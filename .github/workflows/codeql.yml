@@ -1,0 +1,55 @@
+name: "CodeQL"
+
+on:
+    push:
+        branches:
+            - "main"
+            - "v.?[0-9]+.[0-9]+.[0-9]+"
+            - "v.?[0-9]+.[0-9]+"
+            - "v?[0-9]+.[0-9]+.[0-9]+"
+            - "v?[0-9]+.[0-9]+"
+            - release-*
+    pull_request:
+        branches:
+            - "main"
+            - "v.?[0-9]+.[0-9]+.[0-9]+"
+            - "v.?[0-9]+.[0-9]+"
+            - "v?[0-9]+.[0-9]+.[0-9]+"
+            - "v?[0-9]+.[0-9]+"
+            - release-*
+    schedule:
+        - cron: "37 18 * * 6"
+    workflow_dispatch:
+
+jobs:
+    analyze:
+        name: Analyze
+        runs-on: ubuntu-latest
+        permissions:
+            security-events: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: csharp
+                  build-mode: manual
+
+            # C# Build
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: "8.0.x"
+
+            - name: Build the client
+              shell: bash
+              run: dotnet build sources/Valkey.Glide/Valkey.Glide.csproj --configuration Lint --framework net8.0
+
+            - name: Perform CodeQL Analysis
+              uses: github/codeql-action/analyze@v3
+              with:
+                  category: "/language:csharp"

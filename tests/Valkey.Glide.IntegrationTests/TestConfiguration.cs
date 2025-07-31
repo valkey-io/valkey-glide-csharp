@@ -234,7 +234,7 @@ public class TestConfiguration : IDisposable
     public TestConfiguration()
     {
         string? projectDir = Directory.GetCurrentDirectory();
-        while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => d.Contains("valkey-glide"))))
+        while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => Path.GetFileName(d) == "valkey-glide")))
         {
             projectDir = Path.GetDirectoryName(projectDir);
         }
