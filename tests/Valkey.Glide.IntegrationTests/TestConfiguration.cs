@@ -234,17 +234,17 @@ public class TestConfiguration : IDisposable
     public TestConfiguration()
     {
         string? projectDir = Directory.GetCurrentDirectory();
-        while (!(Path.GetFileName(projectDir) == "csharp" || projectDir == null))
+        while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => d.Contains("valkey-glide"))))
         {
             projectDir = Path.GetDirectoryName(projectDir);
         }
 
         if (projectDir == null)
         {
-            throw new FileNotFoundException("Can't detect the project dir. Are you running tests from `csharp` directory?");
+            throw new FileNotFoundException("Can't detect the project dir. Are you running tests from the repo root?");
         }
 
-        _scriptDir = Path.Combine(projectDir, "..", "utils");
+        _scriptDir = Path.Combine(projectDir, "valkey-glide", "utils");
 
         TLS = Environment.GetEnvironmentVariable("tls") == "true";
 
