@@ -12,10 +12,10 @@ name = "glide_rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-redis = { path = "../../glide-core/redis-rs/redis", features = ["aio", "tokio-comp", "connection-manager", "tokio-rustls-comp"] }
-glide-core = { path = "../../glide-core" }
+redis = { path = "../valkey-glide/glide-core/redis-rs/redis", features = ["aio", "tokio-comp", "connection-manager", "tokio-rustls-comp"] }
+glide-core = { path = "../valkey-glide/glide-core" }
 tokio = { version = "^1", features = ["rt", "macros", "rt-multi-thread", "time"] }
-logger_core = { path = "../../logger_core" }
+logger_core = { path = "../valkey-glide/logger_core" }
 
 [profile.release]
 lto = true

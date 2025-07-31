@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)../../csharp/sources/Valkey.Glide/Valkey.Glide.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../sources/Valkey.Glide/Valkey.Glide.csproj" />
   </ItemGroup>
 
   <ItemGroup>
