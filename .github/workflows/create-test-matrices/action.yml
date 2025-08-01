@@ -1,0 +1,98 @@
+inputs:
+    run-full-matrix:
+        description: "Run the full matrix"
+        required: true
+        type: boolean
+    containers:
+        description: "Run in containers"
+        required: true
+        default: false
+        type: boolean
+
+outputs:
+    server-matrix-output:
+        description: "Server matrix"
+        value: ${{ steps.load-server-matrix.outputs.server-matrix }}
+    os-matrix-output:
+        description: "OS matrix"
+        value: ${{ steps.load-os-matrix.outputs.os-matrix }}
+    version-matrix-output:
+        description: "Version matrix"
+        value: ${{ steps.create-lang-version-matrix.outputs.version-matrix }}
+
+runs:
+    using: "composite"
+    steps:
+        - name: "Setup Environment Variables"
+          shell: bash
+          env:
+              RUN_FULL_MATRIX: ${{ inputs.run-full-matrix }}
+              CONTAINERS: ${{ inputs.containers }}
+          run: |
+              echo "RUN_FULL_MATRIX=$RUN_FULL_MATRIX" >> $GITHUB_ENV
+              echo "CONTAINERS=$CONTAINERS" >> $GITHUB_ENV
+
+        - name: Load server matrix
+          id: load-server-matrix
+          shell: bash
+          working-directory: .github/json_matrices
+          run: |
+              set -o pipefail
+              echo 'Select server versions to run tests against'
+              if [[ "$RUN_FULL_MATRIX" == "true" ]]; then
+                  echo 'Pick all server versions - on cron (schedule) or if manually triggered job requires a full matrix'
+                  jq -c . < server-matrix.json | awk '{ printf "server-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+              else
+                  echo 'Pick server versions marked as `"run": "always"` only - on PR, push or manually triggered job which does not require full matrix'
+                  jq -c '[.[] | select(.run == "always")]' < server-matrix.json | awk '{ printf "server-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+              fi
+
+        - name: Load os matrix
+          id: load-os-matrix
+          shell: bash
+          working-directory: .github/json_matrices
+          run: |
+              set -o pipefail
+              [[ "$CONTAINERS" == "true" ]] && CONDITION=".IMAGE?" || CONDITION=".IMAGE == null"
+              echo 'Select runners (VMs) to run tests on'
+              if [[ "$RUN_FULL_MATRIX" == "true" ]]; then
+                  echo 'Pick all runners - on cron (schedule) or if manually triggered job requires a full matrix'
+                  jq -c "[.[] | select($CONDITION)]" < os-matrix.json | awk '{ printf "os-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+              else
+                  echo 'Pick runners marked as '"run": "always"' only - on PR, push or manually triggered job which does not require full matrix'
+                  jq -c '[.[] | select(.run == "always")]' < os-matrix.json | awk '{ printf "os-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+              fi
+
+        - name: Create language version matrix
+          id: create-lang-version-matrix
+          shell: bash
+          working-directory: .github/json_matrices
+          run: |
+              set -o pipefail
+              echo 'Select language (framework/SDK) versions to run tests on'
+              if [[ "$RUN_FULL_MATRIX" == "true" ]]; then
+                  echo 'Pick language versions listed in 'versions' - on cron (schedule) or if manually triggered job requires a full matrix'
+                  jq -c ".versions" < version-matrix.json | awk '{ printf "version-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+              else
+                  echo 'Pick language versions listed in 'always-run-versions' only - on PR, push or manually triggered job which does not require full matrix'
+                  jq -c ".\"always-run-versions\"" < version-matrix.json | awk '{ printf "version-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+              fi
+
+        - name: Validate no empty/incorrect matrices
+          shell: bash
+          run: |
+              SERVERS=`jq length <<< '${{ steps.load-server-matrix.outputs.server-matrix }}'`
+              if [[ $SERVERS == 0 ]]; then
+                  echo "Server version matrix is empty!"
+                  exit 1
+              fi
+              HOSTS=`jq length <<< '${{ steps.load-os-matrix.outputs.os-matrix }}'`
+              if [[ $HOSTS == 0 ]]; then
+                  echo "OS matrix is empty!"
+                  exit 1
+              fi
+              LANGS=`jq length <<< '${{ steps.create-lang-version-matrix.outputs.version-matrix }}'`
+              if [[ $LANGS == 0 ]]; then
+                  echo "Dotnet version matrix is empty!"
+                  exit 1
+              fi
