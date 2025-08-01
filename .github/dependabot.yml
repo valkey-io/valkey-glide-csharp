@@ -3,7 +3,7 @@ version: 2
 updates:
     # Enable version updates for NuGet (C#)
     - package-ecosystem: "nuget"
-      directory: "/csharp"
+      directory: "/"
       schedule:
           interval: "weekly"
           day: "monday"
