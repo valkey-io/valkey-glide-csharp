@@ -1,0 +1,242 @@
+name: C# tests
+
+on:
+    push:
+        branches:
+            - main
+            - release-*
+            - v*
+        paths:
+    pull_request:
+        paths:
+    workflow_dispatch:
+        inputs:
+            full-matrix:
+                description: "Run the full server, host, and language version matrix"
+                type: boolean
+                default: false
+            name:
+                required: false
+                type: string
+                description: "(Optional) Test run name"
+    schedule:
+        - cron: "0 3 * * *"
+
+permissions:
+    contents: read
+
+concurrency:
+    group: C#-${{ github.head_ref || github.ref }}-${{ toJson(inputs) }}
+    cancel-in-progress: true
+
+run-name:
+    # Set custom name if job is started manually and name is given
+    ${{ github.event_name == 'workflow_dispatch' && (inputs.name == '' && format('{0} @ {1} {2}', github.ref_name, github.sha, toJson(inputs)) || inputs.name) || '' }}
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+    get-matrices:
+        runs-on: ubuntu-latest
+        outputs:
+            server-matrix-output: ${{ steps.get-matrices.outputs.server-matrix-output }}
+            host-matrix-output: ${{ steps.get-matrices.outputs.os-matrix-output }}
+            version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
+        steps:
+            - uses: actions/checkout@v4
+            - id: get-matrices
+              uses: ./.github/workflows/create-test-matrices
+              with:
+                  # Run full test matrix if job started by cron or it was explictly specified by a person who triggered the workflow
+                  run-full-matrix: ${{ github.event.inputs.full-matrix == 'true' || github.event_name == 'schedule' }}
+
+    tests:
+        name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
+        needs: get-matrices
+        timeout-minutes: 35
+        strategy:
+            fail-fast: false
+            matrix:
+                dotnet: ${{ fromJson(needs.get-matrices.outputs.version-matrix-output) }}
+                server: ${{ fromJson(needs.get-matrices.outputs.server-matrix-output) }}
+                host: ${{ fromJson(needs.get-matrices.outputs.host-matrix-output) }}
+        runs-on: ${{ matrix.host.RUNNER }}
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: Output Matrix Parameters for this job
+              run: |
+                  echo "Job running with the following matrix configuration:"
+                  echo "${{ toJson(matrix) }}"
+
+            - name: Set up dotnet ${{ matrix.dotnet }}
+              uses: actions/setup-dotnet@v4
+              with:
+                  # install latest dotnet too to use language features
+                  dotnet-version: |
+                      9
+                      ${{ matrix.dotnet }}
+              env:
+                  DOTNET_INSTALL_DIR: ~/.dotnet
+
+            - name: Install shared software dependencies
+              uses: ./.github/workflows/install-shared-dependencies
+              with:
+                  os: ${{ matrix.host.OS }}
+                  target: ${{ matrix.host.TARGET }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  server-version: ${{ matrix.server.version }}
+
+            - uses: actions/cache@v4
+              with:
+                  path: rust/target
+                  key: ${{ matrix.host.TARGET }}
+
+            - name: Test dotnet ${{ matrix.dotnet }}
+              run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
+
+            - name: Run benchmark
+              if: ${{ contains(matrix.host.RUNNER, 'ubuntu') }}
+              shell: bash
+              working-directory: valkey-glide/benchmarks
+              env:
+                  CSHARP_BENCH_FOLDER: $GITHUB_WORKSPACE/benchmarks
+              run: |
+                  redis-server --save "" --daemonize "yes"
+                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net${{ matrix.dotnet }}
+
+            - name: Upload test reports
+              if: always()
+              continue-on-error: true
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
+                  path: |
+                      TestReport.html
+                      valkey-glide/benchmarks/results/*
+                      valkey-glide/utils/clusters/**
+
+    get-containers:
+        runs-on: ubuntu-latest
+        if: ${{ github.event.inputs.full-matrix == 'true' || github.event_name == 'schedule' }}
+        outputs:
+            server-matrix-output: ${{ steps.get-matrices.outputs.server-matrix-output }}
+            host-matrix-output: ${{ steps.get-matrices.outputs.os-matrix-output }}
+            version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
+
+        steps:
+            - uses: actions/checkout@v4
+            - id: get-matrices
+              uses: ./.github/workflows/create-test-matrices
+              with:
+                  run-full-matrix: true
+                  containers: true
+
+    tests-container:
+        runs-on: ${{ matrix.host.RUNNER }}
+        needs: [get-containers]
+        timeout-minutes: 25
+        strategy:
+            fail-fast: false
+            matrix:
+                # Don't use generated matrix for dotnet until net6.0 compatibility issues resolved on amazon linux
+                # dotnet: ${{ fromJson(needs.get-containers.outputs.version-matrix-output) }}
+                dotnet: ["8.0"]
+                server: ${{ fromJson(needs.get-containers.outputs.server-matrix-output) }}
+                host: ${{ fromJson(needs.get-containers.outputs.host-matrix-output) }}
+        container:
+            image: ${{ matrix.host.IMAGE }}
+            options: ${{ join(' -q ', matrix.host.CONTAINER_OPTIONS) }} # adding `-q` to bypass empty options
+        steps:
+            - name: Install git
+              run: |
+                  yum update
+                  yum install -y git tar findutils libicu
+                  echo IMAGE=amazonlinux:latest | sed -r 's/:/-/g' >> $GITHUB_ENV
+            # Replace `:` in the variable otherwise it can't be used in `upload-artifact`
+            - uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: Set up dotnet ${{ matrix.dotnet }}
+              uses: actions/setup-dotnet@v4
+              with:
+                  # install latest dotnet too to use language features
+                  dotnet-version: |
+                      9
+                      ${{ matrix.dotnet }}
+
+            - name: Install shared software dependencies
+              uses: ./.github/workflows/install-shared-dependencies
+              with:
+                  os: ${{ matrix.host.OS }}
+                  target: ${{ matrix.host.TARGET }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  server-version: ${{ matrix.server.version }}
+
+            - uses: actions/cache@v4
+              with:
+                  path: rust/target
+                  key: ${{ matrix.host.IMAGE }}
+
+            - name: Test dotnet ${{ matrix.dotnet }}
+              run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
+
+            - name: Upload test reports
+              if: always()
+              continue-on-error: true
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ env.IMAGE }}-${{ matrix.host.ARCH }}
+                  path: |
+                      TestReport.html
+                      valkey-glide/utils/clusters/**
+
+    lint:
+        timeout-minutes: 10
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: Install Rust toolchain
+              uses: ./.github/workflows/install-rust
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
+            - uses: actions/cache@v4
+              with:
+                  path: rust/target
+                  key: x86_64-unknown-linux-gnu
+
+            - name: lint rust
+              working-directory: rust
+              continue-on-error: true
+              shell: bash
+              run: |
+                  set +e
+                  cargo fmt --all -- --check
+                  cargo clippy --all-features --all-targets -- -D warnings
+                  cargo clippy --all-targets -- -D warnings
+                  cargo update
+                  cargo install --locked cargo-deny
+                  cargo deny check --config $GITHUB_WORKSPACE/valkey-glide/deny.toml
+                  RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
+
+            - name: Set up dotnet
+              uses: actions/setup-dotnet@v4
+              with:
+                  # install latest dotnet too to use language features
+                  dotnet-version: |
+                      9
+                      8
+
+            - name: Format
+              run: |
+                  dotnet format --verify-no-changes --verbosity diagnostic
+                  dotnet build --configuration Lint --framework net8.0

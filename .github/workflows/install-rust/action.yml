@@ -1,0 +1,19 @@
+name: Install Rust tool chain
+
+inputs:
+    target:
+        description: "Specified target for rust toolchain, ex. x86_64-apple-darwin"
+        type: string
+        required: false
+    github-token:
+        description: "GitHub token"
+        type: string
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        - name: Install Rust toolchain
+          uses: dtolnay/rust-toolchain@stable
+          with:
+              targets: ${{ inputs.target }}
