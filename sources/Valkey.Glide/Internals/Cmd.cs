@@ -22,6 +22,7 @@ internal interface ICmd
 internal class Cmd<R, T> : ICmd
 {
     public readonly bool IsNullable;
+    public readonly bool AllowConverterToHandleNull;
     public readonly Func<R, T> Converter;
     public readonly RequestType Request;
     public readonly ArgsArray ArgsArray;
@@ -31,6 +32,11 @@ internal class Cmd<R, T> : ICmd
     {
         if (value is null)
         {
+            if (AllowConverterToHandleNull)
+            {
+                // Let the converter handle null by passing default(R)
+                return Converter(default(R)!);
+            }
             if (IsNullable)
             {
                 return null;
@@ -52,11 +58,12 @@ internal class Cmd<R, T> : ICmd
 
     public new string ToString() => $"{Request} [{string.Join(' ', ArgsArray.Args.ToStrings())}]";
 
-    public Cmd(RequestType request, GlideString[] args, bool isNullable, Func<R, T> converter)
+    public Cmd(RequestType request, GlideString[] args, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
     {
         Request = request;
         ArgsArray = new() { Args = args };
         IsNullable = isNullable;
+        AllowConverterToHandleNull = allowConverterToHandleNull;
         Converter = converter;
     }
 

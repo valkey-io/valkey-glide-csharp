@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide;
+
 namespace Valkey.Glide.Commands;
 
 /// <summary>
@@ -48,19 +50,44 @@ public interface IListCommands
     Task<ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// Removes and returns up to <paramref name="count"/> elements from the first non-empty list
+    /// from the provided <paramref name="keys"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lmpop"/>
+    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="count">The maximum number of elements to pop.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// A <see cref="ListPopResult"/> containing the key of the list that was popped from and the popped elements.
+    /// If no list contains elements, <see cref="ListPopResult.Null"/> will be returned.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ListPopResult result = await client.ListLeftPopAsync(keys, 2);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ListPopResult> ListLeftPopAsync(ValkeyKey[] keys, long count, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Inserts the specified value at the head of the list stored at key.
     /// If key does not exist, it is created as an empty list before performing the push operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lpush"/>
+    /// <seealso href="https://valkey.io/commands/lpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="value">The value to add to the head of the list.</param>
-    /// <param name="when">Not supported. LPUSHX has not been implemented yet.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
+    /// // Regular LPUSH
     /// long result = await client.ListLeftPushAsync(key, value);
+    /// // LPUSHX (only push if key exists)
+    /// long result = await client.ListLeftPushAsync(key, value, When.Exists);
     /// </code>
     /// </example>
     /// </remarks>
@@ -72,15 +99,19 @@ public interface IListCommands
     /// is created as an empty list before performing the push operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lpush"/>
+    /// <seealso href="https://valkey.io/commands/lpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="values">The elements to insert at the head of the list stored at <paramref name="key" />.</param>
-    /// <param name="when">Not supported. LPUSHX has not been implemented yet.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
+    /// // Regular LPUSH
     /// long result = await client.ListLeftPushAsync(key, values, When.Always);
+    /// // LPUSHX (only push if key exists)
+    /// long result = await client.ListLeftPushAsync(key, values, When.Exists);
     /// </code>
     /// </example>
     /// </remarks>
@@ -109,13 +140,22 @@ public interface IListCommands
     /// Inserts the specified value at the tail of the list stored at key.
     /// If key does not exist, it is created as an empty list before performing the push operation.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/rpush"/>
+    /// <seealso href="https://valkey.io/commands/rpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="value">The value to add to the tail of the list.</param>
-    /// <param name="when">Not supported. RPUSHX has not been implemented yet.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
-    /// <seealso href="https://valkey.io/commands/rpush"/>
+    /// <example>
+    /// <code>
+    /// // Regular RPUSH
+    /// long result = await client.ListRightPushAsync(key, value);
+    /// // RPUSHX (only push if key exists)
+    /// long result = await client.ListRightPushAsync(key, value, When.Exists);
+    /// </code>
+    /// </example>
     /// </remarks>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
@@ -125,15 +165,19 @@ public interface IListCommands
     /// If key does not exist, it is created as an empty list before performing the push operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/rpush"/>
+    /// <seealso href="https://valkey.io/commands/rpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="values">The elements to insert at the tail of the list stored at <paramref name="key" />.</param>
-    /// <param name="when">Not supported. RPUSHX has not been implemented yet.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
+    /// // Regular RPUSH
     /// long result = await client.ListRightPushAsync(key, values, When.Always);
+    /// // RPUSHX (only push if key exists)
+    /// long result = await client.ListRightPushAsync(key, values, When.Exists);
     /// </code>
     /// </example>
     /// </remarks>
@@ -195,6 +239,27 @@ public interface IListCommands
     /// </example>
     /// </remarks>
     Task<ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Removes and returns up to <paramref name="count"/> elements from the first non-empty list
+    /// from the provided <paramref name="keys"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lmpop"/>
+    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="count">The maximum number of elements to pop.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// A <see cref="ListPopResult"/> containing the key of the list that was popped from and the popped elements.
+    /// If no list contains elements, <see cref="ListPopResult.Null"/> will be returned.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ListPopResult result = await client.ListRightPopAsync(keys, 2);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ListPopResult> ListRightPopAsync(ValkeyKey[] keys, long count, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the length of the list stored at <paramref name="key" />.
@@ -293,4 +358,171 @@ public interface IListCommands
     /// </example>
     /// </remarks>
     Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None);
+
+    // ===== BLOCKING OPERATIONS - NOT SUPPORTED BY STACKEXCHANGE.REDIS =====
+    // The following blocking operations are NOT supported by StackExchange.Redis because they would
+    // block the entire multiplexer, preventing other operations from executing.
+    // These are GLIDE-only features:
+    // - BLMOVE (blocking list move)
+    // - BLMPOP (blocking list multi-pop)  
+    // - BLPOP (blocking left pop)
+    // - BRPOP (blocking right pop)
+    // See: https://stackexchange.github.io/StackExchange.Redis/Basics.html
+
+    /// <summary>
+    /// Returns the element at index <paramref name="index"/> in the list stored at <paramref name="key"/>.
+    /// The index is zero-based, so 0 means the first element, 1 the second element and so on.
+    /// Negative indices can be used to designate elements starting at the tail of the list.
+    /// Here, -1 means the last element, -2 means the penultimate and so forth.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lindex"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="index">The index of the element in the list to retrieve.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// The element at <paramref name="index"/>.
+    /// If <paramref name="index"/> is out of range or if <paramref name="key"/> does not exist, <see cref="ValkeyValue.Null"/> will be returned.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ValkeyValue result = await client.ListGetByIndexAsync(key, 0);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Inserts <paramref name="value"/> in the list stored at <paramref name="key"/> after the reference value <paramref name="pivot"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/linsert"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="pivot">The reference point in the list.</param>
+    /// <param name="value">The new element to insert.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// The length of the list after the insert operation.
+    /// If the <paramref name="pivot"/> is not found, -1 is returned.
+    /// If <paramref name="key"/> does not exist, 0 is returned.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long result = await client.ListInsertAfterAsync(key, "pivot", "new_element");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Inserts <paramref name="value"/> in the list stored at <paramref name="key"/> before the reference value <paramref name="pivot"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/linsert"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="pivot">The reference point in the list.</param>
+    /// <param name="value">The new element to insert.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// The length of the list after the insert operation.
+    /// If the <paramref name="pivot"/> is not found, -1 is returned.
+    /// If <paramref name="key"/> does not exist, 0 is returned.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long result = await client.ListInsertBeforeAsync(key, "pivot", "new_element");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Atomically returns and removes the first/last element of the list stored at <paramref name="sourceKey"/>
+    /// and pushes the element at the first/last element of the list stored at <paramref name="destinationKey"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lmove"/>
+    /// <param name="sourceKey">The key of the source list.</param>
+    /// <param name="destinationKey">The key of the destination list.</param>
+    /// <param name="sourceSide">The side of the source list to pop from (Left = head, Right = tail).</param>
+    /// <param name="destinationSide">The side of the destination list to push to (Left = head, Right = tail).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// The element being popped and pushed.
+    /// If <paramref name="source"/> does not exist, <see cref="ValkeyValue.Null"/> will be returned.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ValkeyValue result = await client.ListMoveAsync(sourceKey, destKey, ListSide.Left, ListSide.Right);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the index of the first occurrence of <paramref name="element"/> inside the list specified by <paramref name="key"/>.
+    /// If no match is found, -1 is returned.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lpos"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="element">The element to search for.</param>
+    /// <param name="rank">The rank of the match to return (1-based). Negative values indicate searching from the end.</param>
+    /// <param name="maxLength">Limit the search to this many elements. 0 means no limit.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// The index of the first occurrence of <paramref name="element"/>, or -1 if not found.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long result = await client.ListPositionAsync(key, "element", 1, 0);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the indices of matching elements inside the list specified by <paramref name="key"/>.
+    /// If no matches are found, an empty array is returned.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lpos"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="element">The element to search for.</param>
+    /// <param name="count">The maximum number of matches to return.</param>
+    /// <param name="rank">The rank of the first match to return (1-based). Negative values indicate searching from the end.</param>
+    /// <param name="maxLength">Limit the search to this many elements. 0 means no limit.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>
+    /// An array of indices of matching elements.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long[] result = await client.ListPositionsAsync(key, "element", 10, 1, 0);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Sets the list element at <paramref name="index"/> to <paramref name="value"/>.
+    /// The index is zero-based, so 0 means the first element, 1 the second element and so on.
+    /// Negative indices can be used to designate elements starting at the tail of the list.
+    /// Here, -1 means the last element, -2 means the penultimate and so forth.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lset"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="index">The index of the element in the list to set.</param>
+    /// <param name="value">The new value.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// An error is returned for out of range indexes.
+    /// <example>
+    /// <code>
+    /// await client.ListSetByIndexAsync(key, 0, "new_value");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value, CommandFlags flags = CommandFlags.None);
 }

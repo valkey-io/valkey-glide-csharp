@@ -134,6 +134,28 @@ public class CommandTests
             () => Assert.Equal(["LTRIM", "a", "1", "-1"], Request.ListTrimAsync("a", 1, -1).GetArgs()),
             () => Assert.Equal(["LRANGE", "a", "0", "-1"], Request.ListRangeAsync("a", 0, -1).GetArgs()),
             () => Assert.Equal(["LRANGE", "a", "1", "5"], Request.ListRangeAsync("a", 1, 5).GetArgs()),
+            
+            // New List Commands
+            () => Assert.Equal(["LMPOP", "2", "key1", "key2", "LEFT", "COUNT", "3"], Request.ListLeftPopAsync(["key1", "key2"], 3).GetArgs()),
+            () => Assert.Equal(["LMPOP", "2", "key1", "key2", "RIGHT", "COUNT", "3"], Request.ListRightPopAsync(["key1", "key2"], 3).GetArgs()),
+            () => Assert.Equal(["LPUSHX", "a", "value"], Request.ListLeftPushAsync("a", "value", When.Exists).GetArgs()),
+            () => Assert.Equal(["LPUSHX", "a", "one", "two"], Request.ListLeftPushAsync("a", ["one", "two"], When.Exists).GetArgs()),
+            () => Assert.Equal(["RPUSHX", "a", "value"], Request.ListRightPushAsync("a", "value", When.Exists).GetArgs()),
+            () => Assert.Equal(["RPUSHX", "a", "one", "two"], Request.ListRightPushAsync("a", ["one", "two"], When.Exists).GetArgs()),
+            () => Assert.Equal(["LINDEX", "a", "0"], Request.ListGetByIndexAsync("a", 0).GetArgs()),
+            () => Assert.Equal(["LINDEX", "a", "-1"], Request.ListGetByIndexAsync("a", -1).GetArgs()),
+            () => Assert.Equal(["LINSERT", "a", "BEFORE", "pivot", "value"], Request.ListInsertBeforeAsync("a", "pivot", "value").GetArgs()),
+            () => Assert.Equal(["LINSERT", "a", "AFTER", "pivot", "value"], Request.ListInsertAfterAsync("a", "pivot", "value").GetArgs()),
+            () => Assert.Equal(["LMOVE", "src", "dest", "LEFT", "RIGHT"], Request.ListMoveAsync("src", "dest", ListSide.Left, ListSide.Right).GetArgs()),
+            () => Assert.Equal(["LMOVE", "src", "dest", "RIGHT", "LEFT"], Request.ListMoveAsync("src", "dest", ListSide.Right, ListSide.Left).GetArgs()),
+            () => Assert.Equal(["LPOS", "a", "element"], Request.ListPositionAsync("a", "element").GetArgs()),
+            () => Assert.Equal(["LPOS", "a", "element", "RANK", "2"], Request.ListPositionAsync("a", "element", 2).GetArgs()),
+            () => Assert.Equal(["LPOS", "a", "element", "MAXLEN", "100"], Request.ListPositionAsync("a", "element", 1, 100).GetArgs()),
+            () => Assert.Equal(["LPOS", "a", "element", "COUNT", "5"], Request.ListPositionsAsync("a", "element", 5).GetArgs()),
+            () => Assert.Equal(["LPOS", "a", "element", "COUNT", "5", "RANK", "2"], Request.ListPositionsAsync("a", "element", 5, 2).GetArgs()),
+            () => Assert.Equal(["LPOS", "a", "element", "COUNT", "5", "MAXLEN", "50"], Request.ListPositionsAsync("a", "element", 5, 1, 50).GetArgs()),
+            () => Assert.Equal(["LSET", "a", "0", "value"], Request.ListSetByIndexAsync("a", 0, "value").GetArgs()),
+            () => Assert.Equal(["LSET", "a", "-1", "value"], Request.ListSetByIndexAsync("a", -1, "value").GetArgs()),
 
             // Hash Commands
             () => Assert.Equal(new string[] { "HGET", "key", "field" }, Request.HashGetAsync("key", "field").GetArgs()),

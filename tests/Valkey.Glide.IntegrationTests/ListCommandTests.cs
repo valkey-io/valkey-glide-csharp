@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Errors;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class ListCommandTests(TestConfiguration config)
@@ -313,5 +315,377 @@ public class ListCommandTests(TestConfiguration config)
 
         ValkeyValue[] lastElement = await client.ListRangeAsync(key, 0, -1);
         Assert.Equal(["right1"], lastElement.ToGlideStrings());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListMultiPop(BaseClient client)
+    {
+        string key1 = $"{{listKey}}-multipop1-{Guid.NewGuid().ToString()}";
+        string key2 = $"{{listKey}}-multipop2-{Guid.NewGuid().ToString()}";
+        string key3 = $"{{listKey}}-multipop3-{Guid.NewGuid().ToString()}";
+
+        // Test LMPOP with empty lists
+        ListPopResult emptyResult = await client.ListLeftPopAsync([key1, key2], 2);
+        Assert.True(emptyResult.IsNull);
+
+        // Setup lists
+        await client.ListRightPushAsync(key2, ["a", "b", "c", "d"]);
+        await client.ListRightPushAsync(key3, ["x", "y", "z"]);
+
+        // Test LMPOP LEFT - should pop from first non-empty list (key2)
+        ListPopResult leftResult = await client.ListLeftPopAsync([key1, key2, key3], 2);
+        Assert.False(leftResult.IsNull);
+        Assert.Equal(key2, leftResult.Key);
+        Assert.Equal(["a", "b"], leftResult.Values.ToGlideStrings());
+
+        // Verify key2 has remaining elements
+        Assert.Equal(2, await client.ListLengthAsync(key2));
+
+        // Test LMPOP RIGHT - should pop from first non-empty list (key2)
+        ListPopResult rightResult = await client.ListRightPopAsync([key1, key2, key3], 1);
+        Assert.False(rightResult.IsNull);
+        Assert.Equal(key2, rightResult.Key);
+        Assert.Equal(["d"], rightResult.Values.ToGlideStrings());
+
+        // Now key2 has only one element, test popping more than available
+        ListPopResult moreResult = await client.ListLeftPopAsync([key1, key2, key3], 5);
+        Assert.False(moreResult.IsNull);
+        Assert.Equal(key2, moreResult.Key);
+        Assert.Equal(["c"], moreResult.Values.ToGlideStrings());
+
+        // key2 is now empty, should pop from key3
+        ListPopResult nextResult = await client.ListRightPopAsync([key1, key2, key3], 2);
+        Assert.False(nextResult.IsNull);
+        Assert.Equal(key3, nextResult.Key);
+        Assert.Equal(["z", "y"], nextResult.Values.ToGlideStrings());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListPushX(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test LPUSHX on non-existent key
+        Assert.Equal(0, await client.ListLeftPushAsync(key, "test", When.Exists));
+        Assert.Equal(0, await client.ListLengthAsync(key));
+
+        // Test RPUSHX on non-existent key
+        Assert.Equal(0, await client.ListRightPushAsync(key, "test", When.Exists));
+        Assert.Equal(0, await client.ListLengthAsync(key));
+
+        // Create the list first
+        Assert.Equal(1, await client.ListRightPushAsync(key, "initial"));
+
+        // Now LPUSHX should work
+        Assert.Equal(2, await client.ListLeftPushAsync(key, "left", When.Exists));
+        Assert.Equal(4, await client.ListLeftPushAsync(key, ["left2", "left3"], When.Exists));
+
+        // And RPUSHX should work
+        Assert.Equal(5, await client.ListRightPushAsync(key, "right", When.Exists));
+        Assert.Equal(7, await client.ListRightPushAsync(key, ["right2", "right3"], When.Exists));
+
+        // Verify final order
+        ValkeyValue[] result = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["left3", "left2", "left", "initial", "right", "right2", "right3"], result.ToGlideStrings());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListGetByIndex(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test on non-existent key
+        ValkeyValue nullResult = await client.ListGetByIndexAsync("non-exist-key", 0);
+        Assert.Equal(ValkeyValue.Null, nullResult);
+
+        // Setup list
+        await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
+
+        // Test positive indices
+        Assert.Equal("zero", (await client.ListGetByIndexAsync(key, 0)).ToGlideString());
+        Assert.Equal("two", (await client.ListGetByIndexAsync(key, 2)).ToGlideString());
+        Assert.Equal("four", (await client.ListGetByIndexAsync(key, 4)).ToGlideString());
+
+        // Test negative indices
+        Assert.Equal("four", (await client.ListGetByIndexAsync(key, -1)).ToGlideString());
+        Assert.Equal("three", (await client.ListGetByIndexAsync(key, -2)).ToGlideString());
+        Assert.Equal("zero", (await client.ListGetByIndexAsync(key, -5)).ToGlideString());
+
+        // Test out of range
+        ValkeyValue outOfRange1 = await client.ListGetByIndexAsync(key, 10);
+        Assert.Equal(ValkeyValue.Null, outOfRange1);
+
+        ValkeyValue outOfRange2 = await client.ListGetByIndexAsync(key, -10);
+        Assert.Equal(ValkeyValue.Null, outOfRange2);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListInsert(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test insert on non-existent key
+        Assert.Equal(0, await client.ListInsertBeforeAsync("non-exist-key", "pivot", "value"));
+        Assert.Equal(0, await client.ListInsertAfterAsync("non-exist-key", "pivot", "value"));
+
+        // Setup list
+        await client.ListRightPushAsync(key, ["a", "c", "e"]);
+
+        // Test insert before
+        Assert.Equal(4, await client.ListInsertBeforeAsync(key, "c", "b"));
+        ValkeyValue[] afterBefore = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["a", "b", "c", "e"], afterBefore.ToGlideStrings());
+
+        // Test insert after
+        Assert.Equal(5, await client.ListInsertAfterAsync(key, "c", "d"));
+        ValkeyValue[] afterAfter = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["a", "b", "c", "d", "e"], afterAfter.ToGlideStrings());
+
+        // Test insert with non-existent pivot
+        Assert.Equal(-1, await client.ListInsertBeforeAsync(key, "nonexistent", "x"));
+        Assert.Equal(-1, await client.ListInsertAfterAsync(key, "nonexistent", "y"));
+
+        // List should remain unchanged
+        ValkeyValue[] unchanged = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["a", "b", "c", "d", "e"], unchanged.ToGlideStrings());
+
+        // Test insert with duplicate values (should insert at first occurrence)
+        await client.ListRightPushAsync(key, "c"); // Now: [a, b, c, d, e, c]
+        Assert.Equal(7, await client.ListInsertBeforeAsync(key, "c", "before_first_c"));
+        ValkeyValue[] withDuplicate = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["a", "b", "before_first_c", "c", "d", "e", "c"], withDuplicate.ToGlideStrings());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListMove(BaseClient client)
+    {
+        string source = $"{{listKey}}-movesrc-{Guid.NewGuid().ToString()}";
+        string dest = $"{{listKey}}-movedst-{Guid.NewGuid().ToString()}";
+
+        // Test move from non-existent source
+        ValkeyValue nullMove = await client.ListMoveAsync("{listKey}-non-exist-source", dest, ListSide.Left, ListSide.Right);
+        Assert.Equal(ValkeyValue.Null, nullMove);
+
+        // Setup source list
+        await client.ListRightPushAsync(source, ["a", "b", "c", "d"]);
+
+        // Test LEFT to RIGHT move
+        ValkeyValue moved1 = await client.ListMoveAsync(source, dest, ListSide.Left, ListSide.Right);
+        Assert.Equal("a", moved1.ToGlideString());
+
+        // Verify source and destination
+        ValkeyValue[] sourceAfter1 = await client.ListRangeAsync(source, 0, -1);
+        Assert.Equal(["b", "c", "d"], sourceAfter1.ToGlideStrings());
+
+        ValkeyValue[] destAfter1 = await client.ListRangeAsync(dest, 0, -1);
+        Assert.Equal(["a"], destAfter1.ToGlideStrings());
+
+        // Test RIGHT to LEFT move
+        ValkeyValue moved2 = await client.ListMoveAsync(source, dest, ListSide.Right, ListSide.Left);
+        Assert.Equal("d", moved2.ToGlideString());
+
+        ValkeyValue[] sourceAfter2 = await client.ListRangeAsync(source, 0, -1);
+        Assert.Equal(["b", "c"], sourceAfter2.ToGlideStrings());
+
+        ValkeyValue[] destAfter2 = await client.ListRangeAsync(dest, 0, -1);
+        Assert.Equal(["d", "a"], destAfter2.ToGlideStrings());
+
+        // Test LEFT to LEFT move
+        ValkeyValue moved3 = await client.ListMoveAsync(source, dest, ListSide.Left, ListSide.Left);
+        Assert.Equal("b", moved3.ToGlideString());
+
+        ValkeyValue[] destAfter3 = await client.ListRangeAsync(dest, 0, -1);
+        Assert.Equal(["b", "d", "a"], destAfter3.ToGlideStrings());
+
+        // Test RIGHT to RIGHT move
+        ValkeyValue moved4 = await client.ListMoveAsync(source, dest, ListSide.Right, ListSide.Right);
+        Assert.Equal("c", moved4.ToGlideString());
+
+        ValkeyValue[] destAfter4 = await client.ListRangeAsync(dest, 0, -1);
+        Assert.Equal(["b", "d", "a", "c"], destAfter4.ToGlideStrings());
+
+        // Source should now be empty
+        Assert.Equal(0, await client.ListLengthAsync(source));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListPosition(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test on non-existent key
+        string nonExistentKey = "non-exist-key-" + Guid.NewGuid();
+        string nonExistentElement = "non-existent-element-" + Guid.NewGuid();
+        long result = await client.ListPositionAsync(nonExistentKey, nonExistentElement);
+        Assert.Equal(-1, result);
+
+        // Setup list with duplicates
+        await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "d"]);
+
+        // Test basic position (first occurrence)
+        Assert.Equal(0, await client.ListPositionAsync(key, "a"));
+        Assert.Equal(1, await client.ListPositionAsync(key, "b"));
+        Assert.Equal(3, await client.ListPositionAsync(key, "c"));
+
+        // Test with rank (nth occurrence)
+        Assert.Equal(0, await client.ListPositionAsync(key, "a", 1)); // First occurrence
+        Assert.Equal(2, await client.ListPositionAsync(key, "a", 2)); // Second occurrence
+        Assert.Equal(4, await client.ListPositionAsync(key, "a", 3)); // Third occurrence
+
+        // Test with negative rank (from end)
+        Assert.Equal(4, await client.ListPositionAsync(key, "a", -1)); // Last occurrence
+        Assert.Equal(2, await client.ListPositionAsync(key, "a", -2)); // Second to last
+        Assert.Equal(0, await client.ListPositionAsync(key, "a", -3)); // Third to last
+
+        // Test non-existent element
+        Assert.Equal(-1, await client.ListPositionAsync(key, "nonexistent"));
+
+        // Test with maxLength
+        Assert.Equal(0, await client.ListPositionAsync(key, "a", 1, 3)); // Search only first 3 elements
+        Assert.Equal(2, await client.ListPositionAsync(key, "a", 2, 3)); // Second 'a' is at index 2, but we only search first 3
+
+        // Test rank beyond available occurrences
+        Assert.Equal(-1, await client.ListPositionAsync(key, "a", 5)); // Only 3 'a's exist
+        Assert.Equal(-1, await client.ListPositionAsync(key, "b", 2)); // Only 1 'b' exists
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListPositions(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test on non-existent key
+        long[] emptyResult = await client.ListPositionsAsync("{listKey}-non-exist-key-" + Guid.NewGuid(), "{listKey}-non-existent-element-" + Guid.NewGuid(), 5);
+        Assert.Empty(emptyResult);
+
+        // Setup list with duplicates
+        await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "d", "a"]);
+
+        // Test getting all positions
+        long[] allPositions = await client.ListPositionsAsync(key, "a", 10);
+        Assert.Equal([0, 2, 4, 6], allPositions);
+
+        // Test limiting count
+        long[] limitedPositions = await client.ListPositionsAsync(key, "a", 2);
+        Assert.Equal([0, 2], limitedPositions);
+
+        // Test with rank (starting from nth occurrence)
+        long[] fromSecond = await client.ListPositionsAsync(key, "a", 2, 2);
+        Assert.Equal([2, 4], fromSecond);
+
+        // Test with negative rank (from end)
+        long[] fromEnd = await client.ListPositionsAsync(key, "a", 2, -1);
+        Assert.Equal([6, 4], fromEnd);
+
+        // Test with maxLength
+        long[] withMaxLen = await client.ListPositionsAsync(key, "a", 5, 1, 5);
+        Assert.Equal([0, 2, 4], withMaxLen); // Only search first 5 elements
+
+        // Test non-existent element
+        long[] nonExistent = await client.ListPositionsAsync(key, "nonexistent", 5);
+        Assert.Empty(nonExistent);
+
+        // Test single occurrence element
+        long[] singleOccurrence = await client.ListPositionsAsync(key, "b", 5);
+        Assert.Equal([1], singleOccurrence);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListSetByIndex(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Setup list
+        await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
+
+        // Test setting by positive index
+        await client.ListSetByIndexAsync(key, 0, "ZERO");
+        Assert.Equal("ZERO", (await client.ListGetByIndexAsync(key, 0)).ToGlideString());
+
+        await client.ListSetByIndexAsync(key, 2, "TWO");
+        Assert.Equal("TWO", (await client.ListGetByIndexAsync(key, 2)).ToGlideString());
+
+        // Test setting by negative index
+        await client.ListSetByIndexAsync(key, -1, "FOUR");
+        Assert.Equal("FOUR", (await client.ListGetByIndexAsync(key, -1)).ToGlideString());
+
+        await client.ListSetByIndexAsync(key, -2, "THREE");
+        Assert.Equal("THREE", (await client.ListGetByIndexAsync(key, -2)).ToGlideString());
+
+        // Verify final state
+        ValkeyValue[] finalState = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["ZERO", "one", "TWO", "THREE", "FOUR"], finalState.ToGlideStrings());
+
+        // Test error cases - out of range indices should throw
+        await Assert.ThrowsAsync<RequestException>(async () => 
+            await client.ListSetByIndexAsync(key, 10, "invalid"));
+
+        await Assert.ThrowsAsync<RequestException>(async () => 
+            await client.ListSetByIndexAsync(key, -10, "invalid"));
+
+        // Test on non-existent key should throw
+        await Assert.ThrowsAsync<RequestException>(async () => 
+            await client.ListSetByIndexAsync("non-exist-key", 0, "value"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestNewListCommandsIntegration(BaseClient client)
+    {
+        // Integration test combining all new list commands
+        string key1 = $"{{listKey}}newcmd1-{Guid.NewGuid()}";
+        string key2 = $"{{listKey}}newcmd2-{Guid.NewGuid()}";
+        string key3 = $"{{listKey}}newcmd3-{Guid.NewGuid()}";
+
+        // 1. Setup lists using PUSHX (should fail on non-existent keys)
+        Assert.Equal(0, await client.ListLeftPushAsync(key1, "test", When.Exists));
+        Assert.Equal(0, await client.ListRightPushAsync(key1, "test", When.Exists));
+
+        // 2. Create initial list and use PUSHX successfully
+        await client.ListRightPushAsync(key1, "initial");
+        Assert.Equal(2, await client.ListLeftPushAsync(key1, "left", When.Exists));
+        Assert.Equal(3, await client.ListRightPushAsync(key1, "right", When.Exists));
+
+        // 3. Use LINDEX to verify structure
+        Assert.Equal("left", (await client.ListGetByIndexAsync(key1, 0)).ToGlideString());
+        Assert.Equal("initial", (await client.ListGetByIndexAsync(key1, 1)).ToGlideString());
+        Assert.Equal("right", (await client.ListGetByIndexAsync(key1, 2)).ToGlideString());
+
+        // 4. Use LINSERT to add more elements
+        await client.ListInsertBeforeAsync(key1, "initial", "before_initial");
+        await client.ListInsertAfterAsync(key1, "initial", "after_initial");
+
+        // 5. Use LPOS to find positions
+        Assert.Equal(1, await client.ListPositionAsync(key1, "before_initial"));
+        Assert.Equal(3, await client.ListPositionAsync(key1, "after_initial"));
+
+        // 6. Use LSET to modify elements
+        await client.ListSetByIndexAsync(key1, 0, "LEFT");
+        await client.ListSetByIndexAsync(key1, -1, "RIGHT");
+
+        // 7. Use LMOVE to transfer elements
+        ValkeyValue moved = await client.ListMoveAsync(key1, key2, ListSide.Left, ListSide.Right);
+        Assert.Equal("LEFT", moved.ToGlideString());
+
+        // 8. Use LMPOP to pop from multiple lists
+        ListPopResult popResult = await client.ListLeftPopAsync([key3, key1, key2], 2);
+        Assert.False(popResult.IsNull);
+        Assert.Equal(key1, popResult.Key); // key1 should be first non-empty
+
+        // 9. Verify final states
+        Assert.Equal(1, await client.ListLengthAsync(key2)); // Should have the moved element
+        Assert.Equal("LEFT", (await client.ListGetByIndexAsync(key2, 0)).ToGlideString());
+
+        // Verify key1 has remaining elements after LMPOP
+        long remainingLength = await client.ListLengthAsync(key1);
+        Assert.True(remainingLength > 0);
     }
 }
