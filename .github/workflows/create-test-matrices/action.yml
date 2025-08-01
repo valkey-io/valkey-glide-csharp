@@ -83,7 +83,7 @@ runs:
           run: |
               SERVERS=`jq length <<< '${{ steps.load-server-matrix.outputs.server-matrix }}'`
               if [[ $SERVERS == 0 ]]; then
-                  echo "Server matrix is empty!"
+                  echo "Server version matrix is empty!"
                   exit 1
               fi
               HOSTS=`jq length <<< '${{ steps.load-os-matrix.outputs.os-matrix }}'`
@@ -93,6 +93,6 @@ runs:
               fi
               LANGS=`jq length <<< '${{ steps.create-lang-version-matrix.outputs.version-matrix }}'`
               if [[ $LANGS == 0 ]]; then
-                  echo "Language matrix is empty!"
+                  echo "Dotnet version matrix is empty!"
                   exit 1
               fi
