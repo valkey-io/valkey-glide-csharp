@@ -64,4 +64,29 @@ internal class ResponseConverters
             ? converter(val)
             : throw new RequestException($"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");
     }
+
+    /// <summary>
+    /// Handle server value with option to allow converter to process null values
+    /// </summary>
+    public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
+    {
+        if (value is null)
+        {
+            if (allowConverterToHandleNull)
+            {
+                // Let the converter handle the null value by passing default(R)
+                return converter(default!);
+            }
+            if (isNullable)
+            {
+#pragma warning disable CS8603 // Possible null reference return.
+                return default; // will return a null
+#pragma warning restore CS8603 // Possible null reference return.
+            }
+            throw new RequestException($"Unexpected return type from Glide: got null expected {typeof(T).GetRealTypeName()}");
+        }
+        return value is R val
+            ? converter(val)
+            : throw new RequestException($"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");
+    }
 }

@@ -7,8 +7,8 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
-    public static Cmd<GlideString, GlideString> StringGet(GlideString key)
-        => Simple<GlideString>(RequestType.Get, [key], true);
+    public static Cmd<GlideString, ValkeyValue> StringGet(GlideString key)
+        => new(RequestType.Get, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs);
 
     public static Cmd<string, bool> StringSet(ValkeyKey key, ValkeyValue value)
     {
@@ -41,11 +41,11 @@ internal partial class Request
         return Simple<bool>(RequestType.MSetNX, keyValuePairs);
     }
 
-    public static Cmd<long, long> StringSetRange(GlideString key, long offset, GlideString value)
-        => Simple<long>(RequestType.SetRange, [key, offset.ToGlideString(), value]);
+    public static Cmd<long, ValkeyValue> StringSetRange(GlideString key, long offset, GlideString value)
+        => new(RequestType.SetRange, [key, offset.ToGlideString(), value], false, response => (ValkeyValue)response);
 
-    public static Cmd<GlideString, GlideString> StringGetRange(GlideString key, long start, long end)
-        => Simple<GlideString>(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], true);
+    public static Cmd<GlideString, ValkeyValue> StringGetRange(GlideString key, long start, long end)
+        => new(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response);
 
     public static Cmd<long, long> StringLength(GlideString key)
         => Simple<long>(RequestType.Strlen, [key]);
