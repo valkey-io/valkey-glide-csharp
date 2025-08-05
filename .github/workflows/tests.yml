@@ -94,7 +94,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: ${{ matrix.host.TARGET }}
+                  key: rust-${{ matrix.host.TARGET }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
@@ -181,7 +181,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: ${{ matrix.host.IMAGE }}
+                  key: rust-${{ matrix.host.IMAGE }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
@@ -212,7 +212,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: x86_64-unknown-linux-gnu
+                  key: rust-x86_64-unknown-linux-gnu
 
             - name: lint rust
               working-directory: rust

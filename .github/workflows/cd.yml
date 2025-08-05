@@ -37,6 +37,8 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+              with:
+                  submodules: true
 
             - name: load-platform-matrix
               id: load-platform-matrix
@@ -76,6 +78,8 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              with:
+                  submodules: true
 
             - name: Output Matrix Parameters for this job
               shell: bash
@@ -93,15 +97,12 @@ jobs:
 
             - uses: actions/cache@v4
               with:
-                  path: csharp/rust/target
-                  key: ${{ matrix.host.TARGET }}-csharp
-                  restore-keys: |
-                      ${{ matrix.host.TARGET }}-glide-core
-                      ${{ matrix.host.TARGET }}
+                  path: rust/target
+                  key: rust-${{ matrix.host.TARGET }}
 
             - name: Build native libs (linux gnu)
               if: ${{ contains(matrix.host.TARGET, 'linux-gnu') }}
-              working-directory: csharp/rust
+              working-directory: rust
               run: |
                   cargo zigbuild -r --target ${{ matrix.host.TARGET }}.2.17
                   mkdir -p target/release
@@ -109,7 +110,7 @@ jobs:
 
             - name: Build native libs
               if: ${{ !contains(matrix.host.TARGET, 'linux-gnu') }}
-              working-directory: csharp/rust
+              working-directory: rust
               run: cargo build --release --target ${{ matrix.host.TARGET }}
 
             - name: Upload artifacts to publish
@@ -118,9 +119,9 @@ jobs:
               with:
                   name: ${{ matrix.host.TARGET }}
                   path: |
-                      csharp/rust/target/release/*.so
-                      csharp/rust/target/release/*.dylib
-                      csharp/rust/target/release/*.dll
+                      rust/target/release/*.so
+                      rust/target/release/*.dylib
+                      rust/target/release/*.dll
 
     build-package-to-publish:
         needs: [set-release-version, create-binaries]
@@ -133,10 +134,10 @@ jobs:
             - name: Download published artifacts
               uses: actions/download-artifact@v4
               with:
-                  path: csharp/bin
+                  path: bin
 
             - name: Rename lib for windows
-              working-directory: csharp/bin
+              working-directory: bin
               run: |
                   find . -name glide_rs.dll -execdir mv {} libglide_rs.dll \;
                   tree -h
@@ -153,7 +154,7 @@ jobs:
                   DOTNET_INSTALL_DIR: ~/.dotnet
 
             - name: Pack the client
-              working-directory: csharp/sources/Valkey.Glide
+              working-directory: sources/Valkey.Glide
               run: |
                   dotnet build Valkey.Glide.csproj --configuration Release /property:Version=${{ env.RELEASE_VERSION }}
                   dotnet pack Valkey.Glide.csproj --configuration Release -p:NuspecProperties=version=${{ env.RELEASE_VERSION }}
@@ -167,7 +168,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: package
-                  path: csharp/sources/Valkey.Glide/bin/Release/Valkey.Glide.*.nupkg
+                  path: sources/Valkey.Glide/bin/Release/Valkey.Glide.*.nupkg
 
     publish:
         environment: AWS_ACTIONS
@@ -229,7 +230,7 @@ jobs:
                   fi
 
             - name: Patch IT suite to run tests using freshly published version
-              working-directory: csharp/tests/Valkey.Glide.IntegrationTests
+              working-directory: tests/Valkey.Glide.IntegrationTests
               shell: bash
               run: |
                   dotnet remove reference $(dotnet list reference | tail -n +3)
@@ -247,7 +248,7 @@ jobs:
             - name: Run tests
               # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide/issues/3230
               if: ${{ matrix.host.OS != 'windows' }}
-              working-directory: csharp/tests/Valkey.Glide.IntegrationTests
+              working-directory: tests/Valkey.Glide.IntegrationTests
               run: |
                   dotnet test --framework net8.0 --logger "console;verbosity=detailed" --logger "html;LogFileName=TestReport.html" --results-directory . --filter "FullyQualifiedName~CommandTests"
 
@@ -258,8 +259,8 @@ jobs:
               with:
                   name: test-reports-${{ matrix.host.TARGET }}
                   path: |
-                      csharp/TestReport.html
-                      utils/clusters/**
+                      TestReport.html
+                      valkey-glide/utils/clusters/**
 
     remove-package-if-validation-fails:
         needs: [publish, test, set-release-version]
