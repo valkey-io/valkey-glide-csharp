@@ -5,7 +5,7 @@
         "RUNNER": "ubuntu-24.04",
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
-		"tags": ["ci", "cd"],
+        "tags": ["ci", "cd"],
         "run": "always"
     },
     {
@@ -14,7 +14,7 @@
         "RUNNER": "ubuntu-24.04-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-unknown-linux-gnu",
-		"tags": ["ci", "cd"]
+        "tags": ["ci", "cd"]
     },
     {
         "OS": "macos",
@@ -22,7 +22,7 @@
         "RUNNER": "macos-15",
         "ARCH": "arm64",
         "TARGET": "aarch64-apple-darwin",
-		"tags": ["ci", "cd"]
+        "tags": ["ci", "cd"]
     },
     {
         "OS": "macos",
@@ -30,7 +30,7 @@
         "RUNNER": "macos-13",
         "ARCH": "x64",
         "TARGET": "x86_64-apple-darwin",
-		"tags": ["ci", "cd"]
+        "tags": ["ci", "cd"]
     },
     {
         "OS": "amazon-linux",
@@ -38,7 +38,7 @@
         "RUNNER": "ubuntu-latest",
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
-		"tags": ["container"],
+        "tags": ["container"],
         "IMAGE": "amazonlinux:latest"
     },
     {
@@ -47,7 +47,7 @@
         "RUNNER": "windows-2025",
         "ARCH": "x64",
         "TARGET": "x86_64-pc-windows-msvc",
-		"tags": ["cd"]
+        "tags": ["cd"]
     },
     {
         "OS": "windows",
@@ -55,6 +55,6 @@
         "RUNNER": "windows-11-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-pc-windows-msvc",
-		"tags": ["cd"]
+        "tags": ["cd"]
     }
 ]

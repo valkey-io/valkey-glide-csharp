@@ -27,10 +27,10 @@ runs:
           shell: bash
           env:
               RUN_FULL_MATRIX: ${{ inputs.run-full-matrix }}
-              CONTAINERS: ${{ inputs.containers }}
+              TAG: ${{ inputs.tag }}
           run: |
               echo "RUN_FULL_MATRIX=$RUN_FULL_MATRIX" >> $GITHUB_ENV
-              echo "tag=$TAG" >> $GITHUB_ENV
+              echo "TAG=$TAG" >> $GITHUB_ENV
 
         - name: Load server matrix
           id: load-server-matrix
