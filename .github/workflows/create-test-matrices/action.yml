@@ -3,11 +3,11 @@ inputs:
         description: "Run the full matrix"
         required: true
         type: boolean
-    containers:
-        description: "Run in containers"
+    tag:
+        description: "Tag to filter hosts"
         required: true
-        default: false
-        type: boolean
+        type: string
+        default: ci
 
 outputs:
     server-matrix-output:
@@ -30,7 +30,7 @@ runs:
               CONTAINERS: ${{ inputs.containers }}
           run: |
               echo "RUN_FULL_MATRIX=$RUN_FULL_MATRIX" >> $GITHUB_ENV
-              echo "CONTAINERS=$CONTAINERS" >> $GITHUB_ENV
+              echo "tag=$TAG" >> $GITHUB_ENV
 
         - name: Load server matrix
           id: load-server-matrix
@@ -53,11 +53,10 @@ runs:
           working-directory: .github/json_matrices
           run: |
               set -o pipefail
-              [[ "$CONTAINERS" == "true" ]] && CONDITION=".IMAGE?" || CONDITION=".IMAGE == null"
               echo 'Select runners (VMs) to run tests on'
               if [[ "$RUN_FULL_MATRIX" == "true" ]]; then
                   echo 'Pick all runners - on cron (schedule) or if manually triggered job requires a full matrix'
-                  jq -c "[.[] | select($CONDITION)]" < os-matrix.json | awk '{ printf "os-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+                  jq -c "[.[] | select(any(.tags[] == \"$TAG\"; .))]" < os-matrix.json | awk '{ printf "os-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
               else
                   echo 'Pick runners marked as '"run": "always"' only - on PR, push or manually triggered job which does not require full matrix'
                   jq -c '[.[] | select(.run == "always")]' < os-matrix.json | awk '{ printf "os-matrix=%s\n", $0 }' | tee -a $GITHUB_OUTPUT

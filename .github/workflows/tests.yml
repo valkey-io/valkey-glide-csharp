@@ -134,7 +134,7 @@ jobs:
               uses: ./.github/workflows/create-test-matrices
               with:
                   run-full-matrix: true
-                  containers: true
+                  tag: container
 
     tests-container:
         runs-on: ${{ matrix.host.RUNNER }}

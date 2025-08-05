@@ -13,10 +13,20 @@
     <NuGetAudit>false</NuGetAudit>
     <WarningLevel>0</WarningLevel>
     <Configurations>Debug;Release;Lint</Configurations>
+    <NuspecFile>Valkey.Glide.nuspec</NuspecFile>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <Version>255.255.255</Version>
+    <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
+    <Deterministic>true</Deterministic>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>symbols.nupkg</SymbolPackageFormat>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <!-- Enable analysis and un-suppress warnings only in `Lint` configuration -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Lint'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Lint'" Condition="'$(SkipCargo)' != 'true'">
     <LangVersion>preview</LangVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
@@ -48,7 +58,7 @@
     </Exec>
   </Target>
 
-  <ItemGroup Condition="'$(Configuration)' != 'Lint'">
+  <ItemGroup Condition="'$(Configuration)' != 'Lint'" Condition="'$(SkipCargo)' != 'true'">
     <Content Include="$(MSBuildThisFileDirectory)../../rust/target/$(Configuration.ToLower())/glide_rs.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>lib%(FileName)%(Extension)</Link>
