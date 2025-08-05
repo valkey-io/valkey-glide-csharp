@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <!-- Enable analysis and un-suppress warnings only in `Lint` configuration -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Lint'" Condition="'$(SkipCargo)' != 'true'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Lint'">
     <LangVersion>preview</LangVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
@@ -49,7 +49,7 @@
     <InternalsVisibleTo Include="Valkey.Glide.UnitTests" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(SkipCargo)' != 'true'">
     <Exec Condition="'$(Configuration)' == 'Debug'" Command="cargo build" EnvironmentVariables="CARGO_TERM_COLOR=always" ConsoleToMSBuild="true" WorkingDirectory="$(MSBuildThisFileDirectory)../../rust">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
@@ -58,7 +58,7 @@
     </Exec>
   </Target>
 
-  <ItemGroup Condition="'$(Configuration)' != 'Lint'" Condition="'$(SkipCargo)' != 'true'">
+  <ItemGroup Condition="'$(Configuration)' != 'Lint' And '$(SkipCargo)' != 'true'">
     <Content Include="$(MSBuildThisFileDirectory)../../rust/target/$(Configuration.ToLower())/glide_rs.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>lib%(FileName)%(Extension)</Link>
