@@ -10,6 +10,7 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 - **Type Safety**: Strongly-typed API with comprehensive IntelliSense support
 - **Enterprise Ready**: Designed for production workloads with robust error handling
 - **Community Driven**: Open source with active community support
+- **API Compatibility**: Compatible with StackExchange.Redis APIs to ease migration
 
 ## Key Features
 
@@ -20,6 +21,9 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 - **[Cluster Scan](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan)** – Unified key iteration across shards using a consistent, high-level API
 - **[Batching (Pipeline and Transaction)](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#batching-pipeline-and-transaction)** – Execute multiple commands efficiently in a single network roundtrip
 - **[OpenTelemetry](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#opentelemetry)** – Integrated tracing support for enhanced observability
+
+> [!IMPORTANT]
+> Valkey.Glide C# wrapper is in a preview state and still has many features that remain to be implemented before GA.
 
 ## Supported Engine Versions
 
@@ -61,16 +65,12 @@ using Valkey.Glide;
 using static Valkey.Glide.ConnectionConfiguration;
 
 // Create a standalone client
-var config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("localhost", 6379)
-    .WithDatabaseId(0)
-    .Build();
-
-using var client = await GlideClient.CreateClient(config);
+var connection = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
+var db = connection.Datbase;
 
 // Basic string operations
-await client.StringSetAsync("key", "value");
-var result = await client.StringGetAsync("key");
+await db.StringSetAsync("key", "value");
+var result = await db.StringGetAsync("key");
 Console.WriteLine($"Retrieved: {result}");
 ```
 
@@ -161,84 +161,6 @@ var isMember = await client.SetIsMemberAsync("tags", "csharp");
 var allTags = await client.SetMembersAsync("tags");
 ```
 
-## Advanced Features
-
-### Pipeline Operations
-
-Execute multiple commands efficiently in a single network roundtrip:
-
-```csharp
-var pipeline = new Pipeline()
-    .StringSet("key1", "value1")
-    .StringSet("key2", "value2")
-    .StringGet("key1")
-    .StringGet("key2");
-
-var results = await client.ExecutePipelineAsync(pipeline);
-```
-
-### Transactions
-
-Execute commands atomically:
-
-```csharp
-var transaction = new Transaction()
-    .StringSet("counter", "0")
-    .Incr("counter")
-    .Incr("counter");
-
-var results = await client.ExecuteTransactionAsync(transaction);
-```
-
-### Pub/Sub
-
-```csharp
-// Subscribe to channels
-var pubsubClient = await GlideClient.CreateClient(config);
-await pubsubClient.SubscribeAsync("news", (channel, message) =>
-{
-    Console.WriteLine($"Received on {channel}: {message}");
-});
-
-// Publish messages
-await client.PublishAsync("news", "Breaking news!");
-```
-
-## Configuration Options
-
-### Connection Configuration
-
-```csharp
-var config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("localhost", 6379)
-    .WithDatabaseId(0)
-    .WithConnectionTimeout(TimeSpan.FromSeconds(10))
-    .WithRequestTimeout(TimeSpan.FromSeconds(5))
-    .WithReconnectStrategy(new ExponentialBackoffRetryStrategy(3))
-    .Build();
-```
-
-### TLS Configuration
-
-```csharp
-var config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("secure-server.example.com", 6380)
-    .WithTls()
-    .WithTlsCertificatePath("/path/to/cert.pem")
-    .Build();
-```
-
-### Cluster Configuration
-
-```csharp
-var config = new ClusterClientConfigurationBuilder()
-    .WithAddress("node1.cluster.example.com", 6379)
-    .WithAddress("node2.cluster.example.com", 6379)
-    .WithAddress("node3.cluster.example.com", 6379)
-    .WithReadFromReplicas() // Enable read from replicas
-    .Build();
-```
-
 ## Building from Source
 
 ### Prerequisites
@@ -278,18 +200,6 @@ dotnet test tests/Valkey.Glide.IntegrationTests/
 
 - **[API Documentation](https://valkey.io/valkey-glide/)** - Complete API reference
 - **[General Concepts](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts)** - Core concepts and patterns
-- **[Migration Guides](https://github.com/valkey-io/valkey-glide/wiki)** - Migration from other clients
-
-## Examples and Tutorials
-
-Check out the `examples/` directory for comprehensive examples including:
-
-- Basic CRUD operations
-- Advanced data structures
-- Pub/Sub patterns
-- Pipeline and transaction usage
-- Cluster operations
-- Error handling patterns
 
 ## Performance
 
