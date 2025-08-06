@@ -37,14 +37,12 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-              with:
-                  submodules: true
 
             - name: load-platform-matrix
               id: load-platform-matrix
               working-directory: .github/json_matrices
               run: |
-                  jq -c "[.[] | select(any(.tags[] == \"$TAG\"; .))]" < os-matrix.json | awk '{ printf "PLATFORM_MATRIX=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+                  jq -c "[.[] | select(any(.tags[] == \"cd\"; .))]" < os-matrix.json | awk '{ printf "PLATFORM_MATRIX=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
 
     set-release-version:
         runs-on: ubuntu-latest
@@ -238,7 +236,7 @@ jobs:
                   git diff
 
             - name: Install engine
-              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide/issues/3230
+              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide-csharp/issues/6
               if: ${{ matrix.host.OS != 'windows' }}
               uses: ./.github/workflows/install-engine
               with:
@@ -246,7 +244,7 @@ jobs:
                   target: ${{ matrix.host.TARGET }}
 
             - name: Run tests
-              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide/issues/3230
+              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide-csharp/issues/6
               if: ${{ matrix.host.OS != 'windows' }}
               working-directory: tests/Valkey.Glide.IntegrationTests
               run: |
