@@ -62,7 +62,6 @@ Install-Package Valkey.Glide
 
 ```csharp
 using Valkey.Glide;
-using static Valkey.Glide.ConnectionConfiguration;
 
 // Create a standalone client
 var connection = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
