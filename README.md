@@ -160,40 +160,9 @@ var isMember = await client.SetIsMemberAsync("tags", "csharp");
 var allTags = await client.SetMembersAsync("tags");
 ```
 
-## Building from Source
+### Building & Testing
 
-### Prerequisites
-
-- **.NET 6.0 SDK** or higher
-- **Rust** (latest stable version)
-- **Git**
-
-### Build Steps
-
-```bash
-# Clone the repository
-git clone https://github.com/valkey-io/valkey-glide-csharp.git
-cd valkey-glide-csharp
-
-# Build the project
-dotnet build
-
-# Run tests
-dotnet test
-```
-
-### Development
-
-```bash
-# Build in debug mode
-dotnet build --configuration Debug
-
-# Build in release mode
-dotnet build --configuration Release
-
-# Run integration tests (requires Valkey server)
-dotnet test tests/Valkey.Glide.IntegrationTests/
-```
+Development instructions for local building & testing the package are in the [DEVELOPER.md](DEVELOPER.md) file.
 
 ## Documentation
 
@@ -204,7 +173,7 @@ dotnet test tests/Valkey.Glide.IntegrationTests/
 
 Valkey GLIDE for C# is built for high performance:
 
-- **Rust Core**: Leverages Rust's memory safety and performance
+- **Rust Core**: Leverages Rust's memory safety and performance included multi-threaded support
 - **Async/Await**: Non-blocking operations for better throughput
 - **Connection Pooling**: Efficient connection management
 - **Pipeline Support**: Batch operations for reduced latency
@@ -252,7 +221,7 @@ When reporting issues, please include:
 2. .NET version and runtime
 3. Operating system
 4. Server version and configuration
-5. Minimal reproduction code
+5. Minimal reproducible code
 6. Error messages and stack traces
 
 ## License
