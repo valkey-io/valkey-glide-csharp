@@ -65,7 +65,7 @@ using Valkey.Glide;
 
 // Create a standalone client
 var connection = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
-var db = connection.Datbase;
+var db = connection.Database;
 
 // Basic string operations
 await db.StringSetAsync("key", "value");
