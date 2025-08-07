@@ -87,7 +87,7 @@ internal partial class Request
 
     public static Cmd<long?, long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0)
     {
-        List<GlideString> args = new List<GlideString> { key, element };
+        List<GlideString> args = [key, element];
         if (rank != 1)
         {
             args.AddRange([Constants.RankKeyword, rank.ToGlideString()]);
@@ -102,7 +102,7 @@ internal partial class Request
 
     public static Cmd<object[], long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0)
     {
-        List<GlideString> args = new List<GlideString> { key, element, Constants.CountKeyword, count.ToGlideString() };
+        List<GlideString> args = [key, element, Constants.CountKeyword, count.ToGlideString()];
         if (rank != 1)
         {
             args.AddRange([Constants.RankKeyword, rank.ToGlideString()]);
@@ -147,7 +147,7 @@ internal partial class Request
         // - key is the list name that was popped from
         // - value is an array of the popped elements
         KeyValuePair<GlideString, object> kvp = dict.First();
-        ValkeyKey key = new ValkeyKey(kvp.Key.ToString());
+        ValkeyKey key = kvp.Key.ToString();
         object[] valuesArray = (object[])kvp.Value;
         ValkeyValue[] values = valuesArray?.Cast<GlideString>().Select(gs => (ValkeyValue)gs).ToArray() ?? [];
 
