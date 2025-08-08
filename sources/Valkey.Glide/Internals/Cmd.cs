@@ -32,8 +32,7 @@ internal class Cmd<R, T> : ICmd
     {
         if (value is null)
         {
-            if (AllowConverterToHandleNull ||
-                (IsNullable && (typeof(T) == typeof(ValkeyValue) || typeof(T) == typeof(ListPopResult))))
+            if (AllowConverterToHandleNull)
             {
                 return Converter(default!);
             }

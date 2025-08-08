@@ -357,16 +357,6 @@ public interface IListCommands
     /// </remarks>
     Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None);
 
-    // ===== BLOCKING OPERATIONS - NOT SUPPORTED BY STACKEXCHANGE.REDIS =====
-    // The following blocking operations are NOT supported by StackExchange.Redis because they would
-    // block the entire multiplexer, preventing other operations from executing.
-    // These are GLIDE-only features:
-    // - BLMOVE (blocking list move)
-    // - BLMPOP (blocking list multi-pop)  
-    // - BLPOP (blocking left pop)
-    // - BRPOP (blocking right pop)
-    // See: https://stackexchange.github.io/StackExchange.Redis/Basics.html
-
     /// <summary>
     /// Returns the element at index <paramref name="index"/> in the list stored at <paramref name="key"/>.
     /// The index is zero-based, so 0 means the first element, 1 the second element and so on.
@@ -523,6 +513,15 @@ public interface IListCommands
     /// </example>
     /// </remarks>
     Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+
+    // ===== BLOCKING OPERATIONS - NOT SUPPORTED BY STACKEXCHANGE.REDIS =====
+    // The following blocking operations are NOT supported by StackExchange.Redis because they would
+    // block the entire multiplexer, preventing other operations from executing.
+    // These are GLIDE-only features:
+    // - BLMOVE (blocking list move)
+    // - BLMPOP (blocking list multi-pop)  
+    // - BLPOP (blocking left pop)
+    // - BRPOP (blocking right pop)
 
     /// <summary>
     /// Pops an element from the head of the first list that is non-empty, with the given <paramref name="keys"/> being checked in the order that

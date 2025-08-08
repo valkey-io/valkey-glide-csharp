@@ -9,7 +9,7 @@ namespace Valkey.Glide.Internals;
 internal partial class Request
 {
     public static Cmd<GlideString, ValkeyValue> ListLeftPopAsync(ValkeyKey key)
-        => new(RequestType.LPop, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs);
+        => new(RequestType.LPop, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<object[], ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count)
         => new(RequestType.LPop, [key, count.ToGlideString()], true, array =>
@@ -31,7 +31,7 @@ internal partial class Request
         => Simple<long>(RequestType.LPush, [key.ToGlideString(), .. values.ToGlideStrings()]);
 
     public static Cmd<GlideString, ValkeyValue> ListRightPopAsync(ValkeyKey key)
-        => new(RequestType.RPop, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs);
+        => new(RequestType.RPop, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<object[], ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count)
         => new(RequestType.RPop, [key, count.ToGlideString()], true, array =>
@@ -67,14 +67,14 @@ internal partial class Request
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListLeftPopAsync(ValkeyKey[] keys, long count)
         => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), Constants.LeftKeyword, Constants.CountKeyword, count.ToGlideString()], true, dict =>
-            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict));
+            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListRightPopAsync(ValkeyKey[] keys, long count)
         => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), Constants.RightKeyword, Constants.CountKeyword, count.ToGlideString()], true, dict =>
-            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict));
+            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<GlideString, ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index)
-        => new(RequestType.LIndex, [key, index.ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs);
+        => new(RequestType.LIndex, [key, index.ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<long, long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
         => Simple<long>(RequestType.LInsert, [key, Constants.BeforeKeyword, pivot, value]);
@@ -83,7 +83,7 @@ internal partial class Request
         => Simple<long>(RequestType.LInsert, [key, Constants.AfterKeyword, pivot, value]);
 
     public static Cmd<GlideString, ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide)
-        => new(RequestType.LMove, [sourceKey, destinationKey, sourceSide.ToLiteral(), destinationSide.ToLiteral()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs);
+        => new(RequestType.LMove, [sourceKey, destinationKey, sourceSide.ToLiteral(), destinationSide.ToLiteral()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<long?, long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0)
     {
@@ -96,8 +96,8 @@ internal partial class Request
         {
             args.AddRange([Constants.MaxLenKeyword, maxLength.ToGlideString()]);
         }
-        // Use custom null handling to convert null to -1L
-        return new(RequestType.LPos, [.. args], false, response => response is null ? -1L : (long)response, allowConverterToHandleNull: true);
+        // Convert null to -1L, similar to how other commands handle their null cases
+        return new(RequestType.LPos, [.. args], true, response => response is null ? -1L : (long)response, allowConverterToHandleNull: true);
     }
 
     public static Cmd<object[], long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0)
@@ -126,15 +126,15 @@ internal partial class Request
             array is null ? null : [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
     public static Cmd<GlideString, ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout)
-        => new(RequestType.BLMove, [source, destination, sourceSide.ToLiteral(), destinationSide.ToLiteral(), timeout.TotalSeconds.ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs);
+        => new(RequestType.BLMove, [source, destination, sourceSide.ToLiteral(), destinationSide.ToLiteral(), timeout.TotalSeconds.ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, TimeSpan timeout)
         => new(RequestType.BLMPop, [timeout.TotalSeconds.ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral()], true, dict =>
-            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict));
+            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, long count, TimeSpan timeout)
         => new(RequestType.BLMPop, [timeout.TotalSeconds.ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral(), Constants.CountKeyword, count.ToGlideString()], true, dict =>
-            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict));
+            dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     private static ListPopResult ConvertDictToListPopResult(Dictionary<GlideString, object> dict)
     {

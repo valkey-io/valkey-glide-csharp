@@ -8,7 +8,7 @@ namespace Valkey.Glide.Internals;
 internal partial class Request
 {
     public static Cmd<GlideString, ValkeyValue> StringGet(GlideString key)
-        => new(RequestType.Get, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs);
+        => new(RequestType.Get, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<string, bool> StringSet(ValkeyKey key, ValkeyValue value)
     {
@@ -45,7 +45,7 @@ internal partial class Request
         => new(RequestType.SetRange, [key, offset.ToGlideString(), value], false, response => (ValkeyValue)response);
 
     public static Cmd<GlideString, ValkeyValue> StringGetRange(GlideString key, long start, long end)
-        => new(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response);
+        => new(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
 
     public static Cmd<long, long> StringLength(GlideString key)
         => Simple<long>(RequestType.Strlen, [key]);
@@ -69,7 +69,7 @@ internal partial class Request
         => Simple<double>(RequestType.IncrByFloat, [key.ToGlideString(), increment.ToString(System.Globalization.CultureInfo.InvariantCulture).ToGlideString()]);
 
     public static Cmd<GlideString, ValkeyValue> StringGetDelete(ValkeyKey key)
-        => new(RequestType.GetDel, [key.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response);
+        => new(RequestType.GetDel, [key.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
 
     public static Cmd<GlideString, ValkeyValue> StringGetSetExpiry(ValkeyKey key, TimeSpan? expiry)
     {
@@ -83,7 +83,7 @@ internal partial class Request
         {
             args.Add(PersistKeyword.ToGlideString());
         }
-        return new(RequestType.GetEx, [.. args], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response);
+        return new(RequestType.GetEx, [.. args], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
     }
 
 #pragma warning disable IDE0072 // Add missing cases
@@ -96,7 +96,7 @@ internal partial class Request
             _ => throw new ArgumentException("Expiry time must be either Utc or Local", nameof(expiry))
         };
         GlideString[] args = [key.ToGlideString(), ExpiryAtKeyword.ToGlideString(), unixTimestamp.ToGlideString()];
-        return new(RequestType.GetEx, args, true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response);
+        return new(RequestType.GetEx, args, true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
     }
 #pragma warning restore IDE0072 // Add missing cases
 
