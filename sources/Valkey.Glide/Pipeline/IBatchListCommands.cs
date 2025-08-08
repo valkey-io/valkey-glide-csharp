@@ -78,8 +78,6 @@ internal interface IBatchListCommands
     /// <returns>Command Response - <inheritdoc cref="IListCommands.ListRangeAsync(ValkeyKey, long, long, CommandFlags)" /></returns>
     IBatch ListRange(ValkeyKey key, long start = 0, long stop = -1);
 
-    // New list commands
-
     /// <inheritdoc cref="IListCommands.ListLeftPopAsync(ValkeyKey[], long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IListCommands.ListLeftPopAsync(ValkeyKey[], long, CommandFlags)" /></returns>
     IBatch ListLeftPop(ValkeyKey[] keys, long count);

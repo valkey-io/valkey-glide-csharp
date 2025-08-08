@@ -91,8 +91,6 @@ public abstract partial class BaseClient : IListCommands
         return await Command(Request.ListRangeAsync(key, start, stop));
     }
 
-    // New list commands implementations
-
     public async Task<ListPopResult> ListLeftPopAsync(ValkeyKey[] keys, long count, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");

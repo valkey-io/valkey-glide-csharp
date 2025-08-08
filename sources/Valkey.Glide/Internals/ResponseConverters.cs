@@ -48,26 +48,6 @@ internal class ResponseConverters
     /// <param name="converter">Optional function to convert <typeparamref name="R" /> to <typeparamref name="T" />.</param>
     /// <returns>A converted value.</returns>
     /// <exception cref="Exception">When <paramref name="value"/> has incorrect type or value.</exception>
-    public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter)
-    {
-        if (value is null)
-        {
-            if (isNullable)
-            {
-#pragma warning disable CS8603 // Possible null reference return.
-                return default; // will return a null
-#pragma warning restore CS8603 // Possible null reference return.
-            }
-            throw new RequestException($"Unexpected return type from Glide: got null expected {typeof(T).GetRealTypeName()}");
-        }
-        return value is R val
-            ? converter(val)
-            : throw new RequestException($"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");
-    }
-
-    /// <summary>
-    /// Handle server value with option to allow converter to process null values
-    /// </summary>
     public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
     {
         if (value is null)

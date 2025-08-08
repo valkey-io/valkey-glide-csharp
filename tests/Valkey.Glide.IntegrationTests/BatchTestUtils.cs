@@ -809,15 +809,15 @@ internal class BatchTestUtils
 
             // This should pop 2 elements from lmpopKey2 (lmpop1, lmpop2)
             _ = batch.ListLeftPop([lmpopKey1, lmpopKey2], 2);
-            testData.Add(new(ListPopResult.Null, "ListLeftPop([lmpopKey1, lmpopKey2], 2)", true));
+            testData.Add(new(new ListPopResult(lmpopKey2, ["lmpop1", "lmpop2"]), "ListLeftPop([lmpopKey1, lmpopKey2], 2)"));
 
             // This should pop 1 element from lmpopKey2 (lmpop3)
             _ = batch.ListRightPop([lmpopKey1, lmpopKey2], 1);
-            testData.Add(new(ListPopResult.Null, "ListRightPop([lmpopKey1, lmpopKey2], 1)", true));
+            testData.Add(new(new ListPopResult(lmpopKey2, ["lmpop3"]), "ListRightPop([lmpopKey1, lmpopKey2], 1)"));
 
             // Test LMPOP with empty keys - should return null
             _ = batch.ListLeftPop([lmpopKey1, lmpopKey3], 1);
-            testData.Add(new(ListPopResult.Null, "ListLeftPop([lmpopKey1, lmpopKey3], 1) - empty keys", true));
+            testData.Add(new(ListPopResult.Null, "ListLeftPop([lmpopKey1, lmpopKey3], 1) - empty keys"));
         }
 
         // Test LPUSHX and RPUSHX (When.Exists)
@@ -897,7 +897,7 @@ internal class BatchTestUtils
         testData.Add(new(-1L, "ListPosition(posKey, nonexistent)"));
 
         _ = batch.ListPositions(posKey, "a", 10);
-        testData.Add(new(Array.Empty<long>(), "ListPositions(posKey, a, count=10)", true));
+        testData.Add(new(Array.Empty<long>(), "ListPositions(posKey, a, count=10)"));
 
         // Test LSET (ListSetByIndex)
         string setKey = $"{atomicPrefix}set-{Guid.NewGuid()}";

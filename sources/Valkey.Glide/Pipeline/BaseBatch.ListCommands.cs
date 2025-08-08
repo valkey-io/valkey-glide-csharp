@@ -63,8 +63,6 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchListCommands.ListRange(ValkeyKey, long, long)" />
     public T ListRange(ValkeyKey key, long start = 0, long stop = -1) => AddCmd(ListRangeAsync(key, start, stop));
 
-    // New list commands
-
     /// <inheritdoc cref="IBatchListCommands.ListLeftPop(ValkeyKey[], long)" />
     public T ListLeftPop(ValkeyKey[] keys, long count) => AddCmd(ListLeftPopAsync(keys, count));
 
@@ -126,8 +124,6 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchListCommands.ListRemove(ValkeyKey key, ValkeyValue value, long count) => ListRemove(key, value, count);
     IBatch IBatchListCommands.ListTrim(ValkeyKey key, long start, long stop) => ListTrim(key, start, stop);
     IBatch IBatchListCommands.ListRange(ValkeyKey key, long start, long stop) => ListRange(key, start, stop);
-
-    // New list commands explicit interface implementations
     IBatch IBatchListCommands.ListLeftPop(ValkeyKey[] keys, long count) => ListLeftPop(keys, count);
     IBatch IBatchListCommands.ListRightPop(ValkeyKey[] keys, long count) => ListRightPop(keys, count);
     IBatch IBatchListCommands.ListGetByIndex(ValkeyKey key, long index) => ListGetByIndex(key, index);
@@ -137,8 +133,6 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchListCommands.ListPosition(ValkeyKey key, ValkeyValue element, long rank, long maxLength) => ListPosition(key, element, rank, maxLength);
     IBatch IBatchListCommands.ListPositions(ValkeyKey key, ValkeyValue element, long count, long rank, long maxLength) => ListPositions(key, element, count, rank, maxLength);
     IBatch IBatchListCommands.ListSetByIndex(ValkeyKey key, long index, ValkeyValue value) => ListSetByIndex(key, index, value);
-
-    // Blocking list operations explicit interface implementations
     IBatch IBatchListCommands.ListBlockingLeftPop(ValkeyKey[] keys, TimeSpan timeout) => ListBlockingLeftPop(keys, timeout);
     IBatch IBatchListCommands.ListBlockingRightPop(ValkeyKey[] keys, TimeSpan timeout) => ListBlockingRightPop(keys, timeout);
     IBatch IBatchListCommands.ListBlockingMove(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout) => ListBlockingMove(source, destination, sourceSide, destinationSide, timeout);

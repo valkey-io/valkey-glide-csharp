@@ -166,8 +166,6 @@ public class CommandTests
             () => Assert.Equal(["LTRIM", "a", "1", "-1"], Request.ListTrimAsync("a", 1, -1).GetArgs()),
             () => Assert.Equal(["LRANGE", "a", "0", "-1"], Request.ListRangeAsync("a", 0, -1).GetArgs()),
             () => Assert.Equal(["LRANGE", "a", "1", "5"], Request.ListRangeAsync("a", 1, 5).GetArgs()),
-
-            // Blocking List Commands
             () => Assert.Equal(["BLPOP", "key1", "key2", "5"], Request.ListBlockingLeftPopAsync(["key1", "key2"], TimeSpan.FromSeconds(5)).GetArgs()),
             () => Assert.Equal(["BLPOP", "key", "0"], Request.ListBlockingLeftPopAsync(["key"], TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["BLPOP", "a", "b", "c", "10"], Request.ListBlockingLeftPopAsync(["a", "b", "c"], TimeSpan.FromSeconds(10)).GetArgs()),
@@ -188,8 +186,6 @@ public class CommandTests
             () => Assert.Equal(["BLMPOP", "0", "1", "key", "RIGHT", "COUNT", "10"], Request.ListBlockingPopAsync(["key"], ListSide.Right, 10, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["BLMPOP", "2.5", "4", "w", "x", "y", "z", "LEFT", "COUNT", "1"], Request.ListBlockingPopAsync(["w", "x", "y", "z"], ListSide.Left, 1, TimeSpan.FromSeconds(2.5)).GetArgs()),
             () => Assert.Equal(["BLMPOP", "1", "1", "test", "RIGHT", "COUNT", "5"], Request.ListBlockingPopAsync(["test"], ListSide.Right, 5, TimeSpan.FromSeconds(1)).GetArgs()),
-
-            // Non-Blocking List Commands
             () => Assert.Equal(["LMPOP", "2", "key1", "key2", "LEFT", "COUNT", "3"], Request.ListLeftPopAsync(["key1", "key2"], 3).GetArgs()),
             () => Assert.Equal(["LMPOP", "2", "key1", "key2", "RIGHT", "COUNT", "3"], Request.ListRightPopAsync(["key1", "key2"], 3).GetArgs()),
             () => Assert.Equal(["LPUSHX", "a", "value"], Request.ListLeftPushAsync("a", "value", When.Exists).GetArgs()),
@@ -377,22 +373,18 @@ public class CommandTests
             () => Assert.Equal(3L, Request.SortedSetCountAsync("key", 1.0, 10.0).Converter(3L)),
             () => Assert.Equal(0L, Request.SortedSetCountAsync("key").Converter(0L)),
 
-            // Blocking List Commands Converters
+            // List Commands converters
             () => Assert.Equal(["key", "value"], Request.ListBlockingLeftPopAsync(["key"], TimeSpan.FromSeconds(1)).Converter([(gs)"key", (gs)"value"])),
             () => Assert.Null(Request.ListBlockingLeftPopAsync(["key"], TimeSpan.FromSeconds(1)).Converter(null)),
             () => Assert.Equal(["list1", "element"], Request.ListBlockingRightPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5)).Converter([(gs)"list1", (gs)"element"])),
             () => Assert.Null(Request.ListBlockingRightPopAsync(["key"], TimeSpan.Zero).Converter(null)),
             () => Assert.Equal("moved_value", Request.ListBlockingMoveAsync("src", "dest", ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(2)).Converter("moved_value")),
             () => Assert.Equal(ValkeyValue.Null, Request.ListBlockingMoveAsync("src", "dest", ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(2)).Converter(null)),
-
-            // Blocking List Commands with ListPopResult Converters
             () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(null).IsNull),
             () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, 2, TimeSpan.FromSeconds(1)).Converter(null).IsNull),
             () => Assert.False(Request.ListBlockingPopAsync(["mylist"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"value1" } } }).IsNull),
             () => Assert.False(Request.ListBlockingPopAsync(["list2"], ListSide.Right, 3, TimeSpan.FromSeconds(2)).Converter(new Dictionary<GlideString, object> { { (GlideString)"list2", new object[] { (GlideString)"elem1", (GlideString)"elem2" } } }).IsNull),
             () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new Dictionary<GlideString, object>()).IsNull),
-
-            // Non-Blocking List Commands with ListPopResult Converters
             () => Assert.True(Request.ListLeftPopAsync(["key1", "key2"], 2).Converter(null).IsNull),
             () => Assert.True(Request.ListRightPopAsync(["key1", "key2"], 3).Converter(null).IsNull),
             () => Assert.False(Request.ListLeftPopAsync(["mylist"], 1).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"left_value" } } }).IsNull),
