@@ -1,0 +1,131 @@
+name: API Compatibility (Valkey.Glide vs StackExchange.Redis)
+
+on:
+    pull_request:
+        branches: [main]
+    workflow_dispatch:
+        inputs:
+            ser_version:
+                description: StackExchange.Redis version to compare against
+                required: false
+                default: "2.8.58"
+
+permissions:
+    contents: read
+
+jobs:
+    api-compatibility:
+        runs-on: ubuntu-latest
+        env:
+            # Default for PRs; workflow_dispatch can override via input
+            SER_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.ser_version || '2.8.58' }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: |
+                      8.x
+
+            - name: Install shared software dependencies (incl. Rust)
+              uses: ./.github/workflows/install-shared-dependencies
+              with:
+                  os: ubuntu
+                  target: x86_64-unknown-linux-gnu
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install dotnet-api-diff (curl script)
+              shell: bash
+              run: |
+                  set -euxo pipefail
+                  curl -fsSL https://raw.githubusercontent.com/jbrinkman/dotnet-api-diff/main/install.sh | bash
+                  echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+                  dotnetapidiff --version
+
+            - name: Restore dependencies to fetch StackExchange.Redis
+              shell: bash
+              run: |
+                  set -euxo pipefail
+                  dotnet restore benchmarks/csharp_benchmark.csproj
+
+            - name: Ensure StackExchange.Redis package (${SER_VERSION}) is downloaded
+              shell: bash
+              run: |
+                  set -euxo pipefail
+                  dotnet nuget download StackExchange.Redis \
+                    --version "${SER_VERSION}" \
+                    --output "$HOME/.nuget/packages"
+
+            - name: Build Valkey.Glide (net8.0)
+              shell: bash
+              run: |
+                  set -euxo pipefail
+                  dotnet build sources/Valkey.Glide/Valkey.Glide.csproj \
+                    --configuration Release \
+                    --framework net8.0 \
+                    --nologo
+
+            - name: Run API Diff (net8.0)
+              id: run-diff
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  mkdir -p api-diff
+
+                  VALKEY_DLL="sources/Valkey.Glide/bin/Release/net8.0/Valkey.Glide.dll"
+                  SER_DLL="$HOME/.nuget/packages/stackexchange.redis/${SER_VERSION}/lib/net8.0/StackExchange.Redis.dll"
+                  OUTFILE="api-diff/api-changes-net8.0.html"
+
+                  echo "Using StackExchange.Redis version: ${SER_VERSION}"
+                  echo "SER DLL: ${SER_DLL}"
+                  echo "Valkey DLL: ${VALKEY_DLL}"
+
+                  if [[ ! -f "$SER_DLL" ]]; then
+                    echo "# API Diff Error (net8.0)" > "$OUTFILE"
+                    echo "Could not find StackExchange.Redis DLL at $SER_DLL" >> "$OUTFILE"
+                    echo "exit_code=6" >> "$GITHUB_OUTPUT"
+                    exit 0
+                  fi
+                  if [[ ! -f "$VALKEY_DLL" ]]; then
+                    echo "# API Diff Error (net8.0)" > "$OUTFILE"
+                    echo "Could not find Valkey.Glide DLL at $VALKEY_DLL" >> "$OUTFILE"
+                    echo "exit_code=6" >> "$GITHUB_OUTPUT"
+                    exit 0
+                  fi
+
+                  set +e
+                  dotnetapidiff compare \
+                    "$SER_DLL" \
+                    "$VALKEY_DLL" \
+                    --config ".github/api-compat/api-diff-config.json" \
+                    --output html \
+                    --output-file "$OUTFILE"
+                  CODE=$?
+                  set -e
+
+                  echo "Diff exit code: $CODE"
+                  echo "exit_code=$CODE" >> "$GITHUB_OUTPUT"
+
+            - name: Upload API Diff Report (net8.0)
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: api-diff-net8.0
+                  path: api-diff/api-changes-net8.0.html
+
+            - name: Fail if incompatibilities detected (net8.0)
+              if: always()
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  CODE="${{ steps.run-diff.outputs.exit_code }}"
+                  echo "dotnet-api-diff exit code: $CODE"
+                  # 0 = success (no breaking changes)
+                  # 1 = breaking changes detected
+                  # Other non-zero codes indicate errors; fail the job in all non-zero cases
+                  if [[ "$CODE" -ne 0 ]]; then
+                    exit "$CODE"
+                  fi
