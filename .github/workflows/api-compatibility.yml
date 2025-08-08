@@ -30,6 +30,14 @@ jobs:
                   dotnet-version: |
                       8.x
 
+            - name: Install NuGet CLI
+              shell: bash
+              run: |
+                  set -euxo pipefail
+                  sudo apt-get update
+                  sudo apt-get install -y nuget
+                  nuget help | head -n 5
+
             - name: Install shared software dependencies (incl. Rust)
               uses: ./.github/workflows/install-shared-dependencies
               with:
