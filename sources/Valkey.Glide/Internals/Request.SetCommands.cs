@@ -67,7 +67,7 @@ internal partial class Request
         => new(RequestType.SMIsMember, [key.ToGlideString(), .. values.ToGlideStrings()], false, arr => [.. arr.Cast<bool>()]);
 
     public static Cmd<GlideString, ValkeyValue> SetRandomMemberAsync(ValkeyKey key)
-        => new(RequestType.SRandMember, [key.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response);
+        => new(RequestType.SRandMember, [key.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
 
     public static Cmd<object[], ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count)
         => new(RequestType.SRandMember, [key.ToGlideString(), count.ToGlideString()], false, arr => [.. arr.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
