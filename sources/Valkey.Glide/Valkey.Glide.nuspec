@@ -33,14 +33,12 @@
 
     <!-- TODO: make binaries optional/conditional, build fails on a dev's PC who doesn't have all files. Alternative: use different nuspec files -->
     <!-- see runtime IDs in https://learn.microsoft.com/en-us/dotnet/core/rid-catalog -->
-      <!--
     <file src="../../bin/x86_64-unknown-linux-gnu/libglide_rs.so" target="runtimes/linux-x64/native" />
     <file src="../../bin/aarch64-unknown-linux-gnu/libglide_rs.so" target="runtimes/linux-arm64/native" />
     <file src="../../bin/x86_64-apple-darwin/libglide_rs.dylib" target="runtimes/osx-x64/native" />
     <file src="../../bin/aarch64-apple-darwin/libglide_rs.dylib" target="runtimes/osx-arm64/native" />
     <file src="../../bin/x86_64-pc-windows-msvc/libglide_rs.dll" target="runtimes/win-x64/native" />
     <file src="../../bin/aarch64-pc-windows-msvc/libglide_rs.dll" target="runtimes/win-arm64/native" />
-    -->
     <file src="../../README.md" target="" />
   </files>
 </package>
