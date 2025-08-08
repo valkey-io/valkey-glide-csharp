@@ -45,19 +45,17 @@ jobs:
                   echo "$HOME/.local/bin" >> "$GITHUB_PATH"
                   dotnetapidiff --version
 
-            - name: Restore dependencies to fetch StackExchange.Redis
+            - name: Restore dependencies (for tooling)
               shell: bash
               run: |
                   set -euxo pipefail
                   dotnet restore benchmarks/csharp_benchmark.csproj
 
-            - name: Ensure StackExchange.Redis package (${SER_VERSION}) is downloaded
+            - name: Download StackExchange.Redis package (${SER_VERSION})
               shell: bash
               run: |
                   set -euxo pipefail
-                  dotnet nuget download StackExchange.Redis \
-                    --version "${SER_VERSION}" \
-                    --output "$HOME/.nuget/packages"
+                  nuget install StackExchange.Redis -Version "${SER_VERSION}" -OutputDirectory "$HOME/.nuget/packages"
 
             - name: Build Valkey.Glide (net8.0)
               shell: bash
@@ -76,7 +74,7 @@ jobs:
                   mkdir -p api-diff
 
                   VALKEY_DLL="sources/Valkey.Glide/bin/Release/net8.0/Valkey.Glide.dll"
-                  SER_DLL="$HOME/.nuget/packages/stackexchange.redis/${SER_VERSION}/lib/net8.0/StackExchange.Redis.dll"
+                  SER_DLL="$HOME/.nuget/packages/StackExchange.Redis${SER_VERSION}/lib/net8.0/StackExchange.Redis.dll"
                   OUTFILE="api-diff/api-changes-net8.0.html"
 
                   echo "Using StackExchange.Redis version: ${SER_VERSION}"
