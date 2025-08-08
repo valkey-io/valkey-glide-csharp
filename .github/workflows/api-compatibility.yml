@@ -41,12 +41,10 @@ jobs:
                   rustc -V
                   cargo -V
 
-            - name: Install dotnet-api-diff (curl script)
-              shell: bash
+            - name: Install dotnet-api-diff (Chocolatey)
+              shell: pwsh
               run: |
-                  set -euxo pipefail
-                  curl -fsSL https://raw.githubusercontent.com/jbrinkman/dotnet-api-diff/main/install.sh | bash
-                  echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+                  choco install dotnetapidiff --version=1.0.0 -y
                   dotnetapidiff --version
 
             - name: Restore dependencies (for tooling)
