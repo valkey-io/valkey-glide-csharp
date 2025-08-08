@@ -1,42 +1,39 @@
 {
-  "filters": {
-    "includeNamespaces": [],
-    "excludeNamespaces": [],
-    "includeTypes": [],
-    "excludeTypes": [],
-    "includeInternals": false,
-    "includeCompilerGenerated": false
-  },
-  "mappings": {
-    "namespaceMappings": {
-      "StackExchange.Redis": [
-        "Valkey.Glide",
-        "Valkey.Glide.Commands"
-      ]
+    "filters": {
+        "includeNamespaces": [],
+        "excludeNamespaces": [],
+        "includeTypes": [],
+        "excludeTypes": [],
+        "includeInternals": false,
+        "includeCompilerGenerated": false
     },
-    "typeMappings": {
-      "RedisValue": "ValkeyValue",
-      "RedisKey": "ValkeyKey",
-      "RedisResult": "ValkeyResult",
-      "RedisStream": "ValkeyStream",
-      "RedisLiterals": "ValkeyLiterals",
-      "RedisValueWithExpiry": "ValkeyValueWithExpiry"
+    "mappings": {
+        "namespaceMappings": {
+            "StackExchange.Redis": ["Valkey.Glide", "Valkey.Glide.Commands"]
+        },
+        "typeMappings": {
+            "RedisValue": "ValkeyValue",
+            "RedisKey": "ValkeyKey",
+            "RedisResult": "ValkeyResult",
+            "RedisStream": "ValkeyStream",
+            "RedisLiterals": "ValkeyLiterals",
+            "RedisValueWithExpiry": "ValkeyValueWithExpiry"
+        },
+        "autoMapSameNameTypes": true,
+        "ignoreCase": false
     },
-    "autoMapSameNameTypes": true,
-    "ignoreCase": false
-  },
-  "exclusions": {
-    "excludedTypes": [],
-    "excludedMembers": [],
-    "excludedTypePatterns": [],
-    "excludedMemberPatterns": []
-  },
-  "breakingChangeRules": {
-    "treatTypeRemovalAsBreaking": false,
-    "treatMemberRemovalAsBreaking": false,
-    "treatAddedTypeAsBreaking": false,
-    "treatAddedMemberAsBreaking": false,
-    "treatSignatureChangeAsBreaking": true
-  },
-  "failOnBreakingChanges": true
+    "exclusions": {
+        "excludedTypes": [],
+        "excludedMembers": [],
+        "excludedTypePatterns": [],
+        "excludedMemberPatterns": []
+    },
+    "breakingChangeRules": {
+        "treatTypeRemovalAsBreaking": false,
+        "treatMemberRemovalAsBreaking": false,
+        "treatAddedTypeAsBreaking": false,
+        "treatAddedMemberAsBreaking": false,
+        "treatSignatureChangeAsBreaking": true
+    },
+    "failOnBreakingChanges": true
 }
