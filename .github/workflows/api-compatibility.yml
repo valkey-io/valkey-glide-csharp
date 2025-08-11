@@ -46,7 +46,7 @@ jobs:
             - name: Build Valkey.Glide (net8.0)
               shell: pwsh
               run: |
-                  dotnet build --configuration Release --framework net8.0 --nologo
+                  dotnet build --configuration Lint --framework net8.0 --nologo
 
             - name: Run API Diff (net8.0)
               id: run-diff
