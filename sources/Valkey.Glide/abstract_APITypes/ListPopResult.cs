@@ -14,8 +14,9 @@ public readonly struct ListPopResult
 
     /// <summary>
     /// Whether this object is null/empty.
+    /// Modified for GLIDE.
     /// </summary>
-    public bool IsNull => Key.IsNull && Values == Array.Empty<ValkeyValue>();
+    public bool IsNull => Key.IsNull && (Values == null || Values.Length == 0);
 
     /// <summary>
     /// The key of the list that this set of entries came form.

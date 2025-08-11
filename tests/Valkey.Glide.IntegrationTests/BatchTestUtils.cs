@@ -1,4 +1,4 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -22,9 +22,9 @@ internal class BatchTestUtils
         _ = batch.StringSet(key2, value2);
         testData.Add(new(true, "StringSet(key2, value2)"));
         _ = batch.StringGet(key1);
-        testData.Add(new(new gs(value1), "StringGet(key1)"));
+        testData.Add(new(new ValkeyValue(value1), "StringGet(key1)"));
         _ = batch.StringGet(key2);
-        testData.Add(new(new gs(value2), "StringGet(key2)"));
+        testData.Add(new(new ValkeyValue(value2), "StringGet(key2)"));
         _ = batch.StringLength(key1);
         testData.Add(new((long)value1.Length, "StringLength(key1)"));
         _ = batch.StringLength(key2);
@@ -38,21 +38,21 @@ internal class BatchTestUtils
         testData.Add(new((long)(value1.Length + appendValue.Length), "StringAppend(key1, appendValue)"));
 
         _ = batch.StringGet(key1);
-        testData.Add(new(new gs(value1 + appendValue), "StringGet(key1) after append"));
+        testData.Add(new(new ValkeyValue(value1 + appendValue), "StringGet(key1) after append"));
 
         // Append to non-existing key (should create it)
         _ = batch.StringAppend(nonExistingKey, "new-value");
         testData.Add(new(9L, "StringAppend(nonExistingKey, new-value)"));
 
         _ = batch.StringGet(nonExistingKey);
-        testData.Add(new(new gs("new-value"), "StringGet(nonExistingKey) after append"));
+        testData.Add(new(new ValkeyValue("new-value"), "StringGet(nonExistingKey) after append"));
 
         // Append empty string
         _ = batch.StringAppend(key2, "");
         testData.Add(new((long)value2.Length, "StringAppend(key2, empty-string)"));
 
         _ = batch.StringGet(key2);
-        testData.Add(new(new gs(value2), "StringGet(key2) after append empty string"));
+        testData.Add(new(new ValkeyValue(value2), "StringGet(key2) after append empty string"));
 
         // Increment/Decrement tests
         string numKey1 = $"{atomicPrefix}num1-{Guid.NewGuid()}";
@@ -77,70 +77,70 @@ internal class BatchTestUtils
         testData.Add(new(11L, "StringIncrement(numKey1)"));
 
         _ = batch.StringGet(numKey1);
-        testData.Add(new(new gs("11"), "StringGet(numKey1) after increment"));
+        testData.Add(new(new ValkeyValue("11"), "StringGet(numKey1) after increment"));
 
         // Test StringIncrement with amount
         _ = batch.StringIncrement(numKey2, 5);
         testData.Add(new(25L, "StringIncrement(numKey2, 5)"));
 
         _ = batch.StringGet(numKey2);
-        testData.Add(new(new gs("25"), "StringGet(numKey2) after increment by 5"));
+        testData.Add(new(new ValkeyValue("25"), "StringGet(numKey2) after increment by 5"));
 
         // Test StringIncrement with negative amount
         _ = batch.StringIncrement(numKey2, -3);
         testData.Add(new(22L, "StringIncrement(numKey2, -3)"));
 
         _ = batch.StringGet(numKey2);
-        testData.Add(new(new gs("22"), "StringGet(numKey2) after increment by -3"));
+        testData.Add(new(new ValkeyValue("22"), "StringGet(numKey2) after increment by -3"));
 
         // Test StringIncrement on non-existent key
         _ = batch.StringIncrement(numKey3);
         testData.Add(new(1L, "StringIncrement(numKey3) non-existent key"));
 
         _ = batch.StringGet(numKey3);
-        testData.Add(new(new gs("1"), "StringGet(numKey3) after increment non-existent key"));
+        testData.Add(new(new ValkeyValue("1"), "StringGet(numKey3) after increment non-existent key"));
 
         // Test StringIncrement with float
         _ = batch.StringIncrement(floatKey1, 0.5);
         testData.Add(new(11.0, "StringIncrement(floatKey1, 0.5)"));
 
         _ = batch.StringGet(floatKey1);
-        testData.Add(new(new gs("11"), "StringGet(floatKey1) after increment by 0.5"));
+        testData.Add(new(new ValkeyValue("11"), "StringGet(floatKey1) after increment by 0.5"));
 
         // Test StringIncrement with float on non-existent key
         _ = batch.StringIncrement(floatKey2, 0.5);
         testData.Add(new(0.5, "StringIncrement(floatKey2, 0.5) non-existent key"));
 
         _ = batch.StringGet(floatKey2);
-        testData.Add(new(new gs("0.5"), "StringGet(floatKey2) after increment non-existent key"));
+        testData.Add(new(new ValkeyValue("0.5"), "StringGet(floatKey2) after increment non-existent key"));
 
         // Test StringDecrement (by 1)
         _ = batch.StringDecrement(numKey1);
         testData.Add(new(10L, "StringDecrement(numKey1)"));
 
         _ = batch.StringGet(numKey1);
-        testData.Add(new(new gs("10"), "StringGet(numKey1) after decrement"));
+        testData.Add(new(new ValkeyValue("10"), "StringGet(numKey1) after decrement"));
 
         // Test StringDecrement with amount
         _ = batch.StringDecrement(numKey2, 2);
         testData.Add(new(20L, "StringDecrement(numKey2, 2)"));
 
         _ = batch.StringGet(numKey2);
-        testData.Add(new(new gs("20"), "StringGet(numKey2) after decrement by 2"));
+        testData.Add(new(new ValkeyValue("20"), "StringGet(numKey2) after decrement by 2"));
 
         // Test StringDecrement with negative amount
         _ = batch.StringDecrement(numKey2, -5);
         testData.Add(new(25L, "StringDecrement(numKey2, -5)"));
 
         _ = batch.StringGet(numKey2);
-        testData.Add(new(new gs("25"), "StringGet(numKey2) after decrement by -5"));
+        testData.Add(new(new ValkeyValue("25"), "StringGet(numKey2) after decrement by -5"));
 
         // Test StringDecrement on non-existent key
         _ = batch.StringDecrement(numKey4);
         testData.Add(new(-1L, "StringDecrement(numKey4) non-existent key"));
 
         _ = batch.StringGet(numKey4);
-        testData.Add(new(new gs("-1"), "StringGet(numKey4) after decrement non-existent key"));
+        testData.Add(new(new ValkeyValue("-1"), "StringGet(numKey4) after decrement non-existent key"));
 
         // StringGetRange tests
         string rangeKey = $"{atomicPrefix}range-{Guid.NewGuid()}";
@@ -149,17 +149,17 @@ internal class BatchTestUtils
         testData.Add(new(true, "StringSet(rangeKey, Hello World)"));
 
         _ = batch.StringGetRange(rangeKey, 0, 4);
-        testData.Add(new(new gs("Hello"), "StringGetRange(rangeKey, 0, 4)"));
+        testData.Add(new(new ValkeyValue("Hello"), "StringGetRange(rangeKey, 0, 4)"));
 
         _ = batch.StringGetRange(rangeKey, 6, -1);
-        testData.Add(new(new gs("World"), "StringGetRange(rangeKey, 6, -1)"));
+        testData.Add(new(new ValkeyValue("World"), "StringGetRange(rangeKey, 6, -1)"));
 
         _ = batch.StringGetRange(rangeKey, -5, -1);
-        testData.Add(new(new gs("World"), "StringGetRange(rangeKey, -5, -1)"));
+        testData.Add(new(new ValkeyValue("World"), "StringGetRange(rangeKey, -5, -1)"));
 
         string nonExistingKey2 = $"{atomicPrefix}nonexisting2-{Guid.NewGuid()}";
         _ = batch.StringGetRange(nonExistingKey2, 0, 5);
-        testData.Add(new(new gs(""), "StringGetRange(nonExistingKey2, 0, 5)"));
+        testData.Add(new(new ValkeyValue(""), "StringGetRange(nonExistingKey2, 0, 5)"));
 
         // StringSetRange tests
         string setRangeKey = $"{atomicPrefix}setrange-{Guid.NewGuid()}";
@@ -167,18 +167,18 @@ internal class BatchTestUtils
         testData.Add(new(true, "StringSet(setRangeKey, Hello World)"));
 
         _ = batch.StringSetRange(setRangeKey, 6, "Redis");
-        testData.Add(new(11L, "StringSetRange(setRangeKey, 6, Redis)"));
+        testData.Add(new((ValkeyValue)11L, "StringSetRange(setRangeKey, 6, Redis)"));
 
         _ = batch.StringGet(setRangeKey);
-        testData.Add(new(new gs("Hello Redis"), "StringGet(setRangeKey) after setrange"));
+        testData.Add(new(new ValkeyValue("Hello Redis"), "StringGet(setRangeKey) after setrange"));
 
         // StringSetRange on non-existent key (should create it with null padding)
         string setRangeKey2 = $"{atomicPrefix}setrange2-{Guid.NewGuid()}";
         _ = batch.StringSetRange(setRangeKey2, 5, "test");
-        testData.Add(new(9L, "StringSetRange(setRangeKey2, 5, test) non-existent key"));
+        testData.Add(new((ValkeyValue)9L, "StringSetRange(setRangeKey2, 5, test) non-existent key"));
 
         _ = batch.StringGet(setRangeKey2);
-        testData.Add(new(new gs("\0\0\0\0\0test"), "StringGet(setRangeKey2) after setrange non-existent", true));
+        testData.Add(new(new ValkeyValue("\0\0\0\0\0test"), "StringGet(setRangeKey2) after setrange non-existent", true));
 
         // Multiple key StringSet and StringGet tests
         string multiKey1 = $"{atomicPrefix}multi1-{Guid.NewGuid()}";
@@ -208,11 +208,11 @@ internal class BatchTestUtils
         testData.Add(new(new ValkeyValue("delete-me"), "StringGetDelete(getDelKey)"));
 
         _ = batch.StringGet(getDelKey);
-        testData.Add(new(null, "StringGet(getDelKey) after delete"));
+        testData.Add(new(ValkeyValue.Null, "StringGet(getDelKey) after delete"));
 
         string nonExistingKey4 = $"{atomicPrefix}nonexisting4-{Guid.NewGuid()}";
         _ = batch.StringGetDelete(nonExistingKey4);
-        testData.Add(new(null, "StringGetDelete(nonExistingKey4)"));
+        testData.Add(new(ValkeyValue.Null, "StringGetDelete(nonExistingKey4)"));
 
         // StringGetSetExpiry tests (TimeSpan)
         string getSetExpiryKey1 = $"{atomicPrefix}getsetexpiry1-{Guid.NewGuid()}";
@@ -227,7 +227,7 @@ internal class BatchTestUtils
 
         string nonExistingKey5 = $"{atomicPrefix}nonexisting5-{Guid.NewGuid()}";
         _ = batch.StringGetSetExpiry(nonExistingKey5, TimeSpan.FromSeconds(30));
-        testData.Add(new(null, "StringGetSetExpiry(nonExistingKey5, 30s)"));
+        testData.Add(new(ValkeyValue.Null, "StringGetSetExpiry(nonExistingKey5, 30s)"));
 
         // StringGetSetExpiry tests (DateTime)
         string getSetExpiryKey2 = $"{atomicPrefix}getsetexpiry2-{Guid.NewGuid()}";
@@ -650,12 +650,13 @@ internal class BatchTestUtils
     public static List<TestInfo> CreateListTest(Pipeline.IBatch batch, bool isAtomic)
     {
         List<TestInfo> testData = [];
-        string prefix = isAtomic ? "{listKey}-" : "";
-        string key1 = $"{prefix}1-{Guid.NewGuid()}";
-        string key2 = $"{prefix}2-{Guid.NewGuid()}";
-        string key3 = $"{prefix}3-{Guid.NewGuid()}";
-        string key4 = $"{prefix}4-{Guid.NewGuid()}";
-        string key5 = $"{prefix}5-{Guid.NewGuid()}";
+        string prefix = "{listKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
+        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        string key3 = $"{atomicPrefix}3-{Guid.NewGuid()}";
+        string key4 = $"{atomicPrefix}4-{Guid.NewGuid()}";
+        string key5 = $"{atomicPrefix}5-{Guid.NewGuid()}";
 
         string value1 = $"value-1-{Guid.NewGuid()}";
         string value2 = $"value-2-{Guid.NewGuid()}";
@@ -691,8 +692,7 @@ internal class BatchTestUtils
         testData.Add(new(Array.Empty<ValkeyValue>(), "ListLeftPop(key2, 10)", true));
 
         _ = batch.ListLeftPop(key3);
-        // TODO: switch expected back to `ValkeyValue.Null` after converter fix
-        testData.Add(new(null, "ListLeftPop(key3) non-existent"));
+        testData.Add(new(ValkeyValue.Null, "ListLeftPop(key3) non-existent"));
 
         _ = batch.ListLeftPop(key3, 5);
         testData.Add(new(null, "ListLeftPop(key3, 5) non-existent"));
@@ -720,7 +720,7 @@ internal class BatchTestUtils
         testData.Add(new(Array.Empty<ValkeyValue>(), "ListRightPop(key5, 10)", true));
 
         _ = batch.ListRightPop(key3);
-        testData.Add(new(null, "ListRightPop(key3) non-existent"));
+        testData.Add(new(ValkeyValue.Null, "ListRightPop(key3) non-existent"));
 
         _ = batch.ListRightPop(key3, 5);
         testData.Add(new(null, "ListRightPop(key3, 5) non-existent"));
@@ -733,7 +733,7 @@ internal class BatchTestUtils
         testData.Add(new(0L, "ListLength(key3) non-existent"));
 
         // Setup list for LREM, LTRIM, and LRANGE tests
-        string testKey = $"{prefix}test-{Guid.NewGuid()}";
+        string testKey = $"{atomicPrefix}test-{Guid.NewGuid()}";
         _ = batch.ListRightPush(testKey, ["a", "b", "a", "c", "a"]);
         testData.Add(new(5L, "ListRightPush(testKey, [a, b, a, c, a])"));
 
@@ -745,7 +745,7 @@ internal class BatchTestUtils
         testData.Add(new(3L, "ListLength(testKey) after remove"));
 
         // Setup another list for more LREM tests
-        string remKey = $"{prefix}rem-{Guid.NewGuid()}";
+        string remKey = $"{atomicPrefix}rem-{Guid.NewGuid()}";
         _ = batch.ListRightPush(remKey, ["x", "y", "x", "z", "x"]);
         testData.Add(new(5L, "ListRightPush(remKey, [x, y, x, z, x])"));
 
@@ -756,7 +756,7 @@ internal class BatchTestUtils
         testData.Add(new(0L, "ListRemove(remKey, nonexistent, 1) - remove non-existent"));
 
         // Test LRANGE (List Range)
-        string rangeKey = $"{prefix}range-{Guid.NewGuid()}";
+        string rangeKey = $"{atomicPrefix}range-{Guid.NewGuid()}";
         _ = batch.ListRightPush(rangeKey, ["0", "1", "2", "3", "4", "5"]);
         testData.Add(new(6L, "ListRightPush(rangeKey, [0, 1, 2, 3, 4, 5])"));
 
@@ -773,7 +773,7 @@ internal class BatchTestUtils
         testData.Add(new(Array.Empty<ValkeyValue>(), "ListRange(key3, 0, -1) - non-existent", true));
 
         // Test LTRIM (List Trim)
-        string trimKey = $"{prefix}trim-{Guid.NewGuid()}";
+        string trimKey = $"{atomicPrefix}trim-{Guid.NewGuid()}";
         _ = batch.ListRightPush(trimKey, ["a", "b", "c", "d", "e", "f"]);
         testData.Add(new(6L, "ListRightPush(trimKey, [a, b, c, d, e, f])"));
 
@@ -787,7 +787,7 @@ internal class BatchTestUtils
         testData.Add(new(Array.Empty<ValkeyValue>(), "ListRange(trimKey, 0, -1) - after trim", true));
 
         // Test LTRIM with negative indices
-        string trimKey2 = $"{prefix}trim2-{Guid.NewGuid()}";
+        string trimKey2 = $"{atomicPrefix}trim2-{Guid.NewGuid()}";
         _ = batch.ListRightPush(trimKey2, ["1", "2", "3", "4", "5"]);
         testData.Add(new(5L, "ListRightPush(trimKey2, [1, 2, 3, 4, 5])"));
 
@@ -796,6 +796,150 @@ internal class BatchTestUtils
 
         _ = batch.ListLength(trimKey2);
         testData.Add(new(3L, "ListLength(trimKey2) after negative trim"));
+
+        // Test LMPOP (ListLeftPop with multiple keys)
+        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        {
+            string lmpopKey1 = $"{prefix}lmpop1-{Guid.NewGuid()}";
+            string lmpopKey2 = $"{prefix}lmpop2-{Guid.NewGuid()}";
+            string lmpopKey3 = $"{prefix}lmpop3-{Guid.NewGuid()}";
+
+            _ = batch.ListRightPush(lmpopKey2, ["lmpop1", "lmpop2", "lmpop3"]);
+            testData.Add(new(3L, "ListRightPush(lmpopKey2, [lmpop1, lmpop2, lmpop3])"));
+
+            // This should pop 2 elements from lmpopKey2 (lmpop1, lmpop2)
+            _ = batch.ListLeftPop([lmpopKey1, lmpopKey2], 2);
+            testData.Add(new(new ListPopResult(lmpopKey2, ["lmpop1", "lmpop2"]), "ListLeftPop([lmpopKey1, lmpopKey2], 2)"));
+
+            // This should pop 1 element from lmpopKey2 (lmpop3)
+            _ = batch.ListRightPop([lmpopKey1, lmpopKey2], 1);
+            testData.Add(new(new ListPopResult(lmpopKey2, ["lmpop3"]), "ListRightPop([lmpopKey1, lmpopKey2], 1)"));
+
+            // Test LMPOP with empty keys - should return null
+            _ = batch.ListLeftPop([lmpopKey1, lmpopKey3], 1);
+            testData.Add(new(ListPopResult.Null, "ListLeftPop([lmpopKey1, lmpopKey3], 1) - empty keys"));
+        }
+
+        // Test LPUSHX and RPUSHX (When.Exists)
+        string pushxKey = $"{atomicPrefix}pushx-{Guid.NewGuid()}";
+
+        _ = batch.ListLeftPush(pushxKey, "test", When.Exists);
+        testData.Add(new(0L, "ListLeftPush(pushxKey, test, When.Exists) - key doesn't exist"));
+
+        _ = batch.ListRightPush(pushxKey, "test", When.Exists);
+        testData.Add(new(0L, "ListRightPush(pushxKey, test, When.Exists) - key doesn't exist"));
+
+        _ = batch.ListRightPush(pushxKey, "initial");
+        testData.Add(new(1L, "ListRightPush(pushxKey, initial)"));
+
+        _ = batch.ListLeftPush(pushxKey, "left", When.Exists);
+        testData.Add(new(2L, "ListLeftPush(pushxKey, left, When.Exists) - key exists"));
+
+        _ = batch.ListRightPush(pushxKey, "right", When.Exists);
+        testData.Add(new(3L, "ListRightPush(pushxKey, right, When.Exists) - key exists"));
+
+        // Test LINDEX (ListGetByIndex)
+        string indexKey = $"{atomicPrefix}index-{Guid.NewGuid()}";
+        _ = batch.ListRightPush(indexKey, ["idx0", "idx1", "idx2", "idx3"]);
+        testData.Add(new(4L, "ListRightPush(indexKey, [idx0, idx1, idx2, idx3])"));
+
+        _ = batch.ListGetByIndex(indexKey, 0);
+        testData.Add(new(new ValkeyValue("idx0"), "ListGetByIndex(indexKey, 0)"));
+
+        _ = batch.ListGetByIndex(indexKey, -1);
+        testData.Add(new(new ValkeyValue("idx3"), "ListGetByIndex(indexKey, -1)"));
+
+        _ = batch.ListGetByIndex(indexKey, 10);
+        testData.Add(new(ValkeyValue.Null, "ListGetByIndex(indexKey, 10) - out of range"));
+
+        // Test LINSERT (ListInsertBefore/After)
+        string insertKey = $"{atomicPrefix}insert-{Guid.NewGuid()}";
+        _ = batch.ListRightPush(insertKey, ["a", "c", "e"]);
+        testData.Add(new(3L, "ListRightPush(insertKey, [a, c, e])"));
+
+        _ = batch.ListInsertBefore(insertKey, "c", "b");
+        testData.Add(new(4L, "ListInsertBefore(insertKey, c, b)"));
+
+        _ = batch.ListInsertAfter(insertKey, "c", "d");
+        testData.Add(new(5L, "ListInsertAfter(insertKey, c, d)"));
+
+        _ = batch.ListInsertBefore(insertKey, "nonexistent", "x");
+        testData.Add(new(-1L, "ListInsertBefore(insertKey, nonexistent, x)"));
+
+        // Test LMOVE (ListMove)
+        string moveSource = $"{prefix}movesrc-{Guid.NewGuid()}";
+        string moveDest = $"{prefix}movedst-{Guid.NewGuid()}";
+
+        _ = batch.ListRightPush(moveSource, ["move1", "move2", "move3"]);
+        testData.Add(new(3L, "ListRightPush(moveSource, [move1, move2, move3])"));
+
+        _ = batch.ListMove(moveSource, moveDest, ListSide.Left, ListSide.Right);
+        testData.Add(new(new ValkeyValue("move1"), "ListMove(moveSource, moveDest, Left, Right)"));
+
+        _ = batch.ListLength(moveSource);
+        testData.Add(new(2L, "ListLength(moveSource) after move"));
+
+        _ = batch.ListLength(moveDest);
+        testData.Add(new(1L, "ListLength(moveDest) after move"));
+
+        // Test LPOS (ListPosition/ListPositions)
+        string posKey = $"{atomicPrefix}pos-{Guid.NewGuid()}";
+        _ = batch.ListRightPush(posKey, ["a", "b", "a", "c", "a"]);
+        testData.Add(new(5L, "ListRightPush(posKey, [a, b, a, c, a])"));
+
+        _ = batch.ListPosition(posKey, "a");
+        testData.Add(new(0L, "ListPosition(posKey, a) - first occurrence"));
+
+        _ = batch.ListPosition(posKey, "a", 2);
+        testData.Add(new(2L, "ListPosition(posKey, a, rank=2) - second occurrence"));
+
+        _ = batch.ListPosition(posKey, "nonexistent");
+        testData.Add(new(-1L, "ListPosition(posKey, nonexistent)"));
+
+        _ = batch.ListPositions(posKey, "a", 10);
+        testData.Add(new(Array.Empty<long>(), "ListPositions(posKey, a, count=10)"));
+
+        // Test LSET (ListSetByIndex)
+        string setKey = $"{atomicPrefix}set-{Guid.NewGuid()}";
+        _ = batch.ListRightPush(setKey, ["set0", "set1", "set2"]);
+        testData.Add(new(3L, "ListRightPush(setKey, [set0, set1, set2])"));
+
+        _ = batch.ListSetByIndex(setKey, 1, "newvalue");
+        testData.Add(new("OK", "ListSetByIndex(setKey, 1, newvalue)", true));
+
+        _ = batch.ListGetByIndex(setKey, 1);
+        testData.Add(new(new ValkeyValue("newvalue"), "ListGetByIndex(setKey, 1) after set"));
+
+        // Test blocking list operations - reuse existing keys that already have data
+        string blockingKey1 = $"{atomicPrefix}blocking1-{Guid.NewGuid()}";
+
+        // Push data right before BLPOP so it has something to pop
+        _ = batch.ListRightPush(blockingKey1, "block1");
+        testData.Add(new(1L, "ListRightPush(blockingKey1, block1)"));
+
+        _ = batch.ListBlockingLeftPop([blockingKey1], TimeSpan.FromMilliseconds(100));
+        testData.Add(new(new ValkeyValue[] { blockingKey1, "block1" }, "ListBlockingLeftPop([blockingKey1], 100ms)"));
+
+        // Push data right before BRPOP so it has something to pop
+        _ = batch.ListRightPush(blockingKey1, "block2");
+        testData.Add(new(1L, "ListRightPush(blockingKey1, block2)"));
+
+        _ = batch.ListBlockingRightPop([blockingKey1], TimeSpan.FromMilliseconds(100));
+        testData.Add(new(new ValkeyValue[] { blockingKey1, "block2" }, "ListBlockingRightPop([blockingKey1], 100ms)"));
+
+        // Reuse moveSource which already has data from the previous ListMove test
+        _ = batch.ListBlockingMove(moveSource, moveDest, ListSide.Left, ListSide.Right, TimeSpan.FromMilliseconds(100));
+        testData.Add(new(new ValkeyValue("move2"), "ListBlockingMove(moveSource, moveDest, Left, Right, 100ms)"));
+
+        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        {
+            // Push more data to moveSource for the blocking pop test
+            _ = batch.ListRightPush(moveSource, "move3");
+            testData.Add(new(2L, "ListRightPush(moveSource, move3)"));
+
+            _ = batch.ListBlockingPop([moveSource], ListSide.Right, TimeSpan.FromMilliseconds(100));
+            testData.Add(new(new ListPopResult(moveSource, ["move3"]), "ListBlockingPop([moveSource], Right, 100ms)"));
+        }
 
         return testData;
     }

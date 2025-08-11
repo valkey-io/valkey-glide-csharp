@@ -86,7 +86,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         IntPtr response = await message;
         try
         {
-            return HandleServerValue(HandleResponse(response), command.IsNullable, command.Converter);
+            return HandleServerValue(HandleResponse(response), command.IsNullable, command.Converter, command.AllowConverterToHandleNull);
         }
         finally
         {
