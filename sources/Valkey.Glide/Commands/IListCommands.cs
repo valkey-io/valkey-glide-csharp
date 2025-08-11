@@ -267,7 +267,7 @@ public interface IListCommands
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// The length of the list at <paramref name="key" />.
-    /// If <paramref name="key" /> does not exist, it is interpreted as an empty list and 0 is returned.
+    /// If <paramref name="key" /> does not exist, it is interpreted as an empty list and <c>0</c> is returned.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -282,9 +282,9 @@ public interface IListCommands
     /// Removes the first <paramref name="count" /> occurrences of elements equal to <paramref name="value" /> from the list stored at <paramref name="key" />.
     /// The <paramref name="count" /> argument influences the operation in the following ways:
     /// <list type="bullet">
-    ///     <item><paramref name="count" /> &gt; 0: Remove elements equal to <paramref name="value" /> moving from head to tail.</item>
-    ///     <item><paramref name="count" /> &lt; 0: Remove elements equal to <paramref name="value" /> moving from tail to head.</item>
-    ///     <item><paramref name="count" /> = 0: Remove all elements equal to <paramref name="value" />.</item>
+    ///     <item><paramref name="count" /> &gt; <c>0</c>: Remove elements equal to <paramref name="value" /> moving from head to tail.</item>
+    ///     <item><paramref name="count" /> &lt; <c>0</c>: Remove elements equal to <paramref name="value" /> moving from tail to head.</item>
+    ///     <item><paramref name="count" /> = <c>0</c>: Remove all elements equal to <paramref name="value" />.</item>
     /// </list>
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lrem"/>
@@ -294,7 +294,7 @@ public interface IListCommands
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     ///	The number of the removed elements.
-    ///	If <paramref name="key" /> does not exist, 0 is returned.
+    ///	If <paramref name="key" /> does not exist, <c>0</c> is returned.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -307,9 +307,9 @@ public interface IListCommands
 
     /// <summary>
     /// Trims an existing list so that it will contain only the specified range of elements specified.
-    /// The offsets <paramref name="start" /> and <paramref name="stop" /> are zero-based indexes, with 0 being the first element of the list, 1 being the next element
-    /// and so on. These offsets can also be negative numbers indicating offsets starting at the end of the list, with -1 being
-    /// the last element of the list, -2 being the penultimate, and so on.
+    /// The offsets <paramref name="start" /> and <paramref name="stop" /> are zero-based indexes, with <c>0</c> being the first element of the list, <c>1</c> being the next element
+    /// and so on. These offsets can also be negative numbers indicating offsets starting at the end of the list, with <c>-1</c> being
+    /// the last element of the list, <c>-2</c> being the penultimate, and so on.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ltrim"/>
     /// <param name="key">The key of the list.</param>
@@ -334,8 +334,8 @@ public interface IListCommands
 
     /// <summary>
     /// Returns the specified elements of the list stored at <paramref name="key" />.
-    /// The offsets <paramref name="start" /> and <paramref name="stop" /> are zero-based indexes, with 0 being the first element of the list (the head of the list), 1 being the next element and so on.
-    /// These offsets can also be negative numbers indicating offsets starting at the end of the list, with -1 being the last element of the list, -2 being the penultimate, and so on.
+    /// The offsets <paramref name="start" /> and <paramref name="stop" /> are zero-based indexes, with <c>0</c> being the first element of the list (the head of the list), <c>1</c> being the next element and so on.
+    /// These offsets can also be negative numbers indicating offsets starting at the end of the list, with <c>-1</c> being the last element of the list, <c>-2</c> being the penultimate, and so on.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lrange"/>
     /// <param name="key">The key of the list.</param>
@@ -359,9 +359,9 @@ public interface IListCommands
 
     /// <summary>
     /// Returns the element at index <paramref name="index"/> in the list stored at <paramref name="key"/>.
-    /// The index is zero-based, so 0 means the first element, 1 the second element and so on.
+    /// The index is zero-based, so <c>0</c> means the first element, <c>1</c> the second element and so on.
     /// Negative indices can be used to designate elements starting at the tail of the list.
-    /// Here, -1 means the last element, -2 means the penultimate and so forth.
+    /// Here, <c>-1</c> means the last element, <c>-2</c> means the penultimate and so forth.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lindex"/>
     /// <param name="key">The key of the list.</param>
@@ -390,8 +390,8 @@ public interface IListCommands
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// The length of the list after the insert operation.
-    /// If the <paramref name="pivot"/> is not found, -1 is returned.
-    /// If <paramref name="key"/> does not exist, 0 is returned.
+    /// If the <paramref name="pivot"/> is not found, <c>-1</c> is returned.
+    /// If <paramref name="key"/> does not exist, <c>0</c> is returned.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -412,8 +412,8 @@ public interface IListCommands
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// The length of the list after the insert operation.
-    /// If the <paramref name="pivot"/> is not found, -1 is returned.
-    /// If <paramref name="key"/> does not exist, 0 is returned.
+    /// If the <paramref name="pivot"/> is not found, <c>-1</c> is returned.
+    /// If <paramref name="key"/> does not exist, <c>0</c> is returned.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -449,16 +449,16 @@ public interface IListCommands
 
     /// <summary>
     /// Returns the index of the first occurrence of <paramref name="element"/> inside the list specified by <paramref name="key"/>.
-    /// If no match is found, -1 is returned.
+    /// If no match is found, <c>-1</c> is returned.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lpos"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="element">The element to search for.</param>
-    /// <param name="rank">The rank of the match to return (1-based). Negative values indicate searching from the end.</param>
-    /// <param name="maxLength">Limit the search to this many elements. 0 means no limit.</param>
+    /// <param name="rank">The rank of the match to return (<c>1</c>-based). Negative values indicate searching from the end.</param>
+    /// <param name="maxLength">Limit the search to this many elements. <c>0</c> means no limit.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
-    /// The index of the first occurrence of <paramref name="element"/>, or -1 if not found.
+    /// The index of the first occurrence of <paramref name="element"/>, or <c>-1</c> if not found.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -477,8 +477,8 @@ public interface IListCommands
     /// <param name="key">The key of the list.</param>
     /// <param name="element">The element to search for.</param>
     /// <param name="count">The maximum number of matches to return.</param>
-    /// <param name="rank">The rank of the first match to return (1-based). Negative values indicate searching from the end.</param>
-    /// <param name="maxLength">Limit the search to this many elements. 0 means no limit.</param>
+    /// <param name="rank">The rank of the first match to return (<c>1</c>-based). Negative values indicate searching from the end.</param>
+    /// <param name="maxLength">Limit the search to this many elements. <c>0</c> means no limit.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// An array of indices of matching elements.
@@ -494,9 +494,9 @@ public interface IListCommands
 
     /// <summary>
     /// Sets the list element at <paramref name="index"/> to <paramref name="value"/>.
-    /// The index is zero-based, so 0 means the first element, 1 the second element and so on.
+    /// The index is zero-based, so <c>0</c> means the first element, <c>1</c> the second element and so on.
     /// Negative indices can be used to designate elements starting at the tail of the list.
-    /// Here, -1 means the last element, -2 means the penultimate and so forth.
+    /// Here, <c>-1</c> means the last element, <c>-2</c> means the penultimate and so forth.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lset"/>
     /// <param name="key">The key of the list.</param>
