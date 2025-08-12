@@ -66,14 +66,12 @@ runs:
           shell: pwsh
           run: |
               Enable-WindowsOptionalFeature -Online -FeatureName containers -All
-              Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/microsoft/Windows-Containers/Main/helpful_tools/Install-DockerCE/install-docker-ce.ps1" -OutFile install-docker-ce.ps1
-              .\install-docker-ce.ps1
-              & "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchLinuxEngine
+              choco install docker-desktop -y --params="'/LinuxContainers'"
 
         - name: Install Docker
           if: ${{ contains(inputs.target, 'apple') }}
           shell: bash
           run: |
               brew install docker colima
-              colima start
+              colima start --vm-type=qemu
               docker version
