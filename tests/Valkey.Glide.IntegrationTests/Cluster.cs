@@ -182,14 +182,17 @@ public class Cluster : IDisposable
                     if (!string.IsNullOrWhiteSpace(containers))
                     {
                         _ = RunProcess("docker", $"stop {containers.Replace('\n', ' ').Trim()}");
-                        _ = RunProcess("docker", $"rm {containers.Replace('\n', ' ').Trim()}");
                     }
                     _ = RunProcess("docker", "rmi utils-cache");
                 }
                 catch { }
 
-                _ = RunProcess("docker-compose", "build cache", _utilsDir);
-                _ = RunProcess("docker", "tag utils-cache utils-cache");
+                string dockerfilePath = Path.Combine(_utilsDir!, "Dockerfile");
+                string buildContext = Path.GetDirectoryName(_utilsDir!)!;
+                string serviceType = Environment.GetEnvironmentVariable("SERVICE_TYPE") ?? "valkey/valkey";
+                string serviceVersion = Environment.GetEnvironmentVariable("SERVICE_VERSION") ?? "8.0";
+                string buildArgs = $"--build-arg SERVICE_TYPE={serviceType} --build-arg SERVICE_VERSION={serviceVersion}";
+                _ = RunProcess("docker", $"build {buildArgs} -f {dockerfilePath} -t utils-cache {buildContext}");
                 s_imageBuilt = true;
             }
         }
