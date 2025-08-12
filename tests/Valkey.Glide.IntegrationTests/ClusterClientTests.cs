@@ -78,7 +78,7 @@ public class ClusterClientTests(TestConfiguration config)
         res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Replica))).SingleValue! as gs)!;
         Assert.Contains("role:slave", res);
 
-        res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port))).SingleValue! as gs)!;
+        res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.DefaultClusterServer.Hosts[0].host, TestConfiguration.DefaultClusterServer.Hosts[0].port))).SingleValue! as gs)!;
         Assert.Contains("# Replication", res);
     }
 
@@ -117,7 +117,7 @@ public class ClusterClientTests(TestConfiguration config)
         res = await client.Exec(batch, true, new(route: new SlotIdRoute(42, SlotType.Replica)));
         Assert.Contains("role:slave", res![0] as string);
 
-        res = await client.Exec(batch, true, new(route: new ByAddressRoute(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port)));
+        res = await client.Exec(batch, true, new(route: new ByAddressRoute(TestConfiguration.DefaultClusterServer.Hosts[0].host, TestConfiguration.DefaultClusterServer.Hosts[0].port)));
         Assert.Contains("# Replication", res![0] as string);
     }
 

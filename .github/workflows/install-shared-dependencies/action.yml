@@ -57,13 +57,6 @@ runs:
               target: ${{ inputs.target }}
               github-token: ${{ inputs.github-token }}
 
-        - name: Install server
-          if: "${{ inputs.server-version }}"
-          uses: ./.github/workflows/install-server
-          with:
-              server-version: ${{ inputs.server-version }}
-              target: ${{ inputs.target }}
-
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
           uses: ./.github/workflows/install-zig

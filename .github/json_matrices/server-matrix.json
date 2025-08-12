@@ -1,15 +1,15 @@
 [
     {
-        "type": "valkey",
+        "type": "valkey/valkey",
         "version": "8.1",
         "run": "always"
     },
     {
-        "type": "valkey",
+        "type": "valkey/valkey",
         "version": "8.0"
     },
     {
-        "type": "valkey",
+        "type": "valkey/valkey",
         "version": "7.2"
     },
     {

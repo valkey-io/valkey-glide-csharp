@@ -98,6 +98,9 @@ jobs:
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
+              env:
+                  SERVICE_TYPE: ${{ matrix.server.type }}
+                  SERVICE_VERSION: ${{ matrix.server.version }}
 
             - name: Run benchmark
               if: ${{ contains(matrix.host.RUNNER, 'ubuntu') }}
