@@ -306,21 +306,28 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// Create a copy of the configuration.
     /// </summary>
-    public ConfigurationOptions Clone() => new()
+    public ConfigurationOptions Clone()
     {
-        ClientName = ClientName,
-        ConnectTimeout = ConnectTimeout,
-        User = User,
-        Password = Password,
-        ssl = ssl,
-        proxy = proxy,
-        ResponseTimeout = ResponseTimeout,
-        DefaultDatabase = DefaultDatabase,
-        reconnectRetryPolicy = reconnectRetryPolicy,
-        readFrom = readFrom,
-        EndPoints = EndPoints.Clone(),
-        Protocol = Protocol,
-    };
+        var cloned = new ConfigurationOptions
+        {
+            ClientName = ClientName,
+            ConnectTimeout = ConnectTimeout,
+            User = User,
+            Password = Password,
+            ssl = ssl,
+            proxy = proxy,
+            ResponseTimeout = ResponseTimeout,
+            DefaultDatabase = DefaultDatabase,
+            reconnectRetryPolicy = reconnectRetryPolicy,
+            EndPoints = EndPoints.Clone(),
+            Protocol = Protocol,
+        };
+
+        // Use property setter to ensure validation
+        cloned.ReadFrom = readFrom;
+
+        return cloned;
+    }
 
     /// <summary>
     /// Apply settings to configure this instance of <see cref="ConfigurationOptions"/>, e.g. for a specific scenario.
@@ -590,16 +597,24 @@ public sealed class ConfigurationOptions : ICloneable
         switch (readFromConfig.Strategy)
         {
             case ReadFromStrategy.AzAffinity:
-                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
+                if (readFromConfig.Az == null)
                 {
                     throw new ArgumentException("Availability zone should be set when using AzAffinity strategy");
+                }
+                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
+                {
+                    throw new ArgumentException("Availability zone cannot be empty or whitespace");
                 }
                 break;
 
             case ReadFromStrategy.AzAffinityReplicasAndPrimary:
-                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
+                if (readFromConfig.Az == null)
                 {
                     throw new ArgumentException("Availability zone should be set when using AzAffinityReplicasAndPrimary strategy");
+                }
+                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
+                {
+                    throw new ArgumentException("Availability zone cannot be empty or whitespace");
                 }
                 break;
 

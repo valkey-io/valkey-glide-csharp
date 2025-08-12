@@ -217,4 +217,39 @@ public class ConfigurationOptionsReadFromTests
         Assert.Contains("readFrom=Primary", connectionString);
         Assert.DoesNotContain("az=", connectionString);
     }
+
+    [Fact]
+    public void ReadFromProperty_SetNull_DoesNotThrow()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert - Setting to null should not throw
+        options.ReadFrom = null;
+        Assert.Null(options.ReadFrom);
+    }
+
+    [Fact]
+    public void Clone_WithNullReadFrom_ClonesCorrectly()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.ReadFrom = null;
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.Null(cloned.ReadFrom);
+    }
+
+    [Theory]
+    [InlineData("readFrom=AzAffinity,az=")]
+    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az= ")]
+    public void Parse_AzAffinityWithEmptyOrWhitespaceAz_ThrowsSpecificException(string connectionString)
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => ConfigurationOptions.Parse(connectionString));
+        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
+    }
 }
