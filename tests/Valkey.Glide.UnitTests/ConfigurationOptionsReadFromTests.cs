@@ -252,4 +252,272 @@ public class ConfigurationOptionsReadFromTests
         var exception = Assert.Throws<ArgumentException>(() => ConfigurationOptions.Parse(connectionString));
         Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
+
+    #region ToString Serialization Tests
+
+    [Theory]
+    [InlineData(ReadFromStrategy.Primary, "readFrom=Primary")]
+    [InlineData(ReadFromStrategy.PreferReplica, "readFrom=PreferReplica")]
+    public void ToString_WithReadFromStrategyWithoutAz_IncludesCorrectFormat(ReadFromStrategy strategy, string expectedSubstring)
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(strategy);
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.Contains(expectedSubstring, result);
+    }
+
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a", "readFrom=AzAffinity,az=us-east-1a")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b", "readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1b")]
+    public void ToString_WithReadFromStrategyWithAz_IncludesCorrectFormat(ReadFromStrategy strategy, string az, string expectedSubstring)
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(strategy, az);
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.Contains(expectedSubstring, result);
+    }
+
+    [Fact]
+    public void ToString_WithPrimaryStrategy_DoesNotIncludeAz()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.Contains("readFrom=Primary", result);
+        Assert.DoesNotContain("az=", result);
+    }
+
+    [Fact]
+    public void ToString_WithPreferReplicaStrategy_DoesNotIncludeAz()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.Contains("readFrom=PreferReplica", result);
+        Assert.DoesNotContain("az=", result);
+    }
+
+    [Theory]
+    [InlineData("us-east-1a")]
+    [InlineData("eu-west-1b")]
+    [InlineData("ap-south-1c")]
+    [InlineData("ca-central-1")]
+    public void ToString_WithAzAffinityStrategy_IncludesCorrectAzFormat(string azValue)
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue);
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.Contains("readFrom=AzAffinity", result);
+        Assert.Contains($"az={azValue}", result);
+    }
+
+    [Theory]
+    [InlineData("us-west-2a")]
+    [InlineData("eu-central-1b")]
+    [InlineData("ap-northeast-1c")]
+    public void ToString_WithAzAffinityReplicasAndPrimaryStrategy_IncludesCorrectAzFormat(string azValue)
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue);
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.Contains("readFrom=AzAffinityReplicasAndPrimary", result);
+        Assert.Contains($"az={azValue}", result);
+    }
+
+    [Fact]
+    public void ToString_WithNullReadFrom_DoesNotIncludeReadFromOrAz()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = null;
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.DoesNotContain("readFrom=", result);
+        Assert.DoesNotContain("az=", result);
+    }
+
+    [Fact]
+    public void ToString_WithComplexConfiguration_IncludesAllParameters()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.EndPoints.Add("localhost:6379");
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a");
+        options.Ssl = true;
+        options.User = "testuser";
+        options.Password = "testpass";
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.Contains("localhost:6379", result);
+        Assert.Contains("readFrom=AzAffinity", result);
+        Assert.Contains("az=us-east-1a", result);
+        Assert.Contains("ssl=True", result);
+        Assert.Contains("user=testuser", result);
+        Assert.Contains("password=testpass", result);
+    }
+
+    #endregion
+
+    #region Round-trip Parsing Tests
+
+    [Theory]
+    [InlineData("readFrom=Primary")]
+    [InlineData("readFrom=PreferReplica")]
+    [InlineData("readFrom=AzAffinity,az=us-east-1")]
+    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1")]
+    public void RoundTrip_ParseToStringToParse_PreservesReadFromConfiguration(string originalConnectionString)
+    {
+        // Act - First parse
+        var options1 = ConfigurationOptions.Parse(originalConnectionString);
+
+        // Act - ToString
+        var serialized = options1.ToString();
+
+        // Act - Second parse
+        var options2 = ConfigurationOptions.Parse(serialized);
+
+        // Assert
+        Assert.Equal(options1.ReadFrom?.Strategy, options2.ReadFrom?.Strategy);
+        Assert.Equal(options1.ReadFrom?.Az, options2.ReadFrom?.Az);
+    }
+
+    [Fact]
+    public void RoundTrip_ComplexConfigurationWithReadFrom_PreservesAllSettings()
+    {
+        // Arrange
+        var originalConnectionString = "localhost:6379,readFrom=AzAffinity,az=us-east-1,ssl=true,user=testuser";
+
+        // Act - First parse
+        var options1 = ConfigurationOptions.Parse(originalConnectionString);
+
+        // Act - ToString
+        var serialized = options1.ToString();
+
+        // Act - Second parse
+        var options2 = ConfigurationOptions.Parse(serialized);
+
+        // Assert ReadFrom configuration
+        Assert.Equal(options1.ReadFrom?.Strategy, options2.ReadFrom?.Strategy);
+        Assert.Equal(options1.ReadFrom?.Az, options2.ReadFrom?.Az);
+
+        // Assert other configuration is preserved
+        Assert.Equal(options1.Ssl, options2.Ssl);
+        Assert.Equal(options1.User, options2.User);
+        Assert.Equal(options1.EndPoints.Count, options2.EndPoints.Count);
+    }
+
+    [Fact]
+    public void RoundTrip_ProgrammaticallySetReadFrom_PreservesConfiguration()
+    {
+        // Arrange
+        var options1 = new ConfigurationOptions();
+        options1.EndPoints.Add("localhost:6379");
+        options1.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "ap-south-1");
+
+        // Act - ToString
+        var serialized = options1.ToString();
+
+        // Act - Parse
+        var options2 = ConfigurationOptions.Parse(serialized);
+
+        // Assert
+        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, options2.ReadFrom?.Strategy);
+        Assert.Equal("ap-south-1", options2.ReadFrom?.Az);
+    }
+
+    #endregion
+
+    #region Backward Compatibility Tests
+
+    [Fact]
+    public void ToString_ExistingConfigurationWithoutReadFrom_RemainsUnchanged()
+    {
+        // Arrange
+        var options = ConfigurationOptions.Parse("localhost:6379,ssl=true,user=testuser");
+
+        // Act
+        var result = options.ToString();
+
+        // Assert - Should not contain ReadFrom parameters
+        Assert.DoesNotContain("readFrom=", result);
+        Assert.DoesNotContain("az=", result);
+
+        // Assert - Should contain existing parameters
+        Assert.Contains("localhost:6379", result);
+        Assert.Contains("ssl=True", result);
+        Assert.Contains("user=testuser", result);
+    }
+
+    [Fact]
+    public void ToString_DefaultConfigurationOptions_DoesNotIncludeReadFrom()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.DoesNotContain("readFrom=", result);
+        Assert.DoesNotContain("az=", result);
+    }
+
+    [Fact]
+    public void RoundTrip_LegacyConnectionString_RemainsCompatible()
+    {
+        // Arrange - Legacy connection string without ReadFrom
+        var legacyConnectionString = "localhost:6379,ssl=true,connectTimeout=5000,user=admin,password=secret";
+
+        // Act - Parse and serialize
+        var options = ConfigurationOptions.Parse(legacyConnectionString);
+        var serialized = options.ToString();
+        var reparsed = ConfigurationOptions.Parse(serialized);
+
+        // Assert - ReadFrom should be null (default behavior)
+        Assert.Null(options.ReadFrom);
+        Assert.Null(reparsed.ReadFrom);
+
+        // Assert - Other settings preserved
+        Assert.Equal(options.Ssl, reparsed.Ssl);
+        Assert.Equal(options.User, reparsed.User);
+        Assert.Equal(options.Password, reparsed.Password);
+    }
+
+    #endregion
 }
