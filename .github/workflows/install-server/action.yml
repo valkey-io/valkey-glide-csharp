@@ -47,6 +47,7 @@ runs:
           if: ${{ contains(inputs.target, 'windows') }}
           shell: bash
           run: |
+              wls --install
               wsl --install Ubuntu --no-launch
               wsl --set-default-version 2
               wsl --distribution Ubuntu --exec echo "WSL initialized"
@@ -119,6 +120,7 @@ runs:
               wsl bash << EOF
                 set -e
                 cd valkey
+                find . -type f -name version.h
                 make BUILD_TLS=yes
                 sudo make install
                 echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
