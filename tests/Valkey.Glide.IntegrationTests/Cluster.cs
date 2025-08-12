@@ -77,7 +77,7 @@ public class Cluster : IDisposable
 
     private string BuildClusterManagerArgs(bool clusterMode, int replicas, bool tls, List<int> ports)
     {
-        string replicasArg = replicas > 0 ? $"--replicas {replicas}" : "";
+        string replicasArg = replicas > 0 ? $"-r {replicas}" : "";
         string modeArg = clusterMode ? "--cluster-mode" : "";
         string tlsArg = tls ? "--tls" : "";
         string portsArg = $"-p {string.Join(" ", ports)}";
@@ -92,7 +92,7 @@ public class Cluster : IDisposable
         foreach (int internalPort in internalPorts)
         {
             string output = RunProcess("docker", $"port {ContainerName} {internalPort}");
-            string externalPort = output.Trim().Split(':')[1];
+            string externalPort = output.Trim().Split("\n")[0].Split(':')[1];
             hosts.Add(("127.0.0.1", ushort.Parse(externalPort)));
         }
 
@@ -116,32 +116,15 @@ public class Cluster : IDisposable
 
     private bool IsClusterReady()
     {
-        foreach ((string host, ushort port) in Hosts)
+        try
         {
-            try
-            {
-                using TcpClient client = new();
-                client.Connect(host, port);
-                using NetworkStream stream = client.GetStream();
-
-                byte[] request = Encoding.UTF8.GetBytes("info server\r\n");
-                stream.Write(request);
-
-                byte[] buffer = new byte[1024];
-                int bytesRead = stream.Read(buffer);
-
-                if (bytesRead == 0)
-                {
-                    return false;
-                }
-            }
-            catch
-            {
-                return false;
-            }
+            string logs = RunProcess("docker", $"logs {ContainerName}");
+            return logs.Split('\n').Any(line => line.StartsWith("CLUSTER_NODES="));
         }
-
-        return true;
+        catch
+        {
+            return false;
+        }
     }
 
     private Version GetServerVersion()
