@@ -60,3 +60,17 @@ runs:
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
           uses: ./.github/workflows/install-zig
+
+        - name: Install Docker
+          if: ${{ contains(inputs.target, 'windows') }}
+          shell: pwsh
+          run: |
+              choco install docker-desktop -y
+              Start-Service docker
+              docker version
+
+        - name: Install Docker
+          if: ${{ contains(inputs.target, 'mac') }}
+          shell: pwsh
+          run: |
+              brew install docker
