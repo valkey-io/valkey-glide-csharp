@@ -43,10 +43,13 @@ runs:
               fi
               echo "SOURCES_VERSION=$SOURCES_VERSION" >> $GITHUB_ENV
 
-        - uses: Vampire/setup-wsl@v6
+        - name: Setup WSL2 with Ubuntu
           if: ${{ contains(inputs.target, 'windows') }}
-          with:
-              use-cache: 'true'
+          run: |
+              wsl --install Ubuntu --no-launch
+              wsl --set-default-version 2
+              wsl --distribution Ubuntu --exec echo "WSL initialized"
+              wsl --list --verbose
 
         - uses: actions/cache@v4
           id: cache-valkey
@@ -71,23 +74,20 @@ runs:
               if [[ ! -e /usr/local/bin/redis-server ]]; then
                   $SUDO cp valkey-server /usr/local/bin/redis-server
               fi
-              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              echo /usr/local/bin >> $GITHUB_PATH
 
         - name: Install cached engine
           if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' && contains(inputs.target, 'windows') }}
-          shell: wsl-bash {0}
+          shell: pwsh
           run: |
-              cd valkey/src
-              if command -v sudo &> /dev/null
-              then
-                  echo "sudo command exists"
-                  SUDO=sudo
-              fi
-              $SUDO cp valkey-server valkey-cli redis-server redis-cli /usr/local/bin/ 2>/dev/null || :
-              if [[ ! -e /usr/local/bin/redis-server ]]; then
-                  $SUDO cp valkey-server /usr/local/bin/redis-server
-              fi
-              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              wsl --exec bash -c "
+                cd valkey/src
+                sudo cp valkey-server valkey-cli redis-server redis-cli /usr/local/bin/ 2>/dev/null || :
+                if [[ ! -e /usr/local/bin/redis-server ]]; then
+                    sudo cp valkey-server /usr/local/bin/redis-server
+                fi
+                echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              "
 
         - name: Build and install engine
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' && !contains(inputs.target, 'windows') }}
@@ -103,26 +103,28 @@ runs:
                   echo "sudo command does not exist"
                   make install
               fi
-              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              echo /usr/local/bin >> $GITHUB_PATH
 
         - name: Build and install engine
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' && contains(inputs.target, 'windows') }}
           shell: wsl-bash {0}
           run: |
-              cd valkey
-              make BUILD_TLS=yes
-              if command -v sudo &> /dev/null
-              then
-                  echo "sudo command exists"
-                  sudo make install
-              else
-                  echo "sudo command does not exist"
-                  make install
-              fi
-              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              wsl --exec bash -c "
+                cd valkey
+                make BUILD_TLS=yes
+                if command -v sudo &> /dev/null
+                then
+                    echo "sudo command exists"
+                    sudo make install
+                else
+                    echo "sudo command does not exist"
+                    make install
+                fi
+                echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              "
 
         - name: Verify Valkey installation and symlinks
-          if: ${{ !contains(inputs.engine-version, '-rc') }}
+          if: ${{ !contains(inputs.engine-version, '-rc') && !contains(inputs.target, 'windows') }}
           shell: bash
           run: |
               # In Valkey releases, the engine is built with symlinks from valkey-server and valkey-cli

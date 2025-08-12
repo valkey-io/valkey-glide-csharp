@@ -98,13 +98,15 @@ jobs:
 
             - name: Run service in WSL for windows runner
               if: ${{ matrix.host.OS == 'windows' }}
-              shell: wsl-bash {0}
+              shell: pwsh
               working-directory: valkey-glide/utils
               run: |
-                  ./cluster_manager.py start -p 6380
-                  ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
-                  echo "standalone-endpoints=localhost:6380" >> $GITHUB_ENV
-                  echo "cluster-endpoints=localhost:7000" >> $GITHUB_ENV
+                  wsl --exec bash -c "
+                    ./cluster_manager.py start -p 6380
+                    ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
+                    echo "standalone-endpoints=localhost:6380" >> $GITHUB_ENV
+                    echo "cluster-endpoints=localhost:7000" >> $GITHUB_ENV
+                  "
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
