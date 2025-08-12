@@ -48,10 +48,15 @@ internal class ResponseConverters
     /// <param name="converter">Optional function to convert <typeparamref name="R" /> to <typeparamref name="T" />.</param>
     /// <returns>A converted value.</returns>
     /// <exception cref="Exception">When <paramref name="value"/> has incorrect type or value.</exception>
-    public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter)
+    public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
     {
         if (value is null)
         {
+            if (allowConverterToHandleNull)
+            {
+                // Let the converter handle the null value by passing default(R)
+                return converter(default!);
+            }
             if (isNullable)
             {
 #pragma warning disable CS8603 // Possible null reference return.

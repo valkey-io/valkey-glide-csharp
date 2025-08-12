@@ -1,0 +1,88 @@
+name: API Compatibility (Valkey.Glide vs StackExchange.Redis)
+
+on:
+    pull_request:
+        branches: [main]
+    workflow_dispatch:
+        inputs:
+            ser_version:
+                description: StackExchange.Redis version to compare against
+                required: false
+                default: "2.8.58"
+
+permissions:
+    contents: read
+
+jobs:
+    api-compatibility:
+        runs-on: windows-latest
+        env:
+            # Default for PRs; workflow_dispatch can override via input
+            SER_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.ser_version || '2.8.58' }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: |
+                      8.x
+
+            - name: Install dotnet-api-diff (Chocolatey)
+              shell: pwsh
+              run: |
+                  choco install dotnetapidiff --version=1.0.0 -y
+                  dotnetapidiff --version
+
+            - name: Download StackExchange.Redis package (${{ env.SER_VERSION }})
+              shell: pwsh
+              run: |
+                  nuget install StackExchange.Redis -Version "$env:SER_VERSION" -OutputDirectory ./packages
+
+            - name: Build Valkey.Glide (net8.0)
+              shell: pwsh
+              run: |
+                  dotnet build --configuration Release --framework net8.0 --nologo
+
+            - name: Run API Diff (net8.0)
+              id: run-diff
+              shell: bash
+              run: |
+                  mkdir -p api-diff
+
+                  VALKEY_DLL="sources/Valkey.Glide/bin/Release/net8.0/Valkey.Glide.dll"
+                  SER_DLL="packages/StackExchange.Redis.${SER_VERSION}/lib/net8.0/StackExchange.Redis.dll"
+                  OUTFILE="api-diff/api-changes-net8.0.html"
+
+                  echo "Using StackExchange.Redis version: ${SER_VERSION}"
+                  echo "SER DLL: ${SER_DLL}"
+                  echo "Valkey DLL: ${VALKEY_DLL}"
+
+                  if [[ ! -f "$SER_DLL" ]]; then
+                    echo "# API Diff Error (net8.0)" > "$OUTFILE"
+                    echo "Could not find StackExchange.Redis DLL at $SER_DLL" >> "$OUTFILE"
+                    exit 1
+                  fi
+                  if [[ ! -f "$VALKEY_DLL" ]]; then
+                    echo "# API Diff Error (net8.0)" > "$OUTFILE"
+                    echo "Could not find Valkey.Glide DLL at $VALKEY_DLL" >> "$OUTFILE"
+                    exit 1
+                  fi
+
+                  dotnetapidiff compare \
+                    "$SER_DLL" \
+                    "$VALKEY_DLL" \
+                    --config ".github/api-compat/api-diff-config.json" \
+                    --output html \
+                    --output-file "$OUTFILE"
+
+            - name: Upload API Diff Report (net8.0)
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: api-diff-net8.0
+                  path: api-diff/api-changes-net8.0.html
