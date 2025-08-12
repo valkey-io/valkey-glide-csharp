@@ -45,12 +45,17 @@ runs:
 
         - name: Setup WSL2 with Ubuntu
           if: ${{ contains(inputs.target, 'windows') }}
-          shell: pwsh
+          shell: bash
           run: |
               wsl --install Ubuntu --no-launch
               wsl --set-default-version 2
               wsl --distribution Ubuntu --exec echo "WSL initialized"
               wsl --list --verbose
+              wsl bash << EOF
+                set -e
+                sudo apt-get update
+                sudo apt-get install -y make python3
+              EOF
 
         - uses: actions/cache@v4
           id: cache-valkey
@@ -82,6 +87,7 @@ runs:
           shell: bash
           run: |
               wsl bash << EOF
+                set -e
                 cd valkey/src
                 sudo cp valkey-server valkey-cli redis-server redis-cli /usr/local/bin/ 2>/dev/null || :
                 if [[ ! -e /usr/local/bin/redis-server ]]; then
@@ -111,16 +117,10 @@ runs:
           shell: bash
           run: |
               wsl bash << EOF
+                set -e
                 cd valkey
                 make BUILD_TLS=yes
-                if command -v sudo &> /dev/null
-                then
-                    echo "sudo command exists"
-                    sudo make install
-                else
-                    echo "sudo command does not exist"
-                    make install
-                fi
+                sudo make install
                 echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
               EOF
 

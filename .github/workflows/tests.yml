@@ -102,6 +102,9 @@ jobs:
               working-directory: valkey-glide/utils
               run: |
                   wsl bash << EOF
+                    set -e
+                    echo $PWD
+                    echo ls
                     ./cluster_manager.py start -p 6380
                     ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
                     echo "standalone-endpoints=localhost:6380" >> $GITHUB_ENV
