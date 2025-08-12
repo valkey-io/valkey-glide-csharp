@@ -54,7 +54,7 @@ runs:
               wsl bash << EOF
                 set -e
                 sudo apt-get update
-                sudo apt-get install -y make python3 libssl-dev gcc
+                sudo apt-get install -y make python3 libssl-dev gcc build-essential git
               EOF
 
         - uses: actions/cache@v4
