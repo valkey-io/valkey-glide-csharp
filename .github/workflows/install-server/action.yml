@@ -54,7 +54,7 @@ runs:
               wsl bash << EOF
                 set -e
                 sudo apt-get update
-                sudo apt-get install -y make python3
+                sudo apt-get install -y make python3 libssl-dev gcc
               EOF
 
         - uses: actions/cache@v4
