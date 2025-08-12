@@ -520,4 +520,413 @@ public class ConfigurationOptionsReadFromTests
     }
 
     #endregion
+
+    #region ReadFrom Property Validation Tests
+
+    [Fact]
+    public void ReadFromProperty_SetValidPrimaryStrategy_DoesNotThrow()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.Primary);
+
+        // Act & Assert
+        options.ReadFrom = readFrom;
+        Assert.Equal(ReadFromStrategy.Primary, options.ReadFrom.Value.Strategy);
+        Assert.Null(options.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void ReadFromProperty_SetValidPreferReplicaStrategy_DoesNotThrow()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
+
+        // Act & Assert
+        options.ReadFrom = readFrom;
+        Assert.Equal(ReadFromStrategy.PreferReplica, options.ReadFrom.Value.Strategy);
+        Assert.Null(options.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void ReadFromProperty_SetValidAzAffinityStrategy_DoesNotThrow()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
+
+        // Act & Assert
+        options.ReadFrom = readFrom;
+        Assert.Equal(ReadFromStrategy.AzAffinity, options.ReadFrom.Value.Strategy);
+        Assert.Equal("us-east-1", options.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void ReadFromProperty_SetValidAzAffinityReplicasAndPrimaryStrategy_DoesNotThrow()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1");
+
+        // Act & Assert
+        options.ReadFrom = readFrom;
+        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, options.ReadFrom.Value.Strategy);
+        Assert.Equal("eu-west-1", options.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void ReadFromProperty_SetNullValue_DoesNotThrow()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary); // Set to non-null first
+
+        // Act & Assert
+        options.ReadFrom = null;
+        Assert.Null(options.ReadFrom);
+    }
+
+    [Fact]
+    public void ReadFromProperty_SetMultipleTimes_UpdatesCorrectly()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert - Set Primary first
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+        Assert.Equal(ReadFromStrategy.Primary, options.ReadFrom.Value.Strategy);
+        Assert.Null(options.ReadFrom.Value.Az);
+
+        // Act & Assert - Change to AzAffinity
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-west-2");
+        Assert.Equal(ReadFromStrategy.AzAffinity, options.ReadFrom.Value.Strategy);
+        Assert.Equal("us-west-2", options.ReadFrom.Value.Az);
+
+        // Act & Assert - Change back to null
+        options.ReadFrom = null;
+        Assert.Null(options.ReadFrom);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("\t")]
+    [InlineData("\n")]
+    public void ReadFromProperty_SetAzAffinityWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue);
+        });
+        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("\t")]
+    [InlineData("\n")]
+    public void ReadFromProperty_SetAzAffinityReplicasAndPrimaryWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue);
+        });
+        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
+    }
+
+    #endregion
+
+    #region Clone Method ReadFrom Preservation Tests
+
+    [Fact]
+    public void Clone_WithPrimaryReadFrom_PreservesConfiguration()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.NotNull(cloned.ReadFrom);
+        Assert.Equal(ReadFromStrategy.Primary, cloned.ReadFrom.Value.Strategy);
+        Assert.Null(cloned.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void Clone_WithPreferReplicaReadFrom_PreservesConfiguration()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.NotNull(cloned.ReadFrom);
+        Assert.Equal(ReadFromStrategy.PreferReplica, cloned.ReadFrom.Value.Strategy);
+        Assert.Null(cloned.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void Clone_WithAzAffinityReadFrom_PreservesConfiguration()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.NotNull(cloned.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinity, cloned.ReadFrom.Value.Strategy);
+        Assert.Equal("us-east-1", cloned.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void Clone_WithAzAffinityReplicasAndPrimaryReadFrom_PreservesConfiguration()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1");
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.NotNull(cloned.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, cloned.ReadFrom.Value.Strategy);
+        Assert.Equal("eu-west-1", cloned.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void Clone_WithNullReadFrom_PreservesNullValue()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.ReadFrom = null;
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.Null(cloned.ReadFrom);
+    }
+
+    [Fact]
+    public void Clone_ModifyingClonedReadFrom_DoesNotAffectOriginal()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+
+        // Act
+        var cloned = original.Clone();
+        cloned.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-west-2");
+
+        // Assert - Original should remain unchanged
+        Assert.NotNull(original.ReadFrom);
+        Assert.Equal(ReadFromStrategy.Primary, original.ReadFrom.Value.Strategy);
+        Assert.Null(original.ReadFrom.Value.Az);
+
+        // Assert - Cloned should have new value
+        Assert.NotNull(cloned.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinity, cloned.ReadFrom.Value.Strategy);
+        Assert.Equal("us-west-2", cloned.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void Clone_WithComplexConfigurationIncludingReadFrom_PreservesAllSettings()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.EndPoints.Add("localhost:6379");
+        original.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "ap-south-1");
+        original.Ssl = true;
+        original.User = "testuser";
+        original.Password = "testpass";
+        original.ConnectTimeout = 5000;
+        original.ResponseTimeout = 3000;
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert ReadFrom configuration
+        Assert.NotNull(cloned.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, cloned.ReadFrom.Value.Strategy);
+        Assert.Equal("ap-south-1", cloned.ReadFrom.Value.Az);
+
+        // Assert other configuration is preserved
+        Assert.Equal(original.Ssl, cloned.Ssl);
+        Assert.Equal(original.User, cloned.User);
+        Assert.Equal(original.Password, cloned.Password);
+        Assert.Equal(original.ConnectTimeout, cloned.ConnectTimeout);
+        Assert.Equal(original.ResponseTimeout, cloned.ResponseTimeout);
+        Assert.Equal(original.EndPoints.Count, cloned.EndPoints.Count);
+    }
+
+    #endregion
+
+    #region Default Behavior and Null Handling Tests
+
+    [Fact]
+    public void ReadFromProperty_DefaultValue_IsNull()
+    {
+        // Arrange & Act
+        var options = new ConfigurationOptions();
+
+        // Assert
+        Assert.Null(options.ReadFrom);
+    }
+
+    [Fact]
+    public void ReadFromProperty_AfterSettingToNonNull_CanBeSetBackToNull()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+
+        // Act
+        options.ReadFrom = null;
+
+        // Assert
+        Assert.Null(options.ReadFrom);
+    }
+
+    [Fact]
+    public void ReadFromProperty_NullValue_DoesNotAffectToString()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+        options.EndPoints.Add("localhost:6379");
+        options.ReadFrom = null;
+
+        // Act
+        var result = options.ToString();
+
+        // Assert
+        Assert.DoesNotContain("readFrom=", result);
+        Assert.DoesNotContain("az=", result);
+        Assert.Contains("localhost:6379", result);
+    }
+
+    [Fact]
+    public void ReadFromProperty_NullValue_DoesNotAffectClone()
+    {
+        // Arrange
+        var original = new ConfigurationOptions();
+        original.EndPoints.Add("localhost:6379");
+        original.Ssl = true;
+        original.ReadFrom = null;
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.Null(cloned.ReadFrom);
+        Assert.Equal(original.Ssl, cloned.Ssl);
+        Assert.Equal(original.EndPoints.Count, cloned.EndPoints.Count);
+    }
+
+    #endregion
+
+    #region Cross-Validation Tests
+
+    [Fact]
+    public void ReadFromProperty_ValidateAzAffinityRequiresAz_ThroughPropertySetter()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert - This should throw during ReadFrom struct construction, not property setter
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity);
+            options.ReadFrom = readFrom;
+        });
+        Assert.Contains("Availability zone should be set", exception.Message);
+    }
+
+    [Fact]
+    public void ReadFromProperty_ValidateAzAffinityReplicasAndPrimaryRequiresAz_ThroughPropertySetter()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert - This should throw during ReadFrom struct construction, not property setter
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            var readFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary);
+            options.ReadFrom = readFrom;
+        });
+        Assert.Contains("Availability zone should be set", exception.Message);
+    }
+
+    [Fact]
+    public void ReadFromProperty_ValidatePrimaryDoesNotAllowAz_ThroughPropertySetter()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert - This should throw during ReadFrom struct construction, not property setter
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            var readFrom = new ReadFrom(ReadFromStrategy.Primary, "us-east-1");
+            options.ReadFrom = readFrom;
+        });
+        Assert.Contains("could be set only when using", exception.Message);
+    }
+
+    [Fact]
+    public void ReadFromProperty_ValidatePreferReplicaDoesNotAllowAz_ThroughPropertySetter()
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert - This should throw during ReadFrom struct construction, not property setter
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            var readFrom = new ReadFrom(ReadFromStrategy.PreferReplica, "us-east-1");
+            options.ReadFrom = readFrom;
+        });
+        Assert.Contains("could be set only when using", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("us-east-1a")]
+    [InlineData("eu-west-1b")]
+    [InlineData("ap-south-1c")]
+    [InlineData("ca-central-1")]
+    [InlineData("us-gov-east-1")]
+    [InlineData("cn-north-1")]
+    public void ReadFromProperty_ValidAzValues_AcceptedForAzAffinityStrategies(string azValue)
+    {
+        // Arrange
+        var options = new ConfigurationOptions();
+
+        // Act & Assert - AzAffinity
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue);
+        Assert.Equal(ReadFromStrategy.AzAffinity, options.ReadFrom.Value.Strategy);
+        Assert.Equal(azValue, options.ReadFrom.Value.Az);
+
+        // Act & Assert - AzAffinityReplicasAndPrimary
+        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue);
+        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, options.ReadFrom.Value.Strategy);
+        Assert.Equal(azValue, options.ReadFrom.Value.Az);
+    }
+
+    #endregion
 }
