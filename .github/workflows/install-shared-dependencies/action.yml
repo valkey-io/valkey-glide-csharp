@@ -61,16 +61,15 @@ runs:
           if: ${{ contains(inputs.target, 'linux-gnu') }}
           uses: ./.github/workflows/install-zig
 
-        - name: Install Docker
-          if: ${{ contains(inputs.target, 'windows') }}
+        - name: Setup Docker on Windows
           shell: pwsh
           run: |
-              choco install docker-desktop -y
-              Start-Service docker
-              docker version
+            Enable-WindowsOptionalFeature -Online -FeatureName containers -All
+            Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/microsoft/Windows-Containers/Main/helpful_tools/Install-DockerCE/install-docker-ce.ps1" -o install-docker-ce.ps1
+            .\install-docker-ce.ps1
 
         - name: Install Docker
-          if: ${{ contains(inputs.target, 'mac') }}
-          shell: pwsh
+          if: ${{ contains(inputs.target, 'apple') }}
+          shell: bash
           run: |
               brew install docker
