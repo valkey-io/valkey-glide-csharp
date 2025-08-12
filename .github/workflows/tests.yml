@@ -97,6 +97,7 @@ jobs:
                   key: ${{ matrix.host.TARGET }}
 
             - name: Run service in WSL for windows runner
+              if: ${{ matrix.host.OS == 'windows' }}
               shell: wsl-bash {0}
               working-directory: valkey-glide/utils
               run: |
@@ -109,7 +110,7 @@ jobs:
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
 
             - name: Run benchmark
-              if: ${{ contains(matrix.host.RUNNER, 'ubuntu') }}
+              if: ${{ matrix.host.OS == 'ubuntu' }}
               shell: bash
               working-directory: valkey-glide/benchmarks
               env:
