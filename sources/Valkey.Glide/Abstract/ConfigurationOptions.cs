@@ -52,7 +52,9 @@ public sealed class ConfigurationOptions : ICloneable
             Ssl = "ssl",
             Version = "version",
             SetClientLibrary = "setlib",
-            Protocol = "protocol"
+            Protocol = "protocol",
+            ReadFrom = "readFrom",
+            Az = "az"
             ;
 
         private static readonly Dictionary<string, string> normalizedOptions = new[]
@@ -71,6 +73,8 @@ public sealed class ConfigurationOptions : ICloneable
             Version,
             SetClientLibrary,
             Protocol,
+            ReadFrom,
+            Az
         }.ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
 
         public static string TryNormalize(string value)
@@ -83,13 +87,13 @@ public sealed class ConfigurationOptions : ICloneable
         }
     }
 
+    // Private fields
     private bool? ssl;
-
     private Proxy? proxy;
-
     private RetryStrategy? reconnectRetryPolicy;
-
     private ReadFrom? readFrom;
+    private string? tempAz; // Temporary storage for AZ during parsing
+    private ReadFromStrategy? tempReadFromStrategy; // Temporary storage for ReadFrom strategy during parsing
 
     /// <summary>
     /// Gets or sets whether connect/configuration timeouts should be explicitly notified via a TimeoutException.
@@ -243,7 +247,14 @@ public sealed class ConfigurationOptions : ICloneable
     public ReadFrom? ReadFrom
     {
         get => readFrom;
-        set => readFrom = value;
+        set
+        {
+            if (value.HasValue)
+            {
+                ValidateReadFromConfiguration(value.Value);
+            }
+            readFrom = value;
+        }
     }
 
     /// <summary>
@@ -356,6 +367,14 @@ public sealed class ConfigurationOptions : ICloneable
         Append(sb, OptionKeys.ResponseTimeout, ResponseTimeout);
         Append(sb, OptionKeys.DefaultDatabase, DefaultDatabase);
         Append(sb, OptionKeys.Protocol, FormatProtocol(Protocol));
+        if (readFrom.HasValue)
+        {
+            Append(sb, OptionKeys.ReadFrom, FormatReadFromStrategy(readFrom.Value.Strategy));
+            if (!string.IsNullOrWhiteSpace(readFrom.Value.Az))
+            {
+                Append(sb, OptionKeys.Az, readFrom.Value.Az);
+            }
+        }
 
         return sb.ToString();
 
@@ -367,6 +386,18 @@ public sealed class ConfigurationOptions : ICloneable
                 Glide.Protocol.Resp2 => "resp2",
                 Glide.Protocol.Resp3 => "resp3",
                 _ => protocol.GetValueOrDefault().ToString(),
+            };
+        }
+
+        static string FormatReadFromStrategy(ReadFromStrategy strategy)
+        {
+            return strategy switch
+            {
+                ReadFromStrategy.Primary => "Primary",
+                ReadFromStrategy.PreferReplica => "PreferReplica",
+                ReadFromStrategy.AzAffinity => "AzAffinity",
+                ReadFromStrategy.AzAffinityReplicasAndPrimary => "AzAffinityReplicasAndPrimary",
+                _ => strategy.ToString(),
             };
         }
     }
@@ -403,6 +434,8 @@ public sealed class ConfigurationOptions : ICloneable
         ssl = null;
         readFrom = null;
         reconnectRetryPolicy = null;
+        tempAz = null;
+        tempReadFromStrategy = null;
         EndPoints.Clear();
     }
 
@@ -463,6 +496,12 @@ public sealed class ConfigurationOptions : ICloneable
                     case OptionKeys.ResponseTimeout:
                         ResponseTimeout = OptionKeys.ParseInt32(key, value);
                         break;
+                    case OptionKeys.ReadFrom:
+                        ParseReadFromParameter(key, value);
+                        break;
+                    case OptionKeys.Az:
+                        ParseAzParameter(key, value);
+                        break;
                     default:
                         if (!ignoreUnknown) throw new ArgumentException($"Keyword '{key}' is not supported.", key);
                         break;
@@ -476,7 +515,127 @@ public sealed class ConfigurationOptions : ICloneable
                 }
             }
         }
+
+        // Validate ReadFrom configuration after all parameters have been parsed
+        if (tempReadFromStrategy.HasValue)
+        {
+            ValidateAndSetReadFrom();
+        }
+
         return this;
+    }
+
+    private void ParseReadFromParameter(string key, string value) => tempReadFromStrategy = ParseReadFromStrategy(key, value);// Don't validate immediately - wait until all parsing is complete
+
+    private void ParseAzParameter(string key, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("Availability zone cannot be empty or whitespace", key);
+        }
+        tempAz = value;
+        // Don't validate immediately - wait until all parsing is complete
+    }
+
+    private void ValidateAndSetReadFrom()
+    {
+        if (tempReadFromStrategy.HasValue)
+        {
+            var strategy = tempReadFromStrategy.Value;
+
+            // Validate strategy and AZ combinations
+            switch (strategy)
+            {
+                case ReadFromStrategy.AzAffinity:
+                    if (string.IsNullOrWhiteSpace(tempAz))
+                    {
+                        throw new ArgumentException("Availability zone should be set when using AzAffinity strategy");
+                    }
+                    readFrom = new ReadFrom(strategy, tempAz);
+                    break;
+
+                case ReadFromStrategy.AzAffinityReplicasAndPrimary:
+                    if (string.IsNullOrWhiteSpace(tempAz))
+                    {
+                        throw new ArgumentException("Availability zone should be set when using AzAffinityReplicasAndPrimary strategy");
+                    }
+                    readFrom = new ReadFrom(strategy, tempAz);
+                    break;
+
+                case ReadFromStrategy.Primary:
+                    if (!string.IsNullOrWhiteSpace(tempAz))
+                    {
+                        throw new ArgumentException("Availability zone should not be set when using Primary strategy");
+                    }
+                    readFrom = new ReadFrom(strategy);
+                    break;
+
+                case ReadFromStrategy.PreferReplica:
+                    if (!string.IsNullOrWhiteSpace(tempAz))
+                    {
+                        throw new ArgumentException("Availability zone should not be set when using PreferReplica strategy");
+                    }
+                    readFrom = new ReadFrom(strategy);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tempReadFromStrategy), $"ReadFrom strategy '{strategy}' is not supported");
+            }
+        }
+    }
+
+    private static ReadFromStrategy ParseReadFromStrategy(string key, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"Keyword '{key}' requires a ReadFrom strategy value; the value cannot be empty", key);
+        }
+
+        return value.ToLowerInvariant() switch
+        {
+            "primary" => ReadFromStrategy.Primary,
+            "preferreplica" => ReadFromStrategy.PreferReplica,
+            "azaffinity" => ReadFromStrategy.AzAffinity,
+            "azaffinityreplicasandprimary" => ReadFromStrategy.AzAffinityReplicasAndPrimary,
+            _ => throw new ArgumentException($"ReadFrom strategy '{value}' is not supported. Supported values are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary", key)
+        };
+    }
+
+    private static void ValidateReadFromConfiguration(ReadFrom readFromConfig)
+    {
+        switch (readFromConfig.Strategy)
+        {
+            case ReadFromStrategy.AzAffinity:
+                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
+                {
+                    throw new ArgumentException("Availability zone should be set when using AzAffinity strategy");
+                }
+                break;
+
+            case ReadFromStrategy.AzAffinityReplicasAndPrimary:
+                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
+                {
+                    throw new ArgumentException("Availability zone should be set when using AzAffinityReplicasAndPrimary strategy");
+                }
+                break;
+
+            case ReadFromStrategy.Primary:
+                if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
+                {
+                    throw new ArgumentException("Availability zone should not be set when using Primary strategy");
+                }
+                break;
+
+            case ReadFromStrategy.PreferReplica:
+                if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
+                {
+                    throw new ArgumentException("Availability zone should not be set when using PreferReplica strategy");
+                }
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(readFromConfig), $"ReadFrom strategy '{readFromConfig.Strategy}' is not supported");
+        }
     }
 
     /// <summary>
