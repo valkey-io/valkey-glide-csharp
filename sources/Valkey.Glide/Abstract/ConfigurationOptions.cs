@@ -369,11 +369,7 @@ public sealed class ConfigurationOptions : ICloneable
         Append(sb, OptionKeys.Protocol, FormatProtocol(Protocol));
         if (readFrom.HasValue)
         {
-            Append(sb, OptionKeys.ReadFrom, FormatReadFromStrategy(readFrom.Value.Strategy));
-            if (!string.IsNullOrWhiteSpace(readFrom.Value.Az))
-            {
-                Append(sb, OptionKeys.Az, readFrom.Value.Az);
-            }
+            FormatReadFrom(sb, readFrom.Value);
         }
 
         return sb.ToString();
@@ -386,18 +382,6 @@ public sealed class ConfigurationOptions : ICloneable
                 Glide.Protocol.Resp2 => "resp2",
                 Glide.Protocol.Resp3 => "resp3",
                 _ => protocol.GetValueOrDefault().ToString(),
-            };
-        }
-
-        static string FormatReadFromStrategy(ReadFromStrategy strategy)
-        {
-            return strategy switch
-            {
-                ReadFromStrategy.Primary => "Primary",
-                ReadFromStrategy.PreferReplica => "PreferReplica",
-                ReadFromStrategy.AzAffinity => "AzAffinity",
-                ReadFromStrategy.AzAffinityReplicasAndPrimary => "AzAffinityReplicasAndPrimary",
-                _ => strategy.ToString(),
             };
         }
     }
@@ -636,6 +620,37 @@ public sealed class ConfigurationOptions : ICloneable
             default:
                 throw new ArgumentOutOfRangeException(nameof(readFromConfig), $"ReadFrom strategy '{readFromConfig.Strategy}' is not supported");
         }
+    }
+
+    /// <summary>
+    /// Formats a ReadFrom struct to its string representation and appends it to the StringBuilder.
+    /// </summary>
+    /// <param name="sb">The StringBuilder to append to.</param>
+    /// <param name="readFromConfig">The ReadFrom configuration to format.</param>
+    private static void FormatReadFrom(StringBuilder sb, ReadFrom readFromConfig)
+    {
+        Append(sb, OptionKeys.ReadFrom, FormatReadFromStrategy(readFromConfig.Strategy));
+        if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
+        {
+            Append(sb, OptionKeys.Az, readFromConfig.Az);
+        }
+    }
+
+    /// <summary>
+    /// Converts a ReadFromStrategy enum value to its string representation.
+    /// </summary>
+    /// <param name="strategy">The ReadFromStrategy to format.</param>
+    /// <returns>The string representation of the strategy.</returns>
+    private static string FormatReadFromStrategy(ReadFromStrategy strategy)
+    {
+        return strategy switch
+        {
+            ReadFromStrategy.Primary => "Primary",
+            ReadFromStrategy.PreferReplica => "PreferReplica",
+            ReadFromStrategy.AzAffinity => "AzAffinity",
+            ReadFromStrategy.AzAffinityReplicasAndPrimary => "AzAffinityReplicasAndPrimary",
+            _ => strategy.ToString(),
+        };
     }
 
     /// <summary>
