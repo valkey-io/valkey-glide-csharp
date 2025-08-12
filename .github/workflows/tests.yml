@@ -96,6 +96,16 @@ jobs:
                   path: rust/target
                   key: rust-${{ matrix.host.TARGET }}
 
+
+            - run: cargo build
+              working-directory: rust
+
+            - name: Install Docker
+              uses: ./.github/workflows/install-docker
+              with:
+                  os: ${{ matrix.host.OS }}
+
+
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
               env:

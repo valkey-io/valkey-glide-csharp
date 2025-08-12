@@ -60,18 +60,3 @@ runs:
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
           uses: ./.github/workflows/install-zig
-
-        - name: Setup Docker on Windows
-          if: ${{ contains(inputs.target, 'windows') }}
-          shell: pwsh
-          run: |
-              Enable-WindowsOptionalFeature -Online -FeatureName containers -All
-              choco install docker-desktop -y --params="'/LinuxContainers'"
-
-        - name: Install Docker
-          if: ${{ contains(inputs.target, 'apple') }}
-          shell: bash
-          run: |
-              brew install docker colima
-              colima start --vm-type=qemu
-              docker version
