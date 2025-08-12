@@ -79,16 +79,16 @@ runs:
 
         - name: Install cached engine
           if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' && contains(inputs.target, 'windows') }}
-          shell: pwsh
+          shell: bash
           run: |
-              wsl --exec bash -c "
+              wsl bash << EOF
                 cd valkey/src
                 sudo cp valkey-server valkey-cli redis-server redis-cli /usr/local/bin/ 2>/dev/null || :
                 if [[ ! -e /usr/local/bin/redis-server ]]; then
                     sudo cp valkey-server /usr/local/bin/redis-server
                 fi
                 echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
-              "
+              EOF
 
         - name: Build and install engine
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' && !contains(inputs.target, 'windows') }}
@@ -108,9 +108,9 @@ runs:
 
         - name: Build and install engine
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' && contains(inputs.target, 'windows') }}
-          shell: pwsh
+          shell: bash
           run: |
-              wsl --exec bash -c "
+              wsl bash << EOF
                 cd valkey
                 make BUILD_TLS=yes
                 if command -v sudo &> /dev/null
@@ -122,7 +122,7 @@ runs:
                     make install
                 fi
                 echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
-              "
+              EOF
 
         - name: Verify Valkey installation and symlinks
           if: ${{ !contains(inputs.engine-version, '-rc') && !contains(inputs.target, 'windows') }}
