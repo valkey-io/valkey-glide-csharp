@@ -17,10 +17,13 @@ runs:
               Enable-WindowsOptionalFeature -Online -FeatureName containers -All
               choco install docker-desktop -y --params="'/LinuxContainers'"
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
         - name: Setup Docker on Mac
           if: ${{ inputs.os == 'macos' }}
           shell: bash
           run: |
-              brew install docker colima qemu
+              brew install docker colima
               colima start --vm-type=qemu
               docker version

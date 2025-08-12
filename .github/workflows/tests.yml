@@ -100,10 +100,13 @@ jobs:
             - run: cargo build
               working-directory: rust
 
-            - name: Install Docker
-              uses: ./.github/workflows/install-docker
-              with:
-                  os: ${{ matrix.host.OS }}
+#            - name: Install Docker
+#              uses: ./.github/workflows/install-docker
+#              with:
+#                  os: ${{ matrix.host.OS }}
+
+            - name: Set up Docker
+              uses: docker/setup-docker-action@v4
 
 
             - name: Test dotnet ${{ matrix.dotnet }}
