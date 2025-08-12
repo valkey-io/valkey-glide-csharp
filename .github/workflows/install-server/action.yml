@@ -45,6 +45,7 @@ runs:
 
         - name: Setup WSL2 with Ubuntu
           if: ${{ contains(inputs.target, 'windows') }}
+          shell: pwsh
           run: |
               wsl --install Ubuntu --no-launch
               wsl --set-default-version 2
@@ -107,7 +108,7 @@ runs:
 
         - name: Build and install engine
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' && contains(inputs.target, 'windows') }}
-          shell: wsl-bash {0}
+          shell: pwsh
           run: |
               wsl --exec bash -c "
                 cd valkey
