@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Diagnostics;
+
 using Valkey.Glide.IntegrationTests;
 
 using static Valkey.Glide.ConnectionConfiguration;
@@ -10,20 +12,20 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
-    public static Cluster DefaultStandaloneServer { get; internal set; } = null!;
-    public static Cluster DefaultClusterServer { get; internal set; } = null!;
+    public static List<(string host, ushort port)> STANDALONE_HOSTS { get; internal set; } = [];
+    public static List<(string host, ushort port)> CLUSTER_HOSTS { get; internal set; } = [];
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
-            .WithAddress(DefaultStandaloneServer.Hosts[0].host, DefaultStandaloneServer.Hosts[0].port)
+            .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
-            .WithAddress(DefaultClusterServer.Hosts[0].host, DefaultClusterServer.Hosts[0].port)
+            .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithTls(TLS);
 
@@ -134,7 +136,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(DefaultStandaloneServer.Hosts[0].host, DefaultStandaloneServer.Hosts[0].port);
+        config.EndPoints.Add(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port);
         config.Ssl = TLS;
         config.ResponseTimeout = 1000;
         return config;
@@ -143,7 +145,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleClusterConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(DefaultClusterServer.Hosts[0].host, DefaultClusterServer.Hosts[0].port);
+        config.EndPoints.Add(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port);
         config.Ssl = TLS;
         config.ResponseTimeout = 1000;
         return config;
@@ -231,29 +233,54 @@ public class TestConfiguration : IDisposable
 
     public TestConfiguration()
     {
+        string? projectDir = Directory.GetCurrentDirectory();
+        while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => Path.GetFileName(d) == "valkey-glide")))
+        {
+            projectDir = Path.GetDirectoryName(projectDir);
+        }
+
+        if (projectDir == null)
+        {
+            throw new FileNotFoundException("Can't detect the project dir. Are you running tests from the repo root?");
+        }
+
+        _scriptDir = Path.Combine(projectDir, "valkey-glide", "utils");
+
         TLS = Environment.GetEnvironmentVariable("tls") == "true";
 
         if (Environment.GetEnvironmentVariable("cluster-endpoints") is { } || Environment.GetEnvironmentVariable("standalone-endpoints") is { })
         {
             string? clusterEndpoints = Environment.GetEnvironmentVariable("cluster-endpoints");
-            DefaultClusterServer = new(clusterEndpoints is null ? [] : ParseHostsString(clusterEndpoints));
+            CLUSTER_HOSTS = clusterEndpoints is null ? [] : ParseHostsString(clusterEndpoints);
             string? standaloneEndpoints = Environment.GetEnvironmentVariable("standalone-endpoints");
-            DefaultStandaloneServer = new(standaloneEndpoints is null ? [] : ParseHostsString(standaloneEndpoints));
+            STANDALONE_HOSTS = standaloneEndpoints is null ? [] : ParseHostsString(standaloneEndpoints);
             _startedServer = false;
         }
         else
         {
             _startedServer = true;
-            DefaultClusterServer = new Cluster();
-            DefaultClusterServer.Start(clusterMode: true, replicas: 1, tls: TLS);
-            DefaultStandaloneServer = new Cluster();
-            DefaultStandaloneServer.Start(clusterMode: false, replicas: 1, tls: TLS);
-        }
+            // Stop all if weren't stopped on previous test run
+            StopServer(false);
 
+            // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
+            // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
+            string clusterLogsDir = Path.Combine(_scriptDir, "clusters");
+            try
+            {
+                Directory.Delete(clusterLogsDir, true);
+            }
+            catch (DirectoryNotFoundException) { }
+
+            // Start cluster
+            CLUSTER_HOSTS = StartServer(true, TLS);
+            // Start standalone
+            STANDALONE_HOSTS = StartServer(false, TLS);
+        }
+        // Get server version
         SERVER_VERSION = GetServerVersion();
 
-        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", DefaultClusterServer.Hosts)}");
-        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", DefaultStandaloneServer.Hosts)}");
+        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_HOSTS)}");
+        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_HOSTS)}");
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
     }
 
@@ -266,28 +293,118 @@ public class TestConfiguration : IDisposable
         if (_startedServer)
         {
             // Stop all
-            DefaultStandaloneServer.Stop();
-            DefaultClusterServer.Stop();
+            StopServer(true);
         }
     }
 
+    private readonly string _scriptDir;
     private readonly bool _startedServer;
 
-    private static void TestConsoleWriteLine(string message) => TestContext.Current.SendDiagnosticMessage(message);
+    private static void TestConsoleWriteLine(string message) =>
+        TestContext.Current.SendDiagnosticMessage(message);
+
+    internal List<(string host, ushort port)> StartServer(bool cluster, bool tls = false, string? name = null)
+    {
+        string cmd = $"start {(cluster ? "--cluster-mode" : "")} {(tls ? " --tls" : "")} {(name != null ? " --prefix " + name : "")}";
+        return ParseHostsFromOutput(RunClusterManager(cmd, false));
+    }
+
+    /// <summary>
+    /// Stop <b>all</b> instances on the given <paramref name="name"/>.
+    /// </summary>
+    internal void StopServer(bool keepLogs, string? name = null)
+    {
+        string cmd = $"stop --prefix {name ?? "cluster"} {(keepLogs ? "--keep-folder" : "")}";
+        _ = RunClusterManager(cmd, true);
+    }
+
+    private string RunClusterManager(string cmd, bool ignoreExitCode)
+    {
+        ProcessStartInfo info = new()
+        {
+            WorkingDirectory = _scriptDir,
+            FileName = "python3",
+            Arguments = "cluster_manager.py " + cmd,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        Process? script = Process.Start(info);
+        script?.WaitForExit();
+        string? error = script?.StandardError.ReadToEnd();
+        string? output = script?.StandardOutput.ReadToEnd();
+        int? exit_code = script?.ExitCode;
+
+        TestConsoleWriteLine($"cluster_manager.py stdout\n====\n{output}\n====\ncluster_manager.py stderr\n====\n{error}\n====\n");
+
+        return !ignoreExitCode && exit_code != 0
+            ? throw new ApplicationException($"cluster_manager.py script failed: exit code {exit_code}.")
+            : output ?? "";
+    }
+
+    private static List<(string host, ushort port)> ParseHostsFromOutput(string output)
+    {
+        List<(string host, ushort port)> hosts = [];
+        foreach (string line in output.Split("\n"))
+        {
+            if (!line.StartsWith("CLUSTER_NODES="))
+            {
+                continue;
+            }
+
+            string[] addresses = line.Split("=")[1].Split(",");
+            foreach (string address in addresses)
+            {
+                string[] parts = address.Split(":");
+                hosts.Add((parts[0], ushort.Parse(parts[1])));
+            }
+        }
+        return hosts;
+    }
 
     private static Version GetServerVersion()
     {
-#pragma warning disable IDE0046 // Convert to conditional expression
-        if (DefaultStandaloneServer.Hosts.Count > 0)
+        Exception? err = null;
+        if (STANDALONE_HOSTS.Count > 0)
         {
-            return DefaultStandaloneServer.ServerVersion;
+            GlideClient client = DefaultStandaloneClient();
+            try
+            {
+                return TryGetVersion(client);
+            }
+            catch (Exception e)
+            {
+                err = e;
+            }
         }
-        if (DefaultClusterServer.Hosts.Count > 0)
+        if (CLUSTER_HOSTS.Count > 0)
         {
-            return DefaultClusterServer.ServerVersion;
+            GlideClusterClient client = DefaultClusterClient();
+            try
+            {
+                return TryGetVersion(client);
+            }
+            catch (Exception e)
+            {
+                if (err is not null)
+                {
+                    TestConsoleWriteLine(err.ToString());
+                }
+                TestConsoleWriteLine(e.ToString());
+                throw;
+            }
         }
         throw new Exception("No servers are given");
-#pragma warning restore IDE0046 // Convert to conditional expression
+    }
+
+    private static Version TryGetVersion(BaseClient client)
+    {
+        string info = client.GetType() == typeof(GlideClient)
+            ? ((GlideClient)client).Info().GetAwaiter().GetResult()
+            : ((GlideClusterClient)client).Info(Route.Random).GetAwaiter().GetResult().SingleValue;
+        string[] lines = info.Split();
+        string line = lines.FirstOrDefault(l => l.Contains("valkey_version")) ?? lines.First(l => l.Contains("redis_version"));
+        return new(line.Split(':')[1]);
     }
 
     private static List<(string host, ushort port)> ParseHostsString(string @string)

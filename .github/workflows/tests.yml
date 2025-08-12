@@ -94,26 +94,19 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: rust-${{ matrix.host.TARGET }}
+                  key: ${{ matrix.host.TARGET }}
 
-
-            - run: cargo build
-              working-directory: rust
-
-#            - name: Install Docker
-#              uses: ./.github/workflows/install-docker
-#              with:
-#                  os: ${{ matrix.host.OS }}
-
-            - name: Set up Docker
-              uses: docker/setup-docker-action@v4
-
+            - name: Run service in WSL for windows runner
+              shell: wsl-bash {0}
+              working-directory: valkey-glide/utils
+              run: |
+                  ./cluster_manager.py start -p 6380
+                  ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
+                  echo "standalone-endpoints=localhost:6380" >> $GITHUB_ENV
+                  echo "cluster-endpoints=localhost:7000" >> $GITHUB_ENV
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
-              env:
-                  SERVICE_TYPE: ${{ matrix.server.type }}
-                  SERVICE_VERSION: ${{ matrix.server.version }}
 
             - name: Run benchmark
               if: ${{ contains(matrix.host.RUNNER, 'ubuntu') }}
@@ -150,7 +143,7 @@ jobs:
               uses: ./.github/workflows/create-test-matrices
               with:
                   run-full-matrix: true
-                  tag: container
+                  containers: true
 
     tests-container:
         runs-on: ${{ matrix.host.RUNNER }}
@@ -197,7 +190,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: rust-${{ matrix.host.IMAGE }}
+                  key: ${{ matrix.host.IMAGE }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
@@ -228,7 +221,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: rust-x86_64-unknown-linux-gnu
+                  key: x86_64-unknown-linux-gnu
 
             - name: lint rust
               working-directory: rust

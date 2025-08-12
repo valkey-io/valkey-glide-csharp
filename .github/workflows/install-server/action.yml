@@ -21,8 +21,11 @@ runs:
           shell: bash
           env:
               SERVER_VERSION: ${{ inputs.server-version }}
+              TARGET: ${{ inputs.target }}
           run: |
               echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
+              echo "TARGET=${TARGET/pc-windows-msvc/unknown-linux-gnu}" >> $GITHUB_ENV # we use WSL on windows runners
+              echo "BUILD_SHELL=$([[ $TARGET =~ 'windows' ]] && echo 'wsl-bash {0}' || echo 'bash')" >> $GITHUB_ENV
 
         - name: Prepare Valkey sources
           shell: bash
@@ -41,6 +44,11 @@ runs:
               fi
               echo "SOURCES_VERSION=$SOURCES_VERSION" >> $GITHUB_ENV
 
+        - uses: Vampire/setup-wsl@v6
+          if: ${{ contains(inputs.target, 'windows') }}
+          with:
+              use-cache: 'true'
+
         - uses: actions/cache@v4
           id: cache-valkey
           with:
@@ -52,7 +60,7 @@ runs:
         # Manual install, because makefile target rebuilds everything, we want to avoid that
         - name: Install cached engine
           if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
-          shell: bash
+          shell: $BUILD_SHELL
           run: |
               cd valkey/src
               if command -v sudo &> /dev/null
@@ -64,11 +72,11 @@ runs:
               if [[ ! -e /usr/local/bin/redis-server ]]; then
                   $SUDO cp valkey-server /usr/local/bin/redis-server
               fi
-              echo 'export PATH=/usr/local/bin:$PATH' >>~/.bash_profile
+              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
 
         - name: Build and install engine
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' }}
-          shell: bash
+          shell: $BUILD_SHELL
           run: |
               cd valkey
               make BUILD_TLS=yes
@@ -80,10 +88,8 @@ runs:
                   echo "sudo command does not exist"
                   make install
               fi
-              echo 'export PATH=/usr/local/bin:$PATH' >>~/.bash_profile
+              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
 
-        # TODO: This seems redundant to me. Is it necessary? Do we check that the Python we install is the correct version?
-        # Why here and not elsewhere? All Git git repos were created equal
         - name: Verify Valkey installation and symlinks
           if: ${{ !contains(inputs.engine-version, '-rc') }}
           shell: bash
