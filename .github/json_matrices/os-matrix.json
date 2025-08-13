@@ -55,6 +55,7 @@
         "RUNNER": "windows-11-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-pc-windows-msvc",
-        "tags": ["ci", "cd"]
+        "tags": ["cd"],
+		"comment": "Testing requires WSL or a SH runner. See https://github.com/actions/partner-runner-images/issues/109"
     }
 ]

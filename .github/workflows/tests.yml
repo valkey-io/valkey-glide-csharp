@@ -106,8 +106,15 @@ jobs:
 #                  os: ${{ matrix.host.OS }}
 
             - name: Set up Docker
+              if: ${{ matrix.host.OS != 'windows' }}
               uses: docker/setup-docker-action@v4
 
+            - name: Setup Docker on Windows
+              if: ${{ matrix.host.OS == 'windows' }}
+              shell: pwsh
+              run: |
+                  Enable-WindowsOptionalFeature -Online -FeatureName containers -All
+                  choco install docker-desktop -y --params="'/LinuxContainers'"
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
