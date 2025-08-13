@@ -125,6 +125,7 @@ runs:
                 set -e
                 cd valkey
                 find . -type f -name mkreleasehdr.sh
+                chmod +x src/mkreleasehdr.sh
                 src/mkreleasehdr.sh
                 find . -type f -name version.h
                 find . -type f -name mkreleasehdr.sh
