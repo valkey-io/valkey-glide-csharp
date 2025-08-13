@@ -127,7 +127,7 @@ runs:
                 find . -type f -name mkreleasehdr.sh
                 find . -type f -name mkreleasehdr.sh | xargs ls -la
                 chmod +x src/mkreleasehdr.sh
-                bash src/mkreleasehdr.sh
+                sh -c src/mkreleasehdr.sh
                 find . -type f -name version.h
                 find . -type f -name mkreleasehdr.sh
                 make BUILD_TLS=yes
