@@ -45,13 +45,19 @@ runs:
 
         - name: Setup WSL2 with Ubuntu
           if: ${{ contains(inputs.target, 'windows') }}
-          shell: bash
+          shell: pwsh
           run: |
-              wsl --install
+              Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+              Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
               wsl --install Ubuntu --no-launch
               wsl --set-default-version 2
               wsl --distribution Ubuntu --exec echo "WSL initialized"
               wsl --list --verbose
+
+        - name: Configure WSL
+          if: ${{ contains(inputs.target, 'windows') }}
+          shell: bash
+          run: |
               wsl bash << EOF
                 set -e
                 sudo apt-get update
