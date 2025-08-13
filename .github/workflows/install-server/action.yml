@@ -123,7 +123,9 @@ runs:
           run: |
               wsl bash << EOF
                 set -e
-                cd valkey
+                cd valkey/src
+                ./mkreleasehdr.sh
+                cd ..
                 find . -type f -name version.h
                 find . -type f -name mkreleasehdr.sh
                 make BUILD_TLS=yes
