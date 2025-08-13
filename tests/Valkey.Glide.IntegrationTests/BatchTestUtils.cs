@@ -699,8 +699,12 @@ internal class BatchTestUtils
         _ = batch.SortedSetCombineAndStore(SetOperation.Union, combineDestKey, combineKey1, combineKey3);
         testData.Add(new(4L, "SortedSetCombineAndStore(Union, combineDestKey, combineKey1, combineKey3)"));
 
-        _ = batch.SortedSetIntersectionLength([combineKey1, combineKey3]);
-        testData.Add(new(1L, "SortedSetIntersectionLength([combineKey1, combineKey3])"));
+        // Test SortedSetIntersectionLength (ZINTERCARD) - requires Redis 7.0+
+        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        {
+            _ = batch.SortedSetIntersectionLength([combineKey1, combineKey3]);
+            testData.Add(new(1L, "SortedSetIntersectionLength([combineKey1, combineKey3])"));
+        }
 
         // Test SortedSetLengthByValue
         _ = batch.SortedSetLengthByValue(key2, "a", "c");
@@ -720,31 +724,34 @@ internal class BatchTestUtils
         ]);
         testData.Add(new(2L, "SortedSetAdd(popKey, test data for pop)"));
 
-        // Test SortedSetPop
-        _ = batch.SortedSetPop([popKey], 1);
-        testData.Add(new(new SortedSetPopResult(popKey, [
-            new SortedSetEntry("member1", 1.0)
-        ]), "SortedSetPop([popKey], 1)"));
+        // Test SortedSetPop (ZMPOP) - requires Redis 7.0+
+        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        {
+            _ = batch.SortedSetPop([popKey], 1);
+            testData.Add(new(new SortedSetPopResult(popKey, [
+                new SortedSetEntry("member1", 1.0)
+            ]), "SortedSetPop([popKey], 1)"));
 
-        // Test blocking commands with data present to prevent actual blocking
-        string blockingKey = $"{prefix}blocking-{Guid.NewGuid()}";
-        _ = batch.SortedSetAdd(blockingKey, [
-            new SortedSetEntry("block1", 10.0),
-            new SortedSetEntry("block2", 20.0)
-        ]);
-        testData.Add(new(2L, "SortedSetAdd(blockingKey, test data for blocking)"));
+            // Test blocking commands with data present to prevent actual blocking
+            string blockingKey = $"{prefix}blocking-{Guid.NewGuid()}";
+            _ = batch.SortedSetAdd(blockingKey, [
+                new SortedSetEntry("block1", 10.0),
+                new SortedSetEntry("block2", 20.0)
+            ]);
+            testData.Add(new(2L, "SortedSetAdd(blockingKey, test data for blocking)"));
 
-        // Test SortedSetBlockingPop (single key, single element)
-        _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, 0.1);
-        testData.Add(new(new SortedSetEntry("block1", 10.0), "SortedSetBlockingPop(blockingKey, Ascending, 0.1s)"));
+            // Test SortedSetBlockingPop (single key, single element)
+            _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, 0.1);
+            testData.Add(new(new SortedSetEntry("block1", 10.0), "SortedSetBlockingPop(blockingKey, Ascending, 0.1s)"));
 
-        // Test SortedSetBlockingPop (single key, multiple elements)
-        _ = batch.SortedSetBlockingPop(blockingKey, 1, Order.Descending, 0.1);
-        testData.Add(new(new SortedSetEntry[] { new("block2", 20.0) }, "SortedSetBlockingPop(blockingKey, 1, Descending, 0.1s)"));
+            // Test SortedSetBlockingPop (single key, multiple elements)
+            _ = batch.SortedSetBlockingPop(blockingKey, 1, Order.Descending, 0.1);
+            testData.Add(new(new SortedSetEntry[] { new("block2", 20.0) }, "SortedSetBlockingPop(blockingKey, 1, Descending, 0.1s)"));
 
-        // Test SortedSetBlockingPop (multi-key, multiple elements)
-        _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, 0.1);
-        testData.Add(new(SortedSetPopResult.Null, "SortedSetBlockingPop([blockingKey], 1, Descending, 0.1s) - should be null"));
+            // Test SortedSetBlockingPop (multi-key, multiple elements)
+            _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, 0.1);
+            testData.Add(new(SortedSetPopResult.Null, "SortedSetBlockingPop([blockingKey], 1, Descending, 0.1s) - should be null"));
+        }
 
         return testData;
     }
@@ -1066,8 +1073,6 @@ internal class BatchTestUtils
 
         return testData;
     }
-
-
 
     public static TheoryData<BatchTestData> GetTestClientWithAtomic =>
         [.. TestConfiguration.TestClients.SelectMany(r => new[] { true, false }.SelectMany(isAtomic =>

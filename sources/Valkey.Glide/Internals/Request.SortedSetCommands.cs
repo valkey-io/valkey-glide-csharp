@@ -9,6 +9,40 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    private static void AddSortedSetCombineOptions(List<GlideString> args, ValkeyKey[] keys, double[]? weights, Aggregate aggregate, SetOperation operation)
+    {
+        // Add number of keys
+        args.Add(keys.Length.ToGlideString());
+
+        // Add keys
+        args.AddRange(keys.Select(key => key.ToGlideString()));
+
+        // Add weights if provided (not allowed for difference)
+        if (weights != null && operation != SetOperation.Difference)
+        {
+            args.Add(WeightsKeyword);
+            args.AddRange(weights.Select(w => w.ToGlideString()));
+        }
+
+        // Add aggregate if not default (not allowed for difference)
+        if (aggregate != Aggregate.Sum && operation != SetOperation.Difference)
+        {
+            args.Add(AggregateKeyword);
+            args.Add(aggregate.ToString().ToUpper());
+        }
+    }
+
+    private static RequestType GetSortedSetCombineRequestType(SetOperation operation, bool isStore = false)
+    {
+        return operation switch
+        {
+            SetOperation.Union => isStore ? RequestType.ZUnionStore : RequestType.ZUnion,
+            SetOperation.Intersect => isStore ? RequestType.ZInterStore : RequestType.ZInter,
+            SetOperation.Difference => isStore ? RequestType.ZDiffStore : RequestType.ZDiff,
+            _ => throw new ArgumentException($"Unsupported operation: {operation}")
+        };
+    }
+
     private static void AddSortedSetWhenOptions(List<GlideString> args, SortedSetWhen when)
     {
         // Add conditional options
@@ -122,13 +156,7 @@ internal partial class Request
 
         return new(RequestType.ZRange, [.. args], false, dict =>
         {
-            List<SortedSetEntry> entries = [];
-            foreach (KeyValuePair<GlideString, object> kvp in dict)
-            {
-                ValkeyValue element = (ValkeyValue)kvp.Key;
-                double score = Convert.ToDouble(kvp.Value);
-                entries.Add(new SortedSetEntry(element, score));
-            }
+            IEnumerable<SortedSetEntry> entries = dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value));
 
             // Sort by score, then by element for consistent ordering
             IOrderedEnumerable<SortedSetEntry> sortedEntries = order == Order.Ascending
@@ -196,13 +224,7 @@ internal partial class Request
 
         return new(RequestType.ZRange, [.. args], false, dict =>
         {
-            List<SortedSetEntry> entries = [];
-            foreach (KeyValuePair<GlideString, object> kvp in dict)
-            {
-                ValkeyValue element = (ValkeyValue)kvp.Key;
-                double score = Convert.ToDouble(kvp.Value);
-                entries.Add(new SortedSetEntry(element, score));
-            }
+            IEnumerable<SortedSetEntry> entries = dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value));
 
             // Sort by score, then by element for consistent ordering
             IOrderedEnumerable<SortedSetEntry> sortedEntries = order == Order.Ascending
@@ -282,34 +304,9 @@ internal partial class Request
     public static Cmd<object[], ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum)
     {
         List<GlideString> args = [];
+        AddSortedSetCombineOptions(args, keys, weights, aggregate, operation);
 
-        // Add number of keys
-        args.Add(keys.Length.ToGlideString());
-
-        // Add keys
-        args.AddRange(keys.Select(key => key.ToGlideString()));
-
-        // Add weights if provided (not allowed for difference)
-        if (weights != null && operation != SetOperation.Difference)
-        {
-            args.Add(WeightsKeyword);
-            args.AddRange(weights.Select(w => w.ToGlideString()));
-        }
-
-        // Add aggregate if not default (not allowed for difference)
-        if (aggregate != Aggregate.Sum && operation != SetOperation.Difference)
-        {
-            args.Add(AggregateKeyword);
-            args.Add(aggregate.ToString().ToUpper());
-        }
-
-        RequestType requestType = operation switch
-        {
-            SetOperation.Union => RequestType.ZUnion,
-            SetOperation.Intersect => RequestType.ZInter,
-            SetOperation.Difference => RequestType.ZDiff,
-            _ => throw new ArgumentException($"Unsupported operation: {operation}")
-        };
+        RequestType requestType = GetSortedSetCombineRequestType(operation);
 
         return new(requestType, [.. args], false, array => [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
     }
@@ -317,47 +314,16 @@ internal partial class Request
     public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum)
     {
         List<GlideString> args = [];
-
-        // Add number of keys
-        args.Add(keys.Length.ToGlideString());
-
-        // Add keys
-        args.AddRange(keys.Select(key => key.ToGlideString()));
-
-        // Add weights if provided (not allowed for difference)
-        if (weights != null && operation != SetOperation.Difference)
-        {
-            args.Add(WeightsKeyword);
-            args.AddRange(weights.Select(w => w.ToGlideString()));
-        }
-
-        // Add aggregate if not default (not allowed for difference)
-        if (aggregate != Aggregate.Sum && operation != SetOperation.Difference)
-        {
-            args.Add(AggregateKeyword);
-            args.Add(aggregate.ToString().ToUpper());
-        }
+        AddSortedSetCombineOptions(args, keys, weights, aggregate, operation);
 
         // Add WITHSCORES
         args.Add(WithScoresKeyword);
 
-        RequestType requestType = operation switch
-        {
-            SetOperation.Union => RequestType.ZUnion,
-            SetOperation.Intersect => RequestType.ZInter,
-            SetOperation.Difference => RequestType.ZDiff,
-            _ => throw new ArgumentException($"Unsupported operation: {operation}")
-        };
+        RequestType requestType = GetSortedSetCombineRequestType(operation);
 
         return new(requestType, [.. args], false, dict =>
         {
-            List<SortedSetEntry> entries = [];
-            foreach (KeyValuePair<GlideString, object> kvp in dict)
-            {
-                ValkeyValue element = (ValkeyValue)kvp.Key;
-                double score = Convert.ToDouble(kvp.Value);
-                entries.Add(new SortedSetEntry(element, score));
-            }
+            IEnumerable<SortedSetEntry> entries = dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value));
             return [.. entries.OrderBy(e => e.Score).ThenBy(e => e.Element.ToString())];
         });
     }
@@ -368,34 +334,9 @@ internal partial class Request
     public static Cmd<long, long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum)
     {
         List<GlideString> args = [destination.ToGlideString()];
+        AddSortedSetCombineOptions(args, keys, weights, aggregate, operation);
 
-        // Add number of keys
-        args.Add(keys.Length.ToGlideString());
-
-        // Add keys
-        args.AddRange(keys.Select(key => key.ToGlideString()));
-
-        // Add weights if provided (not allowed for difference)
-        if (weights != null && operation != SetOperation.Difference)
-        {
-            args.Add(WeightsKeyword);
-            args.AddRange(weights.Select(w => w.ToGlideString()));
-        }
-
-        // Add aggregate if not default (not allowed for difference)
-        if (aggregate != Aggregate.Sum && operation != SetOperation.Difference)
-        {
-            args.Add(AggregateKeyword);
-            args.Add(aggregate.ToString().ToUpper());
-        }
-
-        RequestType requestType = operation switch
-        {
-            SetOperation.Union => RequestType.ZUnionStore,
-            SetOperation.Intersect => RequestType.ZInterStore,
-            SetOperation.Difference => RequestType.ZDiffStore,
-            _ => throw new ArgumentException($"Unsupported operation: {operation}")
-        };
+        RequestType requestType = GetSortedSetCombineRequestType(operation, isStore: true);
 
         return Simple<long>(requestType, [.. args]);
     }
@@ -458,7 +399,7 @@ internal partial class Request
 
             for (int i = 0; i < response.Length; i++)
             {
-                scores[i] = response[i] == null ? null : Convert.ToDouble(response[i]);
+                scores[i] = response[i] == null ? null : (double)response[i];
             }
 
             return scores;
@@ -474,7 +415,9 @@ internal partial class Request
         return new(requestType, [.. args], true, response =>
         {
             if (response == null)
+            {
                 return null;
+            }
 
             Object[] responseArray = (Object[])response;
 
@@ -484,6 +427,8 @@ internal partial class Request
         }, allowConverterToHandleNull: true);
     }
 
+    // Note: We keep count for the future TODO but disable the warning for now.
+#pragma warning disable IDE0060 // Remove unused parameter
     public static Cmd<object?, SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, double timeout)
     {
         // FUTURE TODO: support count > 1 requests
@@ -493,7 +438,9 @@ internal partial class Request
         return new(requestType, [.. args], true, response =>
         {
             if (response == null)
+            {
                 return [];
+            }
 
             Object[] responseArray = (Object[])response;
 
@@ -503,6 +450,7 @@ internal partial class Request
             return [new SortedSetEntry(member, score)];
         }, allowConverterToHandleNull: true);
     }
+#pragma warning restore IDE0060 // Remove unused parameter
 
     public static Cmd<object?, SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, double timeout)
     {
@@ -523,27 +471,28 @@ internal partial class Request
     private static SortedSetPopResult HandleSortedSetPopResultResponse(object? response)
     {
         if (response == null)
+        {
             return SortedSetPopResult.Null;
+        }
 
         if (response is not object[] responseArray || responseArray.Length != 2)
+        {
             throw new InvalidOperationException($"Unexpected response format for sorted set pop operation");
+        }
 
         ValkeyKey key = ((GlideString)responseArray[0]).ToString();
 
         if (responseArray[1] is not Dictionary<GlideString, object> membersAndScores)
+        {
             throw new InvalidOperationException($"Expected dictionary for members and scores, got {responseArray[1]?.GetType()}");
+        }
 
         if (membersAndScores.Count == 0)
-            return SortedSetPopResult.Null;
-
-        var entries = new SortedSetEntry[membersAndScores.Count];
-        int index = 0;
-        foreach (var kvp in membersAndScores)
         {
-            ValkeyValue member = (ValkeyValue)kvp.Key;
-            double score = Convert.ToDouble(kvp.Value);
-            entries[index++] = new SortedSetEntry(member, score);
+            return SortedSetPopResult.Null;
         }
+
+        SortedSetEntry[] entries = [.. membersAndScores.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))];
 
         return new SortedSetPopResult(key, entries);
     }

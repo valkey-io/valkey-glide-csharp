@@ -808,6 +808,10 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetIntersectionLength(BaseClient client)
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "ZINTERCARD is supported since 7.0.0"
+        );
         string key1 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
         string key2 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
         string key3 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
@@ -885,6 +889,10 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPop(BaseClient client)
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "ZMPOP is supported since 7.0.0"
+        );
         string key1 = $"{{sortedSetKey}}1-{Guid.NewGuid()}";
         string key2 = $"{{sortedSetKey}}2-{Guid.NewGuid()}";
         string emptyKey = $"{{sortedSetKey}}empty-{Guid.NewGuid()}";
@@ -959,6 +967,10 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetBlockingPop(BaseClient client)
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "BZMPOP is supported since 7.0.0"
+        );
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
 
@@ -1015,6 +1027,10 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetBlockingCommands_NonExistentKeys(BaseClient client)
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "BZMPOP is supported since 7.0.0"
+        );
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
 

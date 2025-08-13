@@ -363,9 +363,10 @@ public interface ISortedSetCommands
         long take = -1,
         CommandFlags flags = CommandFlags.None);
 
+    /// TODO: Put ref here once it is implemented in Sorted Set Commands Batch 2
     /// <summary>
-    /// Blocks the connection until it pops and returns a member-score pair from the sorted set stored at key.
-    /// This is the blocking variant of . TODO: Put ref here once it is implemented in Sorted Set Commands Batch 2 
+    /// Blocks the connection until it pops and returns a member-score pair from the sorted set stored at key. Can either pop the max or min element from the set.
+    /// This is the blocking variant of .
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzpopmin"/>
     /// <seealso href="https://valkey.io/commands/bzpopmax"/>
@@ -384,9 +385,10 @@ public interface ISortedSetCommands
     /// </remarks>
     Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, double timeout, CommandFlags flags = CommandFlags.None);
 
+    /// TODO: Put ref here once it is implemented in Sorted Set Commands Batch 2
     /// <summary>
-    /// Blocks the connection until it pops and returns the specified number of elements from the sorted set stored at key.
-    /// This is the blocking variant of TODO: Put ref here once it is implemented in Sorted Set Commands Batch 2 .
+    /// Blocks the connection until it pops and returns the specified number of elements from the sorted set stored at key. Can either pop the max or min element from the set.
+    /// This is the blocking variant of .
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzpopmin"/>
     /// <seealso href="https://valkey.io/commands/bzpopmax"/>
@@ -430,19 +432,14 @@ public interface ISortedSetCommands
     /// </remarks>
     Task<SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None);
 
+    /// TODO: add zunion after it has been implemented
     /// <summary>
-    /// Three functions:
-    /// - Returns the union of members from sorted sets specified by the given keys.
-    /// - Returns the intersection of members from sorted sets specified by the given keys.
-    /// - Returns the difference between the first sorted set and all the successive sorted sets.
-    /// 
     /// Computes a set operation for multiple sorted sets (optionally using per-set weights),
     /// optionally performing a specific aggregation (defaults to Sum).
     /// Difference operation cannot be used with weights or aggregation.
     /// </summary>
     /// <remarks>
     /// See
-    /// TODO: add zunion after it has been implemented
     /// <seealso href="https://redis.io/commands/zinter"/>,
     /// <seealso href="https://redis.io/commands/zdiff"/>.
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
@@ -452,7 +449,12 @@ public interface ISortedSetCommands
     /// <param name="weights">The optional weights per set that correspond to keys.</param>
     /// <param name="aggregate">The aggregation method (defaults to Sum).</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The resulting sorted set.</returns>
+    /// <returns>
+    /// The resulting sorted set. Depending on the operation:
+    /// - Union: Returns the union of members from sorted sets specified by the given keys.
+    /// - Intersection: Returns the intersection of members from sorted sets specified by the given keys.
+    /// - Difference: Returns the difference between the first sorted set and all the successive sorted sets.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -462,19 +464,14 @@ public interface ISortedSetCommands
     /// </remarks>
     Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
 
+    /// TODO: add zunion after it has been implemented
     /// <summary>
-    /// Three functions:
-    /// - Returns the union of members and their scores from sorted sets specified by the given keys.
-    /// - Returns the intersection of members and their scores from sorted sets specified by the given keys.
-    /// - Returns the difference between the first sorted set and all the successive sorted sets.
-    /// 
     /// Computes a set operation for multiple sorted sets (optionally using per-set weights),
     /// optionally performing a specific aggregation (defaults to Sum) and returns the result with scores.
     /// Difference operation cannot be used with weights or aggregation.
     /// </summary>
     /// <remarks>
     /// See
-    /// TODO: add zunion after it has been implemented
     /// <seealso href="https://redis.io/commands/zinter"/>,
     /// <seealso href="https://redis.io/commands/zdiff"/>.
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
@@ -484,7 +481,12 @@ public interface ISortedSetCommands
     /// <param name="weights">The optional weights per set that correspond to keys.</param>
     /// <param name="aggregate">The aggregation method (defaults to Sum).</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The resulting sorted set with scores.</returns>
+    /// <returns>
+    /// The resulting sorted set with scores. Depending on the operation:
+    /// - Union: Returns the union of members and their scores from sorted sets specified by the given keys.
+    /// - Intersection: Returns the intersection of members and their scores from sorted sets specified by the given keys.
+    /// - Difference: Returns the difference between the first sorted set and all the successive sorted sets.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -494,22 +496,14 @@ public interface ISortedSetCommands
     /// </remarks>
     Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
 
+    /// TODO: add zunionstore after it has been implemented
     /// <summary>
-    /// Three functions:
-    /// - Computes the intersection of sorted sets given by the specified keys and stores the result in destination. If destination already exists, it is overwritten.
-    ///   Otherwise, a new sorted set will be created.
-    /// - Calculates the difference between the first sorted set and all the successive sorted sets at keys and stores the difference as a sorted set to destination,
-    ///   overwriting it if it already exists. Non-existent keys are treated as empty sets.
-    /// - Computes the union of sorted sets given by the specified keys, and stores the result in destination. If destination already exists, it
-    ///   is overwritten. Otherwise, a new sorted set will be created.
-    /// 
     /// Computes a set operation over two sorted sets, and stores the result in destination, optionally performing
     /// a specific aggregation (defaults to sum).
     /// Difference operation cannot be used with aggregation.
     /// </summary>
     /// <remarks>
     /// See
-    /// TODO: add zunionstore after it has been implemented
     /// <seealso href="https://redis.io/commands/zinterstore"/>,
     /// <seealso href="https://redis.io/commands/zdiffstore"/>.
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
@@ -520,7 +514,15 @@ public interface ISortedSetCommands
     /// <param name="second">The key of the second sorted set.</param>
     /// <param name="aggregate">The aggregation method (defaults to sum).</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The number of elements in the resulting sorted set at destination.</returns>
+    /// <returns>
+    /// The number of elements in the resulting sorted set at destination. Depending on the operation:
+    /// - Intersection: Computes the intersection of sorted sets given by the specified keys and stores the result in destination. If destination already exists, it is overwritten.
+    ///   Otherwise, a new sorted set will be created.
+    /// - Difference: Calculates the difference between the first sorted set and all the successive sorted sets at keys and stores the difference as a sorted set to destination,
+    ///   overwriting it if it already exists. Non-existent keys are treated as empty sets.
+    /// - Union: Computes the union of sorted sets given by the specified keys, and stores the result in destination. If destination already exists, it
+    ///   is overwritten. Otherwise, a new sorted set will be created.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -530,22 +532,14 @@ public interface ISortedSetCommands
     /// </remarks>
     Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
 
+    /// TODO: add zunionstore after it has been implemented
     /// <summary>
-    /// Three functions:
-    /// - Computes the intersection of sorted sets given by the specified keys and stores the result in destination. If destination already exists, it is overwritten.
-    ///   Otherwise, a new sorted set will be created.
-    /// - Calculates the difference between the first sorted set and all the successive sorted sets at keys and stores the difference as a sorted set to destination,
-    ///   overwriting it if it already exists. Non-existent keys are treated as empty sets.
-    /// - Computes the union of sorted sets given by the specified keys, and stores the result in destination. If destination already exists, it
-    ///   is overwritten. Otherwise, a new sorted set will be created.
-    ///
     /// Computes a set operation over multiple sorted sets (optionally using per-set weights), and stores the result in destination, optionally performing
     /// a specific aggregation (defaults to sum).
     /// Difference operation cannot be used with aggregation.
     /// </summary>
     /// <remarks>
     /// See
-    /// TODO: add zunionstore after it has been implemented
     /// <seealso href="https://redis.io/commands/zinterstore"/>,
     /// <seealso href="https://redis.io/commands/zdiffstore"/>.
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
@@ -556,7 +550,15 @@ public interface ISortedSetCommands
     /// <param name="weights">The optional weights per set that correspond to keys.</param>
     /// <param name="aggregate">The aggregation method (defaults to sum).</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The number of elements in the resulting sorted set at destination.</returns>
+    /// <returns>
+    /// The number of elements in the resulting sorted set at destination. Depending on the operation:
+    /// - Intersection: Computes the intersection of sorted sets given by the specified keys and stores the result in destination. If destination already exists, it is overwritten.
+    ///   Otherwise, a new sorted set will be created.
+    /// - Difference: Calculates the difference between the first sorted set and all the successive sorted sets at keys and stores the difference as a sorted set to destination,
+    ///   overwriting it if it already exists. Non-existent keys are treated as empty sets.
+    /// - Union: Computes the union of sorted sets given by the specified keys, and stores the result in destination. If destination already exists, it
+    ///   is overwritten. Otherwise, a new sorted set will be created.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
