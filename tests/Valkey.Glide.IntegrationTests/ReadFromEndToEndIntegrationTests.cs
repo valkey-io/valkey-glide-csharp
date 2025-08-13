@@ -607,10 +607,11 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
 
         var configurations = new[]
         {
-            ("Primary", ReadFromStrategy.Primary, (string?)null),
-            ("PreferReplica", ReadFromStrategy.PreferReplica, (string?)null),
+            ("Primary", ReadFromStrategy.Primary, null),
+            ("PreferReplica", ReadFromStrategy.PreferReplica, null),
             ("AzAffinity", ReadFromStrategy.AzAffinity, "us-east-1a"),
-            ("AzAffinityReplicasAndPrimary", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")
+            ("AzAffinityReplicasAndPrimary", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b"),
+            ("PrimaryAndSecondary", ReadFromStrategy.PrimaryAndSecondary, null)
         };
 
         try
@@ -770,6 +771,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         // Test that ReadFrom configuration actually reaches the Rust core (FFI layer)
         // by creating clients with different ReadFrom strategies and verifying they work
 
+#pragma warning disable CS8619
         var testCases = new[]
         {
             new { Strategy = ReadFromStrategy.Primary, Az = (string?)null },
@@ -777,6 +779,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             new { Strategy = ReadFromStrategy.AzAffinity, Az = "us-east-1a" },
             new { Strategy = ReadFromStrategy.AzAffinityReplicasAndPrimary, Az = "eu-west-1b" }
         };
+#pragma warning restore CS8619
 
         foreach (var testCase in testCases)
         {
@@ -907,8 +910,8 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
 
         var configurations = new[]
         {
-            (ReadFromStrategy.Primary, (string?)null),
-            (ReadFromStrategy.PreferReplica, (string?)null),
+            (ReadFromStrategy.Primary, null),
+            (ReadFromStrategy.PreferReplica, null),
             (ReadFromStrategy.AzAffinity, "us-east-1a"),
             (ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")
         };

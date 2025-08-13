@@ -387,6 +387,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
 
     [Theory]
     [InlineData(ReadFromStrategy.Primary, null)]
+    [InlineData(ReadFromStrategy.PrimaryAndSecondary, null)]
     [InlineData(ReadFromStrategy.PreferReplica, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
@@ -401,6 +402,9 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
             case ReadFromStrategy.Primary:
                 connectionString += ",readFrom=Primary";
                 break;
+            case ReadFromStrategy.PrimaryAndSecondary:
+                connectionString += ",readFrom=PrimaryAndSecondary";
+                break;
             case ReadFromStrategy.PreferReplica:
                 connectionString += ",readFrom=PreferReplica";
                 break;
@@ -410,6 +414,8 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
             case ReadFromStrategy.AzAffinityReplicasAndPrimary:
                 connectionString += $",readFrom=AzAffinityReplicasAndPrimary,az={az}";
                 break;
+            default:
+                throw new ArgumentException("Invalid ReadFromStrategy for this test");
         }
 
         // Act
