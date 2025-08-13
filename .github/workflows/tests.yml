@@ -54,7 +54,7 @@ jobs:
     tests:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: get-matrices
-        timeout-minutes: ${{ matrix.os == 'windows' && 45 || 30 }}
+        timeout-minutes: ${{ matrix.host.OS == 'windows' && 45 || 30 }}
         strategy:
             fail-fast: false
             matrix:
@@ -95,6 +95,10 @@ jobs:
               with:
                   path: rust/target
                   key: rust-${{ matrix.host.TARGET }}
+
+            - run: cargo build
+              working-directory: rust
+              if: ${{ matrix.host.OS == 'windows' }}
 
             - name: Run service in WSL for windows runner
               if: ${{ matrix.host.OS == 'windows' }}
