@@ -59,7 +59,7 @@ runs:
               wsl bash << EOF
                 set -e
                 sudo apt-get update
-                sudo apt-get install -y make python3 libssl-dev gcc build-essential git pkg-config dos2unix
+                sudo apt-get install -y make python3 libssl-dev gcc dos2unix wslu # build-essential git pkg-config
               EOF
 
         - uses: actions/cache@v4

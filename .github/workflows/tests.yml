@@ -104,11 +104,11 @@ jobs:
                   echo $GITHUB_ENV
                   wsl bash << EOF
                     set -e
-                    wslpath $GITHUB_ENV
+                    wslupath $GITHUB_ENV
                     python3 ./cluster_manager.py start -p 6380 6381
                     python3 ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
-                    echo "standalone-endpoints=localhost:6380" >> `(wslpath $GITHUB_ENV)`
-                    echo "cluster-endpoints=localhost:7000" >> `(wslpath $GITHUB_ENV)`
+                    echo "standalone-endpoints=localhost:6380" >> `(wslupath $GITHUB_ENV)`
+                    echo "cluster-endpoints=localhost:7000" >> `(wslupath $GITHUB_ENV)`
                   EOF
 
             - name: Test dotnet ${{ matrix.dotnet }}
