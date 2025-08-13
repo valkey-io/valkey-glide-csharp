@@ -15,7 +15,7 @@ public readonly struct SortedSetPopResult
     /// <summary>
     /// Whether this object is null/empty.
     /// </summary>
-    public bool IsNull => Key.IsNull && Entries == Array.Empty<SortedSetEntry>();
+    public bool IsNull => Key.IsNull && (Entries == null || Entries.Length == 0);
 
     /// <summary>
     /// The key of the sorted set these entries came form.
