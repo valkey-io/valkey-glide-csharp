@@ -102,10 +102,10 @@ jobs:
               working-directory: valkey-glide/utils
               run: |
                   echo $GITHUB_ENV
+                  echo $GITHUB_ENV | sed 's|\\|/|g' | sed 's|^C:|/mnt/c|'
+                  export ENV_FILE=`echo $GITHUB_ENV | sed 's|\\|/|g' | sed 's|^C:|/mnt/c|'`
                   wsl bash << EOF
                     set -e
-                    echo $GITHUB_ENV | sed 's|\\|/|g' | sed 's|^C:|/mnt/c|'
-                    ENV_FILE=`echo $GITHUB_ENV | sed 's|\\|/|g' | sed 's|^C:|/mnt/c|'`
                     python3 ./cluster_manager.py start -p 6380 6381
                     python3 ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
                     echo "standalone-endpoints=localhost:6380" >> $ENV_FILE
