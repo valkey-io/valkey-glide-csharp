@@ -124,9 +124,6 @@ runs:
               wsl bash << EOF
                 set -e
                 cd valkey
-                find . -type f -name mkreleasehdr.sh
-                find . -type f -name mkreleasehdr.sh | xargs ls -la
-                chmod +x src/mkreleasehdr.sh
                 dos2unix src/mkreleasehdr.sh
                 bash -c src/mkreleasehdr.sh
                 find . -type f -name version.h
