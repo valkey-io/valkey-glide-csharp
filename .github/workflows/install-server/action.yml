@@ -126,8 +126,6 @@ runs:
                 cd valkey
                 dos2unix src/mkreleasehdr.sh
                 bash -c src/mkreleasehdr.sh
-                find . -type f -name version.h
-                find . -type f -name mkreleasehdr.sh
                 make BUILD_TLS=yes
                 sudo make install
                 echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile

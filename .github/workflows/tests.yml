@@ -54,7 +54,7 @@ jobs:
     tests:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: get-matrices
-        timeout-minutes: 35
+        timeout-minutes: ${{ matrix.os == 'windows' && 45 || 30 }}
         strategy:
             fail-fast: false
             matrix:
@@ -109,8 +109,8 @@ jobs:
                     cd valkey-glide/utils
                     echo $PWD
                     ls
-                    ./cluster_manager.py start -p 6380
-                    ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
+                    python3 ./cluster_manager.py start -p 6380
+                    python3 ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
                     echo "standalone-endpoints=localhost:6380" >> $GITHUB_ENV
                     echo "cluster-endpoints=localhost:7000" >> $GITHUB_ENV
                   EOF
