@@ -32,16 +32,13 @@ internal partial class Request
         }
     }
 
-    private static RequestType GetSortedSetCombineRequestType(SetOperation operation, bool isStore = false)
+    private static RequestType GetSortedSetCombineRequestType(SetOperation operation, bool isStore = false) => operation switch
     {
-        return operation switch
-        {
-            SetOperation.Union => isStore ? RequestType.ZUnionStore : RequestType.ZUnion,
-            SetOperation.Intersect => isStore ? RequestType.ZInterStore : RequestType.ZInter,
-            SetOperation.Difference => isStore ? RequestType.ZDiffStore : RequestType.ZDiff,
-            _ => throw new ArgumentException($"Unsupported operation: {operation}")
-        };
-    }
+        SetOperation.Union => isStore ? RequestType.ZUnionStore : RequestType.ZUnion,
+        SetOperation.Intersect => isStore ? RequestType.ZInterStore : RequestType.ZInter,
+        SetOperation.Difference => isStore ? RequestType.ZDiffStore : RequestType.ZDiff,
+        _ => throw new ArgumentException($"Unsupported operation: {operation}")
+    };
 
     private static void AddSortedSetWhenOptions(List<GlideString> args, SortedSetWhen when)
     {
@@ -421,7 +418,7 @@ internal partial class Request
 
             Object[] responseArray = (Object[])response;
 
-            ValkeyValue member = (ValkeyValue)((GlideString)responseArray[1]);
+            ValkeyValue member = (ValkeyValue)(GlideString)responseArray[1];
             double score = (double)responseArray[2];
             return new SortedSetEntry(member, score);
         }, allowConverterToHandleNull: true);
@@ -445,7 +442,7 @@ internal partial class Request
             Object[] responseArray = (Object[])response;
 
             // BZPOPMIN/BZPOPMAX returns [key, member, score] - only one element
-            ValkeyValue member = (ValkeyValue)((GlideString)responseArray[1]);
+            ValkeyValue member = (ValkeyValue)(GlideString)responseArray[1];
             double score = (double)responseArray[2];
             return [new SortedSetEntry(member, score)];
         }, allowConverterToHandleNull: true);
