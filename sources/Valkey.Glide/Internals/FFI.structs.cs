@@ -9,7 +9,7 @@ using static Valkey.Glide.Route;
 namespace Valkey.Glide.Internals;
 
 // FFI-ready structs, helper methods and wrappers
-internal class FFI
+internal partial class FFI
 {
     internal abstract class Marshallable : IDisposable
     {
