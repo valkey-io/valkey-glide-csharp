@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Reflection;
-
 using Xunit;
 
 using static Valkey.Glide.ConnectionConfiguration;
@@ -18,8 +16,8 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        var clusterBuilder = InvokeCreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
 
         // Assert
         var standaloneConfig = standaloneBuilder.Build();
@@ -40,8 +38,8 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        var clusterBuilder = InvokeCreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
 
         // Assert
         var standaloneConfig = standaloneBuilder.Build();
@@ -62,8 +60,8 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a");
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        var clusterBuilder = InvokeCreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
 
         // Assert
         var standaloneConfig = standaloneBuilder.Build();
@@ -84,8 +82,8 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b");
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        var clusterBuilder = InvokeCreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
 
         // Assert
         var standaloneConfig = standaloneBuilder.Build();
@@ -106,8 +104,8 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = null;
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        var clusterBuilder = InvokeCreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
 
         // Assert
         var standaloneConfig = standaloneBuilder.Build();
@@ -125,7 +123,7 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "ap-south-1");
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
         var standaloneConfig = standaloneBuilder.Build();
 
         // Assert - Verify ReadFrom flows through to ConnectionConfig
@@ -143,7 +141,7 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
         var standaloneConfig = standaloneBuilder.Build();
 
         // Assert - Verify ReadFrom flows through to FFI layer
@@ -172,8 +170,8 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = az != null ? new ReadFrom(strategy, az) : new ReadFrom(strategy);
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        var clusterBuilder = InvokeCreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
 
         // Assert
         var standaloneConfig = standaloneBuilder.Build();
@@ -201,7 +199,7 @@ public class ConnectionMultiplexerReadFromMappingTests
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a");
 
         // Act
-        var standaloneBuilder = InvokeCreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        var standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
 
         // Assert
         var standaloneConfig = standaloneBuilder.Build();
@@ -216,21 +214,61 @@ public class ConnectionMultiplexerReadFromMappingTests
         Assert.Equal("TestClient", standaloneConfig.Request.ClientName);
     }
 
-    /// <summary>
-    /// Helper method to invoke the private CreateClientConfigBuilder method using reflection
-    /// </summary>
-    private static T InvokeCreateClientConfigBuilder<T>(ConfigurationOptions configuration)
-        where T : ClientConfigurationBuilder<T>, new()
+    [Fact]
+    public void ClientConfigurationBuilder_ReadFromConfiguration_FlowsToConnectionConfig()
     {
-        var method = typeof(ConnectionMultiplexer).GetMethod("CreateClientConfigBuilder",
-            BindingFlags.NonPublic | BindingFlags.Static);
+        // Arrange
+        const string testAz = "us-west-2b";
+        ReadFrom readFromConfig = new ReadFrom(ReadFromStrategy.AzAffinity, testAz);
 
-        Assert.NotNull(method);
+        // Act - Test Standalone Configuration
+        StandaloneClientConfigurationBuilder standaloneBuilder = new StandaloneClientConfigurationBuilder()
+            .WithAddress("localhost", 6379)
+            .WithReadFrom(readFromConfig);
+        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
 
-        var genericMethod = method.MakeGenericMethod(typeof(T));
-        var result = genericMethod.Invoke(null, [configuration]);
+        // Assert - Standalone
+        Assert.NotNull(standaloneConfig);
+        ConnectionConfig standaloneConnectionConfig = standaloneConfig.ToRequest();
+        Assert.NotNull(standaloneConnectionConfig.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinity, standaloneConnectionConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, standaloneConnectionConfig.ReadFrom.Value.Az);
 
-        Assert.NotNull(result);
-        return (T)result;
+        // Act - Test Cluster Configuration
+        ClusterClientConfigurationBuilder clusterBuilder = new ClusterClientConfigurationBuilder()
+            .WithAddress("localhost", 6379)
+            .WithReadFrom(readFromConfig);
+        ClusterClientConfiguration clusterConfig = clusterBuilder.Build();
+
+        // Assert - Cluster
+        Assert.NotNull(clusterConfig);
+        ConnectionConfig clusterConnectionConfig = clusterConfig.ToRequest();
+        Assert.NotNull(clusterConnectionConfig.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinity, clusterConnectionConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, clusterConnectionConfig.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public void ClientConfigurationBuilder_NullReadFrom_FlowsToConnectionConfig()
+    {
+        // Act - Test Standalone Configuration
+        StandaloneClientConfigurationBuilder standaloneBuilder = new StandaloneClientConfigurationBuilder()
+            .WithAddress("localhost", 6379);
+        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
+
+        // Assert - Standalone
+        Assert.NotNull(standaloneConfig);
+        ConnectionConfig standaloneConnectionConfig = standaloneConfig.ToRequest();
+        Assert.Null(standaloneConnectionConfig.ReadFrom);
+
+        // Act - Test Cluster Configuration
+        ClusterClientConfigurationBuilder clusterBuilder = new ClusterClientConfigurationBuilder()
+            .WithAddress("localhost", 6379);
+        ClusterClientConfiguration clusterConfig = clusterBuilder.Build();
+
+        // Assert - Cluster
+        Assert.NotNull(clusterConfig);
+        ConnectionConfig clusterConnectionConfig = clusterConfig.ToRequest();
+        Assert.Null(clusterConnectionConfig.ReadFrom);
     }
 }

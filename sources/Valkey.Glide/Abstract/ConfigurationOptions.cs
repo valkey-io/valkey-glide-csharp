@@ -538,17 +538,25 @@ public sealed class ConfigurationOptions : ICloneable
             switch (strategy)
             {
                 case ReadFromStrategy.AzAffinity:
-                    if (string.IsNullOrWhiteSpace(tempAz))
+                    if (tempAz == null)
                     {
                         throw new ArgumentException("Availability zone should be set when using AzAffinity strategy");
+                    }
+                    if (string.IsNullOrWhiteSpace(tempAz))
+                    {
+                        throw new ArgumentException("Availability zone cannot be empty or whitespace when using AzAffinity strategy");
                     }
                     readFrom = new ReadFrom(strategy, tempAz);
                     break;
 
                 case ReadFromStrategy.AzAffinityReplicasAndPrimary:
-                    if (string.IsNullOrWhiteSpace(tempAz))
+                    if (tempAz == null)
                     {
                         throw new ArgumentException("Availability zone should be set when using AzAffinityReplicasAndPrimary strategy");
+                    }
+                    if (string.IsNullOrWhiteSpace(tempAz))
+                    {
+                        throw new ArgumentException("Availability zone cannot be empty or whitespace when using AzAffinityReplicasAndPrimary strategy");
                     }
                     readFrom = new ReadFrom(strategy, tempAz);
                     break;
@@ -570,7 +578,7 @@ public sealed class ConfigurationOptions : ICloneable
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(tempReadFromStrategy), $"ReadFrom strategy '{strategy}' is not supported");
+                    throw new ArgumentException($"ReadFrom strategy '{strategy}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
             }
         }
     }
@@ -582,14 +590,14 @@ public sealed class ConfigurationOptions : ICloneable
             throw new ArgumentException($"Keyword '{key}' requires a ReadFrom strategy value; the value cannot be empty", key);
         }
 
-        return value.ToLowerInvariant() switch
+        try
         {
-            "primary" => ReadFromStrategy.Primary,
-            "preferreplica" => ReadFromStrategy.PreferReplica,
-            "azaffinity" => ReadFromStrategy.AzAffinity,
-            "azaffinityreplicasandprimary" => ReadFromStrategy.AzAffinityReplicasAndPrimary,
-            _ => throw new ArgumentException($"ReadFrom strategy '{value}' is not supported. Supported values are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary", key)
-        };
+            return Enum.Parse<ReadFromStrategy>(value, ignoreCase: true);
+        }
+        catch (ArgumentException)
+        {
+            throw new ArgumentException($"ReadFrom strategy '{value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary", key);
+        }
     }
 
     private static void ValidateReadFromConfiguration(ReadFrom readFromConfig)
@@ -644,28 +652,11 @@ public sealed class ConfigurationOptions : ICloneable
     /// <param name="readFromConfig">The ReadFrom configuration to format.</param>
     private static void FormatReadFrom(StringBuilder sb, ReadFrom readFromConfig)
     {
-        Append(sb, OptionKeys.ReadFrom, FormatReadFromStrategy(readFromConfig.Strategy));
+        Append(sb, OptionKeys.ReadFrom, readFromConfig.Strategy.ToString());
         if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
         {
             Append(sb, OptionKeys.Az, readFromConfig.Az);
         }
-    }
-
-    /// <summary>
-    /// Converts a ReadFromStrategy enum value to its string representation.
-    /// </summary>
-    /// <param name="strategy">The ReadFromStrategy to format.</param>
-    /// <returns>The string representation of the strategy.</returns>
-    private static string FormatReadFromStrategy(ReadFromStrategy strategy)
-    {
-        return strategy switch
-        {
-            ReadFromStrategy.Primary => "Primary",
-            ReadFromStrategy.PreferReplica => "PreferReplica",
-            ReadFromStrategy.AzAffinity => "AzAffinity",
-            ReadFromStrategy.AzAffinityReplicasAndPrimary => "AzAffinityReplicasAndPrimary",
-            _ => strategy.ToString(),
-        };
     }
 
     /// <summary>

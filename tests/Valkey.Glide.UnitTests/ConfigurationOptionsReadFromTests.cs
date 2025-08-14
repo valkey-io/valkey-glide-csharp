@@ -108,7 +108,7 @@ public class ConfigurationOptionsReadFromTests
     {
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => ConfigurationOptions.Parse(connectionString));
-        Assert.Contains("cannot be empty or whitespace", exception.Message);
+        Assert.Contains("cannot be empty or whitespace", exception.Message.ToLower());
     }
 
     [Fact]
