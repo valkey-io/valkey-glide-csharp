@@ -373,18 +373,6 @@ internal partial class Request
         return Simple<long>(RequestType.ZLexCount, [.. args]);
     }
 
-    public static Cmd<object?, SortedSetPopResult> SortedSetPopAsync(ValkeyKey[] keys, long count, Order order = Order.Ascending)
-    {
-        List<GlideString> args = [keys.Length.ToGlideString()];
-        args.AddRange(keys.Select(key => key.ToGlideString()));
-
-        args.Add(order == Order.Ascending ? MinKeyword : MaxKeyword);
-        args.Add(CountKeyword);
-        args.Add(count.ToGlideString());
-
-        return new(RequestType.ZMPop, [.. args], true, HandleSortedSetPopResultResponse);
-    }
-
     public static Cmd<object[], double?[]> SortedSetScoresAsync(ValkeyKey key, ValkeyValue[] members)
     {
         List<GlideString> args = [key.ToGlideString()];
@@ -460,6 +448,300 @@ internal partial class Request
 
         return new(RequestType.BZMPop, [.. args], true, HandleSortedSetPopResultResponse, allowConverterToHandleNull: true);
     }
+
+    public static Cmd<object?, SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order = Order.Ascending)
+    {
+        RequestType requestType = order == Order.Ascending ? RequestType.ZPopMin : RequestType.ZPopMax;
+
+        return new(requestType, [key.ToGlideString()], true, response =>
+        {
+            if (response == null)
+            {
+                return null;
+            }
+
+            Dictionary<GlideString, object> responseDict = (Dictionary<GlideString, object>)response;
+            if (responseDict.Count == 0)
+            {
+                return null;
+            }
+
+            var firstEntry = responseDict.First();
+            ValkeyValue member = (ValkeyValue)firstEntry.Key;
+            double score = (double)firstEntry.Value;
+            return new SortedSetEntry(member, score);
+        }, allowConverterToHandleNull: true);
+    }
+
+    // Note: We keep count for the future TODO but disable the warning for now.
+#pragma warning disable IDE0060 // Remove unused parameter
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetPopAsync(ValkeyKey key, long count, Order order = Order.Ascending)
+    {
+        List<GlideString> args = [key.ToGlideString(), count.ToGlideString()];
+        RequestType requestType = order == Order.Ascending ? RequestType.ZPopMin : RequestType.ZPopMax;
+
+        return new(requestType, [.. args], false, response =>
+        {
+            SortedSetEntry[] entries = new SortedSetEntry[response.Count];
+            int i = 0;
+            foreach (var kvp in response)
+            {
+                ValkeyValue member = (ValkeyValue)kvp.Key;
+                double score = (double)kvp.Value;
+                entries[i] = new SortedSetEntry(member, score);
+                i++;
+            }
+
+            return entries;
+        });
+    }
+#pragma warning restore IDE0060 // Remove unused parameter
+
+    public static Cmd<object?, SortedSetPopResult> SortedSetPopAsync(ValkeyKey[] keys, long count, Order order = Order.Ascending)
+    {
+        List<GlideString> args = [keys.Length.ToGlideString()];
+        args.AddRange(keys.Select(key => key.ToGlideString()));
+
+        args.Add(order == Order.Ascending ? MinKeyword : MaxKeyword);
+        args.Add(CountKeyword);
+        args.Add(count.ToGlideString());
+
+        return new(RequestType.ZMPop, [.. args], true, HandleSortedSetPopResultResponse);
+    }
+
+    public static Cmd<GlideString?, ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key)
+    {
+        return new(RequestType.ZRandMember, [key.ToGlideString()], true, response =>
+        {
+            return response is null ? ValkeyValue.Null : (ValkeyValue)response;
+        }, allowConverterToHandleNull: true);
+    }
+
+    public static Cmd<object[], ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count)
+    {
+        List<GlideString> args = [key.ToGlideString(), count.ToGlideString()];
+
+        return new(RequestType.ZRandMember, [.. args], false, response =>
+        {
+            return [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+        });
+    }
+
+    public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count)
+    {
+        List<GlideString> args = [key.ToGlideString(), count.ToGlideString(), WithScoresKeyword];
+
+        return new(RequestType.ZRandMember, [.. args], false, response =>
+        {
+            // Check if response structure is nested arrays [[member, score], [member, score]]
+            // instead of flat array [member, score, member, score]
+            if (response.Length > 0 && response[0] is object[])
+            {
+                // Nested structure: [[member1, score1], [member2, score2]]
+                SortedSetEntry[] entries = new SortedSetEntry[response.Length];
+                for (int i = 0; i < entries.Length; i++)
+                {
+                    object[] pair = (object[])response[i];
+                    ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
+                    double score = (double)pair[1];
+                    entries[i] = new SortedSetEntry(member, score);
+                }
+                return entries;
+            }
+            else
+            {
+                // Flat structure: [member1, score1, member2, score2]
+                SortedSetEntry[] entries = new SortedSetEntry[response.Length / 2];
+                for (int i = 0; i < entries.Length; i++)
+                {
+                    ValkeyValue member = (ValkeyValue)(GlideString)response[i * 2];
+                    double score = double.Parse(((GlideString)response[i * 2 + 1]).ToString());
+                    entries[i] = new SortedSetEntry(member, score);
+                }
+                return entries;
+            }
+        });
+    }
+
+    public static Cmd<long, long> SortedSetRangeAndStoreAsync(
+        ValkeyKey sourceKey,
+        ValkeyKey destinationKey,
+        ValkeyValue start,
+        ValkeyValue stop,
+        SortedSetOrder sortedSetOrder = SortedSetOrder.ByRank,
+        Exclude exclude = Exclude.None,
+        Order order = Order.Ascending,
+        long skip = 0,
+        long? take = null)
+    {
+        List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString()];
+        string[] queryArgs;
+
+        switch (sortedSetOrder)
+        {
+            case SortedSetOrder.ByRank:
+                {
+                    // Convert ValkeyValue to long for rank-based queries
+                    long startIndex = start.HasValue ? (long)start : 0;
+                    long stopIndex = stop.HasValue ? (long)stop : -1;
+
+                    // For ByRank with skip/take, we need to adjust the start/stop indices
+                    // since ZRANGESTORE with ByRank doesn't support LIMIT clause
+                    if (skip > 0)
+                    {
+                        startIndex += skip;
+                    }
+                    if (take.HasValue)
+                    {
+                        stopIndex = startIndex + take.Value - 1;
+                    }
+
+                    RangeByIndex query = new(startIndex, stopIndex);
+                    if (order == Order.Descending)
+                    {
+                        _ = query.SetReverse();
+                    }
+                    queryArgs = query.ToArgs();
+                    break;
+                }
+            case SortedSetOrder.ByScore:
+                {
+                    // Convert ValkeyValue to double for score-based queries
+                    double startScore = start.HasValue ? (double)start : double.NegativeInfinity;
+                    double stopScore = stop.HasValue ? (double)stop : double.PositiveInfinity;
+
+                    // Create score boundaries based on exclude flags
+                    ScoreBoundary startBoundary = exclude.HasFlag(Exclude.Start)
+                        ? ScoreBoundary.Exclusive(startScore)
+                        : ScoreBoundary.Inclusive(startScore);
+
+                    ScoreBoundary stopBoundary = exclude.HasFlag(Exclude.Stop)
+                        ? ScoreBoundary.Exclusive(stopScore)
+                        : ScoreBoundary.Inclusive(stopScore);
+
+                    RangeByScore query = new(startBoundary, stopBoundary);
+                    if (order == Order.Descending)
+                    {
+                        _ = query.SetReverse();
+                    }
+                    if (skip > 0 || take.HasValue)
+                    {
+                        long count = take ?? -1;
+                        _ = query.SetLimit(skip, count);
+                    }
+                    queryArgs = query.ToArgs();
+                    break;
+                }
+            case SortedSetOrder.ByLex:
+                {
+                    // Create lexicographical boundaries based on exclude flags
+                    LexBoundary startBoundary = exclude.HasFlag(Exclude.Start)
+                        ? LexBoundary.Exclusive(start)
+                        : LexBoundary.Inclusive(start);
+
+                    LexBoundary stopBoundary = exclude.HasFlag(Exclude.Stop)
+                        ? LexBoundary.Exclusive(stop)
+                        : LexBoundary.Inclusive(stop);
+
+                    RangeByLex query = new(startBoundary, stopBoundary);
+                    if (order == Order.Descending)
+                    {
+                        _ = query.SetReverse();
+                    }
+                    if (skip > 0 || take.HasValue)
+                    {
+                        long count = take ?? -1;
+                        _ = query.SetLimit(skip, count);
+                    }
+                    queryArgs = query.ToArgs();
+                    break;
+                }
+            default:
+                throw new ArgumentException($"Unsupported SortedSetOrder: {sortedSetOrder}");
+        }
+
+        args.AddRange(queryArgs.Select(arg => arg.ToGlideString()));
+        return Simple<long>(RequestType.ZRangeStore, [.. args]);
+    }
+
+    public static Cmd<long?, long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending)
+    {
+        RequestType requestType = order == Order.Ascending ? RequestType.ZRank : RequestType.ZRevRank;
+        return new(requestType, [key.ToGlideString(), member.ToGlideString()], true, response => response);
+    }
+
+    public static Cmd<long, long> SortedSetRemoveRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None)
+    {
+        // Create lexicographical boundaries based on exclude flags
+        LexBoundary minBoundary = exclude.HasFlag(Exclude.Start)
+            ? LexBoundary.Exclusive(min)
+            : LexBoundary.Inclusive(min);
+
+        LexBoundary maxBoundary = exclude.HasFlag(Exclude.Stop)
+            ? LexBoundary.Exclusive(max)
+            : LexBoundary.Inclusive(max);
+
+        List<GlideString> args = [key.ToGlideString(), ((string)minBoundary).ToGlideString(), ((string)maxBoundary).ToGlideString()];
+        return Simple<long>(RequestType.ZRemRangeByLex, [.. args]);
+    }
+
+    public static Cmd<long, long> SortedSetRemoveRangeByRankAsync(ValkeyKey key, long start, long stop)
+    {
+        List<GlideString> args = [key.ToGlideString(), start.ToGlideString(), stop.ToGlideString()];
+        return Simple<long>(RequestType.ZRemRangeByRank, [.. args]);
+    }
+
+    public static Cmd<long, long> SortedSetRemoveRangeByScoreAsync(ValkeyKey key, double start, double stop, Exclude exclude = Exclude.None)
+    {
+        // Create score boundaries based on exclude flags
+        ScoreBoundary minBoundary = exclude.HasFlag(Exclude.Start)
+            ? ScoreBoundary.Exclusive(start)
+            : ScoreBoundary.Inclusive(start);
+
+        ScoreBoundary maxBoundary = exclude.HasFlag(Exclude.Stop)
+            ? ScoreBoundary.Exclusive(stop)
+            : ScoreBoundary.Inclusive(stop);
+
+        List<GlideString> args = [key.ToGlideString(), ((string)minBoundary).ToGlideString(), ((string)maxBoundary).ToGlideString()];
+        return Simple<long>(RequestType.ZRemRangeByScore, [.. args]);
+    }
+
+    public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0)
+    {
+        List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
+
+        if (!pattern.IsNull)
+        {
+            args.Add(MatchKeyword);
+            args.Add(pattern.ToGlideString());
+        }
+
+        if (pageSize != 250)
+        {
+            args.Add(CountKeyword);
+            args.Add(pageSize.ToGlideString());
+        }
+
+        return new(RequestType.ZScan, [.. args], false, response =>
+        {
+            object[] responseArray = response;
+            long newCursor = long.Parse(responseArray[0].ToString()!);
+            object[] itemsArray = (object[])responseArray[1];
+
+            SortedSetEntry[] entries = new SortedSetEntry[itemsArray.Length / 2];
+            for (int i = 0; i < entries.Length; i++)
+            {
+                ValkeyValue member = (ValkeyValue)(GlideString)itemsArray[i * 2];
+                double score = double.Parse(((GlideString)itemsArray[i * 2 + 1]).ToString());
+                entries[i] = new SortedSetEntry(member, score);
+            }
+
+            return (newCursor, entries);
+        });
+    }
+
+    public static Cmd<double?, double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member)
+        => new(RequestType.ZScore, [key.ToGlideString(), member.ToGlideString()], true, response => response);
 
     /// <summary>
     /// Shared response handler for sorted set pop operations (both blocking and non-blocking).
