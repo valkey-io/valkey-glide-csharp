@@ -510,11 +510,12 @@ public sealed class ConfigurationOptions : ICloneable
         if (strategy.HasValue)
         {
             // Use ReadFrom constructors based on strategy type - the constructors contain the validation logic
+#pragma warning disable IDE0066
             switch (strategy.Value)
             {
                 case ReadFromStrategy.AzAffinity:
                 case ReadFromStrategy.AzAffinityReplicasAndPrimary:
-                    return new ReadFrom(strategy.Value, az);
+                    return new ReadFrom(strategy.Value, az!);
 
                 case ReadFromStrategy.Primary:
                 case ReadFromStrategy.PreferReplica:
@@ -523,6 +524,7 @@ public sealed class ConfigurationOptions : ICloneable
                 default:
                     throw new ArgumentException($"ReadFrom strategy '{strategy.Value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
             }
+#pragma warning restore IDE0066
         }
         return null;
     }
