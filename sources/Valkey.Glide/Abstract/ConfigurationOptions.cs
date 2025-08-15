@@ -308,7 +308,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// </summary>
     public ConfigurationOptions Clone()
     {
-        var cloned = new ConfigurationOptions
+        return new ConfigurationOptions
         {
             ClientName = ClientName,
             ConnectTimeout = ConnectTimeout,
@@ -321,12 +321,8 @@ public sealed class ConfigurationOptions : ICloneable
             reconnectRetryPolicy = reconnectRetryPolicy,
             EndPoints = EndPoints.Clone(),
             Protocol = Protocol,
+            ReadFrom = readFrom
         };
-
-        // Use property setter to ensure validation
-        cloned.ReadFrom = readFrom;
-
-        return cloned;
     }
 
     /// <summary>
@@ -532,7 +528,7 @@ public sealed class ConfigurationOptions : ICloneable
     {
         if (tempReadFromStrategy.HasValue)
         {
-            var strategy = tempReadFromStrategy.Value;
+            ReadFromStrategy strategy = tempReadFromStrategy.Value;
 
             // Validate strategy and AZ combinations
             switch (strategy)
