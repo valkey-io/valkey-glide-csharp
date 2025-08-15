@@ -546,51 +546,6 @@ public sealed class ConfigurationOptions : ICloneable
         }
     }
 
-    private static void ValidateReadFromConfiguration(ReadFrom readFromConfig)
-    {
-        switch (readFromConfig.Strategy)
-        {
-            case ReadFromStrategy.AzAffinity:
-                if (readFromConfig.Az == null)
-                {
-                    throw new ArgumentException("Availability zone should be set when using AzAffinity strategy");
-                }
-                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
-                {
-                    throw new ArgumentException("Availability zone cannot be empty or whitespace");
-                }
-                break;
-
-            case ReadFromStrategy.AzAffinityReplicasAndPrimary:
-                if (readFromConfig.Az == null)
-                {
-                    throw new ArgumentException("Availability zone should be set when using AzAffinityReplicasAndPrimary strategy");
-                }
-                if (string.IsNullOrWhiteSpace(readFromConfig.Az))
-                {
-                    throw new ArgumentException("Availability zone cannot be empty or whitespace");
-                }
-                break;
-
-            case ReadFromStrategy.Primary:
-                if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
-                {
-                    throw new ArgumentException("Availability zone should not be set when using Primary strategy");
-                }
-                break;
-
-            case ReadFromStrategy.PreferReplica:
-                if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
-                {
-                    throw new ArgumentException("Availability zone should not be set when using PreferReplica strategy");
-                }
-                break;
-
-            default:
-                throw new ArgumentOutOfRangeException(nameof(readFromConfig), $"ReadFrom strategy '{readFromConfig.Strategy}' is not supported");
-        }
-    }
-
     /// <summary>
     /// Formats a ReadFrom struct to its string representation and appends it to the StringBuilder.
     /// </summary>
