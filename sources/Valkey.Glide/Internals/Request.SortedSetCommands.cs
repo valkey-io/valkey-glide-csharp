@@ -527,19 +527,15 @@ internal partial class Request
 
         return new(RequestType.ZRandMember, [.. args], false, response =>
         {
-            if (response.Length > 0)
+            SortedSetEntry[] entries = new SortedSetEntry[response.Length];
+            for (int i = 0; i < entries.Length; i++)
             {
-                SortedSetEntry[] entries = new SortedSetEntry[response.Length];
-                for (int i = 0; i < entries.Length; i++)
-                {
-                    object[] pair = (object[])response[i];
-                    ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
-                    double score = (double)pair[1];
-                    entries[i] = new SortedSetEntry(member, score);
-                }
-                return entries;
+                object[] pair = (object[])response[i];
+                ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
+                double score = (double)pair[1];
+                entries[i] = new SortedSetEntry(member, score);
             }
-            return []; // empty
+            return entries;
         });
     }
 
