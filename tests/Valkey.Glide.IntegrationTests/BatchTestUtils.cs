@@ -510,9 +510,10 @@ internal class BatchTestUtils
     public static List<TestInfo> CreateSortedSetTest(Pipeline.IBatch batch, bool isAtomic)
     {
         List<TestInfo> testData = [];
-        string prefix = isAtomic ? "{sortedSetKey}-" : "";
-        string key1 = $"{prefix}1-{Guid.NewGuid()}";
-        string key2 = $"{prefix}2-{Guid.NewGuid()}";
+        string prefix = "{sortedSetKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
+        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
 
         // Test single member add
         _ = batch.SortedSetAdd(key1, "member1", 10.5);
@@ -664,17 +665,17 @@ internal class BatchTestUtils
         testData.Add(new(new ValkeyValue[] { "apple", "banana" }, "SortedSetRangeByValue(key2, 'a', 'c', order: Ascending)"));
 
         // Test new sorted set commands
-        string key3 = $"{prefix}3-{Guid.NewGuid()}";
-        string destKey = $"{prefix}dest-{Guid.NewGuid()}";
+        string key3 = $"{atomicPrefix}3-{Guid.NewGuid()}";
+        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         // Test SortedSetIncrement
         _ = batch.SortedSetIncrement(key1, "testMember1", 5.0);
         testData.Add(new(6.0, "SortedSetIncrement(key1, testMember1, 5.0)"));
 
         // Test combine operations - use prefixed keys to ensure same hash slot for cluster mode
-        string combineKey1 = $"{{sortedSetKey}}-combine1-{Guid.NewGuid()}";
-        string combineKey3 = $"{{sortedSetKey}}-combine3-{Guid.NewGuid()}";
-        string combineDestKey = $"{{sortedSetKey}}-combineDest-{Guid.NewGuid()}";
+        string combineKey1 = $"{prefix}combine1-{Guid.NewGuid()}";
+        string combineKey3 = $"{prefix}combine3-{Guid.NewGuid()}";
+        string combineDestKey = $"{prefix}combineDest-{Guid.NewGuid()}";
 
         // Setup data for combine operations
         _ = batch.SortedSetAdd(combineKey1, [
@@ -717,7 +718,7 @@ internal class BatchTestUtils
 
         // Test pop operations
         // Test pop operations - add data first to prevent blocking
-        string popKey = $"{prefix}pop-{Guid.NewGuid()}";
+        string popKey = $"{atomicPrefix}pop-{Guid.NewGuid()}";
         _ = batch.SortedSetAdd(popKey, [
             new SortedSetEntry("member1", 1.0),
             new SortedSetEntry("member2", 2.0)
@@ -733,7 +734,7 @@ internal class BatchTestUtils
             ]), "SortedSetPop([popKey], 1)"));
 
             // Test blocking commands with data present to prevent actual blocking
-            string blockingKey = $"{prefix}blocking-{Guid.NewGuid()}";
+            string blockingKey = $"{atomicPrefix}blocking-{Guid.NewGuid()}";
             _ = batch.SortedSetAdd(blockingKey, [
                 new SortedSetEntry("block1", 10.0),
                 new SortedSetEntry("block2", 20.0)
@@ -752,6 +753,91 @@ internal class BatchTestUtils
             _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, 0.1);
             testData.Add(new(SortedSetPopResult.Null, "SortedSetBlockingPop([blockingKey], 1, Descending, 0.1s) - should be null"));
         }
+
+        // Test sorted set commands
+        string newKey = $"{prefix}new-{Guid.NewGuid()}";
+        string newDestKey = $"{prefix}newdest-{Guid.NewGuid()}";
+
+        // Setup data
+        _ = batch.SortedSetAdd(newKey, [
+            new SortedSetEntry("newMember1", 10.5),
+            new SortedSetEntry("newMember2", 8.2),
+            new SortedSetEntry("newMember3", 15.0)
+        ]);
+        testData.Add(new(3L, "SortedSetAdd(newKey, test data for new commands)"));
+
+        // Test SortedSetPop (min - default)
+        _ = batch.SortedSetPop(newKey);
+        testData.Add(new(new SortedSetEntry("newMember2", 8.2), "SortedSetPop(newKey) - min"));
+
+        // Test SortedSetPop (max)
+        _ = batch.SortedSetPop(newKey, Order.Descending);
+        testData.Add(new(new SortedSetEntry("newMember3", 15.0), "SortedSetPop(newKey, Order.Descending) - max"));
+
+        // Test SortedSetRandomMember
+        _ = batch.SortedSetRandomMember(newKey);
+        testData.Add(new(new ValkeyValue("newMember1"), "SortedSetRandomMember(newKey)"));
+
+        // Setup data
+        _ = batch.SortedSetAdd(newKey, [
+            new SortedSetEntry("newMember1", 10.5),
+            new SortedSetEntry("newMember2", 8.2),
+            new SortedSetEntry("newMember3", 15.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(newKey, test data for new commands)"));
+
+        // Test SortedSetRank
+        _ = batch.SortedSetRank(newKey, "newMember1");
+        testData.Add(new(1L, "SortedSetRank(newKey, newMember1)"));
+
+        // Test SortedSetRank with descending order (reverse rank)
+        _ = batch.SortedSetRank(newKey, "newMember1", Order.Descending);
+        testData.Add(new(1L, "SortedSetRank(newKey, newMember1, Order.Descending)"));
+
+        // Test SortedSetScore
+        _ = batch.SortedSetScore(newKey, "newMember1");
+        testData.Add(new(10.5, "SortedSetScore(newKey, newMember1)"));
+
+        // Test SortedSetRandomMembers
+        _ = batch.SortedSetRandomMembers(newKey, 2);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRandomMembers(newKey, 2)", true));
+
+        // Test SortedSetRandomMembersWithScores
+        _ = batch.SortedSetRandomMembersWithScores(newKey, 2);
+        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRandomMembersWithScores(newKey, 2)", true));
+
+        // Test SortedSetRangeAndStore (should copy all 3 elements from newKey to newDestKey)
+        _ = batch.SortedSetRangeAndStore(newKey, newDestKey, 0, 9);
+        testData.Add(new(3L, "SortedSetRangeAndStore(newKey, newDestKey, 0, 9)"));
+
+        // Test SortedSetRemoveRangeByRank (should remove all 3 elements)
+        _ = batch.SortedSetRemoveRangeByRank(newKey, 0, 9);
+        testData.Add(new(3L, "SortedSetRemoveRangeByRank(newKey, 0, 9)"));
+
+        // Setup data for union operations
+        string unionKey1 = $"{prefix}union1-{Guid.NewGuid()}";
+        string unionKey2 = $"{prefix}union2-{Guid.NewGuid()}";
+
+        _ = batch.SortedSetAdd(unionKey1, [
+            new SortedSetEntry("common", 1.0),
+            new SortedSetEntry("unique1", 2.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(unionKey1, union test data)"));
+
+        _ = batch.SortedSetAdd(unionKey2, [
+            new SortedSetEntry("common", 3.0),
+            new SortedSetEntry("unique2", 4.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(unionKey2, union test data)"));
+
+        // Test SortedSetCombine with Union
+        _ = batch.SortedSetCombine(SetOperation.Union, [unionKey1, unionKey2]);
+        testData.Add(new(new ValkeyValue[] { "common", "unique1", "unique2" }, "SortedSetCombine(SetOperation.Union, [unionKey1, unionKey2])"));
+
+        // Test SortedSetCombineAndStore with Union
+        string unionDestKey = $"{prefix}uniondest-{Guid.NewGuid()}";
+        _ = batch.SortedSetCombineAndStore(SetOperation.Union, unionDestKey, unionKey1, unionKey2);
+        testData.Add(new(3L, "SortedSetCombineAndStore(SetOperation.Union, unionDestKey, unionKey1, unionKey2)"));
 
         return testData;
     }
