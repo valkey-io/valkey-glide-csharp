@@ -30,7 +30,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         string strategyString, ReadFromStrategy expectedStrategy, string? expectedAz, bool useStandalone)
     {
         // Arrange
-        var hostConfig = useStandalone ? TestConfiguration.STANDALONE_HOSTS[0] : TestConfiguration.CLUSTER_HOSTS[0];
+        (string host, int port) hostConfig = useStandalone ? TestConfiguration.STANDALONE_HOSTS[0] : TestConfiguration.CLUSTER_HOSTS[0];
         string connectionString = $"{hostConfig.host}:{hostConfig.port},ssl={TestConfiguration.TLS}";
         connectionString += $",readFrom={strategyString}";
         if (expectedAz != null)
@@ -39,19 +39,19 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         }
 
         // Act
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
         {
             // Assert - Verify connection was created successfully
             Assert.NotNull(connectionMultiplexer);
 
             // Parse the original configuration to verify ReadFrom was set correctly
-            var parsedConfig = ConfigurationOptions.Parse(connectionString);
+            ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
             Assert.NotNull(parsedConfig.ReadFrom);
             Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
             Assert.Equal(expectedAz, parsedConfig.ReadFrom.Value.Az);
 
             // Verify the configuration reaches the underlying client by testing functionality
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
             Assert.NotNull(database);
 
             // Test a basic operation to ensure the connection works with ReadFrom configuration
@@ -77,7 +77,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
     public async Task EndToEnd_ConnectionString_CaseInsensitiveReadFromParsing(string strategyString)
     {
         // Arrange
-        var expectedStrategy = Enum.Parse<ReadFromStrategy>(strategyString, ignoreCase: true);
+        ReadFromStrategy expectedStrategy = Enum.Parse<ReadFromStrategy>(strategyString, ignoreCase: true);
 
         string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS}";
         connectionString += $",readFrom={strategyString}";
@@ -88,18 +88,18 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         }
 
         // Act
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
         {
             // Assert - Verify connection was created successfully
             Assert.NotNull(connectionMultiplexer);
 
             // Parse the original configuration to verify ReadFrom was set correctly
-            var parsedConfig = ConfigurationOptions.Parse(connectionString);
+            ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
             Assert.NotNull(parsedConfig.ReadFrom);
             Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
 
             // Test basic functionality
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
             await database.PingAsync();
         }
     }
@@ -114,17 +114,17 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         {
             string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS}";
 
-            using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
+            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
             {
                 // Assert - Verify connection was created successfully
                 Assert.NotNull(connectionMultiplexer);
 
                 // Parse the original configuration to verify ReadFrom is null (default behavior)
-                var parsedConfig = ConfigurationOptions.Parse(connectionString);
+                ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
                 Assert.Null(parsedConfig.ReadFrom);
 
                 // Test a basic operation to ensure the connection works without ReadFrom configuration
-                var database = connectionMultiplexer.GetDatabase();
+                IDatabase database = connectionMultiplexer.GetDatabase();
                 await database.PingAsync();
 
                 // Test data operations to verify default behavior works
@@ -140,14 +140,14 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         }
         else
         {
-            var configOptions = new ConfigurationOptions
+            ConfigurationOptions configOptions = new ConfigurationOptions
             {
                 ReadFrom = null
             };
             configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
             configOptions.Ssl = TestConfiguration.TLS;
 
-            using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
+            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
             {
                 // Assert - Verify connection was created successfully
                 Assert.NotNull(connectionMultiplexer);
@@ -156,7 +156,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
                 Assert.Null(configOptions.ReadFrom);
 
                 // Test a basic operation to ensure the connection works without ReadFrom configuration
-                var database = connectionMultiplexer.GetDatabase();
+                IDatabase database = connectionMultiplexer.GetDatabase();
                 await database.PingAsync();
 
                 // Test data operations to verify default behavior works
@@ -181,8 +181,8 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
     [InlineData("Unknown", "", "is not supported")]
     [InlineData("PrimaryAndSecondary", "", "is not supported")]
     [InlineData("", "", "cannot be empty")]
-    [InlineData("AzAffinity", "", "Availability zone should be set when using")]
-    [InlineData("AzAffinityReplicasAndPrimary", "", "Availability zone should be set when using")]
+    [InlineData("AzAffinity", "", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinityReplicasAndPrimary", "", "Availability zone cannot be empty or whitespace")]
     [InlineData("Primary", "us-east-1a", "Availability zone should not be set when using")]
     [InlineData("PreferReplica", "us-east-1a", "Availability zone should not be set when using")]
     [InlineData("AzAffinity", "   ", "Availability zone cannot be empty or whitespace")]
@@ -200,7 +200,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         }
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
             () => ConnectionMultiplexer.ConnectAsync(connectionString));
 
         Assert.Contains(expectedErrorSubstring, exception.Message);
@@ -229,8 +229,8 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         }
 
         // Arrange
-        var configOptions = new ConfigurationOptions();
-        var hostConfig = useStandalone ? TestConfiguration.STANDALONE_HOSTS[0] : TestConfiguration.CLUSTER_HOSTS[0];
+        ConfigurationOptions configOptions = new ConfigurationOptions();
+        (string host, int port) hostConfig = useStandalone ? TestConfiguration.STANDALONE_HOSTS[0] : TestConfiguration.CLUSTER_HOSTS[0];
         configOptions.EndPoints.Add(hostConfig.host, hostConfig.port);
         configOptions.Ssl = TestConfiguration.TLS;
 
@@ -239,7 +239,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             : new ReadFrom(strategy);
 
         // Act
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
         {
             // Assert - Verify connection was created successfully
             Assert.NotNull(connectionMultiplexer);
@@ -250,7 +250,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             Assert.Equal(az, configOptions.ReadFrom.Value.Az);
 
             // Test a basic operation to ensure the connection works with ReadFrom configuration
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
             await database.PingAsync();
 
             // Test data operations to verify the ReadFrom configuration is active
@@ -279,7 +279,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         ReadFromStrategy? strategy, string? az)
     {
         // Arrange
-        var originalConfig = new ConfigurationOptions();
+        ConfigurationOptions originalConfig = new ConfigurationOptions();
         originalConfig.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
         originalConfig.Ssl = TestConfiguration.TLS;
 
@@ -293,10 +293,10 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         string serializedConfig = originalConfig.ToString();
 
         // Act 2: Parse back from string
-        var parsedConfig = ConfigurationOptions.Parse(serializedConfig);
+        ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(serializedConfig);
 
         // Act 3: Connect using parsed configuration
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(parsedConfig))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(parsedConfig))
         {
             // Assert - Verify connection was created successfully
             Assert.NotNull(connectionMultiplexer);
@@ -306,7 +306,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             Assert.Equal(originalConfig.ReadFrom?.Az, parsedConfig.ReadFrom?.Az);
 
             // Test a basic operation to ensure the connection works with round-trip configuration
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
             await database.PingAsync();
 
             // Test data operations to verify the round-trip configuration is active
@@ -331,7 +331,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         // Test that validation errors propagate correctly through the entire configuration pipeline
 
         // Arrange: Create configuration with invalid ReadFrom combination
-        var configOptions = new ConfigurationOptions();
+        ConfigurationOptions configOptions = new ConfigurationOptions();
         configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
         configOptions.Ssl = TestConfiguration.TLS;
 
@@ -343,12 +343,12 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
 
         // Test that the configuration remains in a valid state after failed assignment
         configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
         {
             Assert.NotNull(connectionMultiplexer);
 
             // Test basic functionality
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
             await database.PingAsync();
         }
     }
@@ -357,7 +357,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
     public async Task EndToEnd_ConfigurationPipeline_ClonePreservesReadFromConfiguration()
     {
         // Arrange
-        var originalConfig = new ConfigurationOptions
+        ConfigurationOptions originalConfig = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a")
         };
@@ -365,13 +365,13 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         originalConfig.Ssl = TestConfiguration.TLS;
 
         // Act
-        var clonedConfig = originalConfig.Clone();
+        ConfigurationOptions clonedConfig = originalConfig.Clone();
 
         // Modify original to ensure independence
         originalConfig.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
 
         // Connect using cloned configuration
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(clonedConfig))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(clonedConfig))
         {
             // Assert - Verify connection was created successfully
             Assert.NotNull(connectionMultiplexer);
@@ -386,7 +386,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             Assert.Equal(ReadFromStrategy.Primary, originalConfig.ReadFrom.Value.Strategy);
 
             // Test basic functionality
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
             await database.PingAsync();
         }
     }
@@ -412,19 +412,19 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             : string.Empty;
 
         // Act
-        using (var connection = await ConnectionMultiplexer.ConnectAsync(connectionString))
+        using (ConnectionMultiplexer connection = await ConnectionMultiplexer.ConnectAsync(connectionString))
         {
             // Assert - Verify connection was created successfully
             Assert.NotNull(connection);
 
             // Parse the connection string to verify ReadFrom configuration
-            var parsedConfig = ConfigurationOptions.Parse(connectionString);
+            ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
             Assert.NotNull(parsedConfig.ReadFrom);
             Assert.Equal(strategy, parsedConfig.ReadFrom.Value.Strategy);
             Assert.Equal(az, parsedConfig.ReadFrom.Value.Az);
 
             // Test basic functionality
-            var database = connection.GetDatabase();
+            IDatabase database = connection.GetDatabase();
             await database.PingAsync();
 
             // Test data operations
@@ -451,7 +451,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         if (useConfigurationOptions)
         {
             // Arrange: Create a legacy-style configuration without ReadFrom
-            var legacyConfig = new ConfigurationOptions();
+            ConfigurationOptions legacyConfig = new ConfigurationOptions();
             legacyConfig.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
             legacyConfig.Ssl = TestConfiguration.TLS;
             legacyConfig.ResponseTimeout = 5000;
@@ -459,7 +459,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             // Explicitly not setting ReadFrom to simulate legacy behavior
 
             // Act
-            using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConfig))
+            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConfig))
             {
                 // Assert - Verify connection was created successfully
                 Assert.NotNull(connectionMultiplexer);
@@ -468,7 +468,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
                 Assert.Null(legacyConfig.ReadFrom);
 
                 // Verify full functionality
-                var database = connectionMultiplexer.GetDatabase();
+                IDatabase database = connectionMultiplexer.GetDatabase();
                 await database.PingAsync();
 
                 // Test basic operations to ensure legacy behavior works
@@ -488,17 +488,17 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             string legacyConnectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS},connectTimeout=5000,responseTimeout=5000";
 
             // Act
-            using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConnectionString))
+            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConnectionString))
             {
                 // Assert - Verify connection was created successfully
                 Assert.NotNull(connectionMultiplexer);
 
                 // Parse the connection string to verify ReadFrom is null (legacy behavior)
-                var parsedConfig = ConfigurationOptions.Parse(legacyConnectionString);
+                ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(legacyConnectionString);
                 Assert.Null(parsedConfig.ReadFrom);
 
                 // Verify full functionality
-                var database = connectionMultiplexer.GetDatabase();
+                IDatabase database = connectionMultiplexer.GetDatabase();
                 await database.PingAsync();
 
                 // Test basic operations to ensure legacy behavior works
@@ -529,7 +529,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         // by creating clients with different ReadFrom strategies and verifying they work
 
         // Arrange - Create configuration with ReadFrom
-        var config = new ConfigurationOptions();
+        ConfigurationOptions config = new ConfigurationOptions();
         config.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
         config.Ssl = TestConfiguration.TLS;
 
@@ -538,15 +538,15 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             : new ReadFrom(strategy);
 
         // Act - Create connection and perform operations
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(config))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(config))
         {
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
 
             // Assert - Verify the connection works, indicating FFI layer received configuration
             await database.PingAsync();
 
             // Perform multiple operations to ensure the ReadFrom strategy is active
-            var tasks = new List<Task>();
+            List<Task> tasks = new List<Task>();
             for (int i = 0; i < 5; i++)
             {
                 string key = $"ffi-test-{strategy}-{i}";
@@ -575,15 +575,15 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         const string testAz = "us-east-1a";
 
         // Arrange
-        var config = new ConfigurationOptions();
+        ConfigurationOptions config = new ConfigurationOptions();
         config.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
         config.Ssl = TestConfiguration.TLS;
         config.ReadFrom = new ReadFrom(strategy, testAz);
 
         // Act
-        using (var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(config))
+        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(config))
         {
-            var database = connectionMultiplexer.GetDatabase();
+            IDatabase database = connectionMultiplexer.GetDatabase();
 
             // Assert - Verify the connection works with the specific AZ configuration
             await database.PingAsync();
@@ -613,7 +613,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS},readFrom={readFromPart}";
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
             () => ConnectionMultiplexer.ConnectAsync(connectionString));
 
         Assert.Contains(expectedErrorSubstring, exception.Message);
@@ -630,7 +630,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
         // verifying FFI layer handles multiple configurations
 
         // Arrange
-        var config = new ConfigurationOptions();
+        ConfigurationOptions config = new ConfigurationOptions();
         config.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
         config.Ssl = TestConfiguration.TLS;
 
@@ -639,15 +639,15 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             : new ReadFrom(strategy);
 
         // Act
-        using (var connection = await ConnectionMultiplexer.ConnectAsync(config))
+        using (ConnectionMultiplexer connection = await ConnectionMultiplexer.ConnectAsync(config))
         {
-            var database = connection.GetDatabase();
+            IDatabase database = connection.GetDatabase();
 
             // Assert - Test ping
             await database.PingAsync();
 
             // Test concurrent data operations
-            var operationTasks = new List<Task>();
+            List<Task> operationTasks = new List<Task>();
             for (int j = 0; j < 3; j++)
             {
                 int iteration = j;
