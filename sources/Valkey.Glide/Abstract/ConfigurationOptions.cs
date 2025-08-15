@@ -306,24 +306,21 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// Create a copy of the configuration.
     /// </summary>
-    public ConfigurationOptions Clone()
+    public ConfigurationOptions Clone() => new()
     {
-        return new ConfigurationOptions
-        {
-            ClientName = ClientName,
-            ConnectTimeout = ConnectTimeout,
-            User = User,
-            Password = Password,
-            ssl = ssl,
-            proxy = proxy,
-            ResponseTimeout = ResponseTimeout,
-            DefaultDatabase = DefaultDatabase,
-            reconnectRetryPolicy = reconnectRetryPolicy,
-            EndPoints = EndPoints.Clone(),
-            Protocol = Protocol,
-            ReadFrom = readFrom
-        };
-    }
+        ClientName = ClientName,
+        ConnectTimeout = ConnectTimeout,
+        User = User,
+        Password = Password,
+        ssl = ssl,
+        proxy = proxy,
+        ResponseTimeout = ResponseTimeout,
+        DefaultDatabase = DefaultDatabase,
+        reconnectRetryPolicy = reconnectRetryPolicy,
+        EndPoints = EndPoints.Clone(),
+        Protocol = Protocol,
+        ReadFrom = readFrom
+    };
 
     /// <summary>
     /// Apply settings to configure this instance of <see cref="ConfigurationOptions"/>, e.g. for a specific scenario.
