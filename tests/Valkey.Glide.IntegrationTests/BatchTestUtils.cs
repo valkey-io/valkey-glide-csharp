@@ -798,6 +798,14 @@ internal class BatchTestUtils
         _ = batch.SortedSetScore(newKey, "newMember1");
         testData.Add(new(10.5, "SortedSetScore(newKey, newMember1)"));
 
+        // Test SortedSetRandomMembers
+        _ = batch.SortedSetRandomMembers(newKey, 2);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRandomMembers(newKey, 2)", true));
+
+        // Test SortedSetRandomMembersWithScores
+        _ = batch.SortedSetRandomMembersWithScores(newKey, 2);
+        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRandomMembersWithScores(newKey, 2)", true));
+
         // Test SortedSetRangeAndStore (should copy all 3 elements from newKey to newDestKey)
         _ = batch.SortedSetRangeAndStore(newKey, newDestKey, 0, 9);
         testData.Add(new(3L, "SortedSetRangeAndStore(newKey, newDestKey, 0, 9)"));

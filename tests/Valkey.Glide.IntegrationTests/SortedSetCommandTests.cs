@@ -743,7 +743,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test with weights
         result = await client.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2], [2.0, 0.5]);
         Assert.Equal(3, result.Length);
-        var member2Entry = result.First(e => e.Element == "member2");
+        SortedSetEntry member2Entry = result.First(e => e.Element == "member2");
         Assert.Equal(47.5, member2Entry.Score); // (20 * 2) + (15 * 0.5)
     }
 
@@ -1130,7 +1130,11 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test random members with scores
         SortedSetEntry[] scoreResult = await client.SortedSetRandomMembersWithScoresAsync(key, 2);
         Assert.Equal(2, scoreResult.Length);
-        Assert.All(scoreResult, entry => Assert.Contains(entry.Element.ToString(), new[] { "member1", "member2", "member3" }));
+        Assert.All(scoreResult, entry =>
+        {
+            Assert.Contains(entry.Element.ToString(), new[] { "member1", "member2", "member3" });
+            Assert.True(entry.Score > 0);
+        });
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1461,7 +1465,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test union
         ValkeyValue[] unionResult = await client.SortedSetCombineAsync(SetOperation.Union, [key1, key2]);
         Assert.Equal(3, unionResult.Length);
-        var unionStrings = unionResult.Select(v => v.ToString()).ToArray();
+        string[] unionStrings = [.. unionResult.Select(v => v.ToString())];
         Assert.Contains("member1", unionStrings);
         Assert.Contains("member2", unionStrings);
         Assert.Contains("member3", unionStrings);
@@ -1469,7 +1473,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test union with scores
         SortedSetEntry[] unionWithScores = await client.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2]);
         Assert.Equal(3, unionWithScores.Length);
-        var member2Entry = unionWithScores.First(e => e.Element.ToString() == "member2");
+        SortedSetEntry member2Entry = unionWithScores.First(e => e.Element.ToString() == "member2");
         Assert.Equal(13.2, member2Entry.Score); // 8.2 + 5.0
     }
 
@@ -1501,7 +1505,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         ValkeyValue[] stored = await client.SortedSetRangeByRankAsync(destKey);
         Assert.Equal(3, stored.Length);
-        var storedStrings = stored.Select(v => v.ToString()).ToArray();
+        string[] storedStrings = [.. stored.Select(v => v.ToString())];
         Assert.Contains("member1", storedStrings);
         Assert.Contains("member2", storedStrings);
         Assert.Contains("member3", storedStrings);

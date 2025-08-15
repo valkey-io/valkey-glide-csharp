@@ -466,7 +466,7 @@ internal partial class Request
                 return null;
             }
 
-            var firstEntry = responseDict.First();
+            KeyValuePair<GlideString, object> firstEntry = responseDict.First();
             ValkeyValue member = (ValkeyValue)firstEntry.Key;
             double score = (double)firstEntry.Value;
             return new SortedSetEntry(member, score);
@@ -484,7 +484,7 @@ internal partial class Request
         {
             SortedSetEntry[] entries = new SortedSetEntry[response.Count];
             int i = 0;
-            foreach (var kvp in response)
+            foreach (KeyValuePair<GlideString, object> kvp in response)
             {
                 ValkeyValue member = (ValkeyValue)kvp.Key;
                 double score = (double)kvp.Value;
@@ -509,22 +509,16 @@ internal partial class Request
         return new(RequestType.ZMPop, [.. args], true, HandleSortedSetPopResultResponse);
     }
 
-    public static Cmd<GlideString?, ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key)
-    {
-        return new(RequestType.ZRandMember, [key.ToGlideString()], true, response =>
-        {
-            return response is null ? ValkeyValue.Null : (ValkeyValue)response;
-        }, allowConverterToHandleNull: true);
-    }
+    public static Cmd<GlideString?, ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key) =>
+        new(RequestType.ZRandMember, [key.ToGlideString()], true, response =>
+            response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
 
     public static Cmd<object[], ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count)
     {
         List<GlideString> args = [key.ToGlideString(), count.ToGlideString()];
 
         return new(RequestType.ZRandMember, [.. args], false, response =>
-        {
-            return [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
-        });
+            [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
     }
 
     public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count)
@@ -533,11 +527,8 @@ internal partial class Request
 
         return new(RequestType.ZRandMember, [.. args], false, response =>
         {
-            // Check if response structure is nested arrays [[member, score], [member, score]]
-            // instead of flat array [member, score, member, score]
-            if (response.Length > 0 && response[0] is object[])
+            if (response.Length > 0)
             {
-                // Nested structure: [[member1, score1], [member2, score2]]
                 SortedSetEntry[] entries = new SortedSetEntry[response.Length];
                 for (int i = 0; i < entries.Length; i++)
                 {
@@ -548,18 +539,7 @@ internal partial class Request
                 }
                 return entries;
             }
-            else
-            {
-                // Flat structure: [member1, score1, member2, score2]
-                SortedSetEntry[] entries = new SortedSetEntry[response.Length / 2];
-                for (int i = 0; i < entries.Length; i++)
-                {
-                    ValkeyValue member = (ValkeyValue)(GlideString)response[i * 2];
-                    double score = double.Parse(((GlideString)response[i * 2 + 1]).ToString());
-                    entries[i] = new SortedSetEntry(member, score);
-                }
-                return entries;
-            }
+            return []; // empty
         });
     }
 
@@ -732,7 +712,7 @@ internal partial class Request
             for (int i = 0; i < entries.Length; i++)
             {
                 ValkeyValue member = (ValkeyValue)(GlideString)itemsArray[i * 2];
-                double score = double.Parse(((GlideString)itemsArray[i * 2 + 1]).ToString());
+                double score = double.Parse(((GlideString)itemsArray[(i * 2) + 1]).ToString());
                 entries[i] = new SortedSetEntry(member, score);
             }
 

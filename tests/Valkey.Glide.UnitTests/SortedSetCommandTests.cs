@@ -335,7 +335,7 @@ public class SortedSetCommandTests
                     Assert.IsType<double>(entry.Score);
                 }
                 // Validate specific values (sorted by score)
-                var sortedResults = result.OrderBy(e => e.Score).ToArray();
+                SortedSetEntry[] sortedResults = result.OrderBy(e => e.Score).ToArray();
                 Assert.Equal("member2", result[0].Element);
                 Assert.Equal(8.25, result[0].Score);
                 Assert.Equal("member1", result[1].Element);
@@ -387,7 +387,7 @@ public class SortedSetCommandTests
                 Assert.Equal(3, result.Length);
                 Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
                 // Check that entries are sorted by score
-                var sortedResults = result.OrderBy(e => e.Score).ToArray();
+                SortedSetEntry[] sortedResults = result.OrderBy(e => e.Score).ToArray();
                 Assert.Equal("member2", sortedResults[0].Element);
                 Assert.Equal(8.25, sortedResults[0].Score);
                 Assert.Equal("member1", sortedResults[1].Element);
@@ -555,8 +555,8 @@ public class SortedSetCommandTests
                 };
                 SortedSetEntry[] result = Request.SortedSetPopAsync("key", 2).Converter(testPopMaxDict);
                 Assert.Equal(2, result.Length);
-                var member1Entry = result.First(e => e.Element.ToString() == "member1");
-                var member2Entry = result.First(e => e.Element.ToString() == "member2");
+                SortedSetEntry member1Entry = result.First(e => e.Element.ToString() == "member1");
+                SortedSetEntry member2Entry = result.First(e => e.Element.ToString() == "member2");
                 Assert.Equal(10.5, member1Entry.Score);
                 Assert.Equal(8.25, member2Entry.Score);
             },
@@ -589,22 +589,6 @@ public class SortedSetCommandTests
                 Assert.Equal(2, result.Length);
                 Assert.Equal("member1", result[0]);
                 Assert.Equal("member2", result[1]);
-            },
-
-            // Test SortedSetRandomMembersWithScoresAsync converter
-            () =>
-            {
-                object[] testRandomScoreArray = new object[]
-                {
-                    (GlideString)"member1", (GlideString)"10.5",
-                    (GlideString)"member2", (GlideString)"8.25"
-                };
-                SortedSetEntry[] result = Request.SortedSetRandomMembersWithScoresAsync("key", 2).Converter(testRandomScoreArray);
-                Assert.Equal(2, result.Length);
-                var member1Entry = result.First(e => e.Element.ToString() == "member1");
-                var member2Entry = result.First(e => e.Element.ToString() == "member2");
-                Assert.Equal(10.5, member1Entry.Score);
-                Assert.Equal(8.25, member2Entry.Score);
             },
 
             // Test SortedSetRangeAndStoreAsync converter
