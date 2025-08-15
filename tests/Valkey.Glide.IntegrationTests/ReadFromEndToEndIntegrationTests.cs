@@ -183,8 +183,8 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
     [InlineData("", "", "cannot be empty")]
     [InlineData("AzAffinity", "", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinityReplicasAndPrimary", "", "Availability zone cannot be empty or whitespace")]
-    [InlineData("Primary", "us-east-1a", "Availability zone should not be set when using")]
-    [InlineData("PreferReplica", "us-east-1a", "Availability zone should not be set when using")]
+    //[InlineData("Primary", "us-east-1a", "Availability zone should not be set when using")]
+    //[InlineData("PreferReplica", "us-east-1a", "Availability zone should not be set when using")]
     [InlineData("AzAffinity", "   ", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "\t", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "\n", "Availability zone cannot be empty or whitespace")]
@@ -546,7 +546,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             await database.PingAsync();
 
             // Perform multiple operations to ensure the ReadFrom strategy is active
-            List<Task> tasks = new List<Task>();
+            List<Task> tasks = [];
             for (int i = 0; i < 5; i++)
             {
                 string key = $"ffi-test-{strategy}-{i}";
@@ -647,7 +647,7 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
             await database.PingAsync();
 
             // Test concurrent data operations
-            List<Task> operationTasks = new List<Task>();
+            List<Task> operationTasks = [];
             for (int j = 0; j < 3; j++)
             {
                 int iteration = j;

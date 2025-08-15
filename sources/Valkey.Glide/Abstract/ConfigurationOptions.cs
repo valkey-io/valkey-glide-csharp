@@ -91,9 +91,6 @@ public sealed class ConfigurationOptions : ICloneable
     private bool? ssl;
     private Proxy? proxy;
     private RetryStrategy? reconnectRetryPolicy;
-    private ReadFrom? readFrom;
-    private string? tempAz; // Temporary storage for AZ during parsing
-    private ReadFromStrategy? tempReadFromStrategy; // Temporary storage for ReadFrom strategy during parsing
 
     /// <summary>
     /// Gets or sets whether connect/configuration timeouts should be explicitly notified via a TimeoutException.
@@ -244,18 +241,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// The read from strategy and Availability zone if applicable.
     /// </summary>
-    public ReadFrom? ReadFrom
-    {
-        get => readFrom;
-        set
-        {
-            if (value.HasValue)
-            {
-                ValidateReadFromConfiguration(value.Value);
-            }
-            readFrom = value;
-        }
-    }
+    public ReadFrom? ReadFrom { get; set; }
 
     /// <summary>
     /// Indicates whether endpoints should be resolved via DNS before connecting.
@@ -319,7 +305,7 @@ public sealed class ConfigurationOptions : ICloneable
         reconnectRetryPolicy = reconnectRetryPolicy,
         EndPoints = EndPoints.Clone(),
         Protocol = Protocol,
-        ReadFrom = readFrom
+        ReadFrom = ReadFrom
     };
 
     /// <summary>
@@ -367,9 +353,9 @@ public sealed class ConfigurationOptions : ICloneable
         Append(sb, OptionKeys.ResponseTimeout, ResponseTimeout);
         Append(sb, OptionKeys.DefaultDatabase, DefaultDatabase);
         Append(sb, OptionKeys.Protocol, FormatProtocol(Protocol));
-        if (readFrom.HasValue)
+        if (ReadFrom.HasValue)
         {
-            FormatReadFrom(sb, readFrom.Value);
+            FormatReadFrom(sb, ReadFrom.Value);
         }
 
         return sb.ToString();
@@ -416,10 +402,8 @@ public sealed class ConfigurationOptions : ICloneable
         ClientName = User = Password = null;
         ConnectTimeout = ResponseTimeout = null;
         ssl = null;
-        readFrom = null;
+        ReadFrom = null;
         reconnectRetryPolicy = null;
-        tempAz = null;
-        tempReadFromStrategy = null;
         EndPoints.Clear();
     }
 
@@ -427,6 +411,9 @@ public sealed class ConfigurationOptions : ICloneable
 
     private ConfigurationOptions DoParse(string configuration, bool ignoreUnknown = true)
     {
+        ReadFromStrategy? tempReadFromStrategy = null;
+        string? tempAz = null;
+
         if (configuration == null)
         {
             throw new ArgumentNullException(nameof(configuration));
@@ -481,10 +468,10 @@ public sealed class ConfigurationOptions : ICloneable
                         ResponseTimeout = OptionKeys.ParseInt32(key, value);
                         break;
                     case OptionKeys.ReadFrom:
-                        ParseReadFromParameter(key, value);
+                        tempReadFromStrategy = ParseReadFromStrategy(value);
                         break;
                     case OptionKeys.Az:
-                        ParseAzParameter(key, value);
+                        tempAz = ParseAzParameter(value);
                         break;
                     default:
                         if (!ignoreUnknown) throw new ArgumentException($"Keyword '{key}' is not supported.", key);
@@ -503,84 +490,48 @@ public sealed class ConfigurationOptions : ICloneable
         // Validate ReadFrom configuration after all parameters have been parsed
         if (tempReadFromStrategy.HasValue)
         {
-            ValidateAndSetReadFrom();
+            ReadFrom = SetReadFrom(tempReadFromStrategy, tempAz);
         }
 
         return this;
     }
 
-    private void ParseReadFromParameter(string key, string value) => tempReadFromStrategy = ParseReadFromStrategy(key, value);// Don't validate immediately - wait until all parsing is complete
-
-    private void ParseAzParameter(string key, string value)
+    private string ParseAzParameter(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("Availability zone cannot be empty or whitespace", key);
+            throw new ArgumentException("Availability zone cannot be empty or whitespace");
         }
-        tempAz = value;
-        // Don't validate immediately - wait until all parsing is complete
+        return value;
     }
 
-    private void ValidateAndSetReadFrom()
+    private ReadFrom? SetReadFrom(ReadFromStrategy? strategy, string? az)
     {
-        if (tempReadFromStrategy.HasValue)
+        if (strategy.HasValue)
         {
-            ReadFromStrategy strategy = tempReadFromStrategy.Value;
-
-            // Validate strategy and AZ combinations
-            switch (strategy)
+            // Use ReadFrom constructors based on strategy type - the constructors contain the validation logic
+            switch (strategy.Value)
             {
                 case ReadFromStrategy.AzAffinity:
-                    if (tempAz == null)
-                    {
-                        throw new ArgumentException("Availability zone should be set when using AzAffinity strategy");
-                    }
-                    if (string.IsNullOrWhiteSpace(tempAz))
-                    {
-                        throw new ArgumentException("Availability zone cannot be empty or whitespace when using AzAffinity strategy");
-                    }
-                    readFrom = new ReadFrom(strategy, tempAz);
-                    break;
-
                 case ReadFromStrategy.AzAffinityReplicasAndPrimary:
-                    if (tempAz == null)
-                    {
-                        throw new ArgumentException("Availability zone should be set when using AzAffinityReplicasAndPrimary strategy");
-                    }
-                    if (string.IsNullOrWhiteSpace(tempAz))
-                    {
-                        throw new ArgumentException("Availability zone cannot be empty or whitespace when using AzAffinityReplicasAndPrimary strategy");
-                    }
-                    readFrom = new ReadFrom(strategy, tempAz);
-                    break;
+                    return new ReadFrom(strategy.Value, az);
 
                 case ReadFromStrategy.Primary:
-                    if (!string.IsNullOrWhiteSpace(tempAz))
-                    {
-                        throw new ArgumentException("Availability zone should not be set when using Primary strategy");
-                    }
-                    readFrom = new ReadFrom(strategy);
-                    break;
-
                 case ReadFromStrategy.PreferReplica:
-                    if (!string.IsNullOrWhiteSpace(tempAz))
-                    {
-                        throw new ArgumentException("Availability zone should not be set when using PreferReplica strategy");
-                    }
-                    readFrom = new ReadFrom(strategy);
-                    break;
+                    return new ReadFrom(strategy.Value);
 
                 default:
-                    throw new ArgumentException($"ReadFrom strategy '{strategy}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
+                    throw new ArgumentException($"ReadFrom strategy '{strategy.Value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
             }
         }
+        return null;
     }
 
-    private static ReadFromStrategy ParseReadFromStrategy(string key, string value)
+    private ReadFromStrategy ParseReadFromStrategy(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException($"Keyword '{key}' requires a ReadFrom strategy value; the value cannot be empty", key);
+            throw new ArgumentException("ReadFrom strategy cannot be empty");
         }
 
         try
@@ -589,7 +540,7 @@ public sealed class ConfigurationOptions : ICloneable
         }
         catch (ArgumentException)
         {
-            throw new ArgumentException($"ReadFrom strategy '{value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary", key);
+            throw new ArgumentException($"ReadFrom strategy '{value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
         }
     }
 
