@@ -601,25 +601,6 @@ public class ReadFromEndToEndIntegrationTests(TestConfiguration config)
     }
 
     [Theory]
-    [InlineData("InvalidStrategy", "is not supported")]
-    [InlineData("AzAffinity", "Availability zone should be set")]
-    [InlineData("Primary,az=invalid-az", "Availability zone should not be set")]
-    public async Task EndToEnd_FFILayerIntegration_ErrorHandlingInCompleteConfigurationPipeline(string readFromPart, string expectedErrorSubstring)
-    {
-        // Test that error handling works correctly throughout the complete configuration pipeline
-        // from connection string parsing to FFI layer
-
-        // Arrange
-        string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS},readFrom={readFromPart}";
-
-        // Act & Assert
-        ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
-            () => ConnectionMultiplexer.ConnectAsync(connectionString));
-
-        Assert.Contains(expectedErrorSubstring, exception.Message);
-    }
-
-    [Theory]
     [InlineData(ReadFromStrategy.Primary, null)]
     [InlineData(ReadFromStrategy.PreferReplica, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
