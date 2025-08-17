@@ -58,7 +58,7 @@ runs:
               github-token: ${{ inputs.github-token }}
 
         - name: Install server
-          if: ${{ inputs.server-version }}
+          if: ${{ inputs.server-version && !contains(inputs.target, 'windows') }}
           uses: ./.github/workflows/install-server
           with:
               server-version: ${{ inputs.server-version }}

@@ -69,7 +69,7 @@ public class TestConfiguration : IDisposable
     {
         get
         {
-            if (field.Count == 0)
+            if (field.Count == 0 && STANDALONE_HOSTS.Count > 0)
             {
                 GlideClient resp2client = GlideClient.CreateClient(
                     DefaultClientConfig()
@@ -97,7 +97,7 @@ public class TestConfiguration : IDisposable
     {
         get
         {
-            if (field.Count == 0)
+            if (field.Count == 0 && CLUSTER_HOSTS.Count > 0)
             {
                 GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                     DefaultClusterClientConfig()

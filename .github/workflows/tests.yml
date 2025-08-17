@@ -101,16 +101,7 @@ jobs:
               shell: bash
               working-directory: valkey-glide/utils
               run: |
-                  echo $GITHUB_ENV
-                  echo $GITHUB_ENV | sed 's|\\|/|g' | sed 's|^C:|/mnt/c|'
-                  export ENV_FILE=`echo $GITHUB_ENV | sed 's|\\|/|g' | sed 's|^C:|/mnt/c|'`
-                  wsl bash << EOF
-                    set -e
-                    python3 ./cluster_manager.py start -p 6380 6381
-                    python3 ./cluster_manager.py start --cluster-mode -p 7000 7001 7002 7003 7004 7005
-                    echo "standalone-endpoints=localhost:6380" >> $ENV_FILE
-                    echo "cluster-endpoints=localhost:7000" >> $ENV_FILE
-                  EOF
+                  echo "cluster-endpoints=clustercfg.gh-actions-for-dotnet-glide-client.nra7gl.use1.cache.amazonaws.com:6379" >> $GITHUB_ENV
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
