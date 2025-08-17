@@ -84,6 +84,7 @@ jobs:
                   DOTNET_INSTALL_DIR: ~/.dotnet
 
             - name: Install shared software dependencies
+              if: ${{ contains(toJson(matrix.host.RUNNER), 'self-hosted') }}
               uses: ./.github/workflows/install-shared-dependencies
               with:
                   os: ${{ matrix.host.OS }}
@@ -95,10 +96,6 @@ jobs:
               with:
                   path: rust/target
                   key: rust-${{ matrix.host.TARGET }}
-
-            - run: cargo build
-              working-directory: rust
-              if: ${{ matrix.host.OS == 'windows' }}
 
             - name: Set test endpoints for windows runner
               if: ${{ matrix.host.OS == 'windows' }}
