@@ -54,7 +54,7 @@ jobs:
     tests:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: get-matrices
-        timeout-minutes: ${{ matrix.os == 'windows' && 45 || 30 }}
+        timeout-minutes: ${{ matrix.host.OS == 'windows' && 45 || 30 }}
         strategy:
             fail-fast: false
             matrix:
@@ -96,10 +96,13 @@ jobs:
                   path: rust/target
                   key: rust-${{ matrix.host.TARGET }}
 
-            - name: Run service in WSL for windows runner
+            - run: cargo build
+              working-directory: rust
+              if: ${{ matrix.host.OS == 'windows' }}
+
+            - name: Set test endpoints for windows runner
               if: ${{ matrix.host.OS == 'windows' }}
               shell: bash
-              working-directory: valkey-glide/utils
               run: |
                   echo "cluster-endpoints=clustercfg.gh-actions-for-dotnet-glide-client.nra7gl.use1.cache.amazonaws.com:6379" >> $GITHUB_ENV
 
