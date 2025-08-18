@@ -1,7 +1,7 @@
-name: 'Run Coverage'
-description: 'Run code coverage collection and upload artifacts'
+name: "Run Coverage"
+description: "Run code coverage collection and upload artifacts"
 runs:
-    using: 'composite'
+    using: "composite"
     steps:
         - name: Install Task
           shell: bash
