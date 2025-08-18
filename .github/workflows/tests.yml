@@ -83,10 +83,6 @@ jobs:
               env:
                   DOTNET_INSTALL_DIR: ~/.dotnet
 
-            - name: Install Task for using Taskfile
-              run: |
-                  sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
-
             - name: Install shared software dependencies
               uses: ./.github/workflows/install-shared-dependencies
               with:
@@ -111,32 +107,9 @@ jobs:
                   redis-server --save "" --daemonize "yes"
                   ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net${{ matrix.dotnet }}
 
-            - name: Check if coverage needed
-              id: coverage-check
-              run: |
-                  if [[ "${{ matrix.dotnet }}" == "8.0" && "${{ contains(matrix.host.RUNNER, 'ubuntu') }}" == "true" && "${{ matrix.host.ARCH }}" == "x64" && "${{ matrix.server.version }}" == "8.1" ]]; then
-                    echo "coverage-enabled=true" >> $GITHUB_OUTPUT
-                  fi
-
-            - name: Build and run coverage
-              if: ${{ steps.coverage-check.outputs.coverage-enabled == 'true' }}
-              run: task coverage FRAMEWORK=net8.0
-
-            - name: Upload coverage report artifact
-              if: ${{ steps.coverage-check.outputs.coverage-enabled == 'true' }}
-              uses: actions/upload-artifact@v4
-              with:
-                  name: coverage-report
-                  path: reports/
-                  retention-days: 30
-
-            - name: Upload coverage results artifact
-              if: ${{ steps.coverage-check.outputs.coverage-enabled == 'true' }}
-              uses: actions/upload-artifact@v4
-              with:
-                  name: test-results
-                  path: testresults/
-                  retention-days: 30
+            - name: Run coverage
+              if: ${{ matrix.dotnet == '8.0' && contains(matrix.host.RUNNER, 'ubuntu') && matrix.host.ARCH == 'x64' && matrix.server.version == '8.1' }}
+              uses: ./.github/workflows/run-coverage
 
             - name: Upload test reports
               if: always()

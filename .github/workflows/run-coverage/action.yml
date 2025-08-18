@@ -1,0 +1,32 @@
+name: 'Run Coverage'
+description: 'Run code coverage collection and upload artifacts'
+runs:
+    using: 'composite'
+    steps:
+        - name: Install Task
+          shell: bash
+          run: |
+              sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
+        - name: Install reportgenerator
+          shell: bash
+          run: |
+              dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.4.12
+
+        - name: Build and run coverage
+          shell: bash
+          run: task coverage FRAMEWORK=net8.0
+
+        - name: Upload coverage report artifact
+          uses: actions/upload-artifact@v4
+          with:
+              name: coverage-report
+              path: reports/
+              retention-days: 30
+
+        - name: Upload coverage results artifact
+          uses: actions/upload-artifact@v4
+          with:
+              name: test-results
+              path: testresults/
+              retention-days: 30
