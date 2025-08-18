@@ -1,0 +1,140 @@
+name: Test Coverage
+
+on:
+    pull_request:
+        branches:
+            - main
+            - release-*
+            - v*
+
+jobs:
+    test-coverage:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: |
+                      6.0.x
+                      8.0.x
+
+            - name: Install Task
+              run: |
+                  sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
+            - name: Build and run coverage
+              run: task coverage
+
+            - name: Display coverage summary and set outputs
+              id: coverage
+              run: |
+                  task coverage:summary
+                  # Set outputs for GitHub Actions using same JSON parsing approach
+                  if [ -f "reports/Summary.json" ]; then
+                    SUMMARY=$(cat reports/Summary.json)
+                    LINE_COVERAGE=$(echo "$SUMMARY" | jq -r '.summary.linecoverage')
+                    BRANCH_COVERAGE=$(echo "$SUMMARY" | jq -r '.summary.branchcoverage')
+                    echo "line-coverage=${LINE_COVERAGE}" >> $GITHUB_OUTPUT
+                    echo "branch-coverage=${BRANCH_COVERAGE}" >> $GITHUB_OUTPUT
+                  else
+                    echo "line-coverage=0" >> $GITHUB_OUTPUT
+                    echo "branch-coverage=0" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Upload coverage report artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report
+                  path: reports/
+                  retention-days: 30
+
+            - name: Upload test results artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-results
+                  path: testresults/
+                  retention-days: 30
+
+            - name: Comment coverage on PR
+              if: github.event_name == 'pull_request'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const fs = require('fs');
+
+                      let coverageComment = '## 📊 Test Coverage Report\n\n';
+
+                      try {
+                        const summaryPath = 'reports/Summary.json';
+                        if (fs.existsSync(summaryPath)) {
+                          const lineCoverage = '${{ steps.coverage.outputs.line-coverage }}' || '0';
+                          const branchCoverage = '${{ steps.coverage.outputs.branch-coverage }}' || '0';
+
+                          coverageComment += `| Metric | Coverage |\n`;
+                          coverageComment += `|--------|----------|\n`;
+                          coverageComment += `| **Line Coverage** | ${lineCoverage}% |\n`;
+                          coverageComment += `| **Branch Coverage** | ${branchCoverage}% |\n\n`;
+
+                          // Add coverage badge indicators
+                          const lineCoverageNum = parseFloat(lineCoverage);
+                          const branchCoverageNum = parseFloat(branchCoverage);
+
+                          if (lineCoverageNum >= 80) {
+                            coverageComment += `🟢 **Good line coverage** (${lineCoverage}%)\n`;
+                          } else if (lineCoverageNum >= 60) {
+                            coverageComment += `🟡 **Moderate line coverage** (${lineCoverage}%)\n`;
+                          } else {
+                            coverageComment += `🔴 **Low line coverage** (${lineCoverage}%)\n`;
+                          }
+
+                          if (branchCoverageNum >= 70) {
+                            coverageComment += `🟢 **Good branch coverage** (${branchCoverage}%)\n`;
+                          } else if (branchCoverageNum >= 50) {
+                            coverageComment += `🟡 **Moderate branch coverage** (${branchCoverage}%)\n`;
+                          } else {
+                            coverageComment += `🔴 **Low branch coverage** (${branchCoverage}%)\n`;
+                          }
+                        } else {
+                          coverageComment += '❌ Coverage report not found\n';
+                        }
+                      } catch (error) {
+                        coverageComment += `❌ Error reading coverage report: ${error.message}\n`;
+                      }
+
+                      coverageComment += '\n📁 **Coverage report artifact** has been uploaded and will be available for download.';
+
+                      // Find existing coverage comment
+                      const comments = await github.rest.issues.listComments({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                      });
+
+                      const existingComment = comments.data.find(comment =>
+                        comment.user.login === 'github-actions[bot]' &&
+                        comment.body.includes('📊 Test Coverage Report')
+                      );
+
+                      if (existingComment) {
+                        // Update existing comment
+                        await github.rest.issues.updateComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          comment_id: existingComment.id,
+                          body: coverageComment
+                        });
+                      } else {
+                        // Create new comment
+                        await github.rest.issues.createComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: context.issue.number,
+                          body: coverageComment
+                        });
+                      }
