@@ -6,9 +6,7 @@ on:
             - main
             - release-*
             - v*
-        paths:
     pull_request:
-        paths:
     workflow_dispatch:
         inputs:
             full-matrix:

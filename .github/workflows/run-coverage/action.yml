@@ -22,11 +22,9 @@ runs:
           with:
               name: coverage-report
               path: reports/
-              retention-days: 30
 
         - name: Upload coverage results artifact
           uses: actions/upload-artifact@v4
           with:
               name: test-results
               path: testresults/
-              retention-days: 30
