@@ -181,4 +181,103 @@ public abstract partial class BaseClient : ISortedSetCommands
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.SortedSetBlockingPopAsync(keys, count, order, timeout));
     }
+
+    public async Task<SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetPopAsync(key, order));
+    }
+
+    public async Task<SortedSetEntry[]> SortedSetPopAsync(ValkeyKey key, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        Utils.Requires<ArgumentException>(count == 1, "GLIDE does not currently support multipop ZPOPMIN or ZPOPMAX"); // TODO for the future
+        return await Command(Request.SortedSetPopAsync(key, count, order));
+    }
+
+    public async Task<ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRandomMemberAsync(key));
+    }
+
+    public async Task<ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRandomMembersAsync(key, count));
+    }
+
+    public async Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRandomMembersWithScoresAsync(key, count));
+    }
+
+    public async Task<long> SortedSetRangeAndStoreAsync(
+        ValkeyKey sourceKey,
+        ValkeyKey destinationKey,
+        ValkeyValue start,
+        ValkeyValue stop,
+        SortedSetOrder sortedSetOrder = SortedSetOrder.ByRank,
+        Exclude exclude = Exclude.None,
+        Order order = Order.Ascending,
+        long skip = 0,
+        long? take = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRangeAndStoreAsync(sourceKey, destinationKey, start, stop, sortedSetOrder, exclude, order, skip, take));
+    }
+
+    public async Task<long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRankAsync(key, member, order));
+    }
+
+    public async Task<long> SortedSetRemoveRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRemoveRangeByValueAsync(key, min, max, exclude));
+    }
+
+    public async Task<long> SortedSetRemoveRangeByRankAsync(ValkeyKey key, long start, long stop, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRemoveRangeByRankAsync(key, start, stop));
+    }
+
+    public async Task<long> SortedSetRemoveRangeByScoreAsync(ValkeyKey key, double min, double max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetRemoveRangeByScoreAsync(key, min, max, exclude));
+    }
+
+    public async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        long currentCursor = cursor;
+        int currentOffset = pageOffset;
+
+        do
+        {
+            (long nextCursor, SortedSetEntry[] elements) = await Command(Request.SortedSetScanAsync(key, pattern, pageSize, currentCursor));
+
+            IEnumerable<SortedSetEntry> elementsToYield = currentOffset > 0 ? elements.Skip(currentOffset) : elements;
+
+            foreach (SortedSetEntry element in elementsToYield)
+            {
+                yield return element;
+            }
+
+            currentCursor = nextCursor;
+        } while (currentCursor != 0);
+    }
+
+    public async Task<double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortedSetScoreAsync(key, member));
+    }
 }
