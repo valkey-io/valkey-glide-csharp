@@ -1,0 +1,154 @@
+version: '3'
+
+vars:
+  TEST_RESULTS_DIR: testresults
+  REPORTS_DIR: reports
+  COVERAGE_FILE: "{{.TEST_RESULTS_DIR}}/coverage.cobertura.xml"
+  UNIT_TEST_PROJECT: tests/Valkey.Glide.UnitTests/Valkey.Glide.UnitTests.csproj
+  INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
+
+tasks:
+  clean:
+    desc: Clean test results and reports directories
+    cmds:
+      - rm -rf {{.TEST_RESULTS_DIR}}
+      - rm -rf {{.REPORTS_DIR}}
+      - mkdir -p {{.TEST_RESULTS_DIR}}
+      - mkdir -p {{.REPORTS_DIR}}
+
+  install-tools:
+    desc: Install required tools for coverage reporting
+    cmds:
+      - dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.4.12
+    status:
+      - which reportgenerator
+
+  test:unit:
+    desc: Run unit tests only
+    deps: [clean]
+    cmds:
+      - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --no-build --verbosity normal
+
+  test:integration:
+    desc: Run integration tests only
+    deps: [clean]
+    cmds:
+      - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --no-build --verbosity normal
+
+  test:coverage:unit:
+    desc: Run unit tests with coverage collection
+    deps: [clean]
+    cmds:
+      - dotnet test {{.UNIT_TEST_PROJECT}} 
+        --configuration Release 
+        --collect:"XPlat Code Coverage" 
+        --results-directory {{.TEST_RESULTS_DIR}} 
+        --logger trx 
+        --logger "console;verbosity=detailed"
+        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+  test:coverage:integration:
+    desc: Run integration tests with coverage collection
+    deps: [clean]
+    cmds:
+      - dotnet test {{.INTEGRATION_TEST_PROJECT}} 
+        --configuration Release 
+        --collect:"XPlat Code Coverage" 
+        --results-directory {{.TEST_RESULTS_DIR}} 
+        --logger trx 
+        --logger "console;verbosity=detailed"
+        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+  test:coverage:all:
+    desc: Run all tests with coverage collection
+    deps: [clean]
+    cmds:
+      - dotnet test 
+        --configuration Release 
+        --collect:"XPlat Code Coverage" 
+        --results-directory {{.TEST_RESULTS_DIR}} 
+        --logger trx 
+        --logger "console;verbosity=detailed"
+        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+  coverage:merge:
+    desc: Merge coverage files if multiple exist
+    cmds:
+      - |
+        COVERAGE_FILES=$(find {{.TEST_RESULTS_DIR}} -name "coverage.cobertura.xml" -type f)
+        if [ $(echo "$COVERAGE_FILES" | wc -l) -gt 1 ]; then
+          echo "Multiple coverage files found, merging..."
+          reportgenerator \
+            -reports:"{{.TEST_RESULTS_DIR}}/**/coverage.cobertura.xml" \
+            -targetdir:{{.TEST_RESULTS_DIR}} \
+            -reporttypes:Cobertura \
+            -assemblyfilters:"+Valkey.Glide*"
+          mv {{.TEST_RESULTS_DIR}}/Cobertura.xml {{.COVERAGE_FILE}}
+        else
+          echo "Single coverage file found, copying..."
+          cp $(echo "$COVERAGE_FILES" | head -1) {{.COVERAGE_FILE}}
+        fi
+
+  coverage:report:
+    desc: Generate HTML coverage report from collected data
+    deps: [install-tools, coverage:merge]
+    cmds:
+      - reportgenerator 
+        -reports:{{.COVERAGE_FILE}} 
+        -targetdir:{{.REPORTS_DIR}} 
+        -reporttypes:"Html;JsonSummary" 
+        -assemblyfilters:"+Valkey.Glide*"
+        -classfilters:"-*.Tests*"
+      - echo "Coverage report generated in {{.REPORTS_DIR}}/index.html"
+
+  coverage:summary:
+    desc: Display coverage summary from the report
+    cmds:
+      - |
+        if [ -f "{{.REPORTS_DIR}}/Summary.json" ]; then
+          echo "=== Coverage Summary ==="
+          LINE_COVERAGE=$(cat {{.REPORTS_DIR}}/Summary.json | jq -r '.summary.linecoverage')
+          BRANCH_COVERAGE=$(cat {{.REPORTS_DIR}}/Summary.json | jq -r '.summary.branchcoverage')
+          echo "Line Coverage: ${LINE_COVERAGE}%"
+          echo "Branch Coverage: ${BRANCH_COVERAGE}%"
+        else
+          echo "No coverage summary found. Run 'task coverage:report' first."
+        fi
+
+  coverage:
+    desc: Run all tests with coverage and generate HTML report
+    cmds:
+      - task: test:coverage:all
+      - task: coverage:report
+      - task: coverage:summary
+
+  coverage:unit:
+    desc: Run unit tests with coverage and generate HTML report
+    cmds:
+      - task: test:coverage:unit
+      - task: coverage:report
+      - task: coverage:summary
+
+  coverage:integration:
+    desc: Run integration tests with coverage and generate HTML report
+    cmds:
+      - task: test:coverage:integration
+      - task: coverage:report
+      - task: coverage:summary
+
+  build:
+    desc: Build the solution
+    cmds:
+      - dotnet build --configuration Release
+
+  test:
+    desc: Build and run all tests
+    deps: [build]
+    cmds:
+      - task: test:coverage:all
+
+  default:
+    desc: Default task - build and run coverage
+    cmds:
+      - task: build
+      - task: coverage
