@@ -25,6 +25,7 @@ public static class Constants
     public const string AfterKeyword = "AFTER";
     public const string RankKeyword = "RANK";
     public const string MaxLenKeyword = "MAXLEN";
+    public const string WithValuesKeyword = "WITHVALUES";
 
     /// <summary>
     /// Expiry keywords.

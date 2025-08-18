@@ -12,13 +12,11 @@ internal partial class Request
     public static Cmd<object?, T> CustomCommand<T>(GlideString[] args, Func<object?, T> converter) where T : class?
         => new(RequestType.CustomCommand, args, true, converter);
 
-#pragma warning disable IDE0051 // Add missing cases TODO: REMOVE ONCE 4336 IS MERGED
     /// <summary>
     /// Create a Cmd which returns OK
     /// </summary>
     private static Cmd<string, string> OK(RequestType request, GlideString[] args)
         => Simple<string>(request, args);
-#pragma warning restore IDE0051 // Add missing cases
 
     /// <summary>
     /// Create a Cmd which does not need type conversion
@@ -53,7 +51,7 @@ internal partial class Request
     /// <param name="isNullable">Whether the response can be null</param>
     /// <returns>A command that converts the response to a ValkeyValue</returns>
     private static Cmd<GlideString, ValkeyValue> ToValkeyValue(RequestType request, GlideString[] args, bool isNullable = false)
-        => new(request, args, isNullable, response => (ValkeyValue)response);
+        => new(request, args, isNullable, response => (ValkeyValue)response, allowConverterToHandleNull: true);
 
     /// <summary>
     /// Create a Cmd which converts an array of GlideStrings to an array of ValkeyValues.

@@ -55,10 +55,72 @@ public abstract partial class BaseClient : IHashCommands
         return await Command(Request.HashExistsAsync(key, hashField));
     }
 
+    public async Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashIncrementAsync(key, hashField, value));
+    }
+
+    public async Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashIncrementAsync(key, hashField, value));
+    }
+
+    public async Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashKeysAsync(key));
+    }
+
     public async Task<long> HashLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.HashLengthAsync(key));
+    }
+
+    public async IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        long currentCursor = cursor;
+        int currentOffset = pageOffset;
+
+        do
+        {
+            (long nextCursor, HashEntry[] entries) = await Command(Request.HashScanAsync(key, currentCursor, pattern, pageSize));
+
+            IEnumerable<HashEntry> entriesToYield = currentOffset > 0 ? entries.Skip(currentOffset) : entries;
+
+            foreach (HashEntry entry in entriesToYield)
+            {
+                yield return entry;
+            }
+
+            currentCursor = nextCursor;
+        } while (currentCursor != 0);
+    }
+
+    public async IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        long currentCursor = cursor;
+        int currentOffset = pageOffset;
+
+        do
+        {
+            (long nextCursor, ValkeyValue[] fields) = await Command(Request.HashScanNoValuesAsync(key, currentCursor, pattern, pageSize));
+
+            IEnumerable<ValkeyValue> fieldsToYield = currentOffset > 0 ? fields.Skip(currentOffset) : fields;
+
+            foreach (ValkeyValue field in fieldsToYield)
+            {
+                yield return field;
+            }
+
+            currentCursor = nextCursor;
+        } while (currentCursor != 0);
     }
 
     public async Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None)

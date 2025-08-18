@@ -1160,12 +1160,143 @@ internal class BatchTestUtils
         return testData;
     }
 
+    public static List<TestInfo> CreateHashTest(Pipeline.IBatch batch, bool isAtomic)
+    {
+        List<TestInfo> testData = [];
+        string prefix = "{hashKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
+        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        string nonExistingKey = $"{atomicPrefix}nonexisting-{Guid.NewGuid()}";
+
+        string field1 = "field1";
+        string field2 = "field2";
+        string value1 = "value1";
+        string value2 = "value2";
+
+        // HashSet and HashGet tests
+        _ = batch.HashSet(key1, field1, value1);
+        testData.Add(new(true, "HashSet(key1, field1, value1)"));
+
+        _ = batch.HashGet(key1, field1);
+        testData.Add(new(new ValkeyValue(value1), "HashGet(key1, field1)"));
+
+        _ = batch.HashSet(key1, field2, value2);
+        testData.Add(new(true, "HashSet(key1, field2, value2)"));
+
+        // HashIncrement tests (long)
+        _ = batch.HashSet(key1, "counter", "10");
+        testData.Add(new(true, "HashSet(key1, counter, 10)"));
+
+        _ = batch.HashIncrement(key1, "counter", 5);
+        testData.Add(new(15L, "HashIncrement(key1, counter, 5)"));
+
+        _ = batch.HashIncrement(key1, "counter");
+        testData.Add(new(16L, "HashIncrement(key1, counter) default"));
+
+        // HashIncrement tests (double)
+        _ = batch.HashSet(key1, "float_counter", "10.5");
+        testData.Add(new(true, "HashSet(key1, float_counter, 10.5)"));
+
+        _ = batch.HashIncrement(key1, "float_counter", 2.5);
+        testData.Add(new(13.0, "HashIncrement(key1, float_counter, 2.5)"));
+
+        // HashKeys test
+        _ = batch.HashKeys(key1);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(key1)", true));
+
+        // HashLength test
+        _ = batch.HashLength(key1);
+        testData.Add(new(4L, "HashLength(key1)"));
+
+        // HashExists test
+        _ = batch.HashExists(key1, field1);
+        testData.Add(new(true, "HashExists(key1, field1)"));
+
+        _ = batch.HashExists(key1, "nonexistent");
+        testData.Add(new(false, "HashExists(key1, nonexistent)"));
+
+        // HashStringLength test
+        _ = batch.HashStringLength(key1, field1);
+        testData.Add(new((long)value1.Length, "HashStringLength(key1, field1)"));
+
+        _ = batch.HashStringLength(key1, "nonexistent");
+        testData.Add(new(0L, "HashStringLength(key1, nonexistent)"));
+
+        // HashDelete test
+        _ = batch.HashDelete(key1, field2);
+        testData.Add(new(true, "HashDelete(key1, field2)"));
+
+        _ = batch.HashExists(key1, field2);
+        testData.Add(new(false, "HashExists(key1, field2) after delete"));
+
+        // Test with non-existing key
+        _ = batch.HashGet(nonExistingKey, field1);
+        testData.Add(new(ValkeyValue.Null, "HashGet(nonExistingKey, field1)"));
+
+        _ = batch.HashLength(nonExistingKey);
+        testData.Add(new(0L, "HashLength(nonExistingKey)"));
+
+        _ = batch.HashKeys(nonExistingKey);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(nonExistingKey)"));
+
+        // HashScan tests
+        _ = batch.HashScan(key1, 0, "field*", 10);
+        testData.Add(new((0L, Array.Empty<HashEntry>()), "HashScan(key1, 0, field*, 10)", true));
+
+        // HashScanNoValues tests
+        _ = batch.HashScanNoValues(key1, 0, "field*", 10);
+        testData.Add(new((0L, Array.Empty<ValkeyValue>()), "HashScanNoValues(key1, 0, field*, 10)", true));
+
+        // HashGetAll test
+        _ = batch.HashGetAll(key1);
+        testData.Add(new(new HashEntry[] {
+            new("field1", value1),
+            new("counter", "16"),
+            new("float_counter", "13")
+        }, "HashGetAll(key1)"));
+
+        // HashValues test
+        _ = batch.HashValues(key1);
+        testData.Add(new(new ValkeyValue[] { value1, "16", "13" }, "HashValues(key1)"));
+
+        // HashRandomField tests
+        _ = batch.HashRandomField(key1);
+        testData.Add(new(new ValkeyValue("field1"), "HashRandomField(key1)"));
+
+        _ = batch.HashRandomFields(key1, 2);
+        testData.Add(new(new ValkeyValue[] { "field1", "counter" }, "HashRandomFields(key1, 2)"));
+
+        _ = batch.HashRandomFieldsWithValues(key1, 2);
+        testData.Add(new(new HashEntry[] {
+            new("field1", value1),
+            new("counter", "16")
+        }, "HashRandomFieldsWithValues(key1, 2)"));
+
+        // Multi-field operations
+        HashEntry[] multiEntries = [
+            new HashEntry("multi1", "value1"),
+            new HashEntry("multi2", "value2")
+        ];
+        _ = batch.HashSet(key2, multiEntries);
+        testData.Add(new("OK", "HashSet(key2, multiEntries)"));
+
+        _ = batch.HashGet(key2, ["multi1", "multi2"]);
+        testData.Add(new(new ValkeyValue[] { "value1", "value2" }, "HashGet(key2, [multi1, multi2])"));
+
+        _ = batch.HashDelete(key2, ["multi1", "multi2"]);
+        testData.Add(new(2L, "HashDelete(key2, [multi1, multi2])"));
+
+        return testData;
+    }
+
     public static TheoryData<BatchTestData> GetTestClientWithAtomic =>
         [.. TestConfiguration.TestClients.SelectMany(r => new[] { true, false }.SelectMany(isAtomic =>
             new BatchTestData[] {
                 new("String commands", r.Data, CreateStringTest, isAtomic),
                 new("Set commands", r.Data, CreateSetTest, isAtomic),
                 new("Generic commands", r.Data, CreateGenericTest, isAtomic),
+                new("Hash commands", r.Data, CreateHashTest, isAtomic),
                 new("List commands", r.Data, CreateListTest, isAtomic),
                 new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
                 new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
