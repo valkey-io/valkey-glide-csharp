@@ -29,13 +29,13 @@ tasks:
         desc: Run unit tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --no-build --verbosity normal {{.FRAMEWORK_FLAG}}
+            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
 
     test:integration:
         desc: Run integration tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --no-build --verbosity normal {{.FRAMEWORK_FLAG}}
+            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
 
     test:coverage:unit:
         desc: Run unit tests with coverage collection
@@ -47,6 +47,7 @@ tasks:
               --results-directory {{.TEST_RESULTS_DIR}}
               --logger trx
               --logger "console;verbosity=detailed"
+              --logger "html;LogFileName=TestReport.html"
               {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
@@ -60,6 +61,7 @@ tasks:
               --results-directory {{.TEST_RESULTS_DIR}}
               --logger trx
               --logger "console;verbosity=detailed"
+              --logger "html;LogFileName=TestReport.html"
               {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
@@ -73,6 +75,7 @@ tasks:
               --results-directory {{.TEST_RESULTS_DIR}}
               --logger trx
               --logger "console;verbosity=detailed"
+              --logger "html;LogFileName=TestReport.html"
               {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
