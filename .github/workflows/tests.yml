@@ -114,7 +114,7 @@ jobs:
             - name: Check if coverage needed
               id: coverage-check
               run: |
-                  if [[ "${{ matrix.dotnet }}" == "8.0" && "${{ contains(matrix.host.RUNNER, 'ubuntu') }}" == "true" && "${{ matrix.host.ARCH }}" == "x64" ]]; then
+                  if [[ "${{ matrix.dotnet }}" == "8.0" && "${{ contains(matrix.host.RUNNER, 'ubuntu') }}" == "true" && "${{ matrix.host.ARCH }}" == "x64" && "${{ matrix.server.version }}" == "8.1" ]]; then
                     echo "coverage-enabled=true" >> $GITHUB_OUTPUT
                   fi
 
