@@ -114,13 +114,13 @@ jobs:
             - name: Check if coverage needed
               id: coverage-check
               run: |
-                  if [[ "${{ matrix.dotnet }}" == "8.0.x" && "${{ contains(matrix.host.RUNNER, 'ubuntu') }}" == "true" && "${{ matrix.host.ARCH }}" == "x64" ]]; then
+                  if [[ "${{ matrix.dotnet }}" == "8.0" && "${{ contains(matrix.host.RUNNER, 'ubuntu') }}" == "true" && "${{ matrix.host.ARCH }}" == "x64" ]]; then
                     echo "coverage-enabled=true" >> $GITHUB_OUTPUT
                   fi
 
             - name: Build and run coverage
               if: ${{ steps.coverage-check.outputs.coverage-enabled == 'true' }}
-              run: task coverage
+              run: task coverage FRAMEWORK=net8.0
 
             - name: Upload coverage report artifact
               if: ${{ steps.coverage-check.outputs.coverage-enabled == 'true' }}
