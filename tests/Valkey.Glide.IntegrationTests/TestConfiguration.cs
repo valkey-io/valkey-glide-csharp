@@ -233,55 +233,64 @@ public class TestConfiguration : IDisposable
 
     public TestConfiguration()
     {
-        string? projectDir = Directory.GetCurrentDirectory();
-        while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => Path.GetFileName(d) == "valkey-glide")))
+        try
         {
-            projectDir = Path.GetDirectoryName(projectDir);
-        }
-
-        if (projectDir == null)
-        {
-            throw new FileNotFoundException("Can't detect the project dir. Are you running tests from the repo root?");
-        }
-
-        _scriptDir = Path.Combine(projectDir, "valkey-glide", "utils");
-
-        TLS = Environment.GetEnvironmentVariable("tls") == "true";
-
-        if (Environment.GetEnvironmentVariable("cluster-endpoints") is { } || Environment.GetEnvironmentVariable("standalone-endpoints") is { })
-        {
-            string? clusterEndpoints = Environment.GetEnvironmentVariable("cluster-endpoints");
-            CLUSTER_HOSTS = clusterEndpoints is null ? [] : ParseHostsString(clusterEndpoints);
-            string? standaloneEndpoints = Environment.GetEnvironmentVariable("standalone-endpoints");
-            STANDALONE_HOSTS = standaloneEndpoints is null ? [] : ParseHostsString(standaloneEndpoints);
-            _startedServer = false;
-        }
-        else
-        {
-            _startedServer = true;
-            // Stop all if weren't stopped on previous test run
-            StopServer(false);
-
-            // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
-            // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
-            string clusterLogsDir = Path.Combine(_scriptDir, "clusters");
-            try
+            string? projectDir = Directory.GetCurrentDirectory();
+            while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => Path.GetFileName(d) == "valkey-glide")))
             {
-                Directory.Delete(clusterLogsDir, true);
+                projectDir = Path.GetDirectoryName(projectDir);
             }
-            catch (DirectoryNotFoundException) { }
 
-            // Start cluster
-            CLUSTER_HOSTS = StartServer(true, TLS);
-            // Start standalone
-            STANDALONE_HOSTS = StartServer(false, TLS);
+            if (projectDir == null)
+            {
+                throw new FileNotFoundException("Can't detect the project dir. Are you running tests from the repo root?");
+            }
+
+            _scriptDir = Path.Combine(projectDir, "valkey-glide", "utils");
+
+            TLS = Environment.GetEnvironmentVariable("tls") == "true";
+
+            if (Environment.GetEnvironmentVariable("cluster-endpoints") is { } || Environment.GetEnvironmentVariable("standalone-endpoints") is { })
+            {
+                string? clusterEndpoints = Environment.GetEnvironmentVariable("cluster-endpoints");
+                CLUSTER_HOSTS = clusterEndpoints is null ? [] : ParseHostsString(clusterEndpoints);
+                string? standaloneEndpoints = Environment.GetEnvironmentVariable("standalone-endpoints");
+                STANDALONE_HOSTS = standaloneEndpoints is null ? [] : ParseHostsString(standaloneEndpoints);
+                _startedServer = false;
+            }
+            else
+            {
+                _startedServer = true;
+                // Stop all if weren't stopped on previous test run
+                StopServer(false);
+
+                // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
+                // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
+                string clusterLogsDir = Path.Combine(_scriptDir, "clusters");
+                try
+                {
+                    Directory.Delete(clusterLogsDir, true);
+                }
+                catch (DirectoryNotFoundException) { }
+
+                // Start cluster
+                CLUSTER_HOSTS = StartServer(true, TLS);
+                // Start standalone
+                STANDALONE_HOSTS = StartServer(false, TLS);
+            }
+            // Get server version
+            SERVER_VERSION = GetServerVersion();
         }
-        // Get server version
-        SERVER_VERSION = GetServerVersion();
+        catch (Exception e)
+        {
+            TestConsoleWriteLine($"Test suite setup failed: {e}\n{e.StackTrace}");
+            Environment.Exit(1);
+        }
 
         TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_HOSTS)}");
         TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_HOSTS)}");
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
+        TestConsoleWriteLine($"TLS = {TLS}");
     }
 
     ~TestConfiguration() => Dispose();

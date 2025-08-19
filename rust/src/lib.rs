@@ -133,7 +133,7 @@ pub unsafe extern "C-unwind" fn create_client(
         callback_index: 0,
     };
 
-    let request = unsafe { create_connection_request(config) };
+    let request = dbg!(unsafe { create_connection_request(config) });
     let runtime = Builder::new_multi_thread()
         .enable_all()
         .thread_name("GLIDE C# thread")
