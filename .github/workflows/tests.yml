@@ -102,6 +102,7 @@ jobs:
               shell: bash
               run: |
                   echo "cluster-endpoints=clustercfg.gh-actions-for-dotnet-glide-client.nra7gl.use1.cache.amazonaws.com:6379" >> $GITHUB_ENV
+                  echo "tls=true" >> $GITHUB_ENV
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
