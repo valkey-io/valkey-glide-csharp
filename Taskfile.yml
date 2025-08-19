@@ -145,19 +145,78 @@ tasks:
             - task: coverage:summary
 
     benchmark:
-        desc: Run benchmarks with Redis server
+        desc: Run benchmarks with Redis server (FRAMEWORK must be net8.0 or net6.0)
+        dir: valkey-glide/benchmarks
         cmds:
             - redis-server --save "" --daemonize "yes"
             - |
-                cd valkey-glide/benchmarks
-                export CSHARP_BENCH_FOLDER=$PWD/../../benchmarks
-                if [ "{{.FRAMEWORK}}" = "all" ]; then
-                  echo "Running benchmarks for all frameworks..."
-                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net8.0
-                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net6.0
-                else
-                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework {{.FRAMEWORK}}
-                fi
+                case "{{.FRAMEWORK}}" in
+                    "net8.0"|"net6.0")
+                        echo "Running benchmarks for {{.FRAMEWORK}}..."
+                        ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework {{.FRAMEWORK}}
+
+                        echo ""
+                        echo "=== Benchmark Results ==="
+
+                        # Find the most recent CSV results file
+                        RESULTS_FILE=$(find results -name "*.csv" -type f -exec ls -t {} + | head -1)
+
+                        if [ -f "$RESULTS_FILE" ]; then
+                            echo "Results from: $RESULTS_FILE"
+                            echo ""
+
+                            # Parse and format CSV as 3 separate tables
+                            echo "=== Table 1: Basic Performance Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-10s %-8s %-10s %-8s %-12s\n", "Language", "Client", "Cluster", "Tasks", "TPS"
+                                printf "%-10s %-8s %-10s %-8s %-12s\n", "--------", "------", "-------", "-----", "---"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-10s %-8s %-10s %-8s %-12s\n", $1, $2, $3, $4, $7
+                            }' "$RESULTS_FILE"
+
+                            echo ""
+                            echo "=== Table 2: GET (non-existing) Operation Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "GET Avg (ms)", "GET Std Dev", "GET P50 (ms)", "GET P90 (ms)", "GET P99 (ms)"
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "-----------", "-----------", "-----------", "-----------", "-----------"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-15.3f %-15.6f %-15s %-15s %-15s\n", $11, $12, $8, $9, $10
+                            }' "$RESULTS_FILE"
+
+                            echo ""
+                            echo "=== Table 3: GET (existing) Operation Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "GET Avg (ms)", "GET Std Dev", "GET P50 (ms)", "GET P90 (ms)", "GET P99 (ms)"
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "-----------", "-----------", "-----------", "-----------", "-----------"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-15.3f %-15.6f %-15s %-15s %-15s\n", $16, $17, $13, $14, $15
+                            }' "$RESULTS_FILE"
+
+                            echo ""
+                            echo "=== Table 4: SET Operation Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "SET Avg (ms)", "SET Std Dev", "SET P50 (ms)", "SET P90 (ms)", "SET P99 (ms)"
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "-----------", "-----------", "-----------", "-----------", "-----------"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-15.3f %-15.6f %-15s %-15s %-15s\n", $21, $22, $18, $19, $20
+                            }' "$RESULTS_FILE"
+                        else
+                            echo "No benchmark results found in results/ directory"
+                        fi
+                        ;;
+                    *)
+                        echo "Error: FRAMEWORK must be either 'net8.0' or 'net6.0', got '{{.FRAMEWORK}}'"
+                        exit 1
+                        ;;
+                esac
 
     build:
         desc: Build the solution
