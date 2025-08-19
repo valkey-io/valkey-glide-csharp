@@ -144,6 +144,21 @@ tasks:
             - task: coverage:report
             - task: coverage:summary
 
+    benchmark:
+        desc: Run benchmarks with Redis server
+        cmds:
+            - redis-server --save "" --daemonize "yes"
+            - |
+                cd valkey-glide/benchmarks
+                export CSHARP_BENCH_FOLDER=$PWD/../../benchmarks
+                if [ "{{.FRAMEWORK}}" = "all" ]; then
+                  echo "Running benchmarks for all frameworks..."
+                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net8.0
+                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net6.0
+                else
+                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework {{.FRAMEWORK}}
+                fi
+
     build:
         desc: Build the solution
         cmds:
