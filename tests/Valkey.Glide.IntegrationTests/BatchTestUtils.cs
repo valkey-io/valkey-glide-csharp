@@ -1242,11 +1242,11 @@ internal class BatchTestUtils
 
         // HashScan tests
         _ = batch.HashScan(key1, 0, "field*", 10);
-        testData.Add(new((0L, Array.Empty<HashEntry>()), "HashScan(key1, 0, field*, 10)", true));
+        testData.Add(new((0L, new HashEntry[] { new("field1", "value1") }), "HashScan(key1, 0, field*, 10)"));
 
         // HashScanNoValues tests
         _ = batch.HashScanNoValues(key1, 0, "field*", 10);
-        testData.Add(new((0L, Array.Empty<ValkeyValue>()), "HashScanNoValues(key1, 0, field*, 10)", true));
+        testData.Add(new((0L, new ValkeyValue[] { "field1" }), "HashScanNoValues(key1, 0, field*, 10)"));
 
         // HashGetAll test
         _ = batch.HashGetAll(key1);

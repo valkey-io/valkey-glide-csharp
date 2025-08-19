@@ -84,13 +84,12 @@ public abstract partial class BaseClient : IHashCommands
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
         long currentCursor = cursor;
-        int currentOffset = pageOffset;
 
         do
         {
             (long nextCursor, HashEntry[] entries) = await Command(Request.HashScanAsync(key, currentCursor, pattern, pageSize));
 
-            IEnumerable<HashEntry> entriesToYield = currentOffset > 0 ? entries.Skip(currentOffset) : entries;
+            IEnumerable<HashEntry> entriesToYield = pageOffset > 0 ? entries.Skip(pageOffset) : entries;
 
             foreach (HashEntry entry in entriesToYield)
             {
@@ -106,13 +105,12 @@ public abstract partial class BaseClient : IHashCommands
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
         long currentCursor = cursor;
-        int currentOffset = pageOffset;
 
         do
         {
             (long nextCursor, ValkeyValue[] fields) = await Command(Request.HashScanNoValuesAsync(key, currentCursor, pattern, pageSize));
 
-            IEnumerable<ValkeyValue> fieldsToYield = currentOffset > 0 ? fields.Skip(currentOffset) : fields;
+            IEnumerable<ValkeyValue> fieldsToYield = pageOffset > 0 ? fields.Skip(pageOffset) : fields;
 
             foreach (ValkeyValue field in fieldsToYield)
             {
