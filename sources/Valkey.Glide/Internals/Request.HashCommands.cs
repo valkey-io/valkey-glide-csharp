@@ -92,7 +92,7 @@ internal partial class Request
         return Simple<long>(RequestType.HLen, args);
     }
 
-    public static Cmd<object[], (long, HashEntry[])> HashScanAsync(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0)
+    public static Cmd<object[], (long, T)> HashScanAsync<T>(ValkeyKey key, long cursor, ValkeyValue pattern, long count, bool includeValues = true)
     {
         List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
 
@@ -112,46 +112,28 @@ internal partial class Request
             long nextCursor = long.Parse(((GlideString)scanArray[0]).ToString());
             object[] items = (object[])scanArray[1];
 
-            HashEntry[] entries = new HashEntry[items.Length / 2];
-            for (int i = 0; i < items.Length; i += 2)
+            if (includeValues)
             {
-                ValkeyValue field = (ValkeyValue)(GlideString)items[i];
-                ValkeyValue value = (ValkeyValue)(GlideString)items[i + 1];
-                entries[i / 2] = new HashEntry(field, value);
+                // Return HashEntry[] with both field names and values
+                HashEntry[] entries = new HashEntry[items.Length / 2];
+                for (int i = 0; i < items.Length; i += 2)
+                {
+                    ValkeyValue field = (ValkeyValue)(GlideString)items[i];
+                    ValkeyValue value = (ValkeyValue)(GlideString)items[i + 1];
+                    entries[i / 2] = new HashEntry(field, value);
+                }
+                return (nextCursor, (T)(object)entries);
             }
-
-            return (nextCursor, entries);
-        });
-    }
-
-    public static Cmd<object[], (long, ValkeyValue[])> HashScanNoValuesAsync(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0)
-    {
-        List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
-
-        if (!pattern.IsNull)
-        {
-            args.AddRange([Constants.MatchKeyword.ToGlideString(), pattern.ToGlideString()]);
-        }
-
-        if (count > 0)
-        {
-            args.AddRange([Constants.CountKeyword.ToGlideString(), count.ToGlideString()]);
-        }
-
-        return new(RequestType.HScan, [.. args], false, arr =>
-        {
-            object[] scanArray = arr;
-            long nextCursor = long.Parse(((GlideString)scanArray[0]).ToString());
-            object[] items = (object[])scanArray[1];
-
-            // For HashScanNoValues, we only return the field names (every other item)
-            ValkeyValue[] fields = new ValkeyValue[items.Length / 2];
-            for (int i = 0; i < items.Length; i += 2)
+            else
             {
-                fields[i / 2] = (ValkeyValue)(GlideString)items[i];
+                // Return ValkeyValue[] with only field names
+                ValkeyValue[] fields = new ValkeyValue[items.Length / 2];
+                for (int i = 0; i < items.Length; i += 2)
+                {
+                    fields[i / 2] = (ValkeyValue)(GlideString)items[i];
+                }
+                return (nextCursor, (T)(object)fields);
             }
-
-            return (nextCursor, fields);
         });
     }
 

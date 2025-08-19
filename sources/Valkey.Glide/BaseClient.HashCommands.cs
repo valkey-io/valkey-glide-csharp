@@ -87,7 +87,7 @@ public abstract partial class BaseClient : IHashCommands
 
         do
         {
-            (long nextCursor, HashEntry[] entries) = await Command(Request.HashScanAsync(key, currentCursor, pattern, pageSize));
+            (long nextCursor, HashEntry[] entries) = await Command(Request.HashScanAsync<HashEntry[]>(key, currentCursor, pattern, pageSize, true));
 
             IEnumerable<HashEntry> entriesToYield = pageOffset > 0 ? entries.Skip(pageOffset) : entries;
 
@@ -108,7 +108,7 @@ public abstract partial class BaseClient : IHashCommands
 
         do
         {
-            (long nextCursor, ValkeyValue[] fields) = await Command(Request.HashScanNoValuesAsync(key, currentCursor, pattern, pageSize));
+            (long nextCursor, ValkeyValue[] fields) = await Command(Request.HashScanAsync<ValkeyValue[]>(key, currentCursor, pattern, pageSize, false));
 
             IEnumerable<ValkeyValue> fieldsToYield = pageOffset > 0 ? fields.Skip(pageOffset) : fields;
 
