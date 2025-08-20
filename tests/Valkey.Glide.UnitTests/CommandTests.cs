@@ -3,6 +3,8 @@
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
+using Xunit;
+
 namespace Valkey.Glide.UnitTests;
 
 public class CommandTests
@@ -216,7 +218,15 @@ public class CommandTests
             () => Assert.Equal(new string[] { "HDEL", "key", "field" }, Request.HashDeleteAsync("key", "field").GetArgs()),
             () => Assert.Equal(new string[] { "HDEL", "key", "field1", "field2" }, Request.HashDeleteAsync("key", new ValkeyValue[] { "field1", "field2" }).GetArgs()),
             () => Assert.Equal(new string[] { "HEXISTS", "key", "field" }, Request.HashExistsAsync("key", "field").GetArgs()),
+            () => Assert.Equal(new string[] { "HINCRBY", "key", "field", "5" }, Request.HashIncrementAsync("key", "field", 5L).GetArgs()),
+            () => Assert.Equal(new string[] { "HINCRBY", "key", "field", "1" }, Request.HashIncrementAsync("key", "field", 1L).GetArgs()),
+            () => Assert.Equal(new string[] { "HINCRBYFLOAT", "key", "field", "2.5" }, Request.HashIncrementAsync("key", "field", 2.5).GetArgs()),
+            () => Assert.Equal(new string[] { "HKEYS", "key" }, Request.HashKeysAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HLEN", "key" }, Request.HashLengthAsync("key").GetArgs()),
+            () => Assert.Equal(new string[] { "HSCAN", "key", "0" }, Request.HashScanAsync<HashEntry>("key", 0, ValkeyValue.Null, 0).GetArgs()),
+            () => Assert.Equal(new string[] { "HSCAN", "key", "0", "MATCH", "pattern*", "COUNT", "10" }, Request.HashScanAsync<HashEntry>("key", 0, "pattern*", 10).GetArgs()),
+            () => Assert.Equal(new string[] { "HSCAN", "key", "0" }, Request.HashScanAsync<ValkeyValue>("key", 0, ValkeyValue.Null, 0, false).GetArgs()),
+            () => Assert.Equal(new string[] { "HSCAN", "key", "0", "MATCH", "pattern*", "COUNT", "10" }, Request.HashScanAsync<ValkeyValue>("key", 0, "pattern*", 10, false).GetArgs()),
             () => Assert.Equal(new string[] { "HSTRLEN", "key", "field" }, Request.HashStringLengthAsync("key", "field").GetArgs()),
             () => Assert.Equal(new string[] { "HVALS", "key" }, Request.HashValuesAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HRANDFIELD", "key" }, Request.HashRandomFieldAsync("key").GetArgs()),
@@ -306,7 +316,6 @@ public class CommandTests
             () => Assert.Equal(ValkeyType.String, Request.KeyTypeAsync("key").Converter("string")),
             () => Assert.Equal(ValkeyType.List, Request.KeyTypeAsync("key").Converter("list")),
             () => Assert.Equal(ValkeyType.Set, Request.KeyTypeAsync("key").Converter("set")),
-            () => Assert.Equal(ValkeyType.SortedSet, Request.KeyTypeAsync("key").Converter("zset")),
             () => Assert.Equal(ValkeyType.Hash, Request.KeyTypeAsync("key").Converter("hash")),
             () => Assert.Equal(ValkeyType.Stream, Request.KeyTypeAsync("key").Converter("stream")),
             () => Assert.Equal(ValkeyType.None, Request.KeyTypeAsync("key").Converter("none")),
@@ -358,20 +367,13 @@ public class CommandTests
             () => Assert.Equal(2L, Request.HashDeleteAsync("key", ["field1", "field2"]).Converter(2L)),
             () => Assert.True(Request.HashExistsAsync("key", "field").Converter(true)),
             () => Assert.False(Request.HashExistsAsync("key", "field").Converter(false)),
+            () => Assert.Equal(15L, Request.HashIncrementAsync("key", "field", 5L).Converter(15L)),
+            () => Assert.Equal(10L, Request.HashIncrementAsync("key", "field", 1L).Converter(10L)),
+            () => Assert.Equal(12.5, Request.HashIncrementAsync("key", "field", 2.5).Converter(12.5)),
+            () => Assert.Equal(["field1", "field2"], Request.HashKeysAsync("key").Converter([(gs)"field1", (gs)"field2"])),
+            () => Assert.Equal([], Request.HashKeysAsync("nonexistent").Converter([])),
             () => Assert.Equal(5L, Request.HashLengthAsync("key").Converter(5L)),
             () => Assert.Equal(10L, Request.HashStringLengthAsync("key", "field").Converter(10L)),
-
-            // Sorted Set Commands
-            () => Assert.True(Request.SortedSetAddAsync("key", "member", 10.5).Converter(1L)),
-            () => Assert.False(Request.SortedSetAddAsync("key", "member", 10.5).Converter(0L)),
-            () => Assert.Equal(2L, Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)]).Converter(2L)),
-            () => Assert.Equal(1L, Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5)]).Converter(1L)),
-            () => Assert.True(Request.SortedSetRemoveAsync("key", "member").Converter(1L)),
-            () => Assert.False(Request.SortedSetRemoveAsync("key", "member").Converter(0L)),
-            () => Assert.Equal(2L, Request.SortedSetRemoveAsync("key", ["member1", "member2"]).Converter(2L)),
-            () => Assert.Equal(5L, Request.SortedSetCardAsync("key").Converter(5L)),
-            () => Assert.Equal(3L, Request.SortedSetCountAsync("key", 1.0, 10.0).Converter(3L)),
-            () => Assert.Equal(0L, Request.SortedSetCountAsync("key").Converter(0L)),
 
             // List Commands converters
             () => Assert.Equal(["key", "value"], Request.ListBlockingLeftPopAsync(["key"], TimeSpan.FromSeconds(1)).Converter([(gs)"key", (gs)"value"])),
@@ -567,116 +569,56 @@ public class CommandTests
     }
 
     [Fact]
-    public void ValidateSortedSetCommandArrayConverters()
+    public void RangeByLex_ToArgs_GeneratesCorrectArguments()
     {
-        // Test data for SortedSetRangeByRankAsync
-        object[] testRankArray = [
-            (gs)"member1",
-            (gs)"member2",
-            (gs)"member3"
-        ];
-
-        // Test data for SortedSetRangeByRankWithScoresAsync and SortedSetRangeByScoreWithScoresAsync
-        Dictionary<GlideString, object> testScoreDict = new Dictionary<GlideString, object> {
-            {"member1", 10.5},
-            {"member2", 8.25},
-            {"member3", 15.0}
-        };
-
         Assert.Multiple(
-            // Test SortedSetRangeByRankAsync converter
-            () =>
-            {
-                ValkeyValue[] result = Request.SortedSetRangeByRankAsync("key", 0, -1).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
+            // Basic range
+            () => Assert.Equal(["[a", "[z", "BYLEX"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).ToArgs()),
 
-            // Test SortedSetRangeByRankWithScoresAsync converter
-            () =>
-            {
-                SortedSetEntry[] result = Request.SortedSetRangeByRankWithScoresAsync("key", 0, -1).Converter(testScoreDict);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
-                Assert.Equal("member2", result[0].Element);
-                Assert.Equal(8.25, result[0].Score);
-                Assert.Equal("member1", result[1].Element);
-                Assert.Equal(10.5, result[1].Score);
-                Assert.Equal("member3", result[2].Element);
-                Assert.Equal(15.0, result[2].Score);
+            // Exclusive boundaries
+            () => Assert.Equal(["(a", "(z", "BYLEX"], new RangeByLex(LexBoundary.Exclusive("a"), LexBoundary.Exclusive("z")).ToArgs()),
 
-            },
-            // Test SortedSetRangeByScoreAsync converter
-            () =>
-            {
-                ValkeyValue[] result = Request.SortedSetRangeByScoreAsync("key", 1.0, 20.0).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
+            // Mixed boundaries
+            () => Assert.Equal(["[a", "(z", "BYLEX"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Exclusive("z")).ToArgs()),
 
-            // Test SortedSetRangeByScoreWithScoresAsync converter
-            () =>
-            {
-                SortedSetEntry[] result = Request.SortedSetRangeByScoreWithScoresAsync("key", 1.0, 20.0).Converter(testScoreDict);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
-                // Check that entries have proper element and score values
-                foreach (SortedSetEntry entry in result)
-                {
-                    Assert.IsType<ValkeyValue>(entry.Element);
-                    Assert.IsType<double>(entry.Score);
-                }
-                // Validate specific values (sorted by score)
-                var sortedResults = result.OrderBy(e => e.Score).ToArray();
-                Assert.Equal("member2", result[0].Element);
-                Assert.Equal(8.25, result[0].Score);
-                Assert.Equal("member1", result[1].Element);
-                Assert.Equal(10.5, result[1].Score);
-                Assert.Equal("member3", result[2].Element);
-                Assert.Equal(15.0, result[2].Score);
-            },
+            // Infinity boundaries
+            () => Assert.Equal(["-", "+", "BYLEX"], new RangeByLex(LexBoundary.NegativeInfinity(), LexBoundary.PositiveInfinity()).ToArgs()),
 
-            // Test SortedSetRangeByValueAsync converter
-            () =>
-            {
-                ValkeyValue[] result = Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.None, 0, -1).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
+            // With reverse
+            () => Assert.Equal(["[z", "[a", "BYLEX", "REV"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).SetReverse().ToArgs()),
 
-            // Test SortedSetRangeByValueAsync with order converter
-            // Note: This test validates the converter function only, not the ordering logic.
-            () =>
-            {
-                ValkeyValue[] result = Request.SortedSetRangeByValueAsync("key", default, default, Exclude.None, Order.Descending, 0, -1).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
+            // With limit
+            () => Assert.Equal(["[a", "[z", "BYLEX", "LIMIT", "10", "20"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).SetLimit(10, 20).ToArgs()),
 
-            // Test empty arrays
-            () =>
-            {
-                ValkeyValue[] emptyResult = Request.SortedSetRangeByRankAsync("key").Converter([]);
-                Assert.Empty(emptyResult);
-            },
+            // With reverse and limit
+            () => Assert.Equal(["[z", "[a", "BYLEX", "REV", "LIMIT", "5", "15"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).SetReverse().SetLimit(5, 15).ToArgs())
+        );
+    }
 
-            () =>
-            {
-                SortedSetEntry[] emptyScoreResult = Request.SortedSetRangeByRankWithScoresAsync("key").Converter(new Dictionary<GlideString, object>());
-                Assert.Empty(emptyScoreResult);
-            }
+    [Fact]
+    public void RangeByScore_ToArgs_GeneratesCorrectArguments()
+    {
+        Assert.Multiple(
+            // Basic range
+            () => Assert.Equal(["10", "20", "BYSCORE"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).ToArgs()),
+
+            // Exclusive boundaries
+            () => Assert.Equal(["(10", "(20", "BYSCORE"], new RangeByScore(ScoreBoundary.Exclusive(10), ScoreBoundary.Exclusive(20)).ToArgs()),
+
+            // Mixed boundaries
+            () => Assert.Equal(["10", "(20", "BYSCORE"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Exclusive(20)).ToArgs()),
+
+            // Infinity boundaries
+            () => Assert.Equal(["-inf", "+inf", "BYSCORE"], new RangeByScore(ScoreBoundary.NegativeInfinity(), ScoreBoundary.PositiveInfinity()).ToArgs()),
+
+            // With reverse
+            () => Assert.Equal(["20", "10", "BYSCORE", "REV"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).SetReverse().ToArgs()),
+
+            // With limit
+            () => Assert.Equal(["10", "20", "BYSCORE", "LIMIT", "10", "20"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).SetLimit(10, 20).ToArgs()),
+
+            // With reverse and limit
+            () => Assert.Equal(["20", "10", "BYSCORE", "REV", "LIMIT", "5", "15"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).SetReverse().SetLimit(5, 15).ToArgs())
         );
     }
 }

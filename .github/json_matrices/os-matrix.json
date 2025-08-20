@@ -64,6 +64,6 @@
         "ARCH": "arm64",
         "TARGET": "aarch64-pc-windows-msvc",
         "tags": ["cd"],
-        "comment": "Testing requires WSL or a SH runner. See https://github.com/actions/partner-runner-images/issues/109"
+        "comment": "Testing requires a SH runner. See https://github.com/actions/partner-runner-images/issues/109"
     }
 ]

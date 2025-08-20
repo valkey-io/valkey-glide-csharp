@@ -58,6 +58,87 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRangeByValue(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long)" />
     public T SortedSetRangeByValue(ValkeyKey key, ValkeyValue min = default, ValkeyValue max = default, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1) => AddCmd(SortedSetRangeByValueAsync(key, min, max, exclude, order, skip, take));
 
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombine(SetOperation, ValkeyKey[], double[], Aggregate)" />
+    public T SortedSetCombine(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineAsync(operation, keys, weights, aggregate));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineWithScores(SetOperation, ValkeyKey[], double[], Aggregate)" />
+    public T SortedSetCombineWithScores(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineWithScoresAsync(operation, keys, weights, aggregate));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate)" />
+    public T SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineAndStoreAsync(operation, destination, first, second, aggregate));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation, ValkeyKey, ValkeyKey[], double[], Aggregate)" />
+    public T SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineAndStoreAsync(operation, destination, keys, weights, aggregate));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetIncrement(ValkeyKey, ValkeyValue, double)" />
+    public T SortedSetIncrement(ValkeyKey key, ValkeyValue member, double value) => AddCmd(SortedSetIncrementAsync(key, member, value));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetIntersectionLength(ValkeyKey[], long)" />
+    public T SortedSetIntersectionLength(ValkeyKey[] keys, long limit = 0) => AddCmd(SortedSetIntersectionLengthAsync(keys, limit));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetLengthByValue(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" />
+    public T SortedSetLengthByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None) => AddCmd(SortedSetLengthByValueAsync(key, min, max, exclude));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPop(ValkeyKey[], long, Order)" />
+    public T SortedSetPop(ValkeyKey[] keys, long count, Order order = Order.Ascending) => AddCmd(SortedSetPopAsync(keys, count, order));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScores(ValkeyKey, ValkeyValue[])" />
+    public T SortedSetScores(ValkeyKey key, ValkeyValue[] members) => AddCmd(SortedSetScoresAsync(key, members));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey, Order, double)" />
+    public T SortedSetBlockingPop(ValkeyKey key, Order order, double timeout) => AddCmd(SortedSetBlockingPopAsync(key, order, timeout));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey, long, Order, double)" />
+    public T SortedSetBlockingPop(ValkeyKey key, long count, Order order, double timeout) => AddCmd(SortedSetBlockingPopAsync(key, count, order, timeout));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey[], long, Order, double)" />
+    public T SortedSetBlockingPop(ValkeyKey[] keys, long count, Order order, double timeout) => AddCmd(SortedSetBlockingPopAsync(keys, count, order, timeout));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPop(ValkeyKey, Order)" />
+    public T SortedSetPop(ValkeyKey key, Order order = Order.Ascending) => AddCmd(SortedSetPopAsync(key, order));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPop(ValkeyKey, long, Order)" />
+    public T SortedSetPop(ValkeyKey key, long count, Order order = Order.Ascending) => AddCmd(SortedSetPopAsync(key, count, order));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRandomMember(ValkeyKey)" />
+    public T SortedSetRandomMember(ValkeyKey key) => AddCmd(SortedSetRandomMemberAsync(key));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRandomMembers(ValkeyKey, long)" />
+    public T SortedSetRandomMembers(ValkeyKey key, long count) => AddCmd(SortedSetRandomMembersAsync(key, count));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRandomMembersWithScores(ValkeyKey, long)" />
+    public T SortedSetRandomMembersWithScores(ValkeyKey key, long count) => AddCmd(SortedSetRandomMembersWithScoresAsync(key, count));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRangeAndStore(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?)" />
+    public T SortedSetRangeAndStore(
+        ValkeyKey sourceKey,
+        ValkeyKey destinationKey,
+        ValkeyValue start,
+        ValkeyValue stop,
+        SortedSetOrder sortedSetOrder = SortedSetOrder.ByRank,
+        Exclude exclude = Exclude.None,
+        Order order = Order.Ascending,
+        long skip = 0,
+        long? take = null) => AddCmd(SortedSetRangeAndStoreAsync(sourceKey, destinationKey, start, stop, sortedSetOrder, exclude, order, skip, take));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRank(ValkeyKey, ValkeyValue, Order)" />
+    public T SortedSetRank(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending) => AddCmd(SortedSetRankAsync(key, member, order));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRemoveRangeByValue(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" />
+    public T SortedSetRemoveRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None) => AddCmd(SortedSetRemoveRangeByValueAsync(key, min, max, exclude));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRemoveRangeByRank(ValkeyKey, long, long)" />
+    public T SortedSetRemoveRangeByRank(ValkeyKey key, long start, long stop) => AddCmd(SortedSetRemoveRangeByRankAsync(key, start, stop));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRemoveRangeByScore(ValkeyKey, double, double, Exclude)" />
+    public T SortedSetRemoveRangeByScore(ValkeyKey key, double start, double stop, Exclude exclude = Exclude.None) => AddCmd(SortedSetRemoveRangeByScoreAsync(key, start, stop, exclude));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScan(ValkeyKey, ValkeyValue, int, long)" />
+    public T SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0) => AddCmd(SortedSetScanAsync(key, pattern, pageSize, cursor));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScore(ValkeyKey, ValkeyValue)" />
+    public T SortedSetScore(ValkeyKey key, ValkeyValue member) => AddCmd(SortedSetScoreAsync(key, member));
+
     // Explicit interface implementations for IBatchSortedSetCommands
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when) => SortedSetAdd(key, member, score, when);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, SortedSetEntry[] values, SortedSetWhen when) => SortedSetAdd(key, values, when);
@@ -72,4 +153,28 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetRangeByScoreWithScores(ValkeyKey key, double start, double stop, Exclude exclude, Order order, long skip, long take) => SortedSetRangeByScoreWithScores(key, start, stop, exclude, order, skip, take);
     IBatch IBatchSortedSetCommands.SortedSetRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, long skip, long take) => SortedSetRangeByValue(key, min, max, exclude, skip, take);
     IBatch IBatchSortedSetCommands.SortedSetRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, Order order, long skip, long take) => SortedSetRangeByValue(key, min, max, exclude, order, skip, take);
+    IBatch IBatchSortedSetCommands.SortedSetCombine(SetOperation operation, ValkeyKey[] keys, double[]? weights, Aggregate aggregate) => SortedSetCombine(operation, keys, weights, aggregate);
+    IBatch IBatchSortedSetCommands.SortedSetCombineWithScores(SetOperation operation, ValkeyKey[] keys, double[]? weights, Aggregate aggregate) => SortedSetCombineWithScores(operation, keys, weights, aggregate);
+    IBatch IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate) => SortedSetCombineAndStore(operation, destination, first, second, aggregate);
+    IBatch IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, ValkeyKey[] keys, double[]? weights, Aggregate aggregate) => SortedSetCombineAndStore(operation, destination, keys, weights, aggregate);
+    IBatch IBatchSortedSetCommands.SortedSetIncrement(ValkeyKey key, ValkeyValue member, double value) => SortedSetIncrement(key, member, value);
+    IBatch IBatchSortedSetCommands.SortedSetIntersectionLength(ValkeyKey[] keys, long limit) => SortedSetIntersectionLength(keys, limit);
+    IBatch IBatchSortedSetCommands.SortedSetLengthByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude) => SortedSetLengthByValue(key, min, max, exclude);
+    IBatch IBatchSortedSetCommands.SortedSetPop(ValkeyKey[] keys, long count, Order order) => SortedSetPop(keys, count, order);
+    IBatch IBatchSortedSetCommands.SortedSetScores(ValkeyKey key, ValkeyValue[] members) => SortedSetScores(key, members);
+    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey key, Order order, double timeout) => SortedSetBlockingPop(key, order, timeout);
+    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey key, long count, Order order, double timeout) => SortedSetBlockingPop(key, count, order, timeout);
+    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey[] keys, long count, Order order, double timeout) => SortedSetBlockingPop(keys, count, order, timeout);
+    IBatch IBatchSortedSetCommands.SortedSetPop(ValkeyKey key, Order order) => SortedSetPop(key, order);
+    IBatch IBatchSortedSetCommands.SortedSetPop(ValkeyKey key, long count, Order order) => SortedSetPop(key, count, order);
+    IBatch IBatchSortedSetCommands.SortedSetRandomMember(ValkeyKey key) => SortedSetRandomMember(key);
+    IBatch IBatchSortedSetCommands.SortedSetRandomMembers(ValkeyKey key, long count) => SortedSetRandomMembers(key, count);
+    IBatch IBatchSortedSetCommands.SortedSetRandomMembersWithScores(ValkeyKey key, long count) => SortedSetRandomMembersWithScores(key, count);
+    IBatch IBatchSortedSetCommands.SortedSetRangeAndStore(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue start, ValkeyValue stop, SortedSetOrder sortedSetOrder, Exclude exclude, Order order, long skip, long? take) => SortedSetRangeAndStore(sourceKey, destinationKey, start, stop, sortedSetOrder, exclude, order, skip, take);
+    IBatch IBatchSortedSetCommands.SortedSetRank(ValkeyKey key, ValkeyValue member, Order order) => SortedSetRank(key, member, order);
+    IBatch IBatchSortedSetCommands.SortedSetRemoveRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude) => SortedSetRemoveRangeByValue(key, min, max, exclude);
+    IBatch IBatchSortedSetCommands.SortedSetRemoveRangeByRank(ValkeyKey key, long start, long stop) => SortedSetRemoveRangeByRank(key, start, stop);
+    IBatch IBatchSortedSetCommands.SortedSetRemoveRangeByScore(ValkeyKey key, double start, double stop, Exclude exclude) => SortedSetRemoveRangeByScore(key, start, stop, exclude);
+    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor) => SortedSetScan(key, pattern, pageSize, cursor);
+    IBatch IBatchSortedSetCommands.SortedSetScore(ValkeyKey key, ValkeyValue member) => SortedSetScore(key, member);
 }

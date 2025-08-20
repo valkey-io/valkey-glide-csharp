@@ -235,13 +235,20 @@ jobs:
                   dotnet add package Valkey.Glide --version ${{ env.RELEASE_VERSION }}
                   git diff
 
+            - name: Install engine
+              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide-csharp/issues/6
+              if: ${{ matrix.host.OS != 'windows' }}
+              uses: ./.github/workflows/install-engine
+              with:
+                  engine-version: 8.1
+                  target: ${{ matrix.host.TARGET }}
+
             - name: Run tests
+              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide-csharp/issues/6
+              if: ${{ matrix.host.OS != 'windows' }}
               working-directory: tests/Valkey.Glide.IntegrationTests
               run: |
                   dotnet test --framework net8.0 --logger "console;verbosity=detailed" --logger "html;LogFileName=TestReport.html" --results-directory . --filter "FullyQualifiedName~CommandTests"
-              env:
-                  SERVICE_TYPE: valkey/valkey
-                  SERVICE_VERSION: 8.1
 
             - name: Upload test reports
               if: always()

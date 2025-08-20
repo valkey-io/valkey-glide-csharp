@@ -25,6 +25,7 @@ public static class Constants
     public const string AfterKeyword = "AFTER";
     public const string RankKeyword = "RANK";
     public const string MaxLenKeyword = "MAXLEN";
+    public const string WithValuesKeyword = "WITHVALUES";
 
     /// <summary>
     /// Expiry keywords.
@@ -40,6 +41,22 @@ public static class Constants
     public const string IdxKeyword = "IDX";
     public const string MinMatchLenKeyword = "MINMATCHLEN";
     public const string WithMatchLenKeyword = "WITHMATCHLEN";
+
+    /// <summary>
+    /// Keywords for sorted set conditional operations.
+    /// </summary>
+    public const string ExistsKeyword = "XX";
+    public const string NotExistsKeyword = "NX";
+    public const string GreaterThanKeyword = "GT";
+    public const string LessThanKeyword = "LT";
+
+    /// <summary>
+    /// Keywords for sorted set operations.
+    /// </summary>
+    public const string WeightsKeyword = "WEIGHTS";
+    public const string AggregateKeyword = "AGGREGATE";
+    public const string MinKeyword = "MIN";
+    public const string MaxKeyword = "MAX";
 
     /// <summary>
     /// The highest bound in the sorted set for lexicographical operations.
@@ -60,5 +77,4 @@ public static class Constants
     /// The lowest bound in the sorted set for score operations.
     /// </summary>
     public const string NegativeInfinityScore = "-inf";
-
 }

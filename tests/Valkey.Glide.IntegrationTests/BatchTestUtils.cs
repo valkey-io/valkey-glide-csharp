@@ -1,4 +1,4 @@
-// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -510,9 +510,10 @@ internal class BatchTestUtils
     public static List<TestInfo> CreateSortedSetTest(Pipeline.IBatch batch, bool isAtomic)
     {
         List<TestInfo> testData = [];
-        string prefix = isAtomic ? "{sortedSetKey}-" : "";
-        string key1 = $"{prefix}1-{Guid.NewGuid()}";
-        string key2 = $"{prefix}2-{Guid.NewGuid()}";
+        string prefix = "{sortedSetKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
+        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
 
         // Test single member add
         _ = batch.SortedSetAdd(key1, "member1", 10.5);
@@ -590,39 +591,57 @@ internal class BatchTestUtils
         testData.Add(new(2L, "SortedSetCount(key1, 1.0, 3.0, Exclude.Start)"));
 
         // Test SortedSetRangeByRank
+        // key1 has testMember1 (1.0), testMember2 (2.0), testMember3 (3.0)
         _ = batch.SortedSetRangeByRank(key1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByRank(key1) - all elements", true));
+        testData.Add(new(new ValkeyValue[] { "testMember1", "testMember2", "testMember3" }, "SortedSetRangeByRank(key1) - all elements"));
 
         _ = batch.SortedSetRangeByRank(key1, 0, 1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByRank(key1, 0, 1)", true));
+        testData.Add(new(new ValkeyValue[] { "testMember1", "testMember2" }, "SortedSetRangeByRank(key1, 0, 1)"));
 
         _ = batch.SortedSetRangeByRank(key1, 0, 1, Order.Descending);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByRank(key1, 0, 1, Descending)", true));
+        testData.Add(new(new ValkeyValue[] { "testMember3", "testMember2" }, "SortedSetRangeByRank(key1, 0, 1, Descending)"));
 
         // Test SortedSetRangeByRankWithScores
         _ = batch.SortedSetRangeByRankWithScores(key1);
-        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRangeByRankWithScores(key1) - all elements", true));
+        testData.Add(new(new SortedSetEntry[]
+        {
+            new("testMember1", 1.0),
+            new("testMember2", 2.0),
+            new("testMember3", 3.0)
+        }, "SortedSetRangeByRankWithScores(key1) - all elements"));
 
         _ = batch.SortedSetRangeByRankWithScores(key1, 0, 1);
-        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRangeByRankWithScores(key1, 0, 1)", true));
+        testData.Add(new(new SortedSetEntry[]
+        {
+            new("testMember1", 1.0),
+            new("testMember2", 2.0)
+        }, "SortedSetRangeByRankWithScores(key1, 0, 1)"));
 
         // Test SortedSetRangeByScore
         _ = batch.SortedSetRangeByScore(key1, 1.0, 3.0);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByScore(key1, 1.0, 3.0)", true));
+        testData.Add(new(new ValkeyValue[] { "testMember1", "testMember2", "testMember3" }, "SortedSetRangeByScore(key1, 1.0, 3.0)"));
 
         _ = batch.SortedSetRangeByScore(key1, 1.0, 3.0, Exclude.None, Order.Descending);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByScore(key1, 1.0, 3.0, Descending)", true));
+        testData.Add(new(new ValkeyValue[] { "testMember3", "testMember2", "testMember1" }, "SortedSetRangeByScore(key1, 1.0, 3.0, Descending)"));
 
         // Test SortedSetRangeByScoreWithScores
         _ = batch.SortedSetRangeByScoreWithScores(key1, 1.0, 3.0);
-        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRangeByScoreWithScores(key1, 1.0, 3.0)", true));
+        testData.Add(new(new SortedSetEntry[]
+        {
+            new("testMember1", 1.0),
+            new("testMember2", 2.0),
+            new("testMember3", 3.0)
+        }, "SortedSetRangeByScoreWithScores(key1, 1.0, 3.0)"));
 
         _ = batch.SortedSetRangeByScoreWithScores(key1, 1.0, 3.0, skip: 1, take: 1);
-        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRangeByScoreWithScores(key1, 1.0, 3.0, skip: 1, take: 1)", true));
+        testData.Add(new(new SortedSetEntry[]
+        {
+            new("testMember2", 2.0)
+        }, "SortedSetRangeByScoreWithScores(key1, 1.0, 3.0, skip: 1, take: 1)"));
 
         // Add members with same score for lexicographical ordering tests
         _ = batch.SortedSetAdd(key2, "apple", 0.0);
-        testData.Add(new(false, "SortedSetAdd(key2, apple, 0.0)"));
+        testData.Add(new(true, "SortedSetAdd(key2, apple, 0.0)"));
 
         _ = batch.SortedSetAdd(key2, "banana", 0.0);
         testData.Add(new(true, "SortedSetAdd(key2, banana, 0.0)"));
@@ -631,18 +650,194 @@ internal class BatchTestUtils
         testData.Add(new(true, "SortedSetAdd(key2, cherry, 0.0)"));
 
         // Test SortedSetRangeByValue
+        // key2 has newMember (7.5), apple (0.0), banana (0.0), cherry (0.0) - lexicographically ordered for same scores
         _ = batch.SortedSetRangeByValue(key2, "a", "c", Exclude.None, 0, -1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByValue(key2, 'a', 'c', Exclude.None, 0, -1)", true));
+        testData.Add(new(new ValkeyValue[] { "apple", "banana" }, "SortedSetRangeByValue(key2, 'a', 'c', Exclude.None, 0, -1)"));
 
         _ = batch.SortedSetRangeByValue(key2, "b", "d", Exclude.None, skip: 1, take: 1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByValue(key2, 'b', 'd', Exclude.None, skip: 1, take: 1)", true));
+        testData.Add(new(new ValkeyValue[] { "cherry" }, "SortedSetRangeByValue(key2, 'b', 'd', Exclude.None, skip: 1, take: 1)"));
 
         // Test SortedSetRangeByValue
         _ = batch.SortedSetRangeByValue(key2, order: Order.Descending);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByValue(key2, order: Descending)", true));
+        testData.Add(new(new ValkeyValue[] { "newMember", "cherry", "banana", "apple" }, "SortedSetRangeByValue(key2, order: Descending)"));
 
         _ = batch.SortedSetRangeByValue(key2, "a", "c", order: Order.Ascending);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRangeByValue(key2, 'a', 'c', order: Ascending)", true));
+        testData.Add(new(new ValkeyValue[] { "apple", "banana" }, "SortedSetRangeByValue(key2, 'a', 'c', order: Ascending)"));
+
+        // Test new sorted set commands
+        string key3 = $"{atomicPrefix}3-{Guid.NewGuid()}";
+        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+
+        // Test SortedSetIncrement
+        _ = batch.SortedSetIncrement(key1, "testMember1", 5.0);
+        testData.Add(new(6.0, "SortedSetIncrement(key1, testMember1, 5.0)"));
+
+        // Test combine operations - use prefixed keys to ensure same hash slot for cluster mode
+        string combineKey1 = $"{prefix}combine1-{Guid.NewGuid()}";
+        string combineKey3 = $"{prefix}combine3-{Guid.NewGuid()}";
+        string combineDestKey = $"{prefix}combineDest-{Guid.NewGuid()}";
+
+        // Setup data for combine operations
+        _ = batch.SortedSetAdd(combineKey1, [
+            new SortedSetEntry("testMember1", 6.0), // After increment
+            new SortedSetEntry("testMember2", 2.0),
+            new SortedSetEntry("testMember3", 3.0)
+        ]);
+        testData.Add(new(3L, "SortedSetAdd(combineKey1, test data for combine)"));
+
+        _ = batch.SortedSetAdd(combineKey3, [
+            new SortedSetEntry("testMember2", 25.0),
+            new SortedSetEntry("testMember4", 40.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(combineKey3, test data for combine)"));
+
+        _ = batch.SortedSetCombine(SetOperation.Union, [combineKey1, combineKey3]);
+        testData.Add(new(new ValkeyValue[] { "testMember2", "testMember3", "testMember1", "testMember4" }, "SortedSetCombine(Union, [combineKey1, combineKey3])"));
+
+        _ = batch.SortedSetCombineWithScores(SetOperation.Intersect, [combineKey1, combineKey3]);
+        testData.Add(new(new SortedSetEntry[] { new("testMember2", 27.0) }, "SortedSetCombineWithScores(Intersect, [combineKey1, combineKey3])"));
+
+        _ = batch.SortedSetCombineAndStore(SetOperation.Union, combineDestKey, combineKey1, combineKey3);
+        testData.Add(new(4L, "SortedSetCombineAndStore(Union, combineDestKey, combineKey1, combineKey3)"));
+
+        // Test SortedSetIntersectionLength (ZINTERCARD) - requires Redis 7.0+
+        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        {
+            _ = batch.SortedSetIntersectionLength([combineKey1, combineKey3]);
+            testData.Add(new(1L, "SortedSetIntersectionLength([combineKey1, combineKey3])"));
+        }
+
+        // Test SortedSetLengthByValue
+        _ = batch.SortedSetLengthByValue(key2, "a", "c");
+        testData.Add(new(2L, "SortedSetLengthByValue(key2, a, c)"));
+
+        // Test scores retrieval
+        // testMember1 was incremented from 1.0 to 6.0, testMember2 is 2.0, nonexistent should be null
+        _ = batch.SortedSetScores(key1, ["testMember1", "testMember2", "nonexistent"]);
+        testData.Add(new(new double?[] { 6.0, 2.0, null }, "SortedSetScores(key1, [testMember1, testMember2, nonexistent])"));
+
+        // Test pop operations
+        // Test pop operations - add data first to prevent blocking
+        string popKey = $"{atomicPrefix}pop-{Guid.NewGuid()}";
+        _ = batch.SortedSetAdd(popKey, [
+            new SortedSetEntry("member1", 1.0),
+            new SortedSetEntry("member2", 2.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(popKey, test data for pop)"));
+
+        // Test SortedSetPop (ZMPOP) - requires Redis 7.0+
+        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        {
+            _ = batch.SortedSetPop([popKey], 1);
+            testData.Add(new(new SortedSetPopResult(popKey, [
+                new SortedSetEntry("member1", 1.0)
+            ]), "SortedSetPop([popKey], 1)"));
+
+            // Test blocking commands with data present to prevent actual blocking
+            string blockingKey = $"{atomicPrefix}blocking-{Guid.NewGuid()}";
+            _ = batch.SortedSetAdd(blockingKey, [
+                new SortedSetEntry("block1", 10.0),
+                new SortedSetEntry("block2", 20.0)
+            ]);
+            testData.Add(new(2L, "SortedSetAdd(blockingKey, test data for blocking)"));
+
+            // Test SortedSetBlockingPop (single key, single element)
+            _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, 0.1);
+            testData.Add(new(new SortedSetEntry("block1", 10.0), "SortedSetBlockingPop(blockingKey, Ascending, 0.1s)"));
+
+            // Test SortedSetBlockingPop (single key, multiple elements)
+            _ = batch.SortedSetBlockingPop(blockingKey, 1, Order.Descending, 0.1);
+            testData.Add(new(new SortedSetEntry[] { new("block2", 20.0) }, "SortedSetBlockingPop(blockingKey, 1, Descending, 0.1s)"));
+
+            // Test SortedSetBlockingPop (multi-key, multiple elements)
+            _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, 0.1);
+            testData.Add(new(SortedSetPopResult.Null, "SortedSetBlockingPop([blockingKey], 1, Descending, 0.1s) - should be null"));
+        }
+
+        // Test sorted set commands
+        string newKey = $"{prefix}new-{Guid.NewGuid()}";
+        string newDestKey = $"{prefix}newdest-{Guid.NewGuid()}";
+
+        // Setup data
+        _ = batch.SortedSetAdd(newKey, [
+            new SortedSetEntry("newMember1", 10.5),
+            new SortedSetEntry("newMember2", 8.2),
+            new SortedSetEntry("newMember3", 15.0)
+        ]);
+        testData.Add(new(3L, "SortedSetAdd(newKey, test data for new commands)"));
+
+        // Test SortedSetPop (min - default)
+        _ = batch.SortedSetPop(newKey);
+        testData.Add(new(new SortedSetEntry("newMember2", 8.2), "SortedSetPop(newKey) - min"));
+
+        // Test SortedSetPop (max)
+        _ = batch.SortedSetPop(newKey, Order.Descending);
+        testData.Add(new(new SortedSetEntry("newMember3", 15.0), "SortedSetPop(newKey, Order.Descending) - max"));
+
+        // Test SortedSetRandomMember
+        _ = batch.SortedSetRandomMember(newKey);
+        testData.Add(new(new ValkeyValue("newMember1"), "SortedSetRandomMember(newKey)"));
+
+        // Setup data
+        _ = batch.SortedSetAdd(newKey, [
+            new SortedSetEntry("newMember1", 10.5),
+            new SortedSetEntry("newMember2", 8.2),
+            new SortedSetEntry("newMember3", 15.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(newKey, test data for new commands)"));
+
+        // Test SortedSetRank
+        _ = batch.SortedSetRank(newKey, "newMember1");
+        testData.Add(new(1L, "SortedSetRank(newKey, newMember1)"));
+
+        // Test SortedSetRank with descending order (reverse rank)
+        _ = batch.SortedSetRank(newKey, "newMember1", Order.Descending);
+        testData.Add(new(1L, "SortedSetRank(newKey, newMember1, Order.Descending)"));
+
+        // Test SortedSetScore
+        _ = batch.SortedSetScore(newKey, "newMember1");
+        testData.Add(new(10.5, "SortedSetScore(newKey, newMember1)"));
+
+        // Test SortedSetRandomMembers
+        _ = batch.SortedSetRandomMembers(newKey, 2);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "SortedSetRandomMembers(newKey, 2)", true));
+
+        // Test SortedSetRandomMembersWithScores
+        _ = batch.SortedSetRandomMembersWithScores(newKey, 2);
+        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRandomMembersWithScores(newKey, 2)", true));
+
+        // Test SortedSetRangeAndStore (should copy all 3 elements from newKey to newDestKey)
+        _ = batch.SortedSetRangeAndStore(newKey, newDestKey, 0, 9);
+        testData.Add(new(3L, "SortedSetRangeAndStore(newKey, newDestKey, 0, 9)"));
+
+        // Test SortedSetRemoveRangeByRank (should remove all 3 elements)
+        _ = batch.SortedSetRemoveRangeByRank(newKey, 0, 9);
+        testData.Add(new(3L, "SortedSetRemoveRangeByRank(newKey, 0, 9)"));
+
+        // Setup data for union operations
+        string unionKey1 = $"{prefix}union1-{Guid.NewGuid()}";
+        string unionKey2 = $"{prefix}union2-{Guid.NewGuid()}";
+
+        _ = batch.SortedSetAdd(unionKey1, [
+            new SortedSetEntry("common", 1.0),
+            new SortedSetEntry("unique1", 2.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(unionKey1, union test data)"));
+
+        _ = batch.SortedSetAdd(unionKey2, [
+            new SortedSetEntry("common", 3.0),
+            new SortedSetEntry("unique2", 4.0)
+        ]);
+        testData.Add(new(2L, "SortedSetAdd(unionKey2, union test data)"));
+
+        // Test SortedSetCombine with Union
+        _ = batch.SortedSetCombine(SetOperation.Union, [unionKey1, unionKey2]);
+        testData.Add(new(new ValkeyValue[] { "common", "unique1", "unique2" }, "SortedSetCombine(SetOperation.Union, [unionKey1, unionKey2])"));
+
+        // Test SortedSetCombineAndStore with Union
+        string unionDestKey = $"{prefix}uniondest-{Guid.NewGuid()}";
+        _ = batch.SortedSetCombineAndStore(SetOperation.Union, unionDestKey, unionKey1, unionKey2);
+        testData.Add(new(3L, "SortedSetCombineAndStore(SetOperation.Union, unionDestKey, unionKey1, unionKey2)"));
 
         return testData;
     }
@@ -965,13 +1160,145 @@ internal class BatchTestUtils
         return testData;
     }
 
+    public static List<TestInfo> CreateHashTest(Pipeline.IBatch batch, bool isAtomic)
+    {
+        List<TestInfo> testData = [];
+        string prefix = "{hashKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
+        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        string nonExistingKey = $"{atomicPrefix}nonexisting-{Guid.NewGuid()}";
+
+        string field1 = "field1";
+        string field2 = "field2";
+        string value1 = "value1";
+        string value2 = "value2";
+
+        // HashSet and HashGet tests
+        _ = batch.HashSet(key1, field1, value1);
+        testData.Add(new(true, "HashSet(key1, field1, value1)"));
+
+        _ = batch.HashGet(key1, field1);
+        testData.Add(new(new ValkeyValue(value1), "HashGet(key1, field1)"));
+
+        _ = batch.HashSet(key1, field2, value2);
+        testData.Add(new(true, "HashSet(key1, field2, value2)"));
+
+        // HashIncrement tests (long)
+        _ = batch.HashSet(key1, "counter", "10");
+        testData.Add(new(true, "HashSet(key1, counter, 10)"));
+
+        _ = batch.HashIncrement(key1, "counter", 5);
+        testData.Add(new(15L, "HashIncrement(key1, counter, 5)"));
+
+        _ = batch.HashIncrement(key1, "counter");
+        testData.Add(new(16L, "HashIncrement(key1, counter) default"));
+
+        // HashIncrement tests (double)
+        _ = batch.HashSet(key1, "float_counter", "10.5");
+        testData.Add(new(true, "HashSet(key1, float_counter, 10.5)"));
+
+        _ = batch.HashIncrement(key1, "float_counter", 2.5);
+        testData.Add(new(13.0, "HashIncrement(key1, float_counter, 2.5)"));
+
+        // HashKeys test
+        _ = batch.HashKeys(key1);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(key1)", true));
+
+        // HashLength test
+        _ = batch.HashLength(key1);
+        testData.Add(new(4L, "HashLength(key1)"));
+
+        // HashExists test
+        _ = batch.HashExists(key1, field1);
+        testData.Add(new(true, "HashExists(key1, field1)"));
+
+        _ = batch.HashExists(key1, "nonexistent");
+        testData.Add(new(false, "HashExists(key1, nonexistent)"));
+
+        // HashStringLength test
+        _ = batch.HashStringLength(key1, field1);
+        testData.Add(new((long)value1.Length, "HashStringLength(key1, field1)"));
+
+        _ = batch.HashStringLength(key1, "nonexistent");
+        testData.Add(new(0L, "HashStringLength(key1, nonexistent)"));
+
+        // HashDelete test
+        _ = batch.HashDelete(key1, field2);
+        testData.Add(new(true, "HashDelete(key1, field2)"));
+
+        _ = batch.HashExists(key1, field2);
+        testData.Add(new(false, "HashExists(key1, field2) after delete"));
+
+        // Test with non-existing key
+        _ = batch.HashGet(nonExistingKey, field1);
+        testData.Add(new(ValkeyValue.Null, "HashGet(nonExistingKey, field1)"));
+
+        _ = batch.HashLength(nonExistingKey);
+        testData.Add(new(0L, "HashLength(nonExistingKey)"));
+
+        _ = batch.HashKeys(nonExistingKey);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(nonExistingKey)"));
+
+        // HashScan tests
+        _ = batch.HashScan(key1, 0, "field*", 10);
+        testData.Add(new((0L, new HashEntry[] { new("field1", "value1") }), "HashScan(key1, 0, field*, 10)"));
+
+        // HashScanNoValues tests
+        _ = batch.HashScanNoValues(key1, 0, "field*", 10);
+        testData.Add(new((0L, new ValkeyValue[] { "field1" }), "HashScanNoValues(key1, 0, field*, 10)"));
+
+        // HashGetAll test
+        _ = batch.HashGetAll(key1);
+        testData.Add(new(new HashEntry[] {
+            new("field1", value1),
+            new("counter", "16"),
+            new("float_counter", "13")
+        }, "HashGetAll(key1)"));
+
+        // HashValues test
+        _ = batch.HashValues(key1);
+        testData.Add(new(new ValkeyValue[] { value1, "16", "13" }, "HashValues(key1)"));
+
+        // HashRandomField tests
+        _ = batch.HashRandomField(key1);
+        testData.Add(new(new ValkeyValue("field1"), "HashRandomField(key1)"));
+
+        _ = batch.HashRandomFields(key1, 2);
+        testData.Add(new(new ValkeyValue[] { "field1", "counter" }, "HashRandomFields(key1, 2)"));
+
+        _ = batch.HashRandomFieldsWithValues(key1, 2);
+        testData.Add(new(new HashEntry[] {
+            new("field1", value1),
+            new("counter", "16")
+        }, "HashRandomFieldsWithValues(key1, 2)"));
+
+        // Multi-field operations
+        HashEntry[] multiEntries = [
+            new HashEntry("multi1", "value1"),
+            new HashEntry("multi2", "value2")
+        ];
+        _ = batch.HashSet(key2, multiEntries);
+        testData.Add(new("OK", "HashSet(key2, multiEntries)"));
+
+        _ = batch.HashGet(key2, ["multi1", "multi2"]);
+        testData.Add(new(new ValkeyValue[] { "value1", "value2" }, "HashGet(key2, [multi1, multi2])"));
+
+        _ = batch.HashDelete(key2, ["multi1", "multi2"]);
+        testData.Add(new(2L, "HashDelete(key2, [multi1, multi2])"));
+
+        return testData;
+    }
+
     public static TheoryData<BatchTestData> GetTestClientWithAtomic =>
         [.. TestConfiguration.TestClients.SelectMany(r => new[] { true, false }.SelectMany(isAtomic =>
             new BatchTestData[] {
                 new("String commands", r.Data, CreateStringTest, isAtomic),
                 new("Set commands", r.Data, CreateSetTest, isAtomic),
                 new("Generic commands", r.Data, CreateGenericTest, isAtomic),
+                new("Hash commands", r.Data, CreateHashTest, isAtomic),
                 new("List commands", r.Data, CreateListTest, isAtomic),
+                new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
                 new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
             }))];
 }

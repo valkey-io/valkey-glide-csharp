@@ -38,6 +38,18 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashExistsAsync(ValkeyKey, ValkeyValue, CommandFlags)" /></returns>
     IBatch HashExists(ValkeyKey key, ValkeyValue hashField);
 
+    /// <inheritdoc cref="IHashCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, long, CommandFlags)" /></returns>
+    IBatch HashIncrement(ValkeyKey key, ValkeyValue hashField, long value = 1);
+
+    /// <inheritdoc cref="IHashCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, double, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, double, CommandFlags)" /></returns>
+    IBatch HashIncrement(ValkeyKey key, ValkeyValue hashField, double value);
+
+    /// <inheritdoc cref="IHashCommands.HashKeysAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashKeysAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch HashKeys(ValkeyKey key);
+
     /// <inheritdoc cref="IHashCommands.HashLengthAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashLengthAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch HashLength(ValkeyKey key);
@@ -61,4 +73,12 @@ internal interface IBatchHashCommands
     /// <inheritdoc cref="IHashCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long, CommandFlags)" /></returns>
     IBatch HashRandomFieldsWithValues(ValkeyKey key, long count);
+
+    /// <inheritdoc cref="IHashCommands.HashScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)" /></returns>
+    IBatch HashScan(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0);
+
+    /// <inheritdoc cref="IHashCommands.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)" /></returns>
+    IBatch HashScanNoValues(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0);
 }

@@ -17,7 +17,6 @@ public class TestConfiguration : IDisposable
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
     private static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(250);
-    private static TimeSpan EXTRA_TIMEOUT = TimeSpan.FromSeconds(1);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
@@ -32,22 +31,6 @@ public class TestConfiguration : IDisposable
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithConnectionTimeout(DEFAULT_TIMEOUT)
             .WithTls(TLS);
-
-    public static GlideClient DefaultStandaloneClientWithExtraTimeout()
-        => GlideClient.CreateClient(
-                DefaultClientConfig()
-                .WithRequestTimeout(EXTRA_TIMEOUT)
-                .Build())
-            .GetAwaiter()
-            .GetResult();
-
-    public static GlideClusterClient DefaultClusterClientWithExtraTimeout()
-        => GlideClusterClient.CreateClient(
-                DefaultClusterClientConfig()
-                .WithRequestTimeout(EXTRA_TIMEOUT)
-                .Build())
-            .GetAwaiter()
-            .GetResult();
 
     public static GlideClient DefaultStandaloneClient()
         => GlideClient.CreateClient(DefaultClientConfig().Build()).GetAwaiter().GetResult();
@@ -77,14 +60,12 @@ public class TestConfiguration : IDisposable
             {
                 GlideClient resp2client = GlideClient.CreateClient(
                     DefaultClientConfig()
-                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
                     .Build()
                 ).GetAwaiter().GetResult();
                 resp2client.SetInfo("RESP2");
                 GlideClient resp3client = GlideClient.CreateClient(
                     DefaultClientConfig()
-                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
                     .Build()
                 ).GetAwaiter().GetResult();
@@ -105,14 +86,12 @@ public class TestConfiguration : IDisposable
             {
                 GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                     DefaultClusterClientConfig()
-                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
                     .Build()
                 ).GetAwaiter().GetResult();
                 resp2client.SetInfo("RESP2");
                 GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                     DefaultClusterClientConfig()
-                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
                     .Build()
                 ).GetAwaiter().GetResult();
@@ -263,7 +242,7 @@ public class TestConfiguration : IDisposable
                 string? standaloneEndpoints = Environment.GetEnvironmentVariable("standalone-endpoints");
                 STANDALONE_HOSTS = standaloneEndpoints is null ? [] : ParseHostsString(standaloneEndpoints);
                 _startedServer = false;
-                DEFAULT_TIMEOUT = EXTRA_TIMEOUT = TimeSpan.FromSeconds(5000);
+                DEFAULT_TIMEOUT = TimeSpan.FromSeconds(5000);
             }
             else
             {
@@ -383,7 +362,7 @@ public class TestConfiguration : IDisposable
         Exception? err = null;
         if (STANDALONE_HOSTS.Count > 0)
         {
-            GlideClient client = DefaultStandaloneClientWithExtraTimeout();
+            GlideClient client = DefaultStandaloneClient();
             try
             {
                 return TryGetVersion(client);
@@ -395,7 +374,7 @@ public class TestConfiguration : IDisposable
         }
         if (CLUSTER_HOSTS.Count > 0)
         {
-            GlideClusterClient client = DefaultClusterClientWithExtraTimeout();
+            GlideClusterClient client = DefaultClusterClient();
             try
             {
                 return TryGetVersion(client);
