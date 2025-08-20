@@ -110,7 +110,7 @@ internal partial class Request
         {
             object[] scanArray = arr;
             long nextCursor = long.Parse(((GlideString)scanArray[0]).ToString());
-            object[] items = (object[])scanArray[1];
+            object[] items = (object[])scanArray[1]; // This array will always have an even-length
 
             if (includeValues)
             {
