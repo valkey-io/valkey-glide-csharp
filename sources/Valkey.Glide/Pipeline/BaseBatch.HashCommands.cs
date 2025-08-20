@@ -33,6 +33,15 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashExists(ValkeyKey, ValkeyValue)" />
     public T HashExists(ValkeyKey key, ValkeyValue hashField) => AddCmd(HashExistsAsync(key, hashField));
 
+    /// <inheritdoc cref="IBatchHashCommands.HashIncrement(ValkeyKey, ValkeyValue, long)" />
+    public T HashIncrement(ValkeyKey key, ValkeyValue hashField, long value = 1) => AddCmd(HashIncrementAsync(key, hashField, value));
+
+    /// <inheritdoc cref="IBatchHashCommands.HashIncrement(ValkeyKey, ValkeyValue, double)" />
+    public T HashIncrement(ValkeyKey key, ValkeyValue hashField, double value) => AddCmd(HashIncrementAsync(key, hashField, value));
+
+    /// <inheritdoc cref="IBatchHashCommands.HashKeys(ValkeyKey)" />
+    public T HashKeys(ValkeyKey key) => AddCmd(HashKeysAsync(key));
+
     /// <inheritdoc cref="IBatchHashCommands.HashLength(ValkeyKey)" />
     public T HashLength(ValkeyKey key) => AddCmd(HashLengthAsync(key));
 
@@ -51,6 +60,12 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashRandomFieldsWithValues(ValkeyKey, long)" />
     public T HashRandomFieldsWithValues(ValkeyKey key, long count) => AddCmd(HashRandomFieldsWithValuesAsync(key, count));
 
+    /// <inheritdoc cref="IBatchHashCommands.HashScan(ValkeyKey, long, ValkeyValue, long)" />
+    public T HashScan(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0) => AddCmd(HashScanAsync<HashEntry[]>(key, cursor, pattern, count, true));
+
+    /// <inheritdoc cref="IBatchHashCommands.HashScanNoValues(ValkeyKey, long, ValkeyValue, long)" />
+    public T HashScanNoValues(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0) => AddCmd(HashScanAsync<ValkeyValue[]>(key, cursor, pattern, count, false));
+
     // Explicit interface implementations for IBatchHashCommands
     IBatch IBatchHashCommands.HashGet(ValkeyKey key, ValkeyValue hashField) => HashGet(key, hashField);
     IBatch IBatchHashCommands.HashGet(ValkeyKey key, ValkeyValue[] hashFields) => HashGet(key, hashFields);
@@ -60,10 +75,15 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchHashCommands.HashDelete(ValkeyKey key, ValkeyValue hashField) => HashDelete(key, hashField);
     IBatch IBatchHashCommands.HashDelete(ValkeyKey key, ValkeyValue[] hashFields) => HashDelete(key, hashFields);
     IBatch IBatchHashCommands.HashExists(ValkeyKey key, ValkeyValue hashField) => HashExists(key, hashField);
+    IBatch IBatchHashCommands.HashIncrement(ValkeyKey key, ValkeyValue hashField, long value) => HashIncrement(key, hashField, value);
+    IBatch IBatchHashCommands.HashIncrement(ValkeyKey key, ValkeyValue hashField, double value) => HashIncrement(key, hashField, value);
+    IBatch IBatchHashCommands.HashKeys(ValkeyKey key) => HashKeys(key);
     IBatch IBatchHashCommands.HashLength(ValkeyKey key) => HashLength(key);
     IBatch IBatchHashCommands.HashStringLength(ValkeyKey key, ValkeyValue hashField) => HashStringLength(key, hashField);
     IBatch IBatchHashCommands.HashValues(ValkeyKey key) => HashValues(key);
     IBatch IBatchHashCommands.HashRandomField(ValkeyKey key) => HashRandomField(key);
     IBatch IBatchHashCommands.HashRandomFields(ValkeyKey key, long count) => HashRandomFields(key, count);
     IBatch IBatchHashCommands.HashRandomFieldsWithValues(ValkeyKey key, long count) => HashRandomFieldsWithValues(key, count);
+    IBatch IBatchHashCommands.HashScan(ValkeyKey key, long cursor, ValkeyValue pattern, long count) => HashScan(key, cursor, pattern, count);
+    IBatch IBatchHashCommands.HashScanNoValues(ValkeyKey key, long cursor, ValkeyValue pattern, long count) => HashScanNoValues(key, cursor, pattern, count);
 }
