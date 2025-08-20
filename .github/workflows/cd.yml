@@ -211,7 +211,9 @@ jobs:
               uses: actions/setup-dotnet@v4
               with:
                   # install latest dotnet too to use language features
-                  dotnet-version: 8
+                  dotnet-version: |
+                      8
+                      9
 
             - name: Set up a local nuget
               if: ${{ needs.publish.result == 'skipped' }}
