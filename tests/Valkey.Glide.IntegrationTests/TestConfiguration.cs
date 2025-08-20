@@ -16,23 +16,27 @@ public class TestConfiguration : IDisposable
     public static List<(string host, ushort port)> CLUSTER_HOSTS { get; internal set; } = [];
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
+    private static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(250);
+    private static TimeSpan EXTRA_TIMEOUT = TimeSpan.FromSeconds(1);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
             .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithConnectionTimeout(DEFAULT_TIMEOUT)
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
             .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithConnectionTimeout(DEFAULT_TIMEOUT)
             .WithTls(TLS);
 
     public static GlideClient DefaultStandaloneClientWithExtraTimeout()
         => GlideClient.CreateClient(
                 DefaultClientConfig()
-                .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                .WithRequestTimeout(EXTRA_TIMEOUT)
                 .Build())
             .GetAwaiter()
             .GetResult();
@@ -40,7 +44,7 @@ public class TestConfiguration : IDisposable
     public static GlideClusterClient DefaultClusterClientWithExtraTimeout()
         => GlideClusterClient.CreateClient(
                 DefaultClusterClientConfig()
-                .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                .WithRequestTimeout(EXTRA_TIMEOUT)
                 .Build())
             .GetAwaiter()
             .GetResult();
@@ -73,14 +77,14 @@ public class TestConfiguration : IDisposable
             {
                 GlideClient resp2client = GlideClient.CreateClient(
                     DefaultClientConfig()
-                    .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
                     .Build()
                 ).GetAwaiter().GetResult();
                 resp2client.SetInfo("RESP2");
                 GlideClient resp3client = GlideClient.CreateClient(
                     DefaultClientConfig()
-                    .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
                     .Build()
                 ).GetAwaiter().GetResult();
@@ -101,14 +105,14 @@ public class TestConfiguration : IDisposable
             {
                 GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                     DefaultClusterClientConfig()
-                    .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
                     .Build()
                 ).GetAwaiter().GetResult();
                 resp2client.SetInfo("RESP2");
                 GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                     DefaultClusterClientConfig()
-                    .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                    .WithRequestTimeout(EXTRA_TIMEOUT)
                     .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
                     .Build()
                 ).GetAwaiter().GetResult();
@@ -138,7 +142,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port);
         config.Ssl = TLS;
-        config.ResponseTimeout = 1000;
+        config.ResponseTimeout = (int)DEFAULT_TIMEOUT.TotalMilliseconds;
         return config;
     }
 
@@ -147,7 +151,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port);
         config.Ssl = TLS;
-        config.ResponseTimeout = 1000;
+        config.ResponseTimeout = (int)DEFAULT_TIMEOUT.TotalMilliseconds;
         return config;
     }
 
@@ -259,6 +263,7 @@ public class TestConfiguration : IDisposable
                 string? standaloneEndpoints = Environment.GetEnvironmentVariable("standalone-endpoints");
                 STANDALONE_HOSTS = standaloneEndpoints is null ? [] : ParseHostsString(standaloneEndpoints);
                 _startedServer = false;
+                DEFAULT_TIMEOUT = EXTRA_TIMEOUT = TimeSpan.FromSeconds(5000);
             }
             else
             {
@@ -286,7 +291,7 @@ public class TestConfiguration : IDisposable
         catch (Exception e)
         {
             TestConsoleWriteLine($"Test suite setup failed: {e}\n{e.StackTrace}");
-            Environment.FailFast("Test suite setup failed");
+            Environment.Exit(1);
         }
 
         TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_HOSTS)}");
