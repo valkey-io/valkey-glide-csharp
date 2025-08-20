@@ -104,7 +104,6 @@ jobs:
               run: |
                   cargo zigbuild -r --target ${{ matrix.host.TARGET }}.2.17
                   mkdir -p target/release
-                  cp target/*/release/libglide_rs.so target/release/
 
             - name: Build native libs
               if: ${{ !contains(matrix.host.TARGET, 'linux-gnu') }}
@@ -116,10 +115,11 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: ${{ matrix.host.TARGET }}
+                  if-no-files-found: error
                   path: |
-                      rust/target/release/*.so
-                      rust/target/release/*.dylib
-                      rust/target/release/*.dll
+                      rust/${{ matrix.host.TARGET }}/target/release/*.so
+                      rust/${{ matrix.host.TARGET }}/target/release/*.dylib
+                      rust/${{ matrix.host.TARGET }}/target/release/*.dll
 
     build-package-to-publish:
         needs: [set-release-version, create-binaries]
@@ -166,6 +166,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: package
+                  if-no-files-found: error
                   path: sources/Valkey.Glide/bin/Release/Valkey.Glide.*.nupkg
 
     publish:
@@ -210,9 +211,7 @@ jobs:
               uses: actions/setup-dotnet@v4
               with:
                   # install latest dotnet too to use language features
-                  dotnet-version: |
-                      8
-                      9
+                  dotnet-version: 8
 
             - name: Set up a local nuget
               if: ${{ needs.publish.result == 'skipped' }}
