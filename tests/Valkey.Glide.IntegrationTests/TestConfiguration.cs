@@ -233,6 +233,8 @@ public class TestConfiguration : IDisposable
 
     public TestConfiguration()
     {
+        _scriptDir = "";
+        Logger.Init(Level.Debug);
         try
         {
             string? projectDir = Directory.GetCurrentDirectory();
@@ -284,7 +286,7 @@ public class TestConfiguration : IDisposable
         catch (Exception e)
         {
             TestConsoleWriteLine($"Test suite setup failed: {e}\n{e.StackTrace}");
-            Process.GetCurrentProcess().Kill();
+            Environment.FailFast("Test suite setup failed");
         }
 
         TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_HOSTS)}");
