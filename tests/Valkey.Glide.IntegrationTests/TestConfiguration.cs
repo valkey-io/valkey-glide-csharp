@@ -284,7 +284,7 @@ public class TestConfiguration : IDisposable
         catch (Exception e)
         {
             TestConsoleWriteLine($"Test suite setup failed: {e}\n{e.StackTrace}");
-            Environment.Exit(1);
+            Process.GetCurrentProcess().Kill();
         }
 
         TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_HOSTS)}");
@@ -376,7 +376,7 @@ public class TestConfiguration : IDisposable
         Exception? err = null;
         if (STANDALONE_HOSTS.Count > 0)
         {
-            GlideClient client = DefaultStandaloneClient();
+            GlideClient client = DefaultStandaloneClientWithExtraTimeout();
             try
             {
                 return TryGetVersion(client);
@@ -388,7 +388,7 @@ public class TestConfiguration : IDisposable
         }
         if (CLUSTER_HOSTS.Count > 0)
         {
-            GlideClusterClient client = DefaultClusterClient();
+            GlideClusterClient client = DefaultClusterClientWithExtraTimeout();
             try
             {
                 return TryGetVersion(client);
