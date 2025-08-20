@@ -117,9 +117,9 @@ jobs:
                   name: ${{ matrix.host.TARGET }}
                   if-no-files-found: error
                   path: |
-                      rust/${{ matrix.host.TARGET }}/target/release/*.so
-                      rust/${{ matrix.host.TARGET }}/target/release/*.dylib
-                      rust/${{ matrix.host.TARGET }}/target/release/*.dll
+                      rust/target/${{ matrix.host.TARGET }}/release/*.so
+                      rust/target/${{ matrix.host.TARGET }}/release/*.dylib
+                      rust/target/${{ matrix.host.TARGET }}/release/*.dll
 
     build-package-to-publish:
         needs: [set-release-version, create-binaries]
