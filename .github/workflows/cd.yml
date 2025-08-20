@@ -270,5 +270,5 @@ jobs:
             RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
         steps:
             - name: Remove package from NuGet due to test failures
-              if: ${{ needs.test.result == 'failure' && needs.publish.result == 'success' }}
+              if: ${{ (needs.test.result == 'failure' && needs.publish.result == 'success') || needs.publish.result == 'failure' }}
               run: dotnet nuget delete Valkey.Glide ${{ env.RELEASE_VERSION }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --non-interactive
