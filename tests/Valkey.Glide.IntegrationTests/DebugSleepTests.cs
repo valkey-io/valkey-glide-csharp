@@ -2,13 +2,14 @@
 
 using Valkey.Glide.Pipeline;
 
-using static Valkey.Glide.Errors;
 using static Valkey.Glide.Pipeline.Options;
 
 using TimeoutException = Valkey.Glide.Errors.TimeoutException;
 
 namespace Valkey.Glide.IntegrationTests;
 
+// We separated these tests with sleep commands into their own collection to prevent interference with other tests
+// as C# runs them in parallel.
 [Collection(typeof(DebugSleepTests))]
 [CollectionDefinition(DisableParallelization = true)]
 public class DebugSleepTests

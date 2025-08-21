@@ -3,7 +3,6 @@
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Errors;
-using static Valkey.Glide.Pipeline.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
