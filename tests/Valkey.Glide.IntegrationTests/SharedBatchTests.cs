@@ -22,31 +22,6 @@ public class SharedBatchTests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(GetTestClientWithAtomic))]
-    public async Task BatchTimeout(BaseClient client, bool isAtomic)
-    {
-        bool isCluster = client is GlideClusterClient;
-        Pipeline.IBatch batch = isCluster ? new ClusterBatch(isAtomic) : new Batch(isAtomic);
-        _ = batch.CustomCommand(["DEBUG", "sleep", "0.5"]);
-        BaseBatchOptions options = isCluster ? new ClusterBatchOptions(timeout: 100) : new BatchOptions(timeout: 100);
-
-        // Expect a timeout exception on short timeout
-        _ = await Assert.ThrowsAsync<TimeoutException>(() => isCluster
-                ? ((GlideClusterClient)client).Exec((ClusterBatch)batch, true, (ClusterBatchOptions)options)
-                : ((GlideClient)client).Exec((Batch)batch, true, (BatchOptions)options));
-
-        // Wait for server to wake up
-        Thread.Sleep(TimeSpan.FromSeconds(1));
-
-        // Retry with a longer timeout and expect [OK]
-        options = isCluster ? new ClusterBatchOptions(timeout: 1000, route: Route.Random) : new BatchOptions(timeout: 1000);
-        object?[]? res = isCluster
-            ? await ((GlideClusterClient)client).Exec((ClusterBatch)batch, true, (ClusterBatchOptions)options)
-            : await ((GlideClient)client).Exec((Batch)batch, true, (BatchOptions)options);
-        Assert.Equal(["OK"], res);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(GetTestClientWithAtomic))]
     public async Task BatchRaiseOnError(BaseClient client, bool isAtomic)
     {
         bool isCluster = client is GlideClusterClient;

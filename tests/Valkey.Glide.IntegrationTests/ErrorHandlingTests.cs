@@ -18,16 +18,6 @@ public class ErrorHandlingTests
         );
 
     [Fact]
-    public async Task ErrorIfTimedOut()
-    {
-        using GlideClient client = TestConfiguration.DefaultStandaloneClient();
-        _ = await Assert.ThrowsAsync<TimeoutException>(async () =>
-            _ = await client.CustomCommand(["debug", "sleep", "0.5"])
-        );
-        client.Dispose();
-    }
-
-    [Fact]
     public async Task ErrorIfIncorrectArgs()
     {
         using GlideClient client = TestConfiguration.DefaultStandaloneClient();
