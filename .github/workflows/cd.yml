@@ -186,6 +186,26 @@ jobs:
                   ls -lh
                   dotnet nuget push Valkey.Glide.$RELEASE_VERSION.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
+            - name: Wait for package to be ready for download
+              run: |
+                  dotnet new console --name temp-check --output .
+                  TIMEOUT=300  # 5 minutes
+                  INTERVAL=10  # 10 seconds
+                  ELAPSED=0
+
+                  while [ $ELAPSED -lt $TIMEOUT ]; do
+                      echo "Checking availability... (${ELAPSED}s elapsed)"
+                      if dotnet add package Valkey.Glide --version $RELEASE_VERSION --dry-run --prerelease ; then
+                          echo "Package is now available!"
+                          exit 0
+                      fi
+                      sleep $INTERVAL
+                      ELAPSED=$((ELAPSED + INTERVAL))
+                  done
+
+                  echo "Timeout: Package is not available after ${TIMEOUT}s"
+                  exit 1
+
     test:
         needs: [publish, set-release-version, load-platform-matrix]
         timeout-minutes: 35
