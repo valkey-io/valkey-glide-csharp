@@ -157,7 +157,7 @@ jobs:
                   dotnet pack Valkey.Glide.csproj --configuration Release -p:NuspecProperties=version=$RELEASE_VERSION
                   tree -h bin/Release
                   unzip -l bin/Release/Valkey.Glide.$RELEASE_VERSION.nupkg
-                  unzip -l bin/Release/Valkey.Glide.$RELEASE_VERSION.symbols.nupkg
+                  unzip -l bin/Release/Valkey.Glide.$RELEASE_VERSION.snupkg
               env:
                   SkipCargo: true
 
@@ -166,7 +166,7 @@ jobs:
               with:
                   name: package
                   if-no-files-found: error
-                  path: sources/Valkey.Glide/bin/Release/Valkey.Glide.*.nupkg
+                  path: sources/Valkey.Glide/bin/Release/Valkey.Glide.*nupkg
 
     publish:
         environment: Release
