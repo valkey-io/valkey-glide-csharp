@@ -195,7 +195,7 @@ jobs:
 
                   while [ $ELAPSED -lt $TIMEOUT ]; do
                       echo "Checking availability... (${ELAPSED}s elapsed)"
-                      if dotnet add package Valkey.Glide --version $RELEASE_VERSION --dry-run --prerelease ; then
+                      if dotnet add package Valkey.Glide --version $RELEASE_VERSION --prerelease ; then
                           echo "Package is now available!"
                           exit 0
                       fi
