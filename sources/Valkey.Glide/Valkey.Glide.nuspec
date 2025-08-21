@@ -29,7 +29,6 @@
 
     <!-- PDB files and sources are included into symbol package only -->
     <file src="bin\Release\**\Valkey.Glide.pdb" target="lib" />
-    <file src="**\*.cs" target="src" />
 
     <!-- TODO: make binaries optional/conditional, build fails on a dev's PC who doesn't have all files. Alternative: use different nuspec files -->
     <!-- see runtime IDs in https://learn.microsoft.com/en-us/dotnet/core/rid-catalog -->
