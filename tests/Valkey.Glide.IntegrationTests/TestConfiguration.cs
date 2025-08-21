@@ -12,7 +12,7 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
-    private static readonly object _lockObject = new object();
+    private static readonly object lockObject = new object();
     public static List<(string host, ushort port)> STANDALONE_HOSTS { get; internal set; } = [];
     public static List<(string host, ushort port)> CLUSTER_HOSTS { get; internal set; } = [];
     public static Version SERVER_VERSION { get; internal set; } = new();
@@ -40,7 +40,7 @@ public class TestConfiguration : IDisposable
     {
         get
         {
-            lock (_lockObject)
+            lock (lockObject)
             {
                 if (field.Count == 0)
                 {
@@ -57,7 +57,7 @@ public class TestConfiguration : IDisposable
     {
         get
         {
-            lock (_lockObject)
+            lock (lockObject)
             {
                 if (field.Count == 0)
                 {
@@ -86,7 +86,7 @@ public class TestConfiguration : IDisposable
     {
         get
         {
-            lock (_lockObject)
+            lock (lockObject)
             {
                 if (field.Count == 0)
                 {

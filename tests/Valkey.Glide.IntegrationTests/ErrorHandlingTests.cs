@@ -3,8 +3,6 @@
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 
-using TimeoutException = Valkey.Glide.Errors.TimeoutException;
-
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(ErrorHandlingTests))]

@@ -5,8 +5,6 @@ using Valkey.Glide.Pipeline;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Pipeline.Options;
 
-using TimeoutException = Valkey.Glide.Errors.TimeoutException;
-
 namespace Valkey.Glide.IntegrationTests;
 
 // TODO: even though collections aren't executed in parallel, tests in a collection still parallelized

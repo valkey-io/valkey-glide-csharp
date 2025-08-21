@@ -2,7 +2,6 @@
 
 using Valkey.Glide.Pipeline;
 
-using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Pipeline.Options;
 
