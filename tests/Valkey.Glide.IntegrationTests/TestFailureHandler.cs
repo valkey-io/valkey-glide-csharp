@@ -22,7 +22,7 @@ public static class TestFailureHandler
             }
             s_initialized = true;
 
-            string? output = Environment.GetEnvironmentVariable("GITHUB_OUTPUT");
+            string? output = Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY");
             if (output is null)
             {
                 return;

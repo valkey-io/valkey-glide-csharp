@@ -22,15 +22,7 @@ public static class TestFailureHandler
                 return;
             }
             s_initialized = true;
-
-            Console.WriteLine($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_OUTPUT")}");
-            Console.WriteLine($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY")}");
-            var envVars = Environment.GetEnvironmentVariables();
-            foreach (var var in envVars)
-            {
-                Console.WriteLine($"{var} = {envVars[var]}");
-            }
-            string? output = Environment.GetEnvironmentVariable("GITHUB_OUTPUT");
+            string? output = Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY");
             if (output is null)
             {
                 return;
