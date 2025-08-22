@@ -74,12 +74,3 @@ public static class TestFailureHandler
         return $"[{testName}](https://github.com/{repo}/blob/{sha}/{filePath}#L{lineNumber})";
     }
 }
-
-public class FailFailTests
-{
-    [Fact]
-    public void FailFail()
-    {
-        Assert.Fail("This test always fails");
-    }
-}
