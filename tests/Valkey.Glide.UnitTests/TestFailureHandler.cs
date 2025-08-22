@@ -26,7 +26,7 @@ public static class TestFailureHandler
             TestContext.Current.SendDiagnosticMessage($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_OUTPUT")}");
             TestContext.Current.SendDiagnosticMessage($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY")}");
             var envVars = Environment.GetEnvironmentVariables();
-            foreach (string var in envVars)
+            foreach (var var in envVars)
             {
                 TestContext.Current.SendDiagnosticMessage($"{var} = {envVars[var]}");
             }
