@@ -82,7 +82,7 @@ public static class TestFailureHandler
             filePath = filePath.Substring(workspace.Length).TrimStart('/');
         }
 
-        return $"[testName](https://github.com/{repo}/blob/{sha}/{filePath}#L{lineNumber})";
+        return $"[{testName}](https://github.com/{repo}/blob/{sha}/{filePath}#L{lineNumber})";
     }
 }
 
