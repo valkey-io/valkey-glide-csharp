@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Constants;
+
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -66,10 +68,73 @@ internal partial class Request
         return Boolean<bool>(RequestType.HExists, args);
     }
 
+    public static Cmd<long, long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value)
+    {
+        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()];
+        return Simple<long>(RequestType.HIncrBy, args);
+    }
+
+    public static Cmd<double, double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value)
+    {
+        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()];
+        return Simple<double>(RequestType.HIncrByFloat, args);
+    }
+
+    public static Cmd<object[], ValkeyValue[]> HashKeysAsync(ValkeyKey key)
+    {
+        GlideString[] args = [key.ToGlideString()];
+        return ObjectArrayToValkeyValueArray(RequestType.HKeys, args);
+    }
+
     public static Cmd<long, long> HashLengthAsync(ValkeyKey key)
     {
         GlideString[] args = [key.ToGlideString()];
         return Simple<long>(RequestType.HLen, args);
+    }
+
+    public static Cmd<object[], (long, T)> HashScanAsync<T>(ValkeyKey key, long cursor, ValkeyValue pattern, long count, bool includeValues = true)
+    {
+        List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
+
+        if (!pattern.IsNull)
+        {
+            args.AddRange([Constants.MatchKeyword.ToGlideString(), pattern.ToGlideString()]);
+        }
+
+        if (count > 0)
+        {
+            args.AddRange([Constants.CountKeyword.ToGlideString(), count.ToGlideString()]);
+        }
+
+        return new(RequestType.HScan, [.. args], false, arr =>
+        {
+            object[] scanArray = arr;
+            long nextCursor = long.Parse(((GlideString)scanArray[0]).ToString());
+            object[] items = (object[])scanArray[1]; // This array will always have an even-length
+
+            if (includeValues)
+            {
+                // Return HashEntry[] with both field names and values
+                HashEntry[] entries = new HashEntry[items.Length / 2];
+                for (int i = 0; i < items.Length; i += 2)
+                {
+                    ValkeyValue field = (ValkeyValue)(GlideString)items[i];
+                    ValkeyValue value = (ValkeyValue)(GlideString)items[i + 1];
+                    entries[i / 2] = new HashEntry(field, value);
+                }
+                return (nextCursor, (T)(object)entries);
+            }
+            else
+            {
+                // Return ValkeyValue[] with only field names
+                ValkeyValue[] fields = new ValkeyValue[items.Length / 2];
+                for (int i = 0; i < items.Length; i += 2)
+                {
+                    fields[i / 2] = (ValkeyValue)(GlideString)items[i];
+                }
+                return (nextCursor, (T)(object)fields);
+            }
+        });
     }
 
     public static Cmd<long, long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField)
@@ -98,7 +163,7 @@ internal partial class Request
 
     public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
     {
-        GlideString[] args = [key.ToGlideString(), count.ToGlideString(), "WITHVALUES"];
+        GlideString[] args = [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword];
         return ObjectArrayToHashEntries(RequestType.HRandField, args);
     }
 

@@ -44,7 +44,7 @@ jobs:
             host-matrix-output: ${{ steps.get-matrices.outputs.os-matrix-output }}
             version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - id: get-matrices
               uses: ./.github/workflows/create-test-matrices
               with:
@@ -64,7 +64,7 @@ jobs:
         runs-on: ${{ matrix.host.RUNNER }}
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
               with:
                   submodules: true
 
@@ -94,7 +94,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: ${{ matrix.host.TARGET }}
+                  key: rust-${{ matrix.host.TARGET }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
@@ -129,12 +129,12 @@ jobs:
             version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - id: get-matrices
               uses: ./.github/workflows/create-test-matrices
               with:
                   run-full-matrix: true
-                  containers: true
+                  tag: container
 
     tests-container:
         runs-on: ${{ matrix.host.RUNNER }}
@@ -158,7 +158,7 @@ jobs:
                   yum install -y git tar findutils libicu
                   echo IMAGE=amazonlinux:latest | sed -r 's/:/-/g' >> $GITHUB_ENV
             # Replace `:` in the variable otherwise it can't be used in `upload-artifact`
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
               with:
                   submodules: true
 
@@ -181,7 +181,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: ${{ matrix.host.IMAGE }}
+                  key: rust-${{ matrix.host.IMAGE }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
@@ -200,7 +200,7 @@ jobs:
         timeout-minutes: 10
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
               with:
                   submodules: true
 
@@ -212,7 +212,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: rust/target
-                  key: x86_64-unknown-linux-gnu
+                  key: rust-x86_64-unknown-linux-gnu
 
             - name: lint rust
               working-directory: rust
