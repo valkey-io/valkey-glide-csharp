@@ -36,8 +36,7 @@ public static class TestFailureHandler
                         s_firstFailure = false;
                         File.AppendAllText(output, $"## Failed tests in CI pipeline:\n");
                     }
-                    string testName = ExtractTestName(ex.StackTrace ?? "");
-                    string permalink = BuildPermalink(testName, ex.StackTrace ?? "");
+                    string permalink = BuildPermalink(ex.StackTrace ?? "");
                     File.AppendAllText(output, $"### {permalink}\n```\n{ex.Message}\n```\n\n");
                 }
             };
@@ -45,35 +44,25 @@ public static class TestFailureHandler
         }
     }
 
-    private static string ExtractTestName(string stackTrace)
-    {
-        if (string.IsNullOrEmpty(stackTrace))
-        {
-            return "Unknown";
-        }
-
-        Match match = Regex.Match(stackTrace, @"at Valkey\.Glide\.(.+)\(");
-        return match.Success ? match.Groups[1].Value : "Unknown";
-    }
-
-    private static string BuildPermalink(string testName, string stackTrace)
+    private static string BuildPermalink(string stackTrace)
     {
         string? repo = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
         string? sha = Environment.GetEnvironmentVariable("GITHUB_SHA");
 
         if (repo is null || sha is null)
         {
-            return testName;
+            return "Unknown";
         }
 
-        Match fileMatch = Regex.Match(stackTrace, @"in (.+):line (\d+)");
-        if (!fileMatch.Success)
+        Match match = Regex.Match(stackTrace, @"at Valkey\.Glide\.(.+) in (.+Valkey\.Glide.+):line (\d+)");
+        if (!match.Success)
         {
-            return testName;
+            return "Unknown";
         }
 
-        string filePath = fileMatch.Groups[1].Value;
-        string lineNumber = fileMatch.Groups[2].Value;
+        string testName = match.Groups[1].Value;
+        string filePath = match.Groups[2].Value;
+        string lineNumber = match.Groups[3].Value;
 
         // Convert absolute path to relative path
         string? workspace = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE");
