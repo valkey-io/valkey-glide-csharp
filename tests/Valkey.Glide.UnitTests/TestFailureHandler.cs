@@ -23,12 +23,12 @@ public static class TestFailureHandler
             }
             s_initialized = true;
 
-            TestContext.Current.SendDiagnosticMessage($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_OUTPUT")}");
-            TestContext.Current.SendDiagnosticMessage($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY")}");
+            Console.WriteLine($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_OUTPUT")}");
+            Console.WriteLine($"GH OUTPUT = {Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY")}");
             var envVars = Environment.GetEnvironmentVariables();
             foreach (var var in envVars)
             {
-                TestContext.Current.SendDiagnosticMessage($"{var} = {envVars[var]}");
+                Console.WriteLine($"{var} = {envVars[var]}");
             }
             string? output = Environment.GetEnvironmentVariable("GITHUB_OUTPUT");
             if (output is null)
