@@ -1,7 +1,9 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 // check https://stackoverflow.com/a/77455034 if you're getting analyzer error (using is unnecessary)
+#if NET8_0_OR_GREATER
 using System.Runtime.CompilerServices;
+#endif
 using System.Runtime.InteropServices;
 
 namespace Valkey.Glide.Internals;
