@@ -87,10 +87,11 @@ public sealed class ConfigurationOptions : ICloneable
         }
     }
 
-    // Private fields
+    #region Private fields
     private bool? ssl;
     private Proxy? proxy;
     private RetryStrategy? reconnectRetryPolicy;
+    #endregion
 
     /// <summary>
     /// Gets or sets whether connect/configuration timeouts should be explicitly notified via a TimeoutException.
@@ -468,10 +469,10 @@ public sealed class ConfigurationOptions : ICloneable
                         ResponseTimeout = OptionKeys.ParseInt32(key, value);
                         break;
                     case OptionKeys.ReadFrom:
-                        tempReadFromStrategy = ParseReadFromStrategy(value);
+                        tempReadFromStrategy = CheckReadFromValue(value);
                         break;
                     case OptionKeys.Az:
-                        tempAz = ParseAzParameter(value);
+                        tempAz = CheckAzValue(value);
                         break;
                     default:
                         if (!ignoreUnknown) throw new ArgumentException($"Keyword '{key}' is not supported.", key);
@@ -496,13 +497,13 @@ public sealed class ConfigurationOptions : ICloneable
         return this;
     }
 
-    private string ParseAzParameter(string value)
+    private string CheckAzValue(string az)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(az))
         {
             throw new ArgumentException("Availability zone cannot be empty or whitespace");
         }
-        return value;
+        return az;
     }
 
     private ReadFrom? SetReadFrom(ReadFromStrategy? strategy, string? az)
@@ -510,39 +511,30 @@ public sealed class ConfigurationOptions : ICloneable
         if (strategy.HasValue)
         {
             // Use ReadFrom constructors based on strategy type - the constructors contain the validation logic
-#pragma warning disable IDE0066
-            switch (strategy.Value)
+            return strategy.Value switch
             {
-                case ReadFromStrategy.AzAffinity:
-                case ReadFromStrategy.AzAffinityReplicasAndPrimary:
-                    return new ReadFrom(strategy.Value, az!);
-
-                case ReadFromStrategy.Primary:
-                case ReadFromStrategy.PreferReplica:
-                    return new ReadFrom(strategy.Value);
-
-                default:
-                    throw new ArgumentException($"ReadFrom strategy '{strategy.Value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
-            }
-#pragma warning restore IDE0066
+                ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary => new ReadFrom(strategy.Value, az!),
+                ReadFromStrategy.Primary or ReadFromStrategy.PreferReplica => new ReadFrom(strategy.Value),
+                _ => throw new ArgumentException($"ReadFrom strategy '{strategy.Value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary"),
+            };
         }
         return null;
     }
 
-    private ReadFromStrategy ParseReadFromStrategy(string value)
+    private ReadFromStrategy CheckReadFromValue(string readFrom)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(readFrom))
         {
             throw new ArgumentException("ReadFrom strategy cannot be empty");
         }
 
         try
         {
-            return Enum.Parse<ReadFromStrategy>(value, ignoreCase: true);
+            return Enum.Parse<ReadFromStrategy>(readFrom, ignoreCase: true);
         }
         catch (ArgumentException)
         {
-            throw new ArgumentException($"ReadFrom strategy '{value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
+            throw new ArgumentException($"ReadFrom strategy '{readFrom}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
         }
     }
 

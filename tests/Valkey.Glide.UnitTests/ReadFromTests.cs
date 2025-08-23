@@ -6,7 +6,7 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;
 
-public class ConfigurationOptionsReadFromTests
+public class ReadFromTests
 {
     [Theory]
     [InlineData("readFrom=Primary", ReadFromStrategy.Primary, null)]
@@ -18,20 +18,6 @@ public class ConfigurationOptionsReadFromTests
     [InlineData("READFrom=PRIMARY", ReadFromStrategy.Primary, null)]
     [InlineData("READFrom=AZAFFINITY,AZ=us-east-1", ReadFromStrategy.AzAffinity, "us-east-1")]
     public void Parse_ValidReadFromWithoutAz_SetsCorrectStrategy(string connectionString, ReadFromStrategy expectedStrategy, string? expectedAz)
-    {
-        // Act
-        ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
-
-        // Assert
-        Assert.NotNull(options.ReadFrom);
-        Assert.Equal(expectedStrategy, options.ReadFrom.Value.Strategy);
-        Assert.Equal(expectedAz, options.ReadFrom.Value.Az);
-    }
-
-    [Theory]
-    [InlineData("readFrom=AzAffinity,az=us-east-1", ReadFromStrategy.AzAffinity, "us-east-1")]
-    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1")]
-    public void Parse_ValidReadFromWithAz_SetsCorrectStrategyAndAz(string connectionString, ReadFromStrategy expectedStrategy, string expectedAz)
     {
         // Act
         ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
@@ -259,8 +245,6 @@ public class ConfigurationOptionsReadFromTests
         // Assert
         Assert.Contains(expectedSubstring, result);
     }
-
-
 
     [Theory]
     [InlineData("us-east-1a")]
@@ -564,10 +548,6 @@ public class ConfigurationOptionsReadFromTests
         Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 
-
-
-
-
     [Fact]
     public void Clone_ModifyingClonedReadFrom_DoesNotAffectOriginal()
     {
@@ -679,5 +659,81 @@ public class ConfigurationOptionsReadFromTests
         Assert.Equal(original.EndPoints.Count, cloned.EndPoints.Count);
     }
 
+    [Theory]
+    [InlineData("InvalidStrategy", "", "is not supported")]
+    [InlineData("Unknown", "", "is not supported")]
+    [InlineData("PrimaryAndSecondary", "", "is not supported")]
+    [InlineData("", "", "cannot be empty")]
+    [InlineData("AzAffinity", "", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinityReplicasAndPrimary", "", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinity", "   ", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinity", "\t", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinity", "\n", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinityReplicasAndPrimary", "   ", "Availability zone cannot be empty or whitespace")]
+    public async Task ConnectionString_ArgumentExceptionScenarios(string readFromStrategy, string azValue, string expectedErrorSubstring)
+    {
+        // Arrange
+        string connectionString = $"localhost:6379,readFrom={readFromStrategy}";
+        if (!string.IsNullOrEmpty(azValue))
+        {
+            connectionString += $",az={azValue}";
+        }
 
+        // Act & Assert
+        ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
+            () => ConnectionMultiplexer.ConnectAsync(connectionString));
+
+        Assert.Contains(expectedErrorSubstring, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("primary")]
+    [InlineData("PREFERREPLICA")]
+    [InlineData("azaffinity")]
+    [InlineData("AzAffinityReplicasAndPrimary")]
+    public async Task ConnectionString_CaseInsensitiveReadFromParsing(string strategyString)
+    {
+        // Arrange
+        ReadFromStrategy expectedStrategy = Enum.Parse<ReadFromStrategy>(strategyString, ignoreCase: true);
+
+        string connectionString = $"localhost:6379,readFrom={strategyString}";
+        if (expectedStrategy is ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary)
+        {
+            connectionString += ",az=test-zone";
+        }
+
+        // Parse the original configuration to verify ReadFrom was set correctly
+        ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
+        Assert.NotNull(parsedConfig.ReadFrom);
+        Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
+    }
+
+    [Theory]
+    [InlineData(ReadFromStrategy.Primary, null)]
+    [InlineData(ReadFromStrategy.PreferReplica, null)]
+    [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
+    [InlineData(null, null)] // Null ReadFrom test case
+    public async Task RoundTripSerialization_MaintainsConfigurationIntegrity(ReadFromStrategy? strategy, string? az)
+    {
+        // Arrange
+        ConfigurationOptions originalConfig = new ConfigurationOptions();
+        originalConfig.EndPoints.Add("localhost");
+
+        originalConfig.ReadFrom = strategy.HasValue
+            ? (az != null
+                ? new ReadFrom(strategy.Value, az)
+                : new ReadFrom(strategy.Value))
+            : null;
+
+        // Act 1: Serialize to string
+        string serializedConfig = originalConfig.ToString();
+
+        // Act 2: Parse back from string
+        ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(serializedConfig);
+
+        // Verify functional equivalence between original and parsed configurations
+        Assert.Equal(originalConfig.ReadFrom?.Strategy, parsedConfig.ReadFrom?.Strategy);
+        Assert.Equal(originalConfig.ReadFrom?.Az, parsedConfig.ReadFrom?.Az);
+    }
 }
