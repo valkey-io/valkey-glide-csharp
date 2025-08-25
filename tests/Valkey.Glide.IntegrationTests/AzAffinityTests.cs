@@ -36,6 +36,7 @@ public class AzAffinityTests(TestConfiguration config)
 
         const string az = "us-east-1a";
         const int getCalls = 3;
+        string key = Guid.NewGuid().ToString();
         string getCmdStat = $"cmdstat_get:calls={getCalls}";
 
         // Reset the availability zone for all nodes
@@ -43,13 +44,13 @@ public class AzAffinityTests(TestConfiguration config)
         await configClient.CustomCommand(["config", "resetstat"], AllNodes);
 
         // 12182 is the slot of "foo"
-        await configClient.CustomCommand(["config", "set", "availability-zone", az], new SlotIdRoute(12182, SlotType.Replica));
+        await configClient.CustomCommand(["config", "set", "availability-zone", az], new SlotKeyRoute(key, SlotType.Replica));
 
         using GlideClusterClient azTestClient = CreateAzTestClient(az);
 
         for (int i = 0; i < getCalls; i++)
         {
-            await azTestClient.StringGetAsync("foo");
+            await azTestClient.StringGetAsync(key);
         }
 
         ClusterValue<string> infoResult = await azTestClient.Info([Section.SERVER, Section.COMMANDSTATS], AllNodes);
@@ -84,13 +85,14 @@ public class AzAffinityTests(TestConfiguration config)
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
         const string az = "us-east-1a";
+        string key = Guid.NewGuid().ToString();
 
         // Reset the availability zone for all nodes
         await configClient.CustomCommand(["config", "set", "availability-zone", ""], AllNodes);
         await configClient.CustomCommand(["config", "resetstat"], AllNodes);
 
         // Get Replica Count for current cluster
-        ClusterValue<string> clusterInfo = await configClient.Info([Section.REPLICATION], new SlotKeyRoute("key", SlotType.Primary));
+        ClusterValue<string> clusterInfo = await configClient.Info([Section.REPLICATION], new SlotKeyRoute(key, SlotType.Primary));
         int nReplicas = 0;
         foreach (string line in clusterInfo.SingleValue!.Split('\n'))
         {
@@ -123,7 +125,7 @@ public class AzAffinityTests(TestConfiguration config)
         // Execute GET commands
         for (int i = 0; i < nGetCalls; i++)
         {
-            await azTestClient.StringGetAsync("foo");
+            await azTestClient.StringGetAsync(key);
         }
 
         ClusterValue<string> infoResult = await azTestClient.Info([Section.ALL], AllNodes);
@@ -183,6 +185,7 @@ public class AzAffinityTests(TestConfiguration config)
         const string az = "us-east-1a";
         const string otherAz = "us-east-1b";
         const int nGetCalls = 4;
+        string key = Guid.NewGuid().ToString();
         string getCmdStat = $"cmdstat_get:calls={nGetCalls}";
 
         // Reset stats and set all nodes to otherAz
@@ -190,10 +193,10 @@ public class AzAffinityTests(TestConfiguration config)
         await configClient.CustomCommand(["config", "set", "availability-zone", otherAz], AllNodes);
 
         // Set primary for slot 12182 to az
-        await configClient.CustomCommand(["config", "set", "availability-zone", az], new SlotIdRoute(12182, SlotType.Primary));
+        await configClient.CustomCommand(["config", "set", "availability-zone", az], new SlotKeyRoute(key, SlotType.Primary));
 
         // Verify primary AZ
-        ClusterValue<object?> primaryAzResult = await configClient.CustomCommand(["config", "get", "availability-zone"], new SlotIdRoute(12182, SlotType.Primary));
+        ClusterValue<object?> primaryAzResult = await configClient.CustomCommand(["config", "get", "availability-zone"], new SlotKeyRoute(key, SlotType.Primary));
         object[]? primaryConfigArray = primaryAzResult.SingleValue as object[];
         if (primaryConfigArray != null && primaryConfigArray.Length >= 2)
         {
@@ -205,7 +208,7 @@ public class AzAffinityTests(TestConfiguration config)
         // Execute GET commands
         for (int i = 0; i < nGetCalls; i++)
         {
-            await azTestClient.StringGetAsync("foo");
+            await azTestClient.StringGetAsync(key);
         }
 
         ClusterValue<string> infoResult = await azTestClient.Info([Section.ALL], AllNodes);
