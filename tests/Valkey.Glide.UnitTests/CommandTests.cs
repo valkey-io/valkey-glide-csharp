@@ -293,7 +293,7 @@ public class CommandTests
             () => Assert.Equal(ValkeyValue.Null, Request.ClientGetName().Converter(null)),
             () => Assert.Equal("test-connection", Request.ClientGetName().Converter(new GlideString("test-connection"))),
             () => Assert.Equal(12345L, Request.ClientId().Converter(12345L)),
-            () => Assert.Equal("OK", Request.Select(0).Converter("OK"))
+            () => Assert.Equal("OK", Request.Select(0).Converter("OK")),
 
             () => Assert.True(Request.SetAddAsync("key", "member").Converter(1L)),
             () => Assert.False(Request.SetAddAsync("key", "member").Converter(0L)),

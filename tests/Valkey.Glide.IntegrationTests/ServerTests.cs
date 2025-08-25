@@ -109,6 +109,8 @@ public class ServerTests(TestConfiguration config)
     {
         foreach (IServer server in conn.GetServers())
         {
+            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
+
             // Test CLIENT ID command directly
             long clientId = await server.ClientIdAsync();
             Assert.True(clientId > 0, "Client ID should be a positive number");
@@ -131,6 +133,8 @@ public class ServerTests(TestConfiguration config)
     {
         foreach (IServer server in conn.GetServers())
         {
+            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
+
             // Test CLIENT GETNAME command - should return ValkeyValue.Null initially (no name set)
             ValkeyValue clientName = await server.ClientGetNameAsync();
             Assert.Equal(ValkeyValue.Null, clientName); // No name should be set initially
