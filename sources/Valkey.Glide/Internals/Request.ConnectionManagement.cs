@@ -11,7 +11,7 @@ internal partial class Request
         => new(RequestType.ClientGetName, [], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<object, ClusterValue<ValkeyValue>> ClientGetNameCluster(Route? route = null)
-        => new(RequestType.ClientGetName, [], true, ResponseConverters.MakeClusterValueHandler<object?, ValkeyValue>(v => ValkeyValue.Unbox(v), route is SingleNodeRoute), allowConverterToHandleNull: true);
+        => new(RequestType.ClientGetName, [], true, ResponseConverters.MakeClusterValueHandler<object?, ValkeyValue>(ValkeyValue.Unbox, route is SingleNodeRoute), allowConverterToHandleNull: true);
 
     public static Cmd<long, long> ClientId()
         => Simple<long>(RequestType.ClientId, []);
