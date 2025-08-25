@@ -56,4 +56,21 @@ public interface IServerManagementCommands
     /// <param name="flags">The command flags. Currently flags are ignored.</param>
     /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
     Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Changes the currently selected database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/select"/>
+    /// <param name="index">The index of the database to select.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>A simple "OK" response.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string result = await client.SelectAsync(1);
+    /// Console.WriteLine(result); // Output: "OK"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
 }

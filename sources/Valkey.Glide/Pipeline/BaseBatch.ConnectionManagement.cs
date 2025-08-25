@@ -15,7 +15,19 @@ public abstract partial class BaseBatch<T> : IBatchConnectionManagementCommands 
     /// <inheritdoc cref="IBatchConnectionManagementCommands.Echo(ValkeyValue)" />
     public T Echo(ValkeyValue message) => AddCmd(Request.Echo(message));
 
+    /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientGetNameAsync()" />
+    public T ClientGetNameAsync() => AddCmd(Request.ClientGetName());
+
+    /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientIdAsync()" />
+    public T ClientIdAsync() => AddCmd(Request.ClientId());
+
+    /// <inheritdoc cref="IBatchConnectionManagementCommands.SelectAsync(long)" />
+    public T SelectAsync(long index) => AddCmd(Request.Select(index));
+
     IBatch IBatchConnectionManagementCommands.Ping() => Ping();
     IBatch IBatchConnectionManagementCommands.Ping(ValkeyValue message) => Ping(message);
     IBatch IBatchConnectionManagementCommands.Echo(ValkeyValue message) => Echo(message);
+    IBatch IBatchConnectionManagementCommands.ClientGetNameAsync() => ClientGetNameAsync();
+    IBatch IBatchConnectionManagementCommands.ClientIdAsync() => ClientIdAsync();
+    IBatch IBatchConnectionManagementCommands.SelectAsync(long index) => SelectAsync(index);
 }

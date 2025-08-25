@@ -3,6 +3,7 @@
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
+using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -191,6 +192,51 @@ public class StandaloneClientTests(TestConfiguration config)
         byte[] binaryData = [0x00, 0x01, 0x02, 0xFF, 0xFE];
         ValkeyValue result = await client.EchoAsync(binaryData);
         Assert.Equal(binaryData, (byte[]?)result);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientId(GlideClient client)
+    {
+        long clientId = await client.ClientIdAsync();
+        Assert.True(clientId > 0, "Client ID should be a positive number");
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientGetName(GlideClient client)
+    {
+        // CLIENT GETNAME should return ValkeyValue.Null initially (no name set)
+        ValkeyValue clientName = await client.ClientGetNameAsync();
+        Assert.Equal(ValkeyValue.Null, clientName);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSelect(GlideClient client)
+    {
+        // Test selecting database 0 (default)
+        string result = await client.SelectAsync(0);
+        Assert.Equal("OK", result);
+
+        // Switching to a valid database causes issue to tests running in parallel. So instead, we test
+        // that using an invalid value to ensure different values can still be sent through.
+        await Assert.ThrowsAsync<RequestException>(async () => _ = await client.SelectAsync(-1));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestServerManagementCommands_WithFlags(GlideClient client)
+    {
+        // Test server management commands with CommandFlags (should be ignored)
+        long clientId = await client.ClientIdAsync(CommandFlags.None);
+        Assert.True(clientId > 0);
+
+        ValkeyValue clientName = await client.ClientGetNameAsync(CommandFlags.None);
+        Assert.Equal(ValkeyValue.Null, clientName);
+
+        string selectResult = await client.SelectAsync(0, CommandFlags.None);
+        Assert.Equal("OK", selectResult);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

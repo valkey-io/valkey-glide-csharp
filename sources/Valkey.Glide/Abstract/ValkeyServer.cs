@@ -89,4 +89,16 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await _conn.Command(Request.Echo(message), new ByAddressRoute(EndPoint.ToString()!));
     }
+
+    public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.ClientGetName(), new ByAddressRoute(EndPoint.ToString()!));
+    }
+
+    public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.ClientId(), new ByAddressRoute(EndPoint.ToString()!));
+    }
 }

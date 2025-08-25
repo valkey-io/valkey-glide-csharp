@@ -62,6 +62,14 @@ public class CommandTests
             () => Assert.Equal(["PING"], Request.Ping().GetArgs()),
             () => Assert.Equal(["PING", "Hello"], Request.Ping("Hello").GetArgs()),
             () => Assert.Equal(["ECHO", "message"], Request.Echo("message").GetArgs()),
+            () => Assert.Equal(["SELECT", "0"], Request.Select(0).GetArgs()),
+            () => Assert.Equal(["SELECT", "1"], Request.Select(1).GetArgs()),
+            () => Assert.Equal(["SELECT", "15"], Request.Select(15).GetArgs()),
+            () => Assert.Equal(["SELECT", "-1"], Request.Select(-1).GetArgs()),
+
+            // Server Management Commands
+            () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
+            () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
 
             // Set Commands
             () => Assert.Equal(["SADD", "key", "member"], Request.SetAddAsync("key", "member").GetArgs()),
@@ -281,6 +289,11 @@ public class CommandTests
             () => Assert.IsType<TimeSpan>(Request.Ping().Converter("PONG")),
             () => Assert.IsType<TimeSpan>(Request.Ping("Hello").Converter("Hello")),
             () => Assert.Equal<ValkeyValue>("message", Request.Echo("message").Converter("message")),
+
+            () => Assert.Equal(ValkeyValue.Null, Request.ClientGetName().Converter(null)),
+            () => Assert.Equal("test-connection", Request.ClientGetName().Converter(new GlideString("test-connection"))),
+            () => Assert.Equal(12345L, Request.ClientId().Converter(12345L)),
+            () => Assert.Equal("OK", Request.Select(0).Converter("OK"))
 
             () => Assert.True(Request.SetAddAsync("key", "member").Converter(1L)),
             () => Assert.False(Request.SetAddAsync("key", "member").Converter(0L)),

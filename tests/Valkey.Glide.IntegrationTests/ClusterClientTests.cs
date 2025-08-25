@@ -259,4 +259,61 @@ public class ClusterClientTests(TestConfiguration config)
             Assert.Equivalent(binaryData, bytes);
         }
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientId(GlideClusterClient client)
+    {
+        long clientId = await client.ClientIdAsync();
+        Assert.True(clientId > 0, "Client ID should be a positive number");
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientId_WithRoute(GlideClusterClient client)
+    {
+        // Test CLIENT ID with single node routing
+        var singleNodeResult = await client.ClientIdAsync(Route.Random);
+        Assert.True(singleNodeResult.HasSingleData);
+        Assert.True(singleNodeResult.SingleValue > 0);
+
+        // Test CLIENT ID with all nodes routing
+        var allNodesResult = await client.ClientIdAsync(AllNodes);
+        Assert.True(allNodesResult.HasMultiData);
+        Assert.True(allNodesResult.MultiValue.Count > 0);
+
+        foreach (var kvp in allNodesResult.MultiValue)
+        {
+            Assert.True(kvp.Value > 0, $"Client ID for node {kvp.Key} should be positive");
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientGetName(GlideClusterClient client)
+    {
+        // CLIENT GETNAME should return ValkeyValue null initially (no name set)
+        ValkeyValue clientName = await client.ClientGetNameAsync();
+        Assert.Equal(ValkeyValue.Null, clientName);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientGetName_WithRoute(GlideClusterClient client)
+    {
+        // Test CLIENT GETNAME with single node routing
+        var singleNodeResult = await client.ClientGetNameAsync(Route.Random);
+        Assert.True(singleNodeResult.HasSingleData);
+        Assert.Equal(ValkeyValue.Null, singleNodeResult.SingleValue);
+
+        // Test CLIENT GETNAME with all nodes routing
+        var allNodesResult = await client.ClientGetNameAsync(AllNodes);
+        Assert.True(allNodesResult.HasMultiData);
+        Assert.True(allNodesResult.MultiValue.Count > 0);
+
+        foreach (var kvp in allNodesResult.MultiValue)
+        {
+            Assert.Equal(ValkeyValue.Null, kvp.Value); // No name should be set initially on any node
+        }
+    }
 }
