@@ -1165,8 +1165,8 @@ internal class BatchTestUtils
         _ = batch.ClientIdAsync();
         testData.Add(new(1L, "ClientIdAsync()", true)); // Check type only since ID is dynamic
 
-        // SELECT - only for standalone clients (will be skipped in cluster mode)
-        if (batch is Pipeline.Batch)
+        // SELECT - 9.0.0 allows both standalone and cluster, else just run standalone
+        if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
         {
             _ = batch.SelectAsync(0); // Select database 0 (default)
             testData.Add(new("OK", "SelectAsync(0)"));

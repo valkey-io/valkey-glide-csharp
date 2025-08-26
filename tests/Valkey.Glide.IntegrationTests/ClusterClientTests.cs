@@ -316,4 +316,16 @@ public class ClusterClientTests(TestConfiguration config)
             Assert.Equal(ValkeyValue.Null, kvp.Value); // No name should be set initially on any node
         }
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSelect(GlideClusterClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "SELECT for Cluster Client is supported since 9.0.0"
+        );
+        string result = await client.SelectAsync(0);
+        Assert.Equal("OK", result);
+    }
 }

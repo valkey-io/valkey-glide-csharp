@@ -135,21 +135,9 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     public async Task<long?> GetConnectionIdAsync(EndPoint endpoint, ConnectionType connectionType)
     {
-        try
-        {
-            // Get the server for the specified endpoint
-            IServer server = GetServer(endpoint);
-
-            // Execute CLIENT ID command on the server
-            long connectionId = await server.ClientIdAsync();
-
-            return connectionId;
-        }
-        catch
-        {
-            // Return null if the connection ID cannot be retrieved
-            return null;
-        }
+        IServer server = GetServer(endpoint);
+        long connectionId = await server.ClientIdAsync();
+        return connectionId;
     }
 
     public void Dispose()
