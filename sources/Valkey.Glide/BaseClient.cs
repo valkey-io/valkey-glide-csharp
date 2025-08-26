@@ -138,6 +138,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     ~BaseClient() => Dispose();
 
     internal void SetInfo(string info) => _clientInfo = info;
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void SuccessAction(ulong index, IntPtr ptr);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void FailureAction(ulong index, IntPtr strPtr, RequestErrorType err);
     #endregion private methods
 
     #region private fields
@@ -157,26 +162,4 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
 
     #endregion private fields
-
-    #region FFI function declarations
-
-    private delegate void SuccessAction(ulong index, IntPtr ptr);
-    private delegate void FailureAction(ulong index, IntPtr strPtr, RequestErrorType err);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
-    private static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "batch")]
-    private static extern void BatchFfi(IntPtr client, ulong index, IntPtr batch, [MarshalAs(UnmanagedType.U1)] bool raiseOnError, IntPtr opts);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_response")]
-    private static extern void FreeResponse(IntPtr response);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_client")]
-    private static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
-    private static extern void CloseClientFfi(IntPtr client);
-
-    #endregion
 }
