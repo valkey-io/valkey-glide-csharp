@@ -14,7 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".files", ".files", "{1F0580
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		DEVELOPER.md = DEVELOPER.md
-		..\.github\workflows\csharp.yml = ..\.github\workflows\csharp.yml
+		README.md = README.md
+		icon.png = icon.png
+		.github\workflows\csharp.yml = .github\workflows\csharp.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{9C73AD22-2B57-455C-B623-C30EE8F77B44}"
