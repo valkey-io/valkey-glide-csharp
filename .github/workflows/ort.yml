@@ -26,10 +26,14 @@ concurrency:
 jobs:
     check-condition:
         #if: github.repository_owner == 'valkey-io'
+        name: Check condition
         if: >
             (github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release-') || github.event_name != 'create')
         runs-on: ubuntu-latest
         steps:
+            - run: |
+                  echo '${{ github.event_name }}'
+                  echo '${{ toJson(github.event) }}'
             - run:
 
     run-ort:
@@ -39,10 +43,6 @@ jobs:
         env:
             ATTRIBUTIONS_FILE: THIRD_PARTY_LICENSES
         steps:
-            - run: |
-                  echo '${{ github.event_name }}'
-                  echo '${{ toJson(github.event) }}'
-
             - uses: actions/checkout@v5
               with:
                   submodules: true
