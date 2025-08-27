@@ -7,12 +7,12 @@
     <owners>Valkey GLIDE Maintainers</owners>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>General Language Independent Driver for the Enterprise (GLIDE) for Valkey</description>
-    <projectUrl>https://github.com/valkey-io/valkey-glide/csharp</projectUrl>
+    <projectUrl>https://github.com/valkey-io/valkey-glide-csharp</projectUrl>
     <license type="expression">Apache-2.0</license>
     <!-- TODO other fields from schema: https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/compiler/resources/nuspec.xsd -->
-    <!-- iconUrl -->
-    <readme>README.md</readme> <!-- TODO readme isn't used or isn't renderred -->
-    <repository type="git" url="https://github.com/valkey-io/valkey-glide" /> <!-- TODO: commit="$GitCommitId$" -->
+    <readme>README.md</readme>
+    <icon>icon.png</icon>
+    <repository type="git" url="https://github.com/valkey-io/valkey-glide-csharp" /> <!-- TODO: commit="$GitCommitId$" -->
     <tags>open-source performance database csharp key-value fault-tolerance cache reliability pubsub valkey valkey-client</tags>
     <copyright>Copyright © 2025 Valkey GLIDE Maintainers</copyright>
     <!-- TODO include changelog (as a file or as GH release link) starting from the second release -->
@@ -29,7 +29,6 @@
 
     <!-- PDB files and sources are included into symbol package only -->
     <file src="bin\Release\**\Valkey.Glide.pdb" target="lib" />
-    <file src="**\*.cs" target="src" />
 
     <!-- TODO: make binaries optional/conditional, build fails on a dev's PC who doesn't have all files. Alternative: use different nuspec files -->
     <!-- see runtime IDs in https://learn.microsoft.com/en-us/dotnet/core/rid-catalog -->
@@ -40,5 +39,6 @@
     <file src="../../bin/x86_64-pc-windows-msvc/libglide_rs.dll" target="runtimes/win-x64/native" />
     <file src="../../bin/aarch64-pc-windows-msvc/libglide_rs.dll" target="runtimes/win-arm64/native" />
     <file src="../../README.md" target="" />
+    <file src="../../icon.png" target="" />
   </files>
 </package>

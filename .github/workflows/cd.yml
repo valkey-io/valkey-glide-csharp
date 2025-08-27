@@ -91,7 +91,6 @@ jobs:
                   os: ${{ matrix.host.OS }}
                   target: ${{ matrix.host.TARGET }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
-                  engine-version: ${{ matrix.engine.version }}
 
             - uses: actions/cache@v4
               with:
@@ -104,7 +103,6 @@ jobs:
               run: |
                   cargo zigbuild -r --target ${{ matrix.host.TARGET }}.2.17
                   mkdir -p target/release
-                  cp target/*/release/libglide_rs.so target/release/
 
             - name: Build native libs
               if: ${{ !contains(matrix.host.TARGET, 'linux-gnu') }}
@@ -116,10 +114,11 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: ${{ matrix.host.TARGET }}
+                  if-no-files-found: error
                   path: |
-                      rust/target/release/*.so
-                      rust/target/release/*.dylib
-                      rust/target/release/*.dll
+                      rust/target/${{ matrix.host.TARGET }}/release/*.so
+                      rust/target/${{ matrix.host.TARGET }}/release/*.dylib
+                      rust/target/${{ matrix.host.TARGET }}/release/*.dll
 
     build-package-to-publish:
         needs: [set-release-version, create-binaries]
@@ -154,11 +153,11 @@ jobs:
             - name: Pack the client
               working-directory: sources/Valkey.Glide
               run: |
-                  dotnet build Valkey.Glide.csproj --configuration Release /property:Version=${{ env.RELEASE_VERSION }}
-                  dotnet pack Valkey.Glide.csproj --configuration Release -p:NuspecProperties=version=${{ env.RELEASE_VERSION }}
+                  dotnet build Valkey.Glide.csproj --configuration Release /property:Version=$RELEASE_VERSION
+                  dotnet pack Valkey.Glide.csproj --configuration Release -p:NuspecProperties=version=$RELEASE_VERSION
                   tree -h bin/Release
-                  unzip -l bin/Release/Valkey.Glide.${{ env.RELEASE_VERSION }}.nupkg
-                  unzip -l bin/Release/Valkey.Glide.${{ env.RELEASE_VERSION }}.symbols.nupkg
+                  unzip -l bin/Release/Valkey.Glide.$RELEASE_VERSION.nupkg
+                  unzip -l bin/Release/Valkey.Glide.$RELEASE_VERSION.snupkg
               env:
                   SkipCargo: true
 
@@ -166,13 +165,16 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: package
-                  path: sources/Valkey.Glide/bin/Release/Valkey.Glide.*.nupkg
+                  if-no-files-found: error
+                  path: sources/Valkey.Glide/bin/Release/Valkey.Glide.*nupkg
 
     publish:
         environment: Release
         if: ${{ (inputs.nuget_publish == true || github.event_name == 'push') && github.repository_owner == 'valkey-io' }}
-        needs: [build-package-to-publish]
+        needs: [build-package-to-publish, set-release-version]
         runs-on: ubuntu-latest
+        env:
+            RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
         steps:
             - name: Download package
               uses: actions/download-artifact@v5
@@ -182,11 +184,31 @@ jobs:
             - name: Publish
               run: |
                   ls -lh
-                  dotnet nuget push Valkey.Glide.*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+                  dotnet nuget push Valkey.Glide.$RELEASE_VERSION.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+            - name: Wait for package to be ready for download
+              run: |
+                  dotnet new console --name temp-check --output . --framework net8.0
+                  TIMEOUT=600  # 10 minutes
+                  INTERVAL=10  # 10 seconds
+                  ELAPSED=0
+
+                  while [ $ELAPSED -lt $TIMEOUT ]; do
+                      echo "Checking availability... (${ELAPSED}s elapsed)"
+                      if dotnet add package Valkey.Glide --version $RELEASE_VERSION ; then
+                          echo "Package is now available!"
+                          exit 0
+                      fi
+                      sleep $INTERVAL
+                      ELAPSED=$((ELAPSED + INTERVAL))
+                      dotnet nuget locals all --clear
+                  done
+
+                  echo "Timeout: Package is not available after ${TIMEOUT}s"
+                  exit 1
 
     test:
         needs: [publish, set-release-version, load-platform-matrix]
-        if: ${{ !cancelled() }}
         timeout-minutes: 35
         strategy:
             # Run all jobs
@@ -198,6 +220,8 @@ jobs:
             RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
         steps:
             - uses: actions/checkout@v5
+              with:
+                  submodules: true
 
             - name: Download package
               if: ${{ needs.publish.result == 'skipped' }}
@@ -232,15 +256,15 @@ jobs:
               shell: bash
               run: |
                   dotnet remove reference $(dotnet list reference | tail -n +3)
-                  dotnet add package Valkey.Glide --version ${{ env.RELEASE_VERSION }}
+                  dotnet add package Valkey.Glide --version $RELEASE_VERSION
                   git diff
 
-            - name: Install engine
+            - name: Install server
               # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide-csharp/issues/6
               if: ${{ matrix.host.OS != 'windows' }}
-              uses: ./.github/workflows/install-engine
+              uses: ./.github/workflows/install-server
               with:
-                  engine-version: 8.1
+                  server-version: 8.1
                   target: ${{ matrix.host.TARGET }}
 
             - name: Run tests
@@ -268,5 +292,5 @@ jobs:
             RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
         steps:
             - name: Remove package from NuGet due to test failures
-              if: ${{ needs.test.result == 'failure' && needs.publish.result == 'success' }}
-              run: dotnet nuget delete Valkey.Glide ${{ env.RELEASE_VERSION }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --non-interactive
+              if: ${{ (needs.test.result == 'failure' && needs.publish.result == 'success') || needs.publish.result == 'failure' }}
+              run: dotnet nuget delete Valkey.Glide $RELEASE_VERSION --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --non-interactive
