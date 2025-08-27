@@ -7,13 +7,13 @@ permissions:
 
 on:
     create:
+    push:
+        paths:
+            - .github/workflows/ort.yml
         branches:
             - 'release-*'
         tags:
             - '*'
-    push:
-        paths:
-            - .github/workflows/ort.yml
     pull_request:
         paths:
             - .github/workflows/ort.yml
@@ -24,10 +24,16 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    check-condition:
+        #if: github.repository_owner == 'valkey-io'
+        if: >
+            (github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release-') || github.event_name != 'create')
+        steps:
+
     run-ort:
+        needs: [check-condition]
         name: Create attribution files
         runs-on: ubuntu-latest
-        #if: github.repository_owner == 'valkey-io'
         env:
             ATTRIBUTIONS_FILE: THIRD_PARTY_LICENSES
         steps:
@@ -203,7 +209,7 @@ jobs:
 
               ### Create PR, Note a potential race on the source branch ###
             - name: Create or update pull request
-              if: ${{ env.FOUND_DIFF  == 'true' && github.event_name != 'pull_request' }}
+              if: ${{ env.FOUND_DIFF  == 'true' }}
               run: |
                   TARGET_BRANCH=`git branch --show-current`
                   ORT_DIFF_BRANCH_NAME="ort-diff-for-$TARGET_BRANCH"
