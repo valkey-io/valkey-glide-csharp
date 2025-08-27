@@ -11,9 +11,9 @@ on:
         paths:
             - .github/workflows/ort.yml
         branches:
-            - 'release-*'
+            - "release-*"
         tags:
-            - '*'
+            - "*"
     pull_request:
         paths:
             - .github/workflows/ort.yml
