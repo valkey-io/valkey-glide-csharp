@@ -8,8 +8,6 @@ permissions:
 on:
     create:
     push:
-        paths:
-            - .github/workflows/ort.yml
         branches:
             - "release-*"
     pull_request:
