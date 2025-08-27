@@ -7,8 +7,10 @@ permissions:
 
 on:
     create:
-        ref_type: branch
-        ref: "refs/heads/release-*"
+        #ref_type: branch
+        ref:
+            - refs/heads/release-*
+            - refs/tags/*
     push:
         paths:
             - .github/workflows/ort.yml
@@ -25,7 +27,7 @@ jobs:
     run-ort:
         name: Create attribution files
         runs-on: ubuntu-latest
-        if: github.repository_owner == 'valkey-io'
+        #if: github.repository_owner == 'valkey-io'
         env:
             ATTRIBUTIONS_FILE: THIRD_PARTY_LICENSES
         steps:
