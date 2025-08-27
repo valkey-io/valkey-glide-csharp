@@ -7,10 +7,10 @@ permissions:
 
 on:
     create:
-        #ref_type: branch
-        ref:
-            - refs/heads/release-*
-            - refs/tags/*
+        branches:
+            - 'release-*'
+        tags:
+            - '*'
     push:
         paths:
             - .github/workflows/ort.yml
