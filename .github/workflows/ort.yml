@@ -28,6 +28,7 @@ jobs:
         #if: github.repository_owner == 'valkey-io'
         if: >
             (github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release-') || github.event_name != 'create')
+        runs-on: ubuntu-latest
         steps:
 
     run-ort:
