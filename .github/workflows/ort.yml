@@ -32,8 +32,8 @@ jobs:
             ATTRIBUTIONS_FILE: THIRD_PARTY_LICENSES
         steps:
             - run: |
-                  echo ${{ github.event_name }} 
-                  echo ${{ toJson(github.event) }} 
+                  echo '${{ github.event_name }}'
+                  echo '${{ toJson(github.event) }}'
 
             - uses: actions/checkout@v5
               with:
