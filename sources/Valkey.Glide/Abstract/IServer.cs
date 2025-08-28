@@ -130,4 +130,119 @@ public interface IServer
     /// </example>
     /// </remarks>
     Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Get all configuration parameters matching the specified pattern.
+    /// </summary>
+    /// <param name="pattern">The pattern of config values to get.</param>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <returns>All matching configuration parameters.</returns>
+    /// <remarks><seealso href="https://valkey.io/commands/config-get"/></remarks>
+    KeyValuePair<string, string>[] ConfigGet(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="ConfigGet(ValkeyValue, CommandFlags)"/>
+    Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Resets the statistics reported by Valkey using the INFO command.
+    /// </summary>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <remarks><seealso href="https://valkey.io/commands/config-resetstat"/></remarks>
+    void ConfigResetStatistics(CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="ConfigResetStatistics(CommandFlags)"/>
+    Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// The CONFIG REWRITE command rewrites the valkey.conf file the server was started with,
+    /// applying the minimal changes needed to make it reflecting the configuration currently
+    /// used by the server, that may be different compared to the original one because of the use of the CONFIG SET command.
+    /// </summary>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <remarks><seealso href="https://valkey.io/commands/config-rewrite"/></remarks>
+    void ConfigRewrite(CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="ConfigRewrite(CommandFlags)"/>
+    Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
+    /// You can change both trivial parameters or switch from one to another persistence option using this command.
+    /// </summary>
+    /// <param name="setting">The setting name.</param>
+    /// <param name="value">The new setting value.</param>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <remarks><seealso href="https://valkey.io/commands/config-set"/></remarks>
+    void ConfigSet(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="ConfigSet(ValkeyValue, ValkeyValue, CommandFlags)"/>
+    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the number of keys in the currently-selected database.
+    /// </summary>
+    /// <param name="database">The database ID.</param>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <remarks><seealso href="https://valkey.io/commands/dbsize"/></remarks>
+    long DatabaseSize(int database = -1, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="DatabaseSize(int, CommandFlags)"/>
+    Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Delete all the keys of all databases on the server.
+    /// </summary>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <remarks><seealso href="https://valkey.io/commands/flushall"/></remarks>
+    void FlushAllDatabases(CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="FlushAllDatabases(CommandFlags)"/>
+    Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Delete all the keys of the database.
+    /// </summary>
+    /// <param name="database">The database ID.</param>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <remarks><seealso href="https://valkey.io/commands/flushdb"/></remarks>
+    void FlushDatabase(int database = -1, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="FlushDatabase(int, CommandFlags)"/>
+    Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Return the time of the last DB save executed with success.
+    /// A client may check if a BGSAVE command succeeded reading the LASTSAVE value, then issuing a BGSAVE command
+    /// and checking at regular intervals every N seconds if LASTSAVE changed.
+    /// </summary>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <returns>The last time a save was performed.</returns>
+    /// <remarks><seealso href="https://valkey.io/commands/lastsave"/></remarks>
+    DateTime LastSave(CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="LastSave(CommandFlags)"/>
+    Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// The TIME command returns the current server time in UTC format.
+    /// Use the <see cref="DateTime.ToLocalTime"/> method to get local time.
+    /// </summary>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <returns>The server's current time.</returns>
+    /// <remarks><seealso href="https://valkey.io/commands/time"/></remarks>
+    DateTime Time(CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="Time(CommandFlags)"/>
+    Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// The LOLWUT command displays the Valkey version and a piece of generative computer art.
+    /// </summary>
+    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <returns>A string containing the Valkey version and generative art.</returns>
+    /// <remarks><seealso href="https://valkey.io/commands/lolwut"/></remarks>
+    string Lolwut(CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="Lolwut(CommandFlags)"/>
+    Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None);
 }
