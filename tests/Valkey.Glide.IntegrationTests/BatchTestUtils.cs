@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 internal class BatchTestUtils
@@ -1301,6 +1303,55 @@ internal class BatchTestUtils
 
         _ = batch.HashDelete(key2, ["multi1", "multi2"]);
         testData.Add(new(2L, "HashDelete(key2, [multi1, multi2])"));
+
+        // Hash Field Expire Commands (Valkey 9.0+)
+        if (TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
+        {
+            string expireKey = $"{atomicPrefix}expire-{Guid.NewGuid()}";
+            
+            // Set up data for expire tests
+            _ = batch.HashSet(expireKey, "expire_field1", "expire_value1");
+            testData.Add(new(true, "HashSet(expireKey, expire_field1, expire_value1)"));
+            
+            _ = batch.HashSet(expireKey, "expire_field2", "expire_value2");
+            testData.Add(new(true, "HashSet(expireKey, expire_field2, expire_value2)"));
+
+            // Test HGETEX
+            _ = batch.HashGetEx(expireKey, ["expire_field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60)));
+            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGetEx(expireKey, [expire_field1], 60s)"));
+
+            // Test HSETEX
+            _ = batch.HashSetEx(expireKey, new Dictionary<ValkeyValue, ValkeyValue> { { "setex_field", "setex_value" } }, new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60)));
+            testData.Add(new(true, "HashSetEx(expireKey, {setex_field: setex_value}, 60s)"));
+
+            // Test HEXPIRE
+            _ = batch.HashExpire(expireKey, 30, ["expire_field1"], new HashFieldExpirationConditionOptions());
+            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, 30, [expire_field1])"));
+
+            // Test HPEXPIRE
+            _ = batch.HashPExpire(expireKey, 5000, ["expire_field2"], new HashFieldExpirationConditionOptions());
+            testData.Add(new(new long[] { 1 }, "HashPExpire(expireKey, 5000, [expire_field2])"));
+
+            // Test HTTL
+            _ = batch.HashTtl(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashTtl(expireKey, [expire_field1, expire_field2])", true));
+
+            // Test HPTTL
+            _ = batch.HashPTtl(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashPTtl(expireKey, [expire_field1, expire_field2])", true));
+
+            // Test HPERSIST
+            _ = batch.HashPersist(expireKey, ["expire_field1"]);
+            testData.Add(new(new long[] { 1 }, "HashPersist(expireKey, [expire_field1])"));
+
+            // Test HEXPIRETIME
+            _ = batch.HashExpireTime(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
+
+            // Test HPEXPIRETIME
+            _ = batch.HashPExpireTime(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashPExpireTime(expireKey, [expire_field1, expire_field2])", true));
+        }
 
         return testData;
     }

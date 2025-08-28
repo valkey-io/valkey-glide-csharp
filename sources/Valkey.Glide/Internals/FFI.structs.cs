@@ -435,6 +435,17 @@ internal partial class FFI
         HSetNX = 614,
         HStrlen = 615,
         HVals = 616,
+        HSetEx = 617,
+        HGetEx = 618,
+        HExpire = 619,
+        HPersist = 620,
+        HPExpire = 621,
+        HExpireAt = 622,
+        HPExpireAt = 623,
+        HTtl = 624,
+        HPTtl = 625,
+        HExpireTime = 626,
+        HPExpireTime = 627,
 
         //// HyperLogLog commands
         PfAdd = 701,
