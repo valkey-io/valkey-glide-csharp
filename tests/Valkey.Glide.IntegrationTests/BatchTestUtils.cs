@@ -423,6 +423,79 @@ internal class BatchTestUtils
         return testData;
     }
 
+    public static List<TestInfo> CreateServerManagementTest(Pipeline.IBatch batch, bool isAtomic)
+    {
+        List<TestInfo> testData = [];
+        string prefix = "{serverKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string testKey = $"{atomicPrefix}test-{Guid.NewGuid()}";
+
+        // Set up some test data
+        _ = batch.StringSet(testKey, "test-value");
+        testData.Add(new(true, "StringSet(testKey, test-value)"));
+
+        // ConfigGet tests
+        _ = batch.ConfigGetAsync("*");
+        testData.Add(new(Array.Empty<KeyValuePair<string, string>>(), "ConfigGetAsync(*)", true));
+
+        _ = batch.ConfigGetAsync("maxmemory");
+        testData.Add(new(Array.Empty<KeyValuePair<string, string>>(), "ConfigGetAsync(maxmemory)", true));
+
+        // ConfigSet and ConfigGet combination
+        _ = batch.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lru");
+        testData.Add(new(ValkeyValue.Null, "ConfigSetAsync(maxmemory-policy, allkeys-lru)", true));
+
+        _ = batch.ConfigGetAsync("maxmemory-policy");
+        testData.Add(new(Array.Empty<KeyValuePair<string, string>>(), "ConfigGetAsync(maxmemory-policy)", true));
+
+        // ConfigResetStatistics
+        _ = batch.ConfigResetStatisticsAsync();
+        testData.Add(new(ValkeyValue.Null, "ConfigResetStatisticsAsync()", true));
+
+        // ConfigRewrite
+        _ = batch.ConfigRewriteAsync();
+        testData.Add(new(ValkeyValue.Null, "ConfigRewriteAsync()", true));
+
+        // DatabaseSize
+        _ = batch.DatabaseSizeAsync();
+        testData.Add(new(1L, "DatabaseSizeAsync()", true));
+
+        _ = batch.DatabaseSizeAsync(0);
+        testData.Add(new(1L, "DatabaseSizeAsync(0)", true));
+
+        // FlushDatabase
+        _ = batch.FlushDatabaseAsync();
+        testData.Add(new(ValkeyValue.Null, "FlushDatabaseAsync()", true));
+
+        _ = batch.DatabaseSizeAsync();
+        testData.Add(new(0L, "DatabaseSizeAsync() after flush", true));
+
+        // Set up data again for FlushAll test
+        _ = batch.StringSet(testKey, "test-value");
+        testData.Add(new(true, "StringSet(testKey, test-value) for FlushAll"));
+
+        // FlushAllDatabases
+        _ = batch.FlushAllDatabasesAsync();
+        testData.Add(new(ValkeyValue.Null, "FlushAllDatabasesAsync()", true));
+
+        _ = batch.DatabaseSizeAsync();
+        testData.Add(new(0L, "DatabaseSizeAsync() after FlushAll", true));
+
+        // LastSave
+        _ = batch.LastSaveAsync();
+        testData.Add(new(DateTime.MinValue, "LastSaveAsync()", true));
+
+        // Time
+        _ = batch.TimeAsync();
+        testData.Add(new(DateTime.MinValue, "TimeAsync()", true));
+
+        // Lolwut
+        _ = batch.LolwutAsync();
+        testData.Add(new("", "LolwutAsync()", true));
+
+        return testData;
+    }
+
     public static List<TestInfo> CreateGenericTest(Pipeline.IBatch batch, bool isAtomic)
     {
         List<TestInfo> testData = [];

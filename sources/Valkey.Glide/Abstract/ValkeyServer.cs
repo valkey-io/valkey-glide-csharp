@@ -89,4 +89,94 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await _conn.Command(Request.Echo(message), new ByAddressRoute(EndPoint.ToString()!));
     }
+
+    public KeyValuePair<string, string>[] ConfigGet(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
+        => ConfigGetAsync(pattern, flags).GetAwaiter().GetResult();
+
+    public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.ConfigGetAsync(pattern), MakeRoute());
+    }
+
+    public void ConfigResetStatistics(CommandFlags flags = CommandFlags.None)
+        => ConfigResetStatisticsAsync(flags).GetAwaiter().GetResult();
+
+    public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
+    }
+
+    public void ConfigRewrite(CommandFlags flags = CommandFlags.None)
+        => ConfigRewriteAsync(flags).GetAwaiter().GetResult();
+
+    public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
+    }
+
+    public void ConfigSet(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+        => ConfigSetAsync(setting, value, flags).GetAwaiter().GetResult();
+
+    public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
+    }
+
+    public long DatabaseSize(int database = -1, CommandFlags flags = CommandFlags.None)
+        => DatabaseSizeAsync(database, flags).GetAwaiter().GetResult();
+
+    public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
+    }
+
+    public void FlushAllDatabases(CommandFlags flags = CommandFlags.None)
+        => FlushAllDatabasesAsync(flags).GetAwaiter().GetResult();
+
+    public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
+    }
+
+    public void FlushDatabase(int database = -1, CommandFlags flags = CommandFlags.None)
+        => FlushDatabaseAsync(database, flags).GetAwaiter().GetResult();
+
+    public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        await _conn.Command(Request.FlushDatabaseAsync(), MakeRoute());
+    }
+
+    public DateTime LastSave(CommandFlags flags = CommandFlags.None)
+        => LastSaveAsync(flags).GetAwaiter().GetResult();
+
+    public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.LastSaveAsync(), MakeRoute());
+    }
+
+    public DateTime Time(CommandFlags flags = CommandFlags.None)
+        => TimeAsync(flags).GetAwaiter().GetResult();
+
+    public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.TimeAsync(), MakeRoute());
+    }
+
+    public string Lolwut(CommandFlags flags = CommandFlags.None)
+        => LolwutAsync(flags).GetAwaiter().GetResult();
+
+    public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.LolwutAsync(), MakeRoute());
+    }
 }
