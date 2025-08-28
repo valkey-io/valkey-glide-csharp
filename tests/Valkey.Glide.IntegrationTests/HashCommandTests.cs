@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -480,5 +481,376 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(12500, smallPageScanned.Count);
 
         Assert.Equal(25000, await client.HashLengthAsync(key));
+    }
+
+    // Hash Field Expire Commands (Valkey 9.0+)
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashGetEx(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HGETEX is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data
+        HashEntry[] entries =
+        [
+            new HashEntry("field1", "value1"),
+            new HashEntry("field2", "value2"),
+            new HashEntry("field3", "value3")
+        ];
+        await client.HashSetAsync(key, entries);
+
+        // Test HGETEX with expiry in seconds
+        var options = new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60));
+        ValkeyValue[]? values = await client.HashGetExAsync(key, ["field1", "field2"], options);
+        Assert.NotNull(values);
+        Assert.Equal(2, values.Length);
+        Assert.Equal("value1", values[0]);
+        Assert.Equal("value2", values[1]);
+
+        // Test HGETEX with expiry in milliseconds
+        var msOptions = new HashGetExOptions().SetExpiry(HGetExExpiry.Milliseconds(5000));
+        values = await client.HashGetExAsync(key, ["field3"], msOptions);
+        Assert.NotNull(values);
+        Assert.Single(values);
+        Assert.Equal("value3", values[0]);
+
+        // Test HGETEX with persist option
+        var persistOptions = new HashGetExOptions().SetExpiry(HGetExExpiry.Persist());
+        values = await client.HashGetExAsync(key, ["field1"], persistOptions);
+        Assert.NotNull(values);
+        Assert.Single(values);
+        Assert.Equal("value1", values[0]);
+
+        // Test HGETEX on non-existing key
+        values = await client.HashGetExAsync("nonexistent", ["field1"], options);
+        Assert.Null(values);
+
+        // Test HGETEX with non-existing fields
+        values = await client.HashGetExAsync(key, ["nonexistent1", "nonexistent2"], options);
+        Assert.NotNull(values);
+        Assert.Equal(2, values.Length);
+        Assert.Equal(ValkeyValue.Null, values[0]);
+        Assert.Equal(ValkeyValue.Null, values[1]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSetEx(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HSETEX is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Test HSETEX with expiry in seconds
+        var fieldValueMap = new Dictionary<ValkeyValue, ValkeyValue>
+        {
+            { "field1", "value1" },
+            { "field2", "value2" }
+        };
+        var options = new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60));
+        Assert.Equal(1L, await client.HashSetExAsync(key, fieldValueMap, options));
+
+        // Verify values were set
+        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
+        Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
+
+        // Test HSETEX with NX condition (should fail for existing fields)
+        var nxOptions = new HashSetExOptions().SetOnlyIfNoneExist();
+        Assert.Equal(0L, await client.HashSetExAsync(key, fieldValueMap, nxOptions));
+
+        // Test HSETEX with XX condition (should succeed for existing fields)
+        var xxOptions = new HashSetExOptions().SetOnlyIfAllExist();
+        var updateMap = new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "updated_value1" } };
+        Assert.Equal(1L, await client.HashSetExAsync(key, updateMap, xxOptions));
+        Assert.Equal("updated_value1", await client.HashGetAsync(key, "field1"));
+
+        // Test HSETEX with KEEPTTL option
+        var keepTtlOptions = new HashSetExOptions().SetExpiry(ExpirySet.KeepExisting());
+        var keepTtlMap = new Dictionary<ValkeyValue, ValkeyValue> { { "field3", "value3" } };
+        Assert.Equal(1L, await client.HashSetExAsync(key, keepTtlMap, keepTtlOptions));
+        Assert.Equal("value3", await client.HashGetAsync(key, "field3"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashPersist(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HPERSIST is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data with expiry
+        var fieldValueMap = new Dictionary<ValkeyValue, ValkeyValue>
+        {
+            { "field1", "value1" },
+            { "field2", "value2" },
+            { "field3", "value3" }
+        };
+        var options = new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60));
+        await client.HashSetExAsync(key, fieldValueMap, options);
+
+        // Test HPERSIST on fields with expiry
+        long[] results = await client.HashPersistAsync(key, ["field1", "field2"]);
+        Assert.Equal(2, results.Length);
+        Assert.Equal(1, results[0]); // Successfully removed expiry
+        Assert.Equal(1, results[1]); // Successfully removed expiry
+
+        // Test HPERSIST on field without expiry (should return -1)
+        await client.HashSetAsync(key, "field4", "value4"); // Set without expiry
+        results = await client.HashPersistAsync(key, ["field4"]);
+        Assert.Single(results);
+        Assert.Equal(-1, results[0]); // Field exists but has no expiry
+
+        // Test HPERSIST on non-existing field (should return -2)
+        results = await client.HashPersistAsync(key, ["nonexistent"]);
+        Assert.Single(results);
+        Assert.Equal(-2, results[0]); // Field does not exist
+
+        // Test HPERSIST on non-existing key
+        results = await client.HashPersistAsync("nonexistent_key", ["field1"]);
+        Assert.Single(results);
+        Assert.Equal(-2, results[0]); // Key does not exist
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashExpire(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HEXPIRE is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data
+        await client.HashSetAsync(key, "field1", "value1");
+        await client.HashSetAsync(key, "field2", "value2");
+
+        // Test HEXPIRE with no conditions
+        var options = new HashFieldExpirationConditionOptions();
+        long[] results = await client.HashExpireAsync(key, 60, ["field1", "field2"], options);
+        Assert.Equal(2, results.Length);
+        Assert.Equal(1, results[0]); // Successfully set expiry
+        Assert.Equal(1, results[1]); // Successfully set expiry
+
+        // Test HEXPIRE with NX condition (should fail for fields with existing expiry)
+        var nxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
+        results = await client.HashExpireAsync(key, 120, ["field1"], nxOptions);
+        Assert.Single(results);
+        Assert.Equal(0, results[0]); // Condition not met
+
+        // Test HEXPIRE with XX condition (should succeed for fields with existing expiry)
+        var xxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_EXISTING_EXPIRY);
+        results = await client.HashExpireAsync(key, 30, ["field1"], xxOptions);
+        Assert.Single(results);
+        Assert.Equal(1, results[0]); // Successfully updated expiry
+
+        // Test HEXPIRE on non-existing field
+        results = await client.HashExpireAsync(key, 60, ["nonexistent"], options);
+        Assert.Single(results);
+        Assert.Equal(-2, results[0]); // Field does not exist
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashPExpire(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HPEXPIRE is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data
+        await client.HashSetAsync(key, "field1", "value1");
+
+        // Test HPEXPIRE with milliseconds
+        var options = new HashFieldExpirationConditionOptions();
+        long[] results = await client.HashPExpireAsync(key, 5000, ["field1"], options);
+        Assert.Single(results);
+        Assert.Equal(1, results[0]); // Successfully set expiry
+
+        // Test HPEXPIRE on non-existing field
+        results = await client.HashPExpireAsync(key, 5000, ["nonexistent"], options);
+        Assert.Single(results);
+        Assert.Equal(-2, results[0]); // Field does not exist
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashExpireAt(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HEXPIREAT is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data
+        await client.HashSetAsync(key, "field1", "value1");
+
+        // Test HEXPIREAT with Unix timestamp
+        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds();
+        var options = new HashFieldExpirationConditionOptions();
+        long[] results = await client.HashExpireAtAsync(key, futureTimestamp, ["field1"], options);
+        Assert.Single(results);
+        Assert.Equal(1, results[0]); // Successfully set expiry
+
+        // Test HEXPIREAT on non-existing field
+        results = await client.HashExpireAtAsync(key, futureTimestamp, ["nonexistent"], options);
+        Assert.Single(results);
+        Assert.Equal(-2, results[0]); // Field does not exist
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashPExpireAt(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HPEXPIREAT is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data
+        await client.HashSetAsync(key, "field1", "value1");
+
+        // Test HPEXPIREAT with Unix timestamp in milliseconds
+        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds();
+        var options = new HashFieldExpirationConditionOptions();
+        long[] results = await client.HashPExpireAtAsync(key, futureTimestamp, ["field1"], options);
+        Assert.Single(results);
+        Assert.Equal(1, results[0]); // Successfully set expiry
+
+        // Test HPEXPIREAT on non-existing field
+        results = await client.HashPExpireAtAsync(key, futureTimestamp, ["nonexistent"], options);
+        Assert.Single(results);
+        Assert.Equal(-2, results[0]); // Field does not exist
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashExpireTime(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HEXPIRETIME is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data with expiry
+        await client.HashSetAsync(key, "field1", "value1");
+        await client.HashSetAsync(key, "field2", "value2"); // No expiry
+
+        // Set expiry for field1
+        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds();
+        var options = new HashFieldExpirationConditionOptions();
+        await client.HashExpireAtAsync(key, futureTimestamp, ["field1"], options);
+
+        // Test HEXPIRETIME
+        long[] results = await client.HashExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(3, results.Length);
+        Assert.True(results[0] > 0); // Should return expiry timestamp for field1
+        Assert.Equal(-1, results[1]); // field2 has no expiry
+        Assert.Equal(-2, results[2]); // nonexistent field
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashPExpireTime(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HPEXPIRETIME is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data with expiry
+        await client.HashSetAsync(key, "field1", "value1");
+        await client.HashSetAsync(key, "field2", "value2"); // No expiry
+
+        // Set expiry for field1
+        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds();
+        var options = new HashFieldExpirationConditionOptions();
+        await client.HashPExpireAtAsync(key, futureTimestamp, ["field1"], options);
+
+        // Test HPEXPIRETIME
+        long[] results = await client.HashPExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(3, results.Length);
+        Assert.True(results[0] > 0); // Should return expiry timestamp for field1
+        Assert.Equal(-1, results[1]); // field2 has no expiry
+        Assert.Equal(-2, results[2]); // nonexistent field
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashTtl(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HTTL is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data with expiry
+        await client.HashSetAsync(key, "field1", "value1");
+        await client.HashSetAsync(key, "field2", "value2"); // No expiry
+
+        // Set expiry for field1
+        var options = new HashFieldExpirationConditionOptions();
+        await client.HashExpireAsync(key, 60, ["field1"], options);
+
+        // Test HTTL
+        long[] results = await client.HashTtlAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(3, results.Length);
+        Assert.True(results[0] > 0 && results[0] <= 60); // Should return TTL for field1
+        Assert.Equal(-1, results[1]); // field2 has no expiry
+        Assert.Equal(-2, results[2]); // nonexistent field
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashPTtl(BaseClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "HPTTL is supported since Valkey 9.0.0"
+        );
+
+        string key = Guid.NewGuid().ToString();
+
+        // Set up test data with expiry
+        await client.HashSetAsync(key, "field1", "value1");
+        await client.HashSetAsync(key, "field2", "value2"); // No expiry
+
+        // Set expiry for field1
+        var options = new HashFieldExpirationConditionOptions();
+        await client.HashPExpireAsync(key, 5000, ["field1"], options);
+
+        // Test HPTTL
+        long[] results = await client.HashPTtlAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(3, results.Length);
+        Assert.True(results[0] > 0 && results[0] <= 5000); // Should return TTL for field1
+        Assert.Equal(-1, results[1]); // field2 has no expiry
+        Assert.Equal(-2, results[2]); // nonexistent field
     }
 }
