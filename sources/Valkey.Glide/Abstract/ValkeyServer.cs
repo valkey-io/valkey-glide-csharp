@@ -31,7 +31,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(a => a.ToString()!) ?? []]), new ByAddressRoute(EndPoint.ToString()!));
+        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(a => a.ToString()!) ?? []]), MakeRoute());
         return ValkeyResult.Create(res);
     }
 
@@ -75,18 +75,30 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await _conn.Command(Request.Ping(), new ByAddressRoute(EndPoint.ToString()!));
+        return await _conn.Command(Request.Ping(), MakeRoute());
     }
 
     public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await _conn.Command(Request.Ping(message), new ByAddressRoute(EndPoint.ToString()!));
+        return await _conn.Command(Request.Ping(message), MakeRoute());
     }
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await _conn.Command(Request.Echo(message), new ByAddressRoute(EndPoint.ToString()!));
+        return await _conn.Command(Request.Echo(message), MakeRoute());
+    }
+
+    public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.ClientGetName(), MakeRoute());
+    }
+
+    public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.ClientId(), MakeRoute());
     }
 }

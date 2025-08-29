@@ -102,4 +102,42 @@ public class ServerTests(TestConfiguration config)
             Assert.Equal(randomMessage, echo);
         }
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task CanGetClientId(ConnectionMultiplexer conn, bool isCluster)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
+
+            // Test CLIENT ID command directly
+            long clientId = await server.ClientIdAsync();
+            Assert.True(clientId > 0, "Client ID should be a positive number");
+
+            // Test GetConnectionId from ConnectionMultiplexer (matching SER pattern)
+            long? connectionId = await conn.GetConnectionIdAsync(server.EndPoint, ConnectionType.Interactive);
+            Assert.NotNull(connectionId);
+            Assert.Equal(clientId, connectionId.Value);
+
+            // Test synchronous version
+            long? syncConnectionId = conn.GetConnectionId(server.EndPoint, ConnectionType.Interactive);
+            Assert.NotNull(syncConnectionId);
+            Assert.Equal(clientId, syncConnectionId.Value);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task CanGetClientName(ConnectionMultiplexer conn, bool isCluster)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
+
+            // Test CLIENT GETNAME command - should return ValkeyValue.Null initially (no name set)
+            ValkeyValue clientName = await server.ClientGetNameAsync();
+            Assert.Equal(ValkeyValue.Null, clientName); // No name should be set initially
+        }
+    }
 }

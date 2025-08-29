@@ -66,4 +66,26 @@ public interface IConnectionMultiplexer : IDisposable, IAsyncDisposable
     /// <param name="db">Not supported. To switch the database, please use `SELECT` command.</param>
     /// <param name="asyncState">The async state is not supported by GLIDE.</param>
     IDatabase GetDatabase(int db = -1, object? asyncState = null);
+
+    /// <summary>
+    /// Gets the connection ID for a specific endpoint and connection type.
+    /// </summary>
+    /// <param name="endpoint">The endpoint to get the connection ID for.</param>
+    /// <param name="connectionType">The type of connection (Interactive or Subscription).</param>
+    /// <returns>The connection ID, or null if not available.</returns>
+    /// <remarks>
+    /// This method retrieves the CLIENT ID for the specified endpoint and connection type.
+    /// The connection ID is unique per connection and can be used to identify specific
+    /// connections when using commands like CLIENT LIST or CLIENT KILL.
+    /// </remarks>
+    long? GetConnectionId(EndPoint endpoint, ConnectionType connectionType);
+
+    /// <summary>
+    /// Gets the connection ID for a specific endpoint and connection type asynchronously.
+    /// </summary>
+    /// <param name="endpoint">The endpoint to get the connection ID for.</param>
+    /// <param name="connectionType">The type of connection (Interactive or Subscription).</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the connection ID, or null if not available.</returns>
+    /// <inheritdoc cref="GetConnectionId(EndPoint, ConnectionType)" path="/remarks"/>
+    Task<long?> GetConnectionIdAsync(EndPoint endpoint, ConnectionType connectionType);
 }

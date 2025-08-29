@@ -62,7 +62,7 @@ public class ClusterValue<T>
     /// Asserts if <see cref="HasSingleData" /> is <see langword="false" />.
     /// </summary>
     public T SingleValue
-        => _singleValue ?? throw new Exception("No single value stored");
+        => HasSingleData ? _singleValue! : throw new Exception("No single value stored");
 
     /// <summary>
     /// Check that multi-value is stored in this object. Should be called prior to <see cref="MultiValue" />.

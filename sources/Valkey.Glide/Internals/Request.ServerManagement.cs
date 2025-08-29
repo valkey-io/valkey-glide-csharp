@@ -39,4 +39,7 @@ internal partial class Request
         GlideString[] args = [message.ToGlideString()];
         return new(RequestType.Echo, args, false, gs => (ValkeyValue)gs);
     }
+
+    public static Cmd<string, string> Select(long index)
+        => OK(RequestType.Select, [index.ToString().ToGlideString()]);
 }

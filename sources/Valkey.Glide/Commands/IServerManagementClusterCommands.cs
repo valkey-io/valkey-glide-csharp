@@ -171,4 +171,21 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<TimeSpan> PingAsync(ValkeyValue message, Route route);
+
+    /// <summary>
+    /// Changes the currently selected database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/select"/>
+    /// <param name="index">The index of the database to select.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>A simple "OK" response.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string result = await client.SelectAsync(1);
+    /// Console.WriteLine(result); // Output: "OK"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
 }
