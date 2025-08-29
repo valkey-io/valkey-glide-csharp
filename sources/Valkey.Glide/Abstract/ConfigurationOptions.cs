@@ -52,7 +52,9 @@ public sealed class ConfigurationOptions : ICloneable
             Ssl = "ssl",
             Version = "version",
             SetClientLibrary = "setlib",
-            Protocol = "protocol"
+            Protocol = "protocol",
+            ReadFrom = "readFrom",
+            Az = "az"
             ;
 
         private static readonly Dictionary<string, string> normalizedOptions = new[]
@@ -71,6 +73,8 @@ public sealed class ConfigurationOptions : ICloneable
             Version,
             SetClientLibrary,
             Protocol,
+            ReadFrom,
+            Az
         }.ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
 
         public static string TryNormalize(string value)
@@ -83,13 +87,11 @@ public sealed class ConfigurationOptions : ICloneable
         }
     }
 
+    #region Private fields
     private bool? ssl;
-
     private Proxy? proxy;
-
     private RetryStrategy? reconnectRetryPolicy;
-
-    private ReadFrom? readFrom;
+    #endregion
 
     /// <summary>
     /// Gets or sets whether connect/configuration timeouts should be explicitly notified via a TimeoutException.
@@ -240,11 +242,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// The read from strategy and Availability zone if applicable.
     /// </summary>
-    public ReadFrom? ReadFrom
-    {
-        get => readFrom;
-        set => readFrom = value;
-    }
+    public ReadFrom? ReadFrom { get; set; }
 
     /// <summary>
     /// Indicates whether endpoints should be resolved via DNS before connecting.
@@ -306,9 +304,9 @@ public sealed class ConfigurationOptions : ICloneable
         ResponseTimeout = ResponseTimeout,
         DefaultDatabase = DefaultDatabase,
         reconnectRetryPolicy = reconnectRetryPolicy,
-        readFrom = readFrom,
         EndPoints = EndPoints.Clone(),
         Protocol = Protocol,
+        ReadFrom = ReadFrom
     };
 
     /// <summary>
@@ -356,6 +354,10 @@ public sealed class ConfigurationOptions : ICloneable
         Append(sb, OptionKeys.ResponseTimeout, ResponseTimeout);
         Append(sb, OptionKeys.DefaultDatabase, DefaultDatabase);
         Append(sb, OptionKeys.Protocol, FormatProtocol(Protocol));
+        if (ReadFrom.HasValue)
+        {
+            FormatReadFrom(sb, ReadFrom.Value);
+        }
 
         return sb.ToString();
 
@@ -401,7 +403,7 @@ public sealed class ConfigurationOptions : ICloneable
         ClientName = User = Password = null;
         ConnectTimeout = ResponseTimeout = null;
         ssl = null;
-        readFrom = null;
+        ReadFrom = null;
         reconnectRetryPolicy = null;
         EndPoints.Clear();
     }
@@ -410,6 +412,9 @@ public sealed class ConfigurationOptions : ICloneable
 
     private ConfigurationOptions DoParse(string configuration, bool ignoreUnknown = true)
     {
+        ReadFromStrategy? tempReadFromStrategy = null;
+        string? tempAz = null;
+
         if (configuration == null)
         {
             throw new ArgumentNullException(nameof(configuration));
@@ -463,6 +468,12 @@ public sealed class ConfigurationOptions : ICloneable
                     case OptionKeys.ResponseTimeout:
                         ResponseTimeout = OptionKeys.ParseInt32(key, value);
                         break;
+                    case OptionKeys.ReadFrom:
+                        tempReadFromStrategy = CheckReadFromValue(value);
+                        break;
+                    case OptionKeys.Az:
+                        tempAz = CheckAzValue(value);
+                        break;
                     default:
                         if (!ignoreUnknown) throw new ArgumentException($"Keyword '{key}' is not supported.", key);
                         break;
@@ -476,7 +487,69 @@ public sealed class ConfigurationOptions : ICloneable
                 }
             }
         }
+
+        // Validate ReadFrom configuration after all parameters have been parsed
+        if (tempReadFromStrategy.HasValue)
+        {
+            ReadFrom = SetReadFrom(tempReadFromStrategy, tempAz);
+        }
+
         return this;
+    }
+
+    private string CheckAzValue(string az)
+    {
+        if (string.IsNullOrWhiteSpace(az))
+        {
+            throw new ArgumentException("Availability zone cannot be empty or whitespace");
+        }
+        return az;
+    }
+
+    private ReadFrom? SetReadFrom(ReadFromStrategy? strategy, string? az)
+    {
+        if (strategy.HasValue)
+        {
+            // Use ReadFrom constructors based on strategy type - the constructors contain the validation logic
+            return strategy.Value switch
+            {
+                ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary => new ReadFrom(strategy.Value, az!),
+                ReadFromStrategy.Primary or ReadFromStrategy.PreferReplica => new ReadFrom(strategy.Value),
+                _ => throw new ArgumentException($"ReadFrom strategy '{strategy.Value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary"),
+            };
+        }
+        return null;
+    }
+
+    private ReadFromStrategy CheckReadFromValue(string readFrom)
+    {
+        if (string.IsNullOrWhiteSpace(readFrom))
+        {
+            throw new ArgumentException("ReadFrom strategy cannot be empty");
+        }
+
+        try
+        {
+            return Enum.Parse<ReadFromStrategy>(readFrom, ignoreCase: true);
+        }
+        catch (ArgumentException)
+        {
+            throw new ArgumentException($"ReadFrom strategy '{readFrom}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
+        }
+    }
+
+    /// <summary>
+    /// Formats a ReadFrom struct to its string representation and appends it to the StringBuilder.
+    /// </summary>
+    /// <param name="sb">The StringBuilder to append to.</param>
+    /// <param name="readFromConfig">The ReadFrom configuration to format.</param>
+    private static void FormatReadFrom(StringBuilder sb, ReadFrom readFromConfig)
+    {
+        Append(sb, OptionKeys.ReadFrom, readFromConfig.Strategy.ToString());
+        if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
+        {
+            Append(sb, OptionKeys.Az, readFromConfig.Az);
+        }
     }
 
     /// <summary>

@@ -169,7 +169,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         _db = db;
     }
 
-    private static T CreateClientConfigBuilder<T>(ConfigurationOptions configuration)
+    internal static T CreateClientConfigBuilder<T>(ConfigurationOptions configuration)
         where T : ClientConfigurationBuilder<T>, new()
     {
         T config = new();
