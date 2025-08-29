@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.Pipeline;
 
@@ -81,4 +82,50 @@ internal interface IBatchHashCommands
     /// <inheritdoc cref="IHashCommands.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)" /></returns>
     IBatch HashScanNoValues(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0);
+
+    // Hash Field Expire Commands (Valkey 9.0+)
+
+    /// <inheritdoc cref="IHashCommands.HashGetExAsync(ValkeyKey, ValkeyValue[], HashGetExOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashGetExAsync(ValkeyKey, ValkeyValue[], HashGetExOptions, CommandFlags)" /></returns>
+    IBatch HashGetEx(ValkeyKey key, ValkeyValue[] fields, HashGetExOptions options);
+
+    /// <inheritdoc cref="IHashCommands.HashSetExAsync(ValkeyKey, Dictionary{ValkeyValue, ValkeyValue}, HashSetExOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashSetExAsync(ValkeyKey, Dictionary{ValkeyValue, ValkeyValue}, HashSetExOptions, CommandFlags)" /></returns>
+    IBatch HashSetEx(ValkeyKey key, Dictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options);
+
+    /// <inheritdoc cref="IHashCommands.HashPersistAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashPersistAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
+    IBatch HashPersist(ValkeyKey key, ValkeyValue[] fields);
+
+    /// <inheritdoc cref="IHashCommands.HashExpireAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashExpireAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" /></returns>
+    IBatch HashExpire(ValkeyKey key, long seconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options);
+
+    /// <inheritdoc cref="IHashCommands.HashPExpireAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashPExpireAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" /></returns>
+    IBatch HashPExpire(ValkeyKey key, long milliseconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options);
+
+    /// <inheritdoc cref="IHashCommands.HashExpireAtAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashExpireAtAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" /></returns>
+    IBatch HashExpireAt(ValkeyKey key, long unixSeconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options);
+
+    /// <inheritdoc cref="IHashCommands.HashPExpireAtAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashPExpireAtAsync(ValkeyKey, long, ValkeyValue[], HashFieldExpirationConditionOptions, CommandFlags)" /></returns>
+    IBatch HashPExpireAt(ValkeyKey key, long unixMilliseconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options);
+
+    /// <inheritdoc cref="IHashCommands.HashExpireTimeAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashExpireTimeAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
+    IBatch HashExpireTime(ValkeyKey key, ValkeyValue[] fields);
+
+    /// <inheritdoc cref="IHashCommands.HashPExpireTimeAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashPExpireTimeAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
+    IBatch HashPExpireTime(ValkeyKey key, ValkeyValue[] fields);
+
+    /// <inheritdoc cref="IHashCommands.HashTtlAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashTtlAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
+    IBatch HashTtl(ValkeyKey key, ValkeyValue[] fields);
+
+    /// <inheritdoc cref="IHashCommands.HashPTtlAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashPTtlAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
+    IBatch HashPTtl(ValkeyKey key, ValkeyValue[] fields);
 }
