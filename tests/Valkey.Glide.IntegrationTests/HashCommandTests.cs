@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -593,12 +594,12 @@ public class HashCommandTests(TestConfiguration config)
 
         // First, let's test a simple case - set a field without expiry and try to persist it
         await client.HashSetAsync(key, "field1", "value1");
-        
+
         // First test HTTL to see if it works (should return -1 for no expiry)
         long[] ttlResults = await client.HashTtlAsync(key, ["field1"]);
         Assert.Single(ttlResults);
         Assert.Equal(-1, ttlResults[0]); // Field exists but has no expiry
-        
+
         // Now test HPERSIST (should return -1 for field exists but has no expiry)
         long[] results = await client.HashPersistAsync(key, ["field1"]);
         Assert.Single(results);
