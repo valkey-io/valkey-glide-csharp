@@ -172,10 +172,7 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString()];
         
-        // Add fields first
-        args.AddRange(fields.ToGlideStrings());
-        
-        // Add expiry options after fields
+        // Add expiry options before FIELDS keyword
         if (options.Expiry != null)
         {
             switch (options.Expiry.Type)
@@ -198,6 +195,13 @@ internal partial class Request
             }
         }
 
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
+
         return new(RequestType.HGetEx, [.. args], true, response => 
             response == null ? null : [.. ((object[])response).Select(item =>
                 item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)], allowConverterToHandleNull: true);
@@ -207,14 +211,17 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString()];
         
-        // Add field-value pairs first
-        foreach (var kvp in fieldValueMap)
+        // Add field existence condition options first (FNX/FXX)
+        if (options.OnlyIfNoneExist)
         {
-            args.Add(kvp.Key.ToGlideString());
-            args.Add(kvp.Value.ToGlideString());
+            args.Add(Constants.FnxKeyword);
+        }
+        else if (options.OnlyIfAllExist)
+        {
+            args.Add(Constants.FxxKeyword);
         }
 
-        // Add expiry options after field-value pairs
+        // Add expiry options after conditional options
         if (options.Expiry != null)
         {
             switch (options.Expiry.Type)
@@ -231,14 +238,15 @@ internal partial class Request
             }
         }
 
-        // Add field existence condition options last
-        if (options.OnlyIfNoneExist)
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fieldValueMap.Count.ToGlideString());
+        
+        // Add field-value pairs
+        foreach (var kvp in fieldValueMap)
         {
-            args.Add(Constants.NxKeyword);
-        }
-        else if (options.OnlyIfAllExist)
-        {
-            args.Add(Constants.XxKeyword);
+            args.Add(kvp.Key.ToGlideString());
+            args.Add(kvp.Value.ToGlideString());
         }
 
         return Simple<long>(RequestType.HSetEx, [.. args]);
@@ -246,8 +254,16 @@ internal partial class Request
 
     public static Cmd<object[], long[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] fields)
     {
-        GlideString[] args = [key.ToGlideString(), .. fields.ToGlideStrings()];
-        return new(RequestType.HPersist, args, false, response => 
+        List<GlideString> args = [key.ToGlideString()];
+        
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
+        
+        return new(RequestType.HPersist, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
     }
 
@@ -255,10 +271,7 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString(), seconds.ToGlideString()];
         
-        // Add fields first
-        args.AddRange(fields.ToGlideStrings());
-        
-        // Add condition options after fields
+        // Add condition options before FIELDS keyword
         if (options.Condition != null)
         {
             switch (options.Condition)
@@ -277,6 +290,13 @@ internal partial class Request
                     break;
             }
         }
+
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
 
         return new(RequestType.HExpire, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
@@ -286,10 +306,7 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString(), milliseconds.ToGlideString()];
         
-        // Add fields first
-        args.AddRange(fields.ToGlideStrings());
-        
-        // Add condition options after fields
+        // Add condition options before FIELDS keyword
         if (options.Condition != null)
         {
             switch (options.Condition)
@@ -308,6 +325,13 @@ internal partial class Request
                     break;
             }
         }
+
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
 
         return new(RequestType.HPExpire, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
@@ -317,10 +341,7 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString(), unixSeconds.ToGlideString()];
         
-        // Add fields first
-        args.AddRange(fields.ToGlideStrings());
-        
-        // Add condition options after fields
+        // Add condition options before FIELDS keyword
         if (options.Condition != null)
         {
             switch (options.Condition)
@@ -339,6 +360,13 @@ internal partial class Request
                     break;
             }
         }
+
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
 
         return new(RequestType.HExpireAt, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
@@ -348,10 +376,7 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString(), unixMilliseconds.ToGlideString()];
         
-        // Add fields first
-        args.AddRange(fields.ToGlideStrings());
-        
-        // Add condition options after fields
+        // Add condition options before FIELDS keyword
         if (options.Condition != null)
         {
             switch (options.Condition)
@@ -371,35 +396,74 @@ internal partial class Request
             }
         }
 
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
+
         return new(RequestType.HPExpireAt, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
     }
 
     public static Cmd<object[], long[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields)
     {
-        GlideString[] args = [key.ToGlideString(), .. fields.ToGlideStrings()];
-        return new(RequestType.HExpireTime, args, false, response => 
+        List<GlideString> args = [key.ToGlideString()];
+        
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
+        
+        return new(RequestType.HExpireTime, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
     }
 
     public static Cmd<object[], long[]> HashPExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields)
     {
-        GlideString[] args = [key.ToGlideString(), .. fields.ToGlideStrings()];
-        return new(RequestType.HPExpireTime, args, false, response => 
+        List<GlideString> args = [key.ToGlideString()];
+        
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
+        
+        return new(RequestType.HPExpireTime, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
     }
 
     public static Cmd<object[], long[]> HashTtlAsync(ValkeyKey key, ValkeyValue[] fields)
     {
-        GlideString[] args = [key.ToGlideString(), .. fields.ToGlideStrings()];
-        return new(RequestType.HTtl, args, false, response => 
+        List<GlideString> args = [key.ToGlideString()];
+        
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
+        
+        return new(RequestType.HTtl, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
     }
 
     public static Cmd<object[], long[]> HashPTtlAsync(ValkeyKey key, ValkeyValue[] fields)
     {
-        GlideString[] args = [key.ToGlideString(), .. fields.ToGlideStrings()];
-        return new(RequestType.HPTtl, args, false, response => 
+        List<GlideString> args = [key.ToGlideString()];
+        
+        // Add FIELDS keyword and field count
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        
+        // Add field names
+        args.AddRange(fields.ToGlideStrings());
+        
+        return new(RequestType.HPTtl, [.. args], false, response => 
             [.. ((object[])response).Select(item => (long)item)]);
     }
 
