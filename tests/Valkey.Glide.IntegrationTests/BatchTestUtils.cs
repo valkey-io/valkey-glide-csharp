@@ -1308,11 +1308,11 @@ internal class BatchTestUtils
         if (TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
         {
             string expireKey = $"{atomicPrefix}expire-{Guid.NewGuid()}";
-            
+
             // Set up data for expire tests
             _ = batch.HashSet(expireKey, "expire_field1", "expire_value1");
             testData.Add(new(true, "HashSet(expireKey, expire_field1, expire_value1)"));
-            
+
             _ = batch.HashSet(expireKey, "expire_field2", "expire_value2");
             testData.Add(new(true, "HashSet(expireKey, expire_field2, expire_value2)"));
 
