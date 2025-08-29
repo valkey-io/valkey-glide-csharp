@@ -86,4 +86,15 @@ public static class Constants
     /// The lowest bound in the sorted set for score operations.
     /// </summary>
     public const string NegativeInfinityScore = "-inf";
+
+    /// <summary>
+    /// Keyword for hash field expiration commands.
+    /// </summary>
+    public const string FieldsKeyword = "FIELDS";
+
+    /// <summary>
+    /// Keywords for hash field conditional operations.
+    /// </summary>
+    public const string FxxKeyword = "FXX";
+    public const string FnxKeyword = "FNX";
 }
