@@ -349,8 +349,11 @@ public static class MainClass
             int iterations = options.Minimal ? 1000 : NumberOfIterations(concurrentTasks);
             await RunWithParameters(iterations, dataSize, concurrentTasks, options.ClientsToRun, options.Host, options.Port, clientCount, options.Tls, options.ClusterMode);
         }
+        Console.WriteLine($"Raw ResultsFile (C#) = {options.ResultsFile}");
         Console.WriteLine($"ResultsFile (C#) = {Path.GetFullPath(options.ResultsFile)}");
+        var resultsFile = Path.Combine(Directory.GetCurrentDirectory(), "../valkey-glide/benchmarks", options.ResultsFile);
+        Console.WriteLine($"New ResultsFile (C#) = {resultsFile}");
 
-        PrintResults(options.ResultsFile);
+        PrintResults(resultsFile);
     }
 }
