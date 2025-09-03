@@ -351,7 +351,7 @@ public static class MainClass
         }
         Console.WriteLine($"Raw ResultsFile (C#) = {options.ResultsFile}");
         Console.WriteLine($"ResultsFile (C#) = {Path.GetFullPath(options.ResultsFile)}");
-        var resultsFile = Path.Combine(Directory.GetCurrentDirectory(), "../valkey-glide/benchmarks", options.ResultsFile);
+        string resultsFile = Path.Combine(Directory.GetCurrentDirectory(), "../valkey-glide/benchmarks", options.ResultsFile);
         Console.WriteLine($"New ResultsFile (C#) = {resultsFile}");
 
         PrintResults(resultsFile);
