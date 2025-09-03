@@ -103,11 +103,7 @@ jobs:
               if: ${{ contains(matrix.host.RUNNER, 'ubuntu') }}
               shell: bash
               working-directory: valkey-glide/benchmarks
-              env:
-                  CSHARP_BENCH_FOLDER: ${{ github.workspace }}/benchmarks
               run: |
-                  echo "$GITHUB_WORKSPACE"
-                  echo "CSHARP_BENCH_FOLDER = $CSHARP_BENCH_FOLDER"
                   redis-server --save "" --daemonize "yes"
                   ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net${{ matrix.dotnet }}
 
