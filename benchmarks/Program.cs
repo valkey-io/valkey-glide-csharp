@@ -349,6 +349,7 @@ public static class MainClass
             int iterations = options.Minimal ? 1000 : NumberOfIterations(concurrentTasks);
             await RunWithParameters(iterations, dataSize, concurrentTasks, options.ClientsToRun, options.Host, options.Port, clientCount, options.Tls, options.ClusterMode);
         }
+        Debug.WriteLine($"ResultsFile = {options.ResultsFile}");
 
         PrintResults(options.ResultsFile);
     }
