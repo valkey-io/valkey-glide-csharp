@@ -350,10 +350,10 @@ public static class MainClass
             await RunWithParameters(iterations, dataSize, concurrentTasks, options.ClientsToRun, options.Host, options.Port, clientCount, options.Tls, options.ClusterMode);
         }
         Console.WriteLine($"Raw ResultsFile (C#) = {options.ResultsFile}");
-        Console.WriteLine($"ResultsFile (C#) = {Path.GetFullPath(options.ResultsFile)}");
         string resultsFile = Path.Combine(Directory.GetCurrentDirectory(), "../valkey-glide/benchmarks", options.ResultsFile);
         Console.WriteLine($"New ResultsFile (C#) = {resultsFile}");
+        Console.WriteLine($"ResultsFile (C#) = {Path.GetFullPath(resultsFile)}");
 
-        PrintResults(resultsFile);
+        PrintResults(Path.GetFullPath(resultsFile));
     }
 }
