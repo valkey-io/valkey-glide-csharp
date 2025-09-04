@@ -6,7 +6,9 @@ on:
             - main
             - release-*
             - v*
+
     pull_request:
+
     workflow_dispatch:
         inputs:
             full-matrix:
@@ -17,6 +19,7 @@ on:
                 required: false
                 type: string
                 description: "(Optional) Test run name"
+
     schedule:
         - cron: "0 3 * * *"
 
