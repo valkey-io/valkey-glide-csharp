@@ -121,6 +121,7 @@ tasks:
                   echo "Branch Coverage: ${BRANCH_COVERAGE}%"
                 else
                   echo "No coverage summary found. Run 'task coverage:report' first."
+                  exit 1
                 fi
 
     coverage:
