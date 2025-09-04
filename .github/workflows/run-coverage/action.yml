@@ -1,5 +1,12 @@
 name: "Run Coverage"
 description: "Run code coverage collection and upload artifacts"
+outputs:
+    line-coverage:
+        description: "Line coverage percentage"
+        value: ${{ steps.extract-coverage.outputs.line-coverage }}
+    branch-coverage:
+        description: "Branch coverage percentage"
+        value: ${{ steps.extract-coverage.outputs.branch-coverage }}
 runs:
     using: "composite"
     steps:
@@ -17,7 +24,23 @@ runs:
           shell: bash
           run: |
               task coverage FRAMEWORK=net8.0
-              task coverage:summary >> $GITHUB_OUTPUT
+
+        - name: Extract coverage metrics
+          id: extract-coverage
+          shell: bash
+          run: |
+              if [ -f "reports/Summary.json" ]; then
+                LINE_COVERAGE=$(cat reports/Summary.json | jq -r '.summary.linecoverage')
+                BRANCH_COVERAGE=$(cat reports/Summary.json | jq -r '.summary.branchcoverage')
+                echo "line-coverage=${LINE_COVERAGE}" >> $GITHUB_OUTPUT
+                echo "branch-coverage=${BRANCH_COVERAGE}" >> $GITHUB_OUTPUT
+                echo "=== Coverage Summary ==="
+                echo "Line Coverage: ${LINE_COVERAGE}%"
+                echo "Branch Coverage: ${BRANCH_COVERAGE}%"
+              else
+                echo "No coverage summary found."
+                exit 1
+              fi
 
         - name: Upload coverage report artifact
           uses: actions/upload-artifact@v4
