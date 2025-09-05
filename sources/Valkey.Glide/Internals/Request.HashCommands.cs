@@ -246,12 +246,14 @@ internal partial class Request
         args.Add(Constants.FieldsKeyword);
         args.Add(fieldValueMap.Count.ToGlideString());
 
+#pragma warning disable IDE0008 // Use explicit type
         // Add field-value pairs
         foreach (var kvp in fieldValueMap)
         {
             args.Add(kvp.Key.ToGlideString());
             args.Add(kvp.Value.ToGlideString());
         }
+#pragma warning restore IDE0008 // Use explicit type
 
         return Simple<long>(RequestType.HSetEx, [.. args]);
     }
