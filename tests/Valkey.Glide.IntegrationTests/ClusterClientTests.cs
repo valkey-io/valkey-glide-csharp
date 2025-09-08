@@ -262,7 +262,6 @@ public class ClusterClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-<<<<<<< HEAD
     public async Task ConfigGetAsync_ReturnsConfigurationPerNode(GlideClusterClient client)
     {
         // Test getting all configuration from all nodes
@@ -338,7 +337,9 @@ public class ClusterClientTests(TestConfiguration config)
         foreach (var nodeConfig in nonExistentResult.MultiValue.Values)
         {
             Assert.Empty(nodeConfig);
-=======
+        }
+    }
+
     public async Task TestClientId(GlideClusterClient client)
     {
         long clientId = await client.ClientIdAsync();
@@ -362,13 +363,11 @@ public class ClusterClientTests(TestConfiguration config)
         foreach (var kvp in allNodesResult.MultiValue)
         {
             Assert.True(kvp.Value > 0, $"Client ID for node {kvp.Key} should be positive");
->>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
         }
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-<<<<<<< HEAD
     public async Task DatabaseSizeAsync_ReturnsSizePerNode(GlideClusterClient client)
     {
         string key = $"cluster-dbsize-test-{Guid.NewGuid()}";
@@ -395,7 +394,9 @@ public class ClusterClientTests(TestConfiguration config)
         finally
         {
             await client.KeyDeleteAsync(key);
-=======
+        }
+    }
+
     public async Task TestClientGetName(GlideClusterClient client)
     {
         // CLIENT GETNAME should return ValkeyValue null initially (no name set)
@@ -420,13 +421,11 @@ public class ClusterClientTests(TestConfiguration config)
         foreach (var kvp in allNodesResult.MultiValue)
         {
             Assert.Equal(ValkeyValue.Null, kvp.Value); // No name should be set initially on any node
->>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
         }
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-<<<<<<< HEAD
     public async Task TimeAsync_ReturnsTimePerNode(GlideClusterClient client)
     {
         // Get time from all nodes
@@ -494,7 +493,8 @@ public class ClusterClientTests(TestConfiguration config)
         // Accept both "Valkey" and "Redis" in the output since the server might be either
         Assert.True(singleNodeLolwut.SingleValue.Contains("Valkey", StringComparison.OrdinalIgnoreCase) ||
                    singleNodeLolwut.SingleValue.Contains("Redis", StringComparison.OrdinalIgnoreCase));
-=======
+    }
+
     public async Task TestSelect(GlideClusterClient client)
     {
         Assert.SkipWhen(
@@ -503,6 +503,5 @@ public class ClusterClientTests(TestConfiguration config)
         );
         string result = await client.SelectAsync(0);
         Assert.Equal("OK", result);
->>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
     }
 }

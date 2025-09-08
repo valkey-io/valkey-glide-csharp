@@ -1388,6 +1388,7 @@ internal class BatchTestUtils
                 new("List commands", r.Data, CreateListTest, isAtomic),
                 new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
                 new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
+                new("Server Management commands", r.Data, CreateServerManagementTest, isAtomic)
             }))];
 }
 

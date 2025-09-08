@@ -112,7 +112,6 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
         return await Command(Request.Ping(), route);
     }
 
-<<<<<<< HEAD
     public async Task<TimeSpan> PingAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
@@ -267,7 +266,8 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
-=======
+    }
+
     public async Task<TimeSpan> PingAsync(ValkeyValue message, Route route)
         => await Command(Request.Ping(message), route);
 
@@ -299,6 +299,5 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.Select(index), Route.Random);
->>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
     }
 }

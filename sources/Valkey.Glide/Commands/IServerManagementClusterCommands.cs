@@ -94,7 +94,6 @@ public interface IServerManagementClusterCommands
     /// </returns>
     Task<ClusterValue<string>> Info(Section[] sections, Route route);
 
-
     /// <summary>
     /// Echo the given message back from the server.
     /// </summary>
@@ -184,7 +183,6 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-<<<<<<< HEAD
     Task<TimeSpan> PingAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -563,7 +561,6 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(Route route, CommandFlags flags = CommandFlags.None);
-=======
     Task<TimeSpan> PingAsync(ValkeyValue message, Route route);
 
     /// <summary>
@@ -582,5 +579,4 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
->>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
 }
