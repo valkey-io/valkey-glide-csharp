@@ -130,9 +130,10 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
         return await Command(Request.ClientId().ToClusterValue(route is SingleNodeRoute), route);
     }
 
-    public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
-    {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await Command(Request.Select(index), Route.Random);
-    }
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
+    // {
+    //     Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+    //     return await Command(Request.Select(index), Route.Random);
+    // }
 }

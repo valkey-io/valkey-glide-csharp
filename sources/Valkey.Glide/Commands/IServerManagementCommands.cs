@@ -72,5 +72,6 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
 }

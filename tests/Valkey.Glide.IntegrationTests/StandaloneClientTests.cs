@@ -3,7 +3,6 @@
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
-using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -211,18 +210,19 @@ public class StandaloneClientTests(TestConfiguration config)
         Assert.Equal(ValkeyValue.Null, clientName);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSelect(GlideClient client)
-    {
-        // Test selecting database 0 (default)
-        string result = await client.SelectAsync(0);
-        Assert.Equal("OK", result);
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // [Theory(DisableDiscoveryEnumeration = true)]
+    // [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    // public async Task TestSelect(GlideClient client)
+    // {
+    //     // Test selecting database 0 (default)
+    //     string result = await client.SelectAsync(0);
+    //     Assert.Equal("OK", result);
 
-        // Switching to a valid database causes issue to tests running in parallel. So instead, we test
-        // that using an invalid value to ensure different values can still be sent through.
-        await Assert.ThrowsAsync<RequestException>(async () => _ = await client.SelectAsync(-1));
-    }
+    //     // Switching to a valid database causes issue to tests running in parallel. So instead, we test
+    //     // that using an invalid value to ensure different values can still be sent through.
+    //     await Assert.ThrowsAsync<RequestException>(async () => _ = await client.SelectAsync(-1));
+    // }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
@@ -235,8 +235,9 @@ public class StandaloneClientTests(TestConfiguration config)
         ValkeyValue clientName = await client.ClientGetNameAsync(CommandFlags.None);
         Assert.Equal(ValkeyValue.Null, clientName);
 
-        string selectResult = await client.SelectAsync(0, CommandFlags.None);
-        Assert.Equal("OK", selectResult);
+        // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+        // string selectResult = await client.SelectAsync(0, CommandFlags.None);
+        // Assert.Equal("OK", selectResult);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

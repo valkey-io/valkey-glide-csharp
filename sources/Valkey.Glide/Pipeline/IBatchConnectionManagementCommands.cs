@@ -28,5 +28,6 @@ internal interface IBatchConnectionManagementCommands
 
     /// <inheritdoc cref="IServerManagementCommands.SelectAsync(long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.SelectAsync(long, CommandFlags)" /></returns>
-    IBatch SelectAsync(long index);
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // IBatch SelectAsync(long index);
 }
