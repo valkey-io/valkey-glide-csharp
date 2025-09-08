@@ -37,14 +37,14 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T LolwutAsync() => AddCmd(Request.LolwutAsync());
 
     // Interface implementations
-    Task<KeyValuePair<string, string>[]> IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task IBatchServerManagementCommands.ConfigResetStatisticsAsync() => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task IBatchServerManagementCommands.ConfigRewriteAsync() => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task<long> IBatchServerManagementCommands.DatabaseSizeAsync(int database) => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task IBatchServerManagementCommands.FlushAllDatabasesAsync() => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task IBatchServerManagementCommands.FlushDatabaseAsync(int database) => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task<DateTime> IBatchServerManagementCommands.LastSaveAsync() => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task<DateTime> IBatchServerManagementCommands.TimeAsync() => throw new NotImplementedException("Use the non-async version for batch operations");
-    Task<string> IBatchServerManagementCommands.LolwutAsync() => throw new NotImplementedException("Use the non-async version for batch operations");
+    IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
+    IBatch IBatchServerManagementCommands.ConfigResetStatisticsAsync() => ConfigResetStatisticsAsync();
+    IBatch IBatchServerManagementCommands.ConfigRewriteAsync() => ConfigRewriteAsync();
+    IBatch IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => ConfigSetAsync(setting, value); 
+    IBatch IBatchServerManagementCommands.DatabaseSizeAsync(int database) => DatabaseSizeAsync(database);
+    IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync() => FlushAllDatabasesAsync();
+    IBatch IBatchServerManagementCommands.FlushDatabaseAsync(int database) => FlushDatabaseAsync(database);
+    IBatch IBatchServerManagementCommands.LastSaveAsync() =>  LastSaveAsync();
+    IBatch IBatchServerManagementCommands.TimeAsync() => TimeAsync();
+    IBatch IBatchServerManagementCommands.LolwutAsync() => LolwutAsync();
 }

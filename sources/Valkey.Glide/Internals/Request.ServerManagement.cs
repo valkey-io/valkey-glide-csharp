@@ -89,15 +89,15 @@ internal partial class Request
     }
 
     public static Cmd<string, object?> ConfigResetStatisticsAsync()
-        => new(RequestType.ConfigResetStat, [], false, _ => null);
+        => new(RequestType.ConfigResetStat, [], false, _ => ValkeyValue.Null);
 
     public static Cmd<string, object?> ConfigRewriteAsync()
-        => new(RequestType.ConfigRewrite, [], false, _ => null);
+        => new(RequestType.ConfigRewrite, [], false, _ => ValkeyValue.Null);
 
     public static Cmd<string, object?> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
         GlideString[] args = [setting.ToGlideString(), value.ToGlideString()];
-        return new(RequestType.ConfigSet, args, false, _ => null);
+        return new(RequestType.ConfigSet, args, false, _ => ValkeyValue.Null);
     }
 
     public static Cmd<long, long> DatabaseSizeAsync(int database = -1)
@@ -108,13 +108,13 @@ internal partial class Request
     }
 
     public static Cmd<string, object?> FlushAllDatabasesAsync()
-        => new(RequestType.FlushAll, [], false, _ => null);
+        => new(RequestType.FlushAll, [], false, _ => ValkeyValue.Null);
 
     public static Cmd<string, object?> FlushDatabaseAsync(int database = -1)
     {
         // FLUSHDB doesn't take database parameter - it operates on current database
         // Database selection should be handled at connection level
-        return new(RequestType.FlushDB, [], false, _ => null);
+        return new(RequestType.FlushDB, [], false, _ => ValkeyValue.Null);
     }
 
     public static Cmd<long, DateTime> LastSaveAsync()

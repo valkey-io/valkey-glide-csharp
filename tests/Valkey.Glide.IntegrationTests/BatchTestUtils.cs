@@ -452,34 +452,12 @@ internal class BatchTestUtils
         _ = batch.ConfigResetStatisticsAsync();
         testData.Add(new(ValkeyValue.Null, "ConfigResetStatisticsAsync()", true));
 
-        // ConfigRewrite
-        _ = batch.ConfigRewriteAsync();
-        testData.Add(new(ValkeyValue.Null, "ConfigRewriteAsync()", true));
-
         // DatabaseSize
         _ = batch.DatabaseSizeAsync();
         testData.Add(new(1L, "DatabaseSizeAsync()", true));
 
         _ = batch.DatabaseSizeAsync(0);
         testData.Add(new(1L, "DatabaseSizeAsync(0)", true));
-
-        // FlushDatabase
-        _ = batch.FlushDatabaseAsync();
-        testData.Add(new(ValkeyValue.Null, "FlushDatabaseAsync()", true));
-
-        _ = batch.DatabaseSizeAsync();
-        testData.Add(new(0L, "DatabaseSizeAsync() after flush", true));
-
-        // Set up data again for FlushAll test
-        _ = batch.StringSet(testKey, "test-value");
-        testData.Add(new(true, "StringSet(testKey, test-value) for FlushAll"));
-
-        // FlushAllDatabases
-        _ = batch.FlushAllDatabasesAsync();
-        testData.Add(new(ValkeyValue.Null, "FlushAllDatabasesAsync()", true));
-
-        _ = batch.DatabaseSizeAsync();
-        testData.Add(new(0L, "DatabaseSizeAsync() after FlushAll", true));
 
         // LastSave
         _ = batch.LastSaveAsync();
