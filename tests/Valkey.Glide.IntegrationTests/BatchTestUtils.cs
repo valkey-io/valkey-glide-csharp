@@ -1230,6 +1230,21 @@ internal class BatchTestUtils
         _ = batch.Echo("");
         testData.Add(new(new ValkeyValue(""), "Echo(empty)"));
 
+        // CLIENT GETNAME - should return null initially (no name set)
+        _ = batch.ClientGetNameAsync();
+        testData.Add(new(ValkeyValue.Null, "ClientGetNameAsync()"));
+
+        // CLIENT ID - should return a positive long value
+        _ = batch.ClientIdAsync();
+        testData.Add(new(1L, "ClientIdAsync()", true)); // Check type only since ID is dynamic
+
+        // SELECT - 9.0.0 allows both standalone and cluster, else just run standalone
+        if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
+        {
+            _ = batch.SelectAsync(0); // Select database 0 (default)
+            testData.Add(new("OK", "SelectAsync(0)"));
+        }
+
         return testData;
     }
 

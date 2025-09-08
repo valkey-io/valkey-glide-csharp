@@ -40,6 +40,7 @@ internal partial class Request
         return new(RequestType.Echo, args, false, gs => (ValkeyValue)gs);
     }
 
+<<<<<<< HEAD
     public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
         GlideString[] args = pattern.IsNull ? ["*"] : [pattern.ToGlideString()];
@@ -137,4 +138,8 @@ internal partial class Request
 
     public static Cmd<GlideString, string> LolwutAsync()
         => new(RequestType.Lolwut, [], false, gs => gs.ToString());
+=======
+    public static Cmd<string, string> Select(long index)
+        => OK(RequestType.Select, [index.ToString().ToGlideString()]);
+>>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
 }

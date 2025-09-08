@@ -130,6 +130,16 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return _db!;
     }
 
+    public long? GetConnectionId(EndPoint endpoint, ConnectionType connectionType)
+        => GetConnectionIdAsync(endpoint, connectionType).GetAwaiter().GetResult();
+
+    public async Task<long?> GetConnectionIdAsync(EndPoint endpoint, ConnectionType connectionType)
+    {
+        IServer server = GetServer(endpoint);
+        long connectionId = await server.ClientIdAsync();
+        return connectionId;
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
@@ -159,7 +169,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         _db = db;
     }
 
-    private static T CreateClientConfigBuilder<T>(ConfigurationOptions configuration)
+    internal static T CreateClientConfigBuilder<T>(ConfigurationOptions configuration)
         where T : ClientConfigurationBuilder<T>, new()
     {
         T config = new();

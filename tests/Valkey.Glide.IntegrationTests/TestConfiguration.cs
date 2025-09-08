@@ -302,7 +302,7 @@ public class TestConfiguration : IDisposable
 
     internal List<(string host, ushort port)> StartServer(bool cluster, bool tls = false, string? name = null)
     {
-        string cmd = $"start {(cluster ? "--cluster-mode" : "")} {(tls ? " --tls" : "")} {(name != null ? " --prefix " + name : "")}";
+        string cmd = $"start {(cluster ? "--cluster-mode" : "")} {(tls ? " --tls" : "")} {(name != null ? " --prefix " + name : "")} -r 3";
         return ParseHostsFromOutput(RunClusterManager(cmd, false));
     }
 

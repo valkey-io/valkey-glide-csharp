@@ -16,7 +16,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Client used for connection to cluster servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
-public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands
+public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands
 {
     private GlideClusterClient() { }
 
@@ -112,6 +112,7 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
         return await Command(Request.Ping(), route);
     }
 
+<<<<<<< HEAD
     public async Task<TimeSpan> PingAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
@@ -266,5 +267,38 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
+=======
+    public async Task<TimeSpan> PingAsync(ValkeyValue message, Route route)
+        => await Command(Request.Ping(message), route);
+
+    public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.ClientGetName(), Route.Random);
+    }
+
+    public async Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.ClientGetNameCluster(route), route);
+    }
+
+    public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.ClientId(), Route.Random);
+    }
+
+    public async Task<ClusterValue<long>> ClientIdAsync(Route route, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.ClientId().ToClusterValue(route is SingleNodeRoute), route);
+    }
+
+    public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.Select(index), Route.Random);
+>>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
     }
 }

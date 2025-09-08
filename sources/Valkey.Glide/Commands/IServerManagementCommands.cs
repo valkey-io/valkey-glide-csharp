@@ -93,6 +93,7 @@ public interface IServerManagementCommands
     Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+<<<<<<< HEAD
     /// Gets the values of configuration parameters.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-get/"/>
@@ -252,4 +253,21 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None);
+=======
+    /// Changes the currently selected database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/select"/>
+    /// <param name="index">The index of the database to select.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>A simple "OK" response.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string result = await client.SelectAsync(1);
+    /// Console.WriteLine(result); // Output: "OK"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
+>>>>>>> 380cd28275d0e3f5bf69bde868f0d83242e92d33
 }

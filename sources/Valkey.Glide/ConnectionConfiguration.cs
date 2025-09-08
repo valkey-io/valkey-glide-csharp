@@ -103,6 +103,10 @@ public abstract class ConnectionConfiguration
             {
                 throw new ArgumentException("Availability zone could be set only when using `AzAffinity` or `AzAffinityReplicasAndPrimary` strategy.");
             }
+            if (string.IsNullOrWhiteSpace(az))
+            {
+                throw new ArgumentException("Availability zone cannot be empty or whitespace");
+            }
             Strategy = strategy;
             Az = az;
         }
