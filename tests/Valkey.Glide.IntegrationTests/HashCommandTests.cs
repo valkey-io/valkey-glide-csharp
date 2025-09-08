@@ -530,7 +530,8 @@ public class HashCommandTests(TestConfiguration config)
 
         // Test HGETEX on non-existing key
         values = await client.HashGetExAsync("nonexistent", ["field1"], options);
-        Assert.Null(values);
+        Assert.NotNull(values);
+        Assert.Equal(ValkeyValue.Null, values[0]);
 
         // Test HGETEX with non-existing fields
         values = await client.HashGetExAsync(key, ["nonexistent1", "nonexistent2"], options);
