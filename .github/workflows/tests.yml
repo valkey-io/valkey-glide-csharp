@@ -31,8 +31,8 @@ concurrency:
     cancel-in-progress: true
 
 run-name:
-    # Set custom name if job is started manually and name is given
-    ${{ github.event_name == 'workflow_dispatch' && (inputs.name == '' && format('{0} @ {1} {2}', github.ref_name, github.sha, toJson(inputs)) || inputs.name) || '' }}
+    # Use a distinct name for full-matrix or scheduled runs; otherwise keep manual-dispatch naming behavior
+    ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs['full-matrix'] == 'true')) && 'C# Matrix Tests' || (github.event_name == 'workflow_dispatch' && (inputs.name == '' && format('{0} @ {1} {2}', github.ref_name, github.sha, toJson(inputs)) || inputs.name)) || '' }}
 
 env:
     CARGO_TERM_COLOR: always
@@ -98,7 +98,35 @@ jobs:
                   key: rust-${{ matrix.host.TARGET }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
-              run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
+              run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
+
+            - name: Derive failures.json (from TRX)
+              if: always()
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  SUMMARY_FILE=failures.json
+                  if command -v xmllint >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+                      FAILED_COUNT=$(xmllint --xpath "string(//Counters/@failed)" TestResults.trx 2>/dev/null || echo 0)
+                      PASSED_COUNT=$(xmllint --xpath "string(//Counters/@passed)" TestResults.trx 2>/dev/null || echo 0)
+                      TOTAL_COUNT=$(xmllint --xpath "string(//Counters/@total)" TestResults.trx 2>/dev/null || echo 0)
+                      SKIPPED_COUNT=$(xmllint --xpath "string(//Counters/@skipped)" TestResults.trx 2>/dev/null || echo 0)
+                      echo "{" > "$SUMMARY_FILE"
+                      echo "  \"workflow\": \"C# tests\"," >> "$SUMMARY_FILE"
+                      echo "  \"runId\": ${GITHUB_RUN_ID}," >> "$SUMMARY_FILE"
+                      echo "  \"jobName\": \"net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}\"," >> "$SUMMARY_FILE"
+                      echo "  \"matrix\": {" >> "$SUMMARY_FILE"
+                      echo "    \"dotnet\": \"${{ matrix.dotnet }}\"," >> "$SUMMARY_FILE"
+                      echo "    \"server\": { \"type\": \"${{ matrix.server.type }}\", \"version\": \"${{ matrix.server.version }}\" }," >> "$SUMMARY_FILE"
+                      echo "    \"host\": { \"OS\": \"${{ matrix.host.OS }}\", \"ARCH\": \"${{ matrix.host.ARCH }}\", \"RUNNER\": \"${{ matrix.host.RUNNER }}\" }" >> "$SUMMARY_FILE"
+                      echo "  }," >> "$SUMMARY_FILE"
+                      echo "  \"summary\": { \"total\": $TOTAL_COUNT, \"passed\": $PASSED_COUNT, \"failed\": $FAILED_COUNT, \"skipped\": $SKIPPED_COUNT }," >> "$SUMMARY_FILE"
+                      echo "  \"failed\": []," >> "$SUMMARY_FILE"
+                      echo "  \"links\": { \"runUrl\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\" }" >> "$SUMMARY_FILE"
+                      echo "}" >> "$SUMMARY_FILE"
+                  else
+                      echo '{"workflow":"C# tests","summary":{"note":"Install xmllint+jq for rich failures"}}' > "$SUMMARY_FILE"
+                  fi
 
             - name: Run benchmark
               if: ${{ contains(matrix.host.RUNNER, 'ubuntu') }}
@@ -120,6 +148,8 @@ jobs:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
                   path: |
                       TestReport.html
+                      TestResults.trx
+                      failures.json
                       valkey-glide/benchmarks/results/*
                       valkey-glide/utils/clusters/**
 
@@ -187,7 +217,37 @@ jobs:
                   key: rust-${{ matrix.host.IMAGE }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
-              run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --results-directory .
+              run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
+
+            - name: Derive failures.json (from TRX)
+              if: always()
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  SUMMARY_FILE=failures.json
+                  if command -v xmllint >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+                      FAILED_COUNT=$(xmllint --xpath "string(//Counters/@failed)" TestResults.trx 2>/dev/null || echo 0)
+                      PASSED_COUNT=$(xmllint --xpath "string(//Counters/@passed)" TestResults.trx 2>/dev/null || echo 0)
+                      TOTAL_COUNT=$(xmllint --xpath "string(//Counters/@total)" TestResults.trx 2>/dev/null || echo 0)
+                      SKIPPED_COUNT=$(xmllint --xpath "string(//Counters/@skipped)" TestResults.trx 2>/dev/null || echo 0)
+                      cat > "$SUMMARY_FILE" << JSON
+                      {
+                        "workflow": "C# tests",
+                        "runId": ${GITHUB_RUN_ID},
+                        "jobName": "net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}",
+                        "matrix": {
+                          "dotnet": "${{ matrix.dotnet }}",
+                          "server": { "type": "${{ matrix.server.type }}", "version": "${{ matrix.server.version }}" },
+                          "host": { "OS": "${{ matrix.host.OS }}", "ARCH": "${{ matrix.host.ARCH }}", "RUNNER": "${{ matrix.host.RUNNER }}" }
+                        },
+                        "summary": { "total": $TOTAL_COUNT, "passed": $PASSED_COUNT, "failed": $FAILED_COUNT, "skipped": $SKIPPED_COUNT },
+                        "failed": [],
+                        "links": { "runUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }
+                      }
+                      JSON
+                  else
+                      echo '{"workflow":"C# tests","summary":{"note":"Install xmllint+jq for rich failures"}}' > "$SUMMARY_FILE"
+                  fi
 
             - name: Upload test reports
               if: always()
@@ -197,6 +257,8 @@ jobs:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ env.IMAGE }}-${{ matrix.host.ARCH }}
                   path: |
                       TestReport.html
+                      TestResults.trx
+                      failures.json
                       valkey-glide/utils/clusters/**
 
     lint:
