@@ -73,8 +73,6 @@ internal partial class Request
                 {
                     if (i + 1 < array.Length)
                     {
-                        // string key = array[i] is GlideString gs1 ? gs1.ToString() : array[i]?.ToString() ?? string.Empty;
-                        // string value = array[i + 1] is GlideString gs2 ? gs2.ToString() : array[i + 1]?.ToString() ?? string.Empty;
                         string key = array[i] is GlideString gs1 ? gs1.ToString() : "";
                         string value = array[i + 1] is GlideString gs2 ? gs2.ToString() : array[i + 1]?.ToString() ?? "";
                         result.Add(new KeyValuePair<string, string>(key, value));
