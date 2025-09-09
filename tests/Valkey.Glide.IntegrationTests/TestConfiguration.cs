@@ -26,6 +26,7 @@ public class TestConfiguration : IDisposable
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
+            .WithRequestTimeout(TimeSpan.FromSeconds(1))
             .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithTls(TLS);
@@ -64,12 +65,14 @@ public class TestConfiguration : IDisposable
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(1))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClient resp3client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(1))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
@@ -93,12 +96,14 @@ public class TestConfiguration : IDisposable
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(1))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(1))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
