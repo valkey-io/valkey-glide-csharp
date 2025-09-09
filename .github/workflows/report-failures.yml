@@ -13,8 +13,8 @@ permissions:
 
 jobs:
     report:
-        # Only handle scheduled runs or manual full-matrix runs ("C# Matrix Tests") that ended in failure
-        if: github.event.workflow_run.conclusion == 'failure' && (github.event.workflow_run.event == 'schedule' || github.event.workflow_run.display_title == 'C# Matrix Tests')
+        # Only run this job when the triggering run failed and was schedule or workflow_dispatch
+        if: ${{ github.event.workflow_run.conclusion == 'failure' && (github.event.workflow_run.event == 'schedule' || github.event.workflow_run.event == 'workflow_dispatch') }}
         runs-on: ubuntu-latest
         steps:
             - name: Download artifacts from triggering run
@@ -28,40 +28,91 @@ jobs:
               shell: bash
               run: |
                   set -euo pipefail
-                  if ! command -v jq >/dev/null 2>&1; then
-                    sudo apt-get update -y >/dev/null 2>&1 || true
-                    sudo apt-get install -y jq >/dev/null 2>&1 || true
-                  fi
-                  shopt -s globstar nullglob
+                  sudo apt-get update -y >/dev/null 2>&1 || true
+                  sudo apt-get install -y jq xmlstarlet >/dev/null 2>&1 || true
+                  shopt -s nullglob
+
                   total_failed=0
-                  total_suites=0
-                  md='<!-- run:${{ github.event.workflow_run.id }} -->\n'
-                  md+="# Nightly CI failures for ${{ github.repository }}\n\n"
-                  md+="Triggered: ${{ github.event.workflow_run.run_started_at }} • [Run link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})\n\n"
-                  found_any=0
-                  for f in downloaded/**/failures.json; do
-                    found_any=1
-                    failed=$(jq -r '.summary.failed // 0' "$f" 2>/dev/null || echo 0)
-                    total=$(jq -r '.summary.total // 0' "$f" 2>/dev/null || echo 0)
-                    job=$(jq -r '.jobName // empty' "$f" 2>/dev/null || echo "")
-                    [ -z "$job" ] && job=$(basename "$(dirname "$f")")
-                    runUrl=$(jq -r '.links.runUrl // empty' "$f" 2>/dev/null || echo "")
-                    total_failed=$((total_failed+failed))
-                    total_suites=$((total_suites+1))
-                    md+="- ${job}: ${failed}/${total} failed"
-                    if [ -n "$runUrl" ]; then
-                      md+=" — [run](${runUrl})"
+                  total_legs=0
+                  failing_legs=0
+                  md='<!-- run:${{ github.event.workflow_run.id }} -->
+                  '
+                  md+="# Nightly CI failures for ${{ github.repository }}
+                  "$'\n'
+                  md+="Triggered: ${{ github.event.workflow_run.run_started_at }} • [Run link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
+                  "$'\n\n'
+                  md_details=""
+
+                  # Iterate each artifact folder downloaded
+                  for dir in downloaded/*; do
+                    [ -d "$dir" ] || continue
+                    base="$(basename "$dir")"
+                    case "$base" in
+                      test-reports-*) ;;
+                      *) continue ;;
+                    esac
+                    total_legs=$((total_legs+1))
+                    job_display="$base"
+
+                    # Prefer failures.json
+                    fjson="$dir/failures.json"
+                    failed=0; total=0
+                    if [ -f "$fjson" ]; then
+                      failed=$(jq -r '.summary.failed // 0' "$fjson" 2>/dev/null || echo 0)
+                      total=$(jq -r '.summary.total // 0' "$fjson" 2>/dev/null || echo 0)
                     fi
-                    md+="\n"
+
+                    # Fallback to TRX parse if counts are zero
+                    if [ "$failed" = "0" ] && [ "$total" = "0" ]; then
+                      trx=$(ls "$dir"/*.trx 2>/dev/null | head -n1 || true)
+                      if [ -n "$trx" ]; then
+                        total=$(xmlstarlet sel -T -t -v 'string(//*[local-name()="Counters"]/@total)' "$trx" 2>/dev/null || echo 0)
+                        failed=$(xmlstarlet sel -T -t -v 'string(//*[local-name()="Counters"]/@failed)' "$trx" 2>/dev/null || echo 0)
+                      fi
+                    fi
+
+                    # Emit only failing legs with per-test bullets
+                    if [ "$failed" != "0" ]; then
+                      failing_legs=$((failing_legs+1))
+                      total_failed=$((total_failed+failed))
+                      md+="- ${job_display}: ${failed}/${total} failed\n"
+                      # Try to get failed tests either from failures.json or directly from TRX
+                      bullets=""
+                      if [ -f "$fjson" ]; then
+                        bullets=$(jq -r '.failed[]? | "  - " + (.displayName // .fullyQualifiedName // .name // "(unknown)") + (if .errorMessage then " — " + .errorMessage else (if .message then " — " + .message else "" end) end)' "$fjson" 2>/dev/null || true)
+                      fi
+                      if [ -z "$bullets" ]; then
+                        if [ -n "${trx:-}" ] && [ -f "$trx" ]; then
+                          while IFS= read -r line; do
+                            name="${line%%||*}"
+                            msg="${line#*||}"
+                            # Trim to first line and limit length
+                            msg="${msg%%$'\n'*}"
+                            if [ ${#msg} -gt 200 ]; then msg="${msg:0:197}..."; fi
+                            echo "  - ${name} — ${msg}"
+                          done < <(xmlstarlet sel -T -t -m '//*[local-name()="UnitTestResult" and @outcome="Failed"]' -v 'concat(@testName,"||", normalize-space(.//*[local-name()="Message"]))' -n "$trx" 2>/dev/null || true) > "$dir/.bullets.txt"
+                          bullets=$(cat "$dir/.bullets.txt" 2>/dev/null || true)
+                        fi
+                      fi
+                      if [ -n "$bullets" ]; then
+                        md_details+=$'\n'
+                        md_details+="### ${job_display}\n\n"
+                        md_details+="$bullets\n"
+                      fi
+                    fi
                   done
-                  if [ $found_any -eq 0 ]; then
-                    md+="No failures.json artifacts were found to summarize.\n"
-                  else
-                    md+="\nTotal failed tests across ${total_suites} matrix jobs: ${total_failed}\n"
+
+                  if [ "$failing_legs" = "0" ]; then
+                    md+="The pipeline failed, but no individual test failures were found. This may indicate a job or infrastructure failure.\n"
                   fi
+                  md+=$'\n'
+                  md+="Total failed tests across ${failing_legs} of ${total_legs} matrix jobs: ${total_failed}\n\n"
+                  md+="$md_details"
+
                   printf "%b" "$md" > summary.md
                   echo "summary_path=$(pwd)/summary.md" >> "$GITHUB_OUTPUT"
                   echo "total_failed=${total_failed}" >> "$GITHUB_OUTPUT"
+                  echo "total_legs=${total_legs}" >> "$GITHUB_OUTPUT"
 
             - name: Find or create rolling failure issue
               id: ensure_issue
