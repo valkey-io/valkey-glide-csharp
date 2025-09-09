@@ -230,21 +230,19 @@ jobs:
                       PASSED_COUNT=$(xmllint --xpath "string(//Counters/@passed)" TestResults.trx 2>/dev/null || echo 0)
                       TOTAL_COUNT=$(xmllint --xpath "string(//Counters/@total)" TestResults.trx 2>/dev/null || echo 0)
                       SKIPPED_COUNT=$(xmllint --xpath "string(//Counters/@skipped)" TestResults.trx 2>/dev/null || echo 0)
-                      cat > "$SUMMARY_FILE" << JSON
-                      {
-                        "workflow": "C# tests",
-                        "runId": ${GITHUB_RUN_ID},
-                        "jobName": "net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}",
-                        "matrix": {
-                          "dotnet": "${{ matrix.dotnet }}",
-                          "server": { "type": "${{ matrix.server.type }}", "version": "${{ matrix.server.version }}" },
-                          "host": { "OS": "${{ matrix.host.OS }}", "ARCH": "${{ matrix.host.ARCH }}", "RUNNER": "${{ matrix.host.RUNNER }}" }
-                        },
-                        "summary": { "total": $TOTAL_COUNT, "passed": $PASSED_COUNT, "failed": $FAILED_COUNT, "skipped": $SKIPPED_COUNT },
-                        "failed": [],
-                        "links": { "runUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }
-                      }
-                      JSON
+                      echo "{" > "$SUMMARY_FILE"
+                      echo "  \"workflow\": \"C# tests\"," >> "$SUMMARY_FILE"
+                      echo "  \"runId\": ${GITHUB_RUN_ID}," >> "$SUMMARY_FILE"
+                      echo "  \"jobName\": \"net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}\"," >> "$SUMMARY_FILE"
+                      echo "  \"matrix\": {" >> "$SUMMARY_FILE"
+                      echo "    \"dotnet\": \"${{ matrix.dotnet }}\"," >> "$SUMMARY_FILE"
+                      echo "    \"server\": { \"type\": \"${{ matrix.server.type }}\", \"version\": \"${{ matrix.server.version }}\" }," >> "$SUMMARY_FILE"
+                      echo "    \"host\": { \"OS\": \"${{ matrix.host.OS }}\", \"ARCH\": \"${{ matrix.host.ARCH }}\", \"RUNNER\": \"${{ matrix.host.RUNNER }}\" }" >> "$SUMMARY_FILE"
+                      echo "  }," >> "$SUMMARY_FILE"
+                      echo "  \"summary\": { \"total\": $TOTAL_COUNT, \"passed\": $PASSED_COUNT, \"failed\": $FAILED_COUNT, \"skipped\": $SKIPPED_COUNT }," >> "$SUMMARY_FILE"
+                      echo "  \"failed\": []," >> "$SUMMARY_FILE"
+                      echo "  \"links\": { \"runUrl\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\" }" >> "$SUMMARY_FILE"
+                      echo "}" >> "$SUMMARY_FILE"
                   else
                       echo '{"workflow":"C# tests","summary":{"note":"Install xmllint+jq for rich failures"}}' > "$SUMMARY_FILE"
                   fi
