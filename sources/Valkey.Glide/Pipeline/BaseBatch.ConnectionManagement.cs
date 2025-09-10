@@ -21,13 +21,16 @@ public abstract partial class BaseBatch<T> : IBatchConnectionManagementCommands 
     /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientIdAsync()" />
     public T ClientIdAsync() => AddCmd(Request.ClientId());
 
-    /// <inheritdoc cref="IBatchConnectionManagementCommands.SelectAsync(long)" />
-    public T SelectAsync(long index) => AddCmd(Request.Select(index));
+    // <inheritdoc cref="IBatchConnectionManagementCommands.SelectAsync(long)" />
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // public T SelectAsync(long index) => AddCmd(Request.Select(index));
 
     IBatch IBatchConnectionManagementCommands.Ping() => Ping();
     IBatch IBatchConnectionManagementCommands.Ping(ValkeyValue message) => Ping(message);
     IBatch IBatchConnectionManagementCommands.Echo(ValkeyValue message) => Echo(message);
     IBatch IBatchConnectionManagementCommands.ClientGetNameAsync() => ClientGetNameAsync();
     IBatch IBatchConnectionManagementCommands.ClientIdAsync() => ClientIdAsync();
-    IBatch IBatchConnectionManagementCommands.SelectAsync(long index) => SelectAsync(index);
+
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // IBatch IBatchConnectionManagementCommands.SelectAsync(long index) => SelectAsync(index);
 }

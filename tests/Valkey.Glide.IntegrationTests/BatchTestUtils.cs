@@ -1166,11 +1166,12 @@ internal class BatchTestUtils
         testData.Add(new(1L, "ClientIdAsync()", true)); // Check type only since ID is dynamic
 
         // SELECT - 9.0.0 allows both standalone and cluster, else just run standalone
-        if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
-        {
-            _ = batch.SelectAsync(0); // Select database 0 (default)
-            testData.Add(new("OK", "SelectAsync(0)"));
-        }
+        // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+        // if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
+        // {
+        //     _ = batch.SelectAsync(0); // Select database 0 (default)
+        //     testData.Add(new("OK", "SelectAsync(0)"));
+        // }
 
         return testData;
     }
