@@ -317,15 +317,16 @@ public class ClusterClientTests(TestConfiguration config)
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSelect(GlideClusterClient client)
-    {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "SELECT for Cluster Client is supported since 9.0.0"
-        );
-        string result = await client.SelectAsync(0);
-        Assert.Equal("OK", result);
-    }
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // [Theory(DisableDiscoveryEnumeration = true)]
+    // [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    // public async Task TestSelect(GlideClusterClient client)
+    // {
+    //     Assert.SkipWhen(
+    //         TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+    //         "SELECT for Cluster Client is supported since 9.0.0"
+    //     );
+    //     string result = await client.SelectAsync(0);
+    //     Assert.Equal("OK", result);
+    // }
 }
