@@ -45,6 +45,33 @@ jobs:
             host-matrix-output: ${{ steps.get-matrices.outputs.os-matrix-output }}
             version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
         steps:
+            - name: Write inputs.json
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const fs = require('fs');
+                      fs.mkdirSync('.run-meta', {recursive: true});
+                      const event = context.eventName;
+                      const out = {event};
+                      if (event === 'workflow_dispatch') {
+                        const inputs = context.payload.inputs || {};
+                        const raw = inputs['full-matrix'];
+                        const fm = (raw === true) || (String(raw).toLowerCase() === 'true');
+                        out.inputs = {
+                          'full-matrix': fm,
+                          name: inputs.name || ''
+                        };
+                      }
+                      fs.writeFileSync('.run-meta/inputs.json', JSON.stringify(out));
+                      core.info(`inputs.json => ${JSON.stringify(out)}`);
+
+            - name: Upload inputs.json
+              uses: actions/upload-artifact@v4
+              with:
+                  name: inputs.json
+                  path: .run-meta/inputs.json
+                  if-no-files-found: error
+
             - uses: actions/checkout@v5
             - id: get-matrices
               uses: ./.github/workflows/create-test-matrices
@@ -252,7 +279,7 @@ jobs:
               continue-on-error: true
               uses: actions/upload-artifact@v4
               with:
-                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ env.IMAGE }}-${{ matrix.host.ARCH }}
+                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.IMAGE }}-${{ matrix.host.ARCH }}
                   path: |
                       TestReport.html
                       TestResults.trx

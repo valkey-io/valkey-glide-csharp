@@ -17,8 +17,54 @@ jobs:
         if: ${{ github.event.workflow_run.conclusion == 'failure' && (github.event.workflow_run.event == 'schedule' || github.event.workflow_run.event == 'workflow_dispatch') }}
         runs-on: ubuntu-latest
         steps:
+            - name: Download inputs.json artifact (if present)
+              id: inputs
+              uses: dawidd6/action-download-artifact@v6
+              continue-on-error: true
+              with:
+                  run_id: ${{ github.event.workflow_run.id }}
+                  name: inputs.json
+                  path: inputs_artifact
+
+            - name: Gate on full-matrix runs
+              id: gate
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ github.token }}
+                  script: |
+                      const {owner, repo} = context.repo;
+                      const runId = context.payload.workflow_run.id;
+                      const event = context.payload.workflow_run.event;
+                      const { data: run } = await github.rest.actions.getWorkflowRun({ owner, repo, run_id: runId });
+                      const title = run.display_title || run.name || '';
+                      // Prefer inputs.json when workflow_dispatch
+                      let should = false;
+                      if (event === 'schedule') {
+                        should = true;
+                      } else if (event === 'workflow_dispatch') {
+                        try {
+                          const fs = require('fs');
+                          const path = 'inputs_artifact/inputs.json';
+                          if (fs.existsSync(path)) {
+                            const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+                            const fm = !!(data.inputs && data.inputs['full-matrix']);
+                            should = fm;
+                            core.info(`Gate via inputs.json: full-matrix=${fm}`);
+                          } else {
+                            core.info('inputs.json not found; falling back to title gate');
+                            should = title.startsWith('C# Matrix Tests');
+                          }
+                        } catch (e) {
+                          core.warning(`Failed to read inputs.json: ${e}`);
+                          should = title.startsWith('C# Matrix Tests');
+                        }
+                      }
+                      core.info(`Trigger event: ${event}; run title: ${title}; should process: ${should}`);
+                      return should;
+
             - name: Download artifacts from triggering run
               uses: dawidd6/action-download-artifact@v6
+              if: ${{ steps.gate.outputs.result == 'true' }}
               with:
                   run_id: ${{ github.event.workflow_run.id }}
                   path: downloaded
@@ -26,6 +72,7 @@ jobs:
             - name: Aggregate failures
               id: aggregate
               shell: bash
+              if: ${{ steps.gate.outputs.result == 'true' }}
               run: |
                   set -euo pipefail
                   sudo apt-get update -y >/dev/null 2>&1 || true
@@ -117,6 +164,7 @@ jobs:
             - name: Find or create rolling failure issue
               id: ensure_issue
               uses: actions/github-script@v7
+              if: ${{ steps.gate.outputs.result == 'true' }}
               env:
                   SUMMARY_PATH: ${{ steps.aggregate.outputs.summary_path }}
               with:
