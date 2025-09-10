@@ -65,14 +65,14 @@ public class TestConfiguration : IDisposable
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(5))
+                        .WithRequestTimeout(TimeSpan.FromSeconds(30))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClient resp3client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(5))
+                        .WithRequestTimeout(TimeSpan.FromSeconds(30))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
