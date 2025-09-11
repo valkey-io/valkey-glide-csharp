@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -149,5 +150,71 @@ public abstract partial class BaseClient : IHashCommands
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.HashRandomFieldsWithValuesAsync(key, count));
+    }
+
+    public async Task<ValkeyValue[]?> HashGetExAsync(ValkeyKey key, ValkeyValue[] fields, HashGetExOptions options, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashGetExAsync(key, fields, options));
+    }
+
+    public async Task<long> HashSetExAsync(ValkeyKey key, Dictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashSetExAsync(key, fieldValueMap, options));
+    }
+
+    public async Task<long[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashPersistAsync(key, fields));
+    }
+
+    public async Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashExpireAsync(key, seconds, fields, options));
+    }
+
+    public async Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashPExpireAsync(key, milliseconds, fields, options));
+    }
+
+    public async Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashExpireAtAsync(key, unixSeconds, fields, options));
+    }
+
+    public async Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashPExpireAtAsync(key, unixMilliseconds, fields, options));
+    }
+
+    public async Task<long[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashExpireTimeAsync(key, fields));
+    }
+
+    public async Task<long[]> HashPExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashPExpireTimeAsync(key, fields));
+    }
+
+    public async Task<long[]> HashTtlAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashTtlAsync(key, fields));
+    }
+
+    public async Task<long[]> HashPTtlAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HashPTtlAsync(key, fields));
     }
 }
