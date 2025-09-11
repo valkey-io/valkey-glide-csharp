@@ -115,9 +115,10 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
         return await Command(Request.ClientId());
     }
 
-    public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
-    {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await Command(Request.Select(index));
-    }
+    // TODO: Re-enable when https://github.com/valkey-io/valkey-glide/issues/4691 is resolved.
+    // public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
+    // {
+    //     Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+    //     return await Command(Request.Select(index));
+    // }
 }

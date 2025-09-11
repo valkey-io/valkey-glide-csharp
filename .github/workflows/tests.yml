@@ -6,9 +6,9 @@ on:
             - main
             - release-*
             - v*
-        paths:
+
     pull_request:
-        paths:
+
     workflow_dispatch:
         inputs:
             full-matrix:
@@ -19,6 +19,7 @@ on:
                 required: false
                 type: string
                 description: "(Optional) Test run name"
+
     schedule:
         - cron: "0 3 * * *"
 
@@ -106,6 +107,10 @@ jobs:
               run: |
                   redis-server --save "" --daemonize "yes"
                   ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net${{ matrix.dotnet }}
+
+            - name: Run coverage
+              if: ${{ matrix.dotnet == '8.0' && contains(matrix.host.RUNNER, 'ubuntu') && matrix.host.ARCH == 'x64' && matrix.server.version == '8.1' }}
+              uses: ./.github/workflows/run-coverage
 
             - name: Upload test reports
               if: always()

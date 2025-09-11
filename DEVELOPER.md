@@ -8,10 +8,10 @@ We're excited to share that the GLIDE C# client is currently in development! How
 
 The C# client contains the following parts:
 
-1. Rust part of the C# client located in `lib/src`; it communicates with [GLIDE core rust library](../glide-core/README.md).
-2. C# part of the client located in `lib`; it translates Rust async API into .Net async API.
-3. Integration tests for the C# client located in `tests` directory.
-4. A dedicated benchmarking tool designed to evaluate and compare the performance of Valkey GLIDE and other .Net clients. It is located in `<repo root>/benchmarks/csharp`.
+1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](/valkey-glide/glide-core/README.md).
+2. C# part of the client located in `sources`; it translates Rust async API into .Net async API.
+3. Tests for the C# client located in `tests` directory.
+4. A dedicated benchmarking tool designed to evaluate and compare the performance of Valkey GLIDE and other .Net clients. It is located in `/benchmarks`.
 
 TODO: examples, UT, design docs
 
@@ -22,8 +22,9 @@ Software Dependencies:
 - .Net SDK 8 and 9
 - git
 - valkey (for testing)
+- Task (task runner for standardized development workflows)
 
-Please also install the following packages to build [GLIDE core rust library](../glide-core/README.md):
+Install the following packages to build [GLIDE core rust library](/valkey-glide/glide-core/README.md):
 
 - rustup
 - GCC
@@ -32,6 +33,26 @@ Please also install the following packages to build [GLIDE core rust library](..
 - openssl
 - openssl-dev
 - ziglang and zigbuild (for GNU Linux only)
+
+**Task installation**
+
+Task is a task runner that provides standardized development workflows. Install it using one of the following methods:
+
+```bash
+# Using Homebrew (macOS/Linux)
+brew install go-task/tap/go-task
+
+# Using Snap (Linux)
+sudo snap install task --classic
+
+# Using Chocolatey (Windows)
+choco install go-task
+
+# Direct download from GitHub releases
+# Visit https://github.com/go-task/task/releases
+```
+
+For more installation options, see the [Task installation guide](https://taskfile.dev/installation/).
 
 **Valkey installation**
 
@@ -46,9 +67,13 @@ cargo install --locked cargo-zigbuild
 
 #### Prerequisites
 
+**Task**
+
+Task is a task runner that provides standardized development workflows with consistent configurations, multi-step operations, and cross-platform compatibility. It's highly recommended to use Task commands instead of raw dotnet commands for development.
+
 **.Net**
 
-It is recommended to visit https://dotnet.microsoft.com/en-us/download/dotnet to download .Net installer. To build and run the project, both .Net 8 and 9 are required.
+It is recommended to visit <https://dotnet.microsoft.com/en-us/download/dotnet> to download .Net installer. To build and run the project, both .Net 8 and 9 are required.
 You can also use a package manager to install the .Net SDK:
 
 ```bash
@@ -67,7 +92,6 @@ sudo cp protoc /usr/bin/
 **Valkey installation**
 
 See the [Valkey installation guide](https://valkey.io/topics/installation/) to install the Valkey server and CLI.
-
 
 **Dependencies installation for Ubuntu**
 
@@ -101,12 +125,41 @@ cd valkey-glide-csharp
 2. Build the C# wrapper
 
 ```bash
+cd csharp
+# Using Task (preferred)
 task build
+
+# Or using raw dotnet command
+dotnet build
 ```
 
 3. Run tests
 
-Run test suite:
+
+Run test suite using Task commands (preferred):
+
+```bash
+# Run all tests with coverage (recommended)
+task test
+
+# Run specific test suites
+task test:unit              # Unit tests only
+task test:integration       # Integration tests only
+
+# Run tests with coverage and generate reports
+task coverage               # All tests with coverage
+task coverage:unit          # Unit tests with coverage
+task coverage:integration   # Integration tests with coverage
+
+# Run tests for specific framework
+task test FRAMEWORK=net8.0
+task test FRAMEWORK=net6.0
+
+# Clean test results and reports
+task clean
+```
+
+Alternative using raw dotnet commands:
 
 ```bash
 # Run tests on supported dotnet versions sequentially
@@ -119,6 +172,42 @@ dotnet test
 dotnet test --framework net8.0
 dotnet test --framework net6.0
 ```
+
+### Task Commands Overview
+
+The project uses Task for standardized development workflows. Here are the key commands:
+
+```bash
+# View all available tasks
+task --list
+
+# Default workflow (build + coverage)
+task default
+
+# Install required tools (coverage reporting)
+task install-tools
+
+# Build and test workflows
+task build                  # Build the solution
+task test                   # Build and run all tests with coverage
+task coverage               # Run tests with coverage and generate HTML reports
+
+# Specific test suites
+task test:unit              # Unit tests only
+task test:integration       # Integration tests only
+task coverage:unit          # Unit tests with coverage
+task coverage:integration   # Integration tests with coverage
+
+# Coverage reporting
+task coverage:report        # Generate HTML coverage report
+task coverage:summary       # Display coverage summary
+task clean                  # Clean test results and reports
+
+# Benchmarking
+task benchmark FRAMEWORK=net8.0  # Run performance benchmarks
+```
+
+### Advanced Testing Options
 
 By default, `dotnet test` produces no reporting and does not display the test results.  To log the test results to the console and/or produce a test report, you can use the `--logger` attribute with the test command.  For example:
 
@@ -169,14 +258,22 @@ cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true do
 4. Run benchmark
 
     1. Ensure that you have installed `valkey-server` and `valkey-cli` on your host. You can find the valkey installation guide above.
-    2. Execute the following command from the root project folder:
+    2. Execute benchmarks using Task (preferred):
+
+    ```bash
+    cd csharp
+    # Run benchmarks with standardized configuration
+    task benchmark FRAMEWORK=net8.0
+    ```
+
+    3. Alternative using raw commands:
 
     ```bash
     cd <repo root>/benchmarks/csharp
     dotnet run --framework net8.0 --dataSize 1024 --resultsFile test.json --concurrentTasks 4 --clients all --host localhost --clientCount 4
     ```
 
-    3. Use a [helper script](../benchmarks/README.md) which runs end-to-end benchmarking workflow:
+    4. Use a [helper script](../benchmarks/README.md) which runs end-to-end benchmarking workflow:
 
     ```bash
     cd <repo root>/benchmarks
@@ -208,9 +305,11 @@ cargo clippy --all-features --all-targets -- -D warnings
 cargo fmt --all -- --check
 ```
 
+**Note**: Task commands automatically use standardized configurations for build and test operations, ensuring consistency across development environments.
+
 6. Test framework and style
 
-The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code styles are defined in `.editorcofing` (see `dotnet_diagnostic.xUnit..` rules). The xUnit rules are enforced by the [xUnit analyzers](https://github.com/xunit/xunit.analyzers) referenced in the main xunit.v3 NuGet package. If you choose to use xunit.v3.core instead, you can reference xunit.analyzers explicitly. For additional info, please, refer to https://xunit.net and https://github.com/xunit/xunit
+The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code styles are defined in `.editorcofing` (see `dotnet_diagnostic.xUnit..` rules). The xUnit rules are enforced by the [xUnit analyzers](https://github.com/xunit/xunit.analyzers) referenced in the main xunit.v3 NuGet package. If you choose to use xunit.v3.core instead, you can reference xunit.analyzers explicitly. For additional info, please, refer to <https://xunit.net> and <https://github.com/xunit/xunit>
 
 ## Community and Feedback
 
