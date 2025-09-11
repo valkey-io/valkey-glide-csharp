@@ -95,6 +95,20 @@ public class ExpirySet
     public static ExpirySet Milliseconds(long milliseconds) => new(ExpiryType.Milliseconds, milliseconds);
 
     /// <summary>
+    /// Set expiration to Unix timestamp in seconds.
+    /// </summary>
+    /// <param name="unixSeconds">The Unix timestamp in seconds</param>
+    /// <returns>ExpirySet instance</returns>
+    public static ExpirySet UnixSeconds(long unixSeconds) => new(ExpiryType.UnixSeconds, unixSeconds);
+
+    /// <summary>
+    /// Set expiration to Unix timestamp in milliseconds.
+    /// </summary>
+    /// <param name="unixMilliseconds">The Unix timestamp in milliseconds</param>
+    /// <returns>ExpirySet instance</returns>
+    public static ExpirySet UnixMilliseconds(long unixMilliseconds) => new(ExpiryType.UnixMilliseconds, unixMilliseconds);
+
+    /// <summary>
     /// Keep existing expiration.
     /// </summary>
     /// <returns>ExpirySet instance</returns>
@@ -115,6 +129,16 @@ public enum ExpiryType
     /// Expiration in milliseconds.
     /// </summary>
     Milliseconds,
+
+    /// <summary>
+    /// Expiration as Unix timestamp in seconds.
+    /// </summary>
+    UnixSeconds,
+
+    /// <summary>
+    /// Expiration as Unix timestamp in milliseconds.
+    /// </summary>
+    UnixMilliseconds,
 
     /// <summary>
     /// Keep existing expiration.

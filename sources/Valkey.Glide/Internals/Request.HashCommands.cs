@@ -234,6 +234,12 @@ internal partial class Request
                 case ExpiryType.Milliseconds:
                     args.AddRange([Constants.PxKeyword, options.Expiry.Value!.Value.ToGlideString()]);
                     break;
+                case ExpiryType.UnixSeconds:
+                    args.AddRange([Constants.ExAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
+                    break;
+                case ExpiryType.UnixMilliseconds:
+                    args.AddRange([Constants.PxAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
+                    break;
                 case ExpiryType.KeepExisting:
                     args.Add(Constants.KeepTtlKeyword);
                     break;
