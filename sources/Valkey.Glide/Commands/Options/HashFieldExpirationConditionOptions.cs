@@ -35,20 +35,20 @@ public enum ExpireOptions
     /// <summary>
     /// Set expiration only if the field has no expiration.
     /// </summary>
-    HAS_NO_EXPIRY,
+    HasNoExpiry,
 
     /// <summary>
     /// Set expiration only if the field has an existing expiration.
     /// </summary>
-    HAS_EXISTING_EXPIRY,
+    HasExistingExpiry,
 
     /// <summary>
     /// Set expiration only if the new expiration is greater than the current one.
     /// </summary>
-    NEW_EXPIRY_GREATER_THAN_CURRENT,
+    NewExpiryGreaterThanCurrent,
 
     /// <summary>
     /// Set expiration only if the new expiration is less than the current one.
     /// </summary>
-    NEW_EXPIRY_LESS_THAN_CURRENT
+    NewExpiryLessThanCurrent
 }

@@ -288,16 +288,16 @@ internal partial class Request
         {
             switch (options.Condition)
             {
-                case ExpireOptions.HAS_NO_EXPIRY:
+                case ExpireOptions.HasNoExpiry:
                     args.Add(Constants.NxKeyword);
                     break;
-                case ExpireOptions.HAS_EXISTING_EXPIRY:
+                case ExpireOptions.HasExistingExpiry:
                     args.Add(Constants.XxKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_GREATER_THAN_CURRENT:
+                case ExpireOptions.NewExpiryGreaterThanCurrent:
                     args.Add(Constants.GtKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_LESS_THAN_CURRENT:
+                case ExpireOptions.NewExpiryLessThanCurrent:
                     args.Add(Constants.LtKeyword);
                     break;
                 default:
@@ -325,16 +325,16 @@ internal partial class Request
         {
             switch (options.Condition)
             {
-                case ExpireOptions.HAS_NO_EXPIRY:
+                case ExpireOptions.HasNoExpiry:
                     args.Add(Constants.NxKeyword);
                     break;
-                case ExpireOptions.HAS_EXISTING_EXPIRY:
+                case ExpireOptions.HasExistingExpiry:
                     args.Add(Constants.XxKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_GREATER_THAN_CURRENT:
+                case ExpireOptions.NewExpiryGreaterThanCurrent:
                     args.Add(Constants.GtKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_LESS_THAN_CURRENT:
+                case ExpireOptions.NewExpiryLessThanCurrent:
                     args.Add(Constants.LtKeyword);
                     break;
                 default:
@@ -362,16 +362,16 @@ internal partial class Request
         {
             switch (options.Condition)
             {
-                case ExpireOptions.HAS_NO_EXPIRY:
+                case ExpireOptions.HasNoExpiry:
                     args.Add(Constants.NxKeyword);
                     break;
-                case ExpireOptions.HAS_EXISTING_EXPIRY:
+                case ExpireOptions.HasExistingExpiry:
                     args.Add(Constants.XxKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_GREATER_THAN_CURRENT:
+                case ExpireOptions.NewExpiryGreaterThanCurrent:
                     args.Add(Constants.GtKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_LESS_THAN_CURRENT:
+                case ExpireOptions.NewExpiryLessThanCurrent:
                     args.Add(Constants.LtKeyword);
                     break;
                 default:
@@ -399,16 +399,16 @@ internal partial class Request
         {
             switch (options.Condition)
             {
-                case ExpireOptions.HAS_NO_EXPIRY:
+                case ExpireOptions.HasNoExpiry:
                     args.Add(Constants.NxKeyword);
                     break;
-                case ExpireOptions.HAS_EXISTING_EXPIRY:
+                case ExpireOptions.HasExistingExpiry:
                     args.Add(Constants.XxKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_GREATER_THAN_CURRENT:
+                case ExpireOptions.NewExpiryGreaterThanCurrent:
                     args.Add(Constants.GtKeyword);
                     break;
-                case ExpireOptions.NEW_EXPIRY_LESS_THAN_CURRENT:
+                case ExpireOptions.NewExpiryLessThanCurrent:
                     args.Add(Constants.LtKeyword);
                     break;
                 default:

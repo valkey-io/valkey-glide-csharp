@@ -640,13 +640,13 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(1, results[1]); // Successfully set expiry
 
         // Test HEXPIRE with NX condition (should fail for fields with existing expiry)
-        var nxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
+        var nxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasNoExpiry);
         results = await client.HashExpireAsync(key, 120, ["field1"], nxOptions);
         Assert.Single(results);
         Assert.Equal(0, results[0]); // Condition not met
 
         // Test HEXPIRE with XX condition (should succeed for fields with existing expiry)
-        var xxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_EXISTING_EXPIRY);
+        var xxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasExistingExpiry);
         results = await client.HashExpireAsync(key, 30, ["field1"], xxOptions);
         Assert.Single(results);
         Assert.Equal(1, results[0]); // Successfully updated expiry

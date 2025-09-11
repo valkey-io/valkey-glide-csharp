@@ -31,8 +31,6 @@ public static class Constants
     /// Expiry keywords.
     /// </summary>
     public const string PersistKeyword = "PERSIST";
-    public const string ExpiryKeyword = "EX";
-    public const string ExpiryAtKeyword = "EXAT";
     public const string ExKeyword = "EX";
     public const string PxKeyword = "PX";
     public const string ExAtKeyword = "EXAT";
