@@ -101,7 +101,7 @@ cd valkey-glide-csharp
 2. Build the C# wrapper
 
 ```bash
-dotnet build
+task build
 ```
 
 3. Run tests
