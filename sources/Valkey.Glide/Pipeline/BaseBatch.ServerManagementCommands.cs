@@ -40,11 +40,11 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
     IBatch IBatchServerManagementCommands.ConfigResetStatisticsAsync() => ConfigResetStatisticsAsync();
     IBatch IBatchServerManagementCommands.ConfigRewriteAsync() => ConfigRewriteAsync();
-    IBatch IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => ConfigSetAsync(setting, value); 
+    IBatch IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => ConfigSetAsync(setting, value);
     IBatch IBatchServerManagementCommands.DatabaseSizeAsync(int database) => DatabaseSizeAsync(database);
     IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync() => FlushAllDatabasesAsync();
     IBatch IBatchServerManagementCommands.FlushDatabaseAsync(int database) => FlushDatabaseAsync(database);
-    IBatch IBatchServerManagementCommands.LastSaveAsync() =>  LastSaveAsync();
+    IBatch IBatchServerManagementCommands.LastSaveAsync() => LastSaveAsync();
     IBatch IBatchServerManagementCommands.TimeAsync() => TimeAsync();
     IBatch IBatchServerManagementCommands.LolwutAsync() => LolwutAsync();
 }
