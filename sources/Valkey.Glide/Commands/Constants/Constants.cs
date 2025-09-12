@@ -31,8 +31,15 @@ public static class Constants
     /// Expiry keywords.
     /// </summary>
     public const string PersistKeyword = "PERSIST";
-    public const string ExpiryKeyword = "EX";
-    public const string ExpiryAtKeyword = "EXAT";
+    public const string ExKeyword = "EX";
+    public const string PxKeyword = "PX";
+    public const string ExAtKeyword = "EXAT";
+    public const string PxAtKeyword = "PXAT";
+    public const string KeepTtlKeyword = "KEEPTTL";
+    public const string NxKeyword = "NX";
+    public const string XxKeyword = "XX";
+    public const string GtKeyword = "GT";
+    public const string LtKeyword = "LT";
 
     /// <summary>
     /// Keywords for the LCS command.
@@ -77,4 +84,15 @@ public static class Constants
     /// The lowest bound in the sorted set for score operations.
     /// </summary>
     public const string NegativeInfinityScore = "-inf";
+
+    /// <summary>
+    /// Keyword for hash field expiration commands.
+    /// </summary>
+    public const string FieldsKeyword = "FIELDS";
+
+    /// <summary>
+    /// Keywords for hash field conditional operations.
+    /// </summary>
+    public const string FxxKeyword = "FXX";
+    public const string FnxKeyword = "FNX";
 }
