@@ -9,6 +9,9 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Configurations>Debug;Release;Lint</Configurations>
     <RootNamespace>Valkey.Glide.CustomBenchmark</RootNamespace>
+  <!-- Allow building against net6.0 without failing the SDK's EOL check -->
+  <CheckEolTargetFrameworks>false</CheckEolTargetFrameworks>
+  <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
