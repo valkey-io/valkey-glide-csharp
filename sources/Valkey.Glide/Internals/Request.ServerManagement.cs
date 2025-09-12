@@ -51,9 +51,12 @@ internal partial class Request
             // If it's a dictionary, convert directly
             if (response is Dictionary<GlideString, object> dict)
             {
-                if (dict.Count == 0) { return []; }
+                if (dict.Count == 0)
+                {
+                    return [];
+                }
 
-                List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+                List<KeyValuePair<string, string>> result = [];
                 foreach (KeyValuePair<GlideString, object> kvp in dict)
                 {
                     string key = kvp.Key.ToString();
@@ -68,7 +71,7 @@ internal partial class Request
             {
                 if (array.Length == 0) { return []; }
 
-                List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+                List<KeyValuePair<string, string>> result = [];
                 for (int i = 0; i < array.Length; i += 2)
                 {
                     if (i + 1 < array.Length)
@@ -103,7 +106,9 @@ internal partial class Request
         // DBSIZE doesn't take database parameter - it operates on current database
         // Database selection should be handled at connection level
         if (database != -1)
+        {
             throw new ArgumentException("DBSIZE command does not support database selection. Use SELECT command first.");
+        }
         return new(RequestType.DBSize, [], false, l => l);
     }
 
@@ -111,13 +116,11 @@ internal partial class Request
         => new(RequestType.FlushAll, [], false, _ => ValkeyValue.Null);
 
     public static Cmd<string, object?> FlushDatabaseAsync(int database = -1)
-    {
         // FLUSHDB doesn't take database parameter - it operates on current database
         // Database selection should be handled at connection level
-        if (database != -1)
-            throw new ArgumentException("FLUSHDB command does not support database selection. Use SELECT command first.");
-        return new(RequestType.FlushDB, [], false, _ => ValkeyValue.Null);
-    }
+        => database != -1
+            ? throw new ArgumentException("FLUSHDB command does not support database selection. Use SELECT command first.")
+            : new(RequestType.FlushDB, [], false, _ => ValkeyValue.Null);
 
     public static Cmd<long, DateTime> LastSaveAsync()
         => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));
