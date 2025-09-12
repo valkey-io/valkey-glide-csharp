@@ -252,6 +252,8 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Changes the currently selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/select"/>
