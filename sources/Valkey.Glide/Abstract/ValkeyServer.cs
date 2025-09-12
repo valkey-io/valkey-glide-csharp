@@ -117,7 +117,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
     }
 
     public void ConfigRewrite(CommandFlags flags = CommandFlags.None)
@@ -126,7 +126,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
     }
 
     public void ConfigSet(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
@@ -135,7 +135,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
+        _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
     }
 
     public long DatabaseSize(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -144,7 +144,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
+        return await _conn.Command(Request.DatabaseSizeAsync(database), MakeRoute());
     }
 
     public void FlushAllDatabases(CommandFlags flags = CommandFlags.None)
@@ -153,7 +153,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
+        _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
     }
 
     public void FlushDatabase(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -162,7 +162,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await _conn.Command(Request.FlushDatabaseAsync(), MakeRoute());
+        _ = await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
     }
 
     public DateTime LastSave(CommandFlags flags = CommandFlags.None)

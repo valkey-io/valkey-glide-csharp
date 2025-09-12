@@ -133,44 +133,44 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
+        _ = await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
     }
 
     public async Task ConfigResetStatisticsAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigResetStatisticsAsync(), route);
+        _ = await Command(Request.ConfigResetStatisticsAsync(), route);
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigRewriteAsync(), Route.Random);
+        _ = await Command(Request.ConfigRewriteAsync(), Route.Random);
     }
 
     public async Task ConfigRewriteAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigRewriteAsync(), route);
+        _ = await Command(Request.ConfigRewriteAsync(), route);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
+        _ = await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigSetAsync(setting, value), route);
+        _ = await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
     public async Task<Dictionary<string, long>> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        var result = await Command(Request.DatabaseSizeAsync().ToClusterValue(false), AllPrimaries);
+        ClusterValue<long> result = await Command(Request.DatabaseSizeAsync(database).ToClusterValue(false), AllPrimaries);
         if (result.HasMultiData)
         {
             return result.MultiValue;
@@ -185,39 +185,39 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        return await Command(Request.DatabaseSizeAsync().ToClusterValue(route is SingleNodeRoute), route);
+        return await Command(Request.DatabaseSizeAsync(database).ToClusterValue(route is SingleNodeRoute), route);
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
+        _ = await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
     }
 
     public async Task FlushAllDatabasesAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.FlushAllDatabasesAsync(), route);
+        _ = await Command(Request.FlushAllDatabasesAsync(), route);
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        await Command(Request.FlushDatabaseAsync(), AllPrimaries);
+        _ = await Command(Request.FlushDatabaseAsync(database), AllPrimaries);
     }
 
     public async Task FlushDatabaseAsync(Route route, int database = -1, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        await Command(Request.FlushDatabaseAsync(), route);
+        _ = await Command(Request.FlushDatabaseAsync(database), route);
     }
 
     public async Task<Dictionary<string, DateTime>> LastSaveAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        var result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);
+        ClusterValue<DateTime> result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
             return result.MultiValue;
@@ -235,7 +235,7 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     public async Task<Dictionary<string, DateTime>> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        var result = await Command(Request.TimeAsync().ToClusterValue(false), Route.Random);
+        ClusterValue<DateTime> result = await Command(Request.TimeAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
             return result.MultiValue;
@@ -253,7 +253,7 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     public async Task<Dictionary<string, string>> LolwutAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        var result = await Command(Request.LolwutAsync().ToClusterValue(false), Route.Random);
+        ClusterValue<string> result = await Command(Request.LolwutAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
             return result.MultiValue;

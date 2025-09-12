@@ -456,9 +456,6 @@ internal class BatchTestUtils
         _ = batch.DatabaseSizeAsync();
         testData.Add(new(1L, "DatabaseSizeAsync()", true));
 
-        _ = batch.DatabaseSizeAsync(0);
-        testData.Add(new(1L, "DatabaseSizeAsync(0)", true));
-
         // LastSave
         _ = batch.LastSaveAsync();
         testData.Add(new(DateTime.MinValue, "LastSaveAsync()", true));

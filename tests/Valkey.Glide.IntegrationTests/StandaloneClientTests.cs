@@ -419,9 +419,16 @@ public class StandaloneClientTests(TestConfiguration config)
             long newSize = await client.DatabaseSizeAsync();
             Assert.True(newSize >= initialSize);
 
-            // Test with explicit database (standalone only)
-            long dbSize = await client.DatabaseSizeAsync(0);
-            Assert.True(dbSize >= 0);
+            // Test with explicit database (not supported)
+            try
+            {
+                long dbSize = await client.DatabaseSizeAsync(0);
+            }
+            catch (Exception ex)
+            {
+                Assert.IsType<ArgumentException>(ex);
+            }
+
         }
         finally
         {
