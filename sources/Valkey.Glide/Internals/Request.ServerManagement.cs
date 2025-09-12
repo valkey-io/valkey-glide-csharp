@@ -51,10 +51,10 @@ internal partial class Request
             // If it's a dictionary, convert directly
             if (response is Dictionary<GlideString, object> dict)
             {
-                if (dict.Count == 0) return [];
+                if (dict.Count == 0) { return []; }
 
-                var result = new List<KeyValuePair<string, string>>();
-                foreach (var kvp in dict)
+                List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+                foreach (KeyValuePair<GlideString, object> kvp in dict)
                 {
                     string key = kvp.Key.ToString();
                     string value = kvp.Value is GlideString gs ? gs.ToString() : kvp.Value?.ToString() ?? string.Empty;
@@ -66,9 +66,9 @@ internal partial class Request
             // If it's an array, convert from array
             if (response is object[] array)
             {
-                if (array.Length == 0) return [];
+                if (array.Length == 0) { return []; }
 
-                var result = new List<KeyValuePair<string, string>>();
+                List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
                 for (int i = 0; i < array.Length; i += 2)
                 {
                     if (i + 1 < array.Length)
@@ -102,6 +102,8 @@ internal partial class Request
     {
         // DBSIZE doesn't take database parameter - it operates on current database
         // Database selection should be handled at connection level
+        if (database != -1)
+            throw new ArgumentException("DBSIZE command does not support database selection. Use SELECT command first.");
         return new(RequestType.DBSize, [], false, l => l);
     }
 
@@ -112,6 +114,8 @@ internal partial class Request
     {
         // FLUSHDB doesn't take database parameter - it operates on current database
         // Database selection should be handled at connection level
+        if (database != -1)
+            throw new ArgumentException("FLUSHDB command does not support database selection. Use SELECT command first.");
         return new(RequestType.FlushDB, [], false, _ => ValkeyValue.Null);
     }
 
@@ -119,8 +123,7 @@ internal partial class Request
         => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));
 
     public static Cmd<object[], DateTime> TimeAsync()
-    {
-        return new(RequestType.Time, [], false, arr =>
+        => new(RequestType.Time, [], false, arr =>
         {
             long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
             long microseconds = long.Parse(arr[1] is GlideString gs2 ? gs2.ToString() : arr[1].ToString()!);
@@ -131,7 +134,6 @@ internal partial class Request
                 .AddTicks(microseconds * 10);
 #endif
         });
-    }
 
     public static Cmd<GlideString, string> LolwutAsync()
         => new(RequestType.Lolwut, [], false, gs => gs.ToString());

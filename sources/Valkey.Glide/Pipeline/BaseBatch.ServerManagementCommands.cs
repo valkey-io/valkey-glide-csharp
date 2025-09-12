@@ -19,13 +19,13 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => AddCmd(Request.ConfigSetAsync(setting, value));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.DatabaseSizeAsync(int)" />
-    public T DatabaseSizeAsync(int database = -1) => AddCmd(Request.DatabaseSizeAsync());
+    public T DatabaseSizeAsync(int database = -1) => AddCmd(Request.DatabaseSizeAsync(database));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushAllDatabasesAsync()" />
     public T FlushAllDatabasesAsync() => AddCmd(Request.FlushAllDatabasesAsync());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushDatabaseAsync(int)" />
-    public T FlushDatabaseAsync(int database = -1) => AddCmd(Request.FlushDatabaseAsync());
+    public T FlushDatabaseAsync(int database = -1) => AddCmd(Request.FlushDatabaseAsync(database));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.LastSaveAsync()" />
     public T LastSaveAsync() => AddCmd(Request.LastSaveAsync());

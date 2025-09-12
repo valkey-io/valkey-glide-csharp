@@ -112,19 +112,19 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigResetStatisticsAsync());
+        _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigRewriteAsync());
+        _ = await Command(Request.ConfigRewriteAsync());
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.ConfigSetAsync(setting, value));
+        _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -136,13 +136,13 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.FlushAllDatabasesAsync());
+        _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        await Command(Request.FlushDatabaseAsync(database));
+        _ = await Command(Request.FlushDatabaseAsync(database));
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
