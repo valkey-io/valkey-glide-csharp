@@ -246,6 +246,7 @@ public interface IServer
     /// <inheritdoc cref="Lolwut(CommandFlags)"/>
     Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None);
 
+    /// <summary>
     /// Gets the name of the current connection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-getname"/>
