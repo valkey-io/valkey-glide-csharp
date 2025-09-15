@@ -69,7 +69,10 @@ internal partial class Request
             // If it's an array, convert from array
             if (response is object[] array)
             {
-                if (array.Length == 0) { return []; }
+                if (array.Length == 0)
+                {
+                    return [];
+                }
 
                 List<KeyValuePair<string, string>> result = [];
                 for (int i = 0; i < array.Length; i += 2)
@@ -102,15 +105,11 @@ internal partial class Request
     }
 
     public static Cmd<long, long> DatabaseSizeAsync(int database = -1)
-    {
         // DBSIZE doesn't take database parameter - it operates on current database
         // Database selection should be handled at connection level
-        if (database != -1)
-        {
-            throw new ArgumentException("DBSIZE command does not support database selection. Use SELECT command first.");
-        }
-        return new(RequestType.DBSize, [], false, l => l);
-    }
+        => database != -1
+            ? throw new ArgumentException("DBSIZE command does not support database selection. Use SELECT command first.")
+            : new(RequestType.DBSize, [], false, l => l);
 
     public static Cmd<string, object?> FlushAllDatabasesAsync()
         => new(RequestType.FlushAll, [], false, _ => ValkeyValue.Null);
