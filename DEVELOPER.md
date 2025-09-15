@@ -73,12 +73,11 @@ Task is a task runner that provides standardized development workflows with cons
 
 **.Net**
 
-It is recommended to visit <https://dotnet.microsoft.com/en-us/download/dotnet> to download .Net installer.
+It is recommended to visit <https://dotnet.microsoft.com/en-us/download/dotnet> to download .Net installer. To build and run the project, both .Net 8 and 9 are required.
 You can also use a package manager to install the .Net SDK:
 
 ```bash
-brew install dotnet@6         # MacOS
-sudo apt-get install dotnet6  # Linux
+sudo apt-get install dotnet8 dotnet9  # Linux
 ```
 
 **Protoc installation**
@@ -119,8 +118,8 @@ Before starting this step, make sure you've installed all software requirements.
 1. Clone the repository
 
 ```bash
-git clone https://github.com/valkey-io/valkey-glide.git
-cd valkey-glide
+git clone https://github.com/valkey-io/valkey-glide-csharp.git
+cd valkey-glide-csharp
 ```
 
 2. Build the C# wrapper
@@ -136,7 +135,8 @@ dotnet build
 
 3. Run tests
 
-Run test suite from `csharp` directory using Task commands (preferred):
+
+Run test suite using Task commands (preferred):
 
 ```bash
 # Run all tests with coverage (recommended)
