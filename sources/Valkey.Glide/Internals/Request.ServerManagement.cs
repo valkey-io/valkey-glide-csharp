@@ -46,7 +46,10 @@ internal partial class Request
         return new(RequestType.ConfigGet, args, false, response =>
         {
             // Handle both array and dictionary formats
-            if (response is null) return [];
+            if (response is null)
+            {
+                return [];
+            }
 
             // If it's a dictionary, convert directly
             if (response is Dictionary<GlideString, object> dict)
