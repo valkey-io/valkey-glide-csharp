@@ -13,7 +13,6 @@ This document gives AI agents the minimum, accurate context needed to work produ
 - Public APIs are async; cancellation is supported.
 - Rust core (glide-core) accessed via P/Invoke; be careful with marshaling.
 - Commands organized via partials in `BaseClient.*.cs`; cluster features use routing (`Route`, `ClusterValue<T>`).
-- Compatibility layer under `Abstract/`, command interfaces in `Commands/`, internals under `Internals/`, batching under `Pipeline/`.
 
 ## Build and Test Rules (Agents)
 
@@ -140,7 +139,13 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
   - `BaseClient.cs` and partials: `BaseClient.*.cs` for commands (String, Hash, List, Set, SortedSet, Generic)
   - `GlideClient.cs`, `GlideClusterClient.cs`
   - `ConnectionConfiguration.cs` (builders), `GlideString.cs` (encoding), `ClusterValue.cs`, `Route.cs`, `Logger.cs`, `Errors.cs`
-  - Folders: `Abstract/`, `abstract_APITypes/`, `abstract_Enums/`, `Commands/`, `Internals/`, `Pipeline/`
+  - Folders:
+    - `Abstract/` – base abstractions for clients, pipelines, and shared contracts
+    - `abstract_APITypes/` – public API types (value objects/DTOs) exposed to consumers
+    - `abstract_Enums/` – public enums used across the API surface and routing
+    - `Commands/` – shared command helpers (argument builders, key routing helpers, common utilities)
+    - `Internals/` – interop and low-level glue (P/Invoke to Rust core, marshaling, buffers, utilities)
+    - `Pipeline/` – batching/pipelining primitives and request/response grouping
 - `tests/`
   - `Valkey.Glide.UnitTests/` – unit-level validation, parsing, API construction
   - `Valkey.Glide.IntegrationTests/` – end-to-end standalone and cluster tests, batching, AZ Affinity, error handling
