@@ -340,6 +340,8 @@ public class ClusterClientTests(TestConfiguration config)
         }
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientId(GlideClusterClient client)
     {
         long clientId = await client.ClientIdAsync();
@@ -397,6 +399,8 @@ public class ClusterClientTests(TestConfiguration config)
         }
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientGetName(GlideClusterClient client)
     {
         // CLIENT GETNAME should return ValkeyValue null initially (no name set)
@@ -495,6 +499,8 @@ public class ClusterClientTests(TestConfiguration config)
                    singleNodeLolwut.SingleValue.Contains("Redis", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSelect(GlideClusterClient client)
     {
         Assert.SkipWhen(
