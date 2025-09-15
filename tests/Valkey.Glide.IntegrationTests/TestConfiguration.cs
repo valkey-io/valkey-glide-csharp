@@ -133,6 +133,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port);
         config.Ssl = TLS;
+        config.ResponseTimeout = 60000; // ms
         return config;
     }
 
@@ -141,6 +142,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port);
         config.Ssl = TLS;
+        config.ResponseTimeout = 60000; // ms
         return config;
     }
 
