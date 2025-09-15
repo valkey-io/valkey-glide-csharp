@@ -18,7 +18,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Download artifacts from triggering run
-              uses: dawidd6/action-download-artifact@v6
+              uses: dawidd6/action-download-artifact@v11
               with:
                   run_id: ${{ github.event.workflow_run.id }}
                   path: downloaded
