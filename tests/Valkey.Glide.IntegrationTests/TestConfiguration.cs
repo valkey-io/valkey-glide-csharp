@@ -22,6 +22,7 @@ public class TestConfiguration : IDisposable
         new StandaloneClientConfigurationBuilder()
             .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
@@ -29,6 +30,7 @@ public class TestConfiguration : IDisposable
             .WithRequestTimeout(TimeSpan.FromSeconds(1))
             .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static GlideClient DefaultStandaloneClient()
