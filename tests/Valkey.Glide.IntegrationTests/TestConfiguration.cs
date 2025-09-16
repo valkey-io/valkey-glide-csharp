@@ -34,7 +34,7 @@ public class TestConfiguration : IDisposable
 
     public static ClusterClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
         new ClusterClientConfigurationBuilder()
-            .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
+            .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
             .WithTls(TLS);
