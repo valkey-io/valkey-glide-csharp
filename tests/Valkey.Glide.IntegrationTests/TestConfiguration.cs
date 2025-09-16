@@ -65,14 +65,14 @@ public class TestConfiguration : IDisposable
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(600))
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClient resp3client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(600))
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
@@ -96,14 +96,14 @@ public class TestConfiguration : IDisposable
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
