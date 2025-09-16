@@ -27,14 +27,23 @@ public class TestConfiguration : IDisposable
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
-            .WithRequestTimeout(TimeSpan.FromSeconds(1))
             .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
+    public static ClusterClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
+        new ClusterClientConfigurationBuilder()
+            .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
+            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
+            .WithTls(TLS);
+
     public static GlideClient DefaultStandaloneClient()
         => GlideClient.CreateClient(DefaultClientConfig().Build()).GetAwaiter().GetResult();
+
+    public static GlideClient LowTimeoutStandaloneClient()
+        => GlideClient.CreateClient(DefaultClientConfigLowTimeout().Build()).GetAwaiter().GetResult();
 
     public static GlideClusterClient DefaultClusterClient()
         => GlideClusterClient.CreateClient(DefaultClusterClientConfig().Build()).GetAwaiter().GetResult();
