@@ -131,7 +131,7 @@ public class CommandTests
             () => Assert.Equal(["EXPIRE", "key", "60"], Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60)).GetArgs()),
             () => Assert.Equal(["EXPIRE", "key", "60", "NX"], Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60), ExpireWhen.HasNoExpiry).GetArgs()),
             () => Assert.Equal(["EXPIREAT", "key", "1609459200"], Request.KeyExpireAsync("key", new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc)).GetArgs()),
-            () => Assert.Equal(["TTL", "key"], Request.KeyTimeToLiveAsync("key").GetArgs()),
+            () => Assert.Equal(["PTTL", "key"], Request.KeyTimeToLiveAsync("key").GetArgs()),
             () => Assert.Equal(["TYPE", "key"], Request.KeyTypeAsync("key").GetArgs()),
             () => Assert.Equal(["RENAME", "oldkey", "newkey"], Request.KeyRenameAsync("oldkey", "newkey").GetArgs()),
             () => Assert.Equal(["RENAMENX", "oldkey", "newkey"], Request.KeyRenameNXAsync("oldkey", "newkey").GetArgs()),
@@ -157,6 +157,7 @@ public class CommandTests
             () => Assert.Equal(["TOUCH", "key1", "key2"], Request.KeyTouchAsync(["key1", "key2"]).GetArgs()),
             () => Assert.Equal(["COPY", "src", "dest"], Request.KeyCopyAsync("src", "dest").GetArgs()),
             () => Assert.Equal(["COPY", "src", "dest", "DB", "1", "REPLACE"], Request.KeyCopyAsync("src", "dest", 1, true).GetArgs()),
+            () => Assert.Equal(["PEXPIRETIME", "key"], Request.KeyExpireTimeAsync("key").GetArgs()),
             () => Assert.Equal(["MOVE", "key", "1"], Request.KeyMoveAsync("key", 1).GetArgs()),
 
             // List Commands
@@ -323,7 +324,7 @@ public class CommandTests
             () => Assert.Equal(2L, Request.KeyExistsAsync(["key1", "key2"]).Converter(2L)),
             () => Assert.True(Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60)).Converter(true)),
             () => Assert.False(Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60)).Converter(false)),
-            () => Assert.Equal(TimeSpan.FromSeconds(30), Request.KeyTimeToLiveAsync("key").Converter(30L)),
+            () => Assert.Equal(TimeSpan.FromMilliseconds(30), Request.KeyTimeToLiveAsync("key").Converter(30L)),
             () => Assert.Null(Request.KeyTimeToLiveAsync("key").Converter(-1L)),
             () => Assert.Null(Request.KeyTimeToLiveAsync("key").Converter(-2L)),
             () => Assert.Equal(ValkeyType.String, Request.KeyTypeAsync("key").Converter("string")),
@@ -346,6 +347,9 @@ public class CommandTests
             () => Assert.Equal(2L, Request.KeyTouchAsync(["key1", "key2"]).Converter(2L)),
             () => Assert.True(Request.KeyCopyAsync("src", "dest").Converter(true)),
             () => Assert.False(Request.KeyCopyAsync("src", "dest").Converter(false)),
+            () => Assert.Equal(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc), Request.KeyExpireTimeAsync("key").Converter(1609459200000L)),
+            () => Assert.Null(Request.KeyExpireTimeAsync("key").Converter(-1L)),
+            () => Assert.Null(Request.KeyExpireTimeAsync("key").Converter(-2L)),
             () => Assert.True(Request.KeyMoveAsync("key", 1).Converter(true)),
             () => Assert.False(Request.KeyMoveAsync("key", 1).Converter(false)),
 

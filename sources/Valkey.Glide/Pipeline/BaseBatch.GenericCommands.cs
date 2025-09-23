@@ -29,11 +29,17 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.KeyExists(ValkeyKey[])" />
     public T KeyExists(ValkeyKey[] keys) => AddCmd(KeyExistsAsync(keys));
 
+    /// <inheritdoc cref="IBatchGenericCommands.KeyExpire(ValkeyKey, TimeSpan?)" />
+    public T KeyExpire(ValkeyKey key, TimeSpan? expiry) => AddCmd(KeyExpireAsync(key, expiry));
+
     /// <inheritdoc cref="IBatchGenericCommands.KeyExpire(ValkeyKey, TimeSpan?, ExpireWhen)" />
-    public T KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when = ExpireWhen.Always) => AddCmd(KeyExpireAsync(key, expiry, when));
+    public T KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when) => AddCmd(KeyExpireAsync(key, expiry, when));
+
+    /// <inheritdoc cref="IBatchGenericCommands.KeyExpire(ValkeyKey, DateTime?)" />
+    public T KeyExpire(ValkeyKey key, DateTime? expiry) => AddCmd(KeyExpireAsync(key, expiry));
 
     /// <inheritdoc cref="IBatchGenericCommands.KeyExpire(ValkeyKey, DateTime?, ExpireWhen)" />
-    public T KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always) => AddCmd(KeyExpireAsync(key, expiry, when));
+    public T KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when) => AddCmd(KeyExpireAsync(key, expiry, when));
 
     /// <inheritdoc cref="IBatchGenericCommands.KeyTimeToLive(ValkeyKey)" />
     public T KeyTimeToLive(ValkeyKey key) => AddCmd(KeyTimeToLiveAsync(key));
@@ -65,6 +71,9 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.KeyTouch(ValkeyKey[])" />
     public T KeyTouch(ValkeyKey[] keys) => AddCmd(KeyTouchAsync(keys));
 
+    /// <inheritdoc cref="IBatchGenericCommands.KeyExpireTime(ValkeyKey)" />
+    public T KeyExpireTime(ValkeyKey key) => AddCmd(KeyExpireTimeAsync(key));
+
     /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, bool)" />
     public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false) => AddCmd(KeyCopyAsync(sourceKey, destinationKey, replace));
 
@@ -75,7 +84,9 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.KeyUnlink(ValkeyKey[] keys) => KeyUnlink(keys);
     IBatch IBatchGenericCommands.KeyExists(ValkeyKey key) => KeyExists(key);
     IBatch IBatchGenericCommands.KeyExists(ValkeyKey[] keys) => KeyExists(keys);
+    IBatch IBatchGenericCommands.KeyExpire(ValkeyKey key, TimeSpan? expiry) => KeyExpire(key, expiry);
     IBatch IBatchGenericCommands.KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when) => KeyExpire(key, expiry, when);
+    IBatch IBatchGenericCommands.KeyExpire(ValkeyKey key, DateTime? expiry) => KeyExpire(key, expiry);
     IBatch IBatchGenericCommands.KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when) => KeyExpire(key, expiry, when);
     IBatch IBatchGenericCommands.KeyTimeToLive(ValkeyKey key) => KeyTimeToLive(key);
     IBatch IBatchGenericCommands.KeyType(ValkeyKey key) => KeyType(key);
@@ -87,5 +98,6 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.KeyRestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry, RestoreOptions? restoreOptions) => KeyRestoreDateTime(key, value, expiry, restoreOptions);
     IBatch IBatchGenericCommands.KeyTouch(ValkeyKey key) => KeyTouch(key);
     IBatch IBatchGenericCommands.KeyTouch(ValkeyKey[] keys) => KeyTouch(keys);
+    IBatch IBatchGenericCommands.KeyExpireTime(ValkeyKey key) => KeyExpireTime(key);
     IBatch IBatchGenericCommands.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => KeyCopy(sourceKey, destinationKey, replace);
 }

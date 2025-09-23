@@ -33,7 +33,17 @@ internal partial class Request
 
         if (expiry.HasValue)
         {
-            args.Add(((long)expiry.Value.TotalSeconds).ToGlideString());
+            long milliseconds = (long)expiry.Value.TotalMilliseconds;
+            if (milliseconds % 1000 == 0)
+            {
+                // Use seconds precision
+                args.Add((milliseconds / 1000).ToGlideString());
+            }
+            else
+            {
+                // Use milliseconds precision
+                args.Add(milliseconds.ToGlideString());
+            }
         }
         else
         {
@@ -45,7 +55,12 @@ internal partial class Request
             args.Add(when.ToLiteral().ToGlideString());
         }
 
-        return Simple<bool>(RequestType.Expire, [.. args]);
+        // Choose command based on precision
+        var command = expiry.HasValue && (long)expiry.Value.TotalMilliseconds % 1000 != 0 
+            ? RequestType.PExpire 
+            : RequestType.Expire;
+        
+        return Simple<bool>(command, [.. args]);
     }
 
     public static Cmd<bool, bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always)
@@ -54,8 +69,17 @@ internal partial class Request
 
         if (expiry.HasValue)
         {
-            long unixTimestamp = ((DateTimeOffset)expiry.Value).ToUnixTimeSeconds();
-            args.Add(unixTimestamp.ToGlideString());
+            long unixMilliseconds = ((DateTimeOffset)expiry.Value).ToUnixTimeMilliseconds();
+            if (unixMilliseconds % 1000 == 0)
+            {
+                // Use seconds precision
+                args.Add((unixMilliseconds / 1000).ToGlideString());
+            }
+            else
+            {
+                // Use milliseconds precision
+                args.Add(unixMilliseconds.ToGlideString());
+            }
         }
         else
         {
@@ -67,12 +91,17 @@ internal partial class Request
             args.Add(when.ToLiteral().ToGlideString());
         }
 
-        return Simple<bool>(RequestType.ExpireAt, [.. args]);
+        // Choose command based on precision
+        var command = expiry.HasValue && ((DateTimeOffset)expiry.Value).ToUnixTimeMilliseconds() % 1000 != 0
+            ? RequestType.PExpireAt
+            : RequestType.ExpireAt;
+
+        return Simple<bool>(command, [.. args]);
     }
 
     public static Cmd<long, TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key)
-        => new(RequestType.TTL, [key.ToGlideString()], true, response =>
-            response is -1 or -2 ? null : TimeSpan.FromSeconds(response));
+        => new(RequestType.PTTL, [key.ToGlideString()], true, response =>
+            response is -1 or -2 ? null : TimeSpan.FromMilliseconds(response));
 
     public static Cmd<GlideString, ValkeyType> KeyTypeAsync(ValkeyKey key)
         => new(RequestType.Type, [key.ToGlideString()], false, response =>
@@ -180,6 +209,10 @@ internal partial class Request
 
         return Simple<bool>(RequestType.Copy, [.. args]);
     }
+
+    public static Cmd<long, DateTime?> KeyExpireTimeAsync(ValkeyKey key)
+        => new(RequestType.PExpireTime, [key.ToGlideString()], true, response =>
+            response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response).DateTime);
 
     public static Cmd<bool, bool> KeyMoveAsync(ValkeyKey key, int database)
         => Simple<bool>(RequestType.Move, [key.ToGlideString(), database.ToGlideString()]);

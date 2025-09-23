@@ -136,6 +136,26 @@ public interface IGenericBaseCommands
     /// <seealso href="https://valkey.io/commands/expire"/>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">Duration for the key to expire.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Set a timeout on key. After the timeout has expired, the key will automatically be deleted.<br/>
+    /// If key already has an existing expire set, the time to live is updated to the new value.
+    /// If expiry is a non-positive value, the key will be deleted rather than expired.
+    /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/expire"/>
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">Duration for the key to expire.</param>
     /// <param name="when">The option to set expiry.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
@@ -146,16 +166,34 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None);
+    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets a timeout on key. It takes an absolute Unix timestamp (seconds since January 1, 1970) instead of
     /// specifying the duration. A timestamp in the past will delete the key immediately. After the timeout has
     /// expired, the key will automatically be deleted.<br/>
     /// If key already has an existing expire set, the time to live is updated to the new value.
-    /// The timeout will only be cleared by commands that delete or overwrite the contents of key
+    /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/expireat"/>
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">The timestamp for expiry.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyExpireAsync(key, DateTime.UtcNow.AddMinutes(5));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Sets a timeout on key. It takes an absolute Unix timestamp (seconds since January 1, 1970) instead of
+    /// specifying the duration. A timestamp in the past will delete the key immediately. After the timeout has
+    /// expired, the key will automatically be deleted.<br/>
     /// If key already has an existing expire set, the time to live is updated to the new value.
-    /// If expiry is a non-positive value, the key will be deleted rather than expired.
     /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/expireat"/>
@@ -171,7 +209,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None);
+    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the remaining time to live of a key that has a timeout.
@@ -358,6 +396,22 @@ public interface IGenericBaseCommands
     /// </example>
     /// </remarks>
     Task<long> KeyTouchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the absolute time at which the given key will expire.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pexpiretime"/>
+    /// <param name="key">The key to determine the expiration value of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The expiration time, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// DateTime? expiration = await client.KeyExpireTimeAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Copies the value stored at the source to the destination key. When

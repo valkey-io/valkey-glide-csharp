@@ -93,7 +93,7 @@ public class GenericCommandTests(TestConfiguration config)
         // Set a key
         await client.StringSetAsync(key, value);
 
-        // Set expiry
+        // Set expiry with seconds precision (should use EXPIRE)
         Assert.True(await client.KeyExpireAsync(key, TimeSpan.FromSeconds(10)));
 
         // Check TTL
@@ -101,13 +101,50 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.NotNull(ttl);
         Assert.True(ttl.Value.TotalSeconds > 0 && ttl.Value.TotalSeconds <= 10);
 
-        // Test with DateTime
+        // Test with millisecond precision (should use PEXPIRE)
+        Assert.True(await client.KeyExpireAsync(key, TimeSpan.FromMilliseconds(5500)));
+
+        ttl = await client.KeyTimeToLiveAsync(key);
+        Assert.NotNull(ttl);
+        // Now with PTTL support, we should get millisecond precision
+        Assert.True(ttl.Value.TotalMilliseconds > 0 && ttl.Value.TotalMilliseconds <= 5500);
+
+        // Test with DateTime (should use EXPIREAT or PEXPIREAT based on precision)
         DateTime expireTime = DateTime.UtcNow.AddSeconds(15);
         Assert.True(await client.KeyExpireAsync(key, expireTime));
 
         ttl = await client.KeyTimeToLiveAsync(key);
         Assert.NotNull(ttl);
         Assert.True(ttl.Value.TotalSeconds > 10);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyExpireTime(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = "test_value";
+
+        // Set a key
+        await client.StringSetAsync(key, value);
+
+        // Key without expiry should return null
+        DateTime? expireTime = await client.KeyExpireTimeAsync(key);
+        Assert.Null(expireTime);
+
+        // Set expiry and check expire time
+        DateTime futureTime = DateTime.UtcNow.AddSeconds(30);
+        Assert.True(await client.KeyExpireAsync(key, futureTime));
+
+        expireTime = await client.KeyExpireTimeAsync(key);
+        Assert.NotNull(expireTime);
+        // Should be close to the set time (within a few seconds tolerance)
+        Assert.True(Math.Abs((expireTime.Value - futureTime).TotalSeconds) < 5);
+
+        // Non-existent key should return null
+        string nonExistentKey = Guid.NewGuid().ToString();
+        expireTime = await client.KeyExpireTimeAsync(nonExistentKey);
+        Assert.Null(expireTime);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

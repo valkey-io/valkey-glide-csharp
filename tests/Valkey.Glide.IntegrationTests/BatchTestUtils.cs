@@ -459,6 +459,12 @@ internal class BatchTestUtils
         _ = batch.KeyTimeToLive(genericKey1);
         testData.Add(new(null, "KeyTimeToLive(genericKey1) after persist"));
 
+        _ = batch.KeyExpire(genericKey1, TimeSpan.FromSeconds(120));
+        testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
+
+        _ = batch.KeyExpireTime(genericKey1);
+        testData.Add(new(DateTime.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
+
         _ = batch.KeyTouch(genericKey1);
         testData.Add(new(true, "KeyTouch(genericKey1)"));
 

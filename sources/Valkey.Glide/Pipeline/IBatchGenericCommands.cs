@@ -31,13 +31,21 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExistsAsync(ValkeyKey[], CommandFlags)" /></returns>
     IBatch KeyExists(ValkeyKey[] keys);
 
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" /></returns>
+    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry);
+
     /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when = ExpireWhen.Always);
+    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" /></returns>
+    IBatch KeyExpire(ValkeyKey key, DateTime? expiry);
 
     /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always);
+    IBatch KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when);
 
     /// <inheritdoc cref="IGenericBaseCommands.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" /></returns>
@@ -78,6 +86,10 @@ internal interface IBatchGenericCommands
     /// <inheritdoc cref="IGenericBaseCommands.KeyTouchAsync(ValkeyKey[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyTouchAsync(ValkeyKey[], CommandFlags)" /></returns>
     IBatch KeyTouch(ValkeyKey[] keys);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyExpireTime(ValkeyKey key);
 
     /// <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)" /></returns>
