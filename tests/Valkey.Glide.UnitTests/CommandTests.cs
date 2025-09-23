@@ -158,6 +158,11 @@ public class CommandTests
             () => Assert.Equal(["COPY", "src", "dest"], Request.KeyCopyAsync("src", "dest").GetArgs()),
             () => Assert.Equal(["COPY", "src", "dest", "DB", "1", "REPLACE"], Request.KeyCopyAsync("src", "dest", 1, true).GetArgs()),
             () => Assert.Equal(["PEXPIRETIME", "key"], Request.KeyExpireTimeAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "ENCODING", "key"], Request.KeyEncodingAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "FREQ", "key"], Request.KeyFrequencyAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "IDLETIME", "key"], Request.KeyIdleTimeAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "REFCOUNT", "key"], Request.KeyRefCountAsync("key").GetArgs()),
+            () => Assert.Equal(["RANDOMKEY"], Request.KeyRandomAsync().GetArgs()),
             () => Assert.Equal(["MOVE", "key", "1"], Request.KeyMoveAsync("key", 1).GetArgs()),
 
             // List Commands
@@ -350,6 +355,16 @@ public class CommandTests
             () => Assert.Equal(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc), Request.KeyExpireTimeAsync("key").Converter(1609459200000L)),
             () => Assert.Null(Request.KeyExpireTimeAsync("key").Converter(-1L)),
             () => Assert.Null(Request.KeyExpireTimeAsync("key").Converter(-2L)),
+            () => Assert.Equal("embstr", Request.KeyEncodingAsync("key").Converter(new GlideString("embstr"))),
+            () => Assert.Null(Request.KeyEncodingAsync("key").Converter(null)),
+            () => Assert.Equal(5L, Request.KeyFrequencyAsync("key").Converter(5L)),
+            () => Assert.Null(Request.KeyFrequencyAsync("key").Converter(-1L)),
+            () => Assert.Equal(10L, Request.KeyIdleTimeAsync("key").Converter(10L)),
+            () => Assert.Null(Request.KeyIdleTimeAsync("key").Converter(-1L)),
+            () => Assert.Equal(3L, Request.KeyRefCountAsync("key").Converter(3L)),
+            () => Assert.Null(Request.KeyRefCountAsync("key").Converter(-1L)),
+            () => Assert.Equal("randomkey", Request.KeyRandomAsync().Converter(new GlideString("randomkey"))),
+            () => Assert.Null(Request.KeyRandomAsync().Converter(null)),
             () => Assert.True(Request.KeyMoveAsync("key", 1).Converter(true)),
             () => Assert.False(Request.KeyMoveAsync("key", 1).Converter(false)),
 

@@ -74,8 +74,23 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.KeyExpireTime(ValkeyKey)" />
     public T KeyExpireTime(ValkeyKey key) => AddCmd(KeyExpireTimeAsync(key));
 
+    /// <inheritdoc cref="IBatchGenericCommands.KeyEncoding(ValkeyKey)" />
+    public T KeyEncoding(ValkeyKey key) => AddCmd(KeyEncodingAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.KeyFrequency(ValkeyKey)" />
+    public T KeyFrequency(ValkeyKey key) => AddCmd(KeyFrequencyAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.KeyIdleTime(ValkeyKey)" />
+    public T KeyIdleTime(ValkeyKey key) => AddCmd(KeyIdleTimeAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.KeyRefCount(ValkeyKey)" />
+    public T KeyRefCount(ValkeyKey key) => AddCmd(KeyRefCountAsync(key));
+
     /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, bool)" />
     public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false) => AddCmd(KeyCopyAsync(sourceKey, destinationKey, replace));
+
+    /// <inheritdoc cref="IBatchGenericCommands.KeyRandom()" />
+    public T KeyRandom() => AddCmd(KeyRandomAsync());
 
     // Explicit interface implementations for IBatchGenericCommands
     IBatch IBatchGenericCommands.KeyDelete(ValkeyKey key) => KeyDelete(key);
@@ -99,5 +114,10 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.KeyTouch(ValkeyKey key) => KeyTouch(key);
     IBatch IBatchGenericCommands.KeyTouch(ValkeyKey[] keys) => KeyTouch(keys);
     IBatch IBatchGenericCommands.KeyExpireTime(ValkeyKey key) => KeyExpireTime(key);
+    IBatch IBatchGenericCommands.KeyEncoding(ValkeyKey key) => KeyEncoding(key);
+    IBatch IBatchGenericCommands.KeyFrequency(ValkeyKey key) => KeyFrequency(key);
+    IBatch IBatchGenericCommands.KeyIdleTime(ValkeyKey key) => KeyIdleTime(key);
+    IBatch IBatchGenericCommands.KeyRefCount(ValkeyKey key) => KeyRefCount(key);
     IBatch IBatchGenericCommands.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => KeyCopy(sourceKey, destinationKey, replace);
+    IBatch IBatchGenericCommands.KeyRandom() => KeyRandom();
 }

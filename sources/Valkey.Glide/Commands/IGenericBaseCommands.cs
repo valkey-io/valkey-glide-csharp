@@ -414,6 +414,70 @@ public interface IGenericBaseCommands
     Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// Returns the internal encoding for the object stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-encoding"/>
+    /// <param name="key">The key to determine the encoding of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The encoding of the object, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string? encoding = await client.KeyEncodingAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string?> KeyEncodingAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the logarithmic access frequency counter for the object stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-freq"/>
+    /// <param name="key">The key to determine the frequency of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The frequency counter, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long? frequency = await client.KeyFrequencyAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long?> KeyFrequencyAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the time in seconds since the object stored at key was last accessed.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-idletime"/>
+    /// <param name="key">The key to determine the idle time of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The idle time in seconds, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long? idleTime = await client.KeyIdleTimeAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the reference count of the object stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-refcount"/>
+    /// <param name="key">The key to determine the reference count of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The reference count, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long? refCount = await client.KeyRefCountAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long?> KeyRefCountAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Copies the value stored at the source to the destination key. When
     /// replace is true, removes the destination key first if it already
     /// exists, otherwise performs no action.
@@ -434,4 +498,19 @@ public interface IGenericBaseCommands
     /// </example>
     /// </remarks>
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns a random key from the database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/randomkey"/>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A random key, or <see langword="null"/> when the database is empty.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string? randomKey = await client.KeyRandomAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string?> KeyRandomAsync(CommandFlags flags = CommandFlags.None);
 }

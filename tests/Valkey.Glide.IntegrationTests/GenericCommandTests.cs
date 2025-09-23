@@ -149,6 +149,122 @@ public class GenericCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyEncoding(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = "test_value";
+
+        // Set a string key
+        await client.StringSetAsync(key, value);
+
+        // Get encoding for string key
+        string? encoding = await client.KeyEncodingAsync(key);
+        Assert.NotNull(encoding);
+        // String encoding can be "raw", "embstr", or "int" depending on the value
+        Assert.Contains(encoding, new[] { "raw", "embstr", "int" });
+
+        // Test with different data types
+        string listKey = Guid.NewGuid().ToString();
+        await client.ListLeftPushAsync(listKey, "item");
+        string? listEncoding = await client.KeyEncodingAsync(listKey);
+        Assert.NotNull(listEncoding);
+
+        string setKey = Guid.NewGuid().ToString();
+        await client.SetAddAsync(setKey, "member");
+        string? setEncoding = await client.KeyEncodingAsync(setKey);
+        Assert.NotNull(setEncoding);
+
+        // Non-existent key should return null
+        string nonExistentKey = Guid.NewGuid().ToString();
+        string? nonExistentEncoding = await client.KeyEncodingAsync(nonExistentKey);
+        Assert.Null(nonExistentEncoding);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyFrequency(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = "test_value";
+
+        // Set a string key
+        await client.StringSetAsync(key, value);
+
+        try
+        {
+            // Get frequency for string key
+            long? frequency = await client.KeyFrequencyAsync(key);
+            Assert.NotNull(frequency);
+            Assert.True(frequency >= 0);
+
+            // Non-existent key should return null
+            string nonExistentKey = Guid.NewGuid().ToString();
+            long? nonExistentFrequency = await client.KeyFrequencyAsync(nonExistentKey);
+            Assert.Null(nonExistentFrequency);
+        }
+        catch (Errors.RequestException ex) when (ex.Message.Contains("LFU maxmemory policy is not selected"))
+        {
+            // This is expected when LFU eviction policy is not configured
+            // The command implementation is correct, but server doesn't track frequency
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyIdleTime(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = "test_value";
+
+        // Set a string key
+        await client.StringSetAsync(key, value);
+
+        // Get idle time for string key
+        long? idleTime = await client.KeyIdleTimeAsync(key);
+        Assert.NotNull(idleTime);
+        Assert.True(idleTime >= 0);
+
+        // Wait a bit and check that idle time increases
+        await Task.Delay(1000);
+        long? idleTime2 = await client.KeyIdleTimeAsync(key);
+        Assert.NotNull(idleTime2);
+        Assert.True(idleTime2 >= idleTime);
+
+        // Access the key to reset idle time
+        await client.StringGetAsync(key);
+        long? idleTimeAfterAccess = await client.KeyIdleTimeAsync(key);
+        Assert.NotNull(idleTimeAfterAccess);
+        Assert.True(idleTimeAfterAccess < idleTime2);
+
+        // Non-existent key should return null
+        string nonExistentKey = Guid.NewGuid().ToString();
+        long? nonExistentIdleTime = await client.KeyIdleTimeAsync(nonExistentKey);
+        Assert.Null(nonExistentIdleTime);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyRefCount(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = "test_value";
+
+        // Set a string key
+        await client.StringSetAsync(key, value);
+
+        // Get reference count for string key
+        long? refCount = await client.KeyRefCountAsync(key);
+        Assert.NotNull(refCount);
+        Assert.True(refCount >= 1);
+
+        // Non-existent key should return null
+        string nonExistentKey = Guid.NewGuid().ToString();
+        long? nonExistentRefCount = await client.KeyRefCountAsync(nonExistentKey);
+        Assert.Null(nonExistentRefCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyType(BaseClient client)
     {
         string stringKey = Guid.NewGuid().ToString();
@@ -357,6 +473,43 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(destKey, "new_value");
         Assert.True(await client.KeyCopyAsync(sourceKey, destKey, replace: true));
         Assert.Equal(value, await client.StringGetAsync(destKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyRandom(BaseClient client)
+    {
+        // Test with empty database
+        string? randomKey = await client.KeyRandomAsync();
+        // May be null if database is empty, or return an existing key
+
+        // Set some keys to ensure we have data
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+        string key3 = Guid.NewGuid().ToString();
+
+        await client.StringSetAsync(key1, "value1");
+        await client.StringSetAsync(key2, "value2");
+        await client.StringSetAsync(key3, "value3");
+
+        // Now we should get a random key
+        randomKey = await client.KeyRandomAsync();
+        Assert.NotNull(randomKey);
+        Assert.True(await client.KeyExistsAsync(randomKey));
+
+        // Call multiple times to verify it can return different keys
+        HashSet<string> seenKeys = new();
+        for (int i = 0; i < 10; i++)
+        {
+            string? key = await client.KeyRandomAsync();
+            if (key != null)
+            {
+                seenKeys.Add(key);
+            }
+        }
+
+        // We should have seen at least one key
+        Assert.NotEmpty(seenKeys);
     }
 
 }

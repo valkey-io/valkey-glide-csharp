@@ -128,10 +128,40 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.KeyExpireTimeAsync(key));
     }
 
+    public async Task<string?> KeyEncodingAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyEncodingAsync(key));
+    }
+
+    public async Task<long?> KeyFrequencyAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyFrequencyAsync(key));
+    }
+
+    public async Task<long?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyIdleTimeAsync(key));
+    }
+
+    public async Task<long?> KeyRefCountAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyRefCountAsync(key));
+    }
+
     public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.KeyCopyAsync(sourceKey, destinationKey, replace));
+    }
+
+    public async Task<string?> KeyRandomAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyRandomAsync());
     }
 
 }

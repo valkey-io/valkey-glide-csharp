@@ -85,7 +85,16 @@ internal class Cmd<R, T> : ICmd
     /// </summary>
     public string[] GetArgs() => Request == RequestType.CustomCommand
         ? ArgsArray.Args.ToStrings()
-        : [.. ArgsArray.Args.ToStrings().Prepend(Request.ToString().ToUpper())];
+        : [.. GetCommandParts(Request).Concat(ArgsArray.Args.ToStrings())];
+
+    private static string[] GetCommandParts(RequestType requestType) => requestType switch
+    {
+        RequestType.ObjectEncoding => ["OBJECT", "ENCODING"],
+        RequestType.ObjectFreq => ["OBJECT", "FREQ"],
+        RequestType.ObjectIdleTime => ["OBJECT", "IDLETIME"],
+        RequestType.ObjectRefCount => ["OBJECT", "REFCOUNT"],
+        _ => [requestType.ToString().ToUpper()]
+    };
 }
 
 internal record ArgsArray

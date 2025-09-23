@@ -214,6 +214,21 @@ internal partial class Request
         => new(RequestType.PExpireTime, [key.ToGlideString()], true, response =>
             response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response).DateTime);
 
+    public static Cmd<GlideString, string?> KeyEncodingAsync(ValkeyKey key)
+        => new(RequestType.ObjectEncoding, [key.ToGlideString()], true, response => response?.ToString());
+
+    public static Cmd<long, long?> KeyFrequencyAsync(ValkeyKey key)
+        => new(RequestType.ObjectFreq, [key.ToGlideString()], true, response => response == -1 ? null : response);
+
+    public static Cmd<long, long?> KeyIdleTimeAsync(ValkeyKey key)
+        => new(RequestType.ObjectIdleTime, [key.ToGlideString()], true, response => response == -1 ? null : response);
+
+    public static Cmd<long, long?> KeyRefCountAsync(ValkeyKey key)
+        => new(RequestType.ObjectRefCount, [key.ToGlideString()], true, response => response == -1 ? null : response);
+
+    public static Cmd<GlideString, string?> KeyRandomAsync()
+        => new(RequestType.RandomKey, [], true, response => response?.ToString());
+
     public static Cmd<bool, bool> KeyMoveAsync(ValkeyKey key, int database)
         => Simple<bool>(RequestType.Move, [key.ToGlideString(), database.ToGlideString()]);
 }

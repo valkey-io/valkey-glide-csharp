@@ -91,7 +91,27 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyExpireTime(ValkeyKey key);
 
+    /// <inheritdoc cref="IGenericBaseCommands.KeyEncodingAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyEncodingAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyEncoding(ValkeyKey key);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyFrequencyAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyFrequencyAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyFrequency(ValkeyKey key);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyIdleTime(ValkeyKey key);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRefCountAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyRefCountAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyRefCount(ValkeyKey key);
+
     /// <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)" /></returns>
     IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRandomAsync(CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyRandomAsync(CommandFlags)" /></returns>
+    IBatch KeyRandom();
 }
