@@ -22,16 +22,28 @@ public class TestConfiguration : IDisposable
         new StandaloneClientConfigurationBuilder()
             .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
             .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(TimeSpan.FromSeconds(60))
+            .WithTls(TLS);
+
+    public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
+        new StandaloneClientConfigurationBuilder()
+            .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
+            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
             .WithTls(TLS);
 
     public static GlideClient DefaultStandaloneClient()
         => GlideClient.CreateClient(DefaultClientConfig().Build()).GetAwaiter().GetResult();
+
+    public static GlideClient LowTimeoutStandaloneClient()
+        => GlideClient.CreateClient(DefaultClientConfigLowTimeout().Build()).GetAwaiter().GetResult();
 
     public static GlideClusterClient DefaultClusterClient()
         => GlideClusterClient.CreateClient(DefaultClusterClientConfig().Build()).GetAwaiter().GetResult();
@@ -64,12 +76,14 @@ public class TestConfiguration : IDisposable
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClient resp3client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
@@ -93,12 +107,14 @@ public class TestConfiguration : IDisposable
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
@@ -128,6 +144,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port);
         config.Ssl = TLS;
+        config.ResponseTimeout = 60000; // ms
         return config;
     }
 
@@ -136,6 +153,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port);
         config.Ssl = TLS;
+        config.ResponseTimeout = 60000; // ms
         return config;
     }
 
