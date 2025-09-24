@@ -513,4 +513,28 @@ public interface IGenericBaseCommands
     /// </example>
     /// </remarks>
     Task<string?> KeyRandomAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Sorts the elements in the list, set, or sorted set at key and returns the result.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sort"/>
+    /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
+    /// <param name="skip">The number of elements to skip.</param>
+    /// <param name="take">The number of elements to take. -1 means take all.</param>
+    /// <param name="order">The sort order.</param>
+    /// <param name="sortType">The sort type.</param>
+    /// <param name="by">The pattern to sort by external keys.</param>
+    /// <param name="get">The patterns to retrieve external keys' values.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of sorted elements.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
+    /// ValkeyValue[] result = await client.SortAsync("mylist");
+    /// // result is ["1", "2", "3"]
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None);
 }

@@ -512,4 +512,49 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.NotEmpty(seenKeys);
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSort(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test with list
+        await client.ListLeftPushAsync(key, ["3", "1", "2"]);
+        ValkeyValue[] result = await client.SortAsync(key);
+        Assert.Equal(["1", "2", "3"], result.Select(v => v.ToString()).ToArray());
+
+        // Test with descending order
+        result = await client.SortAsync(key, order: Order.Descending);
+        Assert.Equal(["3", "2", "1"], result.Select(v => v.ToString()).ToArray());
+
+        // Test with limit
+        result = await client.SortAsync(key, skip: 1, take: 1);
+        Assert.Single(result);
+        Assert.Equal("2", result[0].ToString());
+
+        // Test alphabetic sort
+        string alphaKey = Guid.NewGuid().ToString();
+        await client.ListLeftPushAsync(alphaKey, ["b", "a", "c"]);
+        result = await client.SortAsync(alphaKey, sortType: SortType.Alphabetic);
+        Assert.Equal(["a", "b", "c"], result.Select(v => v.ToString()).ToArray());
+
+        string userKey = Guid.NewGuid().ToString();
+
+        // Test with BY pattern (skip for cluster clients as BY option is denied in cluster mode)
+        if (client is not GlideClusterClient)
+        {
+            await client.HashSetAsync("user:1", [new HashEntry("age", "30")]);
+            await client.HashSetAsync("user:2", [new HashEntry("age", "25")]);
+            await client.ListLeftPushAsync(userKey, ["2", "1"]);
+            result = await client.SortAsync(userKey, by: "user:*->age");
+            Assert.Equal(["2", "1"], result.Select(v => v.ToString()).ToArray());
+
+            // Test with GET pattern
+            await client.HashSetAsync("user:1", [new HashEntry("name", "Alice")]);
+            await client.HashSetAsync("user:2", [new HashEntry("name", "Bob")]);
+            result = await client.SortAsync(userKey, by: "user:*->age", get: ["user:*->name"]);
+            Assert.Equal(["Bob", "Alice"], result.Select(v => v.ToString()).ToArray());
+        }
+    }
+
 }

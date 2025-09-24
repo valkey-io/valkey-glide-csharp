@@ -92,6 +92,9 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.KeyRandom()" />
     public T KeyRandom() => AddCmd(KeyRandomAsync());
 
+    /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, long, long, Order, SortType, ValkeyValue, ValkeyValue[])" />
+    public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null) => AddCmd(SortAsync(key, skip, take, order, sortType, by, get));
+
     // Explicit interface implementations for IBatchGenericCommands
     IBatch IBatchGenericCommands.KeyDelete(ValkeyKey key) => KeyDelete(key);
     IBatch IBatchGenericCommands.KeyDelete(ValkeyKey[] keys) => KeyDelete(keys);
@@ -120,4 +123,5 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.KeyRefCount(ValkeyKey key) => KeyRefCount(key);
     IBatch IBatchGenericCommands.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => KeyCopy(sourceKey, destinationKey, replace);
     IBatch IBatchGenericCommands.KeyRandom() => KeyRandom();
+    IBatch IBatchGenericCommands.Sort(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, ValkeyValue[]? get) => Sort(key, skip, take, order, sortType, by, get);
 }
