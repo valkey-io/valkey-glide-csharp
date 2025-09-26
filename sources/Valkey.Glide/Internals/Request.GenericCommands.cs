@@ -265,7 +265,49 @@ internal partial class Request
             args.Add(Constants.AlphaKeyword);
         }
 
-        return new(RequestType.Sort, [.. args], false, response => response?.Cast<GlideString>().Select(item => (ValkeyValue)item).ToArray() ?? []);
+        return new(RequestType.SortReadOnly, [.. args], false, response => response?.Cast<GlideString>().Select(item => (ValkeyValue)item).ToArray() ?? []);
+    }
+
+    public static Cmd<long, long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+
+        if (!by.IsNull)
+        {
+            args.Add(Constants.ByKeyword);
+            args.Add(by.ToGlideString());
+        }
+
+        if (skip != 0 || take != -1)
+        {
+            args.Add(Constants.LimitKeyword);
+            args.Add(skip.ToGlideString());
+            args.Add(take.ToGlideString());
+        }
+
+        if (get != null)
+        {
+            foreach (var pattern in get)
+            {
+                args.Add(Constants.GetKeyword);
+                args.Add(pattern.ToGlideString());
+            }
+        }
+
+        if (order == Order.Descending)
+        {
+            args.Add(Constants.DescKeyword);
+        }
+
+        if (sortType == SortType.Alphabetic)
+        {
+            args.Add(Constants.AlphaKeyword);
+        }
+
+        args.Add(Constants.StoreKeyword);
+        args.Add(destination.ToGlideString());
+
+        return Simple<long>(RequestType.Sort, [.. args]);
     }
 
     public static Cmd<bool, bool> KeyMoveAsync(ValkeyKey key, int database)

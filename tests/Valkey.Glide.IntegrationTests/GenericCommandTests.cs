@@ -567,6 +567,8 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Empty(keys);
     }
 
+
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSort(BaseClient client)
@@ -614,6 +616,54 @@ public class GenericCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortAndStore(BaseClient client)
+    {
+        string sourceKey = "{prefix}-" + Guid.NewGuid().ToString();
+        string destKey = "{prefix}-" + Guid.NewGuid().ToString();
+
+        // Test basic sort and store
+        await client.ListLeftPushAsync(sourceKey, ["3", "1", "2"]);
+        long count = await client.SortAndStoreAsync(destKey, sourceKey);
+        Assert.Equal(3, count);
+
+        // Verify destination contains sorted values
+        ValkeyValue[] result = await client.ListRangeAsync(destKey);
+        Assert.Equal(["1", "2", "3"], result.Select(v => v.ToString()).ToArray());
+
+        // Test with descending order
+        string destKey2 = "{prefix}-" + Guid.NewGuid().ToString();
+        count = await client.SortAndStoreAsync(destKey2, sourceKey, order: Order.Descending);
+        Assert.Equal(3, count);
+        result = await client.ListRangeAsync(destKey2);
+        Assert.Equal(["3", "2", "1"], result.Select(v => v.ToString()).ToArray());
+
+        // Test with limit
+        string destKey3 = "{prefix}-" + Guid.NewGuid().ToString();
+        count = await client.SortAndStoreAsync(destKey3, sourceKey, skip: 1, take: 1);
+        Assert.Equal(1, count);
+        result = await client.ListRangeAsync(destKey3);
+        Assert.Single(result);
+        Assert.Equal("2", result[0].ToString());
+
+        // Test alphabetic sort
+        string alphaKey = "{prefix}-" + Guid.NewGuid().ToString();
+        string alphaDestKey = "{prefix}-" + Guid.NewGuid().ToString();
+        await client.ListLeftPushAsync(alphaKey, ["b", "a", "c"]);
+        count = await client.SortAndStoreAsync(alphaDestKey, alphaKey, sortType: SortType.Alphabetic);
+        Assert.Equal(3, count);
+        result = await client.ListRangeAsync(alphaDestKey);
+        Assert.Equal(["a", "b", "c"], result.Select(v => v.ToString()).ToArray());
+
+        // Test overwriting existing destination
+        await client.StringSetAsync(destKey, "existing_value");
+        count = await client.SortAndStoreAsync(destKey, sourceKey);
+        Assert.Equal(3, count);
+        // Destination should now be a list, not a string
+        Assert.Equal(ValkeyType.List, await client.KeyTypeAsync(destKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestWait(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -622,18 +672,83 @@ public class GenericCommandTests(TestConfiguration config)
         // Set a key to create a write operation
         await client.StringSetAsync(key, value);
 
+        // Test WAIT with different expected behavior for cluster vs standalone
+        long replicaCount = await client.WaitAsync(1, 1000);
+        if (client is GlideClusterClient)
+        {
+            Assert.True(replicaCount >= 1); // Cluster mode
+        }
+        else
+        {
+            Assert.True(replicaCount >= 0); // Standalone mode
+        }
+
         // Test WAIT with 0 replicas (should return immediately)
-        long replicaCount = await client.WaitAsync(0, 1000);
+        replicaCount = await client.WaitAsync(0, 1000);
         Assert.True(replicaCount >= 0);
 
         // Test WAIT with timeout 0 (should return immediately)
         replicaCount = await client.WaitAsync(1, 0);
         Assert.True(replicaCount >= 0);
+    }
 
-        // Test WAIT with reasonable parameters
-        // In a single-node setup, this should return 0 replicas
-        replicaCount = await client.WaitAsync(1, 100);
-        Assert.True(replicaCount >= 0);
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestWait_NegativeTimeout(BaseClient client)
+    {
+        // Test negative timeout should throw exception
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(
+            () => client.WaitAsync(1, -1));
+        Assert.Contains("Timeout cannot be negative", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortAndStore_WithPatterns(GlideClient client)
+    {
+        // Test with BY and GET patterns (only for standalone clients)
+        string userKey = "{prefix}-" + Guid.NewGuid().ToString();
+        string destKey = "{prefix}-" + Guid.NewGuid().ToString();
+
+        // Set up test data
+        await client.HashSetAsync("user:1", [new HashEntry("age", "30"), new HashEntry("name", "Alice")]);
+        await client.HashSetAsync("user:2", [new HashEntry("age", "25"), new HashEntry("name", "Bob")]);
+        await client.ListLeftPushAsync(userKey, ["2", "1"]);
+
+        // Test with BY pattern
+        long count = await client.SortAndStoreAsync(destKey, userKey, by: "user:*->age");
+        Assert.Equal(2, count);
+        ValkeyValue[] result = await client.ListRangeAsync(destKey);
+        Assert.Equal(["2", "1"], result.Select(v => v.ToString()).ToArray());
+
+        // Test with GET pattern
+        string destKey2 = "{prefix}-" + Guid.NewGuid().ToString();
+        count = await client.SortAndStoreAsync(destKey2, userKey, by: "user:*->age", get: ["user:*->name"]);
+        Assert.Equal(2, count);
+        result = await client.ListRangeAsync(destKey2);
+        Assert.Equal(["Bob", "Alice"], result.Select(v => v.ToString()).ToArray());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeysAsync_LargeDataset(GlideClient client)
+    {
+        string prefix = Guid.NewGuid().ToString();
+        
+        var tasks = Enumerable.Range(0, 25000).Select(i => 
+            client.StringSetAsync($"{prefix}:key{i}", $"value{i}"));
+        await Task.WhenAll(tasks);
+
+        int count = 0;
+        await foreach (var key in client.KeysAsync(pattern: $"{prefix}:*"))
+        {
+            count++;
+        }
+        Assert.Equal(25000, count);
+
+        var sampleKeys = Enumerable.Range(0, 100).Select(i => (ValkeyKey)$"{prefix}:key{i}").ToArray();
+        long sampleCount = await client.KeyExistsAsync(sampleKeys);
+        Assert.Equal(100L, sampleCount);
     }
 
 }
