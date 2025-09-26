@@ -165,6 +165,21 @@ public class CommandTests
             () => Assert.Equal(["RANDOMKEY"], Request.KeyRandomAsync().GetArgs()),
             () => Assert.Equal(["MOVE", "key", "1"], Request.KeyMoveAsync("key", 1).GetArgs()),
 
+            // SCAN Commands
+            () => Assert.Equal(["SCAN", "0"], Request.ScanAsync(0).GetArgs()),
+            () => Assert.Equal(["SCAN", "10"], Request.ScanAsync(10).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "MATCH", "pattern*"], Request.ScanAsync(0, "pattern*").GetArgs()),
+            () => Assert.Equal(["SCAN", "5", "MATCH", "test*"], Request.ScanAsync(5, "test*").GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "COUNT", "10"], Request.ScanAsync(0, pageSize: 10).GetArgs()),
+            () => Assert.Equal(["SCAN", "5", "COUNT", "20"], Request.ScanAsync(5, pageSize: 20).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "MATCH", "pattern*", "COUNT", "10"], Request.ScanAsync(0, "pattern*", 10).GetArgs()),
+            () => Assert.Equal(["SCAN", "10", "MATCH", "*suffix", "COUNT", "5"], Request.ScanAsync(10, "*suffix", 5).GetArgs()),
+
+            // WAIT Commands
+            () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, 1000).GetArgs()),
+            () => Assert.Equal(["WAIT", "0", "0"], Request.WaitAsync(0, 0).GetArgs()),
+            () => Assert.Equal(["WAIT", "3", "5000"], Request.WaitAsync(3, 5000).GetArgs()),
+
             // List Commands
             () => Assert.Equal(["LPOP", "a"], Request.ListLeftPopAsync("a").GetArgs()),
             () => Assert.Equal(["LPOP", "a", "3"], Request.ListLeftPopAsync("a", 3).GetArgs()),
@@ -367,6 +382,28 @@ public class CommandTests
             () => Assert.Null(Request.KeyRandomAsync().Converter(null)),
             () => Assert.True(Request.KeyMoveAsync("key", 1).Converter(true)),
             () => Assert.False(Request.KeyMoveAsync("key", 1).Converter(false)),
+
+            // SCAN Commands Converters
+            () => {
+                var result = Request.ScanAsync(0).Converter(new object[] { 0L, new object[] { (gs)"key1", (gs)"key2" } });
+                Assert.Equal(0L, result.Item1);
+                Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()).ToArray());
+            },
+            () => {
+                var result = Request.ScanAsync(10).Converter(new object[] { 5L, new object[] { (gs)"test" } });
+                Assert.Equal(5L, result.Item1);
+                Assert.Equal(["test"], result.Item2.Select(k => k.ToString()).ToArray());
+            },
+            () => {
+                var result = Request.ScanAsync(0).Converter(new object[] { 0L, Array.Empty<object>() });
+                Assert.Equal(0L, result.Item1);
+                Assert.Empty(result.Item2);
+            },
+
+            // WAIT Commands Converters
+            () => Assert.Equal(2L, Request.WaitAsync(1, 1000).Converter(2L)),
+            () => Assert.Equal(0L, Request.WaitAsync(0, 0).Converter(0L)),
+            () => Assert.Equal(1L, Request.WaitAsync(3, 5000).Converter(1L)),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
             () => Assert.Equal(["one", "two"], Request.ListLeftPopAsync("a", 2).Converter([(gs)"one", (gs)"two"])),

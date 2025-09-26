@@ -120,4 +120,27 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.Select(index));
     }
+
+    public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        long currentCursor = cursor;
+        int currentOffset = pageOffset;
+
+        do
+        {
+            (long nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, pattern, pageSize));
+
+            IEnumerable<ValkeyKey> keysToYield = currentOffset > 0 ? keys.Skip(currentOffset) : keys;
+
+            foreach (ValkeyKey key in keysToYield)
+            {
+                yield return key;
+            }
+
+            currentCursor = nextCursor;
+            currentOffset = 0;
+        } while (currentCursor != 0);
+    }
 }

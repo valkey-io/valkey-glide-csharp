@@ -537,4 +537,22 @@ public interface IGenericBaseCommands
     /// </example>
     /// </remarks>
     Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged by at least numreplicas replicas.
+    /// If the timeout is reached, the command returns even if the specified number of replicas were not yet reached.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/wait"/>
+    /// <param name="numreplicas">The number of replicas to wait for.</param>
+    /// <param name="timeout">The timeout in milliseconds.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of replicas that acknowledged the write commands.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long result = await client.WaitAsync(1, 1000);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags = CommandFlags.None);
 }

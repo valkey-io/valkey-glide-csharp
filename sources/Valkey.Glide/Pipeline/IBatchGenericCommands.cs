@@ -118,4 +118,8 @@ internal interface IBatchGenericCommands
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, ValkeyValue[], CommandFlags)" /></returns>
     IBatch Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null);
+
+    /// <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, long, CommandFlags)" /></returns>
+    IBatch Wait(long numreplicas, long timeout);
 }

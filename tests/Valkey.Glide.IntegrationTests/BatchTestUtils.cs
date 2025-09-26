@@ -528,6 +528,16 @@ internal class BatchTestUtils
         _ = batch.KeyUnlink([genericKey1, renamedKey, genericKey3]);
         testData.Add(new(1L, "KeyUnlink([genericKey1, renamedKey, genericKey3])"));
 
+        // WAIT command tests
+        _ = batch.StringSet(prefix + "waitkey", "value");
+        testData.Add(new(true, "StringSet(prefix + waitkey, value)"));
+
+        _ = batch.Wait(0, 1000);
+        testData.Add(new(0L, "Wait(0, 1000)", true));
+
+        _ = batch.Wait(1, 0);
+        testData.Add(new(0L, "Wait(1, 0)", true));
+
         return testData;
     }
 

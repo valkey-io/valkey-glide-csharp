@@ -270,4 +270,30 @@ internal partial class Request
 
     public static Cmd<bool, bool> KeyMoveAsync(ValkeyKey key, int database)
         => Simple<bool>(RequestType.Move, [key.ToGlideString(), database.ToGlideString()]);
+
+    public static Cmd<object[], (long, ValkeyKey[])> ScanAsync(long cursor, ValkeyValue pattern = default, long pageSize = 0)
+    {
+        List<GlideString> args = [cursor.ToGlideString()];
+
+        if (!pattern.IsNull)
+        {
+            args.AddRange([Constants.MatchKeyword.ToGlideString(), pattern.ToGlideString()]);
+        }
+
+        if (pageSize > 0)
+        {
+            args.AddRange([Constants.CountKeyword.ToGlideString(), pageSize.ToGlideString()]);
+        }
+
+        return new(RequestType.Scan, [.. args], false, arr =>
+        {
+            object[] scanArray = arr;
+            long nextCursor = scanArray[0] is long l ? l : long.Parse(scanArray[0].ToString());
+            ValkeyKey[] keys = [.. ((object[])scanArray[1]).Cast<GlideString>().Select(gs => new ValkeyKey(gs))];
+            return (nextCursor, keys);
+        });
+    }
+
+    public static Cmd<long, long> WaitAsync(long numreplicas, long timeout)
+        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), timeout.ToGlideString()]);
 }

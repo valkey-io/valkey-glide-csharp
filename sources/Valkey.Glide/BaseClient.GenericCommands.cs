@@ -170,4 +170,10 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.SortAsync(key, skip, take, order, sortType, by, get));
     }
 
+    public async Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.WaitAsync(numreplicas, timeout));
+    }
+
 }

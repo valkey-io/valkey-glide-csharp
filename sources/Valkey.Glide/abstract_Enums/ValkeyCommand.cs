@@ -203,6 +203,7 @@ internal enum ValkeyCommand
     UNSUBSCRIBE,
     UNWATCH,
 
+    WAIT,
     WATCH,
 
     XACK,
@@ -464,6 +465,7 @@ internal static class ValkeyCommandExtensions
             case ValkeyCommand.TYPE:
             case ValkeyCommand.UNSUBSCRIBE:
             case ValkeyCommand.UNWATCH:
+            case ValkeyCommand.WAIT:
             case ValkeyCommand.WATCH:
             case ValkeyCommand.XINFO:
             case ValkeyCommand.XLEN:
