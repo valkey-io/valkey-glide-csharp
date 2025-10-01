@@ -229,7 +229,7 @@ internal partial class Request
     public static Cmd<GlideString, string?> KeyRandomAsync()
         => new(RequestType.RandomKey, [], true, response => response?.ToString());
 
-    public static Cmd<object[], ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)
+    public static Cmd<object[], ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, Version? serverVersion = null)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -265,7 +265,12 @@ internal partial class Request
             args.Add(Constants.AlphaKeyword);
         }
 
-        return new(RequestType.SortReadOnly, [.. args], false, response => response?.Cast<GlideString>().Select(item => (ValkeyValue)item).ToArray() ?? []);
+        // Use SORT_RO for version 7.0.0+ if server version is available, otherwise use SORT_RO as default
+        var requestType = serverVersion != null && serverVersion < new Version(7, 0, 0)
+            ? RequestType.Sort
+            : RequestType.SortReadOnly;
+
+        return new(requestType, [.. args], false, response => response?.Cast<GlideString>().Select(item => (ValkeyValue)item).ToArray() ?? []);
     }
 
     public static Cmd<long, long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)

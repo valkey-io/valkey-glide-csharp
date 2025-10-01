@@ -93,7 +93,7 @@ public abstract partial class BaseBatch<T>
     public T KeyRandom() => AddCmd(KeyRandomAsync());
 
     /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, long, long, Order, SortType, ValkeyValue, ValkeyValue[])" />
-    public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null) => AddCmd(SortAsync(key, skip, take, order, sortType, by, get));
+    public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null) => AddCmd(SortAsync(key, skip, take, order, sortType, by, get, null));
 
     /// <inheritdoc cref="IBatchGenericCommands.Wait(long, long)" />
     public T Wait(long numreplicas, long timeout) => AddCmd(WaitAsync(numreplicas, timeout));
