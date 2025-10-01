@@ -462,8 +462,11 @@ internal class BatchTestUtils
         _ = batch.KeyExpire(genericKey1, TimeSpan.FromSeconds(120));
         testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
 
-        _ = batch.KeyExpireTime(genericKey1);
-        testData.Add(new(DateTime.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
+        if (TestConfiguration.SERVER_VERSION > new Version("7.0.0")) // KeyExpireTime added in 7.0.0
+        {
+            _ = batch.KeyExpireTime(genericKey1);
+            testData.Add(new(DateTime.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
+        }
 
         _ = batch.KeyEncoding(genericKey1);
         testData.Add(new("embstr", "KeyEncoding(genericKey1)", true));

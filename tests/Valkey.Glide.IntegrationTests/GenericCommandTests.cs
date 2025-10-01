@@ -122,6 +122,10 @@ public class GenericCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyExpireTime(BaseClient client)
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "SetIntersectionLength is supported since 7.0.0"
+        );
         string key = Guid.NewGuid().ToString();
         string value = "test_value";
 
@@ -498,7 +502,7 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.True(await client.KeyExistsAsync(randomKey));
 
         // Call multiple times to verify it can return different keys
-        HashSet<string> seenKeys = new();
+        HashSet<string> seenKeys = [];
         for (int i = 0; i < 10; i++)
         {
             string? key = await client.KeyRandomAsync();
@@ -529,7 +533,7 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(otherKey, "other");
 
         // Test scanning all keys with pattern
-        List<ValkeyKey> keys = new();
+        List<ValkeyKey> keys = [];
         await foreach (ValkeyKey key in client.KeysAsync(pattern: $"{prefix}:*"))
         {
             keys.Add(key);
@@ -578,11 +582,11 @@ public class GenericCommandTests(TestConfiguration config)
         // Test with list
         await client.ListLeftPushAsync(key, ["3", "1", "2"]);
         ValkeyValue[] result = await client.SortAsync(key);
-        Assert.Equal(["1", "2", "3"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
 
         // Test with descending order
         result = await client.SortAsync(key, order: Order.Descending);
-        Assert.Equal(["3", "2", "1"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["3", "2", "1"], [.. result.Select(v => v.ToString())]);
 
         // Test with limit
         result = await client.SortAsync(key, skip: 1, take: 1);
@@ -593,7 +597,7 @@ public class GenericCommandTests(TestConfiguration config)
         string alphaKey = Guid.NewGuid().ToString();
         await client.ListLeftPushAsync(alphaKey, ["b", "a", "c"]);
         result = await client.SortAsync(alphaKey, sortType: SortType.Alphabetic);
-        Assert.Equal(["a", "b", "c"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["a", "b", "c"], [.. result.Select(v => v.ToString())]);
 
         string userKey = Guid.NewGuid().ToString();
 
@@ -604,13 +608,13 @@ public class GenericCommandTests(TestConfiguration config)
             await client.HashSetAsync("user:2", [new HashEntry("age", "25")]);
             await client.ListLeftPushAsync(userKey, ["2", "1"]);
             result = await client.SortAsync(userKey, by: "user:*->age");
-            Assert.Equal(["2", "1"], result.Select(v => v.ToString()).ToArray());
+            Assert.Equal(["2", "1"], [.. result.Select(v => v.ToString())]);
 
             // Test with GET pattern
             await client.HashSetAsync("user:1", [new HashEntry("name", "Alice")]);
             await client.HashSetAsync("user:2", [new HashEntry("name", "Bob")]);
             result = await client.SortAsync(userKey, by: "user:*->age", get: ["user:*->name"]);
-            Assert.Equal(["Bob", "Alice"], result.Select(v => v.ToString()).ToArray());
+            Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
         }
     }
 
@@ -628,14 +632,14 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Verify destination contains sorted values
         ValkeyValue[] result = await client.ListRangeAsync(destKey);
-        Assert.Equal(["1", "2", "3"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
 
         // Test with descending order
         string destKey2 = "{prefix}-" + Guid.NewGuid().ToString();
         count = await client.SortAndStoreAsync(destKey2, sourceKey, order: Order.Descending);
         Assert.Equal(3, count);
         result = await client.ListRangeAsync(destKey2);
-        Assert.Equal(["3", "2", "1"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["3", "2", "1"], [.. result.Select(v => v.ToString())]);
 
         // Test with limit
         string destKey3 = "{prefix}-" + Guid.NewGuid().ToString();
@@ -652,7 +656,7 @@ public class GenericCommandTests(TestConfiguration config)
         count = await client.SortAndStoreAsync(alphaDestKey, alphaKey, sortType: SortType.Alphabetic);
         Assert.Equal(3, count);
         result = await client.ListRangeAsync(alphaDestKey);
-        Assert.Equal(["a", "b", "c"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["a", "b", "c"], [.. result.Select(v => v.ToString())]);
 
         // Test overwriting existing destination
         await client.StringSetAsync(destKey, "existing_value");
@@ -719,14 +723,14 @@ public class GenericCommandTests(TestConfiguration config)
         long count = await client.SortAndStoreAsync(destKey, userKey, by: "user:*->age");
         Assert.Equal(2, count);
         ValkeyValue[] result = await client.ListRangeAsync(destKey);
-        Assert.Equal(["2", "1"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["2", "1"], [.. result.Select(v => v.ToString())]);
 
         // Test with GET pattern
         string destKey2 = "{prefix}-" + Guid.NewGuid().ToString();
         count = await client.SortAndStoreAsync(destKey2, userKey, by: "user:*->age", get: ["user:*->name"]);
         Assert.Equal(2, count);
         result = await client.ListRangeAsync(destKey2);
-        Assert.Equal(["Bob", "Alice"], result.Select(v => v.ToString()).ToArray());
+        Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -746,7 +750,7 @@ public class GenericCommandTests(TestConfiguration config)
         }
         Assert.Equal(25000, count);
 
-        var sampleKeys = Enumerable.Range(0, 100).Select(i => (ValkeyKey)$"{prefix}:key{i}").ToArray();
+        ValkeyKey[] sampleKeys = [.. Enumerable.Range(0, 100).Select(i => (ValkeyKey)$"{prefix}:key{i}")];
         long sampleCount = await client.KeyExistsAsync(sampleKeys);
         Assert.Equal(100L, sampleCount);
     }
