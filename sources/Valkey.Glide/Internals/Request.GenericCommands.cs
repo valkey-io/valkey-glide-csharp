@@ -56,10 +56,10 @@ internal partial class Request
         }
 
         // Choose command based on precision
-        var command = expiry.HasValue && (long)expiry.Value.TotalMilliseconds % 1000 != 0 
-            ? RequestType.PExpire 
+        var command = expiry.HasValue && (long)expiry.Value.TotalMilliseconds % 1000 != 0
+            ? RequestType.PExpire
             : RequestType.Expire;
-        
+
         return Simple<bool>(command, [.. args]);
     }
 

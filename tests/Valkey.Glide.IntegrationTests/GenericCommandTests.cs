@@ -734,8 +734,8 @@ public class GenericCommandTests(TestConfiguration config)
     public async Task TestKeysAsync_LargeDataset(GlideClient client)
     {
         string prefix = Guid.NewGuid().ToString();
-        
-        var tasks = Enumerable.Range(0, 25000).Select(i => 
+
+        var tasks = Enumerable.Range(0, 25000).Select(i =>
             client.StringSetAsync($"{prefix}:key{i}", $"value{i}"));
         await Task.WhenAll(tasks);
 
@@ -750,5 +750,4 @@ public class GenericCommandTests(TestConfiguration config)
         long sampleCount = await client.KeyExistsAsync(sampleKeys);
         Assert.Equal(100L, sampleCount);
     }
-
 }

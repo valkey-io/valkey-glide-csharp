@@ -384,17 +384,20 @@ public class CommandTests
             () => Assert.False(Request.KeyMoveAsync("key", 1).Converter(false)),
 
             // SCAN Commands Converters
-            () => {
+            () =>
+            {
                 var result = Request.ScanAsync(0).Converter(new object[] { 0L, new object[] { (gs)"key1", (gs)"key2" } });
                 Assert.Equal(0L, result.Item1);
                 Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()).ToArray());
             },
-            () => {
+            () =>
+            {
                 var result = Request.ScanAsync(10).Converter(new object[] { 5L, new object[] { (gs)"test" } });
                 Assert.Equal(5L, result.Item1);
                 Assert.Equal(["test"], result.Item2.Select(k => k.ToString()).ToArray());
             },
-            () => {
+            () =>
+            {
                 var result = Request.ScanAsync(0).Converter(new object[] { 0L, Array.Empty<object>() });
                 Assert.Equal(0L, result.Item1);
                 Assert.Empty(result.Item2);
