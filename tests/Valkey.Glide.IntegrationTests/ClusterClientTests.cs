@@ -328,4 +328,79 @@ public class ClusterClientTests(TestConfiguration config)
         string result = await client.SelectAsync(0);
         Assert.Equal("OK", result);
     }
+
+    [Fact]
+    public async Task TestClusterDatabaseId()
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "Multi-database support for Cluster Client requires Valkey 9.0+"
+        );
+
+        var config = TestConfiguration.DefaultClusterClientConfig()
+            .WithDataBaseId(1)
+            .Build();
+
+        using var client = await GlideClusterClient.CreateClient(config);
+        
+        // Verify we can connect with database ID 1
+        TimeSpan result = await client.PingAsync();
+        Assert.True(result >= TimeSpan.Zero);
+        
+        // Verify database isolation by setting a key in database 1
+        string testKey = Guid.NewGuid().ToString();
+        string testValue = "test_value_db1";
+        await client.StringSetAsync(testKey, testValue);
+        
+        // Verify the key exists in database 1
+        ValkeyValue retrievedValue = await client.StringGetAsync(testKey);
+        Assert.Equal(testValue, retrievedValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyMoveAsync(GlideClusterClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "MOVE command for Cluster Client requires Valkey 9.0+ with multi-database support"
+        );
+
+        string key = Guid.NewGuid().ToString();
+        string value = "test_value";
+        
+        // Set a key in the current database
+        await client.StringSetAsync(key, value);
+        
+        // Move the key to database 1
+        bool moveResult = await client.KeyMoveAsync(key, 1);
+        Assert.True(moveResult);
+        
+        // Verify the key no longer exists in the current database
+        Assert.False(await client.KeyExistsAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyCopyAsync(GlideClusterClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"
+        );
+
+        string sourceKey = Guid.NewGuid().ToString();
+        string destKey = Guid.NewGuid().ToString();
+        string value = "test_value";
+        
+        // Set a key in the current database
+        await client.StringSetAsync(sourceKey, value);
+        
+        // Copy the key to database 1
+        bool copyResult = await client.KeyCopyAsync(sourceKey, destKey, 1);
+        Assert.True(copyResult);
+        
+        // Verify the source key still exists in the current database
+        Assert.True(await client.KeyExistsAsync(sourceKey));
+    }
 }

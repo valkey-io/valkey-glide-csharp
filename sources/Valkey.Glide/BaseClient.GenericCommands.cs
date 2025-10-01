@@ -122,4 +122,33 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.KeyCopyAsync(sourceKey, destinationKey, replace));
     }
 
+    public async Task<string?> KeyRandomAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyRandomAsync());
+    }
+
+    public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SortAsync(key, skip, take, order, sortType, by, get));
+    }
+
+    public async Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.WaitAsync(numreplicas, timeout));
+    }
+
+    public async Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyMoveAsync(key, database));
+    }
+
+    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
+    }
 }

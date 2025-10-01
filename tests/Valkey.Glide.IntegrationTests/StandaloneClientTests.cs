@@ -268,7 +268,7 @@ public class StandaloneClientTests(TestConfiguration config)
         _ = batch.StringSet(sourceKey, value);
         _ = batch.StringSet(moveKey, value);
 
-        IBatchStandalone batch2 = new Batch(isAtomic);
+        Batch batch2 = new Batch(isAtomic);
 
         // Test KeyCopy with database parameter
         _ = batch2.KeyCopy(sourceKey, destKey, 1, false);
