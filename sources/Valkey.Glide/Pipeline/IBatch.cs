@@ -16,12 +16,12 @@ internal interface IBatch : IBatchSetCommands, IBatchStringCommands, IBatchListC
     /// <returns>Command Response - <inheritdoc cref="IGenericCommands.CustomCommand(GlideString[])" /></returns>
     IBatch CustomCommand(GlideString[] args);
 
-    /// <inheritdoc cref="IServerManagementCommands.Info()" path="/summary" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.Info()" /></returns>
+    /// <inheritdoc cref="IServerManagementCommands.InfoAsync()" path="/summary" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync()" /></returns>
     IBatch Info();
 
-    /// <inheritdoc cref="IServerManagementCommands.Info(Section[])" path="/summary" />
-    /// <inheritdoc cref="IServerManagementCommands.Info(Section[])" path="/param" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.Info(Section[])" /></returns>
+    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(Section[])" path="/summary" />
+    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(Section[])" path="/param" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync(Section[])" /></returns>
     IBatch Info(Section[] sections);
 }
