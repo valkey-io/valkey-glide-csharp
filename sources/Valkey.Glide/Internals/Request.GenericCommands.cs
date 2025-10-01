@@ -330,7 +330,7 @@ internal partial class Request
         return new(RequestType.Scan, [.. args], false, arr =>
         {
             object[] scanArray = arr;
-            long nextCursor = scanArray[0] is long l ? l : long.Parse(scanArray[0].ToString());
+            long nextCursor = scanArray[0] is long l ? l : long.Parse(scanArray[0].ToString() ?? "0");
             ValkeyKey[] keys = [.. ((object[])scanArray[1]).Cast<GlideString>().Select(gs => new ValkeyKey(gs))];
             return (nextCursor, keys);
         });
