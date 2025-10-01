@@ -68,9 +68,9 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
     public async Task<object?> CustomCommand(GlideString[] args)
         => await Command(Request.CustomCommand(args));
 
-    public async Task<string> Info() => await Info([]);
+    public async Task<string> InfoAsync() => await InfoAsync([]);
 
-    public async Task<string> Info(InfoOptions.Section[] sections)
+    public async Task<string> InfoAsync(InfoOptions.Section[] sections)
         => await Command(Request.Info(sections));
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)

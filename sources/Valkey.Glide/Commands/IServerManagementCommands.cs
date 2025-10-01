@@ -15,35 +15,35 @@ public interface IServerManagementCommands
     /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IServerManagementClusterCommands.Info()" path="/remarks" />
+    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync()" path="/remarks" />
     /// <returns>A <see langword="string" /> containing the information for the sections requested.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string info = await client.Info();
+    /// string info = await client.InfoAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> Info();
+    Task<string> InfoAsync();
 
     /// <summary>
     /// Get information and statistics about the server.<br />
     /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IServerManagementClusterCommands.Info(Section[])" path="/remarks" />
-    /// <inheritdoc cref="IServerManagementClusterCommands.Info(Section[])" path="/param" />
+    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(Section[])" path="/remarks" />
+    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(Section[])" path="/param" />
     /// <returns>
-    /// <inheritdoc cref="Info()" />
+    /// <inheritdoc cref="InfoAsync()" />
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string info = await client.Info([Section.SERVER, Section.MEMORY]);
+    /// string info = await client.InfoAsync([Section.SERVER, Section.MEMORY]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> Info(Section[] sections);
+    Task<string> InfoAsync(Section[] sections);
 
     /// <summary>
     /// Echo the given message back from the server.

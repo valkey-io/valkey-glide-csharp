@@ -19,13 +19,13 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string response = await client.Info();
+    /// string response = await client.InfoAsync();
     /// response.Split().First(l => l.Contains("total_net_input_bytes"))
     /// </code>
     /// </example>
     /// </remarks>
     /// <returns>A <see langword="string" /> containing the information for the sections requested per cluster node.</returns>
-    Task<Dictionary<string, string>> Info();
+    Task<Dictionary<string, string>> InfoAsync();
 
     /// <summary>
     /// Get information and statistics about the server.<br />
@@ -36,14 +36,14 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string response = await client.Info([ Section.STATS ]);
+    /// string response = await client.InfoAsync([ Section.STATS ]);
     /// response.Split().First(l => l.Contains("total_net_input_bytes"))
     /// </code>
     /// </example>
     /// </remarks>
-    /// <inheritdoc cref="Info(Section[], Route)" path="/param" />
+    /// <inheritdoc cref="InfoAsync(Section[], Route)" path="/param" />
     /// <returns>A <see langword="string" /> containing the information for the sections requested per cluster node.</returns>
-    Task<Dictionary<string, string>> Info(Section[] sections);
+    Task<Dictionary<string, string>> InfoAsync(Section[] sections);
 
     /// <summary>
     /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.<br />
@@ -53,18 +53,18 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, string&gt; response = (await client.Info(Route.AllNodes)).MultiValue;
+    /// Dictionary&lt;string, string&gt; response = (await client.InfoAsync(Route.AllNodes)).MultiValue;
     /// response.Select(pair =>
     ///         (Node: pair.Key, Value: pair.Value.Split().First(l => l.Contains("total_net_input_bytes")))
     ///     ).ToDictionary(p => p.Key, p => p.Value)
     /// </code>
     /// </example>
     /// </remarks>
-    /// <inheritdoc cref="Info(Section[], Route)" path="/param" />
+    /// <inheritdoc cref="InfoAsync(Section[], Route)" path="/param" />
     /// <returns>
-    /// <inheritdoc cref="Info(Section[], Route)" />
+    /// <inheritdoc cref="InfoAsync(Section[], Route)" />
     /// </returns>
-    Task<ClusterValue<string>> Info(Route route);
+    Task<ClusterValue<string>> InfoAsync(Route route);
 
     /// <summary>
     /// Get information and statistics about the server.<br />
@@ -75,7 +75,7 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, string&gt; response = (await client.Info([ Section.STATS ], Route.AllNodes)).MultiValue;
+    /// Dictionary&lt;string, string&gt; response = (await client.InfoAsync([ Section.STATS ], Route.AllNodes)).MultiValue;
     /// response.Select(pair =>
     ///         (Node: pair.Key, Value: pair.Value.Split().First(l => l.Contains("total_net_input_bytes")))
     ///     ).ToDictionary(p => p.Key, p => p.Value)
@@ -92,7 +92,7 @@ public interface IServerManagementClusterCommands
     /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
     /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
-    Task<ClusterValue<string>> Info(Section[] sections, Route route);
+    Task<ClusterValue<string>> InfoAsync(Section[] sections, Route route);
 
     /// <summary>
     /// Echo the given message back from the server.

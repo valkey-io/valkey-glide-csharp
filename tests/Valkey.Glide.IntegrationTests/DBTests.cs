@@ -21,7 +21,7 @@ public class DBTests(TestConfiguration config)
         ValkeyValue retrievedValue = await db.StringGetAsync(key);
         Assert.Equal("val", retrievedValue.ToString());
 
-        string info = await db.Info([InfoOptions.Section.CLUSTER]);
+        string info = await db.InfoAsync([InfoOptions.Section.CLUSTER]);
 
         Assert.True(isCluster
             ? info.Contains("cluster_enabled:1")

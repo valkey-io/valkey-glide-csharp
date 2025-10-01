@@ -125,7 +125,7 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task Info(GlideClusterClient client)
     {
-        Dictionary<string, string> info = await client.Info();
+        Dictionary<string, string> info = await client.InfoAsync();
         foreach (string nodeInfo in info.Values)
         {
             Assert.Multiple([
@@ -135,7 +135,7 @@ public class ClusterClientTests(TestConfiguration config)
             ]);
         }
 
-        info = await client.Info([Section.REPLICATION]);
+        info = await client.InfoAsync([Section.REPLICATION]);
         foreach (string nodeInfo in info.Values)
         {
             Assert.Multiple([
@@ -150,14 +150,14 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoWithRoute(GlideClusterClient client)
     {
-        ClusterValue<string> info = await client.Info(Route.Random);
+        ClusterValue<string> info = await client.InfoAsync(Route.Random);
         Assert.Multiple([
             () => Assert.Contains("# Server", info.SingleValue),
             () => Assert.Contains("# Replication", info.SingleValue),
             () => Assert.DoesNotContain("# Latencystats", info.SingleValue),
         ]);
 
-        info = await client.Info(AllPrimaries);
+        info = await client.InfoAsync(AllPrimaries);
         foreach (string nodeInfo in info.MultiValue.Values)
         {
             Assert.Multiple([
@@ -167,7 +167,7 @@ public class ClusterClientTests(TestConfiguration config)
             ]);
         }
 
-        info = await client.Info([Section.ERRORSTATS], AllNodes);
+        info = await client.InfoAsync([Section.ERRORSTATS], AllNodes);
 
         foreach (string nodeInfo in info.MultiValue.Values)
         {

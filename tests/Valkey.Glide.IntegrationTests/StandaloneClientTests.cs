@@ -145,14 +145,14 @@ public class StandaloneClientTests(TestConfiguration config)
     {
         GlideClient client = TestConfiguration.DefaultStandaloneClient();
 
-        string info = await client.Info();
+        string info = await client.InfoAsync();
         Assert.Multiple([
             () => Assert.Contains("# Server", info),
             () => Assert.Contains("# Replication", info),
             () => Assert.DoesNotContain("# Latencystats", info),
         ]);
 
-        info = await client.Info([Section.REPLICATION]);
+        info = await client.InfoAsync([Section.REPLICATION]);
         Assert.Multiple([
             () => Assert.DoesNotContain("# Server", info),
             () => Assert.Contains("# Replication", info),
@@ -343,7 +343,7 @@ public class StandaloneClientTests(TestConfiguration config)
         }
 
         // Test multiple parameters (like Go test TestConfigSetAndGet_multipleArgs)
-        var serverVersion = await client.Info([Section.SERVER]);
+        var serverVersion = await client.InfoAsync([Section.SERVER]);
         if (serverVersion != null && (serverVersion.Contains("redis_version:7") || serverVersion.Contains("valkey_version:7")))
         {
             var originalTimeout = await client.ConfigGetAsync("timeout");
