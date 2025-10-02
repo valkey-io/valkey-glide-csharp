@@ -382,63 +382,6 @@ public interface IGenericBaseCommands
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns a random key from the database.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/randomkey"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A random key, or <see langword="null"/> when the database is empty.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// string? randomKey = await client.KeyRandomAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string?> KeyRandomAsync(CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// Sorts the elements in the list, set, or sorted set at key and returns the result.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/sort"/>
-    /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
-    /// <param name="skip">The number of elements to skip.</param>
-    /// <param name="take">The number of elements to take. -1 means take all.</param>
-    /// <param name="order">The sort order.</param>
-    /// <param name="sortType">The sort type.</param>
-    /// <param name="by">The pattern to sort by external keys.</param>
-    /// <param name="get">The patterns to retrieve external keys' values.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of sorted elements.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
-    /// ValkeyValue[] result = await client.SortAsync("mylist");
-    /// // result is ["1", "2", "3"]
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged by at least numreplicas replicas.
-    /// If the timeout is reached, the command returns even if the specified number of replicas were not yet reached.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/wait"/>
-    /// <param name="numreplicas">The number of replicas to wait for.</param>
-    /// <param name="timeout">The timeout in milliseconds.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The number of replicas that acknowledged the write commands.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// long result = await client.WaitAsync(1, 1000);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
     /// Moves key from the currently selected database to the specified destination database.
     /// When key already exists in the destination database, or it does not exist in the source database, it does nothing.
     /// It is possible to use MOVE as a locking primitive because of this.

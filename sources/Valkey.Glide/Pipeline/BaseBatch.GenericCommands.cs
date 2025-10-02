@@ -68,24 +68,12 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, bool)" />
     public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false) => AddCmd(KeyCopyAsync(sourceKey, destinationKey, replace));
 
-<<<<<<< Updated upstream
-=======
-    /// <inheritdoc cref="IBatchGenericCommands.KeyRandom()" />
-    public T KeyRandom() => AddCmd(KeyRandomAsync());
-
-    /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, long, long, Order, SortType, ValkeyValue, ValkeyValue[])" />
-    public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null) => AddCmd(SortAsync(key, skip, take, order, sortType, by, get));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Wait(long, long)" />
-    public T Wait(long numreplicas, long timeout) => AddCmd(WaitAsync(numreplicas, timeout));
-
     /// <inheritdoc cref="IBatchGenericCommands.KeyMove(ValkeyKey, int)" />
     public T KeyMove(ValkeyKey key, int database) => AddCmd(KeyMoveAsync(key, database));
 
     /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, int, bool)" />
     public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false) => AddCmd(KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
 
->>>>>>> Stashed changes
     // Explicit interface implementations for IBatchGenericCommands
     IBatch IBatchGenericCommands.KeyDelete(ValkeyKey key) => KeyDelete(key);
     IBatch IBatchGenericCommands.KeyDelete(ValkeyKey[] keys) => KeyDelete(keys);
