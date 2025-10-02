@@ -239,7 +239,11 @@ public class CommandTests
             () => Assert.Equal(new string[] { "HVALS", "key" }, Request.HashValuesAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HRANDFIELD", "key" }, Request.HashRandomFieldAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3" }, Request.HashRandomFieldsAsync("key", 3).GetArgs()),
-            () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3", "WITHVALUES" }, Request.HashRandomFieldsWithValuesAsync("key", 3).GetArgs())
+            () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3", "WITHVALUES" }, Request.HashRandomFieldsWithValuesAsync("key", 3).GetArgs()),
+
+            // HyperLogLog Commands
+            () => Assert.Equal(["PFADD", "key", "element"], Request.HyperLogLogAddAsync("key", "element").GetArgs()),
+            () => Assert.Equal(["PFADD", "key", "element1", "element2", "element3"], Request.HyperLogLogAddAsync("key", ["element1", "element2", "element3"]).GetArgs())
         );
     }
 
@@ -405,7 +409,13 @@ public class CommandTests
             () => Assert.False(Request.ListLeftPopAsync(["mylist"], 1).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"left_value" } } }).IsNull),
             () => Assert.False(Request.ListRightPopAsync(["list2"], 2).Converter(new Dictionary<GlideString, object> { { (GlideString)"list2", new object[] { (GlideString)"right1", (GlideString)"right2" } } }).IsNull),
             () => Assert.True(Request.ListLeftPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull),
-            () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull)
+            () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull),
+
+            // HyperLogLog Command Converters
+            () => Assert.True(Request.HyperLogLogAddAsync("key", "element").Converter(1L)),
+            () => Assert.False(Request.HyperLogLogAddAsync("key", "element").Converter(0L)),
+            () => Assert.True(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(1L)),
+            () => Assert.False(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(0L))
         );
     }
 
