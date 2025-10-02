@@ -2,7 +2,6 @@
 
 using System.Runtime.InteropServices;
 
-using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 using Valkey.Glide.Pipeline;
 
