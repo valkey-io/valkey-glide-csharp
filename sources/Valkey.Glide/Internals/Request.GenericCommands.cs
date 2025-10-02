@@ -183,4 +183,30 @@ internal partial class Request
 
     public static Cmd<bool, bool> KeyMoveAsync(ValkeyKey key, int database)
         => Simple<bool>(RequestType.Move, [key.ToGlideString(), database.ToGlideString()]);
+
+    /// <summary>
+    /// Creates a command to add one element to a HyperLogLog data structure.
+    /// </summary>
+    /// <param name="key">The key of the HyperLogLog.</param>
+    /// <param name="element">The element to add.</param>
+    /// <returns>A command that adds the element to the HyperLogLog and returns true if altered.</returns>
+    public static Cmd<long, bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element)
+        => Boolean<long>(RequestType.PfAdd, [key.ToGlideString(), element.ToGlideString()]);
+
+    /// <summary>
+    /// Creates a command to add multiple elements to a HyperLogLog data structure.
+    /// </summary>
+    /// <param name="key">The key of the HyperLogLog.</param>
+    /// <param name="elements">The elements to add.</param>
+    /// <returns>A command that adds the elements to the HyperLogLog and returns true if altered.</returns>
+    public static Cmd<long, bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue[] elements)
+    {
+        GlideString[] args = new GlideString[elements.Length + 1];
+        args[0] = key.ToGlideString();
+        for (int i = 0; i < elements.Length; i++)
+        {
+            args[i + 1] = elements[i].ToGlideString();
+        }
+        return Boolean<long>(RequestType.PfAdd, args);
+    }
 }

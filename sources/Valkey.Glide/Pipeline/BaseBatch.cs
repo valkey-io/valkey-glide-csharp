@@ -65,7 +65,15 @@ public abstract partial class BaseBatch<T>(bool isAtomic) : IBatch where T : Bas
     /// <inheritdoc cref="IBatch.Info(Section[])" />
     public T Info(Section[] sections) => AddCmd(Request.Info(sections));
 
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey, ValkeyValue)" />
+    public T HyperLogLogAdd(ValkeyKey key, ValkeyValue element) => AddCmd(Request.HyperLogLogAddAsync(key, element));
+
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey, ValkeyValue[])" />
+    public T HyperLogLogAdd(ValkeyKey key, ValkeyValue[] elements) => AddCmd(Request.HyperLogLogAddAsync(key, elements));
+
     IBatch IBatch.CustomCommand(GlideString[] args) => CustomCommand(args);
     IBatch IBatch.Info() => Info();
     IBatch IBatch.Info(Section[] sections) => Info(sections);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey key, ValkeyValue element) => HyperLogLogAdd(key, element);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey key, ValkeyValue[] elements) => HyperLogLogAdd(key, elements);
 }
