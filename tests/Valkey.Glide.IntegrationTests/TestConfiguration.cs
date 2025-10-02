@@ -415,8 +415,8 @@ public class TestConfiguration : IDisposable
     private static Version TryGetVersion(BaseClient client)
     {
         string info = client.GetType() == typeof(GlideClient)
-            ? ((GlideClient)client).Info().GetAwaiter().GetResult()
-            : ((GlideClusterClient)client).Info(Route.Random).GetAwaiter().GetResult().SingleValue;
+            ? ((GlideClient)client).InfoAsync().GetAwaiter().GetResult()
+            : ((GlideClusterClient)client).InfoAsync(Route.Random).GetAwaiter().GetResult().SingleValue;
         string[] lines = info.Split();
         string line = lines.FirstOrDefault(l => l.Contains("valkey_version")) ?? lines.First(l => l.Contains("redis_version"));
         return new(line.Split(':')[1]);
