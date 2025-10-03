@@ -153,7 +153,7 @@ public class CommandTests
             () => Assert.Equal(["EXPIRE", "key", "60"], Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60)).GetArgs()),
             () => Assert.Equal(["EXPIRE", "key", "60", "NX"], Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60), ExpireWhen.HasNoExpiry).GetArgs()),
             () => Assert.Equal(["EXPIREAT", "key", "1609459200"], Request.KeyExpireAsync("key", new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc)).GetArgs()),
-            () => Assert.Equal(["TTL", "key"], Request.KeyTimeToLiveAsync("key").GetArgs()),
+            () => Assert.Equal(["PTTL", "key"], Request.KeyTimeToLiveAsync("key").GetArgs()),
             () => Assert.Equal(["TYPE", "key"], Request.KeyTypeAsync("key").GetArgs()),
             () => Assert.Equal(["RENAME", "oldkey", "newkey"], Request.KeyRenameAsync("oldkey", "newkey").GetArgs()),
             () => Assert.Equal(["RENAMENX", "oldkey", "newkey"], Request.KeyRenameNXAsync("oldkey", "newkey").GetArgs()),
@@ -179,7 +179,28 @@ public class CommandTests
             () => Assert.Equal(["TOUCH", "key1", "key2"], Request.KeyTouchAsync(["key1", "key2"]).GetArgs()),
             () => Assert.Equal(["COPY", "src", "dest"], Request.KeyCopyAsync("src", "dest").GetArgs()),
             () => Assert.Equal(["COPY", "src", "dest", "DB", "1", "REPLACE"], Request.KeyCopyAsync("src", "dest", 1, true).GetArgs()),
+            () => Assert.Equal(["PEXPIRETIME", "key"], Request.KeyExpireTimeAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "ENCODING", "key"], Request.KeyEncodingAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "FREQ", "key"], Request.KeyFrequencyAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "IDLETIME", "key"], Request.KeyIdleTimeAsync("key").GetArgs()),
+            () => Assert.Equal(["OBJECT", "REFCOUNT", "key"], Request.KeyRefCountAsync("key").GetArgs()),
+            () => Assert.Equal(["RANDOMKEY"], Request.KeyRandomAsync().GetArgs()),
             () => Assert.Equal(["MOVE", "key", "1"], Request.KeyMoveAsync("key", 1).GetArgs()),
+
+            // SCAN Commands
+            () => Assert.Equal(["SCAN", "0"], Request.ScanAsync(0).GetArgs()),
+            () => Assert.Equal(["SCAN", "10"], Request.ScanAsync(10).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "MATCH", "pattern*"], Request.ScanAsync(0, "pattern*").GetArgs()),
+            () => Assert.Equal(["SCAN", "5", "MATCH", "test*"], Request.ScanAsync(5, "test*").GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "COUNT", "10"], Request.ScanAsync(0, pageSize: 10).GetArgs()),
+            () => Assert.Equal(["SCAN", "5", "COUNT", "20"], Request.ScanAsync(5, pageSize: 20).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "MATCH", "pattern*", "COUNT", "10"], Request.ScanAsync(0, "pattern*", 10).GetArgs()),
+            () => Assert.Equal(["SCAN", "10", "MATCH", "*suffix", "COUNT", "5"], Request.ScanAsync(10, "*suffix", 5).GetArgs()),
+
+            // WAIT Commands
+            () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, 1000).GetArgs()),
+            () => Assert.Equal(["WAIT", "0", "0"], Request.WaitAsync(0, 0).GetArgs()),
+            () => Assert.Equal(["WAIT", "3", "5000"], Request.WaitAsync(3, 5000).GetArgs()),
 
             // List Commands
             () => Assert.Equal(["LPOP", "a"], Request.ListLeftPopAsync("a").GetArgs()),
@@ -393,7 +414,7 @@ public class CommandTests
             () => Assert.Equal(2L, Request.KeyExistsAsync(["key1", "key2"]).Converter(2L)),
             () => Assert.True(Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60)).Converter(true)),
             () => Assert.False(Request.KeyExpireAsync("key", TimeSpan.FromSeconds(60)).Converter(false)),
-            () => Assert.Equal(TimeSpan.FromSeconds(30), Request.KeyTimeToLiveAsync("key").Converter(30L)),
+            () => Assert.Equal(TimeSpan.FromMilliseconds(30), Request.KeyTimeToLiveAsync("key").Converter(30L)),
             () => Assert.Null(Request.KeyTimeToLiveAsync("key").Converter(-1L)),
             () => Assert.Null(Request.KeyTimeToLiveAsync("key").Converter(-2L)),
             () => Assert.Equal(ValkeyType.String, Request.KeyTypeAsync("key").Converter("string")),
@@ -416,8 +437,46 @@ public class CommandTests
             () => Assert.Equal(2L, Request.KeyTouchAsync(["key1", "key2"]).Converter(2L)),
             () => Assert.True(Request.KeyCopyAsync("src", "dest").Converter(true)),
             () => Assert.False(Request.KeyCopyAsync("src", "dest").Converter(false)),
+            () => Assert.Equal(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc), Request.KeyExpireTimeAsync("key").Converter(1609459200000L)),
+            () => Assert.Null(Request.KeyExpireTimeAsync("key").Converter(-1L)),
+            () => Assert.Null(Request.KeyExpireTimeAsync("key").Converter(-2L)),
+            () => Assert.Equal("embstr", Request.KeyEncodingAsync("key").Converter(new GlideString("embstr"))),
+            () => Assert.Null(Request.KeyEncodingAsync("key").Converter(null)),
+            () => Assert.Equal(5L, Request.KeyFrequencyAsync("key").Converter(5L)),
+            () => Assert.Null(Request.KeyFrequencyAsync("key").Converter(-1L)),
+            () => Assert.Equal(10L, Request.KeyIdleTimeAsync("key").Converter(10L)),
+            () => Assert.Null(Request.KeyIdleTimeAsync("key").Converter(-1L)),
+            () => Assert.Equal(3L, Request.KeyRefCountAsync("key").Converter(3L)),
+            () => Assert.Null(Request.KeyRefCountAsync("key").Converter(-1L)),
+            () => Assert.Equal("randomkey", Request.KeyRandomAsync().Converter(new GlideString("randomkey"))),
+            () => Assert.Null(Request.KeyRandomAsync().Converter(null)),
             () => Assert.True(Request.KeyMoveAsync("key", 1).Converter(true)),
             () => Assert.False(Request.KeyMoveAsync("key", 1).Converter(false)),
+
+            // SCAN Commands Converters
+            () =>
+            {
+                var result = Request.ScanAsync(0).Converter(new object[] { 0L, new object[] { (gs)"key1", (gs)"key2" } });
+                Assert.Equal(0L, result.Item1);
+                Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()).ToArray());
+            },
+            () =>
+            {
+                var result = Request.ScanAsync(10).Converter(new object[] { 5L, new object[] { (gs)"test" } });
+                Assert.Equal(5L, result.Item1);
+                Assert.Equal(["test"], result.Item2.Select(k => k.ToString()).ToArray());
+            },
+            () =>
+            {
+                var result = Request.ScanAsync(0).Converter(new object[] { 0L, Array.Empty<object>() });
+                Assert.Equal(0L, result.Item1);
+                Assert.Empty(result.Item2);
+            },
+
+            // WAIT Commands Converters
+            () => Assert.Equal(2L, Request.WaitAsync(1, 1000).Converter(2L)),
+            () => Assert.Equal(0L, Request.WaitAsync(0, 0).Converter(0L)),
+            () => Assert.Equal(1L, Request.WaitAsync(3, 5000).Converter(1L)),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
             () => Assert.Equal(["one", "two"], Request.ListLeftPopAsync("a", 2).Converter([(gs)"one", (gs)"two"])),

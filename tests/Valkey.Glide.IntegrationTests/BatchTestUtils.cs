@@ -507,6 +507,33 @@ internal class BatchTestUtils
         _ = batch.KeyTimeToLive(genericKey1);
         testData.Add(new(null, "KeyTimeToLive(genericKey1) after persist"));
 
+        _ = batch.KeyExpire(genericKey1, TimeSpan.FromSeconds(120));
+        testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
+
+        if (TestConfiguration.SERVER_VERSION > new Version("7.0.0")) // KeyExpireTime added in 7.0.0
+        {
+            _ = batch.KeyExpireTime(genericKey1);
+            testData.Add(new(DateTime.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
+        }
+
+        _ = batch.KeyEncoding(genericKey1);
+        testData.Add(new("embstr", "KeyEncoding(genericKey1)", true));
+
+        // KeyFrequency requires LFU maxmemory policy to be configured
+        // Since we can't guarantee this in test environment, we skip this test in batch mode
+        // The functionality is tested in integration tests with proper exception handling
+        // _ = batch.KeyFrequency(genericKey1);
+        // testData.Add(new(1L, "KeyFrequency(genericKey1)", true));
+
+        _ = batch.KeyIdleTime(genericKey1);
+        testData.Add(new(0L, "KeyIdleTime(genericKey1)", true));
+
+        _ = batch.KeyRefCount(genericKey1);
+        testData.Add(new(1L, "KeyRefCount(genericKey1)", true));
+
+        _ = batch.KeyRandom();
+        testData.Add(new(genericKey1, "KeyRandom()", true));
+
         _ = batch.KeyTouch(genericKey1);
         testData.Add(new(true, "KeyTouch(genericKey1)"));
 
@@ -551,6 +578,16 @@ internal class BatchTestUtils
 
         _ = batch.KeyUnlink([genericKey1, renamedKey, genericKey3]);
         testData.Add(new(1L, "KeyUnlink([genericKey1, renamedKey, genericKey3])"));
+
+        // WAIT command tests
+        _ = batch.StringSet(prefix + "waitkey", "value");
+        testData.Add(new(true, "StringSet(prefix + waitkey, value)"));
+
+        _ = batch.Wait(0, 1000);
+        testData.Add(new(0L, "Wait(0, 1000)", true));
+
+        _ = batch.Wait(1, 0);
+        testData.Add(new(0L, "Wait(1, 0)", true));
 
         return testData;
     }
