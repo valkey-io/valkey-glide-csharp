@@ -278,7 +278,7 @@ public class StandaloneClientTests(TestConfiguration config)
         _ = batch2.KeyMove(moveKey, 2);
 
         object?[] results = (await client.Exec((Batch)batch, false))!;
-        object?[] results2 = (await client.Exec((Batch)batch2, false))!;
+        object?[] results2 = (await client.Exec(batch2, false))!;
 
         Assert.Multiple(
             () => Assert.True((bool)results[0]!), // Set sourceKey
