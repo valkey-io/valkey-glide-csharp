@@ -220,8 +220,7 @@ public abstract class ConnectionConfiguration
     }
 
     /// <summary>
-    /// Configuration for a cluster client. Use <see cref="ClusterClientConfigurationBuilder" /> or
-    /// <see cref="ClusterClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, Protocol?, string?)" /> to create an instance.
+    /// Configuration for a cluster client. Use <see cref="ClusterClientConfigurationBuilder" /> to create an instance.
     /// </summary>
     public sealed class ClusterClientConfiguration : BaseClientConfiguration
     {
