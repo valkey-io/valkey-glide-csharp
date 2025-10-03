@@ -524,16 +524,16 @@ public class ClusterClientTests(TestConfiguration config)
             .Build();
 
         using var client = await GlideClusterClient.CreateClient(config);
-        
+
         // Verify we can connect with database ID 1
         TimeSpan result = await client.PingAsync();
         Assert.True(result >= TimeSpan.Zero);
-        
+
         // Verify database isolation by setting a key in database 1
         string testKey = Guid.NewGuid().ToString();
         string testValue = "test_value_db1";
         await client.StringSetAsync(testKey, testValue);
-        
+
         // Verify the key exists in database 1
         ValkeyValue retrievedValue = await client.StringGetAsync(testKey);
         Assert.Equal(testValue, retrievedValue.ToString());
@@ -550,14 +550,14 @@ public class ClusterClientTests(TestConfiguration config)
 
         string key = Guid.NewGuid().ToString();
         string value = "test_value";
-        
+
         // Set a key in the current database
         await client.StringSetAsync(key, value);
-        
+
         // Move the key to database 1
         bool moveResult = await client.KeyMoveAsync(key, 1);
         Assert.True(moveResult);
-        
+
         // Verify the key no longer exists in the current database
         Assert.False(await client.KeyExistsAsync(key));
     }
@@ -574,14 +574,14 @@ public class ClusterClientTests(TestConfiguration config)
         string sourceKey = Guid.NewGuid().ToString();
         string destKey = Guid.NewGuid().ToString();
         string value = "test_value";
-        
+
         // Set a key in the current database
         await client.StringSetAsync(sourceKey, value);
-        
+
         // Copy the key to database 1
         bool copyResult = await client.KeyCopyAsync(sourceKey, destKey, 1);
         Assert.True(copyResult);
-        
+
         // Verify the source key still exists in the current database
         Assert.True(await client.KeyExistsAsync(sourceKey));
     }
