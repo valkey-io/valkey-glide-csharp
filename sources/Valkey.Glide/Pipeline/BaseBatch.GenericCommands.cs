@@ -130,12 +130,9 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.KeyIdleTime(ValkeyKey key) => KeyIdleTime(key);
     IBatch IBatchGenericCommands.KeyRefCount(ValkeyKey key) => KeyRefCount(key);
     IBatch IBatchGenericCommands.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => KeyCopy(sourceKey, destinationKey, replace);
-<<<<<<< HEAD
     IBatch IBatchGenericCommands.KeyMove(ValkeyKey key, int database) => KeyMove(key, database);
     IBatch IBatchGenericCommands.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace) => KeyCopy(sourceKey, destinationKey, destinationDatabase, replace);
-=======
     IBatch IBatchGenericCommands.KeyRandom() => KeyRandom();
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, ValkeyValue[]? get) => Sort(key, skip, take, order, sortType, by, get);
     IBatch IBatchGenericCommands.Wait(long numreplicas, long timeout) => Wait(numreplicas, timeout);
->>>>>>> 21f0ecef5ad79cbf806c757e5ddb8e8825824032
 }

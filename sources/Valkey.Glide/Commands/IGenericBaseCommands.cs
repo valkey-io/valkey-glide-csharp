@@ -539,6 +539,7 @@ public interface IGenericBaseCommands
     /// </example>
     /// </remarks>
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false, CommandFlags flags = CommandFlags.None);
+    /// <summary>
     /// Returns a random key from the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/randomkey"/>
