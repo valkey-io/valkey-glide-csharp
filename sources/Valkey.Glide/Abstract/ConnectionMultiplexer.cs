@@ -54,7 +54,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         Utils.Requires<NotImplementedException>(log == null, "Log writer is not supported by GLIDE");
         StandaloneClientConfiguration standaloneConfig = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration).Build();
         GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
-        string info = await standalone.Info([Section.CLUSTER]);
+        string info = await standalone.InfoAsync([Section.CLUSTER]);
         BaseClientConfiguration config = info.Contains("cluster_enabled:1")
             ? CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(configuration).Build()
             : standaloneConfig;

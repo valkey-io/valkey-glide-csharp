@@ -60,7 +60,7 @@ public class ServerTests(TestConfiguration config)
                 }
             }
 
-            IGrouping<string, KeyValuePair<string, string>>[] infoParsed = server.Info();
+            IGrouping<string, KeyValuePair<string, string>>[] infoParsed = await server.InfoAsync();
             foreach (IGrouping<string, KeyValuePair<string, string>> data in infoParsed)
             {
                 if (data.Key == "Server")

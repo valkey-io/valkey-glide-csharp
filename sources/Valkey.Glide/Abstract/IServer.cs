@@ -81,9 +81,6 @@ public interface IServer
     /// <inheritdoc cref="InfoRawAsync(ValkeyValue, CommandFlags)"/>
     string? InfoRaw(ValkeyValue section = default, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="InfoAsync(ValkeyValue, CommandFlags)"/>
-    IGrouping<string, KeyValuePair<string, string>>[] Info(ValkeyValue section = default, CommandFlags flags = CommandFlags.None);
-
     /// <summary>
     /// This command is often used to test if a connection is still alive, or to measure latency.
     /// </summary>
@@ -130,6 +127,86 @@ public interface IServer
     /// </example>
     /// </remarks>
     Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Get the values of configuration parameters.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-get"/>
+    /// <param name="pattern">The pattern to match configuration parameters. If not specified, returns all parameters.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>An array of key-value pairs representing configuration parameters and their values.</returns>
+    Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Reset the statistics reported by the INFO command.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-resetstat"/>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Rewrite the configuration file with the current configuration.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-rewrite"/>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Set a configuration parameter to the given value.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-set"/>
+    /// <param name="setting">The configuration parameter to set.</param>
+    /// <param name="value">The value to set for the configuration parameter.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Return the number of keys in the selected database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/dbsize"/>
+    /// <param name="database">The database index. If -1, uses the current database.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>The number of keys in the database.</returns>
+    Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Delete all the keys of all databases on the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall"/>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Delete all the keys of the selected database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushdb"/>
+    /// <param name="database">The database index. If -1, uses the current database.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Return the UNIX timestamp of the last successful save to disk.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lastsave"/>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>The timestamp of the last successful save.</returns>
+    Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Return the current server time.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/time"/>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>The current server time.</returns>
+    Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Display some computer art and the Valkey version.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut"/>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <returns>A string containing computer art and version information.</returns>
+    Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Gets the name of the current connection.
