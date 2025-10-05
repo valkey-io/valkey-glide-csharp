@@ -23,7 +23,6 @@ namespace Valkey.Glide.Pipeline;
 /// </param>
 public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatchStandalone
 {
-    // Standalone commands: select, move, copy, scan
-
     // Explicit interface implementations for IBatchStandalone
+    IBatch IBatchStandalone.SelectAsync(long index) => SelectAsync(index);
 }
