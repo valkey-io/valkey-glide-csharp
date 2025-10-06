@@ -28,4 +28,14 @@ internal interface IBatchHyperLogLogCommands
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey[], CommandFlags)" path="/param" />
     /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey[], CommandFlags)" /></returns>
     IBatch HyperLogLogLength(ValkeyKey[] keys);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/summary" />
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/param" />
+    /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
+    IBatch HyperLogLogMerge(ValkeyKey destination, ValkeyKey first, ValkeyKey second);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey[], CommandFlags)" path="/summary" />
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey[], CommandFlags)" path="/param" />
+    /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey[], CommandFlags)" /></returns>
+    IBatch HyperLogLogMerge(ValkeyKey destination, ValkeyKey[] sourceKeys);
 }

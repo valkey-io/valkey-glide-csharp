@@ -137,4 +137,79 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         count = await client.HyperLogLogLengthAsync([prefix + nonExistentKey, prefix + Guid.NewGuid().ToString()]);
         Assert.Equal(0, count);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHyperLogLogMerge_TwoKeys(BaseClient client)
+    {
+        // Use keys with same hash tag to ensure they map to same slot in cluster mode
+        string prefix = "{hll}";
+        string source1 = prefix + Guid.NewGuid().ToString();
+        string source2 = prefix + Guid.NewGuid().ToString();
+        string destination = prefix + Guid.NewGuid().ToString();
+
+        // Add different elements to source HLLs
+        await client.HyperLogLogAddAsync(source1, ["a", "b", "c"]);
+        await client.HyperLogLogAddAsync(source2, ["c", "d", "e"]);
+
+        // Merge into destination
+        await client.HyperLogLogMergeAsync(destination, source1, source2);
+
+        // Check that destination has merged cardinality
+        long destCount = await client.HyperLogLogLengthAsync(destination);
+        long source1Count = await client.HyperLogLogLengthAsync(source1);
+        long source2Count = await client.HyperLogLogLengthAsync(source2);
+
+        Assert.True(destCount > 0);
+        Assert.True(destCount >= Math.Max(source1Count, source2Count)); // Should be at least as large as largest source
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHyperLogLogMerge_MultipleKeys(BaseClient client)
+    {
+        // Use keys with same hash tag to ensure they map to same slot in cluster mode
+        string prefix = "{hll}";
+        string source1 = prefix + Guid.NewGuid().ToString();
+        string source2 = prefix + Guid.NewGuid().ToString();
+        string source3 = prefix + Guid.NewGuid().ToString();
+        string destination = prefix + Guid.NewGuid().ToString();
+
+        // Add different elements to source HLLs
+        await client.HyperLogLogAddAsync(source1, ["a", "b"]);
+        await client.HyperLogLogAddAsync(source2, ["c", "d"]);
+        await client.HyperLogLogAddAsync(source3, ["e", "f"]);
+
+        // Merge all sources into destination
+        await client.HyperLogLogMergeAsync(destination, [source1, source2, source3]);
+
+        // Check that destination has merged cardinality
+        long destCount = await client.HyperLogLogLengthAsync(destination);
+        Assert.True(destCount > 0);
+        Assert.True(destCount <= 10); // Should be reasonable approximation
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHyperLogLogMerge_EmptySource(BaseClient client)
+    {
+        // Use keys with same hash tag to ensure they map to same slot in cluster mode
+        string prefix = "{hll}";
+        string source1 = prefix + Guid.NewGuid().ToString();
+        string emptySource = prefix + Guid.NewGuid().ToString();
+        string destination = prefix + Guid.NewGuid().ToString();
+
+        // Add elements to only one source
+        await client.HyperLogLogAddAsync(source1, ["a", "b", "c"]);
+        // emptySource remains empty
+
+        // Merge with empty source
+        await client.HyperLogLogMergeAsync(destination, source1, emptySource);
+
+        // Destination should have same cardinality as source1
+        long destCount = await client.HyperLogLogLengthAsync(destination);
+        long source1Count = await client.HyperLogLogLengthAsync(source1);
+        
+        Assert.Equal(source1Count, destCount);
+    }
 }

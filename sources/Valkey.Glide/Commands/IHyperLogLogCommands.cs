@@ -88,4 +88,39 @@ public interface IHyperLogLogCommands
     /// </example>
     /// </remarks>
     Task<long> HyperLogLogLengthAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Merges multiple HyperLogLog values into a unique value that will approximate the cardinality of the union of the observed Sets of the source HyperLogLog structures.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pfmerge/"/>
+    /// <param name="destination">The key of the destination HyperLogLog.</param>
+    /// <param name="first">The key of the first source HyperLogLog.</param>
+    /// <param name="second">The key of the second source HyperLogLog.</param>
+    /// <param name="flags">The command flags. Currently flags are ignored.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.HyperLogLogMergeAsync("dest_hll", "hll1", "hll2");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Merges multiple HyperLogLog values into a unique value that will approximate the cardinality of the union of the observed Sets of the source HyperLogLog structures.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pfmerge/"/>
+    /// <param name="destination">The key of the destination HyperLogLog.</param>
+    /// <param name="sourceKeys">The keys of the source HyperLogLogs.</param>
+    /// <param name="flags">The command flags. Currently flags are ignored.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.HyperLogLogMergeAsync("dest_hll", ["hll1", "hll2", "hll3"]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys, CommandFlags flags = CommandFlags.None);
 }
