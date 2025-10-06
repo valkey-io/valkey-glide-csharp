@@ -18,4 +18,16 @@ public abstract partial class BaseClient : IHyperLogLogCommands
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.HyperLogLogAddAsync(key, elements));
     }
+
+    public async Task<long> HyperLogLogLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HyperLogLogLengthAsync(key));
+    }
+
+    public async Task<long> HyperLogLogLengthAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.HyperLogLogLengthAsync(keys));
+    }
 }

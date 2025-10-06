@@ -18,4 +18,14 @@ internal interface IBatchHyperLogLogCommands
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogAddAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/param" />
     /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogAddAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
     IBatch HyperLogLogAdd(ValkeyKey key, ValkeyValue[] elements);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey, CommandFlags)" path="/summary" />
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey, CommandFlags)" path="/param" />
+    /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch HyperLogLogLength(ValkeyKey key);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey[], CommandFlags)" path="/summary" />
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey[], CommandFlags)" path="/param" />
+    /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey[], CommandFlags)" /></returns>
+    IBatch HyperLogLogLength(ValkeyKey[] keys);
 }

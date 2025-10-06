@@ -243,7 +243,9 @@ public class CommandTests
 
             // HyperLogLog Commands
             () => Assert.Equal(["PFADD", "key", "element"], Request.HyperLogLogAddAsync("key", "element").GetArgs()),
-            () => Assert.Equal(["PFADD", "key", "element1", "element2", "element3"], Request.HyperLogLogAddAsync("key", ["element1", "element2", "element3"]).GetArgs())
+            () => Assert.Equal(["PFADD", "key", "element1", "element2", "element3"], Request.HyperLogLogAddAsync("key", ["element1", "element2", "element3"]).GetArgs()),
+            () => Assert.Equal(["PFCOUNT", "key"], Request.HyperLogLogLengthAsync("key").GetArgs()),
+            () => Assert.Equal(["PFCOUNT", "key1", "key2", "key3"], Request.HyperLogLogLengthAsync(["key1", "key2", "key3"]).GetArgs())
         );
     }
 
@@ -412,10 +414,13 @@ public class CommandTests
             () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull),
 
             // HyperLogLog Command Converters
-            () => Assert.True(Request.HyperLogLogAddAsync("key", "element").Converter(1L)),
-            () => Assert.False(Request.HyperLogLogAddAsync("key", "element").Converter(0L)),
-            () => Assert.True(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(1L)),
-            () => Assert.False(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(0L))
+            () => Assert.True(Request.HyperLogLogAddAsync("key", "element").Converter(true)),
+            () => Assert.False(Request.HyperLogLogAddAsync("key", "element").Converter(false)),
+            () => Assert.True(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(true)),
+            () => Assert.False(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(false)),
+            () => Assert.Equal(42L, Request.HyperLogLogLengthAsync("key").Converter(42L)),
+            () => Assert.Equal(0L, Request.HyperLogLogLengthAsync("key").Converter(0L)),
+            () => Assert.Equal(100L, Request.HyperLogLogLengthAsync(["key1", "key2"]).Converter(100L))
         );
     }
 
