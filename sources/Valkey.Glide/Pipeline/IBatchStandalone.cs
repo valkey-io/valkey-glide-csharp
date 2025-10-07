@@ -7,7 +7,7 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 internal interface IBatchStandalone
 {
-    /// <inheritdoc cref="IServerManagementCommands.SelectAsync(long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.SelectAsync(long, CommandFlags)" /></returns>
+    /// <inheritdoc cref="Commands.IServerManagementCommands.SelectAsync(long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IServerManagementCommands.SelectAsync(long, CommandFlags)" /></returns>
     IBatch SelectAsync(long index);
 }
