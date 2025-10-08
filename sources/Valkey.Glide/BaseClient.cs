@@ -52,9 +52,15 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         Message message = client._messageContainer.GetMessageForCall();
         CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer);
         client._clientPointer = await message; // This will throw an error thru failure callback if any
-        return client._clientPointer != IntPtr.Zero
-            ? client
-            : throw new ConnectionException("Failed creating a client");
+
+        if (client._clientPointer != IntPtr.Zero)
+        {
+            // Initialize server version after successful connection
+            await client.InitializeServerVersionAsync();
+            return client;
+        }
+
+        throw new ConnectionException("Failed creating a client");
     }
 
     protected BaseClient()
@@ -139,6 +145,8 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     internal void SetInfo(string info) => _clientInfo = info;
 
+    protected abstract Task InitializeServerVersionAsync();
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void SuccessAction(ulong index, IntPtr ptr);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -160,6 +168,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private readonly MessageContainer _messageContainer;
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
+    protected Version? _serverVersion; // cached server version
 
     #endregion private fields
 }

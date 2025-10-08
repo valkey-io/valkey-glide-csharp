@@ -125,7 +125,7 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task Info(GlideClusterClient client)
     {
-        Dictionary<string, string> info = await client.Info();
+        Dictionary<string, string> info = await client.InfoAsync();
         foreach (string nodeInfo in info.Values)
         {
             Assert.Multiple([
@@ -135,7 +135,7 @@ public class ClusterClientTests(TestConfiguration config)
             ]);
         }
 
-        info = await client.Info([Section.REPLICATION]);
+        info = await client.InfoAsync([Section.REPLICATION]);
         foreach (string nodeInfo in info.Values)
         {
             Assert.Multiple([
@@ -150,14 +150,14 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoWithRoute(GlideClusterClient client)
     {
-        ClusterValue<string> info = await client.Info(Route.Random);
+        ClusterValue<string> info = await client.InfoAsync(Route.Random);
         Assert.Multiple([
             () => Assert.Contains("# Server", info.SingleValue),
             () => Assert.Contains("# Replication", info.SingleValue),
             () => Assert.DoesNotContain("# Latencystats", info.SingleValue),
         ]);
 
-        info = await client.Info(AllPrimaries);
+        info = await client.InfoAsync(AllPrimaries);
         foreach (string nodeInfo in info.MultiValue.Values)
         {
             Assert.Multiple([
@@ -167,7 +167,7 @@ public class ClusterClientTests(TestConfiguration config)
             ]);
         }
 
-        info = await client.Info([Section.ERRORSTATS], AllNodes);
+        info = await client.InfoAsync([Section.ERRORSTATS], AllNodes);
 
         foreach (string nodeInfo in info.MultiValue.Values)
         {
@@ -262,6 +262,86 @@ public class ClusterClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigGetAsync_ReturnsConfigurationPerNode(GlideClusterClient client)
+    {
+        // Test getting all configuration from all nodes
+        var allConfig = await client.ConfigGetAsync("*");
+        Assert.True(allConfig.HasMultiData);
+        Assert.NotEmpty(allConfig.MultiValue);
+
+        // Each node should have configuration
+        foreach (var nodeConfig in allConfig.MultiValue.Values)
+        {
+            Assert.NotEmpty(nodeConfig);
+            // Check for any configuration parameter (timeout is commonly available)
+            Assert.True(nodeConfig.Any(), "Node should have at least one configuration parameter");
+        }
+
+        // Test with specific route using maxmemory-policy parameter (which should exist)
+        var singleNodeConfig = await client.ConfigGetAsync("maxmemory-policy", Route.Random);
+        Assert.NotNull(singleNodeConfig.SingleValue);
+        Assert.Single(singleNodeConfig.SingleValue);
+        Assert.Equal("maxmemory-policy", singleNodeConfig.SingleValue[0].Key);
+
+        // Test ConfigSet and ConfigGet combination (like Go TestConfigSetGet)
+        // Use maxmemory-policy instead of timeout as it's more reliably settable
+        var originalPolicy = await client.ConfigGetAsync("maxmemory-policy", Route.Random);
+        string originalValue = originalPolicy.SingleValue?.FirstOrDefault().Value ?? "noeviction";
+
+        try
+        {
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lru");
+
+            var result = await client.ConfigGetAsync("maxmemory-policy");
+            Assert.True(result.HasMultiData);
+            Assert.NotEmpty(result.MultiValue);
+            foreach (var nodeConfig in result.MultiValue.Values)
+            {
+                Assert.Contains(nodeConfig, kvp => kvp.Key == "maxmemory-policy" && kvp.Value == "allkeys-lru");
+            }
+
+            // Test with route options (like Go TestConfigSetGetWithOptions)
+            // Set on all primaries and verify we can read from primaries
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lfu", Route.AllPrimaries);
+
+            // Get from all primaries to verify the change was applied
+            var primariesResult = await client.ConfigGetAsync("maxmemory-policy", Route.AllPrimaries);
+            Assert.NotEmpty(primariesResult.MultiValue.Values);
+            foreach (var nodeConfig in primariesResult.MultiValue.Values)
+            {
+                Assert.Contains(nodeConfig, kvp => kvp.Key == "maxmemory-policy" && kvp.Value == "allkeys-lfu");
+            }
+
+            // Test setting different value and verify it propagates to all primaries
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"volatile-lru", Route.AllPrimaries);
+            var finalResult = await client.ConfigGetAsync("maxmemory-policy", Route.AllPrimaries);
+            Assert.NotEmpty(finalResult.MultiValue.Values);
+            foreach (var nodeConfig in finalResult.MultiValue.Values)
+            {
+                Assert.Contains(nodeConfig, kvp => kvp.Key == "maxmemory-policy" && kvp.Value == "volatile-lru");
+            }
+        }
+        finally
+        {
+            // Restore original value
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)originalValue, Route.AllPrimaries);
+        }
+
+        // Test invalid parameters
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.ConfigSetAsync((ValkeyValue)"invalid-config-param", (ValkeyValue)"value"));
+
+        // Test getting non-existent configuration
+        var nonExistentResult = await client.ConfigGetAsync("non-existent-config");
+        Assert.True(nonExistentResult.HasMultiData);
+        foreach (var nodeConfig in nonExistentResult.MultiValue.Values)
+        {
+            Assert.Empty(nodeConfig);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientId(GlideClusterClient client)
     {
         long clientId = await client.ClientIdAsync();
@@ -285,6 +365,37 @@ public class ClusterClientTests(TestConfiguration config)
         foreach (var kvp in allNodesResult.MultiValue)
         {
             Assert.True(kvp.Value > 0, $"Client ID for node {kvp.Key} should be positive");
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task DatabaseSizeAsync_ReturnsSizePerNode(GlideClusterClient client)
+    {
+        string key = $"cluster-dbsize-test-{Guid.NewGuid()}";
+
+        try
+        {
+            // Add a key
+            await client.StringSetAsync(key, "test-value");
+
+            // Get database size from all nodes
+            var allSizes = await client.DatabaseSizeAsync();
+            Assert.NotEmpty(allSizes);
+
+            // Each node should have a size >= 0
+            foreach (var size in allSizes.Values)
+            {
+                Assert.True(size >= 0);
+            }
+
+            // Test with specific route
+            var singleNodeSize = await client.DatabaseSizeAsync(Route.Random);
+            Assert.True(singleNodeSize.SingleValue >= 0);
+        }
+        finally
+        {
+            await client.KeyDeleteAsync(key);
         }
     }
 
@@ -319,6 +430,77 @@ public class ClusterClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TimeAsync_ReturnsTimePerNode(GlideClusterClient client)
+    {
+        // Get time from all nodes
+        var allTimes = await client.TimeAsync();
+        Assert.NotEmpty(allTimes);
+
+        DateTime localTime = DateTime.UtcNow;
+
+        // Each node should have a reasonable time
+        foreach (var serverTime in allTimes.Values)
+        {
+            TimeSpan diff = (serverTime - localTime).Duration();
+            Assert.True(diff < TimeSpan.FromSeconds(10),
+                $"Server time {serverTime} differs from local time {localTime} by {diff}");
+        }
+
+        // Test with specific route
+        var singleNodeTime = await client.TimeAsync(Route.Random);
+        TimeSpan singleDiff = (singleNodeTime.SingleValue - localTime).Duration();
+        Assert.True(singleDiff < TimeSpan.FromSeconds(10));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task LastSaveAsync_ReturnsLastSavePerNode(GlideClusterClient client)
+    {
+        // Get last save time from all nodes
+        var allLastSaves = await client.LastSaveAsync();
+        Assert.NotEmpty(allLastSaves);
+
+        // Each node should have a valid last save time
+        foreach (var lastSave in allLastSaves.Values)
+        {
+            Assert.NotEqual(DateTime.MinValue, lastSave);
+            Assert.True(lastSave <= DateTime.UtcNow);
+            Assert.True(lastSave >= DateTime.UtcNow.AddDays(-30));
+        }
+
+        // Test with specific route
+        var singleNodeLastSave = await client.LastSaveAsync(Route.Random);
+        Assert.NotEqual(DateTime.MinValue, singleNodeLastSave.SingleValue);
+        Assert.True(singleNodeLastSave.SingleValue <= DateTime.UtcNow);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_ReturnsArtPerNode(GlideClusterClient client)
+    {
+        // Get lolwut from all nodes
+        var allLolwut = await client.LolwutAsync();
+        Assert.NotEmpty(allLolwut);
+
+        // Each node should return some art
+        foreach (var lolwut in allLolwut.Values)
+        {
+            Assert.NotEmpty(lolwut);
+            // Accept both "Valkey" and "Redis" in the output since the server might be either
+            Assert.True(lolwut.Contains("Valkey", StringComparison.OrdinalIgnoreCase) ||
+                       lolwut.Contains("Redis", StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Test with specific route
+        var singleNodeLolwut = await client.LolwutAsync(Route.Random);
+        Assert.NotEmpty(singleNodeLolwut.SingleValue);
+        // Accept both "Valkey" and "Redis" in the output since the server might be either
+        Assert.True(singleNodeLolwut.SingleValue.Contains("Valkey", StringComparison.OrdinalIgnoreCase) ||
+                   singleNodeLolwut.SingleValue.Contains("Redis", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSelect(GlideClusterClient client)
     {
         Assert.SkipWhen(
@@ -327,5 +509,80 @@ public class ClusterClientTests(TestConfiguration config)
         );
         string result = await client.SelectAsync(0);
         Assert.Equal("OK", result);
+    }
+
+    [Fact]
+    public async Task TestClusterDatabaseId()
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "Multi-database support for Cluster Client requires Valkey 9.0+"
+        );
+
+        var config = TestConfiguration.DefaultClusterClientConfig()
+            .WithDataBaseId(1)
+            .Build();
+
+        using var client = await GlideClusterClient.CreateClient(config);
+
+        // Verify we can connect with database ID 1
+        TimeSpan result = await client.PingAsync();
+        Assert.True(result >= TimeSpan.Zero);
+
+        // Verify database isolation by setting a key in database 1
+        string testKey = Guid.NewGuid().ToString();
+        string testValue = "test_value_db1";
+        await client.StringSetAsync(testKey, testValue);
+
+        // Verify the key exists in database 1
+        ValkeyValue retrievedValue = await client.StringGetAsync(testKey);
+        Assert.Equal(testValue, retrievedValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyMoveAsync(GlideClusterClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "MOVE command for Cluster Client requires Valkey 9.0+ with multi-database support"
+        );
+
+        string key = Guid.NewGuid().ToString();
+        string value = "test_value";
+
+        // Set a key in the current database
+        await client.StringSetAsync(key, value);
+
+        // Move the key to database 1
+        bool moveResult = await client.KeyMoveAsync(key, 1);
+        Assert.True(moveResult);
+
+        // Verify the key no longer exists in the current database
+        Assert.False(await client.KeyExistsAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestKeyCopyAsync(GlideClusterClient client)
+    {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"
+        );
+
+        string sourceKey = Guid.NewGuid().ToString();
+        string destKey = Guid.NewGuid().ToString();
+        string value = "test_value";
+
+        // Set a key in the current database
+        await client.StringSetAsync(sourceKey, value);
+
+        // Copy the key to database 1
+        bool copyResult = await client.KeyCopyAsync(sourceKey, destKey, 1);
+        Assert.True(copyResult);
+
+        // Verify the source key still exists in the current database
+        Assert.True(await client.KeyExistsAsync(sourceKey));
     }
 }

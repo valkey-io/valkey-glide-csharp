@@ -187,7 +187,7 @@ public abstract class ConnectionConfiguration
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
-        /// <param name="databaseId"><inheritdoc cref="StandaloneClientConfigurationBuilder.DataBaseId" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         public StandaloneClientConfiguration(
@@ -220,8 +220,7 @@ public abstract class ConnectionConfiguration
     }
 
     /// <summary>
-    /// Configuration for a cluster client. Use <see cref="ClusterClientConfigurationBuilder" /> or
-    /// <see cref="ClusterClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, Protocol?, string?)" /> to create an instance.
+    /// Configuration for a cluster client. Use <see cref="ClusterClientConfigurationBuilder" /> to create an instance.
     /// </summary>
     public sealed class ClusterClientConfiguration : BaseClientConfiguration
     {
@@ -237,6 +236,7 @@ public abstract class ConnectionConfiguration
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         public ClusterClientConfiguration(
@@ -248,6 +248,7 @@ public abstract class ConnectionConfiguration
             RetryStrategy? retryStrategy = null,
             string? username = null,
             string? password = null,
+            uint? databaseId = null,
             Protocol? protocol = null,
             string? clientName = null
             )
@@ -260,6 +261,7 @@ public abstract class ConnectionConfiguration
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.Authentication = (username, password!) : new();
+            _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
             Request = builder.Build().Request;
@@ -515,6 +517,23 @@ public abstract class ConnectionConfiguration
         public T WithConnectionRetryStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
             => WithConnectionRetryStrategy(new RetryStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
         #endregion
+        #region DataBase ID
+        /// <summary>
+        /// Index of the logical database to connect to. Must be non-negative and within the range
+        /// supported by the server configuration. If not specified, defaults to database 0.
+        /// For cluster mode, requires Valkey 9.0+ with cluster-databases configuration enabled.
+        /// </summary>
+        public uint DataBaseId
+        {
+            set => Config.DatabaseId = value;
+        }
+        /// <inheritdoc cref="DataBaseId" />
+        public T WithDataBaseId(uint dataBaseId)
+        {
+            DataBaseId = dataBaseId;
+            return (T)this;
+        }
+        #endregion
 
         internal ConnectionConfig Build() => Config;
     }
@@ -530,22 +549,6 @@ public abstract class ConnectionConfiguration
         /// Complete the configuration with given settings.
         /// </summary>
         public new StandaloneClientConfiguration Build() => new() { Request = base.Build() };
-
-        #region DataBase ID
-        /// <summary>
-        /// Index of the logical database to connect to.
-        /// </summary>
-        public uint DataBaseId
-        {
-            set => Config.DatabaseId = value;
-        }
-        /// <inheritdoc cref="DataBaseId" />
-        public StandaloneClientConfigurationBuilder WithDataBaseId(uint dataBaseId)
-        {
-            DataBaseId = dataBaseId;
-            return this;
-        }
-        #endregion
     }
 
     /// <summary>
