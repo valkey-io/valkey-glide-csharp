@@ -51,4 +51,67 @@ internal static partial class Request
         GlideString[] args = [key.ToGlideString(), member1.ToGlideString(), member2.ToGlideString(), unit.ToLiteral()];
         return Simple<double?>(RequestType.GeoDist, args, true);
     }
+
+    /// <summary>
+    /// Creates a request for GEOHASH command for a single member.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to get the geohash for.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], string?> GeoHashAsync(ValkeyKey key, ValkeyValue member)
+    {
+        GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
+        return new(RequestType.GeoHash, args, false, response => response.Length > 0 ? response[0]?.ToString() : null);
+    }
+
+    /// <summary>
+    /// Creates a request for GEOHASH command for multiple members.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="members">The members to get the geohashes for.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], string?[]> GeoHashAsync(ValkeyKey key, ValkeyValue[] members)
+    {
+        GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
+        return new(RequestType.GeoHash, args, false, response => response.Select(item => item?.ToString()).ToArray());
+    }
+
+    /// <summary>
+    /// Creates a request for GEOPOS command for a single member.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to get the position for.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member)
+    {
+        GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
+        return new(RequestType.GeoPos, args, false, response => 
+        {
+            if (response.Length == 0 || response[0] == null) return (GeoPosition?)null;
+            var posArray = (object[])response[0];
+            if (posArray.Length < 2 || posArray[0] == null || posArray[1] == null) return (GeoPosition?)null;
+            return (GeoPosition?)new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
+        });
+    }
+
+    /// <summary>
+    /// Creates a request for GEOPOS command for multiple members.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="members">The members to get the positions for.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members)
+    {
+        GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
+        return new(RequestType.GeoPos, args, false, response => 
+        {
+            return response.Select(item => 
+            {
+                if (item == null) return (GeoPosition?)null;
+                var posArray = (object[])item;
+                if (posArray.Length < 2 || posArray[0] == null || posArray[1] == null) return (GeoPosition?)null;
+                return (GeoPosition?)new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
+            }).ToArray();
+        });
+    }
 }

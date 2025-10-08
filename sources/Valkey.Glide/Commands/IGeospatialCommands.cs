@@ -89,4 +89,72 @@ public interface IGeospatialCommands
     /// </example>
     /// </remarks>
     Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the geohash string for a single member in the geospatial index represented by the sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geohash"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to get the geohash for.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The geohash string for the member. Returns <see langword="null"/> if the member is missing.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string? hash = await client.GeoHashAsync("mygeo", "Palermo");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the geohash strings for multiple members in the geospatial index represented by the sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geohash"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="members">The members to get the geohashes for.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of geohash strings for the members. Returns <see langword="null"/> for missing members.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string?[] hashes = await client.GeoHashAsync("mygeo", new ValkeyValue[] { "Palermo", "Catania" });
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string?[]> GeoHashAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the longitude and latitude for a single member in the geospatial index represented by the sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geopos"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to get the position for.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The longitude and latitude for the member. Returns <see langword="null"/> if the member is missing.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// GeoPosition? position = await client.GeoPositionAsync("mygeo", "Palermo");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the longitude and latitude for multiple members in the geospatial index represented by the sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geopos"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="members">The members to get the positions for.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of longitude and latitude for the members. Returns <see langword="null"/> for missing members.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// GeoPosition?[] positions = await client.GeoPositionAsync("mygeo", new ValkeyValue[] { "Palermo", "Catania" });
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None);
 }

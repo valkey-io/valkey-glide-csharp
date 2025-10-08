@@ -21,9 +21,25 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoDistance(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" />
     public T GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters) => AddCmd(GeoDistanceAsync(key, member1, member2, unit));
 
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoHash(ValkeyKey, ValkeyValue)" />
+    public T GeoHash(ValkeyKey key, ValkeyValue member) => AddCmd(GeoHashAsync(key, member));
+
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoHash(ValkeyKey, ValkeyValue[])" />
+    public T GeoHash(ValkeyKey key, ValkeyValue[] members) => AddCmd(GeoHashAsync(key, members));
+
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoPosition(ValkeyKey, ValkeyValue)" />
+    public T GeoPosition(ValkeyKey key, ValkeyValue member) => AddCmd(GeoPositionAsync(key, member));
+
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoPosition(ValkeyKey, ValkeyValue[])" />
+    public T GeoPosition(ValkeyKey key, ValkeyValue[] members) => AddCmd(GeoPositionAsync(key, members));
+
     // Explicit interface implementations for IBatchGeospatialCommands
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, double longitude, double latitude, ValkeyValue member) => GeoAdd(key, longitude, latitude, member);
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry value) => GeoAdd(key, value);
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry[] values) => GeoAdd(key, values);
     IBatch IBatchGeospatialCommands.GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit) => GeoDistance(key, member1, member2, unit);
+    IBatch IBatchGeospatialCommands.GeoHash(ValkeyKey key, ValkeyValue member) => GeoHash(key, member);
+    IBatch IBatchGeospatialCommands.GeoHash(ValkeyKey key, ValkeyValue[] members) => GeoHash(key, members);
+    IBatch IBatchGeospatialCommands.GeoPosition(ValkeyKey key, ValkeyValue member) => GeoPosition(key, member);
+    IBatch IBatchGeospatialCommands.GeoPosition(ValkeyKey key, ValkeyValue[] members) => GeoPosition(key, members);
 }
