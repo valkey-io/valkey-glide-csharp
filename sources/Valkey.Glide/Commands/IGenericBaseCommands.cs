@@ -500,6 +500,46 @@ public interface IGenericBaseCommands
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// Moves key from the currently selected database to the specified destination database.
+    /// When key already exists in the destination database, or it does not exist in the source database, it does nothing.
+    /// It is possible to use MOVE as a locking primitive because of this.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/move"/>
+    /// <param name="key">The key to move.</param>
+    /// <param name="database">The database to move the key to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if key was moved. <see langword="false"/> if key was not moved.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyMoveAsync(key, 2);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Copies the value stored at the source to the destination key in the specified database. When
+    /// replace is true, removes the destination key first if it already
+    /// exists, otherwise performs no action.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/copy"/>
+    /// <note>Since Valkey 6.2.0 and above.</note>
+    /// <param name="sourceKey">The key to the source value.</param>
+    /// <param name="destinationKey">The key where the value should be copied to.</param>
+    /// <param name="destinationDatabase">The database ID to store destinationKey in.</param>
+    /// <param name="replace">Whether to overwrite an existing values at destinationKey.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if sourceKey was copied. <see langword="false"/> if sourceKey was not copied.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyCopyAsync(sourceKey, destKey, 1, replace: true);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false, CommandFlags flags = CommandFlags.None);
+    /// <summary>
     /// Returns a random key from the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/randomkey"/>

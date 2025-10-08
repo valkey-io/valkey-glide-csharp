@@ -1,7 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Internals;
-
 namespace Valkey.Glide.Pipeline;
 
 /// <summary>
@@ -25,15 +23,6 @@ namespace Valkey.Glide.Pipeline;
 /// </param>
 public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatchStandalone
 {
-    // Standalone commands: select, move, copy, scan
-
-    /// <inheritdoc cref="IBatchStandalone.KeyCopy(ValkeyKey, ValkeyKey, int, bool)" />
-    public Batch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false) => AddCmd(Request.KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
-
-    /// <inheritdoc cref="IBatchStandalone.KeyMove(ValkeyKey, int)" />
-    public Batch KeyMove(ValkeyKey key, int database) => AddCmd(Request.KeyMoveAsync(key, database));
-
     // Explicit interface implementations for IBatchStandalone
-    IBatchStandalone IBatchStandalone.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace) => KeyCopy(sourceKey, destinationKey, destinationDatabase, replace);
-    IBatchStandalone IBatchStandalone.KeyMove(ValkeyKey key, int database) => KeyMove(key, database);
+    IBatch IBatchStandalone.SelectAsync(long index) => SelectAsync(index);
 }
