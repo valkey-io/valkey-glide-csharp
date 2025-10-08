@@ -1,0 +1,36 @@
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using Valkey.Glide.Commands;
+using Valkey.Glide.Internals;
+
+namespace Valkey.Glide;
+
+public abstract partial class BaseClient : IGeospatialCommands
+{
+    /// <inheritdoc/>
+    public async Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags = CommandFlags.None)
+    {
+        return await GeoAddAsync(key, new GeoEntry(longitude, latitude, member), flags).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.GeoAddAsync(key, value));
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.GeoAddAsync(key, values));
+    }
+
+    /// <inheritdoc/>
+    public async Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.GeoDistanceAsync(key, member1, member2, unit));
+    }
+}
