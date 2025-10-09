@@ -136,6 +136,26 @@ public interface IGenericBaseCommands
     /// <seealso href="https://valkey.io/commands/expire"/>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">Duration for the key to expire.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Set a timeout on key. After the timeout has expired, the key will automatically be deleted.<br/>
+    /// If key already has an existing expire set, the time to live is updated to the new value.
+    /// If expiry is a non-positive value, the key will be deleted rather than expired.
+    /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/expire"/>
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">Duration for the key to expire.</param>
     /// <param name="when">The option to set expiry.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
@@ -146,16 +166,34 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None);
+    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets a timeout on key. It takes an absolute Unix timestamp (seconds since January 1, 1970) instead of
     /// specifying the duration. A timestamp in the past will delete the key immediately. After the timeout has
     /// expired, the key will automatically be deleted.<br/>
     /// If key already has an existing expire set, the time to live is updated to the new value.
-    /// The timeout will only be cleared by commands that delete or overwrite the contents of key
+    /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/expireat"/>
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">The timestamp for expiry.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyExpireAsync(key, DateTime.UtcNow.AddMinutes(5));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Sets a timeout on key. It takes an absolute Unix timestamp (seconds since January 1, 1970) instead of
+    /// specifying the duration. A timestamp in the past will delete the key immediately. After the timeout has
+    /// expired, the key will automatically be deleted.<br/>
     /// If key already has an existing expire set, the time to live is updated to the new value.
-    /// If expiry is a non-positive value, the key will be deleted rather than expired.
     /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/expireat"/>
@@ -171,7 +209,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None);
+    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the remaining time to live of a key that has a timeout.
@@ -360,6 +398,86 @@ public interface IGenericBaseCommands
     Task<long> KeyTouchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// Returns the absolute time at which the given key will expire.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pexpiretime"/>
+    /// <param name="key">The key to determine the expiration value of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The expiration time, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// DateTime? expiration = await client.KeyExpireTimeAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the internal encoding for the object stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-encoding"/>
+    /// <param name="key">The key to determine the encoding of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The encoding of the object, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string? encoding = await client.KeyEncodingAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string?> KeyEncodingAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the logarithmic access frequency counter for the object stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-freq"/>
+    /// <param name="key">The key to determine the frequency of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The frequency counter, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long? frequency = await client.KeyFrequencyAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long?> KeyFrequencyAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the time in seconds since the object stored at key was last accessed.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-idletime"/>
+    /// <param name="key">The key to determine the idle time of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The idle time in seconds, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long? idleTime = await client.KeyIdleTimeAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the reference count of the object stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/object-refcount"/>
+    /// <param name="key">The key to determine the reference count of.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The reference count, or <see langword="null"/> when key does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long? refCount = await client.KeyRefCountAsync(key);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long?> KeyRefCountAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Copies the value stored at the source to the destination key. When
     /// replace is true, removes the destination key first if it already
     /// exists, otherwise performs no action.
@@ -380,4 +498,101 @@ public interface IGenericBaseCommands
     /// </example>
     /// </remarks>
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Moves key from the currently selected database to the specified destination database.
+    /// When key already exists in the destination database, or it does not exist in the source database, it does nothing.
+    /// It is possible to use MOVE as a locking primitive because of this.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/move"/>
+    /// <param name="key">The key to move.</param>
+    /// <param name="database">The database to move the key to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if key was moved. <see langword="false"/> if key was not moved.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyMoveAsync(key, 2);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Copies the value stored at the source to the destination key in the specified database. When
+    /// replace is true, removes the destination key first if it already
+    /// exists, otherwise performs no action.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/copy"/>
+    /// <note>Since Valkey 6.2.0 and above.</note>
+    /// <param name="sourceKey">The key to the source value.</param>
+    /// <param name="destinationKey">The key where the value should be copied to.</param>
+    /// <param name="destinationDatabase">The database ID to store destinationKey in.</param>
+    /// <param name="replace">Whether to overwrite an existing values at destinationKey.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns><see langword="true"/> if sourceKey was copied. <see langword="false"/> if sourceKey was not copied.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool result = await client.KeyCopyAsync(sourceKey, destKey, 1, replace: true);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false, CommandFlags flags = CommandFlags.None);
+    /// <summary>
+    /// Returns a random key from the database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/randomkey"/>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A random key, or <see langword="null"/> when the database is empty.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string? randomKey = await client.KeyRandomAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string?> KeyRandomAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Sorts the elements in the list, set, or sorted set at key and returns the result.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sort"/>
+    /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
+    /// <param name="skip">The number of elements to skip.</param>
+    /// <param name="take">The number of elements to take. -1 means take all.</param>
+    /// <param name="order">The sort order.</param>
+    /// <param name="sortType">The sort type.</param>
+    /// <param name="by">The pattern to sort by external keys.</param>
+    /// <param name="get">The patterns to retrieve external keys' values.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of sorted elements.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
+    /// ValkeyValue[] result = await client.SortAsync("mylist");
+    /// // result is ["1", "2", "3"]
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged by at least numreplicas replicas.
+    /// If the timeout is reached, the command returns even if the specified number of replicas were not yet reached.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/wait"/>
+    /// <param name="numreplicas">The number of replicas to wait for.</param>
+    /// <param name="timeout">The timeout in milliseconds.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of replicas that acknowledged the write commands.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long result = await client.WaitAsync(1, 1000);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags = CommandFlags.None);
 }

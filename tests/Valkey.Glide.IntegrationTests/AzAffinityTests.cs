@@ -26,7 +26,7 @@ public class AzAffinityTests(TestConfiguration config)
 
     private static async Task<int> GetReplicaCountInCluster(GlideClusterClient client)
     {
-        ClusterValue<string> clusterInfo = await client.Info([Section.REPLICATION], new SlotKeyRoute("_", SlotType.Primary));
+        ClusterValue<string> clusterInfo = await client.InfoAsync([Section.REPLICATION], new SlotKeyRoute("_", SlotType.Primary));
         foreach (string line in clusterInfo.SingleValue!.Split('\n'))
         {
             string[] parts = line.Split(':', 2);
@@ -63,7 +63,7 @@ public class AzAffinityTests(TestConfiguration config)
             await azTestClient.StringGetAsync(key);
         }
 
-        ClusterValue<string> infoResult = await azTestClient.Info([Section.SERVER, Section.COMMANDSTATS], AllNodes);
+        ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.SERVER, Section.COMMANDSTATS], AllNodes);
         azTestClient.Dispose();
 
         int changedAzCount = 0;
@@ -108,7 +108,7 @@ public class AzAffinityTests(TestConfiguration config)
         await configClient.CustomCommand(["config", "resetstat"], AllNodes);
 
         // Get Replica Count for current cluster
-        ClusterValue<string> clusterInfo = await configClient.Info([Section.REPLICATION], new SlotKeyRoute(key, SlotType.Primary));
+        ClusterValue<string> clusterInfo = await configClient.InfoAsync([Section.REPLICATION], new SlotKeyRoute(key, SlotType.Primary));
         int nReplicas = await GetReplicaCountInCluster(configClient);
         int nCallsPerReplica = 5;
         int nGetCalls = nCallsPerReplica * nReplicas;
@@ -134,7 +134,7 @@ public class AzAffinityTests(TestConfiguration config)
             await azTestClient.StringGetAsync(key);
         }
 
-        ClusterValue<string> infoResult = await azTestClient.Info([Section.ALL], AllNodes);
+        ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);
         azTestClient.Dispose();
 
         // Check that all replicas have the same number of GET calls
@@ -168,7 +168,7 @@ public class AzAffinityTests(TestConfiguration config)
             await azTestClient.StringGetAsync("foo");
         }
 
-        ClusterValue<string> infoResult = await azTestClient.Info([Section.COMMANDSTATS], AllNodes);
+        ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.COMMANDSTATS], AllNodes);
         azTestClient.Dispose();
 
         // We expect the calls to be distributed evenly among the replicas
@@ -219,7 +219,7 @@ public class AzAffinityTests(TestConfiguration config)
             await azTestClient.StringGetAsync(key);
         }
 
-        ClusterValue<string> infoResult = await azTestClient.Info([Section.ALL], AllNodes);
+        ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);
         azTestClient.Dispose();
 
         // Check that only the primary in the specified AZ handled all GET calls

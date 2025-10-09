@@ -69,9 +69,6 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public string? InfoRaw(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
         => InfoRawAsync(section, flags).GetAwaiter().GetResult();
 
-    public IGrouping<string, KeyValuePair<string, string>>[] Info(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
-        => InfoAsync(section, flags).GetAwaiter().GetResult();
-
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
@@ -100,5 +97,65 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await _conn.Command(Request.ClientId(), MakeRoute());
+    }
+
+    public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.ConfigGetAsync(pattern), MakeRoute());
+    }
+
+    public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        _ = await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
+    }
+
+    public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        _ = await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
+    }
+
+    public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
+    }
+
+    public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.DatabaseSizeAsync(database), MakeRoute());
+    }
+
+    public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
+    }
+
+    public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        _ = await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
+    }
+
+    public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.LastSaveAsync(), MakeRoute());
+    }
+
+    public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.TimeAsync(), MakeRoute());
+    }
+
+    public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await _conn.Command(Request.LolwutAsync(), MakeRoute());
     }
 }

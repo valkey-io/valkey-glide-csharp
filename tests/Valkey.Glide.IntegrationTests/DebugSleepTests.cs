@@ -17,7 +17,7 @@ public class DebugSleepTests
     [Fact]
     public async Task ErrorIfTimedOut()
     {
-        using GlideClient client = TestConfiguration.DefaultStandaloneClient();
+        using GlideClient client = TestConfiguration.LowTimeoutStandaloneClient();
         _ = await Assert.ThrowsAsync<TimeoutException>(async () =>
             _ = await client.CustomCommand(["debug", "sleep", "0.5"])
         );

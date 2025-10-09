@@ -25,7 +25,9 @@ internal class ResponseConverters
             ? value => ClusterValue<T>.OfSingleValue(converter((R)value))
             : value => value is Dictionary<GlideString, object> dict
                 ? ClusterValue<T>.OfMultiValue(dict.ConvertValues(converter))
-                : ClusterValue<T>.OfSingleValue(converter((R)value)); // In case the nodes combine multiple results to a single result
+                : value is Dictionary<string, object> stringDict
+                    ? ClusterValue<T>.OfMultiValue(stringDict.ConvertValues(converter))
+                    : ClusterValue<T>.OfSingleValue(converter((R)value)); // In case the nodes combine multiple results to a single result
 
     /// <summary>
     /// Process and convert a cluster multi-node response.
