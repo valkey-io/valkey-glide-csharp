@@ -10,6 +10,13 @@ namespace Valkey.Glide.Internals;
 
 internal partial class FFI
 {
+    /// <summary>
+    /// FFI callback delegate for PubSub message reception.
+    /// </summary>
+    /// <param name="clientId">The client ID that received the message.</param>
+    /// <param name="messagePtr">Pointer to the PubSubMessageInfo structure.</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate void PubSubMessageCallback(ulong clientId, IntPtr messagePtr);
 #if NET8_0_OR_GREATER
     [LibraryImport("libglide_rs", EntryPoint = "command")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -30,6 +37,14 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "close_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void CloseClientFfi(IntPtr client);
+
+    [LibraryImport("libglide_rs", EntryPoint = "register_pubsub_callback")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void RegisterPubSubCallbackFfi(IntPtr client, IntPtr callback);
+
+    [LibraryImport("libglide_rs", EntryPoint = "free_pubsub_message")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void FreePubSubMessageFfi(IntPtr messagePtr);
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
     public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -45,5 +60,11 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
     public static extern void CloseClientFfi(IntPtr client);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "register_pubsub_callback")]
+    public static extern void RegisterPubSubCallbackFfi(IntPtr client, IntPtr callback);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_pubsub_message")]
+    public static extern void FreePubSubMessageFfi(IntPtr messagePtr);
 #endif
 }

@@ -26,6 +26,10 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             {
                 return;
             }
+
+            // Clean up PubSub resources
+            CleanupPubSubResources();
+
             _messageContainer.DisposeWithError(null);
             CloseClientFfi(_clientPointer);
             _clientPointer = IntPtr.Zero;
@@ -37,6 +41,17 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     public override string ToString() => $"{GetType().Name} {{ 0x{_clientPointer:X} {_clientInfo} }}";
 
     public override int GetHashCode() => (int)_clientPointer;
+
+    /// <summary>
+    /// Get the PubSub message queue for manual message retrieval.
+    /// Returns null if no PubSub subscriptions are configured.
+    /// </summary>
+    public PubSubMessageQueue? PubSubQueue => _pubSubHandler?.GetQueue();
+
+    /// <summary>
+    /// Indicates whether this client has PubSub subscriptions configured.
+    /// </summary>
+    public bool HasPubSubSubscriptions => _pubSubHandler != null;
 
     #endregion public methods
 
@@ -55,6 +70,9 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         if (client._clientPointer != IntPtr.Zero)
         {
+            // Initialize PubSub handler if subscriptions are configured
+            client.InitializePubSubHandler(config.Request.PubSubSubscriptions);
+
             // Initialize server version after successful connection
             await client.InitializeServerVersionAsync();
             return client;
@@ -147,6 +165,76 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     protected abstract Task InitializeServerVersionAsync();
 
+    /// <summary>
+    /// Initializes PubSub message handling if PubSub subscriptions are configured.
+    /// </summary>
+    /// <param name="config">The PubSub subscription configuration.</param>
+    private void InitializePubSubHandler(BasePubSubSubscriptionConfig? config)
+    {
+        if (config == null)
+        {
+            return;
+        }
+
+        // Create the PubSub message handler
+        _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
+
+        // Generate a unique client ID for PubSub callback registration
+        _clientId = (ulong)GetHashCode();
+
+        // Register this client for PubSub callbacks
+        PubSubCallbackManager.RegisterClient(_clientId, this);
+
+        // Register the PubSub callback with the native client
+        if (_clientPointer != IntPtr.Zero)
+        {
+            RegisterPubSubCallbackFfi(_clientPointer, PubSubCallbackManager.GetNativeCallbackPtr());
+        }
+    }
+
+    /// <summary>
+    /// Handles incoming PubSub messages from the FFI layer.
+    /// This method is called by the PubSubCallbackManager.
+    /// </summary>
+    /// <param name="message">The PubSub message to handle.</param>
+    internal virtual void HandlePubSubMessage(PubSubMessage message)
+    {
+        try
+        {
+            _pubSubHandler?.HandleMessage(message);
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't let exceptions escape
+            // In a production environment, this should use proper logging
+            Console.Error.WriteLine($"Error handling PubSub message in client {_clientId}: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Cleans up PubSub resources during client disposal.
+    /// </summary>
+    private void CleanupPubSubResources()
+    {
+        if (_pubSubHandler != null)
+        {
+            try
+            {
+                // Unregister from the callback manager
+                PubSubCallbackManager.UnregisterClient(_clientId);
+
+                // Dispose the message handler
+                _pubSubHandler.Dispose();
+                _pubSubHandler = null;
+            }
+            catch (Exception ex)
+            {
+                // Log the error but continue with disposal
+                Console.Error.WriteLine($"Error cleaning up PubSub resources for client {_clientId}: {ex}");
+            }
+        }
+    }
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void SuccessAction(ulong index, IntPtr ptr);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -169,6 +257,12 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
     protected Version? _serverVersion; // cached server version
+
+    /// PubSub message handler for routing messages to callbacks or queues.
+    private PubSubMessageHandler? _pubSubHandler;
+
+    /// Unique client ID for PubSub callback registration.
+    private ulong _clientId;
 
     #endregion private fields
 }

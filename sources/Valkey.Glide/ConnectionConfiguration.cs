@@ -24,9 +24,10 @@ public abstract class ConnectionConfiguration
         public uint DatabaseId;
         public Protocol? Protocol;
         public string? ClientName;
+        public BasePubSubSubscriptionConfig? PubSubSubscriptions;
 
         internal FFI.ConnectionConfig ToFfi() =>
-            new(Addresses, TlsMode, ClusterMode, (uint?)RequestTimeout?.TotalMilliseconds, (uint?)ConnectionTimeout?.TotalMilliseconds, ReadFrom, RetryStrategy, AuthenticationInfo, DatabaseId, Protocol, ClientName);
+            new(Addresses, TlsMode, ClusterMode, (uint?)RequestTimeout?.TotalMilliseconds, (uint?)ConnectionTimeout?.TotalMilliseconds, ReadFrom, RetryStrategy, AuthenticationInfo, DatabaseId, Protocol, ClientName, PubSubSubscriptions);
     }
 
     /// <summary>
@@ -549,6 +550,23 @@ public abstract class ConnectionConfiguration
         /// Complete the configuration with given settings.
         /// </summary>
         public new StandaloneClientConfiguration Build() => new() { Request = base.Build() };
+
+        #region PubSub Subscriptions
+        /// <summary>
+        /// Configure PubSub subscriptions for the standalone client.
+        /// </summary>
+        /// <param name="config">The PubSub subscription configuration.</param>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when config is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when config is invalid.</exception>
+        public StandaloneClientConfigurationBuilder WithPubSubSubscriptions(StandalonePubSubSubscriptionConfig config)
+        {
+            ArgumentNullException.ThrowIfNull(config);
+            config.Validate();
+            Config.PubSubSubscriptions = config;
+            return this;
+        }
+        #endregion
     }
 
     /// <summary>
@@ -563,5 +581,22 @@ public abstract class ConnectionConfiguration
         /// Complete the configuration with given settings.
         /// </summary>
         public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
+
+        #region PubSub Subscriptions
+        /// <summary>
+        /// Configure PubSub subscriptions for the cluster client.
+        /// </summary>
+        /// <param name="config">The PubSub subscription configuration.</param>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when config is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when config is invalid.</exception>
+        public ClusterClientConfigurationBuilder WithPubSubSubscriptions(ClusterPubSubSubscriptionConfig config)
+        {
+            ArgumentNullException.ThrowIfNull(config);
+            config.Validate();
+            Config.PubSubSubscriptions = config;
+            return this;
+        }
+        #endregion
     }
 }

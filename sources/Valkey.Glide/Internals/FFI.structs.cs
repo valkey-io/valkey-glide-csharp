@@ -200,6 +200,10 @@ internal partial class FFI
     {
         private ConnectionRequest _request;
         private readonly List<NodeAddress> _addresses;
+        private readonly BasePubSubSubscriptionConfig? _pubSubConfig;
+        private IntPtr _pubSubChannelsPtr = IntPtr.Zero;
+        private IntPtr _pubSubPatternsPtr = IntPtr.Zero;
+        private IntPtr _pubSubShardedChannelsPtr = IntPtr.Zero;
 
         public ConnectionConfig(
             List<NodeAddress> addresses,
@@ -212,9 +216,11 @@ internal partial class FFI
             AuthenticationInfo? authenticationInfo,
             uint databaseId,
             ConnectionConfiguration.Protocol? protocol,
-            string? clientName)
+            string? clientName,
+            BasePubSubSubscriptionConfig? pubSubSubscriptions)
         {
             _addresses = addresses;
+            _pubSubConfig = pubSubSubscriptions;
             _request = new()
             {
                 AddressCount = (nuint)addresses.Count,
@@ -235,10 +241,47 @@ internal partial class FFI
                 HasProtocol = protocol.HasValue,
                 Protocol = protocol ?? default,
                 ClientName = clientName,
+                HasPubSubConfig = pubSubSubscriptions != null,
+                PubSubConfig = new PubSubConfigInfo()
             };
         }
 
-        protected override void FreeMemory() => Marshal.FreeHGlobal(_request.Addresses);
+        protected override void FreeMemory()
+        {
+            Marshal.FreeHGlobal(_request.Addresses);
+
+            if (_pubSubConfig != null)
+            {
+                int channelCount = _pubSubConfig.Subscriptions.TryGetValue(0, out List<string>? channels) ? channels.Count : 0;
+                int patternCount = _pubSubConfig.Subscriptions.TryGetValue(1, out List<string>? patterns) ? patterns.Count : 0;
+                int shardedChannelCount = _pubSubConfig.Subscriptions.TryGetValue(2, out List<string>? shardedChannels) ? shardedChannels.Count : 0;
+
+                FreeStringArray(_pubSubChannelsPtr, channelCount);
+                FreeStringArray(_pubSubPatternsPtr, patternCount);
+                FreeStringArray(_pubSubShardedChannelsPtr, shardedChannelCount);
+            }
+        }
+
+        private static void FreeStringArray(IntPtr arrayPtr, int count)
+        {
+            if (arrayPtr == IntPtr.Zero || count == 0)
+            {
+                return;
+            }
+
+            // Free each string in the array
+            for (int i = 0; i < count; i++)
+            {
+                IntPtr stringPtr = Marshal.ReadIntPtr(arrayPtr, i * IntPtr.Size);
+                if (stringPtr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(stringPtr);
+                }
+            }
+
+            // Free the array itself
+            Marshal.FreeHGlobal(arrayPtr);
+        }
 
         protected override IntPtr AllocateAndCopy()
         {
@@ -248,7 +291,65 @@ internal partial class FFI
             {
                 Marshal.StructureToPtr(_addresses[i], _request.Addresses + (i * addressSize), false);
             }
+
+            // Marshal PubSub configuration if present
+            if (_pubSubConfig != null)
+            {
+                _request.PubSubConfig = MarshalPubSubConfig(_pubSubConfig);
+            }
+
             return StructToPtr(_request);
+        }
+
+        private PubSubConfigInfo MarshalPubSubConfig(BasePubSubSubscriptionConfig config)
+        {
+            var pubSubInfo = new PubSubConfigInfo();
+
+            // Marshal exact channels (mode 0)
+            if (config.Subscriptions.TryGetValue(0, out List<string>? channels) && channels.Count > 0)
+            {
+                _pubSubChannelsPtr = MarshalStringArray(channels);
+                pubSubInfo.ChannelsPtr = _pubSubChannelsPtr;
+                pubSubInfo.ChannelCount = (uint)channels.Count;
+            }
+
+            // Marshal patterns (mode 1)
+            if (config.Subscriptions.TryGetValue(1, out List<string>? patterns) && patterns.Count > 0)
+            {
+                _pubSubPatternsPtr = MarshalStringArray(patterns);
+                pubSubInfo.PatternsPtr = _pubSubPatternsPtr;
+                pubSubInfo.PatternCount = (uint)patterns.Count;
+            }
+
+            // Marshal sharded channels (mode 2) - only for cluster clients
+            if (config.Subscriptions.TryGetValue(2, out List<string>? shardedChannels) && shardedChannels.Count > 0)
+            {
+                _pubSubShardedChannelsPtr = MarshalStringArray(shardedChannels);
+                pubSubInfo.ShardedChannelsPtr = _pubSubShardedChannelsPtr;
+                pubSubInfo.ShardedChannelCount = (uint)shardedChannels.Count;
+            }
+
+            return pubSubInfo;
+        }
+
+        private static IntPtr MarshalStringArray(List<string> strings)
+        {
+            if (strings.Count == 0)
+            {
+                return IntPtr.Zero;
+            }
+
+            // Allocate array of string pointers
+            IntPtr arrayPtr = Marshal.AllocHGlobal(IntPtr.Size * strings.Count);
+
+            for (int i = 0; i < strings.Count; i++)
+            {
+                // Allocate and copy each string
+                IntPtr stringPtr = Marshal.StringToHGlobalAnsi(strings[i]);
+                Marshal.WriteIntPtr(arrayPtr, i * IntPtr.Size, stringPtr);
+            }
+
+            return arrayPtr;
         }
     }
 
@@ -264,6 +365,54 @@ internal partial class FFI
     private static T[] PoolRent<T>(int len) => ArrayPool<T>.Shared.Rent(len);
 
     private static void PoolReturn<T>(T[] arr) => ArrayPool<T>.Shared.Return(arr);
+
+    /// <summary>
+    /// Marshals a PubSubMessageInfo structure from native memory to a managed PubSubMessage object.
+    /// </summary>
+    /// <param name="messagePtr">Pointer to the native PubSubMessageInfo structure.</param>
+    /// <returns>A managed PubSubMessage object.</returns>
+    /// <exception cref="ArgumentException">Thrown when the message pointer is invalid or contains invalid data.</exception>
+    internal static PubSubMessage MarshalPubSubMessage(IntPtr messagePtr)
+    {
+        if (messagePtr == IntPtr.Zero)
+        {
+            throw new ArgumentException("Invalid PubSub message pointer", nameof(messagePtr));
+        }
+
+        try
+        {
+            PubSubMessageInfo messageInfo = Marshal.PtrToStructure<PubSubMessageInfo>(messagePtr);
+
+            if (string.IsNullOrEmpty(messageInfo.Message))
+            {
+                throw new ArgumentException("PubSub message content cannot be null or empty");
+            }
+
+            if (string.IsNullOrEmpty(messageInfo.Channel))
+            {
+                throw new ArgumentException("PubSub message channel cannot be null or empty");
+            }
+
+            // Create PubSubMessage based on whether pattern is present
+            return string.IsNullOrEmpty(messageInfo.Pattern)
+                ? new PubSubMessage(messageInfo.Message, messageInfo.Channel)
+                : new PubSubMessage(messageInfo.Message, messageInfo.Channel, messageInfo.Pattern);
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            throw new ArgumentException($"Failed to marshal PubSub message from native memory: {ex.Message}", nameof(messagePtr), ex);
+        }
+    }
+
+    /// <summary>
+    /// Creates a function pointer for the PubSub message callback that can be passed to native code.
+    /// </summary>
+    /// <param name="callback">The managed callback delegate.</param>
+    /// <returns>A function pointer that can be passed to native code.</returns>
+    internal static IntPtr CreatePubSubCallbackPtr(PubSubMessageCallback callback)
+    {
+        return Marshal.GetFunctionPointerForDelegate(callback);
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct CmdInfo
@@ -770,7 +919,21 @@ internal partial class FFI
         public ConnectionConfiguration.Protocol Protocol;
         [MarshalAs(UnmanagedType.LPStr)]
         public string? ClientName;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasPubSubConfig;
+        public PubSubConfigInfo PubSubConfig;
         // TODO more config params, see ffi.rs
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PubSubConfigInfo
+    {
+        public IntPtr ChannelsPtr;
+        public uint ChannelCount;
+        public IntPtr PatternsPtr;
+        public uint PatternCount;
+        public IntPtr ShardedChannelsPtr;
+        public uint ShardedChannelCount;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
@@ -788,6 +951,20 @@ internal partial class FFI
         public string? Username = username;
         [MarshalAs(UnmanagedType.LPStr)]
         public string Password = password;
+    }
+
+    /// <summary>
+    /// FFI structure for PubSub message data received from native code.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public struct PubSubMessageInfo
+    {
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string Message;
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string Channel;
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string? Pattern;
     }
 
     internal enum TlsMode : uint
