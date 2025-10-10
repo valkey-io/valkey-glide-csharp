@@ -282,7 +282,15 @@ public class CommandTests
             () => Assert.Equal(new string[] { "HVALS", "key" }, Request.HashValuesAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HRANDFIELD", "key" }, Request.HashRandomFieldAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3" }, Request.HashRandomFieldsAsync("key", 3).GetArgs()),
-            () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3", "WITHVALUES" }, Request.HashRandomFieldsWithValuesAsync("key", 3).GetArgs())
+            () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3", "WITHVALUES" }, Request.HashRandomFieldsWithValuesAsync("key", 3).GetArgs()),
+
+            // HyperLogLog Commands
+            () => Assert.Equal(["PFADD", "key", "element"], Request.HyperLogLogAddAsync("key", "element").GetArgs()),
+            () => Assert.Equal(["PFADD", "key", "element1", "element2", "element3"], Request.HyperLogLogAddAsync("key", ["element1", "element2", "element3"]).GetArgs()),
+            () => Assert.Equal(["PFCOUNT", "key"], Request.HyperLogLogLengthAsync("key").GetArgs()),
+            () => Assert.Equal(["PFCOUNT", "key1", "key2", "key3"], Request.HyperLogLogLengthAsync(["key1", "key2", "key3"]).GetArgs()),
+            () => Assert.Equal(["PFMERGE", "dest", "src1", "src2"], Request.HyperLogLogMergeAsync("dest", "src1", "src2").GetArgs()),
+            () => Assert.Equal(["PFMERGE", "dest", "src1", "src2", "src3"], Request.HyperLogLogMergeAsync("dest", ["src1", "src2", "src3"]).GetArgs())
         );
     }
 
@@ -534,7 +542,18 @@ public class CommandTests
             () => Assert.False(Request.ListLeftPopAsync(["mylist"], 1).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"left_value" } } }).IsNull),
             () => Assert.False(Request.ListRightPopAsync(["list2"], 2).Converter(new Dictionary<GlideString, object> { { (GlideString)"list2", new object[] { (GlideString)"right1", (GlideString)"right2" } } }).IsNull),
             () => Assert.True(Request.ListLeftPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull),
-            () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull)
+            () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull),
+
+            // HyperLogLog Command Converters
+            () => Assert.True(Request.HyperLogLogAddAsync("key", "element").Converter(true)),
+            () => Assert.False(Request.HyperLogLogAddAsync("key", "element").Converter(false)),
+            () => Assert.True(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(true)),
+            () => Assert.False(Request.HyperLogLogAddAsync("key", ["element1", "element2"]).Converter(false)),
+            () => Assert.Equal(42L, Request.HyperLogLogLengthAsync("key").Converter(42L)),
+            () => Assert.Equal(0L, Request.HyperLogLogLengthAsync("key").Converter(0L)),
+            () => Assert.Equal(100L, Request.HyperLogLogLengthAsync(["key1", "key2"]).Converter(100L)),
+            () => Assert.Equal("OK", Request.HyperLogLogMergeAsync("dest", "src1", "src2").Converter("OK")),
+            () => Assert.Equal("OK", Request.HyperLogLogMergeAsync("dest", ["src1", "src2"]).Converter("OK"))
         );
     }
 
