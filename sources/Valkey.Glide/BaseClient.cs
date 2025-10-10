@@ -128,7 +128,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     protected Version? ParseServerVersion(string response)
     {
         var versionMatch = System.Text.RegularExpressions.Regex.Match(response, @"(?:valkey_version|redis_version):([\d\.]+)");
-        return versionMatch.Success ? new Version(versionMatch.Groups[1].Value) : null;
+        return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
     }
     #endregion protected methods
 
