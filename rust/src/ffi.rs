@@ -624,27 +624,125 @@ pub type PubSubCallback = extern "C" fn(client_id: u64, message_ptr: *const PubS
 /// * `callback` - Function pointer to the PubSub message callback
 #[unsafe(no_mangle)]
 pub extern "C" fn register_pubsub_callback(
-    client: *mut std::ffi::c_void,
-    _callback: PubSubCallback,
+    client_ptr: *mut std::ffi::c_void,
+    callback: PubSubCallback,
 ) {
-    // TODO: Implement actual callback registration with glide-core
-    // This is a placeholder implementation that would need to integrate with
-    // the actual glide-core PubSub functionality once it's available
-
-    // For now, we just store the callback pointer (this would be properly implemented
-    // when glide-core PubSub support is added)
-    if client.is_null() {
+    if client_ptr.is_null() {
         eprintln!("Warning: register_pubsub_callback called with null client pointer");
         return;
     }
 
-    // In a real implementation, this would:
-    // 1. Cast the client pointer to the appropriate client type
-    // 2. Store the callback in the client's PubSub handler
-    // 3. Set up the message routing from glide-core to this callback
+    // Cast the client pointer back to our Client type
+    // Safety: This is safe because we know the pointer came from create_client
+    // and points to a valid Client instance wrapped in Arc
+    unsafe {
+        // Increment the reference count to get a temporary Arc
+        std::sync::Arc::increment_strong_count(client_ptr);
+        let client_arc = std::sync::Arc::from_raw(client_ptr as *const crate::Client);
 
-    // Placeholder logging
-    println!("PubSub callback registered for client {:p}", client);
+        // Store the callback in the client
+        if let Ok(mut callback_guard) = client_arc.pubsub_callback.lock() {
+            *callback_guard = Some(callback);
+            println!("PubSub callback registered for client {:p}", client_ptr);
+        } else {
+            eprintln!("Failed to acquire lock for PubSub callback registration");
+        }
+
+        // Don't drop the Arc, just forget it to maintain the reference count
+        std::mem::forget(client_arc);
+
+        // TODO: When glide-core PubSub support is available, this is where we would:
+        // 1. Set up the message routing from glide-core to invoke our callback
+        // 2. Configure the client to handle PubSub messages
+        // 3. Establish the subscription channels
+    }
+}
+
+/// Invoke the PubSub callback for a client with a message.
+/// This function is intended to be called by glide-core when a PubSub message is received.
+///
+/// # Safety
+/// * `client_ptr` must be a valid client pointer obtained from `create_client`
+/// * `message_ptr` must be a valid pointer to a PubSubMessageInfo structure
+///
+/// # Parameters
+/// * `client_ptr` - Pointer to the client instance
+/// * `message_ptr` - Pointer to the PubSub message information
+pub(crate) unsafe fn invoke_pubsub_callback(
+    client_ptr: *const std::ffi::c_void,
+    message_ptr: *const PubSubMessageInfo,
+) {
+    if client_ptr.is_null() || message_ptr.is_null() {
+        eprintln!("Warning: invoke_pubsub_callback called with null pointer(s)");
+        return;
+    }
+
+    unsafe {
+        // Increment the reference count to get a temporary Arc
+        std::sync::Arc::increment_strong_count(client_ptr);
+        let client_arc = std::sync::Arc::from_raw(client_ptr as *const crate::Client);
+
+        // Get the callback and invoke it
+        if let Ok(callback_guard) = client_arc.pubsub_callback.lock() {
+            if let Some(callback) = *callback_guard {
+                // Extract client ID from the pointer (simplified approach)
+                let client_id = client_ptr as u64;
+
+                // Invoke the callback
+                callback(client_id, message_ptr);
+            }
+        }
+
+        // Don't drop the Arc, just forget it to maintain the reference count
+        std::mem::forget(client_arc);
+    }
+}
+
+/// Create a PubSubMessageInfo structure from Rust strings.
+/// The returned pointer must be freed using `free_pubsub_message`.
+///
+/// # Parameters
+/// * `message` - The message content
+/// * `channel` - The channel name
+/// * `pattern` - The pattern that matched (None for exact channel subscriptions)
+///
+/// # Returns
+/// * Pointer to allocated PubSubMessageInfo structure, or null on allocation failure
+pub(crate) fn create_pubsub_message(
+    message: &str,
+    channel: &str,
+    pattern: Option<&str>,
+) -> *mut PubSubMessageInfo {
+    use std::ffi::CString;
+
+    // Convert strings to C strings
+    let message_cstr = match CString::new(message) {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let channel_cstr = match CString::new(channel) {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let pattern_cstr = match pattern {
+        Some(p) => match CString::new(p) {
+            Ok(s) => Some(s),
+            Err(_) => return std::ptr::null_mut(),
+        },
+        None => None,
+    };
+
+    // Create the message info structure
+    let message_info = PubSubMessageInfo {
+        message: message_cstr.into_raw(),
+        channel: channel_cstr.into_raw(),
+        pattern: pattern_cstr.map_or(std::ptr::null(), |s| s.into_raw()),
+    };
+
+    // Allocate and return
+    Box::into_raw(Box::new(message_info))
 }
 
 /// Free memory allocated for a PubSub message.

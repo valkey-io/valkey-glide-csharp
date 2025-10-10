@@ -2,8 +2,9 @@
 
 mod ffi;
 use ffi::{
-    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, ResponseValue, RouteInfo, create_cmd,
-    create_connection_request, create_pipeline, create_route, get_pipeline_options,
+    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, ResponseValue,
+    RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
+    get_pipeline_options,
 };
 use glide_core::{
     client::Client as GlideClient,
@@ -11,7 +12,7 @@ use glide_core::{
 };
 use std::{
     ffi::{CStr, CString, c_char, c_void},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 use tokio::runtime::{Builder, Runtime};
 
@@ -28,6 +29,7 @@ pub enum Level {
 pub struct Client {
     runtime: Runtime,
     core: Arc<CommandExecutionCore>,
+    pubsub_callback: Arc<Mutex<Option<ffi::PubSubCallback>>>,
 }
 
 /// Success callback that is called when a command succeeds.
@@ -151,7 +153,11 @@ pub unsafe extern "C-unwind" fn create_client(
                 client,
             });
 
-            let client_ptr = Arc::into_raw(Arc::new(Client { runtime, core }));
+            let client_ptr = Arc::into_raw(Arc::new(Client {
+                runtime,
+                core,
+                pubsub_callback: Arc::new(Mutex::new(None)),
+            }));
             unsafe { success_callback(0, client_ptr as *const ResponseValue) };
         }
         Err(err) => {
