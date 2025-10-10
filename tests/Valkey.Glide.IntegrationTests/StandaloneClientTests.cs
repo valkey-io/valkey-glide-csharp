@@ -75,6 +75,9 @@ public class StandaloneClientTests(TestConfiguration config)
 
         _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
             .WithReadFrom(new ConnectionConfiguration.ReadFrom(ConnectionConfiguration.ReadFromStrategy.Primary)).Build());
+
+        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
+            .WithLazyConnect(true).Build());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -480,5 +483,45 @@ public class StandaloneClientTests(TestConfiguration config)
         // Should contain version information (could be Redis or Valkey)
         Assert.True(result.Contains("Redis", StringComparison.OrdinalIgnoreCase) ||
                    result.Contains("Valkey", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task LazyConnect()
+    {
+        using var referenceClient = TestConfiguration.DefaultStandaloneClient();
+        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+
+        // Initialization should not establish connection.
+        var config = TestConfiguration.DefaultClientConfig().WithLazyConnect(true).Build();
+        using var client = await GlideClient.CreateClient(config);
+
+        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.Equal(initialCount, afterCreateCount);
+
+        // First command should establish connection.
+        await client.PingAsync();
+
+        int afterCommandCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.True(afterCreateCount < afterCommandCount);
+    }
+
+    [Fact]
+    public async Task EagerConnect()
+    {
+        using var referenceClient = TestConfiguration.DefaultStandaloneClient();
+        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+
+        // Initialization should establish connection.
+        var config = TestConfiguration.DefaultClientConfig().Build();
+        using var client = await GlideClient.CreateClient(config);
+
+        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.True(initialCount < afterCreateCount);
+
+        // First command should not establish connection.
+        await client.PingAsync();
+
+        int afterCommandCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.Equal(afterCreateCount, afterCommandCount);
     }
 }

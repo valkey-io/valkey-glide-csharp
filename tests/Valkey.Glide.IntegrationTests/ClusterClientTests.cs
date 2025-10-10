@@ -585,4 +585,44 @@ public class ClusterClientTests(TestConfiguration config)
         // Verify the source key still exists in the current database
         Assert.True(await client.KeyExistsAsync(sourceKey));
     }
+
+    [Fact]
+    public async Task LazyConnect()
+    {
+        using var referenceClient = TestConfiguration.DefaultClusterClient();
+        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+
+        // Initialization should not establish connection.
+        var config = TestConfiguration.DefaultClusterClientConfig().WithLazyConnect(true).Build();
+        using var client = await GlideClusterClient.CreateClient(config);
+
+        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.Equal(initialCount, afterCreateCount);
+
+        // First command should establish connection.
+        await client.PingAsync();
+
+        int afterCommandCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.True(afterCreateCount < afterCommandCount);
+    }
+
+    [Fact]
+    public async Task EagerConnect()
+    {
+        using var referenceClient = TestConfiguration.DefaultClusterClient();
+        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+
+        // Initialization should establish connection.
+        var config = TestConfiguration.DefaultClusterClientConfig().Build();
+        using var client = await GlideClusterClient.CreateClient(config);
+
+        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.True(initialCount < afterCreateCount);
+
+        // First command should not establish connection.
+        await client.PingAsync();
+
+        int afterCommandCount = await TestUtils.GetConnectionCount(referenceClient);
+        Assert.Equal(afterCreateCount, afterCommandCount);
+    }
 }
