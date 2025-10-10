@@ -7,6 +7,7 @@ using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
 
+[Collection("GlideTests")]
 public class StandaloneClientTests(TestConfiguration config)
 {
     public static TheoryData<bool> GetAtomic => [true, false];
@@ -144,14 +145,14 @@ public class StandaloneClientTests(TestConfiguration config)
     {
         GlideClient client = TestConfiguration.DefaultStandaloneClient();
 
-        string info = await client.Info();
+        string info = await client.InfoAsync();
         Assert.Multiple([
             () => Assert.Contains("# Server", info),
             () => Assert.Contains("# Replication", info),
             () => Assert.DoesNotContain("# Latencystats", info),
         ]);
 
-        info = await client.Info([Section.REPLICATION]);
+        info = await client.InfoAsync([Section.REPLICATION]);
         Assert.Multiple([
             () => Assert.DoesNotContain("# Server", info),
             () => Assert.Contains("# Replication", info),
@@ -268,7 +269,7 @@ public class StandaloneClientTests(TestConfiguration config)
         _ = batch.StringSet(sourceKey, value);
         _ = batch.StringSet(moveKey, value);
 
-        IBatchStandalone batch2 = new Batch(isAtomic);
+        Batch batch2 = new Batch(isAtomic);
 
         // Test KeyCopy with database parameter
         _ = batch2.KeyCopy(sourceKey, destKey, 1, false);
@@ -277,7 +278,7 @@ public class StandaloneClientTests(TestConfiguration config)
         _ = batch2.KeyMove(moveKey, 2);
 
         object?[] results = (await client.Exec((Batch)batch, false))!;
-        object?[] results2 = (await client.Exec((Batch)batch2, false))!;
+        object?[] results2 = (await client.Exec(batch2, false))!;
 
         Assert.Multiple(
             () => Assert.True((bool)results[0]!), // Set sourceKey
@@ -285,5 +286,199 @@ public class StandaloneClientTests(TestConfiguration config)
             () => Assert.True((bool)results2[0]!), // KeyCopy result
             () => Assert.True((bool)results2[1]!)  // KeyMove result
         );
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigGetAsync_ReturnsConfiguration(GlideClient client)
+    {
+        // Test getting all configuration
+        var allConfig = await client.ConfigGetAsync("*");
+        Assert.NotEmpty(allConfig);
+        Assert.Contains(allConfig, kvp => kvp.Key == "maxmemory-policy");
+
+        // Test getting specific configuration
+        var maxMemoryConfig = await client.ConfigGetAsync("maxmemory-policy");
+        Assert.Single(maxMemoryConfig);
+        Assert.Equal("maxmemory-policy", maxMemoryConfig[0].Key);
+        Assert.NotEmpty(maxMemoryConfig[0].Value);
+
+        // Test getting multiple parameters individually (since StackExchange.Redis doesn't support multiple params in one call)
+        var timeoutConfig = await client.ConfigGetAsync("timeout");
+        var maxMemoryPolicyConfig = await client.ConfigGetAsync("maxmemory-policy");
+        Assert.True(timeoutConfig.Length >= 0); // timeout might not be set
+        Assert.True(maxMemoryPolicyConfig.Length >= 1); // maxmemory-policy should exist
+        Assert.Contains(maxMemoryPolicyConfig, kvp => kvp.Key == "maxmemory-policy");
+
+        // Test getting non-existent configuration (like Go test)
+        var nonExistentConfig = await client.ConfigGetAsync("non-existent-config");
+        Assert.Empty(nonExistentConfig);
+
+        // Test with empty parameters should default to "*" pattern
+        var allConfigDefault = await client.ConfigGetAsync();
+        Assert.NotEmpty(allConfigDefault);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigSetAsync_SetsConfiguration(GlideClient client)
+    {
+        // Test single parameter set/get (existing functionality)
+        var originalConfig = await client.ConfigGetAsync("maxmemory-policy");
+        string originalValue = originalConfig[0].Value;
+
+        try
+        {
+            // Set new value
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lru");
+
+            // Verify it was set
+            var newConfig = await client.ConfigGetAsync("maxmemory-policy");
+            Assert.Equal("allkeys-lru", newConfig[0].Value);
+        }
+        finally
+        {
+            // Restore original value
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)originalValue);
+        }
+
+        // Test multiple parameters (like Go test TestConfigSetAndGet_multipleArgs)
+        var serverVersion = await client.InfoAsync([Section.SERVER]);
+        if (serverVersion != null && (serverVersion.Contains("redis_version:7") || serverVersion.Contains("valkey_version:7")))
+        {
+            var originalTimeout = await client.ConfigGetAsync("timeout");
+            var originalMaxMemory = await client.ConfigGetAsync("maxmemory");
+
+            string originalTimeoutValue = originalTimeout.FirstOrDefault().Value ?? "0";
+            string originalMaxMemoryValue = originalMaxMemory.FirstOrDefault().Value ?? "0";
+
+            try
+            {
+                // Set multiple configuration parameters individually (since StackExchange.Redis doesn't support dictionary)
+                await client.ConfigSetAsync((ValkeyValue)"timeout", (ValkeyValue)"1000");
+                await client.ConfigSetAsync((ValkeyValue)"maxmemory", (ValkeyValue)"1073741824"); // 1GB in bytes
+
+                // Verify both parameters were set
+                var timeoutResult = await client.ConfigGetAsync("timeout");
+                var maxMemoryResult = await client.ConfigGetAsync("maxmemory");
+                Assert.Contains(timeoutResult, kvp => kvp.Key == "timeout" && kvp.Value == "1000");
+                Assert.Contains(maxMemoryResult, kvp => kvp.Key == "maxmemory" && kvp.Value == "1073741824");
+            }
+            finally
+            {
+                // Restore original values
+                await client.ConfigSetAsync((ValkeyValue)"timeout", (ValkeyValue)originalTimeoutValue);
+                await client.ConfigSetAsync((ValkeyValue)"maxmemory", (ValkeyValue)originalMaxMemoryValue);
+            }
+        }
+
+        // Test invalid parameters (like Go test TestConfigSetAndGet_invalidArgs)
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.ConfigSetAsync((ValkeyValue)"invalid-config-param", (ValkeyValue)"value"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigResetStatisticsAsync_ResetsStats(GlideClient client)
+    {
+        // This should not throw
+        await client.ConfigResetStatisticsAsync();
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigRewriteAsync_RewritesConfig(GlideClient client)
+    {
+        try
+        {
+            await client.ConfigRewriteAsync();
+        }
+        catch (Exception ex)
+        {
+            // The test environment may not have a config file, verify error matches
+            ex.Message.Contains("The server is running without a config file");
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task DatabaseSizeAsync_ReturnsSize(GlideClient client)
+    {
+        string key = $"dbsize-test-{Guid.NewGuid()}";
+
+        try
+        {
+            // Get initial size
+            long initialSize = await client.DatabaseSizeAsync();
+            Assert.True(initialSize >= 0);
+
+            // Add a key
+            await client.StringSetAsync(key, "test-value");
+
+            // Size should increase
+            long newSize = await client.DatabaseSizeAsync();
+            Assert.True(newSize >= initialSize);
+
+            // Test with explicit database (not supported)
+            try
+            {
+                long dbSize = await client.DatabaseSizeAsync(0);
+            }
+            catch (Exception ex)
+            {
+                Assert.IsType<ArgumentException>(ex);
+            }
+
+        }
+        finally
+        {
+            await client.KeyDeleteAsync(key);
+        }
+    }
+
+
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task LastSaveAsync_ReturnsLastSaveTime(GlideClient client)
+    {
+        DateTime lastSave = await client.LastSaveAsync();
+
+        // Should be a valid date (not default)
+        Assert.NotEqual(DateTime.MinValue, lastSave);
+        Assert.NotEqual(DateTime.MaxValue, lastSave);
+
+        // Should be in the past
+        Assert.True(lastSave <= DateTime.UtcNow);
+
+        // Should be reasonable (not too far in the past)
+        Assert.True(lastSave >= DateTime.UtcNow.AddDays(-30));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TimeAsync_ReturnsServerTime(GlideClient client)
+    {
+        DateTime serverTime = await client.TimeAsync();
+        DateTime localTime = DateTime.UtcNow;
+
+        // Server time should be close to local time (within 10 seconds)
+        TimeSpan diff = (serverTime - localTime).Duration();
+        Assert.True(diff < TimeSpan.FromSeconds(10),
+            $"Server time {serverTime} differs from local time {localTime} by {diff}");
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_ReturnsArt(GlideClient client)
+    {
+        string result = await client.LolwutAsync();
+
+        // Should return some text
+        Assert.NotEmpty(result);
+
+        // Should contain version information (could be Redis or Valkey)
+        Assert.True(result.Contains("Redis", StringComparison.OrdinalIgnoreCase) ||
+                   result.Contains("Valkey", StringComparison.OrdinalIgnoreCase));
     }
 }

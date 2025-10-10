@@ -77,4 +77,14 @@ public static class Constants
     /// The lowest bound in the sorted set for score operations.
     /// </summary>
     public const string NegativeInfinityScore = "-inf";
+
+    /// <summary>
+    /// Keywords for SORT command.
+    /// </summary>
+    public const string AlphaKeyword = "ALPHA";
+    public const string AscKeyword = "ASC";
+    public const string DescKeyword = "DESC";
+    public const string ByKeyword = "BY";
+    public const string GetKeyword = "GET";
+    public const string StoreKeyword = "STORE";
 }

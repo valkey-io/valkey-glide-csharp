@@ -31,13 +31,21 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExistsAsync(ValkeyKey[], CommandFlags)" /></returns>
     IBatch KeyExists(ValkeyKey[] keys);
 
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" /></returns>
+    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry);
+
     /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when = ExpireWhen.Always);
+    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" /></returns>
+    IBatch KeyExpire(ValkeyKey key, DateTime? expiry);
 
     /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always);
+    IBatch KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when);
 
     /// <inheritdoc cref="IGenericBaseCommands.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" /></returns>
@@ -79,7 +87,46 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyTouchAsync(ValkeyKey[], CommandFlags)" /></returns>
     IBatch KeyTouch(ValkeyKey[] keys);
 
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyExpireTime(ValkeyKey key);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyEncodingAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyEncodingAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyEncoding(ValkeyKey key);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyFrequencyAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyFrequencyAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyFrequency(ValkeyKey key);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyIdleTime(ValkeyKey key);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRefCountAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyRefCountAsync(ValkeyKey, CommandFlags)" /></returns>
+    IBatch KeyRefCount(ValkeyKey key);
+
     /// <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)" /></returns>
     IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyMoveAsync(ValkeyKey, int, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyMoveAsync(ValkeyKey, int, CommandFlags)" /></returns>
+    IBatch KeyMove(ValkeyKey key, int database);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" /></returns>
+    IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false);
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRandomAsync(CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.KeyRandomAsync(CommandFlags)" /></returns>
+    IBatch KeyRandom();
+
+    /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, ValkeyValue[], CommandFlags)" /></returns>
+    IBatch Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null);
+
+    /// <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, long, CommandFlags)" /></returns>
+    IBatch Wait(long numreplicas, long timeout);
 }
