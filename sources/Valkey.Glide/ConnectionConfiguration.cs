@@ -172,7 +172,7 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Configuration for a standalone client. <br />
     /// Use <see cref="StandaloneClientConfigurationBuilder" /> or
-    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, uint?, Protocol?, string?, bool?)" /> to create an instance.
+    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, uint?, Protocol?, string?, bool)" /> to create an instance.
     /// </summary>
     public sealed class StandaloneClientConfiguration : BaseClientConfiguration
     {

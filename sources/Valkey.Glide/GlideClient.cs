@@ -196,7 +196,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
         } while (currentCursor != 0);
     }
 
-    protected override async Task<Version?> GetServerVersionAsync()
+    protected override async Task<Version> GetServerVersionAsync()
     {
         if (_serverVersion == null)
         {
