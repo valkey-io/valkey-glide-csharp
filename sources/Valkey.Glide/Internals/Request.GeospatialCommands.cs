@@ -114,4 +114,223 @@ internal static partial class Request
             }).ToArray();
         });
     }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCH command with member origin.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="fromMember">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape)
+    {
+        return GeoSearchAsync(key, fromMember, shape, -1, true, null, GeoRadiusOptions.None);
+    }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCH command with member origin, count limit, demandClosest option, order, and options.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="fromMember">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results.</param>
+    /// <param name="options">The options for the search result format.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count, bool demandClosest, Order? order, GeoRadiusOptions options)
+    {
+        List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
+        List<ValkeyValue> shapeArgs = [];
+        shape.AddArgs(shapeArgs);
+        args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
+        if (count > 0)
+        {
+            args.Add(ValkeyLiterals.COUNT.ToGlideString());
+            args.Add(count.ToGlideString());
+            if (!demandClosest)
+            {
+                args.Add(ValkeyLiterals.ANY.ToGlideString());
+            }
+        }
+        if (order.HasValue)
+        {
+            args.Add(order.Value.ToLiteral().ToGlideString());
+        }
+        List<ValkeyValue> optionArgs = [];
+        options.AddArgs(optionArgs);
+        args.AddRange(optionArgs.Select(a => a.ToGlideString()));
+        return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
+    }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCH command with position origin.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="fromPosition">The position to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape)
+    {
+        return GeoSearchAsync(key, fromPosition, shape, -1, true, null, GeoRadiusOptions.None);
+    }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCH command with position origin, count limit, demandClosest option, order, and options.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="fromPosition">The position to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results.</param>
+    /// <param name="options">The options for the search result format.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count, bool demandClosest, Order? order, GeoRadiusOptions options)
+    {
+        List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
+        List<ValkeyValue> shapeArgs = [];
+        shape.AddArgs(shapeArgs);
+        args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
+        if (count > 0)
+        {
+            args.Add(ValkeyLiterals.COUNT.ToGlideString());
+            args.Add(count.ToGlideString());
+            if (!demandClosest)
+            {
+                args.Add(ValkeyLiterals.ANY.ToGlideString());
+            }
+        }
+        if (order.HasValue)
+        {
+            args.Add(order.Value.ToLiteral().ToGlideString());
+        }
+        List<ValkeyValue> optionArgs = [];
+        options.AddArgs(optionArgs);
+        args.AddRange(optionArgs.Select(a => a.ToGlideString()));
+        return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
+    }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCH command with polygon.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="polygon">The polygon to search within.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoSearchPolygon polygon)
+    {
+        return GeoSearchAsync(key, polygon, -1, true, null, GeoRadiusOptions.None);
+    }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCH command with polygon, count limit, demandClosest option, order, and options.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="polygon">The polygon to search within.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results.</param>
+    /// <param name="options">The options for the search result format.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoSearchPolygon polygon, long count, bool demandClosest, Order? order, GeoRadiusOptions options)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        List<ValkeyValue> polygonArgs = [];
+        polygon.AddArgs(polygonArgs);
+        args.AddRange(polygonArgs.Select(a => a.ToGlideString()));
+        if (count > 0)
+        {
+            args.Add(ValkeyLiterals.COUNT.ToGlideString());
+            args.Add(count.ToGlideString());
+            if (!demandClosest)
+            {
+                args.Add(ValkeyLiterals.ANY.ToGlideString());
+            }
+        }
+        if (order.HasValue)
+        {
+            args.Add(order.Value.ToLiteral().ToGlideString());
+        }
+        List<ValkeyValue> optionArgs = [];
+        options.AddArgs(optionArgs);
+        args.AddRange(optionArgs.Select(a => a.ToGlideString()));
+        return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
+    }
+
+    /// <summary>
+    /// Processes the response from GEOSEARCH command based on the options.
+    /// </summary>
+    /// <param name="response">The raw response from the server.</param>
+    /// <param name="options">The options used in the request.</param>
+    /// <returns>An array of GeoRadiusResult objects.</returns>
+    private static GeoRadiusResult[] ProcessGeoSearchResponse(object[] response, GeoRadiusOptions options)
+    {
+
+        
+        return response.Select(item =>
+        {
+            // If no options are specified, Redis returns simple strings (member names)
+            if (options == GeoRadiusOptions.None)
+            {
+                return new GeoRadiusResult(new ValkeyValue(item?.ToString()), null, null, null);
+            }
+
+            // With options, Redis returns arrays: [member, ...additional data based on options]
+            if (item is not object[] itemArray || itemArray.Length == 0)
+            {
+                // Fallback for unexpected format
+                return new GeoRadiusResult(new ValkeyValue(item?.ToString()), null, null, null);
+            }
+
+            var member = new ValkeyValue(itemArray[0]?.ToString());
+            double? distance = null;
+            long? hash = null;
+            GeoPosition? position = null;
+
+            int index = 1;
+            
+            // Redis returns additional data in this specific order:
+            // 1. Distance (if WITHDIST)
+            // 2. Hash (if WITHHASH) 
+            // 3. Coordinates (if WITHCOORD)
+            
+            if ((options & GeoRadiusOptions.WithDistance) != 0 && index < itemArray.Length)
+            {
+                // Distance comes as a nested array: [distance_value]
+                if (itemArray[index] is object[] distArray && distArray.Length > 0)
+                {
+                    if (double.TryParse(distArray[0]?.ToString(), out var dist))
+                        distance = dist;
+                }
+                index++;
+            }
+            
+            if ((options & GeoRadiusOptions.WithGeoHash) != 0 && index < itemArray.Length)
+            {
+                // Hash comes as a nested array: [hash_value]
+                if (itemArray[index] is object[] hashArray && hashArray.Length > 0)
+                {
+                    if (long.TryParse(hashArray[0]?.ToString(), out var h))
+                        hash = h;
+                }
+                index++;
+            }
+            
+            if ((options & GeoRadiusOptions.WithCoordinates) != 0 && index < itemArray.Length)
+            {
+                // Coordinates come as a triple-nested array: [[[longitude, latitude]]]
+                if (itemArray[index] is object[] coordOuterArray && coordOuterArray.Length > 0 &&
+                    coordOuterArray[0] is object[] coordMiddleArray && coordMiddleArray.Length >= 2)
+                {
+                    if (double.TryParse(coordMiddleArray[0]?.ToString(), out var lon) &&
+                        double.TryParse(coordMiddleArray[1]?.ToString(), out var lat))
+                    {
+                        position = new GeoPosition(lon, lat);
+                    }
+                }
+            }
+
+            return new GeoRadiusResult(member, distance, hash, position);
+        }).ToArray();
+    }
 }

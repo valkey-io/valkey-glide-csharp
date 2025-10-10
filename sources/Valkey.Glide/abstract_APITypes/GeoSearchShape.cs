@@ -90,3 +90,33 @@ public class GeoSearchBox : GeoSearchShape
         args.Add(Unit.ToLiteral());
     }
 }
+
+/// <summary>
+/// A polygon drawn on a map.
+/// </summary>
+public class GeoSearchPolygon : GeoSearchShape
+{
+    private readonly GeoPosition[] _vertices;
+
+    /// <summary>
+    /// Initializes a GeoPolygon.
+    /// </summary>
+    /// <param name="vertices">The vertices of the polygon.</param>
+    public GeoSearchPolygon(GeoPosition[] vertices) : base(GeoUnit.Meters)
+    {
+        _vertices = vertices;
+    }
+
+    internal override int ArgCount => 2 + (_vertices.Length * 2);
+
+    internal override void AddArgs(List<ValkeyValue> args)
+    {
+        args.Add(ValkeyLiterals.BYPOLYGON);
+        args.Add(_vertices.Length);
+        foreach (var vertex in _vertices)
+        {
+            args.Add(vertex.Longitude);
+            args.Add(vertex.Latitude);
+        }
+    }
+}

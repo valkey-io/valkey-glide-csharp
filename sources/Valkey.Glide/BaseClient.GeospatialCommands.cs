@@ -61,4 +61,25 @@ public abstract partial class BaseClient : IGeospatialCommands
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.GeoPositionAsync(key, members));
     }
+
+    /// <inheritdoc/>
+    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.GeoSearchAsync(key, fromMember, shape, count, demandClosest, order, options));
+    }
+
+    /// <inheritdoc/>
+    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.GeoSearchAsync(key, fromPosition, shape, count, demandClosest, order, options));
+    }
+
+    /// <inheritdoc/>
+    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoSearchPolygon polygon, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.GeoSearchAsync(key, polygon, count, demandClosest, order, options));
+    }
 }

@@ -157,4 +157,73 @@ public interface IGeospatialCommands
     /// </example>
     /// </remarks>
     Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearch"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="fromMember">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results. Null for default ordering.</param>
+    /// <param name="options">The options for the search result format.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of results within the specified area.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+    /// GeoRadiusResult[] results = await client.GeoSearchAsync("mygeo", "Palermo", shape);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearch"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="fromPosition">The position to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results. Null for default ordering.</param>
+    /// <param name="options">The options for the search result format.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of results within the specified area.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var position = new GeoPosition(15.087269, 37.502669);
+    /// var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+    /// GeoRadiusResult[] results = await client.GeoSearchAsync("mygeo", position, shape);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the members of a geospatial index which are within the borders of the specified polygon.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearch"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="polygon">The polygon area to search within.</param>
+    /// <param name="count">The maximum number of results to return. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results. Null for default ordering.</param>
+    /// <param name="options">The options for the search result format.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of results within the specified polygon.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var polygon = new GeoSearchPolygon(new GeoPosition[] { new(12.0, 37.0), new(16.0, 37.0), new(16.0, 39.0), new(12.0, 39.0) });
+    /// GeoRadiusResult[] results = await client.GeoSearchAsync("mygeo", polygon);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoSearchPolygon polygon, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
 }
