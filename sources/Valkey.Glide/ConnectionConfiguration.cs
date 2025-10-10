@@ -24,9 +24,10 @@ public abstract class ConnectionConfiguration
         public uint DatabaseId;
         public Protocol? Protocol;
         public string? ClientName;
+        public bool LazyConnect;
 
         internal FFI.ConnectionConfig ToFfi() =>
-            new(Addresses, TlsMode, ClusterMode, (uint?)RequestTimeout?.TotalMilliseconds, (uint?)ConnectionTimeout?.TotalMilliseconds, ReadFrom, RetryStrategy, AuthenticationInfo, DatabaseId, Protocol, ClientName);
+            new(Addresses, TlsMode, ClusterMode, (uint?)RequestTimeout?.TotalMilliseconds, (uint?)ConnectionTimeout?.TotalMilliseconds, ReadFrom, RetryStrategy, AuthenticationInfo, DatabaseId, Protocol, ClientName, LazyConnect);
     }
 
     /// <summary>
@@ -171,7 +172,7 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Configuration for a standalone client. <br />
     /// Use <see cref="StandaloneClientConfigurationBuilder" /> or
-    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, uint?, Protocol?, string?)" /> to create an instance.
+    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, uint?, Protocol?, string?, bool?)" /> to create an instance.
     /// </summary>
     public sealed class StandaloneClientConfiguration : BaseClientConfiguration
     {
@@ -190,6 +191,7 @@ public abstract class ConnectionConfiguration
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
+        /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
         public StandaloneClientConfiguration(
             List<(string? host, ushort? port)> addresses,
             bool? useTls = null,
@@ -201,7 +203,8 @@ public abstract class ConnectionConfiguration
             string? password = null,
             uint? databaseId = null,
             Protocol? protocol = null,
-            string? clientName = null
+            string? clientName = null,
+            bool lazyConnect = false
             )
         {
             StandaloneClientConfigurationBuilder builder = new();
@@ -215,6 +218,7 @@ public abstract class ConnectionConfiguration
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
+            builder.LazyConnect = lazyConnect;
             Request = builder.Build().Request;
         }
     }
@@ -239,6 +243,7 @@ public abstract class ConnectionConfiguration
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
+        /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
         public ClusterClientConfiguration(
             List<(string? host, ushort? port)> addresses,
             bool? useTls = null,
@@ -250,7 +255,8 @@ public abstract class ConnectionConfiguration
             string? password = null,
             uint? databaseId = null,
             Protocol? protocol = null,
-            string? clientName = null
+            string? clientName = null,
+            bool lazyConnect = false
             )
         {
             ClusterClientConfigurationBuilder builder = new();
@@ -264,6 +270,7 @@ public abstract class ConnectionConfiguration
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
+            builder.LazyConnect = lazyConnect;
             Request = builder.Build().Request;
         }
     }
@@ -531,6 +538,24 @@ public abstract class ConnectionConfiguration
         public T WithDataBaseId(uint dataBaseId)
         {
             DataBaseId = dataBaseId;
+            return (T)this;
+        }
+        #endregion
+        #region Lazy Connect
+        /// <summary>
+        /// Configure whether to defer connections until the first command is executed.<br />
+        /// If not explicitly set, a default value of <c>false</c> will be used.
+        /// </summary>
+        public bool LazyConnect
+        {
+            get => Config.LazyConnect;
+            set => Config.LazyConnect = value;
+        }
+
+        /// <inheritdoc cref="LazyConnect" />
+        public T WithLazyConnect(bool lazyConnect)
+        {
+            LazyConnect = lazyConnect;
             return (T)this;
         }
         #endregion
