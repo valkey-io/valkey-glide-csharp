@@ -593,3 +593,89 @@ pub(crate) unsafe fn get_pipeline_options(
         PipelineRetryStrategy::new(info.retry_server_error, info.retry_connection_error),
     )
 }
+
+/// FFI structure for PubSub message information.
+#[repr(C)]
+#[derive(Debug, Clone)]
+pub struct PubSubMessageInfo {
+    /// The message content as a null-terminated C string.
+    pub message: *const c_char,
+    /// The channel name as a null-terminated C string.
+    pub channel: *const c_char,
+    /// The pattern that matched (null if exact channel subscription).
+    pub pattern: *const c_char,
+}
+
+/// FFI callback function type for PubSub messages.
+///
+/// # Parameters
+/// * `client_id` - The ID of the client that received the message
+/// * `message_ptr` - Pointer to PubSubMessageInfo structure
+pub type PubSubCallback = extern "C" fn(client_id: u64, message_ptr: *const PubSubMessageInfo);
+
+/// Register a PubSub callback for the specified client.
+///
+/// # Safety
+/// * `client` must be a valid client pointer obtained from `create_client`
+/// * `callback` must be a valid function pointer that remains valid for the client's lifetime
+///
+/// # Parameters
+/// * `client` - Pointer to the client instance
+/// * `callback` - Function pointer to the PubSub message callback
+#[unsafe(no_mangle)]
+pub extern "C" fn register_pubsub_callback(
+    client: *mut std::ffi::c_void,
+    _callback: PubSubCallback,
+) {
+    // TODO: Implement actual callback registration with glide-core
+    // This is a placeholder implementation that would need to integrate with
+    // the actual glide-core PubSub functionality once it's available
+
+    // For now, we just store the callback pointer (this would be properly implemented
+    // when glide-core PubSub support is added)
+    if client.is_null() {
+        eprintln!("Warning: register_pubsub_callback called with null client pointer");
+        return;
+    }
+
+    // In a real implementation, this would:
+    // 1. Cast the client pointer to the appropriate client type
+    // 2. Store the callback in the client's PubSub handler
+    // 3. Set up the message routing from glide-core to this callback
+
+    // Placeholder logging
+    println!("PubSub callback registered for client {:p}", client);
+}
+
+/// Free memory allocated for a PubSub message.
+///
+/// # Safety
+/// * `message_ptr` must be a valid pointer to a PubSubMessageInfo structure
+/// * The structure and its string fields must have been allocated by this library
+/// * This function should only be called once per message
+///
+/// # Parameters
+/// * `message_ptr` - Pointer to the PubSubMessageInfo structure to free
+#[unsafe(no_mangle)]
+pub extern "C" fn free_pubsub_message(message_ptr: *mut PubSubMessageInfo) {
+    if message_ptr.is_null() {
+        return;
+    }
+
+    unsafe {
+        let message_info = Box::from_raw(message_ptr);
+
+        // Free the individual string fields if they were allocated
+        if !message_info.message.is_null() {
+            let _ = std::ffi::CString::from_raw(message_info.message as *mut c_char);
+        }
+        if !message_info.channel.is_null() {
+            let _ = std::ffi::CString::from_raw(message_info.channel as *mut c_char);
+        }
+        if !message_info.pattern.is_null() {
+            let _ = std::ffi::CString::from_raw(message_info.pattern as *mut c_char);
+        }
+
+        // message_info is automatically dropped here, freeing the struct itself
+    }
+}
