@@ -118,7 +118,7 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         long count1 = await client.HyperLogLogLengthAsync(key1);
         long count2 = await client.HyperLogLogLengthAsync(key2);
         long count3 = await client.HyperLogLogLengthAsync(key3);
-        
+
         Assert.True(unionCount >= Math.Max(Math.Max(count1, count2), count3));
     }
 
@@ -209,7 +209,7 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         // Destination should have same cardinality as source1
         long destCount = await client.HyperLogLogLengthAsync(destination);
         long source1Count = await client.HyperLogLogLengthAsync(source1);
-        
+
         Assert.Equal(source1Count, destCount);
     }
 }
