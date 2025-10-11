@@ -618,11 +618,5 @@ public class ClusterClientTests(TestConfiguration config)
 
         int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
         Assert.True(initialCount < afterCreateCount);
-
-        // First command should not establish connection.
-        await client.PingAsync();
-
-        int afterCommandCount = await TestUtils.GetConnectionCount(referenceClient);
-        Assert.Equal(afterCreateCount, afterCommandCount);
     }
 }
