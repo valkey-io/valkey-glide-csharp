@@ -191,6 +191,109 @@ public class GeospatialCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoDistance_AllUnits_ReturnsCorrectDistances(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        await client.GeoAddAsync(key, entries);
+        
+        // Test all units with expected values (approximate distance between Palermo and Catania)
+        double? distanceMeters = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Meters);
+        double? distanceKilometers = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Kilometers);
+        double? distanceMiles = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Miles);
+        double? distanceFeet = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Feet);
+        
+        // Verify all distances are returned
+        Assert.NotNull(distanceMeters);
+        Assert.NotNull(distanceKilometers);
+        Assert.NotNull(distanceMiles);
+        Assert.NotNull(distanceFeet);
+        
+        // Verify approximate expected values (distance between Palermo and Catania)
+        Assert.True(distanceMeters > 166000 && distanceMeters < 167000); // ~166274 meters
+        Assert.True(distanceKilometers > 166 && distanceKilometers < 167); // ~166.27 km
+        Assert.True(distanceMiles > 103 && distanceMiles < 104); // ~103.31 miles
+        Assert.True(distanceFeet > 545000 && distanceFeet < 546000); // ~545,518 feet
+        
+        // Verify unit conversions are consistent
+        double metersToKm = distanceMeters.Value / 1000;
+        double metersToMiles = distanceMeters.Value / 1609.344;
+        double metersToFeet = distanceMeters.Value * 3.28084;
+        
+        Assert.True(Math.Abs(metersToKm - distanceKilometers.Value) < 0.001);
+        Assert.True(Math.Abs(metersToMiles - distanceMiles.Value) < 0.001);
+        Assert.True(Math.Abs(metersToFeet - distanceFeet.Value) < 1); // Allow 1 foot tolerance
+    }
+    
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoDistance_DefaultUnit_ReturnsMeters(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        await client.GeoAddAsync(key, entries);
+        
+        // Test default unit (should be meters)
+        double? distanceDefault = await client.GeoDistanceAsync(key, "Palermo", "Catania");
+        double? distanceMeters = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Meters);
+        
+        Assert.NotNull(distanceDefault);
+        Assert.NotNull(distanceMeters);
+        Assert.Equal(distanceMeters.Value, distanceDefault.Value, 1e-9);
+    }
+    
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearch_AllUnits_ReturnsConsistentResults(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania"),
+            new GeoEntry(12.758489, 38.788135, "Trapani")
+        ];
+        await client.GeoAddAsync(key, entries);
+        
+        var position = new GeoPosition(13.361389, 38.115556); // Palermo coordinates
+        
+        // Test search with different units - all should return same members but with different radius values
+        var shapeMeters = new GeoSearchCircle(200000, GeoUnit.Meters); // 200km in meters
+        var shapeKilometers = new GeoSearchCircle(200, GeoUnit.Kilometers); // 200km
+        var shapeMiles = new GeoSearchCircle(124.27, GeoUnit.Miles); // ~200km in miles
+        var shapeFeet = new GeoSearchCircle(656168, GeoUnit.Feet); // ~200km in feet
+        
+        GeoRadiusResult[] resultsMeters = await client.GeoSearchAsync(key, position, shapeMeters);
+        GeoRadiusResult[] resultsKilometers = await client.GeoSearchAsync(key, position, shapeKilometers);
+        GeoRadiusResult[] resultsMiles = await client.GeoSearchAsync(key, position, shapeMiles);
+        GeoRadiusResult[] resultsFeet = await client.GeoSearchAsync(key, position, shapeFeet);
+        
+        // All searches should return the same members (Palermo and Catania should be within 200km)
+        Assert.NotEmpty(resultsMeters);
+        Assert.NotEmpty(resultsKilometers);
+        Assert.NotEmpty(resultsMiles);
+        Assert.NotEmpty(resultsFeet);
+        
+        // Should return same number of results
+        Assert.Equal(resultsMeters.Length, resultsKilometers.Length);
+        Assert.Equal(resultsMeters.Length, resultsMiles.Length);
+        Assert.Equal(resultsMeters.Length, resultsFeet.Length);
+        
+        // Should contain Palermo and Catania
+        Assert.Contains("Palermo", resultsMeters.Select(r => r.Member.ToString()));
+        Assert.Contains("Catania", resultsMeters.Select(r => r.Member.ToString()));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GeoDistance_ReturnsCorrectDistance(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
