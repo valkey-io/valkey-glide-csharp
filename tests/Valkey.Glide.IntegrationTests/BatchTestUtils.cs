@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 internal class BatchTestUtils
@@ -1390,6 +1392,68 @@ internal class BatchTestUtils
         return testData;
     }
 
+    public static List<TestInfo> CreateGeospatialTest(Pipeline.IBatch batch, bool isAtomic)
+    {
+        List<TestInfo> testData = [];
+        string prefix = "{geoKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
+        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+
+        // Test GeoAdd
+        _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"));
+        testData.Add(new(1L, "GeoAdd(key1, Palermo)"));
+
+        _ = batch.GeoAdd(key1, new GeoEntry[] {
+            new GeoEntry(15.087269, 37.502669, "Catania"),
+            new GeoEntry(12.496366, 41.902782, "Rome")
+        });
+        testData.Add(new(2L, "GeoAdd(key1, [Catania, Rome])"));
+
+        // Test GeoAdd with options
+        _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS));
+        testData.Add(new(0L, "GeoAdd(key1, Palermo, XX) - update existing"));
+
+        _ = batch.GeoAdd(key1, new GeoEntry(9.189982, 45.4642035, "Milan"), new GeoAddOptions(ConditionalChange.ONLY_IF_DOES_NOT_EXIST));
+        testData.Add(new(1L, "GeoAdd(key1, Milan, NX) - add new"));
+
+        // Test GeoDistance
+        _ = batch.GeoDistance(key1, "Palermo", "Catania", GeoUnit.Kilometers);
+        testData.Add(new(166.2742, "GeoDistance(key1, Palermo, Catania, km)", true));
+
+        _ = batch.GeoDistance(key1, "Palermo", "Catania", GeoUnit.Meters);
+        testData.Add(new(166274.0, "GeoDistance(key1, Palermo, Catania, m)", true));
+
+        _ = batch.GeoDistance(key1, "Palermo", "NonExistent", GeoUnit.Kilometers);
+        testData.Add(new(null, "GeoDistance(key1, Palermo, NonExistent, km)"));
+
+        // Test GeoHash - batch returns string for single member, string[] for multiple
+        _ = batch.GeoHash(key1, "Palermo");
+        testData.Add(new("", "GeoHash(key1, Palermo)", true));
+
+        _ = batch.GeoHash(key1, new ValkeyValue[] { "Palermo", "Catania" });
+        testData.Add(new(Array.Empty<string>(), "GeoHash(key1, [Palermo, Catania])", true));
+
+        // Test GeoPosition
+        _ = batch.GeoPosition(key1, "Palermo");
+        testData.Add(new(new GeoPosition(13.361389, 38.115556), "GeoPosition(key1, Palermo)", true));
+
+        _ = batch.GeoPosition(key1, new ValkeyValue[] { "Palermo", "NonExistent" });
+        testData.Add(new(Array.Empty<GeoPosition?>(), "GeoPosition(key1, [Palermo, NonExistent])", true));
+
+        // Test GeoSearch
+        _ = batch.GeoSearch(key1, "Palermo", new GeoSearchCircle(200, GeoUnit.Kilometers));
+        testData.Add(new(Array.Empty<GeoRadiusResult>(), "GeoSearch(key1, Palermo, 200km circle)", true));
+
+        _ = batch.GeoSearch(key1, new GeoPosition(15, 37), new GeoSearchBox(400, 400, GeoUnit.Kilometers));
+        testData.Add(new(Array.Empty<GeoRadiusResult>(), "GeoSearch(key1, position, 400x400km box)", true));
+
+        // Note: GeoSearchAndStore is not available in batch interface
+
+        return testData;
+    }
+
     public static TheoryData<BatchTestData> GetTestClientWithAtomic =>
         [.. TestConfiguration.TestClients.SelectMany(r => new[] { true, false }.SelectMany(isAtomic =>
             new BatchTestData[] {
@@ -1399,6 +1463,7 @@ internal class BatchTestUtils
                 new("Hash commands", r.Data, CreateHashTest, isAtomic),
                 new("List commands", r.Data, CreateListTest, isAtomic),
                 new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
+                new("Geospatial commands", r.Data, CreateGeospatialTest, isAtomic),
                 new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
                 new("Server Management commands", r.Data, CreateServerManagementTest, isAtomic)
             }))];
