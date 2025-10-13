@@ -63,9 +63,16 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         nint successCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._successCallbackDelegate);
         nint failureCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._failureCallbackDelegate);
 
+        // Get PubSub callback pointer if PubSub subscriptions are configured
+        nint pubsubCallbackPointer = IntPtr.Zero;
+        if (config.Request.PubSubSubscriptions != null)
+        {
+            pubsubCallbackPointer = PubSubCallbackManager.GetNativeCallbackPtr();
+        }
+
         using FFI.ConnectionConfig request = config.Request.ToFfi();
         Message message = client._messageContainer.GetMessageForCall();
-        CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer);
+        CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer, pubsubCallbackPointer);
         client._clientPointer = await message; // This will throw an error thru failure callback if any
 
         if (client._clientPointer != IntPtr.Zero)
@@ -180,16 +187,10 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
 
         // Generate a unique client ID for PubSub callback registration
-        _clientId = (ulong)GetHashCode();
+        _clientId = (ulong)_clientPointer.ToInt64();
 
         // Register this client for PubSub callbacks
         PubSubCallbackManager.RegisterClient(_clientId, this);
-
-        // Register the PubSub callback with the native client
-        if (_clientPointer != IntPtr.Zero)
-        {
-            RegisterPubSubCallbackFfi(_clientPointer, PubSubCallbackManager.GetNativeCallbackPtr());
-        }
     }
 
     /// <summary>
@@ -206,8 +207,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         catch (Exception ex)
         {
             // Log the error but don't let exceptions escape
-            // In a production environment, this should use proper logging
-            Console.Error.WriteLine($"Error handling PubSub message in client {_clientId}: {ex}");
+            Logger.Log(Level.Error, "BaseClient", $"Error handling PubSub message in client {_clientId}: {ex.Message}", ex);
         }
     }
 
@@ -220,7 +220,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         {
             try
             {
-                // Unregister from the callback manager
+                // Unregister from the client registry
                 PubSubCallbackManager.UnregisterClient(_clientId);
 
                 // Dispose the message handler
@@ -230,7 +230,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             catch (Exception ex)
             {
                 // Log the error but continue with disposal
-                Console.Error.WriteLine($"Error cleaning up PubSub resources for client {_clientId}: {ex}");
+                Logger.Log(Level.Warn, "BaseClient", $"Error cleaning up PubSub resources for client {_clientId}: {ex.Message}", ex);
             }
         }
     }
