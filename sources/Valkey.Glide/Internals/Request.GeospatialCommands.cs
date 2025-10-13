@@ -333,4 +333,80 @@ internal static partial class Request
             return new GeoRadiusResult(member, distance, hash, position);
         }).ToArray();
     }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCHSTORE command with member origin.
+    /// </summary>
+    /// <param name="sourceKey">The key of the source sorted set.</param>
+    /// <param name="destinationKey">The key where results will be stored.</param>
+    /// <param name="fromMember">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results.</param>
+    /// <param name="storeDistances">When true, stores distances instead of just member names.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
+    {
+        List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
+        List<ValkeyValue> shapeArgs = [];
+        shape.AddArgs(shapeArgs);
+        args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
+        if (count > 0)
+        {
+            args.Add(ValkeyLiterals.COUNT.ToGlideString());
+            args.Add(count.ToGlideString());
+            if (!demandClosest)
+            {
+                args.Add(ValkeyLiterals.ANY.ToGlideString());
+            }
+        }
+        if (order.HasValue)
+        {
+            args.Add(order.Value.ToLiteral().ToGlideString());
+        }
+        if (storeDistances)
+        {
+            args.Add(ValkeyLiterals.STOREDIST.ToGlideString());
+        }
+        return Simple<long>(RequestType.GeoSearchStore, [.. args]);
+    }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCHSTORE command with position origin.
+    /// </summary>
+    /// <param name="sourceKey">The key of the source sorted set.</param>
+    /// <param name="destinationKey">The key where results will be stored.</param>
+    /// <param name="fromPosition">The position to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results.</param>
+    /// <param name="storeDistances">When true, stores distances instead of just member names.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
+    {
+        List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
+        List<ValkeyValue> shapeArgs = [];
+        shape.AddArgs(shapeArgs);
+        args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
+        if (count > 0)
+        {
+            args.Add(ValkeyLiterals.COUNT.ToGlideString());
+            args.Add(count.ToGlideString());
+            if (!demandClosest)
+            {
+                args.Add(ValkeyLiterals.ANY.ToGlideString());
+            }
+        }
+        if (order.HasValue)
+        {
+            args.Add(order.Value.ToLiteral().ToGlideString());
+        }
+        if (storeDistances)
+        {
+            args.Add(ValkeyLiterals.STOREDIST.ToGlideString());
+        }
+        return Simple<long>(RequestType.GeoSearchStore, [.. args]);
+    }
 }

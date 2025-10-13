@@ -63,6 +63,60 @@ public class GeospatialCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoAdd_InvalidLongitude_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string member = "InvalidPlace";
+
+        // Test longitude too low (-181)
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoAddAsync(key, -181, 0, member));
+
+        // Test longitude too high (181)
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoAddAsync(key, 181, 0, member));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoAdd_InvalidLatitude_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string member = "InvalidPlace";
+
+        // Test latitude too high (86)
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoAddAsync(key, 0, 86, member));
+
+        // Test latitude too low (-86)
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoAddAsync(key, 0, -86, member));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoAdd_EmptyEntries_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        GeoEntry[] emptyEntries = [];
+
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoAddAsync(key, emptyEntries));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoAdd_WrongKeyType_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.StringSetAsync(key, "not_a_geo_key");
+
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GeoDistance_ReturnsCorrectDistance(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -88,6 +142,17 @@ public class GeospatialCommandTests(TestConfiguration config)
         
         double? distance = await client.GeoDistanceAsync(key, "Palermo", "NonExistent");
         Assert.Null(distance);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoDistance_WrongKeyType_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.StringSetAsync(key, "not_a_geo_key");
+        
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoDistanceAsync(key, "member1", "member2"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -131,6 +196,28 @@ public class GeospatialCommandTests(TestConfiguration config)
         
         string? hash = await client.GeoHashAsync(key, "NonExistent");
         Assert.Null(hash);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoHash_WrongKeyType_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.StringSetAsync(key, "not_a_geo_key");
+        
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoHashAsync(key, "member"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoHash_EmptyMembers_ReturnsEmptyArray(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        
+        string?[] hashes = await client.GeoHashAsync(key, new ValkeyValue[] { });
+        Assert.Empty(hashes);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -179,6 +266,17 @@ public class GeospatialCommandTests(TestConfiguration config)
         
         GeoPosition? position = await client.GeoPositionAsync(key, "NonExistent");
         Assert.Null(position);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoPosition_WrongKeyType_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.StringSetAsync(key, "not_a_geo_key");
+        
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoPositionAsync(key, "member"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -440,5 +538,144 @@ public class GeospatialCommandTests(TestConfiguration config)
         
         Assert.Equal(0.0, palermoResult.Distance.Value, 1); // Distance from itself should be ~0
         Assert.True(cataniaResult.Distance.Value > 160 && cataniaResult.Distance.Value < 170); // ~166km between cities
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_WithMember_StoresResults(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        await client.GeoAddAsync(sourceKey, entries);
+        
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape);
+        
+        Assert.True(count >= 1);
+        Assert.Contains("Palermo", (await client.SortedSetRangeByRankAsync(destinationKey, 0, -1)).Select(r => r.ToString()));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_WithPosition_StoresResults(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        await client.GeoAddAsync(sourceKey, entries);
+        
+        var position = new GeoPosition(13.361389, 38.115556);
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, position, shape);
+        
+        Assert.True(count >= 1);
+        Assert.Contains("Palermo", (await client.SortedSetRangeByRankAsync(destinationKey, 0, -1)).Select(r => r.ToString()));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_WithDistances_StoresDistances(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        await client.GeoAddAsync(sourceKey, entries);
+        
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, storeDistances: true);
+        
+        Assert.True(count >= 1);
+        var results = await client.SortedSetRangeByRankWithScoresAsync(destinationKey, 0, -1);
+        Assert.NotEmpty(results);
+        Assert.True(results.Any(r => r.Score >= 0)); // Distances should be non-negative
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearch_NonExistentMember_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        
+        var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoSearchAsync(key, "NonExistentMember", shape));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearch_WrongKeyType_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.StringSetAsync(key, "not_a_geo_key");
+        
+        var position = new GeoPosition(13.361389, 38.115556);
+        var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoSearchAsync(key, position, shape));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearch_NoMembersInArea_ReturnsEmpty(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        
+        var position = new GeoPosition(0.0, 0.0); // Far from Palermo
+        var shape = new GeoSearchCircle(1, GeoUnit.Meters); // Very small radius
+        GeoRadiusResult[] results = await client.GeoSearchAsync(key, position, shape);
+        
+        Assert.Empty(results);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_NonExistentMember_ThrowsException(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        await client.GeoAddAsync(sourceKey, 13.361389, 38.115556, "Palermo");
+        
+        var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "NonExistentMember", shape));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_WrongKeyType_ThrowsException(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        await client.StringSetAsync(sourceKey, "not_a_geo_key");
+        
+        var position = new GeoPosition(13.361389, 38.115556);
+        var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
+        await Assert.ThrowsAsync<Errors.RequestException>(async () => 
+            await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, position, shape));
     }
 }
