@@ -282,7 +282,27 @@ public class CommandTests
             () => Assert.Equal(new string[] { "HVALS", "key" }, Request.HashValuesAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HRANDFIELD", "key" }, Request.HashRandomFieldAsync("key").GetArgs()),
             () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3" }, Request.HashRandomFieldsAsync("key", 3).GetArgs()),
-            () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3", "WITHVALUES" }, Request.HashRandomFieldsWithValuesAsync("key", 3).GetArgs())
+            () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3", "WITHVALUES" }, Request.HashRandomFieldsWithValuesAsync("key", 3).GetArgs()),
+
+            // Geospatial Commands
+            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo")).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo", "15.087268999999999", "37.502668999999997", "Catania"], Request.GeoAddAsync("key", new GeoEntry[] { new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoEntry(15.087269, 37.502669, "Catania") }).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "NX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_DOES_NOT_EXIST)).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "XX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS)).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "CH", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(true)).GetArgs()),
+            () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "m"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Meters).GetArgs()),
+            () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "km"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Kilometers).GetArgs()),
+            () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "mi"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Miles).GetArgs()),
+            () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "ft"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Feet).GetArgs()),
+            () => Assert.Equal(["GEOHASH", "key", "Palermo"], Request.GeoHashAsync("key", "Palermo").GetArgs()),
+            () => Assert.Equal(["GEOHASH", "key", "Palermo", "Catania"], Request.GeoHashAsync("key", new ValkeyValue[] { "Palermo", "Catania" }).GetArgs()),
+            () => Assert.Equal(["GEOPOS", "key", "Palermo"], Request.GeoPositionAsync("key", "Palermo").GetArgs()),
+            () => Assert.Equal(["GEOPOS", "key", "Palermo", "Catania"], Request.GeoPositionAsync("key", new ValkeyValue[] { "Palermo", "Catania" }).GetArgs()),
+            () => Assert.Equal(["GEOSEARCH", "key", "FROMMEMBER", "Palermo", "BYRADIUS", "100", "km"], Request.GeoSearchAsync("key", "Palermo", new GeoSearchCircle(100, GeoUnit.Kilometers)).GetArgs()),
+            () => Assert.Equal(["GEOSEARCH", "key", "FROMLONLAT", "13.361389000000001", "38.115555999999998", "BYRADIUS", "200", "m"], Request.GeoSearchAsync("key", new GeoPosition(13.361389, 38.115556), new GeoSearchCircle(200, GeoUnit.Meters)).GetArgs()),
+            () => Assert.Equal(["GEOSEARCH", "key", "FROMMEMBER", "Palermo", "BYBOX", "300", "400", "km"], Request.GeoSearchAsync("key", "Palermo", new GeoSearchBox(400, 300, GeoUnit.Kilometers)).GetArgs()),
+            () => Assert.Equal(["GEOSEARCHSTORE", "dest", "key", "FROMMEMBER", "Palermo", "BYRADIUS", "100", "km"], Request.GeoSearchAndStoreAsync("key", "dest", "Palermo", new GeoSearchCircle(100, GeoUnit.Kilometers), -1, true, null, false).GetArgs()),
+            () => Assert.Equal(["GEOSEARCHSTORE", "dest", "key", "FROMLONLAT", "13.361389000000001", "38.115555999999998", "BYRADIUS", "200", "m", "STOREDIST"], Request.GeoSearchAndStoreAsync("key", "dest", new GeoPosition(13.361389, 38.115556), new GeoSearchCircle(200, GeoUnit.Meters), -1, true, null, true).GetArgs())
         );
     }
 
