@@ -117,6 +117,80 @@ public class GeospatialCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoAdd_WithNX_OnlyAddsIfNotExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Add initial entries
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        long result = await client.GeoAddAsync(key, entries);
+        Assert.Equal(2, result);
+        
+        // Try to add with NX option - should return 0 since members already exist
+        GeoEntry[] newEntries =
+        [
+            new GeoEntry(13.361389, 39.0, "Palermo"), // Different latitude
+            new GeoEntry(15.087269, 38.0, "Catania")  // Different latitude
+        ];
+        var nxOptions = new GeoAddOptions(ConditionalChange.ONLY_IF_DOES_NOT_EXIST);
+        long nxResult = await client.GeoAddAsync(key, newEntries, nxOptions);
+        Assert.Equal(0, nxResult);
+    }
+    
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoAdd_WithXX_OnlyUpdatesIfExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Add initial entries
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        long result = await client.GeoAddAsync(key, entries);
+        Assert.Equal(2, result);
+        
+        // Try to add new member with XX option - should return 0 since member doesn't exist
+        var newEntry = new GeoEntry(32.0853, 34.7818, "Tel-Aviv");
+        var xxOptions = new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS);
+        long xxResult = await client.GeoAddAsync(key, newEntry, xxOptions);
+        Assert.Equal(0, xxResult);
+    }
+    
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoAdd_WithCH_ReturnsChangedCount(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Add initial entries
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        long result = await client.GeoAddAsync(key, entries);
+        Assert.Equal(2, result);
+        
+        // Update existing member and add new member with CH option
+        GeoEntry[] updateEntries =
+        [
+            new GeoEntry(15.087269, 40.0, "Catania"), // Update existing
+            new GeoEntry(32.0853, 34.7818, "Tel-Aviv") // Add new
+        ];
+        var chOptions = new GeoAddOptions(true); // true = CH option
+        long chResult = await client.GeoAddAsync(key, updateEntries, chOptions);
+        Assert.Equal(2, chResult); // Should return 2 (1 changed + 1 added)
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GeoDistance_ReturnsCorrectDistance(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();

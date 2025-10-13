@@ -72,6 +72,28 @@ public interface IGeospatialCommands
     Task<long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// Adds the specified geospatial item to the specified key with options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geoadd"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="value">The geospatial item to add.</param>
+    /// <param name="options">The options for the GEOADD command.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of elements added or changed, depending on options.</returns>
+    Task<long> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Adds the specified geospatial items to the specified key with options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geoadd"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="values">The geospatial items to add.</param>
+    /// <param name="options">The options for the GEOADD command.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of elements added or changed, depending on options.</returns>
+    Task<long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Returns the distance between two members in the geospatial index represented by the sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geodist"/>

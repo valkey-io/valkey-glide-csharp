@@ -39,6 +39,69 @@ internal static partial class Request
     }
 
     /// <summary>
+    /// Creates a request for GEOADD command with a single value and options.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="value">The geospatial item to add.</param>
+    /// <param name="options">The options for the GEOADD command.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        
+        if (options.ConditionalChange.HasValue)
+        {
+            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST 
+                ? ValkeyLiterals.NX.ToGlideString() 
+                : ValkeyLiterals.XX.ToGlideString());
+        }
+        
+        if (options.Changed)
+        {
+            args.Add(ValkeyLiterals.CH.ToGlideString());
+        }
+        
+        args.Add(value.Longitude.ToGlideString());
+        args.Add(value.Latitude.ToGlideString());
+        args.Add(value.Member.ToGlideString());
+        
+        return Simple<long>(RequestType.GeoAdd, [.. args]);
+    }
+
+    /// <summary>
+    /// Creates a request for GEOADD command with multiple values and options.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="values">The geospatial items to add.</param>
+    /// <param name="options">The options for the GEOADD command.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions options)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        
+        if (options.ConditionalChange.HasValue)
+        {
+            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST 
+                ? ValkeyLiterals.NX.ToGlideString() 
+                : ValkeyLiterals.XX.ToGlideString());
+        }
+        
+        if (options.Changed)
+        {
+            args.Add(ValkeyLiterals.CH.ToGlideString());
+        }
+        
+        foreach (var value in values)
+        {
+            args.Add(value.Longitude.ToGlideString());
+            args.Add(value.Latitude.ToGlideString());
+            args.Add(value.Member.ToGlideString());
+        }
+
+        return Simple<long>(RequestType.GeoAdd, [.. args]);
+    }
+
+    /// <summary>
     /// Creates a request for GEODIST command.
     /// </summary>
     /// <param name="key">The key of the sorted set.</param>

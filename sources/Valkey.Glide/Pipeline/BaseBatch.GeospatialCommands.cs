@@ -18,6 +18,12 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, GeoEntry[])" />
     public T GeoAdd(ValkeyKey key, GeoEntry[] values) => AddCmd(GeoAddAsync(key, values));
 
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, GeoEntry, GeoAddOptions)" />
+    public T GeoAdd(ValkeyKey key, GeoEntry value, GeoAddOptions options) => AddCmd(GeoAddAsync(key, value, options));
+
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, GeoEntry[], GeoAddOptions)" />
+    public T GeoAdd(ValkeyKey key, GeoEntry[] values, GeoAddOptions options) => AddCmd(GeoAddAsync(key, values, options));
+
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoDistance(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" />
     public T GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters) => AddCmd(GeoDistanceAsync(key, member1, member2, unit));
 
@@ -46,6 +52,8 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, double longitude, double latitude, ValkeyValue member) => GeoAdd(key, longitude, latitude, member);
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry value) => GeoAdd(key, value);
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry[] values) => GeoAdd(key, values);
+    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry value, GeoAddOptions options) => GeoAdd(key, value, options);
+    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry[] values, GeoAddOptions options) => GeoAdd(key, values, options);
     IBatch IBatchGeospatialCommands.GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit) => GeoDistance(key, member1, member2, unit);
     IBatch IBatchGeospatialCommands.GeoHash(ValkeyKey key, ValkeyValue member) => GeoHash(key, member);
     IBatch IBatchGeospatialCommands.GeoHash(ValkeyKey key, ValkeyValue[] members) => GeoHash(key, members);

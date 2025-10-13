@@ -18,6 +18,14 @@ internal interface IBatchGeospatialCommands
     /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry[], CommandFlags)" /></returns>
     IBatch GeoAdd(ValkeyKey key, GeoEntry[] values);
 
+    /// <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions, CommandFlags)" /></returns>
+    IBatch GeoAdd(ValkeyKey key, GeoEntry value, GeoAddOptions options);
+
+    /// <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry[], GeoAddOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry[], GeoAddOptions, CommandFlags)" /></returns>
+    IBatch GeoAdd(ValkeyKey key, GeoEntry[] values, GeoAddOptions options);
+
     /// <inheritdoc cref="IGeospatialCommands.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit, CommandFlags)" /></returns>
     IBatch GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters);
