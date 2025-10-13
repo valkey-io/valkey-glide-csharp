@@ -785,15 +785,21 @@ public class GeospatialCommandTests(TestConfiguration config)
         GeoEntry[] entries =
         [
             new GeoEntry(13.361389, 38.115556, "Palermo"),
-            new GeoEntry(15.087269, 37.502669, "Catania")
+            new GeoEntry(15.087269, 37.502669, "Catania"),
+            new GeoEntry(12.758489, 38.788135, "Trapani")
         ];
         await client.GeoAddAsync(sourceKey, entries);
         
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape);
         
-        Assert.True(count >= 1);
-        Assert.Contains("Palermo", (await client.SortedSetRangeByRankAsync(destinationKey, 0, -1)).Select(r => r.ToString()));
+        Assert.Equal(3, count);
+        
+        ValkeyValue[] storedMembers = await client.SortedSetRangeByRankAsync(destinationKey, 0, -1);
+        Assert.Equal(3, storedMembers.Length);
+        Assert.Contains("Palermo", storedMembers.Select(r => r.ToString()));
+        Assert.Contains("Catania", storedMembers.Select(r => r.ToString()));
+        Assert.Contains("Trapani", storedMembers.Select(r => r.ToString()));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -837,10 +843,18 @@ public class GeospatialCommandTests(TestConfiguration config)
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, storeDistances: true);
         
-        Assert.True(count >= 1);
+        Assert.Equal(2, count);
+        
         var results = await client.SortedSetRangeByRankWithScoresAsync(destinationKey, 0, -1);
-        Assert.NotEmpty(results);
-        Assert.True(results.Any(r => r.Score >= 0)); // Distances should be non-negative
+        Assert.Equal(2, results.Length);
+        
+        var palermoResult = results.FirstOrDefault(r => r.Key.ToString() == "Palermo");
+        var cataniaResult = results.FirstOrDefault(r => r.Key.ToString() == "Catania");
+        
+        Assert.NotNull(palermoResult);
+        Assert.NotNull(cataniaResult);
+        Assert.Equal(0.0, palermoResult.Value, 0.1);
+        Assert.Equal(166.2742, cataniaResult.Value, 0.1);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -911,5 +925,80 @@ public class GeospatialCommandTests(TestConfiguration config)
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
         await Assert.ThrowsAsync<Errors.RequestException>(async () => 
             await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, position, shape));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_WithCount_LimitsStoredResults(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania"),
+            new GeoEntry(12.758489, 38.788135, "Trapani"),
+            new GeoEntry(14.015482, 37.734741, "Enna")
+        ];
+        await client.GeoAddAsync(sourceKey, entries);
+        
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, count: 2);
+        
+        Assert.Equal(2, count);
+        
+        ValkeyValue[] storedMembers = await client.SortedSetRangeByRankAsync(destinationKey, 0, -1);
+        Assert.Equal(2, storedMembers.Length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_OverwritesDestination(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        GeoEntry[] entries =
+        [
+            new GeoEntry(13.361389, 38.115556, "Palermo"),
+            new GeoEntry(15.087269, 37.502669, "Catania")
+        ];
+        await client.GeoAddAsync(sourceKey, entries);
+        
+        await client.SortedSetAddAsync(destinationKey, new SortedSetEntry[] { new SortedSetEntry("OldMember", 100) });
+        Assert.Equal(1, await client.SortedSetCardAsync(destinationKey));
+        
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape);
+        
+        Assert.Equal(2, count);
+        
+        ValkeyValue[] storedMembers = await client.SortedSetRangeByRankAsync(destinationKey, 0, -1);
+        Assert.Equal(2, storedMembers.Length);
+        Assert.DoesNotContain("OldMember", storedMembers.Select(m => m.ToString()));
+        Assert.Contains("Palermo", storedMembers.Select(m => m.ToString()));
+        Assert.Contains("Catania", storedMembers.Select(m => m.ToString()));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GeoSearchAndStore_NoResults_CreatesEmptyDestination(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string sourceKey = keyPrefix + ":source";
+        string destinationKey = keyPrefix + ":dest";
+        
+        await client.GeoAddAsync(sourceKey, 13.361389, 38.115556, "Palermo");
+        
+        var position = new GeoPosition(0.0, 0.0);
+        var shape = new GeoSearchCircle(1, GeoUnit.Meters);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, position, shape);
+        
+        Assert.Equal(0, count);
+        Assert.Equal(0, await client.SortedSetCardAsync(destinationKey));
+        // Verify destination key exists but is empty - TypeAsync not available in BaseClient
     }
 }
