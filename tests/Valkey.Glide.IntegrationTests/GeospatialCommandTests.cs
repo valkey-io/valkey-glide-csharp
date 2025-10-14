@@ -597,37 +597,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.Contains("Catania", results.Select(r => r.Member.ToString()));
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GeoSearch_ByPolygon_ReturnsMembers(BaseClient client)
-    {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version(9, 0, 0),
-            "BYPOLYGON is only supported in Valkey 9.0.0+"
-        );
-        
-        string key = Guid.NewGuid().ToString();
-        GeoEntry[] entries =
-        [
-            new GeoEntry(13.361389, 38.115556, "Palermo"),
-            new GeoEntry(15.087269, 37.502669, "Catania")
-        ];
-        await client.GeoAddAsync(key, entries);
-        
-        var vertices = new GeoPosition[]
-        {
-            new GeoPosition(12.0, 37.0),
-            new GeoPosition(16.0, 37.0),
-            new GeoPosition(16.0, 39.0),
-            new GeoPosition(12.0, 39.0)
-        };
-        var polygon = new GeoSearchPolygon(vertices);
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, polygon);
-        
-        Assert.NotEmpty(results);
-        Assert.Contains("Palermo", results.Select(r => r.Member.ToString()));
-        Assert.Contains("Catania", results.Select(r => r.Member.ToString()));
-    }
+
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]

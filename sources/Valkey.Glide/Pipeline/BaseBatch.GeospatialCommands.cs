@@ -45,8 +45,7 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearch(ValkeyKey, GeoPosition, GeoSearchShape, long, bool, Order?, GeoRadiusOptions)" />
     public T GeoSearch(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default) => AddCmd(GeoSearchAsync(key, fromPosition, shape, count, demandClosest, order, options));
 
-    /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearch(ValkeyKey, GeoSearchPolygon, long, bool, Order?, GeoRadiusOptions)" />
-    public T GeoSearch(ValkeyKey key, GeoSearchPolygon polygon, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default) => AddCmd(GeoSearchAsync(key, polygon, count, demandClosest, order, options));
+
 
     // Explicit interface implementations for IBatchGeospatialCommands
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, double longitude, double latitude, ValkeyValue member) => GeoAdd(key, longitude, latitude, member);
@@ -61,5 +60,5 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGeospatialCommands.GeoPosition(ValkeyKey key, ValkeyValue[] members) => GeoPosition(key, members);
     IBatch IBatchGeospatialCommands.GeoSearch(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count, bool demandClosest, Order? order, GeoRadiusOptions options) => GeoSearch(key, fromMember, shape, count, demandClosest, order, options);
     IBatch IBatchGeospatialCommands.GeoSearch(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count, bool demandClosest, Order? order, GeoRadiusOptions options) => GeoSearch(key, fromPosition, shape, count, demandClosest, order, options);
-    IBatch IBatchGeospatialCommands.GeoSearch(ValkeyKey key, GeoSearchPolygon polygon, long count, bool demandClosest, Order? order, GeoRadiusOptions options) => GeoSearch(key, polygon, count, demandClosest, order, options);
+
 }

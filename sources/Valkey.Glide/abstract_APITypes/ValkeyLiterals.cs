@@ -136,7 +136,7 @@ internal static class ValkeyLiterals
 
         // Geo Radius/Search Literals
         BYBOX = "BYBOX",
-        BYPOLYGON = "BYPOLYGON",
+
         BYRADIUS = "BYRADIUS",
         FROMMEMBER = "FROMMEMBER",
         FROMLONLAT = "FROMLONLAT",

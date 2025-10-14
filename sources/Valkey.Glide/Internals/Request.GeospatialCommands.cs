@@ -274,51 +274,7 @@ internal static partial class Request
         return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
     }
 
-    /// <summary>
-    /// Creates a request for GEOSEARCH command with polygon.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="polygon">The polygon to search within.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoSearchPolygon polygon)
-    {
-        return GeoSearchAsync(key, polygon, -1, true, null, GeoRadiusOptions.None);
-    }
 
-    /// <summary>
-    /// Creates a request for GEOSEARCH command with polygon, count limit, demandClosest option, order, and options.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="polygon">The polygon to search within.</param>
-    /// <param name="count">The maximum number of results to return.</param>
-    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
-    /// <param name="order">The order in which to return results.</param>
-    /// <param name="options">The options for the search result format.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoSearchPolygon polygon, long count, bool demandClosest, Order? order, GeoRadiusOptions options)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-        List<ValkeyValue> polygonArgs = [];
-        polygon.AddArgs(polygonArgs);
-        args.AddRange(polygonArgs.Select(a => a.ToGlideString()));
-        if (count > 0)
-        {
-            args.Add(ValkeyLiterals.COUNT.ToGlideString());
-            args.Add(count.ToGlideString());
-            if (!demandClosest)
-            {
-                args.Add(ValkeyLiterals.ANY.ToGlideString());
-            }
-        }
-        if (order.HasValue)
-        {
-            args.Add(order.Value.ToLiteral().ToGlideString());
-        }
-        List<ValkeyValue> optionArgs = [];
-        options.AddArgs(optionArgs);
-        args.AddRange(optionArgs.Select(a => a.ToGlideString()));
-        return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
-    }
 
     /// <summary>
     /// Processes the response from GEOSEARCH command based on the options.

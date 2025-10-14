@@ -54,7 +54,5 @@ internal interface IBatchGeospatialCommands
     /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, long, bool, Order?, GeoRadiusOptions, CommandFlags)" /></returns>
     IBatch GeoSearch(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default);
 
-    /// <inheritdoc cref="IGeospatialCommands.GeoSearchAsync(ValkeyKey, GeoSearchPolygon, long, bool, Order?, GeoRadiusOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoSearchAsync(ValkeyKey, GeoSearchPolygon, long, bool, Order?, GeoRadiusOptions, CommandFlags)" /></returns>
-    IBatch GeoSearch(ValkeyKey key, GeoSearchPolygon polygon, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default);
+
 }
