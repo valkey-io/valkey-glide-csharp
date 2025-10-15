@@ -13,4 +13,11 @@ public abstract partial class BaseClient : IBitmapCommands
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.GetBitAsync(key, offset));
     }
+
+    /// <inheritdoc/>
+    public async Task<bool> StringSetBitAsync(ValkeyKey key, long offset, bool value, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.SetBitAsync(key, offset, value));
+    }
 }

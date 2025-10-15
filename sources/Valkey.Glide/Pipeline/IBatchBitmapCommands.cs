@@ -10,4 +10,8 @@ internal interface IBatchBitmapCommands
     /// <inheritdoc cref="Commands.IBitmapCommands.StringGetBitAsync(ValkeyKey, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringGetBitAsync(ValkeyKey, long, CommandFlags)" /></returns>
     IBatch StringGetBit(ValkeyKey key, long offset);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringSetBitAsync(ValkeyKey, long, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringSetBitAsync(ValkeyKey, long, bool, CommandFlags)" /></returns>
+    IBatch StringSetBit(ValkeyKey key, long offset, bool value);
 }

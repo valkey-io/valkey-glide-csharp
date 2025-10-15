@@ -27,4 +27,23 @@ public interface IBitmapCommands
     /// </example>
     /// </remarks>
     Task<bool> StringGetBitAsync(ValkeyKey key, long offset, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Sets or clears the bit at offset in the string value stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/setbit"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="offset">The offset in the string to set the bit at.</param>
+    /// <param name="value">The bit value to set (true for 1, false for 0).</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The original bit value stored at offset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool oldBit = await client.StringSetBitAsync("mykey", 1, true);
+    /// Console.WriteLine(oldBit); // Output: false (original bit value)
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> StringSetBitAsync(ValkeyKey key, long offset, bool value, CommandFlags flags = CommandFlags.None);
 }
