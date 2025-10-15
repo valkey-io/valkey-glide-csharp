@@ -1,17 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Valkey.Glide.Internals;
-
-using Xunit;
-
-using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -19,16 +9,17 @@ namespace Valkey.Glide.IntegrationTests;
 /// Integration tests for FFI PubSub callback flow infrastructure.
 /// These tests verify end-to-end message processing, client registry operations,
 /// error handling, and async message processing using simulated FFI callbacks.
-/// Note: Tests use simulated FFI callbacks since PubSub commands are not yet implemented (tasks 8-10).
+/// Note: Uses simulated FFI callbacks since full PubSub server integration requires additional infrastructure.
+/// Future enhancement: Replace with real PUBLISH commands via CustomCommand when PubSub infrastructure is complete.
 /// </summary>
 [Collection("ClientRegistry")]
 public class PubSubFFICallbackIntegrationTests : IDisposable
 {
-    private readonly List<BaseClient> _testClients = new();
-    private readonly ConcurrentBag<Exception> _callbackExceptions = new();
-    private readonly ConcurrentBag<PubSubMessage> _receivedMessages = new();
+    private readonly List<BaseClient> _testClients = [];
+    private readonly ConcurrentBag<Exception> _callbackExceptions = [];
+    private readonly ConcurrentBag<PubSubMessage> _receivedMessages = [];
     private readonly ManualResetEventSlim _messageReceivedEvent = new(false);
-    private readonly object _lockObject = new();
+    private readonly Lock _lockObject = new();
 
     public void Dispose()
     {
@@ -50,7 +41,8 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
 
     /// <summary>
     /// Simulates an FFI callback by directly invoking the client's message handler.
-    /// This allows testing the callback infrastructure without requiring actual server PubSub.
+    /// This allows testing the callback infrastructure without requiring full server PubSub integration.
+    /// Future enhancement: Replace with real PUBLISH commands via CustomCommand when PubSub infrastructure is complete.
     /// </summary>
     private async Task SimulateFFICallback(BaseClient client, string channel, string message, string? pattern)
     {
@@ -89,7 +81,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
         GlideClient subscriberClient = await GlideClient.CreateClient(config);
         _testClients.Add(subscriberClient);
 
-        // Simulate FFI callback invocation (since PubSub commands not yet implemented)
+        // Simulate FFI callback invocation - tests the callback infrastructure
         await SimulateFFICallback(subscriberClient, testChannel, testMessage, null);
 
         // Wait for message to be received
@@ -136,7 +128,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
         GlideClusterClient subscriberClient = await GlideClusterClient.CreateClient(config);
         _testClients.Add(subscriberClient);
 
-        // Simulate FFI callback invocation (since PubSub commands not yet implemented)
+        // Simulate FFI callback invocation - tests the callback infrastructure
         await SimulateFFICallback(subscriberClient, testChannel, testMessage, null);
 
         // Wait for message to be received
@@ -199,7 +191,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
         // Arrange
         const int clientCount = 10;
         const int messagesPerClient = 5;
-        List<Task> clientTasks = new();
+        List<Task> clientTasks = [];
         ConcurrentDictionary<string, int> messageCountsByChannel = new();
 
         // Act - Create multiple clients concurrently
@@ -215,8 +207,8 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                     .WithChannel(clientChannel)
                     .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
                     {
-                        Interlocked.Increment(ref messagesReceived);
-                        messageCountsByChannel.AddOrUpdate(clientChannel, 1, (key, value) => value + 1);
+                        _ = Interlocked.Increment(ref messagesReceived);
+                        _ = messageCountsByChannel.AddOrUpdate(clientChannel, 1, (key, value) => value + 1);
                     });
 
                 StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
@@ -228,8 +220,6 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 {
                     _testClients.Add(subscriberClient);
                 }
-
-                // No need for publisher client in simulation mode
 
                 // Simulate multiple messages via FFI callbacks
                 for (int j = 0; j < messagesPerClient; j++)
@@ -286,7 +276,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                     throw new InvalidOperationException("Test exception in callback");
                 }
 
-                Interlocked.Increment(ref successfulMessages);
+                _ = Interlocked.Increment(ref successfulMessages);
                 if (successfulMessages >= 2)
                 {
                     _messageReceivedEvent.Set();
@@ -322,8 +312,8 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
     {
         // Arrange
         string testChannel = $"async-test-{Guid.NewGuid()}";
-        List<TimeSpan> callbackDurations = new();
-        List<TimeSpan> processingDurations = new();
+        List<TimeSpan> callbackDurations = [];
+        List<TimeSpan> processingDurations = [];
         int messagesProcessed = 0;
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
@@ -460,7 +450,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
     {
         // Arrange
         string testChannel = $"memory-test-{Guid.NewGuid()}";
-        List<string> receivedMessages = new();
+        List<string> receivedMessages = [];
         int messageCount = 0;
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
@@ -488,7 +478,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
         _testClients.Add(subscriberClient);
 
         // Simulate messages with various content to test marshaling
-        string[] testMessages = {
+        string[] testMessages = [
             "Simple message",
             "Message with special chars: !@#$%^&*()",
             "Unicode message: 你好世界 🌍",
@@ -499,7 +489,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
             "XML: <root><item>value</item></root>",
             "Base64: SGVsbG8gV29ybGQ=",
             "Final message"
-        };
+        ];
 
         foreach (string message in testMessages)
         {
@@ -623,6 +613,6 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
         Assert.True(callbackCount >= 3, "All callbacks should have been invoked despite exceptions");
 
         // Process should still be running (not crashed)
-        Assert.True(Environment.HasShutdownStarted == false, "Process should not have initiated shutdown");
+        Assert.True(!Environment.HasShutdownStarted, "Process should not have initiated shutdown");
     }
 }
