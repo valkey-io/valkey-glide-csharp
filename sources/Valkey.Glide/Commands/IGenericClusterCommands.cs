@@ -279,5 +279,5 @@ public interface IGenericClusterCommands
     /// </example>
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
     /// <seealso href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan">Cluster Scan</seealso> 
-    Task<(ClusterScanCursor cursor, string[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null);
+    Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null);
 }
