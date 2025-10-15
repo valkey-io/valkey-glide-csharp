@@ -320,5 +320,5 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     }
 
     public async Task<(ClusterScanCursor cursor, string[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
-        => await Command(Request.ClusterScanAsync(cursor, options));
+        => throw new NotImplementedException("Cluster SCAN is not yet implemented - requires special FFI handling");
 }
