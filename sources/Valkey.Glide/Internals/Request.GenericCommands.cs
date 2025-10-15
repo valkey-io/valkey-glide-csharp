@@ -335,23 +335,6 @@ internal partial class Request
         });
     }
 
-    public static Cmd<object[], (ClusterScanCursor, string[])> ClusterScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
-    {
-        List<GlideString> args = [cursor.CursorId.ToGlideString()];
-
-        if (options != null)
-        {
-            args.AddRange(options.ToArgs().Select(arg => arg.ToGlideString()));
-        }
-
-        return new(RequestType.ClusterScan, [.. args], false, arr =>
-        {
-            var nextCursor = new ClusterScanCursor(arr[0].ToString() ?? "0");
-            string[] keys = [.. ((object[])arr[1]).Select(item => item.ToString())];
-            return (nextCursor, keys);
-        });
-    }
-
     public static Cmd<long, long> WaitAsync(long numreplicas, long timeout)
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), timeout.ToGlideString()]);
 }
