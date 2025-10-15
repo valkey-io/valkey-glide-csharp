@@ -61,6 +61,6 @@ public class ScanOptions
         ValkeyType.SortedSet => "zset",
         ValkeyType.Hash => "hash",
         ValkeyType.Stream => "stream",
-        _ => throw new ArgumentException($"Unsupported ValkeyType for SCAN: {type}")
+        ValkeyType.Unknown or ValkeyType.None or _ => throw new ArgumentException($"Unsupported ValkeyType for SCAN: {type}")
     };
 }
