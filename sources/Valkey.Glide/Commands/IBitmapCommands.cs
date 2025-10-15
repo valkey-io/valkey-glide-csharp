@@ -67,4 +67,70 @@ public interface IBitmapCommands
     /// </example>
     /// </remarks>
     Task<long> StringBitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Return the position of the first bit set to 1 or 0 in a string.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitpos"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="bit">The bit value to search for (true for 1, false for 0).</param>
+    /// <param name="start">The start offset.</param>
+    /// <param name="end">The end offset.</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The position of the first bit with the specified value, or -1 if not found.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.StringSetAsync("mykey", "A"); // ASCII 'A' is 01000001
+    /// long pos = await client.StringBitPositionAsync("mykey", true);
+    /// Console.WriteLine(pos); // Output: 1 (first set bit at position 1)
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> StringBitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Perform a bitwise operation between multiple keys and store the result in the destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitop"/>
+    /// <param name="operation">The bitwise operation to perform.</param>
+    /// <param name="destination">The key to store the result.</param>
+    /// <param name="first">The first source key.</param>
+    /// <param name="second">The second source key.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The size of the string stored in the destination key.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.StringSetAsync("key1", "A");
+    /// await client.StringSetAsync("key2", "B");
+    /// long size = await client.StringBitOperationAsync(Bitwise.And, "result", "key1", "key2");
+    /// Console.WriteLine(size); // Output: 1 (size of result)
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Perform a bitwise operation between multiple keys and store the result in the destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitop"/>
+    /// <param name="operation">The bitwise operation to perform.</param>
+    /// <param name="destination">The key to store the result.</param>
+    /// <param name="keys">The source keys.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The size of the string stored in the destination key.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.StringSetAsync("key1", "A");
+    /// await client.StringSetAsync("key2", "B");
+    /// await client.StringSetAsync("key3", "C");
+    /// long size = await client.StringBitOperationAsync(Bitwise.Or, "result", new ValkeyKey[] { "key1", "key2", "key3" });
+    /// Console.WriteLine(size); // Output: 1 (size of result)
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
 }

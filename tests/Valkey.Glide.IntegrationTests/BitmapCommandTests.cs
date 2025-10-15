@@ -178,4 +178,166 @@ public class BitmapCommandTests(TestConfiguration config)
         long firstByteCount = await client.StringBitCountAsync(key, 0, 7, StringIndexType.Bit);
         Assert.Equal(2, firstByteCount);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitPosition_FindsFirstSetBit(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Set string to "A" (ASCII 65 = 01000001 in binary)
+        await client.StringSetAsync(key, "A");
+        
+        // Find first set bit (should be at position 1)
+        long pos1 = await client.StringBitPositionAsync(key, true);
+        Assert.Equal(1, pos1);
+        
+        // Find first unset bit (should be at position 0)
+        long pos0 = await client.StringBitPositionAsync(key, false);
+        Assert.Equal(0, pos0);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitPosition_NonExistentKey_ReturnsMinusOne(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Search for set bit in non-existent key
+        long pos = await client.StringBitPositionAsync(key, true);
+        Assert.Equal(-1, pos);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitPosition_WithRange_FindsInRange(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Set multiple bits: bit 1 and bit 9
+        await client.StringSetBitAsync(key, 1, true);
+        await client.StringSetBitAsync(key, 9, true);
+        
+        // Find first set bit in entire string
+        long pos1 = await client.StringBitPositionAsync(key, true);
+        Assert.Equal(1, pos1);
+        
+        // Find first set bit starting from bit 8 using bit indexing
+        long pos2 = await client.StringBitPositionAsync(key, true, 8, -1, StringIndexType.Bit);
+        Assert.Equal(9, pos2);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitOperation_And_PerformsCorrectOperation(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string key1 = keyPrefix + ":key1";
+        string key2 = keyPrefix + ":key2";
+        string result = keyPrefix + ":result";
+        
+        // Set key1 to "A" (01000001) and key2 to "B" (01000010)
+        await client.StringSetAsync(key1, "A");
+        await client.StringSetAsync(key2, "B");
+        
+        // Perform AND operation
+        long size = await client.StringBitOperationAsync(Bitwise.And, result, key1, key2);
+        Assert.Equal(1, size);
+        
+        // Verify result: A AND B = 01000001 AND 01000010 = 01000000 = '@'
+        ValkeyValue resultValue = await client.StringGetAsync(result);
+        Assert.Equal("@", resultValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitOperation_Or_PerformsCorrectOperation(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string key1 = keyPrefix + ":key1";
+        string key2 = keyPrefix + ":key2";
+        string result = keyPrefix + ":result";
+        
+        // Set key1 to "A" (01000001) and key2 to "B" (01000010)
+        await client.StringSetAsync(key1, "A");
+        await client.StringSetAsync(key2, "B");
+        
+        // Perform OR operation
+        long size = await client.StringBitOperationAsync(Bitwise.Or, result, key1, key2);
+        Assert.Equal(1, size);
+        
+        // Verify result: A OR B = 01000001 OR 01000010 = 01000011 = 'C'
+        ValkeyValue resultValue = await client.StringGetAsync(result);
+        Assert.Equal("C", resultValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitOperation_MultipleKeys_PerformsCorrectOperation(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string key1 = keyPrefix + ":key1";
+        string key2 = keyPrefix + ":key2";
+        string key3 = keyPrefix + ":key3";
+        string result = keyPrefix + ":result";
+        
+        // Set keys with different bit patterns
+        await client.StringSetAsync(key1, "A"); // 01000001
+        await client.StringSetAsync(key2, "B"); // 01000010
+        await client.StringSetAsync(key3, "D"); // 01000100
+        
+        // Perform OR operation on multiple keys
+        ValkeyKey[] keys = [key1, key2, key3];
+        long size = await client.StringBitOperationAsync(Bitwise.Or, result, keys);
+        Assert.Equal(1, size);
+        
+        // Verify result: A OR B OR D = 01000001 OR 01000010 OR 01000100 = 01000111 = 'G'
+        ValkeyValue resultValue = await client.StringGetAsync(result);
+        Assert.Equal("G", resultValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitOperation_Xor_PerformsCorrectOperation(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string key1 = keyPrefix + ":key1";
+        string key2 = keyPrefix + ":key2";
+        string result = keyPrefix + ":result";
+        
+        // Set key1 to "A" (01000001) and key2 to "B" (01000010)
+        await client.StringSetAsync(key1, "A");
+        await client.StringSetAsync(key2, "B");
+        
+        // Perform XOR operation
+        long size = await client.StringBitOperationAsync(Bitwise.Xor, result, key1, key2);
+        Assert.Equal(1, size);
+        
+        // Verify result: A XOR B = 01000001 XOR 01000010 = 00000011 = ASCII 3
+        ValkeyValue resultValue = await client.StringGetAsync(result);
+        byte[] resultBytes = resultValue;
+        Assert.Equal(3, resultBytes[0]); // XOR of 65 (A) and 66 (B) is 3
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitOperation_Not_PerformsCorrectOperation(BaseClient client)
+    {
+        string keyPrefix = "{" + Guid.NewGuid().ToString() + "}";
+        string key1 = keyPrefix + ":key1";
+        string result = keyPrefix + ":result";
+        
+        // Set key1 to "A" (01000001)
+        await client.StringSetAsync(key1, "A");
+        
+        // Perform NOT operation (NOT only takes one key)
+        ValkeyKey[] keys = [key1];
+        long size = await client.StringBitOperationAsync(Bitwise.Not, result, keys);
+        Assert.Equal(1, size);
+        
+        // Verify result: NOT A = NOT 01000001 = 10111110 = '¾' (ASCII 190)
+        ValkeyValue resultValue = await client.StringGetAsync(result);
+        byte[] resultBytes = resultValue;
+        Assert.Equal(190, resultBytes[0]); // NOT of 65 (A) is 190
+    }
 }

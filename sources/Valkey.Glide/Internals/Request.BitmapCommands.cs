@@ -21,4 +21,27 @@ internal partial class Request
         }
         return Simple<long>(RequestType.BitCount, [.. args]);
     }
+
+    public static Cmd<long, long> BitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte)
+    {
+        List<GlideString> args = [key.ToGlideString(), (bit ? 1 : 0).ToGlideString(), start.ToGlideString(), end.ToGlideString()];
+        if (indexType != StringIndexType.Byte)
+        {
+            args.Add(indexType.ToLiteral().ToGlideString());
+        }
+        return Simple<long>(RequestType.BitPos, [.. args]);
+    }
+
+    public static Cmd<long, long> BitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second)
+    {
+        GlideString[] args = [ValkeyLiterals.Get(operation).ToGlideString(), destination.ToGlideString(), first.ToGlideString(), second.ToGlideString()];
+        return Simple<long>(RequestType.BitOp, args);
+    }
+
+    public static Cmd<long, long> BitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys)
+    {
+        List<GlideString> args = [ValkeyLiterals.Get(operation).ToGlideString(), destination.ToGlideString()];
+        args.AddRange(keys.ToGlideStrings());
+        return Simple<long>(RequestType.BitOp, [.. args]);
+    }
 }

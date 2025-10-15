@@ -18,4 +18,16 @@ internal interface IBatchBitmapCommands
     /// <inheritdoc cref="Commands.IBitmapCommands.StringBitCountAsync(ValkeyKey, long, long, StringIndexType, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitCountAsync(ValkeyKey, long, long, StringIndexType, CommandFlags)" /></returns>
     IBatch StringBitCount(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType, CommandFlags)" /></returns>
+    IBatch StringBitPosition(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
+    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey[], CommandFlags)" /></returns>
+    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys);
 }

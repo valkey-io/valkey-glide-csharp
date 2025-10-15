@@ -15,7 +15,19 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchBitmapCommands.StringBitCount(ValkeyKey, long, long, StringIndexType)" />
     public T StringBitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte) => AddCmd(Request.BitCountAsync(key, start, end, indexType));
 
+    /// <inheritdoc cref="IBatchBitmapCommands.StringBitPosition(ValkeyKey, bool, long, long, StringIndexType)" />
+    public T StringBitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte) => AddCmd(Request.BitPositionAsync(key, bit, start, end, indexType));
+
+    /// <inheritdoc cref="IBatchBitmapCommands.StringBitOperation(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey)" />
+    public T StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.BitOperationAsync(operation, destination, first, second));
+
+    /// <inheritdoc cref="IBatchBitmapCommands.StringBitOperation(Bitwise, ValkeyKey, ValkeyKey[])" />
+    public T StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys) => AddCmd(Request.BitOperationAsync(operation, destination, keys));
+
     IBatch IBatchBitmapCommands.StringGetBit(ValkeyKey key, long offset) => StringGetBitAsync(key, offset);
     IBatch IBatchBitmapCommands.StringSetBit(ValkeyKey key, long offset, bool value) => StringSetBitAsync(key, offset, value);
     IBatch IBatchBitmapCommands.StringBitCount(ValkeyKey key, long start, long end, StringIndexType indexType) => StringBitCountAsync(key, start, end, indexType);
+    IBatch IBatchBitmapCommands.StringBitPosition(ValkeyKey key, bool bit, long start, long end, StringIndexType indexType) => StringBitPositionAsync(key, bit, start, end, indexType);
+    IBatch IBatchBitmapCommands.StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second) => StringBitOperationAsync(operation, destination, first, second);
+    IBatch IBatchBitmapCommands.StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys) => StringBitOperationAsync(operation, destination, keys);
 }
