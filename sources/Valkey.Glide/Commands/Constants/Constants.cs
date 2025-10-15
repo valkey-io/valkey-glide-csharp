@@ -19,6 +19,7 @@ public static class Constants
     public const string ByScoreKeyword = "BYSCORE";
     public const string MatchKeyword = "MATCH";
     public const string CountKeyword = "COUNT";
+    public const string TypeKeyword = "TYPE";
     public const string LeftKeyword = "LEFT";
     public const string RightKeyword = "RIGHT";
     public const string BeforeKeyword = "BEFORE";
