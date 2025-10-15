@@ -228,8 +228,52 @@ public interface IGeospatialCommands
     Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
 
 
-
+    /// <summary>
+    /// Searches for members in a geospatial index and stores the results in a destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearchstore"/>
+    /// <param name="sourceKey">The key of the source sorted set.</param>
+    /// <param name="destinationKey">The key where results will be stored.</param>
+    /// <param name="fromMember">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to store. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When true, stores the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to store results. Null for default ordering.</param>
+    /// <param name="storeDistances">When true, stores distances as scores. When false, stores geohash values as scores.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of elements stored in the destination key.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+    /// long count = await client.GeoSearchAndStoreAsync("source", "dest", "Palermo", shape);
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
 
+    /// <summary>
+    /// Searches for members in a geospatial index and stores the results in a destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearchstore"/>
+    /// <param name="sourceKey">The key of the source sorted set.</param>
+    /// <param name="destinationKey">The key where results will be stored.</param>
+    /// <param name="fromPosition">The position to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to store. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When true, stores the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to store results. Null for default ordering.</param>
+    /// <param name="storeDistances">When true, stores distances as scores. When false, stores geohash values as scores.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of elements stored in the destination key.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var position = new GeoPosition(15.087269, 37.502669);
+    /// var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+    /// long count = await client.GeoSearchAndStoreAsync("source", "dest", position, shape);
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
 }

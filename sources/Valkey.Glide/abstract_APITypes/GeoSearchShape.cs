@@ -90,5 +90,3 @@ public class GeoSearchBox : GeoSearchShape
         args.Add(Unit.ToLiteral());
     }
 }
-
-

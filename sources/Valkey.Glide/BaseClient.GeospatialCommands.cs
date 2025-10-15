@@ -90,8 +90,6 @@ public abstract partial class BaseClient : IGeospatialCommands
         return await Command(Request.GeoSearchAsync(key, fromPosition, shape, count, demandClosest, order, options));
     }
 
-
-
     /// <inheritdoc/>
     public async Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None)
     {
