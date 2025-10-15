@@ -319,6 +319,6 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
         return _serverVersion;
     }
 
-    public Task<(ClusterScanCursor cursor, string[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
-        => throw new NotImplementedException();
+    public async Task<(ClusterScanCursor cursor, string[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
+        => await Command(Request.ClusterScanAsync(cursor, options));
 }
