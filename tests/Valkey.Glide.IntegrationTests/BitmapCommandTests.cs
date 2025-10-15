@@ -130,4 +130,52 @@ public class BitmapCommandTests(TestConfiguration config)
         Assert.False(finalBit0);
         Assert.True(finalBit1);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitCount_CountsSetBits(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Set string to "A" (ASCII 65 = 01000001 in binary = 2 bits set)
+        await client.StringSetAsync(key, "A");
+        
+        // Count all bits
+        long count = await client.StringBitCountAsync(key);
+        Assert.Equal(2, count);
+        
+        // Count bits in byte range
+        long countRange = await client.StringBitCountAsync(key, 0, 0);
+        Assert.Equal(2, countRange);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitCount_NonExistentKey_ReturnsZero(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        long count = await client.StringBitCountAsync(key);
+        Assert.Equal(0, count);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitCount_WithBitIndex_CountsCorrectly(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Set multiple bits
+        await client.StringSetBitAsync(key, 0, true);  // bit 0
+        await client.StringSetBitAsync(key, 1, true);  // bit 1
+        await client.StringSetBitAsync(key, 8, true);  // bit 8 (second byte)
+        
+        // Count all bits
+        long totalCount = await client.StringBitCountAsync(key);
+        Assert.Equal(3, totalCount);
+        
+        // Count bits 0-7 (first byte) using bit indexing
+        long firstByteCount = await client.StringBitCountAsync(key, 0, 7, StringIndexType.Bit);
+        Assert.Equal(2, firstByteCount);
+    }
 }

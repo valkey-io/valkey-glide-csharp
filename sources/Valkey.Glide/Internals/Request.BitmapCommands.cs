@@ -11,4 +11,14 @@ internal partial class Request
 
     public static Cmd<long, bool> SetBitAsync(ValkeyKey key, long offset, bool value)
         => new(RequestType.SetBit, [key.ToGlideString(), offset.ToGlideString(), (value ? 1 : 0).ToGlideString()], false, response => (long)response != 0);
+
+    public static Cmd<long, long> BitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte)
+    {
+        List<GlideString> args = [key.ToGlideString(), start.ToGlideString(), end.ToGlideString()];
+        if (indexType != StringIndexType.Byte)
+        {
+            args.Add(indexType.ToLiteral().ToGlideString());
+        }
+        return Simple<long>(RequestType.BitCount, [.. args]);
+    }
 }

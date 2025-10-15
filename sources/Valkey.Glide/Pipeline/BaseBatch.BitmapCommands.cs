@@ -12,6 +12,10 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchBitmapCommands.StringSetBit(ValkeyKey, long, bool)" />
     public T StringSetBitAsync(ValkeyKey key, long offset, bool value) => AddCmd(Request.SetBitAsync(key, offset, value));
 
+    /// <inheritdoc cref="IBatchBitmapCommands.StringBitCount(ValkeyKey, long, long, StringIndexType)" />
+    public T StringBitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte) => AddCmd(Request.BitCountAsync(key, start, end, indexType));
+
     IBatch IBatchBitmapCommands.StringGetBit(ValkeyKey key, long offset) => StringGetBitAsync(key, offset);
     IBatch IBatchBitmapCommands.StringSetBit(ValkeyKey key, long offset, bool value) => StringSetBitAsync(key, offset, value);
+    IBatch IBatchBitmapCommands.StringBitCount(ValkeyKey key, long start, long end, StringIndexType indexType) => StringBitCountAsync(key, start, end, indexType);
 }

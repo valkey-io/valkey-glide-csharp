@@ -46,4 +46,25 @@ public interface IBitmapCommands
     /// </example>
     /// </remarks>
     Task<bool> StringSetBitAsync(ValkeyKey key, long offset, bool value, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Count the number of set bits in a string.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitcount"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="start">The start offset.</param>
+    /// <param name="end">The end offset.</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of bits set to 1.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.StringSetAsync("mykey", "A"); // ASCII 'A' is 01000001
+    /// long count = await client.StringBitCountAsync("mykey");
+    /// Console.WriteLine(count); // Output: 2 (two bits set)
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> StringBitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte, CommandFlags flags = CommandFlags.None);
 }
