@@ -5,7 +5,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// A cursor used to iterate through data returned by cluster SCAN requests.
 /// </summary>
-public class ClusterScanCursor : IDisposable
+public class ClusterScanCursor
 {
     private const string FinishedCursorId = "finished";
 
@@ -37,8 +37,8 @@ public class ClusterScanCursor : IDisposable
     /// <summary>
     /// Releases resources associated with this cursor.
     /// </summary>
-    public void Dispose()
+    ~ClusterScanCursor()
     {
-        // TODO: Release native cursor resources when FFI integration is added
+        // TODO: Release native cursor resources when FFI integration is added.
     }
 }
