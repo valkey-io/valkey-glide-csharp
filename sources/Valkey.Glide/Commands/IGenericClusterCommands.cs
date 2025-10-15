@@ -1,5 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Errors;
@@ -251,4 +252,32 @@ public interface IGenericClusterCommands
     /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
     /// </returns>
     Task<object?[]?> Exec(ClusterBatch batch, bool raiseOnError, ClusterBatchOptions options);
+
+    /// <summary>
+    /// Incrementally iterates over the matching keys in the cluster.
+    /// <para>
+    /// The cluster SCAN command is a cursor-based iterator. An iteration starts when the cursor 
+    /// is set to <see cref="ClusterScanCursor.InitialCursor()"/>. At every call of the command, the 
+    /// server returns an updated cursor that the user needs to use as the cursor argument in the next 
+    /// call. The iteration terminates when <see cref="ClusterScanCursor.IsFinished"/> returns <c>true</c>.
+    /// </para>
+    /// </summary>
+    /// <param name="cursor">The cursor for iteration.</param>
+    /// <param name="options">Optional scan options for filtering results.</param>
+    /// <returns>The next cursor and an array of matching keys.</returns>
+    /// <example>
+    /// <code>
+    /// var allKeys = new List&lt;string&gt;();
+    /// var cursor = ClusterScanCursor.InitialCursor();
+    /// 
+    /// while (!cursor.IsFinished)
+    /// {
+    ///     (cursor, var keys) = await client.ScanAsync(cursor);
+    ///     allKeys.AddRange(keys);
+    /// }
+    /// </code>
+    /// </example>
+    /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
+    /// <seealso href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan">Cluster Scan</seealso> 
+    Task<(ClusterScanCursor cursor, string[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null);
 }
