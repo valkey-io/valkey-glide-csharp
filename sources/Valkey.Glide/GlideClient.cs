@@ -177,14 +177,18 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
-        long currentCursor = cursor;
+        string currentCursor = cursor.ToString();
         int currentOffset = pageOffset;
 
         do
         {
-            (long nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, pattern, pageSize));
+            var options = new ScanOptions();
+            if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
+            if (pageSize > 0) options.Count = pageSize;
 
-            IEnumerable<ValkeyKey> keysToYield = currentOffset > 0 ? keys.Skip(currentOffset) : keys;
+            (string nextCursor, string[] keys) = await Command(Request.ScanAsync(currentCursor, options));
+
+            IEnumerable<ValkeyKey> keysToYield = currentOffset > 0 ? keys.Skip(currentOffset).Select(k => (ValkeyKey)k) : keys.Select(k => (ValkeyKey)k);
 
             foreach (ValkeyKey key in keysToYield)
             {
@@ -193,7 +197,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
 
             currentCursor = nextCursor;
             currentOffset = 0;
-        } while (currentCursor != 0);
+        } while (currentCursor != "0");
     }
 
     protected override async Task<Version> GetServerVersionAsync()
