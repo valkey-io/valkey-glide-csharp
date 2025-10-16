@@ -330,7 +330,7 @@ internal partial class Request
         return new(RequestType.Scan, [.. args], false, arr =>
         {
             string nextCursor = arr[0].ToString() ?? "0";
-            string[] keys = [.. ((object[])arr[1]).Select(item => item.ToString())];
+            string[] keys = [.. ((object[])arr[1]).Select(item => item.ToString()!)];
             return (nextCursor, keys);
         });
     }
