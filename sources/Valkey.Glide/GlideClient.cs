@@ -190,7 +190,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
 
             if (currentOffset > 0)
             {
-                keys = keys.Skip(pageOffset).ToArray();
+                keys = [.. keys.Skip(pageOffset)];
                 currentOffset = 0;
             }
 
