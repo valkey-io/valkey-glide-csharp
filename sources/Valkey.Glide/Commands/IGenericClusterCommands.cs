@@ -256,10 +256,10 @@ public interface IGenericClusterCommands
     /// <summary>
     /// Incrementally iterates over the matching keys in the cluster.
     /// <para>
-    /// The cluster SCAN command is a cursor-based iterator. An iteration starts when the cursor 
-    /// is set to <see cref="ClusterScanCursor.InitialCursor()"/>. At every call of the command, the 
-    /// server returns an updated cursor that the user needs to use as the cursor argument in the next 
-    /// call. The iteration terminates when <see cref="ClusterScanCursor.IsFinished"/> returns <c>true</c>.
+    /// The cluster SCAN command is a cursor-based iterator. An iteration starts when the cursor is set to
+    /// <see cref="ClusterScanCursor.InitialCursor()"/>. At every call of the command, the  server returns
+    /// an updated cursor that the user needs to use as the cursor argument in the next call. The iteration
+    /// terminates when <see cref="ClusterScanCursor.IsFinished"/> returns <c>true</c>.
     /// </para>
     /// </summary>
     /// <param name="cursor">The cursor for iteration.</param>
@@ -272,8 +272,10 @@ public interface IGenericClusterCommands
     /// 
     /// while (!cursor.IsFinished)
     /// {
-    ///     (cursor, var keys) = await client.ScanAsync(cursor);
-    ///     allKeys.AddRange(keys);
+    ///     var result = await client.ScanAsync(cursor);
+    ///     cursor.Dispose();
+    ///     cursor = result.cursor;
+    ///     allKeys.AddRange(result.keys);
     /// }
     /// </code>
     /// </example>
