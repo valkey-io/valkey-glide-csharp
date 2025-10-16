@@ -13,6 +13,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class TestConfiguration : IDisposable
 {
     private static readonly object LockObject = new object();
+    private const string DefaultServerGroupName = "cluster";
     public static List<(string host, ushort port)> STANDALONE_HOSTS { get; internal set; } = [];
     public static List<(string host, ushort port)> CLUSTER_HOSTS { get; internal set; } = [];
     public static Version SERVER_VERSION { get; internal set; } = new();
@@ -318,18 +319,18 @@ public class TestConfiguration : IDisposable
     private static void TestConsoleWriteLine(string message) =>
         TestContext.Current.SendDiagnosticMessage(message);
 
-    internal List<(string host, ushort port)> StartServer(bool cluster, bool tls = false, string? name = null)
+    internal List<(string host, ushort port)> StartServer(bool cluster, bool tls = false, string name = DefaultServerGroupName)
     {
-        string cmd = $"start {(cluster ? "--cluster-mode" : "")} {(tls ? " --tls" : "")} {(name != null ? " --prefix " + name : "")} -r 3";
+        string cmd = $"start {(cluster ? "--cluster-mode" : "")} {(tls ? " --tls" : "")} --prefix {name} -r 3";
         return ParseHostsFromOutput(RunClusterManager(cmd, false));
     }
 
     /// <summary>
     /// Stop <b>all</b> instances on the given <paramref name="name"/>.
     /// </summary>
-    internal void StopServer(bool keepLogs, string? name = null)
+    internal void StopServer(bool keepLogs, string name = DefaultServerGroupName)
     {
-        string cmd = $"stop --prefix {name ?? "cluster"} {(keepLogs ? "--keep-folder" : "")}";
+        string cmd = $"stop --prefix {name} {(keepLogs ? "--keep-folder" : "")}";
         _ = RunClusterManager(cmd, true);
     }
 
