@@ -132,6 +132,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     }
     #endregion protected methods
 
+    #region protected fields
+    protected Version? _serverVersion; // cached server version
+    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
+    #endregion protected fields
+
     #region private methods
     private void SuccessCallback(ulong index, IntPtr ptr) =>
         // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
@@ -171,8 +176,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private readonly MessageContainer _messageContainer;
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
-    protected Version? _serverVersion; // cached server version
-    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
 
     #endregion private fields
 }
