@@ -276,7 +276,7 @@ public class TestConfiguration : IDisposable
         {
             _startedServer = true;
             // Stop all if weren't stopped on previous test run
-            StopServer(false);
+            ServerUtils.StopServer(DefaultServerGroupName, keepLogs: false);
 
             // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
             // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
@@ -287,10 +287,9 @@ public class TestConfiguration : IDisposable
             }
             catch (DirectoryNotFoundException) { }
 
-            // Start cluster
-            CLUSTER_HOSTS = StartServer(true, TLS);
-            // Start standalone
-            STANDALONE_HOSTS = StartServer(false, TLS);
+            // Start cluster and standalone servers.
+            CLUSTER_HOSTS = ServerUtils.StartStandaloneServer(DefaultServerGroupName, useTls: TLS);
+            STANDALONE_HOSTS = ServerUtils.StartStandaloneServer(DefaultServerGroupName, useTls: TLS);
         }
         // Get server version
         SERVER_VERSION = GetServerVersion();
@@ -309,7 +308,7 @@ public class TestConfiguration : IDisposable
         if (_startedServer)
         {
             // Stop all
-            StopServer(true);
+            ServerUtils.StopServer(DefaultServerGroupName, keepLogs: true);
         }
     }
 
@@ -319,64 +318,6 @@ public class TestConfiguration : IDisposable
     private static void TestConsoleWriteLine(string message) =>
         TestContext.Current.SendDiagnosticMessage(message);
 
-    internal List<(string host, ushort port)> StartServer(bool cluster, bool tls = false, string name = DefaultServerGroupName)
-    {
-        string cmd = $"start {(cluster ? "--cluster-mode" : "")} {(tls ? " --tls" : "")} --prefix {name} -r 3";
-        return ParseHostsFromOutput(RunClusterManager(cmd, false));
-    }
-
-    /// <summary>
-    /// Stop <b>all</b> instances on the given <paramref name="name"/>.
-    /// </summary>
-    internal void StopServer(bool keepLogs, string name = DefaultServerGroupName)
-    {
-        string cmd = $"stop --prefix {name} {(keepLogs ? "--keep-folder" : "")}";
-        _ = RunClusterManager(cmd, true);
-    }
-
-    private string RunClusterManager(string cmd, bool ignoreExitCode)
-    {
-        ProcessStartInfo info = new()
-        {
-            WorkingDirectory = _scriptDir,
-            FileName = "python3",
-            Arguments = "cluster_manager.py " + cmd,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        Process? script = Process.Start(info);
-        script?.WaitForExit();
-        string? error = script?.StandardError.ReadToEnd();
-        string? output = script?.StandardOutput.ReadToEnd();
-        int? exit_code = script?.ExitCode;
-
-        TestConsoleWriteLine($"cluster_manager.py stdout\n====\n{output}\n====\ncluster_manager.py stderr\n====\n{error}\n====\n");
-
-        return !ignoreExitCode && exit_code != 0
-            ? throw new ApplicationException($"cluster_manager.py script failed: exit code {exit_code}.")
-            : output ?? "";
-    }
-
-    private static List<(string host, ushort port)> ParseHostsFromOutput(string output)
-    {
-        List<(string host, ushort port)> hosts = [];
-        foreach (string line in output.Split("\n"))
-        {
-            if (!line.StartsWith("CLUSTER_NODES="))
-            {
-                continue;
-            }
-
-            string[] addresses = line.Split("=")[1].Split(",");
-            foreach (string address in addresses)
-            {
-                string[] parts = address.Split(":");
-                hosts.Add((parts[0], ushort.Parse(parts[1])));
-            }
-        }
-        return hosts;
-    }
 
     private static Version GetServerVersion()
     {

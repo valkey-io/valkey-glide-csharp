@@ -9,14 +9,14 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 public static class ServerUtils
 {
-    public static List<(string host, ushort port)> StartStandaloneServer(string name, bool tls = false)
+    public static List<(string host, ushort port)> StartStandaloneServer(string name, bool useTls = false)
     {
-        return StartServer(name, tls, clusterMode: false);
+        return StartServer(name, useTls: useTls, useClusterMode: false);
     }
 
-    public static List<(string host, ushort port)> StartClusterServer(string name, bool tls = false)
+    public static List<(string host, ushort port)> StartClusterServer(string name, bool useTls = false)
     {
-        return StartServer(name, tls, clusterMode: true);
+        return StartServer(name, useTls: useTls, useClusterMode: true);
     }
 
     public static void StopServer(string name, bool keepLogs = false)
@@ -81,9 +81,9 @@ public static class ServerUtils
         return hosts;
     }
 
-    private static List<(string host, ushort port)> StartServer(string name, bool tls, bool clusterMode)
+    private static List<(string host, ushort port)> StartServer(string name, bool useTls, bool useClusterMode)
     {
-        string cmd = $"start {(clusterMode ? "--cluster-mode" : "")} {(tls ? "--tls" : "")} --prefix {name} -r 3";
+        string cmd = $"start {(useClusterMode ? "--cluster-mode" : "")} {(useTls ? "--tls" : "")} --prefix {name} -r 3";
         return ParseHostsFromOutput(RunClusterManager(cmd, false));
     }
 }
