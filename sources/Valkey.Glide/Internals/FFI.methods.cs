@@ -30,7 +30,7 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "close_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void CloseClientFfi(IntPtr client);
-    
+
     [LibraryImport("libglide_rs", EntryPoint = "request_cluster_scan")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RequestClusterScanFfi(IntPtr client, ulong index, IntPtr cursor, ulong argCount, IntPtr args, IntPtr argLengths);
