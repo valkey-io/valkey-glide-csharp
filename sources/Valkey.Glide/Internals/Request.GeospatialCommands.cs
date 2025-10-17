@@ -123,7 +123,7 @@ internal static partial class Request
     public static Cmd<object[], GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member)
     {
         GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
-        return new(RequestType.GeoPos, args, false, response => 
+        return new(RequestType.GeoPos, args, false, response =>
             response.Length > 0 ? ParseGeoPosition(response[0]) : null);
     }
 
@@ -136,7 +136,7 @@ internal static partial class Request
     public static Cmd<object[], GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members)
     {
         GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
-        return new(RequestType.GeoPos, args, false, response => 
+        return new(RequestType.GeoPos, args, false, response =>
             response.Select(ParseGeoPosition).ToArray());
     }
 
