@@ -156,11 +156,11 @@ public class GeospatialCommandTests(TestConfiguration config)
         long result = await client.GeoAddAsync(key, entries);
         Assert.Equal(2, result);
         
-        // Try to add new member with XX option - should return 0 since member doesn't exist
+        // Try to add new member with XX option - should return false since member doesn't exist
         var newEntry = new GeoEntry(32.0853, 34.7818, "Tel-Aviv");
         var xxOptions = new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS);
-        long xxResult = await client.GeoAddAsync(key, newEntry, xxOptions);
-        Assert.Equal(0, xxResult);
+        bool xxResult = await client.GeoAddAsync(key, newEntry, xxOptions);
+        Assert.False(xxResult);
     }
     
     [Theory(DisableDiscoveryEnumeration = true)]

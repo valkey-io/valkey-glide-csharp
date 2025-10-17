@@ -182,6 +182,7 @@ public interface IGeospatialCommands
 
     /// <summary>
     /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape.
+    /// The shape is centred on the specified member or longlat.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geosearch"/>
     /// <param name="key">The key of the sorted set.</param>

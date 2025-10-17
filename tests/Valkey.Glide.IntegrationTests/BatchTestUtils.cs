@@ -1413,10 +1413,10 @@ internal class BatchTestUtils
 
         // Test GeoAdd with options
         _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS));
-        testData.Add(new(0L, "GeoAdd(key1, Palermo, XX) - update existing"));
+        testData.Add(new(false, "GeoAdd(key1, Palermo, XX) - update existing"));
 
         _ = batch.GeoAdd(key1, new GeoEntry(9.189982, 45.4642035, "Milan"), new GeoAddOptions(ConditionalChange.ONLY_IF_DOES_NOT_EXIST));
-        testData.Add(new(1L, "GeoAdd(key1, Milan, NX) - add new"));
+        testData.Add(new(true, "GeoAdd(key1, Milan, NX) - add new"));
 
         // Test GeoDistance
         _ = batch.GeoDistance(key1, "Palermo", "Catania", GeoUnit.Kilometers);
