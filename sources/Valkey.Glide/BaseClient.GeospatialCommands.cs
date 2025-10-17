@@ -28,7 +28,7 @@ public abstract partial class BaseClient : IGeospatialCommands
     }
 
     /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.GeoAddAsync(key, value, options));

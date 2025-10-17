@@ -79,8 +79,8 @@ public interface IGeospatialCommands
     /// <param name="value">The geospatial item to add.</param>
     /// <param name="options">The options for the GEOADD command.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The number of elements added or changed, depending on options.</returns>
-    Task<long> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
+    /// <returns><see langword="true"/> if the element was added or changed, <see langword="false"/> otherwise.</returns>
+    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Adds the specified geospatial items to the specified key with options.

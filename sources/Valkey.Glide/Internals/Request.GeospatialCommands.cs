@@ -27,7 +27,7 @@ internal static partial class Request
     public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry[] values)
     {
         List<GlideString> args = [key.ToGlideString()];
-        
+
         foreach (var value in values)
         {
             args.Add(value.Longitude.ToGlideString());
@@ -45,27 +45,27 @@ internal static partial class Request
     /// <param name="value">The geospatial item to add.</param>
     /// <param name="options">The options for the GEOADD command.</param>
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options)
+    public static Cmd<long, bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
-        
+
         if (options.ConditionalChange.HasValue)
         {
-            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST 
-                ? ValkeyLiterals.NX.ToGlideString() 
+            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST
+                ? ValkeyLiterals.NX.ToGlideString()
                 : ValkeyLiterals.XX.ToGlideString());
         }
-        
+
         if (options.Changed)
         {
             args.Add(ValkeyLiterals.CH.ToGlideString());
         }
-        
+
         args.Add(value.Longitude.ToGlideString());
         args.Add(value.Latitude.ToGlideString());
         args.Add(value.Member.ToGlideString());
-        
-        return Simple<long>(RequestType.GeoAdd, [.. args]);
+
+        return Boolean<long>(RequestType.GeoAdd, [.. args]);
     }
 
     /// <summary>
@@ -78,19 +78,19 @@ internal static partial class Request
     public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
-        
+
         if (options.ConditionalChange.HasValue)
         {
-            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST 
-                ? ValkeyLiterals.NX.ToGlideString() 
+            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST
+                ? ValkeyLiterals.NX.ToGlideString()
                 : ValkeyLiterals.XX.ToGlideString());
         }
-        
+
         if (options.Changed)
         {
             args.Add(ValkeyLiterals.CH.ToGlideString());
         }
-        
+
         foreach (var value in values)
         {
             args.Add(value.Longitude.ToGlideString());
@@ -148,7 +148,7 @@ internal static partial class Request
     public static Cmd<object[], GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member)
     {
         GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
-        return new(RequestType.GeoPos, args, false, response => 
+        return new(RequestType.GeoPos, args, false, response =>
         {
             if (response.Length == 0 || response[0] == null) return (GeoPosition?)null;
             var posArray = (object[])response[0];
@@ -166,9 +166,9 @@ internal static partial class Request
     public static Cmd<object[], GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members)
     {
         GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
-        return new(RequestType.GeoPos, args, false, response => 
+        return new(RequestType.GeoPos, args, false, response =>
         {
-            return response.Select(item => 
+            return response.Select(item =>
             {
                 if (item == null) return (GeoPosition?)null;
                 var posArray = (object[])item;
@@ -285,7 +285,7 @@ internal static partial class Request
     private static GeoRadiusResult[] ProcessGeoSearchResponse(object[] response, GeoRadiusOptions options)
     {
 
-        
+
         return response.Select(item =>
         {
             // If no options are specified, Redis returns simple strings (member names)
@@ -307,12 +307,12 @@ internal static partial class Request
             GeoPosition? position = null;
 
             int index = 1;
-            
+
             // Redis returns additional data in this specific order:
             // 1. Distance (if WITHDIST)
-            // 2. Hash (if WITHHASH) 
+            // 2. Hash (if WITHHASH)
             // 3. Coordinates (if WITHCOORD)
-            
+
             if ((options & GeoRadiusOptions.WithDistance) != 0 && index < itemArray.Length)
             {
                 // Distance comes as a nested array: [distance_value]
@@ -323,7 +323,7 @@ internal static partial class Request
                 }
                 index++;
             }
-            
+
             if ((options & GeoRadiusOptions.WithGeoHash) != 0 && index < itemArray.Length)
             {
                 // Hash comes as a nested array: [hash_value]
@@ -334,7 +334,7 @@ internal static partial class Request
                 }
                 index++;
             }
-            
+
             if ((options & GeoRadiusOptions.WithCoordinates) != 0 && index < itemArray.Length)
             {
                 // Coordinates come as a triple-nested array: [[[longitude, latitude]]]
