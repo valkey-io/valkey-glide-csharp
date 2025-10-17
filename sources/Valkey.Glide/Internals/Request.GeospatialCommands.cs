@@ -7,15 +7,40 @@ namespace Valkey.Glide.Internals;
 internal static partial class Request
 {
     /// <summary>
+    /// Adds GeoAddOptions to the argument list.
+    /// </summary>
+    /// <param name="args">The argument list to add options to.</param>
+    /// <param name="options">The options to add.</param>
+    private static void AddGeoAddOptions(List<GlideString> args, GeoAddOptions? options)
+    {
+        if (options?.ConditionalChange.HasValue == true)
+        {
+            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST
+                ? ValkeyLiterals.NX.ToGlideString()
+                : ValkeyLiterals.XX.ToGlideString());
+        }
+
+        if (options?.Changed == true)
+        {
+            args.Add(ValkeyLiterals.CH.ToGlideString());
+        }
+    }
+
+    /// <summary>
     /// Creates a request for GEOADD command.
     /// </summary>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="value">The geospatial item to add.</param>
+    /// <param name="options">The options for the GEOADD command.</param>
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, bool> GeoAddAsync(ValkeyKey key, GeoEntry value)
+    public static Cmd<long, bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions? options = null)
     {
-        GlideString[] args = [key.ToGlideString(), value.Longitude.ToGlideString(), value.Latitude.ToGlideString(), value.Member.ToGlideString()];
-        return Boolean<long>(RequestType.GeoAdd, args);
+        List<GlideString> args = [key.ToGlideString()];
+        AddGeoAddOptions(args, options);
+        args.Add(value.Longitude.ToGlideString());
+        args.Add(value.Latitude.ToGlideString());
+        args.Add(value.Member.ToGlideString());
+        return Boolean<long>(RequestType.GeoAdd, [.. args]);
     }
 
     /// <summary>
@@ -23,81 +48,18 @@ internal static partial class Request
     /// </summary>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="values">The geospatial items to add.</param>
+    /// <param name="options">The options for the GEOADD command.</param>
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry[] values)
+    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions? options = null)
     {
         List<GlideString> args = [key.ToGlideString()];
-
+        AddGeoAddOptions(args, options);
         foreach (var value in values)
         {
             args.Add(value.Longitude.ToGlideString());
             args.Add(value.Latitude.ToGlideString());
             args.Add(value.Member.ToGlideString());
         }
-
-        return Simple<long>(RequestType.GeoAdd, [.. args]);
-    }
-
-    /// <summary>
-    /// Creates a request for GEOADD command with a single value and options.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="value">The geospatial item to add.</param>
-    /// <param name="options">The options for the GEOADD command.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        if (options.ConditionalChange.HasValue)
-        {
-            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST
-                ? ValkeyLiterals.NX.ToGlideString()
-                : ValkeyLiterals.XX.ToGlideString());
-        }
-
-        if (options.Changed)
-        {
-            args.Add(ValkeyLiterals.CH.ToGlideString());
-        }
-
-        args.Add(value.Longitude.ToGlideString());
-        args.Add(value.Latitude.ToGlideString());
-        args.Add(value.Member.ToGlideString());
-
-        return Boolean<long>(RequestType.GeoAdd, [.. args]);
-    }
-
-    /// <summary>
-    /// Creates a request for GEOADD command with multiple values and options.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="values">The geospatial items to add.</param>
-    /// <param name="options">The options for the GEOADD command.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions options)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        if (options.ConditionalChange.HasValue)
-        {
-            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST
-                ? ValkeyLiterals.NX.ToGlideString()
-                : ValkeyLiterals.XX.ToGlideString());
-        }
-
-        if (options.Changed)
-        {
-            args.Add(ValkeyLiterals.CH.ToGlideString());
-        }
-
-        foreach (var value in values)
-        {
-            args.Add(value.Longitude.ToGlideString());
-            args.Add(value.Latitude.ToGlideString());
-            args.Add(value.Member.ToGlideString());
-        }
-
         return Simple<long>(RequestType.GeoAdd, [.. args]);
     }
 
@@ -140,6 +102,19 @@ internal static partial class Request
     }
 
     /// <summary>
+    /// Parses a position array into a GeoPosition.
+    /// </summary>
+    /// <param name="item">The position array from server response.</param>
+    /// <returns>A GeoPosition or null if parsing fails.</returns>
+    private static GeoPosition? ParseGeoPosition(object? item)
+    {
+        if (item == null) return null;
+        var posArray = (object[])item;
+        if (posArray.Length < 2 || posArray[0] == null || posArray[1] == null) return null;
+        return new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
+    }
+
+    /// <summary>
     /// Creates a request for GEOPOS command for a single member.
     /// </summary>
     /// <param name="key">The key of the sorted set.</param>
@@ -148,13 +123,8 @@ internal static partial class Request
     public static Cmd<object[], GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member)
     {
         GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
-        return new(RequestType.GeoPos, args, false, response =>
-        {
-            if (response.Length == 0 || response[0] == null) return (GeoPosition?)null;
-            var posArray = (object[])response[0];
-            if (posArray.Length < 2 || posArray[0] == null || posArray[1] == null) return (GeoPosition?)null;
-            return (GeoPosition?)new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
-        });
+        return new(RequestType.GeoPos, args, false, response => 
+            response.Length > 0 ? ParseGeoPosition(response[0]) : null);
     }
 
     /// <summary>
@@ -166,32 +136,12 @@ internal static partial class Request
     public static Cmd<object[], GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members)
     {
         GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
-        return new(RequestType.GeoPos, args, false, response =>
-        {
-            return response.Select(item =>
-            {
-                if (item == null) return (GeoPosition?)null;
-                var posArray = (object[])item;
-                if (posArray.Length < 2 || posArray[0] == null || posArray[1] == null) return (GeoPosition?)null;
-                return (GeoPosition?)new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
-            }).ToArray();
-        });
+        return new(RequestType.GeoPos, args, false, response => 
+            response.Select(ParseGeoPosition).ToArray());
     }
 
     /// <summary>
     /// Creates a request for GEOSEARCH command with member origin.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="fromMember">The member to search from.</param>
-    /// <param name="shape">The search area shape.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape)
-    {
-        return GeoSearchAsync(key, fromMember, shape, -1, true, null, GeoRadiusOptions.None);
-    }
-
-    /// <summary>
-    /// Creates a request for GEOSEARCH command with member origin, count limit, demandClosest option, order, and options.
     /// </summary>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="fromMember">The member to search from.</param>
@@ -201,7 +151,7 @@ internal static partial class Request
     /// <param name="order">The order in which to return results.</param>
     /// <param name="options">The options for the search result format.</param>
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count, bool demandClosest, Order? order, GeoRadiusOptions options)
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.None)
     {
         List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
         List<ValkeyValue> shapeArgs = [];
@@ -232,24 +182,12 @@ internal static partial class Request
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="fromPosition">The position to search from.</param>
     /// <param name="shape">The search area shape.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape)
-    {
-        return GeoSearchAsync(key, fromPosition, shape, -1, true, null, GeoRadiusOptions.None);
-    }
-
-    /// <summary>
-    /// Creates a request for GEOSEARCH command with position origin, count limit, demandClosest option, order, and options.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="fromPosition">The position to search from.</param>
-    /// <param name="shape">The search area shape.</param>
     /// <param name="count">The maximum number of results to return.</param>
     /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
     /// <param name="order">The order in which to return results.</param>
     /// <param name="options">The options for the search result format.</param>
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count, bool demandClosest, Order? order, GeoRadiusOptions options)
+    public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.None)
     {
         List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
         List<ValkeyValue> shapeArgs = [];
@@ -354,20 +292,16 @@ internal static partial class Request
     }
 
     /// <summary>
-    /// Creates a request for GEOSEARCHSTORE command with member origin.
+    /// Adds common GeoSearchAndStore arguments to the argument list.
     /// </summary>
-    /// <param name="sourceKey">The key of the source sorted set.</param>
-    /// <param name="destinationKey">The key where results will be stored.</param>
-    /// <param name="fromMember">The member to search from.</param>
+    /// <param name="args">The argument list to add to.</param>
     /// <param name="shape">The search area shape.</param>
     /// <param name="count">The maximum number of results to return.</param>
-    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="demandClosest">When true, returns the closest results.</param>
     /// <param name="order">The order in which to return results.</param>
     /// <param name="storeDistances">When true, stores distances instead of just member names.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
+    private static void AddGeoSearchAndStoreArgs(List<GlideString> args, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
     {
-        List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
         List<ValkeyValue> shapeArgs = [];
         shape.AddArgs(shapeArgs);
         args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
@@ -388,6 +322,24 @@ internal static partial class Request
         {
             args.Add(ValkeyLiterals.STOREDIST.ToGlideString());
         }
+    }
+
+    /// <summary>
+    /// Creates a request for GEOSEARCHSTORE command with member origin.
+    /// </summary>
+    /// <param name="sourceKey">The key of the source sorted set.</param>
+    /// <param name="destinationKey">The key where results will be stored.</param>
+    /// <param name="fromMember">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
+    /// <param name="order">The order in which to return results.</param>
+    /// <param name="storeDistances">When true, stores distances instead of just member names.</param>
+    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
+    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
+    {
+        List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
+        AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
         return Simple<long>(RequestType.GeoSearchStore, [.. args]);
     }
 
@@ -406,26 +358,7 @@ internal static partial class Request
     public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
     {
         List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
-        List<ValkeyValue> shapeArgs = [];
-        shape.AddArgs(shapeArgs);
-        args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
-        if (count > 0)
-        {
-            args.Add(ValkeyLiterals.COUNT.ToGlideString());
-            args.Add(count.ToGlideString());
-            if (!demandClosest)
-            {
-                args.Add(ValkeyLiterals.ANY.ToGlideString());
-            }
-        }
-        if (order.HasValue)
-        {
-            args.Add(order.Value.ToLiteral().ToGlideString());
-        }
-        if (storeDistances)
-        {
-            args.Add(ValkeyLiterals.STOREDIST.ToGlideString());
-        }
+        AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
         return Simple<long>(RequestType.GeoSearchStore, [.. args]);
     }
 }
