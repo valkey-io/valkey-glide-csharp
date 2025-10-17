@@ -1,8 +1,9 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
+using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -488,34 +489,66 @@ public class StandaloneClientTests(TestConfiguration config)
     [Fact]
     public async Task LazyConnect()
     {
-        using var referenceClient = TestConfiguration.DefaultStandaloneClient();
-        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+        string serverName = $"test_{Guid.NewGuid():N}";
 
-        // Initialization should not establish connection.
-        var config = TestConfiguration.DefaultClientConfig().WithLazyConnect(true).Build();
-        using var client = await GlideClient.CreateClient(config);
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerUtils.StartStandaloneServer(serverName);
+            var configBuilder = new StandaloneClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port);
+            var eagerConfig = configBuilder.WithLazyConnect(false).Build();
+            var lazyConfig = configBuilder.WithLazyConnect(true).Build();
 
-        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
-        Assert.Equal(initialCount, afterCreateCount);
+            // Create reference client.
+            using var referenceClient = await GlideClient.CreateClient(eagerConfig);
+            var initialCount = await TestUtils.GetConnectionCount(referenceClient);
 
-        // First command should establish connection.
-        await client.PingAsync();
+            // Create lazy client (does not connect immediately).
+            using var lazyClient = await GlideClient.CreateClient(lazyConfig);
+            var connectCount = await TestUtils.GetConnectionCount(referenceClient);
 
-        int afterCommandCount = await TestUtils.GetConnectionCount(referenceClient);
-        Assert.True(afterCreateCount < afterCommandCount);
+            Assert.Equal(initialCount, connectCount);
+
+            // First command establishes connection.
+            await lazyClient.PingAsync();
+            var commandCount = await TestUtils.GetConnectionCount(referenceClient);
+
+            Assert.True(connectCount < commandCount);
+        }
+        finally
+        {
+            ServerUtils.StopServer(serverName);
+        }
     }
 
     [Fact]
     public async Task EagerConnect()
     {
-        using var referenceClient = TestConfiguration.DefaultStandaloneClient();
-        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+        string serverName = $"test_{Guid.NewGuid():N}";
 
-        // Initialization should establish connection.
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        using var client = await GlideClient.CreateClient(config);
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerUtils.StartStandaloneServer(serverName);
+            var eagerConfig = new StandaloneClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port)
+                .WithLazyConnect(false)
+                .Build();
 
-        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
-        Assert.True(initialCount < afterCreateCount);
+            // Create reference client.
+            using var referenceClient = await GlideClient.CreateClient(eagerConfig);
+            var initialCount = await TestUtils.GetConnectionCount(referenceClient);
+
+            // Create eager client (connects immediately).
+            using var eagerClient = await GlideClient.CreateClient(eagerConfig);
+            var connectCount = await TestUtils.GetConnectionCount(referenceClient);
+
+            Assert.True(initialCount < connectCount);
+        }
+        finally
+        {
+            ServerUtils.StopServer(serverName);
+        }
     }
 }

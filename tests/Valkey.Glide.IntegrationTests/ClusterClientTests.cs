@@ -5,6 +5,7 @@ using System.Text;
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
+using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
 
@@ -589,34 +590,66 @@ public class ClusterClientTests(TestConfiguration config)
     [Fact]
     public async Task LazyConnect()
     {
-        using var referenceClient = TestConfiguration.DefaultClusterClient();
-        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+        string serverName = $"test_{Guid.NewGuid():N}";
 
-        // Initialization should not establish connection.
-        var config = TestConfiguration.DefaultClusterClientConfig().WithLazyConnect(true).Build();
-        using var client = await GlideClusterClient.CreateClient(config);
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerUtils.StartClusterServer(serverName);
+            var configBuilder = new ClusterClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port);
+            var eagerConfig = configBuilder.WithLazyConnect(false).Build();
+            var lazyConfig = configBuilder.WithLazyConnect(true).Build();
 
-        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
-        Assert.Equal(initialCount, afterCreateCount);
+            // Create reference client.
+            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
+            var initialCount = await TestUtils.GetConnectionCount(referenceClient);
 
-        // First command should establish connection.
-        await client.PingAsync();
+            // Create lazy client (does not connect immediately).
+            using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
+            var connectCount = await TestUtils.GetConnectionCount(referenceClient);
 
-        int afterCommandCount = await TestUtils.GetConnectionCount(referenceClient);
-        Assert.True(afterCreateCount < afterCommandCount);
+            Assert.Equal(initialCount, connectCount);
+
+            // First command establishes connection.
+            await lazyClient.PingAsync();
+            var commandCount = await TestUtils.GetConnectionCount(referenceClient);
+
+            Assert.True(connectCount < commandCount);
+        }
+        finally
+        {
+            ServerUtils.StopServer(serverName);
+        }
     }
 
     [Fact]
     public async Task EagerConnect()
     {
-        using var referenceClient = TestConfiguration.DefaultClusterClient();
-        int initialCount = await TestUtils.GetConnectionCount(referenceClient);
+        string serverName = $"test_{Guid.NewGuid():N}";
 
-        // Initialization should establish connection.
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        using var client = await GlideClusterClient.CreateClient(config);
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerUtils.StartClusterServer(serverName);
+            var eagerConfig = new ClusterClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port)
+                .WithLazyConnect(false)
+                .Build();
 
-        int afterCreateCount = await TestUtils.GetConnectionCount(referenceClient);
-        Assert.True(initialCount < afterCreateCount);
+            // Create reference client.
+            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
+            var initialCount = await TestUtils.GetConnectionCount(referenceClient);
+
+            // Create eager client (connects immediately).
+            using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
+            var connectCount = await TestUtils.GetConnectionCount(referenceClient);
+
+            Assert.True(initialCount < connectCount);
+        }
+        finally
+        {
+            ServerUtils.StopServer(serverName);
+        }
     }
 }
