@@ -45,11 +45,22 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// <summary>
     /// Get the PubSub message queue for manual message retrieval.
     /// Returns null if no PubSub subscriptions are configured.
+    /// Uses thread-safe access to prevent race conditions.
     /// </summary>
-    public PubSubMessageQueue? PubSubQueue => _pubSubHandler?.GetQueue();
+    public PubSubMessageQueue? PubSubQueue
+    {
+        get
+        {
+            lock (_pubSubLock)
+            {
+                return _pubSubHandler?.GetQueue();
+            }
+        }
+    }
 
     /// <summary>
     /// Indicates whether this client has PubSub subscriptions configured.
+    /// Uses volatile read for thread-safe access without locking.
     /// </summary>
     public bool HasPubSubSubscriptions => _pubSubHandler != null;
 
@@ -259,6 +270,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Initializes PubSub message handling if PubSub subscriptions are configured.
+    /// Uses thread-safe initialization to ensure proper visibility across threads.
     /// </summary>
     /// <param name="config">The PubSub subscription configuration.</param>
     private void InitializePubSubHandler(BasePubSubSubscriptionConfig? config)
@@ -268,45 +280,82 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             return;
         }
 
-        // Create the PubSub message handler
-        _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
+        // Create the PubSub message handler with thread-safe initialization
+        lock (_pubSubLock)
+        {
+            _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
+        }
     }
 
     /// <summary>
     /// Handles incoming PubSub messages from the FFI layer.
-    /// This method is called directly by the FFI callback.
+    /// This method is called directly by the FFI callback and uses thread-safe access to the handler.
     /// </summary>
     /// <param name="message">The PubSub message to handle.</param>
     internal virtual void HandlePubSubMessage(PubSubMessage message)
     {
-        try
+        // Thread-safe access to handler - use local copy to avoid race conditions
+        PubSubMessageHandler? handler;
+        lock (_pubSubLock)
         {
-            _pubSubHandler?.HandleMessage(message);
+            handler = _pubSubHandler;
         }
-        catch (Exception ex)
+
+        if (handler != null)
         {
-            // Log the error but don't let exceptions escape
-            Logger.Log(Level.Error, "BaseClient", $"Error handling PubSub message: {ex.Message}", ex);
+            try
+            {
+                handler.HandleMessage(message);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't let exceptions escape
+                Logger.Log(Level.Error, "BaseClient", $"Error handling PubSub message: {ex.Message}", ex);
+            }
         }
     }
 
     /// <summary>
-    /// Cleans up PubSub resources during client disposal.
+    /// Cleans up PubSub resources during client disposal with proper synchronization.
+    /// Uses locking to coordinate safe disposal and prevent conflicts with concurrent message processing.
     /// </summary>
     private void CleanupPubSubResources()
     {
-        if (_pubSubHandler != null)
+        PubSubMessageHandler? handler = null;
+
+        // Acquire lock and capture handler reference, then set to null
+        lock (_pubSubLock)
+        {
+            handler = _pubSubHandler;
+            _pubSubHandler = null;
+        }
+
+        // Dispose outside of lock to prevent deadlocks
+        if (handler != null)
         {
             try
             {
-                // Dispose the message handler
-                _pubSubHandler.Dispose();
-                _pubSubHandler = null;
+                // Create a task to dispose the handler with timeout
+                var disposeTask = Task.Run(() => handler.Dispose());
+
+                // Wait for disposal with timeout (5 seconds)
+                if (!disposeTask.Wait(TimeSpan.FromSeconds(5)))
+                {
+                    Logger.Log(Level.Warn, "BaseClient",
+                        "PubSub handler disposal did not complete within timeout (5 seconds)");
+                }
+            }
+            catch (AggregateException ex)
+            {
+                // Log the error but continue with disposal
+                Logger.Log(Level.Warn, "BaseClient",
+                    $"Error cleaning up PubSub resources: {ex.InnerException?.Message ?? ex.Message}", ex);
             }
             catch (Exception ex)
             {
                 // Log the error but continue with disposal
-                Logger.Log(Level.Warn, "BaseClient", $"Error cleaning up PubSub resources: {ex.Message}", ex);
+                Logger.Log(Level.Warn, "BaseClient",
+                    $"Error cleaning up PubSub resources: {ex.Message}", ex);
             }
         }
     }
@@ -348,7 +397,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     protected Version? _serverVersion; // cached server version
 
     /// PubSub message handler for routing messages to callbacks or queues.
-    private PubSubMessageHandler? _pubSubHandler;
+    /// Uses volatile to ensure visibility across threads without locking on every read.
+    private volatile PubSubMessageHandler? _pubSubHandler;
+
+    /// Lock object for coordinating PubSub handler access and disposal.
+    private readonly object _pubSubLock = new();
 
     #endregion private fields
 }

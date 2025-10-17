@@ -1,14 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Valkey.Glide.Internals;
-
-using Xunit;
 
 namespace Valkey.Glide.UnitTests;
 
@@ -88,7 +81,7 @@ public class PubSubFFIMemoryLeakTests
     {
         // Arrange
         const int iterationsPerSize = 1_000;
-        var messageSizes = new[] { 10, 100, 1_000, 10_000, 100_000 }; // Various sizes
+        int[] messageSizes = [10, 100, 1_000, 10_000, 100_000]; // Various sizes
 
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -102,7 +95,7 @@ public class PubSubFFIMemoryLeakTests
         {
             Console.WriteLine($"Testing message size: {messageSize} bytes");
 
-            string largeMessage = new string('X', messageSize);
+            string largeMessage = new('X', messageSize);
             string channel = "test-channel";
 
             long beforeSizeTest = GC.GetTotalMemory(true);
@@ -164,7 +157,7 @@ public class PubSubFFIMemoryLeakTests
             if (i % gcInterval == 0)
             {
                 // Create some temporary objects to increase GC pressure
-                var tempObjects = new object[1000];
+                object[] tempObjects = new object[1000];
                 for (int j = 0; j < tempObjects.Length; j++)
                 {
                     tempObjects[j] = new byte[1024]; // 1KB objects
@@ -209,8 +202,8 @@ public class PubSubFFIMemoryLeakTests
         Console.WriteLine($"Initial memory for concurrent test: {initialMemory:N0} bytes");
 
         // Act: Process messages concurrently from multiple threads
-        var tasks = new Task[threadsCount];
-        var exceptions = new Exception?[threadsCount];
+        Task[] tasks = new Task[threadsCount];
+        Exception?[] exceptions = new Exception?[threadsCount];
 
         for (int threadIndex = 0; threadIndex < threadsCount; threadIndex++)
         {
@@ -278,9 +271,9 @@ public class PubSubFFIMemoryLeakTests
         Console.WriteLine($"Starting extended duration test for {durationSeconds} seconds");
         Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
 
-        var stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
         int messageCount = 0;
-        var memorySnapshots = new List<(TimeSpan Time, long Memory)>();
+        List<(TimeSpan Time, long Memory)> memorySnapshots = [];
 
         // Act: Process messages for extended duration
         while (stopwatch.Elapsed.TotalSeconds < durationSeconds)
