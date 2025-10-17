@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Runtime.InteropServices;
+using System.Threading.Channels;
 
 using Valkey.Glide.Internals;
 using Valkey.Glide.Pipeline;
@@ -187,36 +188,41 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         IntPtr patternPtr,
         long patternLen)
     {
-        // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
-        _ = Task.Run(() =>
+        try
         {
-            try
+            // Only process actual message notifications, ignore subscription confirmations
+            if (!IsMessageNotification((PushKind)pushKind))
             {
-                // Only process actual message notifications, ignore subscription confirmations
-                if (!IsMessageNotification((PushKind)pushKind))
+                Logger.Log(Level.Debug, "PubSubCallback", $"PubSub notification received: {(PushKind)pushKind}");
+                return;
+            }
+
+            // Marshal the message from FFI callback parameters
+            PubSubMessage message = MarshalPubSubMessage(
+                (PushKind)pushKind,
+                messagePtr,
+                messageLen,
+                channelPtr,
+                channelLen,
+                patternPtr,
+                patternLen);
+
+            // Write to channel (non-blocking with backpressure)
+            Channel<PubSubMessage>? channel = _messageChannel;
+            if (channel != null)
+            {
+                if (!channel.Writer.TryWrite(message))
                 {
-                    Logger.Log(Level.Debug, "PubSubCallback", $"PubSub notification received: {(PushKind)pushKind}");
-                    return;
+                    Logger.Log(Level.Warn, "PubSubCallback",
+                        $"PubSub message channel full, message dropped for channel {message.Channel}");
                 }
-
-                // Marshal the message from FFI callback parameters
-                PubSubMessage message = MarshalPubSubMessage(
-                    (PushKind)pushKind,
-                    messagePtr,
-                    messageLen,
-                    channelPtr,
-                    channelLen,
-                    patternPtr,
-                    patternLen);
-
-                // Process the message through the handler
-                HandlePubSubMessage(message);
             }
-            catch (Exception ex)
-            {
-                Logger.Log(Level.Error, "PubSubCallback", $"Error in PubSub callback: {ex.Message}", ex);
-            }
-        });
+        }
+        catch (Exception ex)
+        {
+            Logger.Log(Level.Error, "PubSubCallback",
+                $"Error in PubSub callback: {ex.Message}", ex);
+        }
     }
 
     private static bool IsMessageNotification(PushKind pushKind) =>
@@ -280,10 +286,58 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             return;
         }
 
-        // Create the PubSub message handler with thread-safe initialization
         lock (_pubSubLock)
         {
+            // Get performance configuration or use defaults
+            PubSubPerformanceConfig perfConfig = config.PerformanceConfig ?? new();
+
+            // Create bounded channel with configurable capacity and backpressure strategy
+            BoundedChannelOptions channelOptions = new(perfConfig.ChannelCapacity)
+            {
+                FullMode = perfConfig.FullMode,
+                SingleReader = true,  // Optimization: only one processor task
+                SingleWriter = false  // Multiple FFI callbacks may write
+            };
+
+            _messageChannel = Channel.CreateBounded<PubSubMessage>(channelOptions);
+            _processingCancellation = new CancellationTokenSource();
+
+            // Create message handler
             _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
+
+            // Start dedicated processing task
+            _messageProcessingTask = Task.Run(async () =>
+            {
+                try
+                {
+                    await foreach (PubSubMessage message in _messageChannel.Reader.ReadAllAsync(_processingCancellation.Token))
+                    {
+                        try
+                        {
+                            // Thread-safe access to handler
+                            PubSubMessageHandler? handler = _pubSubHandler;
+                            if (handler != null && !_processingCancellation.Token.IsCancellationRequested)
+                            {
+                                handler.HandleMessage(message);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log(Level.Error, "BaseClient",
+                                $"Error processing PubSub message: {ex.Message}", ex);
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.Log(Level.Info, "BaseClient", "PubSub processing cancelled");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Level.Error, "BaseClient",
+                        $"PubSub processing task failed: {ex.Message}", ex);
+                }
+            }, _processingCancellation.Token);
         }
     }
 
@@ -322,41 +376,57 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private void CleanupPubSubResources()
     {
         PubSubMessageHandler? handler = null;
+        Channel<PubSubMessage>? channel = null;
+        Task? processingTask = null;
+        CancellationTokenSource? cancellation = null;
+        TimeSpan shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
 
-        // Acquire lock and capture handler reference, then set to null
+        // Acquire lock and capture references, then set to null
         lock (_pubSubLock)
         {
             handler = _pubSubHandler;
+            channel = _messageChannel;
+            processingTask = _messageProcessingTask;
+            cancellation = _processingCancellation;
+
             _pubSubHandler = null;
+            _messageChannel = null;
+            _messageProcessingTask = null;
+            _processingCancellation = null;
         }
 
-        // Dispose outside of lock to prevent deadlocks
-        if (handler != null)
+        // Cleanup outside of lock to prevent deadlocks
+        try
         {
-            try
-            {
-                // Create a task to dispose the handler with timeout
-                var disposeTask = Task.Run(() => handler.Dispose());
+            // Signal shutdown
+            cancellation?.Cancel();
 
-                // Wait for disposal with timeout (5 seconds)
-                if (!disposeTask.Wait(TimeSpan.FromSeconds(5)))
+            // Complete channel to stop message processing
+            channel?.Writer.Complete();
+
+            // Wait for processing task to complete (with timeout)
+            if (processingTask != null)
+            {
+                if (!processingTask.Wait(shutdownTimeout))
                 {
                     Logger.Log(Level.Warn, "BaseClient",
-                        "PubSub handler disposal did not complete within timeout (5 seconds)");
+                        $"PubSub processing task did not complete within timeout ({shutdownTimeout.TotalSeconds}s)");
                 }
             }
-            catch (AggregateException ex)
-            {
-                // Log the error but continue with disposal
-                Logger.Log(Level.Warn, "BaseClient",
-                    $"Error cleaning up PubSub resources: {ex.InnerException?.Message ?? ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                // Log the error but continue with disposal
-                Logger.Log(Level.Warn, "BaseClient",
-                    $"Error cleaning up PubSub resources: {ex.Message}", ex);
-            }
+
+            // Dispose resources
+            handler?.Dispose();
+            cancellation?.Dispose();
+        }
+        catch (AggregateException ex)
+        {
+            Logger.Log(Level.Warn, "BaseClient",
+                $"Error during PubSub cleanup: {ex.InnerException?.Message ?? ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            Logger.Log(Level.Warn, "BaseClient",
+                $"Error during PubSub cleanup: {ex.Message}", ex);
         }
     }
 
@@ -402,6 +472,15 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     /// Lock object for coordinating PubSub handler access and disposal.
     private readonly object _pubSubLock = new();
+
+    /// Channel for bounded message queuing with backpressure support.
+    private Channel<PubSubMessage>? _messageChannel;
+
+    /// Dedicated background task for processing PubSub messages.
+    private Task? _messageProcessingTask;
+
+    /// Cancellation token source for graceful shutdown of message processing.
+    private CancellationTokenSource? _processingCancellation;
 
     #endregion private fields
 }

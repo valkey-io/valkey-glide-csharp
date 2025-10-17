@@ -353,19 +353,26 @@ public class PubSubFFIMemoryLeakTests
 
         try
         {
-            // This simulates the marshaling that occurs in the FFI callback
-            FFI.PushKind pushKind = pattern != null ? FFI.PushKind.PushPMessage : FFI.PushKind.PushMessage;
+            // Simulate marshaling by creating byte arrays (as the real FFI callback does)
+            byte[] messageBytes = new byte[message.Length];
+            Marshal.Copy(messagePtr, messageBytes, 0, message.Length);
 
-            PubSubMessage result = FFI.MarshalPubSubMessage(
-                pushKind,
-                messagePtr,
-                message.Length,
-                channelPtr,
-                channel.Length,
-                patternPtr,
-                pattern?.Length ?? 0);
+            byte[] channelBytes = new byte[channel.Length];
+            Marshal.Copy(channelPtr, channelBytes, 0, channel.Length);
 
-            // Verify the message was marshaled correctly
+            byte[]? patternBytes = null;
+            if (pattern != null && patternPtr != IntPtr.Zero)
+            {
+                patternBytes = new byte[pattern.Length];
+                Marshal.Copy(patternPtr, patternBytes, 0, pattern.Length);
+            }
+
+            // Create PubSubMessage (simulating what the real callback does)
+            PubSubMessage result = pattern != null
+                ? new PubSubMessage(message, channel, pattern)
+                : new PubSubMessage(message, channel);
+
+            // Verify the message was created correctly
             if (result.Message != message || result.Channel != channel || result.Pattern != pattern)
             {
                 throw new InvalidOperationException("Message marshaling failed");

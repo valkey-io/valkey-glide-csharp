@@ -37,6 +37,7 @@ public abstract class BasePubSubSubscriptionConfig
     internal MessageCallback? Callback { get; set; }
     internal object? Context { get; set; }
     internal Dictionary<uint, List<string>> Subscriptions { get; set; } = [];
+    internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
     /// Configure a message callback to be invoked when messages are received.
