@@ -65,7 +65,31 @@ public abstract partial class BaseBatch<T>(bool isAtomic) : IBatch where T : Bas
     /// <inheritdoc cref="IBatch.Info(Section[])" />
     public T Info(Section[] sections) => AddCmd(Request.Info(sections));
 
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey, ValkeyValue)" />
+    public T HyperLogLogAdd(ValkeyKey key, ValkeyValue element) => AddCmd(Request.HyperLogLogAddAsync(key, element));
+
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey, ValkeyValue[])" />
+    public T HyperLogLogAdd(ValkeyKey key, ValkeyValue[] elements) => AddCmd(Request.HyperLogLogAddAsync(key, elements));
+
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogLength(ValkeyKey)" />
+    public T HyperLogLogLength(ValkeyKey key) => AddCmd(Request.HyperLogLogLengthAsync(key));
+
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogLength(ValkeyKey[])" />
+    public T HyperLogLogLength(ValkeyKey[] keys) => AddCmd(Request.HyperLogLogLengthAsync(keys));
+
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogMerge(ValkeyKey, ValkeyKey, ValkeyKey)" />
+    public T HyperLogLogMerge(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.HyperLogLogMergeAsync(destination, first, second));
+
+    /// <inheritdoc cref="IBatchHyperLogLogCommands.HyperLogLogMerge(ValkeyKey, ValkeyKey[])" />
+    public T HyperLogLogMerge(ValkeyKey destination, ValkeyKey[] sourceKeys) => AddCmd(Request.HyperLogLogMergeAsync(destination, sourceKeys));
+
     IBatch IBatch.CustomCommand(GlideString[] args) => CustomCommand(args);
     IBatch IBatch.Info() => Info();
     IBatch IBatch.Info(Section[] sections) => Info(sections);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey key, ValkeyValue element) => HyperLogLogAdd(key, element);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogAdd(ValkeyKey key, ValkeyValue[] elements) => HyperLogLogAdd(key, elements);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogLength(ValkeyKey key) => HyperLogLogLength(key);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogLength(ValkeyKey[] keys) => HyperLogLogLength(keys);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogMerge(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => HyperLogLogMerge(destination, first, second);
+    IBatch IBatchHyperLogLogCommands.HyperLogLogMerge(ValkeyKey destination, ValkeyKey[] sourceKeys) => HyperLogLogMerge(destination, sourceKeys);
 }
