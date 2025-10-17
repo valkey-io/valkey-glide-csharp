@@ -204,7 +204,7 @@ public interface IGeospatialCommands
     Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape.
+    /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape, centred on the specified position.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geosearch"/>
     /// <param name="key">The key of the sorted set.</param>
