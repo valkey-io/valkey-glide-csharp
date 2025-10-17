@@ -460,16 +460,6 @@ internal partial class FFI
         }
     }
 
-    /// <summary>
-    /// Creates a function pointer for the PubSub message callback that can be passed to native code.
-    /// </summary>
-    /// <param name="callback">The managed callback delegate.</param>
-    /// <returns>A function pointer that can be passed to native code.</returns>
-    internal static IntPtr CreatePubSubCallbackPtr(PubSubMessageCallback callback)
-    {
-        return Marshal.GetFunctionPointerForDelegate(callback);
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     private struct CmdInfo
     {

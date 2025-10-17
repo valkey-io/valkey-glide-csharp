@@ -13,7 +13,6 @@ internal partial class FFI
     /// <summary>
     /// FFI callback delegate for PubSub message reception matching the Rust FFI signature.
     /// </summary>
-    /// <param name="clientPtr">The client pointer address used as unique identifier.</param>
     /// <param name="pushKind">The type of push notification received.</param>
     /// <param name="messagePtr">Pointer to the raw message bytes.</param>
     /// <param name="messageLen">The length of the message data in bytes.</param>
@@ -23,8 +22,7 @@ internal partial class FFI
     /// <param name="patternLen">The length of the pattern in bytes (0 if no pattern).</param>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void PubSubMessageCallback(
-        ulong clientPtr,
-        PushKind pushKind,
+        uint pushKind,
         IntPtr messagePtr,
         long messageLen,
         IntPtr channelPtr,
@@ -52,14 +50,6 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void CloseClientFfi(IntPtr client);
 
-    [LibraryImport("libglide_rs", EntryPoint = "register_pubsub_callback")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void RegisterPubSubCallbackFfi(IntPtr client, IntPtr callback);
-
-    [LibraryImport("libglide_rs", EntryPoint = "free_pubsub_message")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void FreePubSubMessageFfi(IntPtr messagePtr);
-
 
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
@@ -76,12 +66,6 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
     public static extern void CloseClientFfi(IntPtr client);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "register_pubsub_callback")]
-    public static extern void RegisterPubSubCallbackFfi(IntPtr client, IntPtr callback);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_pubsub_message")]
-    public static extern void FreePubSubMessageFfi(IntPtr messagePtr);
 
 
 #endif

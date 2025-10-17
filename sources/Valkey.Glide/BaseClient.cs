@@ -67,7 +67,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         nint pubsubCallbackPointer = IntPtr.Zero;
         if (config.Request.PubSubSubscriptions != null)
         {
-            pubsubCallbackPointer = PubSubCallbackManager.GetNativeCallbackPtr();
+            pubsubCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._pubsubCallbackDelegate);
         }
 
         using FFI.ConnectionConfig request = config.Request.ToFfi();
@@ -92,6 +92,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     {
         _successCallbackDelegate = SuccessCallback;
         _failureCallbackDelegate = FailureCallback;
+        _pubsubCallbackDelegate = PubSubCallback;
         _messageContainer = new(this);
     }
 
@@ -166,6 +167,90 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         _ = Task.Run(() => _messageContainer.GetMessage((int)index).SetException(Create(errType, str)));
     }
 
+    private void PubSubCallback(
+        uint pushKind,
+        IntPtr messagePtr,
+        long messageLen,
+        IntPtr channelPtr,
+        long channelLen,
+        IntPtr patternPtr,
+        long patternLen)
+    {
+        // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                // Only process actual message notifications, ignore subscription confirmations
+                if (!IsMessageNotification((PushKind)pushKind))
+                {
+                    Logger.Log(Level.Debug, "PubSubCallback", $"PubSub notification received: {(PushKind)pushKind}");
+                    return;
+                }
+
+                // Marshal the message from FFI callback parameters
+                PubSubMessage message = MarshalPubSubMessage(
+                    (PushKind)pushKind,
+                    messagePtr,
+                    messageLen,
+                    channelPtr,
+                    channelLen,
+                    patternPtr,
+                    patternLen);
+
+                // Process the message through the handler
+                HandlePubSubMessage(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Level.Error, "PubSubCallback", $"Error in PubSub callback: {ex.Message}", ex);
+            }
+        });
+    }
+
+    private static bool IsMessageNotification(PushKind pushKind) =>
+        pushKind switch
+        {
+            PushKind.PushMessage => true,      // Regular channel message
+            PushKind.PushPMessage => true,     // Pattern-based message
+            PushKind.PushSMessage => true,     // Sharded channel message
+            _ => false                         // All other types are confirmations/notifications
+        };
+
+    private static PubSubMessage MarshalPubSubMessage(
+        PushKind pushKind,
+        IntPtr messagePtr,
+        long messageLen,
+        IntPtr channelPtr,
+        long channelLen,
+        IntPtr patternPtr,
+        long patternLen)
+    {
+        // Marshal the raw byte pointers to byte arrays
+        byte[] messageBytes = new byte[messageLen];
+        Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
+
+        byte[] channelBytes = new byte[channelLen];
+        Marshal.Copy(channelPtr, channelBytes, 0, (int)channelLen);
+
+        byte[]? patternBytes = null;
+        if (patternPtr != IntPtr.Zero && patternLen > 0)
+        {
+            patternBytes = new byte[patternLen];
+            Marshal.Copy(patternPtr, patternBytes, 0, (int)patternLen);
+        }
+
+        // Convert to strings (assuming UTF-8 encoding)
+        string message = System.Text.Encoding.UTF8.GetString(messageBytes);
+        string channel = System.Text.Encoding.UTF8.GetString(channelBytes);
+        string? pattern = patternBytes != null ? System.Text.Encoding.UTF8.GetString(patternBytes) : null;
+
+        // Create the appropriate PubSubMessage based on whether pattern is present
+        return pattern != null
+            ? new PubSubMessage(message, channel, pattern)
+            : new PubSubMessage(message, channel);
+    }
+
     ~BaseClient() => Dispose();
 
     internal void SetInfo(string info) => _clientInfo = info;
@@ -185,17 +270,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         // Create the PubSub message handler
         _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
-
-        // Generate a unique client ID for PubSub callback registration
-        _clientId = (ulong)_clientPointer.ToInt64();
-
-        // Register this client for PubSub callbacks
-        PubSubCallbackManager.RegisterClient(_clientId, this);
     }
 
     /// <summary>
     /// Handles incoming PubSub messages from the FFI layer.
-    /// This method is called by the PubSubCallbackManager.
+    /// This method is called directly by the FFI callback.
     /// </summary>
     /// <param name="message">The PubSub message to handle.</param>
     internal virtual void HandlePubSubMessage(PubSubMessage message)
@@ -207,7 +286,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         catch (Exception ex)
         {
             // Log the error but don't let exceptions escape
-            Logger.Log(Level.Error, "BaseClient", $"Error handling PubSub message in client {_clientId}: {ex.Message}", ex);
+            Logger.Log(Level.Error, "BaseClient", $"Error handling PubSub message: {ex.Message}", ex);
         }
     }
 
@@ -220,9 +299,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         {
             try
             {
-                // Unregister from the client registry
-                PubSubCallbackManager.UnregisterClient(_clientId);
-
                 // Dispose the message handler
                 _pubSubHandler.Dispose();
                 _pubSubHandler = null;
@@ -230,7 +306,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             catch (Exception ex)
             {
                 // Log the error but continue with disposal
-                Logger.Log(Level.Warn, "BaseClient", $"Error cleaning up PubSub resources for client {_clientId}: {ex.Message}", ex);
+                Logger.Log(Level.Warn, "BaseClient", $"Error cleaning up PubSub resources: {ex.Message}", ex);
             }
         }
     }
@@ -239,6 +315,15 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private delegate void SuccessAction(ulong index, IntPtr ptr);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void FailureAction(ulong index, IntPtr strPtr, RequestErrorType err);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void PubSubAction(
+        uint pushKind,
+        IntPtr messagePtr,
+        long messageLen,
+        IntPtr channelPtr,
+        long channelLen,
+        IntPtr patternPtr,
+        long patternLen);
     #endregion private methods
 
     #region private fields
@@ -251,6 +336,10 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// and held in order to prevent the cost of marshalling on each function call.
     private readonly SuccessAction _successCallbackDelegate;
 
+    /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
+    /// and held in order to prevent the cost of marshalling on each function call.
+    private readonly PubSubAction _pubsubCallbackDelegate;
+
     /// Raw pointer to the underlying native client.
     private IntPtr _clientPointer;
     private readonly MessageContainer _messageContainer;
@@ -260,9 +349,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     /// PubSub message handler for routing messages to callbacks or queues.
     private PubSubMessageHandler? _pubSubHandler;
-
-    /// Unique client ID for PubSub callback registration.
-    private ulong _clientId;
 
     #endregion private fields
 }

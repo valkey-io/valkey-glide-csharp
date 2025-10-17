@@ -12,7 +12,7 @@ use glide_core::{
 };
 use std::{
     ffi::{CStr, CString, c_char, c_void},
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use tokio::runtime::{Builder, Runtime};
 
@@ -29,7 +29,6 @@ pub enum Level {
 pub struct Client {
     runtime: Runtime,
     core: Arc<CommandExecutionCore>,
-    pubsub_callback: Arc<Mutex<Option<ffi::PubSubCallback>>>,
 }
 
 /// Success callback that is called when a command succeeds.
@@ -122,12 +121,15 @@ impl Drop for PanicGuard {
 /// * `config` must be a valid [`ConnectionConfig`] pointer. See the safety documentation of [`create_connection_request`].
 /// * `success_callback` and `failure_callback` must be valid pointers to the corresponding FFI functions.
 ///   See the safety documentation of [`SuccessCallback`] and [`FailureCallback`].
+/// * `pubsub_callback` is an optional callback. When provided, it must be a valid function pointer.
+///   See the safety documentation in the FFI module for PubSubCallback.
 #[allow(rustdoc::private_intra_doc_links)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn create_client(
     config: *const ConnectionConfig,
     success_callback: SuccessCallback,
     failure_callback: FailureCallback,
+    #[allow(unused_variables)] pubsub_callback: Option<PubSubCallback>,
 ) {
     let mut panic_guard = PanicGuard {
         panicked: true,
@@ -144,7 +146,13 @@ pub unsafe extern "C-unwind" fn create_client(
         .unwrap();
 
     let _runtime_handle = runtime.enter();
-    let res = runtime.block_on(GlideClient::new(request, None));
+
+    // Set up push notification channel if PubSub subscriptions are configured
+    let is_subscriber = request.pubsub_subscriptions.is_some() && pubsub_callback.is_some();
+    let (push_tx, mut push_rx) = tokio::sync::mpsc::unbounded_channel();
+    let tx = if is_subscriber { Some(push_tx) } else { None };
+
+    let res = runtime.block_on(GlideClient::new(request, tx));
     match res {
         Ok(client) => {
             let core = Arc::new(CommandExecutionCore {
@@ -153,11 +161,22 @@ pub unsafe extern "C-unwind" fn create_client(
                 client,
             });
 
-            let client_ptr = Arc::into_raw(Arc::new(Client {
-                runtime,
-                core,
-                pubsub_callback: Arc::new(Mutex::new(None)),
-            }));
+            let client_adapter = Arc::new(Client { runtime, core });
+            let client_ptr = Arc::into_raw(client_adapter.clone());
+
+            // If pubsub_callback is provided, spawn a task to handle push notifications
+            if is_subscriber {
+                if let Some(callback) = pubsub_callback {
+                    client_adapter.runtime.spawn(async move {
+                        while let Some(push_msg) = push_rx.recv().await {
+                            unsafe {
+                                process_push_notification(push_msg, callback);
+                            }
+                        }
+                    });
+                }
+            }
+
             unsafe { success_callback(0, client_ptr as *const ResponseValue) };
         }
         Err(err) => {
@@ -174,6 +193,79 @@ pub unsafe extern "C-unwind" fn create_client(
 
     panic_guard.panicked = false;
     drop(panic_guard);
+}
+
+/// Processes a push notification message and calls the provided callback function.
+///
+/// This function extracts the message data from the PushInfo and invokes the C# callback
+/// with the appropriate parameters.
+///
+/// # Parameters
+/// - `push_msg`: The push notification message to process.
+/// - `pubsub_callback`: The callback function to invoke with the processed notification.
+///
+/// # Safety
+/// This function is unsafe because it:
+/// - Calls an FFI function (`pubsub_callback`) that may have undefined behavior
+/// - Assumes push_msg.data contains valid BulkString values
+///
+/// The caller must ensure:
+/// - `pubsub_callback` is a valid function pointer to a properly implemented callback
+/// - Memory allocated during conversion is properly handled by C#
+unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: PubSubCallback) {
+    use redis::Value;
+
+    // Convert push_msg.data to extract message components
+    let strings: Vec<(*const u8, i64)> = push_msg
+        .data
+        .into_iter()
+        .filter_map(|value| match value {
+            Value::BulkString(bytes) => {
+                let len = bytes.len() as i64;
+                let ptr = bytes.as_ptr();
+                std::mem::forget(bytes); // Prevent deallocation - C# will handle it
+                Some((ptr, len))
+            }
+            _ => None,
+        })
+        .collect();
+
+    // Extract pattern, channel, and message based on the push kind
+    let ((pattern_ptr, pattern_len), (channel_ptr, channel_len), (message_ptr, message_len)) = {
+        match strings.len() {
+            2 => ((std::ptr::null(), 0), strings[0], strings[1]), // No pattern (exact subscription)
+            3 => (strings[0], strings[1], strings[2]),            // With pattern
+            _ => return,                                          // Invalid message format
+        }
+    };
+
+    // Convert PushKind to the FFI-safe enum
+    let kind = match push_msg.kind {
+        redis::PushKind::Disconnection => return, // Don't send disconnection to callback
+        redis::PushKind::Message => 0u32,         // PushMessage
+        redis::PushKind::PMessage => 1u32,        // PushPMessage
+        redis::PushKind::SMessage => 2u32,        // PushSMessage
+        redis::PushKind::Subscribe => 3u32,       // Subscription confirmation
+        redis::PushKind::PSubscribe => 4u32,      // Pattern subscription confirmation
+        redis::PushKind::SSubscribe => 5u32,      // Sharded subscription confirmation
+        redis::PushKind::Unsubscribe => 6u32,     // Unsubscription confirmation
+        redis::PushKind::PUnsubscribe => 7u32,    // Pattern unsubscription confirmation
+        redis::PushKind::SUnsubscribe => 8u32,    // Sharded unsubscription confirmation
+        _ => return,                              // Unknown/unsupported kind
+    };
+
+    // Call the C# callback with the push notification data
+    unsafe {
+        pubsub_callback(
+            kind,
+            message_ptr,
+            message_len,
+            channel_ptr,
+            channel_len,
+            pattern_ptr,
+            pattern_len,
+        );
+    }
 }
 
 /// Closes the given client, deallocating it from the heap.
