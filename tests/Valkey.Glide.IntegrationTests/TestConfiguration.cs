@@ -1,7 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Diagnostics;
-
 using Valkey.Glide.IntegrationTests;
 
 using static Valkey.Glide.ConnectionConfiguration;
@@ -288,7 +286,7 @@ public class TestConfiguration : IDisposable
             catch (DirectoryNotFoundException) { }
 
             // Start cluster and standalone servers.
-            CLUSTER_HOSTS = ServerUtils.StartStandaloneServer(DefaultServerGroupName, useTls: TLS);
+            CLUSTER_HOSTS = ServerUtils.StartClusterServer(DefaultServerGroupName, useTls: TLS);
             STANDALONE_HOSTS = ServerUtils.StartStandaloneServer(DefaultServerGroupName, useTls: TLS);
         }
         // Get server version
