@@ -198,7 +198,7 @@ pub unsafe extern "C-unwind" fn create_client(
 /// Processes a push notification message and calls the provided callback function.
 ///
 /// This function extracts the message data from the PushInfo and invokes the C# callback
-/// with the appropriate parameters.
+/// with the appropriate parameters using scoped lifetime management to prevent memory leaks.
 ///
 /// # Parameters
 /// - `push_msg`: The push notification message to process.
@@ -211,50 +211,103 @@ pub unsafe extern "C-unwind" fn create_client(
 ///
 /// The caller must ensure:
 /// - `pubsub_callback` is a valid function pointer to a properly implemented callback
-/// - Memory allocated during conversion is properly handled by C#
+/// - The callback copies data synchronously before returning
+///
+/// # Memory Safety
+/// This implementation uses scoped lifetime management instead of `std::mem::forget()`.
+/// Vec<u8> instances are kept alive during callback execution and automatically cleaned up
+/// when the function exits, preventing memory leaks.
 unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: PubSubCallback) {
     use redis::Value;
 
-    // Convert push_msg.data to extract message components
-    let strings: Vec<(*const u8, i64)> = push_msg
+    // Keep Vec<u8> instances alive for the duration of the callback
+    let strings: Vec<Vec<u8>> = push_msg
         .data
         .into_iter()
         .filter_map(|value| match value {
-            Value::BulkString(bytes) => {
-                let len = bytes.len() as i64;
-                let ptr = bytes.as_ptr();
-                std::mem::forget(bytes); // Prevent deallocation - C# will handle it
-                Some((ptr, len))
+            Value::BulkString(bytes) => Some(bytes),
+            _ => {
+                logger_core::log(
+                    logger_core::Level::Warn,
+                    "pubsub",
+                    &format!("Unexpected value type in PubSub message: {:?}", value),
+                );
+                None
             }
-            _ => None,
         })
         .collect();
 
-    // Extract pattern, channel, and message based on the push kind
-    let ((pattern_ptr, pattern_len), (channel_ptr, channel_len), (message_ptr, message_len)) = {
-        match strings.len() {
-            2 => ((std::ptr::null(), 0), strings[0], strings[1]), // No pattern (exact subscription)
-            3 => (strings[0], strings[1], strings[2]),            // With pattern
-            _ => return,                                          // Invalid message format
+    // Store the kind to avoid move issues
+    let push_kind = push_msg.kind.clone();
+
+    // Validate message structure based on PushKind and convert to FFI kind
+    let (pattern, channel, message, kind) = match (push_kind.clone(), strings.len()) {
+        (redis::PushKind::Message, 2) => {
+            // Regular message: [channel, message]
+            (None, &strings[0], &strings[1], 0u32)
+        }
+        (redis::PushKind::PMessage, 3) => {
+            // Pattern message: [pattern, channel, message]
+            (Some(&strings[0]), &strings[1], &strings[2], 1u32)
+        }
+        (redis::PushKind::SMessage, 2) => {
+            // Sharded message: [channel, message]
+            (None, &strings[0], &strings[1], 2u32)
+        }
+        (redis::PushKind::Subscribe, 2) => {
+            // Subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], 3u32)
+        }
+        (redis::PushKind::PSubscribe, 3) => {
+            // Pattern subscribe confirmation: [pattern, channel, count]
+            (Some(&strings[0]), &strings[1], &strings[2], 4u32)
+        }
+        (redis::PushKind::SSubscribe, 2) => {
+            // Sharded subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], 5u32)
+        }
+        (redis::PushKind::Unsubscribe, 2) => {
+            // Unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], 6u32)
+        }
+        (redis::PushKind::PUnsubscribe, 3) => {
+            // Pattern unsubscribe confirmation: [pattern, channel, count]
+            (Some(&strings[0]), &strings[1], &strings[2], 7u32)
+        }
+        (redis::PushKind::SUnsubscribe, 2) => {
+            // Sharded unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], 8u32)
+        }
+        (redis::PushKind::Disconnection, _) => {
+            logger_core::log(
+                logger_core::Level::Info,
+                "pubsub",
+                "PubSub disconnection received",
+            );
+            return;
+        }
+        (kind, len) => {
+            logger_core::log(
+                logger_core::Level::Error,
+                "pubsub",
+                &format!(
+                    "Invalid PubSub message structure: kind={:?}, len={}",
+                    kind, len
+                ),
+            );
+            return;
         }
     };
 
-    // Convert PushKind to the FFI-safe enum
-    let kind = match push_msg.kind {
-        redis::PushKind::Disconnection => return, // Don't send disconnection to callback
-        redis::PushKind::Message => 0u32,         // PushMessage
-        redis::PushKind::PMessage => 1u32,        // PushPMessage
-        redis::PushKind::SMessage => 2u32,        // PushSMessage
-        redis::PushKind::Subscribe => 3u32,       // Subscription confirmation
-        redis::PushKind::PSubscribe => 4u32,      // Pattern subscription confirmation
-        redis::PushKind::SSubscribe => 5u32,      // Sharded subscription confirmation
-        redis::PushKind::Unsubscribe => 6u32,     // Unsubscription confirmation
-        redis::PushKind::PUnsubscribe => 7u32,    // Pattern unsubscription confirmation
-        redis::PushKind::SUnsubscribe => 8u32,    // Sharded unsubscription confirmation
-        _ => return,                              // Unknown/unsupported kind
-    };
+    // Prepare pointers while keeping strings alive
+    let pattern_ptr = pattern.map(|p| p.as_ptr()).unwrap_or(std::ptr::null());
+    let pattern_len = pattern.map(|p| p.len() as i64).unwrap_or(0);
+    let channel_ptr = channel.as_ptr();
+    let channel_len = channel.len() as i64;
+    let message_ptr = message.as_ptr();
+    let message_len = message.len() as i64;
 
-    // Call the C# callback with the push notification data
+    // Call callback while strings are still alive
     unsafe {
         pubsub_callback(
             kind,
@@ -266,6 +319,9 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
             pattern_len,
         );
     }
+
+    // Vec<u8> instances are automatically cleaned up here
+    // No memory leak, no use-after-free
 }
 
 /// Closes the given client, deallocating it from the heap.

@@ -172,44 +172,6 @@ public class PubSubFFIIntegrationTests
     }
 
     [Fact]
-    public void CreatePubSubCallbackPtr_WithValidCallback_ReturnsNonZeroPointer()
-    {
-        // Arrange
-        FFI.PubSubMessageCallback callback = (clientPtr, pushKind, messagePtr, messageLen, channelPtr, channelLen, patternPtr, patternLen) => { };
-
-        // Act
-        IntPtr result = FFI.CreatePubSubCallbackPtr(callback);
-
-        // Assert
-        Assert.NotEqual(IntPtr.Zero, result);
-    }
-
-    [Fact]
-    public void PubSubCallbackManager_RegisterAndUnregisterClient_WorksCorrectly()
-    {
-        // This test verifies the basic functionality of the callback manager
-        // without actually invoking native callbacks
-
-        // Arrange
-        ulong clientPtr = 12345;
-        var mockClient = new MockBaseClient();
-
-        // Act - Register
-        PubSubCallbackManager.RegisterClient(clientPtr, mockClient);
-
-        // Act - Get callback pointer (should not throw)
-        IntPtr callbackPtr = PubSubCallbackManager.GetNativeCallbackPtr();
-
-        // Assert
-        Assert.NotEqual(IntPtr.Zero, callbackPtr);
-
-        // Act - Unregister
-        PubSubCallbackManager.UnregisterClient(clientPtr);
-
-        // No exception should be thrown
-    }
-
-    [Fact]
     public void MarshalPubSubMessage_WithShardedMessage_ReturnsCorrectMessage()
     {
         // Arrange

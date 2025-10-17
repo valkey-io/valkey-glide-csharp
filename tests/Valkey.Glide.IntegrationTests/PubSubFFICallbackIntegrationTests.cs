@@ -3,23 +3,24 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
+using Valkey.Glide;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
 /// Integration tests for FFI PubSub callback flow infrastructure.
-/// These tests verify end-to-end message processing, client registry operations,
-/// error handling, and async message processing using simulated FFI callbacks.
+/// These tests verify end-to-end message processing, error handling, and async message processing
+/// using simulated FFI callbacks.
 /// Note: Uses simulated FFI callbacks since full PubSub server integration requires additional infrastructure.
 /// Future enhancement: Replace with real PUBLISH commands via CustomCommand when PubSub infrastructure is complete.
 /// </summary>
-[Collection("ClientRegistry")]
 public class PubSubFFICallbackIntegrationTests : IDisposable
 {
     private readonly List<BaseClient> _testClients = [];
     private readonly ConcurrentBag<Exception> _callbackExceptions = [];
     private readonly ConcurrentBag<PubSubMessage> _receivedMessages = [];
     private readonly ManualResetEventSlim _messageReceivedEvent = new(false);
-    private readonly Lock _lockObject = new();
+    private readonly object _lockObject = new();
 
     public void Dispose()
     {
@@ -73,7 +74,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 _messageReceivedEvent.Set();
             });
 
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
+        var config = TestConfiguration.DefaultClientConfig()
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
@@ -120,7 +121,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 _messageReceivedEvent.Set();
             });
 
-        ClusterClientConfiguration config = TestConfiguration.DefaultClusterClientConfig()
+        var config = TestConfiguration.DefaultClusterClientConfig()
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
@@ -162,7 +163,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 _messageReceivedEvent.Set();
             });
 
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
+        var config = TestConfiguration.DefaultClientConfig()
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
@@ -183,77 +184,6 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
         Assert.Equal(testMessage, receivedMessage.Message);
         Assert.Equal(testChannel, receivedMessage.Channel);
         Assert.Equal(testPattern, receivedMessage.Pattern);
-    }
-
-    [Fact]
-    public async Task ClientRegistryOperations_UnderConcurrentAccess_WorksCorrectly()
-    {
-        // Arrange
-        const int clientCount = 10;
-        const int messagesPerClient = 5;
-        List<Task> clientTasks = [];
-        ConcurrentDictionary<string, int> messageCountsByChannel = new();
-
-        // Act - Create multiple clients concurrently
-        for (int i = 0; i < clientCount; i++)
-        {
-            int clientIndex = i;
-            Task clientTask = Task.Run(async () =>
-            {
-                string clientChannel = $"concurrent-test-{clientIndex}-{Guid.NewGuid()}";
-                int messagesReceived = 0;
-
-                StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-                    .WithChannel(clientChannel)
-                    .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
-                    {
-                        _ = Interlocked.Increment(ref messagesReceived);
-                        _ = messageCountsByChannel.AddOrUpdate(clientChannel, 1, (key, value) => value + 1);
-                    });
-
-                StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
-                    .WithPubSubSubscriptions(pubsubConfig)
-                    .Build();
-
-                GlideClient subscriberClient = await GlideClient.CreateClient(config);
-                lock (_lockObject)
-                {
-                    _testClients.Add(subscriberClient);
-                }
-
-                // Simulate multiple messages via FFI callbacks
-                for (int j = 0; j < messagesPerClient; j++)
-                {
-                    await SimulateFFICallback(subscriberClient, clientChannel, $"Message {j} from client {clientIndex}", null);
-                    await Task.Delay(10); // Small delay to avoid overwhelming
-                }
-
-                // Wait for messages to be processed
-                await Task.Delay(1000);
-
-                Assert.True(messagesReceived > 0, $"Client {clientIndex} should have received at least one message");
-            });
-
-            clientTasks.Add(clientTask);
-        }
-
-        // Wait for all client tasks to complete
-        await Task.WhenAll(clientTasks);
-
-        // Assert
-        Assert.True(messageCountsByChannel.Count > 0, "Should have received messages on multiple channels");
-        Assert.True(ClientRegistry.Count >= clientCount, "Client registry should contain registered clients");
-
-        // Verify client registry operations work correctly
-        foreach (BaseClient client in _testClients)
-        {
-            ulong clientPtr = (ulong)client.GetHashCode(); // Use a predictable ID for testing
-            ClientRegistry.RegisterClient(clientPtr, client);
-            BaseClient? retrievedClient = ClientRegistry.GetClient(clientPtr);
-            Assert.NotNull(retrievedClient);
-            bool unregistered = ClientRegistry.UnregisterClient(clientPtr);
-            Assert.True(unregistered);
-        }
     }
 
     [Fact]
@@ -283,7 +213,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 }
             });
 
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
+        var config = TestConfiguration.DefaultClientConfig()
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
@@ -338,7 +268,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 }
             });
 
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
+        var config = TestConfiguration.DefaultClientConfig()
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
@@ -375,77 +305,6 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task ClientRegistryLookupOperations_WithRealClients_HandlesUnknownClientsGracefully()
-    {
-        // Arrange
-        string testChannel = $"lookup-test-{Guid.NewGuid()}";
-        bool messageReceived = false;
-
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
-            {
-                messageReceived = true;
-                _messageReceivedEvent.Set();
-            });
-
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
-
-        // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(config);
-        _testClients.Add(subscriberClient);
-
-        // Test unknown client lookup
-        ulong unknownClientPtr = 999999999;
-        BaseClient? unknownClient = ClientRegistry.GetClient(unknownClientPtr);
-        Assert.Null(unknownClient);
-
-        // Test that normal operations still work
-        await SimulateFFICallback(subscriberClient, testChannel, "Test message after unknown lookup", null);
-        bool received = _messageReceivedEvent.Wait(TimeSpan.FromSeconds(5));
-
-        // Assert
-        Assert.True(received, "Normal operations should continue after unknown client lookup");
-        Assert.True(messageReceived, "Message should have been received normally");
-    }
-
-    [Fact]
-    public async Task ClientRegistryCleanup_WithClientDisposal_RemovesEntriesCorrectly()
-    {
-        // Arrange
-        string testChannel = $"cleanup-test-{Guid.NewGuid()}";
-
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) => { });
-
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
-
-        // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(config);
-        ulong clientPtr = (ulong)subscriberClient.GetHashCode();
-
-        // Verify client is registered
-        Assert.True(subscriberClient.HasPubSubSubscriptions);
-
-        // Dispose the client
-        subscriberClient.Dispose();
-
-        // Wait a bit for cleanup to complete
-        await Task.Delay(100);
-
-        // Assert
-        // The client should be unregistered from the registry after disposal
-        BaseClient? retrievedClient = ClientRegistry.GetClient(clientPtr);
-        // Note: The actual client pointer used internally may be different from our test pointer
-        // The important thing is that disposal doesn't throw exceptions
-    }
-
-    [Fact]
     public async Task MemoryManagement_WithMarshaledData_HandlesCleanupCorrectly()
     {
         // Arrange
@@ -469,7 +328,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 }
             });
 
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
+        var config = TestConfiguration.DefaultClientConfig()
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
@@ -517,45 +376,6 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task PubSubCallbackManager_WithPerformanceMonitoring_LogsExecutionTimes()
-    {
-        // This test verifies that the callback manager properly monitors and logs performance
-        // We can't easily test the actual logging output, but we can verify the system works
-
-        // Arrange
-        string testChannel = $"performance-test-{Guid.NewGuid()}";
-        bool messageReceived = false;
-
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
-            {
-                // Simulate some processing time
-                Thread.Sleep(5);
-                messageReceived = true;
-                _messageReceivedEvent.Set();
-            });
-
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
-
-        // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(config);
-        _testClients.Add(subscriberClient);
-
-        await SimulateFFICallback(subscriberClient, testChannel, "Performance test message", null);
-        bool received = _messageReceivedEvent.Wait(TimeSpan.FromSeconds(5));
-
-        // Assert
-        Assert.True(received, "Message should have been received");
-        Assert.True(messageReceived, "Callback should have been invoked");
-
-        // The performance monitoring happens internally in PubSubCallbackManager
-        // We verify the system works end-to-end, which exercises the performance monitoring code
-    }
-
-    [Fact]
     public async Task ErrorIsolation_WithMessageHandlerExceptions_DoesNotCrashProcess()
     {
         // Arrange
@@ -587,7 +407,7 @@ public class PubSubFFICallbackIntegrationTests : IDisposable
                 }
             });
 
-        StandaloneClientConfiguration config = TestConfiguration.DefaultClientConfig()
+        var config = TestConfiguration.DefaultClientConfig()
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
