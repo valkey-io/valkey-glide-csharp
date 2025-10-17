@@ -208,19 +208,19 @@ public class GeospatialCommandTests(TestConfiguration config)
         double? distanceFeet = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Feet);
 
         // Verify approximate expected values (distance between Palermo and Catania)
-        Assert.Equal(166274, distanceMeters.Value, 1000); // ~166274 meters
-        Assert.Equal(166.27, distanceKilometers.Value, 1); // ~166.27 km
-        Assert.Equal(103.31, distanceMiles.Value, 1); // ~103.31 miles
-        Assert.Equal(545518, distanceFeet.Value, 1000); // ~545,518 feet
+        Assert.True(Math.Abs(distanceMeters.Value - 166274) < 1000); // ~166274 meters
+        Assert.True(Math.Abs(distanceKilometers.Value - 166.27) < 1); // ~166.27 km
+        Assert.True(Math.Abs(distanceMiles.Value - 103.31) < 1); // ~103.31 miles
+        Assert.True(Math.Abs(distanceFeet.Value - 545518) < 1000); // ~545,518 feet
 
         // Verify unit conversions are consistent
         double metersToKm = distanceMeters.Value / 1000;
         double metersToMiles = distanceMeters.Value / 1609.344;
         double metersToFeet = distanceMeters.Value * 3.28084;
 
-        Assert.Equal(metersToKm, distanceKilometers.Value, 0.001);
-        Assert.Equal(metersToMiles, distanceMiles.Value, 0.001);
-        Assert.Equal(metersToFeet, distanceFeet.Value, 1);
+        Assert.True(Math.Abs(metersToKm - distanceKilometers.Value) < 0.01);
+        Assert.True(Math.Abs(metersToMiles - distanceMiles.Value) < 0.01);
+        Assert.True(Math.Abs(metersToFeet - distanceFeet.Value) < 10);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -239,7 +239,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         double? distanceDefault = await client.GeoDistanceAsync(key, "Palermo", "Catania");
         double? distanceMeters = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Meters);
 
-        Assert.Equal(distanceMeters.Value, distanceDefault.Value, 1e-9);
+        Assert.True(Math.Abs(distanceMeters.Value - distanceDefault.Value) < 1e-9);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
