@@ -245,8 +245,6 @@ public class GeospatialCommandTests(TestConfiguration config)
         double? distanceDefault = await client.GeoDistanceAsync(key, "Palermo", "Catania");
         double? distanceMeters = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Meters);
         
-        Assert.NotNull(distanceDefault);
-        Assert.NotNull(distanceMeters);
         Assert.Equal(distanceMeters.Value, distanceDefault.Value, 1e-9);
     }
     
