@@ -64,6 +64,8 @@
     <Using Include="Valkey.Glide.GlideString">
       <Alias>gs</Alias>
     </Using>
+    <Using Include="System.Runtime.InteropServices" />
+    <Using Include="Valkey.Glide.Internals" />
   </ItemGroup>
 
 </Project>

@@ -29,6 +29,8 @@ pub enum Level {
 pub struct Client {
     runtime: Runtime,
     core: Arc<CommandExecutionCore>,
+    pubsub_shutdown: std::sync::Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+    pubsub_task: std::sync::Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 /// Success callback that is called when a command succeeds.
@@ -161,21 +163,57 @@ pub unsafe extern "C-unwind" fn create_client(
                 client,
             });
 
-            let client_adapter = Arc::new(Client { runtime, core });
-            let client_ptr = Arc::into_raw(client_adapter.clone());
-
-            // If pubsub_callback is provided, spawn a task to handle push notifications
-            if is_subscriber {
+            // Set up graceful shutdown coordination for PubSub task
+            let (pubsub_shutdown, pubsub_task) = if is_subscriber {
                 if let Some(callback) = pubsub_callback {
-                    client_adapter.runtime.spawn(async move {
-                        while let Some(push_msg) = push_rx.recv().await {
-                            unsafe {
-                                process_push_notification(push_msg, callback);
+                    let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
+
+                    let task_handle = runtime.spawn(async move {
+                        logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
+
+                        loop {
+                            tokio::select! {
+                                Some(push_msg) = push_rx.recv() => {
+                                    unsafe {
+                                        process_push_notification(push_msg, callback);
+                                    }
+                                }
+                                _ = &mut shutdown_rx => {
+                                    logger_core::log(
+                                        logger_core::Level::Info,
+                                        "pubsub",
+                                        "PubSub task received shutdown signal",
+                                    );
+                                    break;
+                                }
                             }
                         }
+
+                        logger_core::log(
+                            logger_core::Level::Info,
+                            "pubsub",
+                            "PubSub task completed gracefully",
+                        );
                     });
+
+                    (
+                        std::sync::Mutex::new(Some(shutdown_tx)),
+                        std::sync::Mutex::new(Some(task_handle)),
+                    )
+                } else {
+                    (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
                 }
-            }
+            } else {
+                (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
+            };
+
+            let client_adapter = Arc::new(Client {
+                runtime,
+                core,
+                pubsub_shutdown,
+                pubsub_task,
+            });
+            let client_ptr = Arc::into_raw(client_adapter.clone());
 
             unsafe { success_callback(0, client_ptr as *const ResponseValue) };
         }
@@ -328,6 +366,8 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
 /// This function should only be called once per pointer created by [`create_client`].
 /// After calling this function the `client_ptr` is not in a valid state.
 ///
+/// Implements graceful shutdown coordination for PubSub tasks with timeout.
+///
 /// # Safety
 ///
 /// * `client_ptr` must not be `null`.
@@ -335,6 +375,71 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
 #[unsafe(no_mangle)]
 pub extern "C" fn close_client(client_ptr: *const c_void) {
     assert!(!client_ptr.is_null());
+
+    // Get a reference to the client to access shutdown coordination
+    let client = unsafe { &*(client_ptr as *const Client) };
+
+    // Take ownership of shutdown sender and signal graceful shutdown
+    if let Ok(mut guard) = client.pubsub_shutdown.lock() {
+        if let Some(shutdown_tx) = guard.take() {
+            logger_core::log(
+                logger_core::Level::Debug,
+                "pubsub",
+                "Signaling PubSub task to shutdown",
+            );
+
+            // Send shutdown signal (ignore error if receiver already dropped)
+            let _ = shutdown_tx.send(());
+        }
+    }
+
+    // Take ownership of task handle and wait for completion with timeout
+    if let Ok(mut guard) = client.pubsub_task.lock() {
+        if let Some(task_handle) = guard.take() {
+            let timeout = std::time::Duration::from_secs(5);
+
+            logger_core::log(
+                logger_core::Level::Debug,
+                "pubsub",
+                &format!(
+                    "Waiting for PubSub task to complete (timeout: {:?})",
+                    timeout
+                ),
+            );
+
+            let result = client
+                .runtime
+                .block_on(async { tokio::time::timeout(timeout, task_handle).await });
+
+            match result {
+                Ok(Ok(())) => {
+                    logger_core::log(
+                        logger_core::Level::Info,
+                        "pubsub",
+                        "PubSub task completed successfully",
+                    );
+                }
+                Ok(Err(e)) => {
+                    logger_core::log(
+                        logger_core::Level::Warn,
+                        "pubsub",
+                        &format!("PubSub task completed with error: {:?}", e),
+                    );
+                }
+                Err(_) => {
+                    logger_core::log(
+                        logger_core::Level::Warn,
+                        "pubsub",
+                        &format!(
+                            "PubSub task did not complete within timeout ({:?})",
+                            timeout
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
     // This will bring the strong count down to 0 once all client requests are done.
     unsafe { Arc::decrement_strong_count(client_ptr as *const Client) };
 }

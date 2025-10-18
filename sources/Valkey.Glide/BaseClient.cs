@@ -291,6 +291,9 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             // Get performance configuration or use defaults
             PubSubPerformanceConfig perfConfig = config.PerformanceConfig ?? new();
 
+            // Store shutdown timeout for use during disposal
+            _shutdownTimeout = perfConfig.ShutdownTimeout;
+
             // Create bounded channel with configurable capacity and backpressure strategy
             BoundedChannelOptions channelOptions = new(perfConfig.ChannelCapacity)
             {
@@ -305,11 +308,13 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             // Create message handler
             _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
 
-            // Start dedicated processing task
+            // Start dedicated processing task with graceful shutdown support
             _messageProcessingTask = Task.Run(async () =>
             {
                 try
                 {
+                    Logger.Log(Level.Debug, "BaseClient", "PubSub processing task started");
+
                     await foreach (PubSubMessage message in _messageChannel.Reader.ReadAllAsync(_processingCancellation.Token))
                     {
                         try
@@ -327,10 +332,12 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
                                 $"Error processing PubSub message: {ex.Message}", ex);
                         }
                     }
+
+                    Logger.Log(Level.Debug, "BaseClient", "PubSub processing task completing normally");
                 }
                 catch (OperationCanceledException)
                 {
-                    Logger.Log(Level.Info, "BaseClient", "PubSub processing cancelled");
+                    Logger.Log(Level.Info, "BaseClient", "PubSub processing cancelled gracefully");
                 }
                 catch (Exception ex)
                 {
@@ -372,6 +379,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// <summary>
     /// Cleans up PubSub resources during client disposal with proper synchronization.
     /// Uses locking to coordinate safe disposal and prevent conflicts with concurrent message processing.
+    /// Implements graceful shutdown with configurable timeout.
     /// </summary>
     private void CleanupPubSubResources()
     {
@@ -379,7 +387,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         Channel<PubSubMessage>? channel = null;
         Task? processingTask = null;
         CancellationTokenSource? cancellation = null;
-        TimeSpan shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
+        TimeSpan shutdownTimeout = _shutdownTimeout;
 
         // Acquire lock and capture references, then set to null
         lock (_pubSubLock)
@@ -398,16 +406,24 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         // Cleanup outside of lock to prevent deadlocks
         try
         {
-            // Signal shutdown
+            Logger.Log(Level.Debug, "BaseClient", "Initiating graceful PubSub shutdown");
+
+            // Signal shutdown to processing task
             cancellation?.Cancel();
 
             // Complete channel to stop message processing
+            // This will cause the ReadAllAsync to complete after processing remaining messages
             channel?.Writer.Complete();
 
             // Wait for processing task to complete (with timeout)
             if (processingTask != null)
             {
-                if (!processingTask.Wait(shutdownTimeout))
+                bool completed = processingTask.Wait(shutdownTimeout);
+                if (completed)
+                {
+                    Logger.Log(Level.Info, "BaseClient", "PubSub processing task completed gracefully");
+                }
+                else
                 {
                     Logger.Log(Level.Warn, "BaseClient",
                         $"PubSub processing task did not complete within timeout ({shutdownTimeout.TotalSeconds}s)");
@@ -417,6 +433,8 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             // Dispose resources
             handler?.Dispose();
             cancellation?.Dispose();
+
+            Logger.Log(Level.Debug, "BaseClient", "PubSub cleanup completed");
         }
         catch (AggregateException ex)
         {
@@ -481,6 +499,9 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     /// Cancellation token source for graceful shutdown of message processing.
     private CancellationTokenSource? _processingCancellation;
+
+    /// Timeout for graceful shutdown of PubSub processing.
+    private TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
 
     #endregion private fields
 }
