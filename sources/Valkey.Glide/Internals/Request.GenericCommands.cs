@@ -318,7 +318,7 @@ internal partial class Request
     public static Cmd<bool, bool> KeyMoveAsync(ValkeyKey key, int database)
         => Simple<bool>(RequestType.Move, [key.ToGlideString(), database.ToGlideString()]);
 
-    public static Cmd<object[], (string, string[])> ScanAsync(string cursor, ScanOptions? options = null)
+    public static Cmd<object[], (string, ValkeyKey[])> ScanAsync(string cursor, ScanOptions? options = null)
     {
         List<GlideString> args = [cursor.ToGlideString()];
 
@@ -330,7 +330,7 @@ internal partial class Request
         return new(RequestType.Scan, [.. args], false, arr =>
         {
             string nextCursor = arr[0].ToString() ?? "0";
-            string[] keys = [.. ((object[])arr[1]).Select(item => item.ToString()!)];
+            ValkeyKey[] keys = [.. ((object[])arr[1]).Select(item => new ValkeyKey(item.ToString()))];
             return (nextCursor, keys);
         });
     }

@@ -220,6 +220,6 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
         return _serverVersion;
     }
 
-    public async Task<(string cursor, string[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
+    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 }
