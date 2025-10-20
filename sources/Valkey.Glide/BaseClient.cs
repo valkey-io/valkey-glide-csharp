@@ -155,7 +155,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     protected abstract Task<Version> GetServerVersionAsync();
 
-    protected async Task<(string cursor, string[] keys)> ClusterScanCommand(string cursor, string[] args)
+    protected async Task<(string cursor, ValkeyKey[] keys)> ClusterScanCommand(string cursor, string[] args)
     {
         var message = _messageContainer.GetMessageForCall();
         IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor);
@@ -194,7 +194,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
                 var result = HandleResponse(response);
                 var array = (object[])result!;
                 var nextCursor = array[0]!.ToString()!;
-                var keys = ((object[])array[1]!).Select(k => k!.ToString()!).ToArray();
+                var keys = ((object[])array[1]!).Select(k => new ValkeyKey(k!.ToString())).ToArray();
                 return (nextCursor, keys);
             }
             finally

@@ -171,9 +171,9 @@ public interface IGenericCommands
     /// <summary>
     /// Incrementally iterates over the matching keys in the database.
     /// <para>
-    /// The SCAN command is a cursor-based iterator. An iteration starts when the cursor 
-    /// is set to <c>"0"</c>. At every call of the command, the 
-    /// server returns an updated cursor that the user needs to use as the cursor argument in the next 
+    /// The SCAN command is a cursor-based iterator. An iteration starts when the cursor
+    /// is set to <c>"0"</c>. At every call of the command, the
+    /// server returns an updated cursor that the user needs to use as the cursor argument in the next
     /// call. The iteration terminates when the cursor is <c>"0"</c>.
     /// </para>
     /// </summary>
@@ -182,9 +182,9 @@ public interface IGenericCommands
     /// <returns>The next cursor and an array of matching keys.</returns>
     /// <example>
     /// <code>
-    /// var allKeys = new List&lt;string&gt;();
+    /// var allKeys = new List&lt;ValkeyKey&gt;();
     /// string cursor = "0";
-    /// 
+    ///
     /// do
     /// {
     ///     (cursor, var keys) = await client.ScanAsync(cursor);
@@ -193,7 +193,7 @@ public interface IGenericCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
-    Task<(string cursor, string[] keys)> ScanAsync(string cursor, ScanOptions? options = null);
+    Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null);
 
 
 

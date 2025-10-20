@@ -485,13 +485,13 @@ public class CommandTests
             {
                 var result = Request.ScanAsync("0").Converter(["0", new object[] { (gs)"key1", (gs)"key2" }]);
                 Assert.Equal("0", result.Item1);
-                Assert.Equal(["key1", "key2"], result.Item2);
+                Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()).ToArray());
             },
             () =>
             {
                 var result = Request.ScanAsync("10").Converter(["5", new object[] { (gs)"test" }]);
                 Assert.Equal("5", result.Item1);
-                Assert.Equal(["test"], result.Item2);
+                Assert.Equal(["test"], result.Item2.Select(k => k.ToString()).ToArray());
             },
             () =>
             {

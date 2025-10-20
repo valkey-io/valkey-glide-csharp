@@ -270,9 +270,9 @@ public interface IGenericClusterCommands
     /// <returns>The next cursor and an array of matching keys.</returns>
     /// <example>
     /// <code>
-    /// var allKeys = new List&lt;string&gt;();
+    /// var allKeys = new List&lt;ValkeyKey&gt;();
     /// var cursor = ClusterScanCursor.InitialCursor();
-    /// 
+    ///
     /// while (!cursor.IsFinished)
     /// {
     ///     (cursor, var keys) = await client.ScanAsync(cursor);
@@ -281,6 +281,6 @@ public interface IGenericClusterCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
-    /// <seealso href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan">Cluster Scan</seealso> 
-    Task<(ClusterScanCursor cursor, string[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null);
+    /// <seealso href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan">Cluster Scan</seealso>
+    Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null);
 }
