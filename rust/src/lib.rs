@@ -151,7 +151,8 @@ pub unsafe extern "C-unwind" fn create_client(
     let _runtime_handle = runtime.enter();
 
     // Set up push notification channel if PubSub subscriptions are configured
-    let is_subscriber = request.pubsub_subscriptions.is_some() && pubsub_callback.is_some();
+    // The callback is optional - users can use queue-based message retrieval instead
+    let is_subscriber = request.pubsub_subscriptions.is_some();
 
     let (push_tx, mut push_rx) = tokio::sync::mpsc::unbounded_channel();
     let tx = if is_subscriber { Some(push_tx) } else { None };
@@ -166,45 +167,43 @@ pub unsafe extern "C-unwind" fn create_client(
             });
 
             // Set up graceful shutdown coordination for PubSub task
-            let (pubsub_shutdown, pubsub_task) = if is_subscriber {
-                if let Some(callback) = pubsub_callback {
-                    let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
+            // Only spawn the callback task if a callback is provided
+            let (pubsub_shutdown, pubsub_task) = if is_subscriber && pubsub_callback.is_some() {
+                let callback = pubsub_callback.unwrap();
+                let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
 
-                    let task_handle = runtime.spawn(async move {
-                        logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
+                let task_handle = runtime.spawn(async move {
+                    logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
 
-                        loop {
-                            tokio::select! {
-                                Some(push_msg) = push_rx.recv() => {
-                                    unsafe {
-                                        process_push_notification(push_msg, callback);
-                                    }
-                                }
-                                _ = &mut shutdown_rx => {
-                                    logger_core::log(
-                                        logger_core::Level::Info,
-                                        "pubsub",
-                                        "PubSub task received shutdown signal",
-                                    );
-                                    break;
+                    loop {
+                        tokio::select! {
+                            Some(push_msg) = push_rx.recv() => {
+                                unsafe {
+                                    process_push_notification(push_msg, callback);
                                 }
                             }
+                            _ = &mut shutdown_rx => {
+                                logger_core::log(
+                                    logger_core::Level::Info,
+                                    "pubsub",
+                                    "PubSub task received shutdown signal",
+                                );
+                                break;
+                            }
                         }
+                    }
 
-                        logger_core::log(
-                            logger_core::Level::Info,
-                            "pubsub",
-                            "PubSub task completed gracefully",
-                        );
-                    });
+                    logger_core::log(
+                        logger_core::Level::Info,
+                        "pubsub",
+                        "PubSub task completed gracefully",
+                    );
+                });
 
-                    (
-                        std::sync::Mutex::new(Some(shutdown_tx)),
-                        std::sync::Mutex::new(Some(task_handle)),
-                    )
-                } else {
-                    (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
-                }
+                (
+                    std::sync::Mutex::new(Some(shutdown_tx)),
+                    std::sync::Mutex::new(Some(task_handle)),
+                )
             } else {
                 (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
             };
