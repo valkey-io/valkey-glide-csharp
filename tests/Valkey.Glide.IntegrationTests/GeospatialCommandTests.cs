@@ -247,8 +247,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoSearch_AllUnits_ReturnsConsistentResults(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        GeoEntry[] entries =
-        [
+        GeoEntry[] entries = [
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.758489, 38.788135, "Trapani")
@@ -295,14 +294,13 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoHash_NonExistentMembers_ReturnsNulls(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        GeoEntry[] entries =
-        [
+        GeoEntry[] entries = [
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
         await client.GeoAddAsync(key, entries);
 
-        string?[] hashes = await client.GeoHashAsync(key, new ValkeyValue[] { "Palermo", "Catania", "NonExistent" });
+        string?[] hashes = await client.GeoHashAsync(key, ["Palermo", "Catania", "NonExistent"]);
         Assert.NotNull(hashes[0]); // Palermo
         Assert.NotNull(hashes[1]); // Catania
         Assert.Null(hashes[2]); // NonExistent
@@ -315,7 +313,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
-        GeoPosition?[] positions = await client.GeoPositionAsync(key, new ValkeyValue[] { "Palermo", "NonExistent" });
+        GeoPosition?[] positions = await client.GeoPositionAsync(key, ["Palermo", "NonExistent"]);
         Assert.NotNull(positions[0]); // Palermo
         Assert.Null(positions[1]); // NonExistent
     }
@@ -409,11 +407,11 @@ public class GeospatialCommandTests(TestConfiguration config)
         ];
         await client.GeoAddAsync(key, entries);
 
-        string?[] hashes = await client.GeoHashAsync(key, new ValkeyValue[] { "Palermo", "Catania" });
+        string?[] hashes = await client.GeoHashAsync(key, ["Palermo", "Catania"]);
         Assert.NotNull(hashes[0]);
         Assert.NotNull(hashes[1]);
-        Assert.NotEmpty(hashes[0]);
-        Assert.NotEmpty(hashes[1]);
+        Assert.NotEmpty(hashes[0]!);
+        Assert.NotEmpty(hashes[1]!);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -445,7 +443,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
-        string?[] hashes = await client.GeoHashAsync(key, new ValkeyValue[] { });
+        string?[] hashes = await client.GeoHashAsync(key, []);
         Assert.Empty(hashes);
     }
 
@@ -476,7 +474,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         ];
         await client.GeoAddAsync(key, entries);
 
-        GeoPosition?[] positions = await client.GeoPositionAsync(key, new ValkeyValue[] { "Palermo", "Catania" });
+        GeoPosition?[] positions = await client.GeoPositionAsync(key, ["Palermo", "Catania"]);
         Assert.NotNull(positions[0]);
         Assert.NotNull(positions[1]);
         Assert.True(Math.Abs(positions[0]!.Value.Longitude - 13.361389) < 0.001);
@@ -694,7 +692,6 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.NotEmpty(distResults);
 
         var palermoDist = distResults.FirstOrDefault(r => r.Member.ToString() == "Palermo");
-        Assert.NotNull(palermoDist);
         Assert.Equal("Palermo", palermoDist.Member.ToString());
         Assert.NotNull(palermoDist.Distance); // Should have distance
         Assert.Equal(0.0, palermoDist.Distance.Value, 1); // Distance from itself should be ~0
@@ -705,7 +702,6 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.NotEmpty(coordResults);
 
         var palermoCoord = coordResults.FirstOrDefault(r => r.Member.ToString() == "Palermo");
-        Assert.NotNull(palermoCoord);
         Assert.Equal("Palermo", palermoCoord.Member.ToString());
         Assert.True(palermoCoord.Position.HasValue); // Should have coordinates
         Assert.Null(palermoCoord.Distance); // Should be null without WithDistance
@@ -729,8 +725,6 @@ public class GeospatialCommandTests(TestConfiguration config)
         var palermoResult = results.FirstOrDefault(r => r.Member.ToString() == "Palermo");
         var cataniaResult = results.FirstOrDefault(r => r.Member.ToString() == "Catania");
 
-        Assert.NotNull(palermoResult);
-        Assert.NotNull(cataniaResult);
         Assert.NotNull(palermoResult.Distance);
         Assert.NotNull(cataniaResult.Distance);
 
@@ -812,13 +806,11 @@ public class GeospatialCommandTests(TestConfiguration config)
         var results = await client.SortedSetRangeByRankWithScoresAsync(destinationKey, 0, -1);
         Assert.Equal(2, results.Length);
 
-        var palermoResult = results.FirstOrDefault(r => r.Key.ToString() == "Palermo");
-        var cataniaResult = results.FirstOrDefault(r => r.Key.ToString() == "Catania");
+        var palermoResult = results.FirstOrDefault(r => r.Element.ToString() == "Palermo");
+        var cataniaResult = results.FirstOrDefault(r => r.Element.ToString() == "Catania");
 
-        Assert.NotNull(palermoResult);
-        Assert.NotNull(cataniaResult);
-        Assert.Equal(0.0, palermoResult.Value, 0.1);
-        Assert.Equal(166.2742, cataniaResult.Value, 0.1);
+        Assert.Equal(0.0, palermoResult.Score, 0.1);
+        Assert.Equal(166.2742, cataniaResult.Score, 0.1);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -899,8 +891,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string sourceKey = keyPrefix + ":source";
         string destinationKey = keyPrefix + ":dest";
 
-        GeoEntry[] entries =
-        [
+        GeoEntry[] entries = [
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.758489, 38.788135, "Trapani"),
@@ -932,7 +923,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         ];
         await client.GeoAddAsync(sourceKey, entries);
 
-        await client.SortedSetAddAsync(destinationKey, new SortedSetEntry[] { new SortedSetEntry("OldMember", 100) });
+        await client.SortedSetAddAsync(destinationKey, [new SortedSetEntry("OldMember", 100)]);
         Assert.Equal(1, await client.SortedSetCardAsync(destinationKey));
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);

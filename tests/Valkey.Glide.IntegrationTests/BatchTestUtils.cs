@@ -1,6 +1,6 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
+
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -607,8 +607,7 @@ internal class BatchTestUtils
         testData.Add(new(true, "SortedSetAdd(key1, member1, 10.5)"));
 
         // Test multiple members add
-        SortedSetEntry[] entries =
-        [
+        SortedSetEntry[] entries = [
             new("member2", 8.2),
             new("member3", 15.0)
         ];
@@ -1405,10 +1404,10 @@ internal class BatchTestUtils
         _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"));
         testData.Add(new(1L, "GeoAdd(key1, Palermo)"));
 
-        _ = batch.GeoAdd(key1, new GeoEntry[] {
+        _ = batch.GeoAdd(key1, [
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.496366, 41.902782, "Rome")
-        });
+        ]);
         testData.Add(new(2L, "GeoAdd(key1, [Catania, Rome])"));
 
         // Test GeoAdd with options
@@ -1432,14 +1431,14 @@ internal class BatchTestUtils
         _ = batch.GeoHash(key1, "Palermo");
         testData.Add(new("", "GeoHash(key1, Palermo)", true));
 
-        _ = batch.GeoHash(key1, new ValkeyValue[] { "Palermo", "Catania" });
+        _ = batch.GeoHash(key1, ["Palermo", "Catania"]);
         testData.Add(new(Array.Empty<string>(), "GeoHash(key1, [Palermo, Catania])", true));
 
         // Test GeoPosition
         _ = batch.GeoPosition(key1, "Palermo");
         testData.Add(new(new GeoPosition(13.361389, 38.115556), "GeoPosition(key1, Palermo)", true));
 
-        _ = batch.GeoPosition(key1, new ValkeyValue[] { "Palermo", "NonExistent" });
+        _ = batch.GeoPosition(key1, ["Palermo", "NonExistent"]);
         testData.Add(new(Array.Empty<GeoPosition?>(), "GeoPosition(key1, [Palermo, NonExistent])", true));
 
         // Test GeoSearch
