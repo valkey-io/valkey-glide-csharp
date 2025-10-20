@@ -2,7 +2,6 @@
 
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Valkey.Glide;
 
@@ -14,7 +13,7 @@ public sealed class PubSubMessageQueue : IDisposable
 {
     private readonly ConcurrentQueue<PubSubMessage> _messages;
     private readonly SemaphoreSlim _messageAvailable;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private volatile bool _disposed;
 
     /// <summary>

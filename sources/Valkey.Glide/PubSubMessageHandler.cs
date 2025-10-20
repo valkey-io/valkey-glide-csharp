@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
-using System.Threading;
 
 namespace Valkey.Glide;
 
@@ -21,7 +19,7 @@ internal sealed class PubSubMessageHandler : IDisposable
     private readonly MessageCallback? _callback;
     private readonly object? _context;
     private readonly PubSubMessageQueue _queue;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private volatile bool _disposed;
 
     /// <summary>
@@ -77,12 +75,9 @@ internal sealed class PubSubMessageHandler : IDisposable
     {
         ThrowIfDisposed();
 
-        if (_callback != null)
-        {
-            throw new InvalidOperationException("Cannot access message queue when callback is configured. Use callback mode or queue mode, not both.");
-        }
-
-        return _queue;
+        return _callback != null
+            ? throw new InvalidOperationException("Cannot access message queue when callback is configured. Use callback mode or queue mode, not both.")
+            : _queue;
     }
 
     /// <summary>
