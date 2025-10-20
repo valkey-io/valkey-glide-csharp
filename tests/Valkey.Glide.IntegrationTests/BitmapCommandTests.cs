@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class BitmapCommandTests(TestConfiguration config)
@@ -339,5 +341,149 @@ public class BitmapCommandTests(TestConfiguration config)
         ValkeyValue resultValue = await client.StringGetAsync(result);
         byte[] resultBytes = resultValue;
         Assert.Equal(190, resultBytes[0]); // NOT of 65 (A) is 190
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitField_GetSetIncrBy_WorksCorrectly(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Set initial value "A" (ASCII 65 = 01000001)
+        await client.StringSetAsync(key, "A");
+        
+        var subCommands = new BitFieldOptions.IBitFieldSubCommand[]
+        {
+            // Get 8 unsigned bits at offset 0
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
+            // Set 8 unsigned bits at offset 0 to 66 (ASCII 'B')
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 66),
+            // Increment by 1
+            new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 1)
+        };
+        
+        long[] results = await client.StringBitFieldAsync(key, subCommands);
+        
+        Assert.Equal(3, results.Length);
+        Assert.Equal(65, results[0]); // Original value 'A'
+        Assert.Equal(65, results[1]); // Old value before SET
+        Assert.Equal(67, results[2]); // New value after INCRBY (66 + 1 = 67 = 'C')
+        
+        // Verify final value
+        ValkeyValue finalValue = await client.StringGetAsync(key);
+        Assert.Equal("C", finalValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitFieldReadOnly_Get_WorksCorrectly(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        // Set initial value "A" (ASCII 65 = 01000001)
+        await client.StringSetAsync(key, "A");
+        
+        var readOnlyCommands = new BitFieldOptions.IBitFieldReadOnlySubCommand[]
+        {
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(0)),
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(4))
+        };
+        
+        long[] results = await client.StringBitFieldReadOnlyAsync(key, readOnlyCommands);
+        
+        Assert.Equal(3, results.Length);
+        Assert.Equal(65, results[0]);  // Full 8 bits: 01000001 = 65
+        Assert.Equal(4, results[1]);   // First 4 bits: 0100 = 4
+        Assert.Equal(1, results[2]);   // Next 4 bits: 0001 = 1
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitField_OverflowControl_WorksCorrectly(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        var subCommands = new BitFieldOptions.IBitFieldSubCommand[]
+        {
+            // Set overflow to WRAP first
+            new BitFieldOptions.BitFieldOverflow(BitFieldOptions.OverflowType.Wrap),
+            // Set u8 at offset 0 to 255 (max value)
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 255),
+            // Increment u8 at offset 0 by 1 (255 + 1 = 0 with wrap)
+            new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 1)
+        };
+        
+        long[] results = await client.StringBitFieldAsync(key, subCommands);
+        
+        Assert.Equal(2, results.Length);
+        Assert.Equal(0, results[0]);   // SET returns old value (0)
+        Assert.Equal(0, results[1]);   // 255 + 1 = 0 (wrapped)
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitField_OverflowSat_WorksCorrectly(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        var subCommands = new BitFieldOptions.IBitFieldSubCommand[]
+        {
+            new BitFieldOptions.BitFieldOverflow(BitFieldOptions.OverflowType.Sat),
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 250),
+            new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 10)
+        };
+        
+        long[] results = await client.StringBitFieldAsync(key, subCommands);
+        
+        Assert.Equal(2, results.Length);
+        Assert.Equal(0, results[0]);   // SET returns old value (0)
+        Assert.Equal(255, results[1]); // 250 + 10 = 255 (saturated at max)
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitField_OverflowFail_WorksCorrectly(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        var subCommands = new BitFieldOptions.IBitFieldSubCommand[]
+        {
+            new BitFieldOptions.BitFieldOverflow(BitFieldOptions.OverflowType.Fail),
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 255),
+            new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 1)
+        };
+        
+        long[] results = await client.StringBitFieldAsync(key, subCommands);
+        
+        Assert.Equal(2, results.Length);
+        Assert.Equal(0, results[0]);   // SET returns old value (0)
+        Assert.Equal(0, results[1]);   // 255 + 1 = null (fail), converted to 0
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task BitField_OffsetMultiplier_WorksCorrectly(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        
+        var subCommands = new BitFieldOptions.IBitFieldSubCommand[]
+        {
+            // Set first i8 at offset #0 (0 * 8 = bit 0)
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffsetMultiplier(0), 100),
+            // Set second i8 at offset #1 (1 * 8 = bit 8)
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffsetMultiplier(1), -50),
+            // Get both values back
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffsetMultiplier(0)),
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffsetMultiplier(1))
+        };
+        
+        long[] results = await client.StringBitFieldAsync(key, subCommands);
+        
+        Assert.Equal(4, results.Length);
+        Assert.Equal(0, results[0]);   // SET returns old value (0)
+        Assert.Equal(0, results[1]);   // SET returns old value (0)
+        Assert.Equal(100, results[2]); // First i8 value
+        Assert.Equal(-50, results[3]); // Second i8 value
     }
 }

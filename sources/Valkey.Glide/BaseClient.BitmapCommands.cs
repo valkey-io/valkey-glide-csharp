@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -47,5 +48,19 @@ public abstract partial class BaseClient : IBitmapCommands
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.BitOperationAsync(operation, destination, keys));
+    }
+
+    /// <inheritdoc/>
+    public async Task<long[]> StringBitFieldAsync(ValkeyKey key, BitFieldOptions.IBitFieldSubCommand[] subCommands, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.BitFieldAsync(key, subCommands));
+    }
+
+    /// <inheritdoc/>
+    public async Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands, CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        return await Command(Request.BitFieldReadOnlyAsync(key, subCommands));
     }
 }

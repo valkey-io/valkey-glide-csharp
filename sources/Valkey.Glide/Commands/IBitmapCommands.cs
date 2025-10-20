@@ -133,4 +133,51 @@ public interface IBitmapCommands
     /// </example>
     /// </remarks>
     Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Reads or modifies the array of bits representing the string stored at key based on the specified subcommands.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitfield"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="subCommands">The subcommands to execute (GET, SET, INCRBY).</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of results from the executed subcommands.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.StringSetAsync("mykey", "A"); // ASCII 'A' is 01000001
+    /// var subCommands = new IBitFieldSubCommand[] {
+    ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), 0),
+    ///     new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), 0, 66) // ASCII 'B'
+    /// };
+    /// long[] results = await client.StringBitFieldAsync("mykey", subCommands);
+    /// Console.WriteLine(results[0]); // Output: 65 (ASCII 'A')
+    /// Console.WriteLine(results[1]); // Output: 65 (old value)
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long[]> StringBitFieldAsync(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldSubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Reads the array of bits representing the string stored at key based on the specified GET subcommands.
+    /// This is a read-only variant of BITFIELD.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitfield_ro"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="subCommands">The GET subcommands to execute.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of results from the executed GET subcommands.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.StringSetAsync("mykey", "A"); // ASCII 'A' is 01000001
+    /// var subCommands = new IBitFieldReadOnlySubCommand[] {
+    ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), 0)
+    /// };
+    /// long[] results = await client.StringBitFieldReadOnlyAsync("mykey", subCommands);
+    /// Console.WriteLine(results[0]); // Output: 65 (ASCII 'A')
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
 }
