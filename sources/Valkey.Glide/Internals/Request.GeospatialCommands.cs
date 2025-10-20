@@ -97,7 +97,7 @@ internal static partial class Request
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
     public static Cmd<object[], string?[]> GeoHashAsync(ValkeyKey key, ValkeyValue[] members)
     {
-        GlideString[] args = [key.ToGlideString(), ..members.Select(m => m.ToGlideString())];
+        GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
         return new(RequestType.GeoHash, args, false, response => response.Select(item => item?.ToString()).ToArray());
     }
 
@@ -135,7 +135,7 @@ internal static partial class Request
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
     public static Cmd<object[], GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members)
     {
-        GlideString[] args = [key.ToGlideString(), ..members.Select(m => m.ToGlideString())];
+        GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
         return new(RequestType.GeoPos, args, false, response =>
             response.Select(ParseGeoPosition).ToArray());
     }
