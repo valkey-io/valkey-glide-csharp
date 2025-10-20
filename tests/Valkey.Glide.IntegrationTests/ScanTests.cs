@@ -4,13 +4,13 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class ClusterScanTests(TestConfiguration config)
+public class ScanTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClusterScanAsync_BasicIteration(GlideClusterClient client)
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestScanAsync_PrefixFiltering(BaseClient client)
     {
         // Add keys.
         string prefix = Guid.NewGuid().ToString();
@@ -26,13 +26,19 @@ public class ClusterScanTests(TestConfiguration config)
 
         Assert.Equivalent(new[] { key1, key2 }, matchingKeys);
 
+        // Get all keys with non-existent prefix.
+        options = new ScanOptions { MatchPattern = $"nonexistent:*" };
+        matchingKeys = await ExecuteScanAsync(client, options);
+
+        Assert.Empty(matchingKeys);
+
         // Remove keys.
         await client.KeyDeleteAsync(new[] { key1, key2 });
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClusterScanAsync_TypeFiltering(GlideClusterClient client)
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestScanAsync_TypeFiltering(BaseClient client)
     {
         // Add keys with different types.
         string prefix = Guid.NewGuid().ToString();
@@ -44,25 +50,31 @@ public class ClusterScanTests(TestConfiguration config)
         await client.ListLeftPushAsync(listKey, "item");
         await client.SetAddAsync(setKey, "member");
 
-        // Get all keys with matching type.
-        var options = new ScanOptions {MatchPattern = $"{prefix}:*", Type = ValkeyType.String };
+        // Get all keys with string type.
+        var options = new ScanOptions { MatchPattern = $"{prefix}:*", Type = ValkeyType.String };
         var matchingKeys = await ExecuteScanAsync(client, options);
 
         Assert.Equivalent(new[] { stringKey }, matchingKeys);
 
-        // Get all matching set keys.
+        // Get all keys with set type.
         options = new ScanOptions { MatchPattern = $"{prefix}:*", Type = ValkeyType.Set };
         matchingKeys = await ExecuteScanAsync(client, options);
 
         Assert.Equivalent(new[] { setKey }, matchingKeys);
 
+        // Get all keys with non-existent type.
+        options = new ScanOptions { MatchPattern = $"{prefix}:*", Type = ValkeyType.Hash};
+        matchingKeys = await ExecuteScanAsync(client, options);
+
+        Assert.Empty(matchingKeys);
+
         // Remove keys.
-        client.KeyDeleteAsync(new[] { stringKey, listKey, setKey });
+        await client.KeyDeleteAsync(new[] { stringKey, listKey, setKey });
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClusterScanAsync_CombinedOptions(GlideClusterClient client)
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestScanAsync_CombinedOptions(BaseClient client)
     {
         // Add keys with different prefixes and types.
         string prefix = Guid.NewGuid().ToString();
@@ -86,28 +98,34 @@ public class ClusterScanTests(TestConfiguration config)
         Assert.Equivalent(new[] { matchStringKey }, matchingKeys);
 
         // Remove keys.
-        client.KeyDeleteAsync(new[] { matchStringKey, matchListKey, otherStringKey });
+        await client.KeyDeleteAsync(new[] { matchStringKey, matchListKey, otherStringKey });
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClusterScanAsync_EmptyResults(GlideClusterClient client)
+    private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ScanOptions? options = null)
     {
-        // Get all keys with non-existent prefix.
-        var options = new ScanOptions { MatchPattern = "nonexistent:*" };
-        var matchingKeys = await ExecuteScanAsync(client, options);
-
-        Assert.Empty(matchingKeys);
-    }
-    private static async Task<ValkeyKey[]> ExecuteScanAsync(GlideClusterClient client, ScanOptions? options = null)
-    {
-        var cursor = ClusterScanCursor.InitialCursor();
         var allKeys = new List<ValkeyKey>();
 
-        while (!cursor.IsFinished)
+        if (client is GlideClient standaloneClient)
         {
-            (cursor, var keys) = await client.ScanAsync(cursor, options);
-            allKeys.AddRange(keys);
+            string cursor = "0";
+            do
+            {
+                (cursor, var keys) = await standaloneClient.ScanAsync(cursor, options);
+                allKeys.AddRange(keys);
+            } while (cursor != "0");
+        }
+        else if (client is GlideClusterClient clusterClient)
+        {
+            var cursor = ClusterScanCursor.InitialCursor();
+            while (!cursor.IsFinished)
+            {
+                (cursor, var keys) = await clusterClient.ScanAsync(cursor, options);
+                allKeys.AddRange(keys);
+            }
+        }
+        else
+        {
+            throw new ArgumentException($"Unsupported client type: {client.GetType()}");
         }
 
         return allKeys.ToArray();
