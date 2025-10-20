@@ -206,10 +206,10 @@ internal static partial class Request
         {
             args.Add(order.Value.ToLiteral().ToGlideString());
         }
-        List<ValkeyValue> optionArgs = [];
+        var optionArgs = new List<ValkeyValue>();
         options.AddArgs(optionArgs);
         args.AddRange(optionArgs.Select(a => a.ToGlideString()));
-        return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
+        return new(RequestType.GeoSearch, args.ToArray(), false, response => ProcessGeoSearchResponse(response, options));
     }
 
 
@@ -302,7 +302,7 @@ internal static partial class Request
     /// <param name="storeDistances">When true, stores distances instead of just member names.</param>
     private static void AddGeoSearchAndStoreArgs(List<GlideString> args, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
     {
-        List<ValkeyValue> shapeArgs = [];
+        var shapeArgs = new List<ValkeyValue>();
         shape.AddArgs(shapeArgs);
         args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
         if (count > 0)
@@ -340,7 +340,7 @@ internal static partial class Request
     {
         List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
         AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
-        return Simple<long>(RequestType.GeoSearchStore, [.. args]);
+        return Simple<long>(RequestType.GeoSearchStore, args.ToArray());
     }
 
     /// <summary>
@@ -359,6 +359,6 @@ internal static partial class Request
     {
         List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
         AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
-        return Simple<long>(RequestType.GeoSearchStore, [.. args]);
+        return Simple<long>(RequestType.GeoSearchStore, args.ToArray());
     }
 }
