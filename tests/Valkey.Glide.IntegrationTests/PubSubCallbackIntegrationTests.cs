@@ -13,6 +13,8 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCallbackIntegrationTests : IDisposable
 {
     private readonly List<BaseClient> _testClients = [];
+    private readonly ConcurrentBag<Exception> _callbackExceptions = [];
+    private readonly ConcurrentBag<PubSubMessage> _receivedMessages = [];
     private readonly ManualResetEventSlim _messageReceivedEvent = new(false);
     private readonly object _lockObject = new();
 
@@ -634,10 +636,7 @@ public class PubSubCallbackIntegrationTests : IDisposable
         // Publish to matching channel
         ClusterValue<object?> publishResult = await publisher.CustomCommand(["PUBLISH", testChannel, testMessage]);
         long numReceivers = Convert.ToInt64(publishResult.SingleValue);
-
-        // Note: In cluster mode, PUBLISH returns the number of clients that received the message on the node
-        // where the channel is hashed. Pattern subscriptions may not always report correctly via PUBLISH return value
-        // in cluster mode because the subscription might be on a different node. We verify message delivery via callback.
+        Assert.Equal(1L, numReceivers);
 
         // Wait for message
         bool received = _messageReceivedEvent.Wait(TimeSpan.FromSeconds(5));
