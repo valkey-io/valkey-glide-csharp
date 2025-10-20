@@ -16,6 +16,18 @@ public class ClusterScanCursorTests
     }
 
     [Fact]
+    public void Constructor()
+    {
+        Assert.Throws<ArgumentNullException>(() => new ClusterScanCursor(null!));
+
+        var cursorId = "some-cursor-id";
+        var cursor = new ClusterScanCursor(cursorId);
+
+        Assert.Equal(cursorId, cursor.CursorId);
+        Assert.False(cursor.IsFinished);
+    }
+
+    [Fact]
     public void IsFinished()
     {
         var cursorId = "finished";
@@ -23,11 +35,5 @@ public class ClusterScanCursorTests
 
         Assert.Equal(cursorId, cursor.CursorId);
         Assert.True(cursor.IsFinished);
-
-        cursorId = "some-cursor-id";
-        cursor = new ClusterScanCursor(cursorId);
-
-        Assert.Equal(cursorId, cursor.CursorId);
-        Assert.False(cursor.IsFinished);
     }
 }
