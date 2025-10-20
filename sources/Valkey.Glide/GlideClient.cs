@@ -186,7 +186,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
             if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
             if (pageSize > 0) options.Count = pageSize;
 
-            (currentCursor, string[] keys) = await Command(Request.ScanAsync(currentCursor, options));
+            (currentCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, options));
 
             if (currentOffset > 0)
             {
@@ -194,7 +194,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
                 currentOffset = 0;
             }
 
-            foreach (ValkeyKey key in keys.Select(k => (ValkeyKey)k))
+            foreach (ValkeyKey key in keys)
             {
                 yield return key;
             }
