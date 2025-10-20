@@ -40,7 +40,7 @@ internal static partial class Request
         args.Add(value.Longitude.ToGlideString());
         args.Add(value.Latitude.ToGlideString());
         args.Add(value.Member.ToGlideString());
-        return Boolean<long>(RequestType.GeoAdd, args.ToArray());
+        return Boolean<long>(RequestType.GeoAdd, [.. args]);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ internal static partial class Request
             args.Add(value.Latitude.ToGlideString());
             args.Add(value.Member.ToGlideString());
         }
-        return Simple<long>(RequestType.GeoAdd, args.ToArray());
+        return Simple<long>(RequestType.GeoAdd, [.. args]);
     }
 
     /// <summary>
@@ -97,8 +97,9 @@ internal static partial class Request
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
     public static Cmd<object[], string?[]> GeoHashAsync(ValkeyKey key, ValkeyValue[] members)
     {
-        GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
-        return new(RequestType.GeoHash, args, false, response => response.Select(item => item?.ToString()).ToArray());
+        var args = new List<GlideString> { key.ToGlideString() };
+        args.AddRange(members.Select(m => m.ToGlideString()));
+        return new(RequestType.GeoHash, [.. args], false, response => [.. response.Select(item => item?.ToString())]);
     }
 
     /// <summary>
@@ -135,9 +136,10 @@ internal static partial class Request
     /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
     public static Cmd<object[], GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members)
     {
-        GlideString[] args = [key.ToGlideString(), .. members.Select(m => m.ToGlideString())];
-        return new(RequestType.GeoPos, args, false, response =>
-            response.Select(ParseGeoPosition).ToArray());
+        var args = new List<GlideString> { key.ToGlideString() };
+        args.AddRange(members.Select(m => m.ToGlideString()));
+        return new(RequestType.GeoPos, [.. args], false, response =>
+            [.. response.Select(ParseGeoPosition)]);
     }
 
     /// <summary>
@@ -173,7 +175,7 @@ internal static partial class Request
         List<ValkeyValue> optionArgs = [];
         options.AddArgs(optionArgs);
         args.AddRange(optionArgs.Select(a => a.ToGlideString()));
-        return new(RequestType.GeoSearch, args.ToArray(), false, response => ProcessGeoSearchResponse(response, options));
+        return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
     }
 
     /// <summary>
@@ -190,7 +192,7 @@ internal static partial class Request
     public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.None)
     {
         List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
-        var shapeArgs = new List<ValkeyValue>();
+        List<ValkeyValue> shapeArgs = [];
         shape.AddArgs(shapeArgs);
         args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
         if (count > 0)
@@ -206,10 +208,10 @@ internal static partial class Request
         {
             args.Add(order.Value.ToLiteral().ToGlideString());
         }
-        var optionArgs = new List<ValkeyValue>();
+        List<ValkeyValue> optionArgs = [];
         options.AddArgs(optionArgs);
         args.AddRange(optionArgs.Select(a => a.ToGlideString()));
-        return new(RequestType.GeoSearch, args.ToArray(), false, response => ProcessGeoSearchResponse(response, options));
+        return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
     }
 
 
@@ -224,7 +226,7 @@ internal static partial class Request
     {
 
 
-        return response.Select(item =>
+        return [.. response.Select(item =>
         {
             // If no options are specified, Redis returns simple strings (member names)
             if (options == GeoRadiusOptions.None)
@@ -288,7 +290,7 @@ internal static partial class Request
             }
 
             return new GeoRadiusResult(member, distance, hash, position);
-        }).ToArray();
+        })];
     }
 
     /// <summary>
@@ -302,7 +304,7 @@ internal static partial class Request
     /// <param name="storeDistances">When true, stores distances instead of just member names.</param>
     private static void AddGeoSearchAndStoreArgs(List<GlideString> args, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
     {
-        var shapeArgs = new List<ValkeyValue>();
+        List<ValkeyValue> shapeArgs = [];
         shape.AddArgs(shapeArgs);
         args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
         if (count > 0)
@@ -340,7 +342,7 @@ internal static partial class Request
     {
         List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
         AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
-        return Simple<long>(RequestType.GeoSearchStore, args.ToArray());
+        return Simple<long>(RequestType.GeoSearchStore, [.. args]);
     }
 
     /// <summary>
@@ -359,6 +361,6 @@ internal static partial class Request
     {
         List<GlideString> args = [destinationKey.ToGlideString(), sourceKey.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
         AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
-        return Simple<long>(RequestType.GeoSearchStore, args.ToArray());
+        return Simple<long>(RequestType.GeoSearchStore, [.. args]);
     }
 }
