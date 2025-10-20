@@ -154,7 +154,7 @@ internal static partial class Request
     public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.None)
     {
         List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), fromMember.ToGlideString()];
-        List<ValkeyValue> shapeArgs = [];
+        var shapeArgs = new List<ValkeyValue>();
         shape.AddArgs(shapeArgs);
         args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
         if (count > 0)
@@ -190,7 +190,7 @@ internal static partial class Request
     public static Cmd<object[], GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.None)
     {
         List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), fromPosition.Longitude.ToGlideString(), fromPosition.Latitude.ToGlideString()];
-        List<ValkeyValue> shapeArgs = [];
+        var shapeArgs = new List<ValkeyValue>();
         shape.AddArgs(shapeArgs);
         args.AddRange(shapeArgs.Select(a => a.ToGlideString()));
         if (count > 0)
@@ -229,17 +229,17 @@ internal static partial class Request
             // If no options are specified, Redis returns simple strings (member names)
             if (options == GeoRadiusOptions.None)
             {
-                return new GeoRadiusResult(new ValkeyValue(item?.ToString()), null, null, null);
+                return new GeoRadiusResult(new ValkeyValue(item?.ToString() ?? ""), null, null, null);
             }
 
             // With options, Redis returns arrays: [member, ...additional data based on options]
             if (item is not object[] itemArray || itemArray.Length == 0)
             {
                 // Fallback for unexpected format
-                return new GeoRadiusResult(new ValkeyValue(item?.ToString()), null, null, null);
+                return new GeoRadiusResult(new ValkeyValue(item?.ToString() ?? ""), null, null, null);
             }
 
-            var member = new ValkeyValue(itemArray[0]?.ToString());
+            var member = new ValkeyValue(itemArray[0]?.ToString() ?? "");
             double? distance = null;
             long? hash = null;
             GeoPosition? position = null;
