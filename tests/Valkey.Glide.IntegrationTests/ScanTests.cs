@@ -33,7 +33,7 @@ public class ScanTests(TestConfiguration config)
         Assert.Empty(matchingKeys);
 
         // Remove keys.
-        await client.KeyDeleteAsync(new[] { key1, key2 });
+        await client.KeyDeleteAsync([key1, key2]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -63,13 +63,13 @@ public class ScanTests(TestConfiguration config)
         Assert.Equivalent(new[] { setKey }, matchingKeys);
 
         // Get all keys with non-existent type.
-        options = new ScanOptions { MatchPattern = $"{prefix}:*", Type = ValkeyType.Hash};
+        options = new ScanOptions { MatchPattern = $"{prefix}:*", Type = ValkeyType.Hash };
         matchingKeys = await ExecuteScanAsync(client, options);
 
         Assert.Empty(matchingKeys);
 
         // Remove keys.
-        await client.KeyDeleteAsync(new[] { stringKey, listKey, setKey });
+        await client.KeyDeleteAsync([stringKey, listKey, setKey]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -98,7 +98,7 @@ public class ScanTests(TestConfiguration config)
         Assert.Equivalent(new[] { matchStringKey }, matchingKeys);
 
         // Remove keys.
-        await client.KeyDeleteAsync(new[] { matchStringKey, matchListKey, otherStringKey });
+        await client.KeyDeleteAsync([matchStringKey, matchListKey, otherStringKey]);
     }
 
     private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ScanOptions? options = null)
@@ -128,6 +128,6 @@ public class ScanTests(TestConfiguration config)
             throw new ArgumentException($"Unsupported client type: {client.GetType()}");
         }
 
-        return allKeys.ToArray();
+        return [.. allKeys];
     }
 }

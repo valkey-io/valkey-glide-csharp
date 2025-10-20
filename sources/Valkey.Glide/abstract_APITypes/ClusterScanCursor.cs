@@ -37,6 +37,7 @@ public class ClusterScanCursor
     /// <param name="cursorId">The cursor ID.</param>
     internal ClusterScanCursor(string cursorId)
     {
+        ArgumentNullException.ThrowIfNull(cursorId);
         CursorId = cursorId;
     }
 }
