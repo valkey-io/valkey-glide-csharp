@@ -228,10 +228,19 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private static bool IsMessageNotification(PushKind pushKind) =>
         pushKind switch
         {
-            PushKind.PushMessage => true,      // Regular channel message
-            PushKind.PushPMessage => true,     // Pattern-based message
-            PushKind.PushSMessage => true,     // Sharded channel message
-            _ => false                         // All other types are confirmations/notifications
+            PushKind.PushMessage => true,       // Regular channel message
+            PushKind.PushPMessage => true,      // Pattern-based message
+            PushKind.PushSMessage => true,      // Sharded channel message
+            PushKind.PushDisconnection => false,
+            PushKind.PushOther => false,
+            PushKind.PushInvalidate => false,
+            PushKind.PushUnsubscribe => false,
+            PushKind.PushPUnsubscribe => false,
+            PushKind.PushSUnsubscribe => false,
+            PushKind.PushSubscribe => false,
+            PushKind.PushPSubscribe => false,
+            PushKind.PushSSubscribe => false,
+            _ => false
         };
 
     private static PubSubMessage MarshalPubSubMessage(

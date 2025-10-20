@@ -1,9 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
-
-using Valkey.Glide;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -16,8 +13,6 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCallbackIntegrationTests : IDisposable
 {
     private readonly List<BaseClient> _testClients = [];
-    private readonly ConcurrentBag<Exception> _callbackExceptions = [];
-    private readonly ConcurrentBag<PubSubMessage> _receivedMessages = [];
     private readonly ManualResetEventSlim _messageReceivedEvent = new(false);
     private readonly object _lockObject = new();
 
@@ -478,7 +473,7 @@ public class PubSubCallbackIntegrationTests : IDisposable
         Assert.True(callbackCount >= 3, "All callbacks should have been invoked despite exceptions");
 
         // Process should still be running (not crashed)
-        Assert.True(!Environment.HasShutdownStarted, "Process should not have initiated shutdown");
+        Assert.False(Environment.HasShutdownStarted, "Process should not have initiated shutdown");
     }
 
     [Fact]
