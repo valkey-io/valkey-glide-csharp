@@ -19,8 +19,8 @@ public class PubSubMessageHandlerTests
         // Act
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, context);
 
-        // Assert
-        Assert.NotNull(handler.GetQueue());
+        // Assert - GetQueue should throw when callback is configured
+        Assert.Throws<InvalidOperationException>(() => handler.GetQueue());
     }
 
     [Fact]

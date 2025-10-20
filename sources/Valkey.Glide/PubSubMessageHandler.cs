@@ -72,9 +72,16 @@ internal sealed class PubSubMessageHandler : IDisposable
     /// </summary>
     /// <returns>The message queue instance.</returns>
     /// <exception cref="ObjectDisposedException">Thrown when the handler has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when a callback is configured.</exception>
     internal PubSubMessageQueue GetQueue()
     {
         ThrowIfDisposed();
+
+        if (_callback != null)
+        {
+            throw new InvalidOperationException("Cannot access message queue when callback is configured. Use callback mode or queue mode, not both.");
+        }
+
         return _queue;
     }
 
