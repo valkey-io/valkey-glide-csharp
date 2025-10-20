@@ -13,8 +13,6 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCallbackIntegrationTests : IDisposable
 {
     private readonly List<BaseClient> _testClients = [];
-    private readonly ConcurrentBag<Exception> _callbackExceptions = [];
-    private readonly ConcurrentBag<PubSubMessage> _receivedMessages = [];
     private readonly ManualResetEventSlim _messageReceivedEvent = new(false);
     private readonly object _lockObject = new();
 
