@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-
 namespace Valkey.Glide;
 
 /// <summary>
@@ -19,7 +18,7 @@ internal sealed class PubSubMessageHandler : IDisposable
     private readonly MessageCallback? _callback;
     private readonly object? _context;
     private readonly PubSubMessageQueue _queue;
-    private readonly Lock _lock = new();
+    private readonly object _lock = new();
     private volatile bool _disposed;
 
     /// <summary>

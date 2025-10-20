@@ -13,7 +13,7 @@ public sealed class PubSubMessageQueue : IDisposable
 {
     private readonly ConcurrentQueue<PubSubMessage> _messages;
     private readonly SemaphoreSlim _messageAvailable;
-    private readonly Lock _lock = new();
+    private readonly object _lock = new();
     private volatile bool _disposed;
 
     /// <summary>
