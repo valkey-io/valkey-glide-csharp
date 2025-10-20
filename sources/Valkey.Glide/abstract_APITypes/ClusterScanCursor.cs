@@ -18,7 +18,7 @@ public class ClusterScanCursor
     /// <summary>
     /// The cursor ID for this scan iteration.
     /// </summary>
-    public string CursorId { get; internal set; }
+    public string CursorId { get; }
 
     /// <summary>
     /// Indicates whether this cursor represents the end of the scan.
