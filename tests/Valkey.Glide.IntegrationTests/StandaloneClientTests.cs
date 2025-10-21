@@ -494,7 +494,7 @@ public class StandaloneClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerUtils.StartStandaloneServer(serverName);
+            var addresses = ServerManager.StartStandaloneServer(serverName);
             var configBuilder = new StandaloneClientConfigurationBuilder()
                 .WithAddress(addresses[0].host, addresses[0].port);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
@@ -518,7 +518,7 @@ public class StandaloneClientTests(TestConfiguration config)
         }
         finally
         {
-            ServerUtils.StopServer(serverName);
+            ServerManager.StopServer(serverName);
         }
     }
 
@@ -530,7 +530,7 @@ public class StandaloneClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerUtils.StartStandaloneServer(serverName);
+            var addresses = ServerManager.StartStandaloneServer(serverName);
             var eagerConfig = new StandaloneClientConfigurationBuilder()
                 .WithAddress(addresses[0].host, addresses[0].port)
                 .WithLazyConnect(false)
@@ -548,7 +548,7 @@ public class StandaloneClientTests(TestConfiguration config)
         }
         finally
         {
-            ServerUtils.StopServer(serverName);
+            ServerManager.StopServer(serverName);
         }
     }
 }

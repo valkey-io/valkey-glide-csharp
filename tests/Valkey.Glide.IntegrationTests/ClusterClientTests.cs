@@ -595,7 +595,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerUtils.StartClusterServer(serverName);
+            var addresses = ServerManager.StartClusterServer(serverName);
             var configBuilder = new ClusterClientConfigurationBuilder()
                 .WithAddress(addresses[0].host, addresses[0].port);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
@@ -619,7 +619,7 @@ public class ClusterClientTests(TestConfiguration config)
         }
         finally
         {
-            ServerUtils.StopServer(serverName);
+            ServerManager.StopServer(serverName);
         }
     }
 
@@ -631,7 +631,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerUtils.StartClusterServer(serverName);
+            var addresses = ServerManager.StartClusterServer(serverName);
             var eagerConfig = new ClusterClientConfigurationBuilder()
                 .WithAddress(addresses[0].host, addresses[0].port)
                 .WithLazyConnect(false)
@@ -649,7 +649,7 @@ public class ClusterClientTests(TestConfiguration config)
         }
         finally
         {
-            ServerUtils.StopServer(serverName);
+            ServerManager.StopServer(serverName);
         }
     }
 }

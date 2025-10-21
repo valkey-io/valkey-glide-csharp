@@ -5,9 +5,9 @@ using System.Diagnostics;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Utility methods for managing Valkey server instances during testing
+/// Manages Valkey server instances during testing
 /// </summary>
-public static class ServerUtils
+public static class ServerManager
 {
     public static List<(string host, ushort port)> StartStandaloneServer(string name, bool useTls = false)
     {
@@ -23,6 +23,32 @@ public static class ServerUtils
     {
         string cmd = $"stop --prefix {name} {(keepLogs ? "--keep-folder" : "")}";
         RunClusterManager(cmd, true);
+    }
+
+    private static List<(string host, ushort port)> StartServer(string name, bool useTls, bool useClusterMode)
+    {
+        string cmd = $"start {(useClusterMode ? "--cluster-mode" : "")} {(useTls ? "--tls" : "")} --prefix {name} -r 3";
+        return ParseHostsFromOutput(RunClusterManager(cmd, false));
+    }
+
+    private static List<(string host, ushort port)> ParseHostsFromOutput(string output)
+    {
+        List<(string host, ushort port)> hosts = [];
+        foreach (string line in output.Split("\n"))
+        {
+            if (!line.StartsWith("CLUSTER_NODES="))
+            {
+                continue;
+            }
+
+            string[] addresses = line.Split("=")[1].Split(",");
+            foreach (string address in addresses)
+            {
+                string[] parts = address.Split(":");
+                hosts.Add((parts[0], ushort.Parse(parts[1])));
+            }
+        }
+        return hosts;
     }
 
     private static string RunClusterManager(string cmd, bool ignoreExitCode)
@@ -59,31 +85,5 @@ public static class ServerUtils
         return !ignoreExitCode && exitCode != 0
             ? throw new ApplicationException($"cluster_manager.py script failed: exit code {exitCode}.")
             : output ?? "";
-    }
-
-    private static List<(string host, ushort port)> ParseHostsFromOutput(string output)
-    {
-        List<(string host, ushort port)> hosts = [];
-        foreach (string line in output.Split("\n"))
-        {
-            if (!line.StartsWith("CLUSTER_NODES="))
-            {
-                continue;
-            }
-
-            string[] addresses = line.Split("=")[1].Split(",");
-            foreach (string address in addresses)
-            {
-                string[] parts = address.Split(":");
-                hosts.Add((parts[0], ushort.Parse(parts[1])));
-            }
-        }
-        return hosts;
-    }
-
-    private static List<(string host, ushort port)> StartServer(string name, bool useTls, bool useClusterMode)
-    {
-        string cmd = $"start {(useClusterMode ? "--cluster-mode" : "")} {(useTls ? "--tls" : "")} --prefix {name} -r 3";
-        return ParseHostsFromOutput(RunClusterManager(cmd, false));
     }
 }
