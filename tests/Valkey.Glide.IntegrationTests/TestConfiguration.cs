@@ -20,6 +20,8 @@ public class TestConfiguration : IDisposable
     // Version check helper methods for test skipping
     public static bool IsVersionLessThan(string version) => SERVER_VERSION < new Version(version);
     public static bool IsVersionLessThan(int major, int minor = 0, int build = 0) => SERVER_VERSION < new Version(major, minor, build);
+    public static bool IsVersionAtLeast(string version) => SERVER_VERSION >= new Version(version);
+    public static bool IsVersionAtLeast(int major, int minor = 0, int build = 0) => SERVER_VERSION >= new Version(major, minor, build);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()

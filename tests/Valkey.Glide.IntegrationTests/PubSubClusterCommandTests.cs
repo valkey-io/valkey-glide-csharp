@@ -53,8 +53,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
         _testClients.Add(publisherClient);
 
-        // Wait for subscription to be established
-        await Task.Delay(1000);
+        // Wait for subscription to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
@@ -120,8 +120,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
         _testClients.Add(publisherClient);
 
-        // Wait for subscription to be established
-        await Task.Delay(1000);
+        // Wait for subscription to be established - sharded subscriptions in cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage, sharded: true);
@@ -179,8 +179,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
         _testClients.Add(queryClient);
 
-        // Wait for subscription to be established
-        await Task.Delay(1000);
+        // Wait for subscription to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         string[] channels = await queryClient.PubSubChannelsAsync();
@@ -222,8 +222,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
         _testClients.Add(queryClient);
 
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
+        // Wait for subscriptions to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         string[] channels = await queryClient.PubSubChannelsAsync(pattern);
@@ -291,8 +291,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
         _testClients.Add(queryClient);
 
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
+        // Wait for subscriptions to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         Dictionary<string, long> counts = await queryClient.PubSubNumSubAsync([testChannel1, testChannel2]);
@@ -350,8 +350,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
         _testClients.Add(queryClient);
 
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
+        // Wait for subscriptions to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Get pattern count
         long patternCount = await queryClient.PubSubNumPatAsync();
@@ -403,8 +403,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
         _testClients.Add(queryClient);
 
-        // Wait for subscription to be established
-        await Task.Delay(1000);
+        // Wait for subscription to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         string[] channels = await queryClient.PubSubShardChannelsAsync();
@@ -448,8 +448,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
         _testClients.Add(queryClient);
 
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
+        // Wait for subscriptions to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         string[] channels = await queryClient.PubSubShardChannelsAsync(pattern);
@@ -521,8 +521,8 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
         _testClients.Add(queryClient);
 
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
+        // Wait for subscriptions to be established - cluster mode may need more time
+        await Task.Delay(2000);
 
         // Act
         Dictionary<string, long> counts = await queryClient.PubSubShardNumSubAsync([testChannel1, testChannel2]);

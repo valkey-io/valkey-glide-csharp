@@ -34,14 +34,17 @@ internal class MessageContainer(BaseClient client)
 
     internal void DisposeWithError(Exception? error)
     {
-        int countIncompleted = _messages.Count(message => !message.IsCompleted);
-        if (countIncompleted > 0)
-        {
-            Logger.Log(Level.Error, GetType().Name, $"Client is closing, but there are {countIncompleted} ongoing requests");
-        }
         lock (_messages)
         {
-            foreach (Message? message in _messages.Where(message => !message.IsCompleted))
+            // Create a snapshot of incomplete messages to avoid collection modification during enumeration
+            List<Message> incompleteMessages = _messages.Where(message => !message.IsCompleted).ToList();
+
+            if (incompleteMessages.Count > 0)
+            {
+                Logger.Log(Level.Error, GetType().Name, $"Client is closing, but there are {incompleteMessages.Count} ongoing requests");
+            }
+
+            foreach (Message message in incompleteMessages)
             {
                 try
                 {
