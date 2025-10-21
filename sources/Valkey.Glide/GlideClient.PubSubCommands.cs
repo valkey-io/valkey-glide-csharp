@@ -32,7 +32,7 @@ public partial class GlideClient : IPubSubStandaloneCommands
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        GlideString[] channelArgs = channels.Select(c => (GlideString)c).ToArray();
+        GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         return await Command(Request.PubSubNumSub(channelArgs));
     }
 
