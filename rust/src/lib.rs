@@ -11,6 +11,7 @@ use glide_core::{
 };
 use std::{
     ffi::{CStr, CString, c_char, c_void},
+    slice,
     sync::Arc,
 };
 use tokio::runtime::{Builder, Runtime};
@@ -439,29 +440,160 @@ pub unsafe extern "C" fn init(level: Option<Level>, file_name: *const c_char) ->
     logger_level.into()
 }
 
-/// Stub implementation for cluster scan request.
+/// Execute a cluster scan request.
 ///
 /// # Safety
-/// * All pointer parameters must be valid for the duration of the call.
+/// * `client_ptr` must be a valid Client pointer from create_client
+/// * `cursor` must be a valid C string
+/// * `args` and `arg_lengths` must be valid arrays of length `arg_count`
+/// * `args` array format: alternating parameter names and values (e.g., [b"MATCH", pattern, b"COUNT", count_str])
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn request_cluster_scan(
-    _client: *const c_void,
-    _index: usize,
-    _cursor: *const c_char,
-    _arg_count: u64,
-    _args: *const usize,
-    _arg_lengths: *const u64,
+    client_ptr: *const c_void,
+    callback_index: usize,
+    cursor: *const c_char,
+    arg_count: u64,
+    args: *const usize,
+    arg_lengths: *const u64,
 ) {
-    // Stub implementation - always fails
-    panic!("request_cluster_scan not implemented");
+    let client = unsafe {
+        Arc::increment_strong_count(client_ptr);
+        Arc::from_raw(client_ptr as *mut Client)
+    };
+    let core = client.core.clone();
+
+    let mut panic_guard = PanicGuard {
+        panicked: true,
+        failure_callback: core.failure_callback,
+        callback_index,
+    };
+
+    let cursor_id = unsafe { CStr::from_ptr(cursor) }
+        .to_str()
+        .unwrap_or("0")
+        .to_owned();
+
+    let cluster_scan_args = unsafe { parse_cluster_scan_args(args, arg_lengths, arg_count) };
+
+    let scan_state_cursor =
+        match glide_core::cluster_scan_container::get_cluster_scan_cursor(cursor_id) {
+            Ok(existing_cursor) => existing_cursor,
+            Err(_error) => redis::ScanStateRC::new(),
+        };
+
+    client.runtime.spawn(async move {
+        let mut panic_guard = PanicGuard {
+            panicked: true,
+            failure_callback: core.failure_callback,
+            callback_index,
+        };
+
+        let result = core
+            .client
+            .clone()
+            .cluster_scan(&scan_state_cursor, cluster_scan_args)
+            .await;
+        match result {
+            Ok(value) => {
+                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
+                unsafe { (core.success_callback)(callback_index, ptr) };
+            }
+            Err(err) => unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    error_message(&err),
+                    error_type(&err),
+                );
+            },
+        };
+        panic_guard.panicked = false;
+    });
+
+    panic_guard.panicked = false;
 }
 
-/// Stub implementation for removing cluster scan cursor.
+/// Remove a cluster scan cursor from the Rust core container.
+///
+/// This should be called when the C# ClusterScanCursor is disposed or finalized
+/// to clean up resources allocated by the Rust core for cluster scan operations.
 ///
 /// # Safety
-/// * `cursor_id` must point to a valid C string.
+/// * `cursor_id` must be a valid C string or null
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn remove_cluster_scan_cursor(_cursor_id: *const c_char) {
-    // Stub implementation - always fails
-    panic!("remove_cluster_scan_cursor not implemented");
+pub unsafe extern "C" fn remove_cluster_scan_cursor(cursor_id: *const c_char) {
+    if cursor_id.is_null() {
+        return;
+    }
+
+    if let Ok(cursor_str) = unsafe { CStr::from_ptr(cursor_id).to_str() } {
+        glide_core::cluster_scan_container::remove_scan_state_cursor(cursor_str.to_string());
+    }
+}
+
+/// Parse cluster scan arguments from C-style arrays.
+///
+/// # Safety
+/// * `args` and `arg_lengths` must be valid arrays of length `arg_count`
+/// * Each pointer in `args` must point to valid memory of the corresponding length
+unsafe fn parse_cluster_scan_args(
+    args: *const usize,
+    arg_lengths: *const u64,
+    arg_count: u64,
+) -> redis::ClusterScanArgs {
+    if arg_count == 0 {
+        return redis::ClusterScanArgs::builder().build();
+    }
+
+    let mut pattern: Option<&[u8]> = None;
+    let mut object_type: Option<&[u8]> = None;
+    let mut count: Option<&[u8]> = None;
+
+    let mut i = 0;
+    while i < arg_count as usize {
+        let arg_ptr = unsafe { *args.add(i) as *const u8 };
+        let arg_len = unsafe { *arg_lengths.add(i) as usize };
+        let arg = unsafe { slice::from_raw_parts(arg_ptr, arg_len) };
+
+        match arg {
+            b"MATCH" if i + 1 < arg_count as usize => {
+                i += 1;
+                let pattern_ptr = unsafe { *args.add(i) as *const u8 };
+                let pattern_len = unsafe { *arg_lengths.add(i) as usize };
+                pattern = Some(unsafe { slice::from_raw_parts(pattern_ptr, pattern_len) });
+            }
+            b"TYPE" if i + 1 < arg_count as usize => {
+                i += 1;
+                let type_ptr = unsafe { *args.add(i) as *const u8 };
+                let type_len = unsafe { *arg_lengths.add(i) as usize };
+                object_type = Some(unsafe { slice::from_raw_parts(type_ptr, type_len) });
+            }
+            b"COUNT" if i + 1 < arg_count as usize => {
+                i += 1;
+                let count_ptr = unsafe { *args.add(i) as *const u8 };
+                let count_len = unsafe { *arg_lengths.add(i) as usize };
+                count = Some(unsafe { slice::from_raw_parts(count_ptr, count_len) });
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+
+    let mut builder = redis::ClusterScanArgs::builder();
+    if let Some(pattern) = pattern {
+        builder = builder.with_match_pattern(pattern);
+    }
+    if let Some(count_bytes) = count {
+        if let Ok(count_str) = std::str::from_utf8(count_bytes) {
+            if let Ok(count_val) = count_str.parse::<u32>() {
+                builder = builder.with_count(count_val);
+            }
+        }
+    }
+    if let Some(type_bytes) = object_type {
+        if let Ok(type_str) = std::str::from_utf8(type_bytes) {
+            builder = builder.with_object_type(redis::ObjectType::from(type_str.to_string()));
+        }
+    }
+    builder.build()
 }
