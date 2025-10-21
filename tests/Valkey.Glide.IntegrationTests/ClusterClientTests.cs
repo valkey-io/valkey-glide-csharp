@@ -603,17 +603,17 @@ public class ClusterClientTests(TestConfiguration config)
 
             // Create reference client.
             using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await TestUtils.GetConnectionCount(referenceClient);
+            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
 
             // Create lazy client (does not connect immediately).
             using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
-            var connectCount = await TestUtils.GetConnectionCount(referenceClient);
+            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
 
             Assert.Equal(initialCount, connectCount);
 
             // First command establishes connection.
             await lazyClient.PingAsync();
-            var commandCount = await TestUtils.GetConnectionCount(referenceClient);
+            var commandCount = await ConnectionInfo.GetConnectionCount(referenceClient);
 
             Assert.True(connectCount < commandCount);
         }
@@ -639,11 +639,11 @@ public class ClusterClientTests(TestConfiguration config)
 
             // Create reference client.
             using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await TestUtils.GetConnectionCount(referenceClient);
+            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
 
             // Create eager client (connects immediately).
             using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var connectCount = await TestUtils.GetConnectionCount(referenceClient);
+            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
 
             Assert.True(initialCount < connectCount);
         }
