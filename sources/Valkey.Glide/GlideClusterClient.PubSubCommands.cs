@@ -44,7 +44,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        GlideString[] channelArgs = channels.Select(c => (GlideString)c).ToArray();
+        GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         // In cluster mode, route to all primaries to aggregate subscriber counts
         return await Command(Request.PubSubNumSub(channelArgs), Route.AllPrimaries);
     }
@@ -77,7 +77,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        GlideString[] channelArgs = channels.Select(c => (GlideString)c).ToArray();
+        GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         // In cluster mode, route to all primaries to aggregate shard subscriber counts
         return await Command(Request.PubSubShardNumSub(channelArgs), Route.AllPrimaries);
     }
