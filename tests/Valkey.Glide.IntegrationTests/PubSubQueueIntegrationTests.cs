@@ -227,7 +227,7 @@ public class PubSubQueueIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task QueueBasedRetrieval_GetMessageAsync_BlocksUntilMessageAvailable()
+    public async Task QueueBasedRetrieval_GetMessageAsync_BlocksAndSupportsCancellation()
     {
         // Arrange
         string testChannel = $"queue-async-{Guid.NewGuid()}";
@@ -254,59 +254,28 @@ public class PubSubQueueIntegrationTests : IDisposable
         PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
         Assert.NotNull(queue);
 
-        // Start waiting for message (should block)
+        // Test 1: Verify blocking behavior
         Task<PubSubMessage> getMessageTask = Task.Run(async () =>
         {
             using CancellationTokenSource cts = new(TimeSpan.FromSeconds(10));
             return await queue.GetMessageAsync(cts.Token);
         });
 
-        // Give the task time to start waiting
         await Task.Delay(100);
-
-        // Verify task is still waiting
         Assert.False(getMessageTask.IsCompleted, "GetMessageAsync should be waiting for message");
 
-        // Now publish the message
         await publisherClient.CustomCommand(["PUBLISH", testChannel, testMessage]);
-
-        // Wait for message to be received
         PubSubMessage receivedMessage = await getMessageTask;
 
-        // Assert
         Assert.NotNull(receivedMessage);
         Assert.Equal(testMessage, receivedMessage.Message);
         Assert.Equal(testChannel, receivedMessage.Channel);
-    }
 
-    [Fact]
-    public async Task QueueBasedRetrieval_GetMessageAsync_WithCancellation_ThrowsOperationCanceledException()
-    {
-        // Arrange
-        string testChannel = $"queue-cancel-{Guid.NewGuid()}";
-
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel);
-
-        var subscriberConfig = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
-
-        // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        await Task.Delay(1000);
-
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-
-        using CancellationTokenSource cts = new(TimeSpan.FromMilliseconds(500));
-
-        // Assert
+        // Test 2: Verify cancellation support
+        using CancellationTokenSource cts2 = new(TimeSpan.FromMilliseconds(500));
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
         {
-            await queue.GetMessageAsync(cts.Token);
+            await queue.GetMessageAsync(cts2.Token);
         });
     }
 

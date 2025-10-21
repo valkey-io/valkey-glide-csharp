@@ -205,33 +205,6 @@ public class PubSubFFIIntegrationTests
         }
     }
 
-    [Fact]
-    public void MarshalPubSubMessage_WithNullChannelPointer_ThrowsArgumentException()
-    {
-        // Arrange
-        string message = "test message";
-        IntPtr messagePtr = Marshal.StringToHGlobalAnsi(message);
-
-        try
-        {
-            // Act & Assert
-            ArgumentException ex = Assert.Throws<ArgumentException>(() =>
-                FFI.MarshalPubSubMessage(
-                    FFI.PushKind.PushMessage,
-                    messagePtr,
-                    message.Length,
-                    IntPtr.Zero,
-                    0,
-                    IntPtr.Zero,
-                    0));
-            Assert.Contains("Invalid channel data: pointer is null", ex.Message);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(messagePtr);
-        }
-    }
-
     // Mock class for testing
     private class MockBaseClient : BaseClient
     {

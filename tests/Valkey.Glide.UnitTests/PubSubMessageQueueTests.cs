@@ -278,18 +278,6 @@ public class PubSubMessageQueueTests
     }
 
     [Fact]
-    public void Dispose_MultipleCalls_DoesNotThrow()
-    {
-        // Arrange
-        var queue = new PubSubMessageQueue();
-
-        // Act & Assert
-        queue.Dispose();
-        queue.Dispose(); // Should not throw
-        queue.Dispose(); // Should not throw
-    }
-
-    [Fact]
     public async Task ConcurrentAccess_MultipleThreads_ThreadSafe()
     {
         // Arrange

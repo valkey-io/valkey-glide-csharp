@@ -79,7 +79,7 @@ public class PubSubMessageHandlerTests
     }
 
     [Fact]
-    public void HandleMessage_CallbackThrowsException_LogsErrorAndContinues()
+    public void HandleMessage_CallbackThrowsException_DoesNotPropagate()
     {
         // Arrange
         bool exceptionThrown = false;
@@ -93,12 +93,10 @@ public class PubSubMessageHandlerTests
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
         PubSubMessage message = new PubSubMessage("test-message", "test-channel");
 
-        // Act & Assert - Should not throw
+        // Act & Assert - Exception should be caught and not propagate
         handler.HandleMessage(message);
 
         Assert.True(exceptionThrown);
-        // Note: We can't easily verify logging without mocking the static Logger class
-        // The important thing is that the exception doesn't propagate
     }
 
     [Fact]
@@ -202,20 +200,6 @@ public class PubSubMessageHandlerTests
         handler.Dispose();
         handler.Dispose();
         handler.Dispose();
-    }
-
-    [Fact]
-    public void Dispose_WithQueueDisposalError_LogsWarningAndContinues()
-    {
-        // Arrange
-        using PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
-
-        // Act
-        handler.Dispose();
-
-        // The queue disposal should complete normally, but we test the error handling path
-        // by verifying the handler can be disposed without throwing
-        Assert.True(true); // Test passes if no exception is thrown
     }
 
     [Fact]

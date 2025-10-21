@@ -90,22 +90,4 @@ public class PubSubGracefulShutdownTests
         Assert.Equal(3, messagesProcessed);
         Assert.True(processingCompleted);
     }
-
-    [Fact]
-    public async Task TimeoutBasedWaiting_CompletesWithinTimeout()
-    {
-        TimeSpan timeout = TimeSpan.FromMilliseconds(500);
-        Task longRunningTask = Task.Delay(TimeSpan.FromSeconds(10));
-        bool completed = longRunningTask.Wait(timeout);
-        Assert.False(completed);
-    }
-
-    [Fact]
-    public async Task TimeoutBasedWaiting_QuickTask_CompletesBeforeTimeout()
-    {
-        TimeSpan timeout = TimeSpan.FromSeconds(5);
-        Task quickTask = Task.Delay(TimeSpan.FromMilliseconds(100));
-        bool completed = quickTask.Wait(timeout);
-        Assert.True(completed);
-    }
 }

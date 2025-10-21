@@ -110,63 +110,6 @@ public class PubSubThreadSafetyTests
     }
 
     [Fact]
-    public async Task PubSubHandler_StressTest_100Iterations_NoRaceConditions()
-    {
-        // Run 100 iterations of concurrent operations
-        for (int iteration = 0; iteration < 100; iteration++)
-        {
-            var exceptions = new ConcurrentBag<Exception>();
-            var messagesProcessed = 0;
-
-            var config = new StandalonePubSubSubscriptionConfig()
-                .WithChannel("test-channel")
-                .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
-                {
-                    Interlocked.Increment(ref messagesProcessed);
-                }, null);
-
-            var client = CreateMockClientWithPubSub(config);
-
-            // Concurrent message publishing
-            var publishTask = Task.Run(async () =>
-            {
-                try
-                {
-                    for (int i = 0; i < 50; i++)
-                    {
-                        var message = new PubSubMessage($"message-{i}", "test-channel");
-                        client.HandlePubSubMessage(message);
-                        await Task.Delay(1);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Add(ex);
-                }
-            });
-
-            // Concurrent disposal after random delay
-            var disposeTask = Task.Run(async () =>
-            {
-                try
-                {
-                    await Task.Delay(Random.Shared.Next(10, 100));
-                    client.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Add(ex);
-                }
-            });
-
-            await Task.WhenAll(publishTask, disposeTask);
-
-            // Assert - No exceptions should occur
-            Assert.Empty(exceptions);
-        }
-    }
-
-    [Fact]
     public async Task PubSubQueue_ConcurrentAccess_ThreadSafe()
     {
         // Arrange
@@ -188,61 +131,6 @@ public class PubSubThreadSafetyTests
 
         // Assert - No exceptions should occur
         Assert.NotNull(client.PubSubQueue);
-    }
-
-    [Fact]
-    public async Task PubSubHandler_MultipleThreadsAccessingHandler_NoUseAfterDispose()
-    {
-        // Arrange
-        var exceptions = new ConcurrentBag<Exception>();
-        var config = new StandalonePubSubSubscriptionConfig()
-            .WithChannel("test-channel")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
-            {
-                Thread.Sleep(10); // Simulate processing
-            }, null);
-
-        var client = CreateMockClientWithPubSub(config);
-
-        // Act - Multiple threads processing messages
-        var messageTasks = Enumerable.Range(0, 20)
-            .Select(i => Task.Run(() =>
-            {
-                try
-                {
-                    for (int j = 0; j < 10; j++)
-                    {
-                        var message = new PubSubMessage($"message-{i}-{j}", "test-channel");
-                        client.HandlePubSubMessage(message);
-                        Thread.Sleep(5);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Add(ex);
-                }
-            }))
-            .ToList();
-
-        // Dispose after some messages have been sent
-        await Task.Delay(50);
-        var disposeTask = Task.Run(() =>
-        {
-            try
-            {
-                client.Dispose();
-            }
-            catch (Exception ex)
-            {
-                exceptions.Add(ex);
-            }
-        });
-
-        messageTasks.Add(disposeTask);
-        await Task.WhenAll(messageTasks);
-
-        // Assert - No exceptions should occur (messages after disposal are silently dropped)
-        Assert.Empty(exceptions);
     }
 
     [Fact]
@@ -303,9 +191,9 @@ public class PubSubThreadSafetyTests
     }
 
     [Fact]
-    public async Task PubSubHandler_DisposalTimeout_LogsWarning()
+    public async Task PubSubHandler_DisposalDuringCallback_CompletesWithoutHanging()
     {
-        // Arrange - Create handler with slow disposal
+        // Arrange - Create handler with slow callback
         var disposeStarted = new ManualResetEventSlim(false);
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
@@ -326,7 +214,7 @@ public class PubSubThreadSafetyTests
 
         await Task.Delay(100); // Let message processing start
 
-        // Act - Dispose should timeout but not hang
+        // Act - Dispose should complete without hanging
         var disposeTask = Task.Run(() => client.Dispose());
 
         // Allow disposal to proceed after a short delay

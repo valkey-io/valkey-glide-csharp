@@ -238,48 +238,6 @@ public class PubSubConfigurationTests
 
     #endregion
 
-    #region FFI Marshaling Tests
-
-    [Fact]
-    public void ConnectionConfig_ToFfi_WithPubSubConfig_MarshalsProperly()
-    {
-        // Arrange
-        var pubSubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel("test-channel")
-            .WithPattern("test-*");
-
-        // Act - Test through the builder which creates the internal ConnectionConfig
-        var builder = new StandaloneClientConfigurationBuilder()
-            .WithAddress("localhost", 6379)
-            .WithPubSubSubscriptions(pubSubConfig);
-
-        var config = builder.Build();
-        var ffiConfig = config.Request.ToFfi();
-
-        // Assert
-        Assert.NotNull(ffiConfig);
-        // Note: We can't directly test the FFI marshaling without access to the internal structures,
-        // but we can verify that the ToFfi() method doesn't throw and the config is passed through
-    }
-
-    [Fact]
-    public void ConnectionConfig_ToFfi_WithoutPubSubConfig_MarshalsProperly()
-    {
-        // Arrange & Act - Test through the builder without PubSub config
-        var builder = new StandaloneClientConfigurationBuilder()
-            .WithAddress("localhost", 6379);
-
-        var config = builder.Build();
-        var ffiConfig = config.Request.ToFfi();
-
-        // Assert
-        Assert.NotNull(ffiConfig);
-        // Note: We can't directly test the FFI marshaling without access to the internal structures,
-        // but we can verify that the ToFfi() method doesn't throw when PubSubSubscriptions is null
-    }
-
-    #endregion
-
     #region Validation Tests
 
     [Fact]
