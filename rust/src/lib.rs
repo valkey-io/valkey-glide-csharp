@@ -438,3 +438,30 @@ pub unsafe extern "C" fn init(level: Option<Level>, file_name: *const c_char) ->
     let logger_level = logger_core::init(level.map(|level| level.into()), file_name_as_str);
     logger_level.into()
 }
+
+/// Stub implementation for cluster scan request.
+///
+/// # Safety
+/// * All pointer parameters must be valid for the duration of the call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn request_cluster_scan(
+    _client: *const c_void,
+    _index: usize,
+    _cursor: *const c_char,
+    _arg_count: u64,
+    _args: *const usize,
+    _arg_lengths: *const u64,
+) {
+    // Stub implementation - always fails
+    panic!("request_cluster_scan not implemented");
+}
+
+/// Stub implementation for removing cluster scan cursor.
+///
+/// # Safety
+/// * `cursor_id` must point to a valid C string.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn remove_cluster_scan_cursor(_cursor_id: *const c_char) {
+    // Stub implementation - always fails
+    panic!("remove_cluster_scan_cursor not implemented");
+}
