@@ -1,0 +1,238 @@
+version: "3"
+
+vars:
+    TEST_RESULTS_DIR: testresults
+    REPORTS_DIR: reports
+    COVERAGE_FILE: "{{.TEST_RESULTS_DIR}}/coverage.cobertura.xml"
+    UNIT_TEST_PROJECT: tests/Valkey.Glide.UnitTests/Valkey.Glide.UnitTests.csproj
+    INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
+    FRAMEWORK: '{{.FRAMEWORK | default "all"}}'
+    FRAMEWORK_FLAG: '{{if ne .FRAMEWORK "all"}}--framework {{.FRAMEWORK}}{{end}}'
+
+tasks:
+    clean:
+        desc: Clean test results and reports directories
+        cmds:
+            - rm -rf {{.TEST_RESULTS_DIR}}
+            - rm -rf {{.REPORTS_DIR}}
+            - mkdir -p {{.TEST_RESULTS_DIR}}
+            - mkdir -p {{.REPORTS_DIR}}
+
+    install-tools:
+        desc: Install required tools for coverage reporting
+        cmds:
+            - dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.4.12
+        status:
+            - which reportgenerator
+
+    test:unit:
+        desc: Run unit tests only
+        deps: [clean]
+        cmds:
+            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
+
+    test:integration:
+        desc: Run integration tests only
+        deps: [clean]
+        cmds:
+            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
+
+    test:coverage:unit:
+        desc: Run unit tests with coverage collection
+        deps: [clean]
+        cmds:
+            - dotnet test {{.UNIT_TEST_PROJECT}}
+              --configuration Release
+              --collect:"XPlat Code Coverage"
+              --results-directory {{.TEST_RESULTS_DIR}}
+              --logger trx
+              --logger "console;verbosity=detailed"
+              --logger "html;LogFileName=TestReport.html"
+              {{.FRAMEWORK_FLAG}}
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+    test:coverage:integration:
+        desc: Run integration tests with coverage collection
+        deps: [clean]
+        cmds:
+            - dotnet test {{.INTEGRATION_TEST_PROJECT}}
+              --configuration Release
+              --collect:"XPlat Code Coverage"
+              --results-directory {{.TEST_RESULTS_DIR}}
+              --logger trx
+              --logger "console;verbosity=detailed"
+              --logger "html;LogFileName=TestReport.html"
+              {{.FRAMEWORK_FLAG}}
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+    test:coverage:all:
+        desc: Run all tests with coverage collection
+        deps: [clean]
+        cmds:
+            - dotnet test
+              --configuration Release
+              --collect:"XPlat Code Coverage"
+              --results-directory {{.TEST_RESULTS_DIR}}
+              --logger trx
+              --logger "console;verbosity=detailed"
+              --logger "html;LogFileName=TestReport.html"
+              {{.FRAMEWORK_FLAG}}
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+    coverage:merge:
+        desc: Merge coverage files if multiple exist
+        cmds:
+            - |
+                COVERAGE_FILES=$(find {{.TEST_RESULTS_DIR}} -name "coverage.cobertura.xml" -type f)
+                if [ $(echo "$COVERAGE_FILES" | wc -l) -gt 1 ]; then
+                  echo "Multiple coverage files found, merging..."
+                  reportgenerator \
+                    -reports:"{{.TEST_RESULTS_DIR}}/**/coverage.cobertura.xml" \
+                    -targetdir:{{.TEST_RESULTS_DIR}} \
+                    -reporttypes:Cobertura \
+                    -assemblyfilters:"+Valkey.Glide*"
+                  mv {{.TEST_RESULTS_DIR}}/Cobertura.xml {{.COVERAGE_FILE}}
+                else
+                  echo "Single coverage file found, copying..."
+                  cp $(echo "$COVERAGE_FILES" | head -1) {{.COVERAGE_FILE}}
+                fi
+
+    coverage:report:
+        desc: Generate HTML coverage report from collected data
+        deps: [install-tools, coverage:merge]
+        cmds:
+            - reportgenerator
+              -reports:{{.COVERAGE_FILE}}
+              -targetdir:{{.REPORTS_DIR}}
+              -reporttypes:"Html;JsonSummary"
+              -assemblyfilters:"+Valkey.Glide*"
+              -classfilters:"-*.Tests*"
+            - echo "Coverage report generated in {{.REPORTS_DIR}}/index.html"
+
+    coverage:summary:
+        desc: Display coverage summary from the report
+        cmds:
+            - |
+                if [ -f "{{.REPORTS_DIR}}/Summary.json" ]; then
+                  echo "=== Coverage Summary ==="
+                  LINE_COVERAGE=$(cat {{.REPORTS_DIR}}/Summary.json | jq -r '.summary.linecoverage')
+                  BRANCH_COVERAGE=$(cat {{.REPORTS_DIR}}/Summary.json | jq -r '.summary.branchcoverage')
+                  echo "Line Coverage: ${LINE_COVERAGE}%"
+                  echo "Branch Coverage: ${BRANCH_COVERAGE}%"
+                else
+                  echo "No coverage summary found. Run 'task coverage:report' first."
+                  exit 1
+                fi
+
+    coverage:
+        desc: Run all tests with coverage and generate HTML report
+        cmds:
+            - task: test:coverage:all
+            - task: coverage:report
+            - task: coverage:summary
+
+    coverage:unit:
+        desc: Run unit tests with coverage and generate HTML report
+        cmds:
+            - task: test:coverage:unit
+            - task: coverage:report
+            - task: coverage:summary
+
+    coverage:integration:
+        desc: Run integration tests with coverage and generate HTML report
+        cmds:
+            - task: test:coverage:integration
+            - task: coverage:report
+            - task: coverage:summary
+
+    benchmark:
+        desc: Run benchmarks with Redis server (FRAMEWORK must be net8.0 or net6.0)
+        dir: valkey-glide/benchmarks
+        cmds:
+            - redis-server --save "" --daemonize "yes"
+            - |
+                case "{{.FRAMEWORK}}" in
+                    "net8.0"|"net6.0")
+                        echo "Running benchmarks for {{.FRAMEWORK}}..."
+                        ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework {{.FRAMEWORK}}
+
+                        echo ""
+                        echo "=== Benchmark Results ==="
+
+                        # Find the most recent CSV results file
+                        RESULTS_FILE=$(find results -name "*.csv" -type f -exec ls -t {} + | head -1)
+
+                        if [ -f "$RESULTS_FILE" ]; then
+                            echo "Results from: $RESULTS_FILE"
+                            echo ""
+
+                            # Parse and format CSV as 3 separate tables
+                            echo "=== Table 1: Basic Performance Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-10s %-8s %-10s %-8s %-12s\n", "Language", "Client", "Cluster", "Tasks", "TPS"
+                                printf "%-10s %-8s %-10s %-8s %-12s\n", "--------", "------", "-------", "-----", "---"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-10s %-8s %-10s %-8s %-12s\n", $1, $2, $3, $4, $7
+                            }' "$RESULTS_FILE"
+
+                            echo ""
+                            echo "=== Table 2: GET (non-existing) Operation Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "GET Avg (ms)", "GET Std Dev", "GET P50 (ms)", "GET P90 (ms)", "GET P99 (ms)"
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "-----------", "-----------", "-----------", "-----------", "-----------"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-15.3f %-15.6f %-15s %-15s %-15s\n", $11, $12, $8, $9, $10
+                            }' "$RESULTS_FILE"
+
+                            echo ""
+                            echo "=== Table 3: GET (existing) Operation Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "GET Avg (ms)", "GET Std Dev", "GET P50 (ms)", "GET P90 (ms)", "GET P99 (ms)"
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "-----------", "-----------", "-----------", "-----------", "-----------"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-15.3f %-15.6f %-15s %-15s %-15s\n", $16, $17, $13, $14, $15
+                            }' "$RESULTS_FILE"
+
+                            echo ""
+                            echo "=== Table 4: SET Operation Metrics ==="
+                            awk -F',' '
+                            BEGIN {
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "SET Avg (ms)", "SET Std Dev", "SET P50 (ms)", "SET P90 (ms)", "SET P99 (ms)"
+                                printf "%-15s %-15s %-15s %-15s %-15s\n", "-----------", "-----------", "-----------", "-----------", "-----------"
+                            }
+                            NR > 1 && NF > 1 {
+                                printf "%-15.3f %-15.6f %-15s %-15s %-15s\n", $21, $22, $18, $19, $20
+                            }' "$RESULTS_FILE"
+                        else
+                            echo "No benchmark results found in results/ directory"
+                            exit 1
+                        fi
+                        ;;
+                    *)
+                        echo "Error: FRAMEWORK must be either 'net8.0' or 'net6.0', got '{{.FRAMEWORK}}'"
+                        exit 1
+                        ;;
+                esac
+
+    build:
+        desc: Build the solution
+        cmds:
+            - dotnet build --configuration Release {{.FRAMEWORK_FLAG}}
+
+    test:
+        desc: Build and run all tests
+        deps: [build]
+        cmds:
+            - task: test:coverage:all
+
+    default:
+        desc: Default task - build and run coverage
+        cmds:
+            - task: build
+            - task: coverage

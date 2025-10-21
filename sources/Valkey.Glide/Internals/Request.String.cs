@@ -76,7 +76,7 @@ internal partial class Request
         List<GlideString> args = [key.ToGlideString()];
         if (expiry.HasValue)
         {
-            args.Add(ExpiryKeyword.ToGlideString());
+            args.Add(ExKeyword.ToGlideString());
             args.Add(((long)expiry.Value.TotalSeconds).ToGlideString());
         }
         else
@@ -95,7 +95,7 @@ internal partial class Request
             DateTimeKind.Utc => ((DateTimeOffset)expiry).ToUnixTimeSeconds(),
             _ => throw new ArgumentException("Expiry time must be either Utc or Local", nameof(expiry))
         };
-        GlideString[] args = [key.ToGlideString(), ExpiryAtKeyword.ToGlideString(), unixTimestamp.ToGlideString()];
+        GlideString[] args = [key.ToGlideString(), ExAtKeyword.ToGlideString(), unixTimestamp.ToGlideString()];
         return new(RequestType.GetEx, args, true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
     }
 #pragma warning restore IDE0072 // Add missing cases

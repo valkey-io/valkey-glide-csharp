@@ -7,7 +7,7 @@ on:
     workflow_dispatch:
         inputs:
             version:
-                description: "The release version of GLIDE, formatted as *.*.* or *.*.*-rc*"
+                description: "The release version of GLIDE, formatted as v*.*.* or v*.*.*-rc*"
                 required: true
             nuget_publish:
                 description: "Publish to NuGet"
@@ -54,12 +54,14 @@ jobs:
               shell: bash
               run: |
                   if ${{ github.event_name == 'workflow_dispatch' }}; then
-                      R_VERSION="${{ env.INPUT_VERSION }}"
+                      RAW_VERSION="${{ env.INPUT_VERSION }}"
                   else
-                      R_VERSION=${{ github.ref_name }}
+                      RAW_VERSION=${{ github.ref_name }}
                   fi
+                  # Strip leading 'v' if present
+                  R_VERSION="${RAW_VERSION#v}"
                   echo "RELEASE_VERSION=${R_VERSION}" >> $GITHUB_ENV
-                  echo "Release version detected: $R_VERSION"
+                  echo "Release version detected: $R_VERSION (raw: $RAW_VERSION)"
                   echo "RELEASE_VERSION=$R_VERSION" >> $GITHUB_OUTPUT
               env:
                   INPUT_VERSION: ${{ github.event.inputs.version }}
