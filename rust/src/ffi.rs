@@ -71,14 +71,93 @@ pub struct ConnectionConfig {
     pub protocol: redis::ProtocolVersion,
     /// zero pointer is valid, means no client name is given (`None`)
     pub client_name: *const c_char,
+    pub has_pubsub_config: bool,
+    pub pubsub_config: PubSubConfigInfo,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
-    pub pubsub_subscriptions: Option<redis::PubSubSubscriptionInfo>,
     pub inflight_requests_limit: Option<u32>,
     pub otel_endpoint: Option<String>,
     pub otel_flush_interval_ms: Option<u64>,
     */
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct PubSubConfigInfo {
+    pub channels_ptr: *const *const c_char,
+    pub channel_count: u32,
+    pub patterns_ptr: *const *const c_char,
+    pub pattern_count: u32,
+    pub sharded_channels_ptr: *const *const c_char,
+    pub sharded_channel_count: u32,
+}
+
+/// Convert a C string array to a Vec of Vec<u8>
+///
+/// # Safety
+///
+/// * `ptr` must point to an array of `count` valid C string pointers
+/// * Each C string pointer must be valid and null-terminated
+unsafe fn convert_string_array(ptr: *const *const c_char, count: u32) -> Vec<Vec<u8>> {
+    if ptr.is_null() || count == 0 {
+        return Vec::new();
+    }
+
+    let slice = unsafe { std::slice::from_raw_parts(ptr, count as usize) };
+    slice
+        .iter()
+        .map(|&str_ptr| {
+            let c_str = unsafe { CStr::from_ptr(str_ptr) };
+            c_str.to_bytes().to_vec()
+        })
+        .collect()
+}
+
+/// Convert PubSubConfigInfo to the format expected by glide-core
+///
+/// # Safety
+///
+/// * All pointers in `config` must be valid or null
+/// * String arrays must contain valid C strings
+unsafe fn convert_pubsub_config(
+    config: &PubSubConfigInfo,
+) -> std::collections::HashMap<redis::PubSubSubscriptionKind, std::collections::HashSet<Vec<u8>>> {
+    use redis::PubSubSubscriptionKind;
+    use std::collections::{HashMap, HashSet};
+
+    let mut subscriptions = HashMap::new();
+
+    // Convert exact channels
+    if config.channel_count > 0 {
+        let channels = unsafe { convert_string_array(config.channels_ptr, config.channel_count) };
+        subscriptions.insert(
+            PubSubSubscriptionKind::Exact,
+            channels.into_iter().collect::<HashSet<_>>(),
+        );
+    }
+
+    // Convert patterns
+    if config.pattern_count > 0 {
+        let patterns = unsafe { convert_string_array(config.patterns_ptr, config.pattern_count) };
+        subscriptions.insert(
+            PubSubSubscriptionKind::Pattern,
+            patterns.into_iter().collect::<HashSet<_>>(),
+        );
+    }
+
+    // Convert sharded channels
+    if config.sharded_channel_count > 0 {
+        let sharded = unsafe {
+            convert_string_array(config.sharded_channels_ptr, config.sharded_channel_count)
+        };
+        subscriptions.insert(
+            PubSubSubscriptionKind::Sharded,
+            sharded.into_iter().collect::<HashSet<_>>(),
+        );
+    }
+
+    subscriptions
 }
 
 /// Convert connection configuration to a corresponding object.
@@ -147,9 +226,18 @@ pub(crate) unsafe fn create_connection_request(
         } else {
             None
         },
+        pubsub_subscriptions: if config.has_pubsub_config {
+            let subscriptions = unsafe { convert_pubsub_config(&config.pubsub_config) };
+            if subscriptions.is_empty() {
+                None
+            } else {
+                Some(subscriptions)
+            }
+        } else {
+            None
+        },
         // TODO below
         periodic_checks: None,
-        pubsub_subscriptions: None,
         inflight_requests_limit: None,
         lazy_connect: false,
     }
@@ -593,3 +681,29 @@ pub(crate) unsafe fn get_pipeline_options(
         PipelineRetryStrategy::new(info.retry_server_error, info.retry_connection_error),
     )
 }
+
+/// FFI callback function type for PubSub messages.
+/// This callback is invoked by Rust when a PubSub message is received.
+/// The callback signature matches the C# expectations for marshaling PubSub data.
+///
+/// # Parameters
+/// * `push_kind` - The type of push notification (message, pmessage, smessage, etc.)
+/// * `message_ptr` - Pointer to the raw message bytes
+/// * `message_len` - Length of the message data in bytes
+/// * `channel_ptr` - Pointer to the raw channel name bytes
+/// * `channel_len` - Length of the channel name in bytes
+/// * `pattern_ptr` - Pointer to the raw pattern bytes (null if no pattern)
+/// * `pattern_len` - Length of the pattern in bytes (0 if no pattern)
+pub type PubSubCallback = unsafe extern "C" fn(
+    push_kind: u32,
+    message_ptr: *const u8,
+    message_len: i64,
+    channel_ptr: *const u8,
+    channel_len: i64,
+    pattern_ptr: *const u8,
+    pattern_len: i64,
+);
+
+// PubSub callback functions removed - using instance-based callbacks instead.
+// The pubsub_callback parameter in create_client will be used to configure glide-core's
+// PubSub message handler when full integration is implemented.
