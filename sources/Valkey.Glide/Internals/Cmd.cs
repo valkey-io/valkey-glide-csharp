@@ -102,6 +102,11 @@ internal class Cmd<R, T> : ICmd
         RequestType.ObjectIdleTime => ["OBJECT", "IDLETIME"],
         RequestType.ObjectRefCount => ["OBJECT", "REFCOUNT"],
         RequestType.Command_ => ["COMMAND"],
+        RequestType.PubSubChannels => ["PUBSUB", "CHANNELS"],
+        RequestType.PubSubNumSub => ["PUBSUB", "NUMSUB"],
+        RequestType.PubSubNumPat => ["PUBSUB", "NUMPAT"],
+        RequestType.PubSubShardChannels => ["PUBSUB", "SHARDCHANNELS"],
+        RequestType.PubSubShardNumSub => ["PUBSUB", "SHARDNUMSUB"],
         _ => [requestType.ToString().ToUpper()]
     };
 #pragma warning restore IDE0072 // Populate switch
