@@ -78,6 +78,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PublishAsync_ShardedChannel_WithNoSubscribers_ReturnsZero()
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "Sharded PubSub is supported since 7.0.0"
+        );
+
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
         GlideClusterClient client = await GlideClusterClient.CreateClient(config);
@@ -96,6 +101,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PublishAsync_ShardedChannel_WithSubscriber_ReturnsSubscriberCount()
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "Sharded PubSub is supported since 7.0.0"
+        );
+
         // Arrange
         string testChannel = $"test-shard-{Guid.NewGuid()}";
         string testMessage = "Hello from sharded PublishAsync";
@@ -360,6 +370,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsArray()
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "Sharded PubSub is supported since 7.0.0"
+        );
+
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
         GlideClusterClient client = await GlideClusterClient.CreateClient(config);
@@ -376,6 +391,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "Sharded PubSub is supported since 7.0.0"
+        );
+
         // Arrange
         string testChannel = $"test-shard-{Guid.NewGuid()}";
 
@@ -408,6 +428,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "Sharded PubSub is supported since 7.0.0"
+        );
+
         // Arrange
         string channelPrefix = $"test-shard-{Guid.NewGuid()}";
         string testChannel1 = $"{channelPrefix}-channel1";
@@ -452,6 +477,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "Sharded PubSub is supported since 7.0.0"
+        );
+
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
         GlideClusterClient client = await GlideClusterClient.CreateClient(config);
@@ -473,6 +503,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsCorrectCounts()
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "Sharded PubSub is supported since 7.0.0"
+        );
+
         // Arrange
         string testChannel1 = $"test-shard-{Guid.NewGuid()}";
         string testChannel2 = $"test-shard-{Guid.NewGuid()}";
