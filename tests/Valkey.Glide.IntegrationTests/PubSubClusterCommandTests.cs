@@ -78,10 +78,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PublishAsync_ShardedChannel_WithNoSubscribers_ReturnsZero()
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "Sharded PubSub is supported since 7.0.0"
-        );
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
@@ -101,10 +98,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PublishAsync_ShardedChannel_WithSubscriber_ReturnsSubscriberCount()
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "Sharded PubSub is supported since 7.0.0"
-        );
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
         // Arrange
         string testChannel = $"test-shard-{Guid.NewGuid()}";
@@ -370,10 +364,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsArray()
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "Sharded PubSub is supported since 7.0.0"
-        );
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
@@ -391,10 +382,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "Sharded PubSub is supported since 7.0.0"
-        );
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
         // Arrange
         string testChannel = $"test-shard-{Guid.NewGuid()}";
@@ -428,10 +416,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "Sharded PubSub is supported since 7.0.0"
-        );
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
         // Arrange
         string channelPrefix = $"test-shard-{Guid.NewGuid()}";
@@ -477,10 +462,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "Sharded PubSub is supported since 7.0.0"
-        );
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
@@ -503,10 +485,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     [Fact]
     public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsCorrectCounts()
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "Sharded PubSub is supported since 7.0.0"
-        );
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
         // Arrange
         string testChannel1 = $"test-shard-{Guid.NewGuid()}";
