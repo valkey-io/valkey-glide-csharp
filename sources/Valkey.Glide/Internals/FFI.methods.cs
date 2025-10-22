@@ -31,6 +31,22 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void CloseClientFfi(IntPtr client);
 
+    [LibraryImport("libglide_rs", EntryPoint = "store_script")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr StoreScriptFfi(IntPtr scriptPtr, UIntPtr scriptLen);
+
+    [LibraryImport("libglide_rs", EntryPoint = "drop_script")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr DropScriptFfi(IntPtr hashPtr, UIntPtr hashLen);
+
+    [LibraryImport("libglide_rs", EntryPoint = "free_script_hash_buffer")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void FreeScriptHashBuffer(IntPtr hashBuffer);
+
+    [LibraryImport("libglide_rs", EntryPoint = "free_drop_script_error")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void FreeDropScriptError(IntPtr errorBuffer);
+
     [LibraryImport("libglide_rs", EntryPoint = "request_cluster_scan")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RequestClusterScanFfi(IntPtr client, ulong index, IntPtr cursor, ulong argCount, IntPtr args, IntPtr argLengths);
@@ -58,11 +74,24 @@ internal partial class FFI
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
     public static extern void CloseClientFfi(IntPtr client);
 
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "store_script")]
+    public static extern IntPtr StoreScriptFfi(IntPtr scriptPtr, UIntPtr scriptLen);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_script")]
+    public static extern IntPtr DropScriptFfi(IntPtr hashPtr, UIntPtr hashLen);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_script_hash_buffer")]
+    public static extern void FreeScriptHashBuffer(IntPtr hashBuffer);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_drop_script_error")]
+    public static extern void FreeDropScriptError(IntPtr errorBuffer);
+	
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "request_cluster_scan")]
     public static extern void RequestClusterScanFfi(IntPtr client, ulong index, IntPtr cursor, ulong argCount, IntPtr args, IntPtr argLengths);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "remove_cluster_scan_cursor")]
     public static extern void RemoveClusterScanCursorFfi(IntPtr cursorId);
+	
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "refresh_iam_token")]
     public static extern void RefreshIamTokenFfi(IntPtr client, ulong index);
 #endif

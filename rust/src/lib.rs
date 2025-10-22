@@ -440,6 +440,116 @@ pub unsafe extern "C" fn init(level: Option<Level>, file_name: *const c_char) ->
     logger_level.into()
 }
 
+#[repr(C)]
+pub struct ScriptHashBuffer {
+    pub ptr: *mut u8,
+    pub len: usize,
+    pub capacity: usize,
+}
+
+/// Store a Lua script in the script cache and return its SHA1 hash.
+///
+/// # Parameters
+///
+/// * `script_bytes`: Pointer to the script bytes.
+/// * `script_len`: Length of the script in bytes.
+///
+/// # Returns
+///
+/// A pointer to a `ScriptHashBuffer` containing the SHA1 hash of the script.
+/// The caller is responsible for freeing this memory using [`free_script_hash_buffer`].
+///
+/// # Safety
+///
+/// * `script_bytes` must point to `script_len` consecutive properly initialized bytes.
+/// * The returned buffer must be freed by the caller using [`free_script_hash_buffer`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn store_script(
+    script_bytes: *const u8,
+    script_len: usize,
+) -> *mut ScriptHashBuffer {
+    let script = unsafe { std::slice::from_raw_parts(script_bytes, script_len) };
+    let hash = glide_core::scripts_container::add_script(script);
+    let mut hash = std::mem::ManuallyDrop::new(hash);
+    let script_hash_buffer = ScriptHashBuffer {
+        ptr: hash.as_mut_ptr(),
+        len: hash.len(),
+        capacity: hash.capacity(),
+    };
+    Box::into_raw(Box::new(script_hash_buffer))
+}
+
+/// Free a `ScriptHashBuffer` obtained from [`store_script`].
+///
+/// # Parameters
+///
+/// * `buffer`: Pointer to the `ScriptHashBuffer`.
+///
+/// # Safety
+///
+/// * `buffer` must be a pointer returned from [`store_script`].
+/// * This function must be called exactly once per buffer.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn free_script_hash_buffer(buffer: *mut ScriptHashBuffer) {
+    if buffer.is_null() {
+        return;
+    }
+    let buffer = unsafe { Box::from_raw(buffer) };
+    let _hash = unsafe { String::from_raw_parts(buffer.ptr, buffer.len, buffer.capacity) };
+}
+
+/// Remove a script from the script cache.
+///
+/// Returns a null pointer if it succeeds and a C string error message if it fails.
+///
+/// # Parameters
+///
+/// * `hash`: The SHA1 hash of the script to remove as a byte array.
+/// * `len`: The length of `hash`.
+///
+/// # Returns
+///
+/// A null pointer on success, or a pointer to a C string error message on failure.
+/// The caller is responsible for freeing the error message using [`free_drop_script_error`].
+///
+/// # Safety
+///
+/// * `hash` must be a valid pointer to a UTF-8 string.
+/// * The returned error pointer (if not null) must be freed using [`free_drop_script_error`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn drop_script(hash: *mut u8, len: usize) -> *mut c_char {
+    if hash.is_null() {
+        return CString::new("Hash pointer was null.").unwrap().into_raw();
+    }
+
+    let slice = std::ptr::slice_from_raw_parts_mut(hash, len);
+    let Ok(hash_str) = std::str::from_utf8(unsafe { &*slice }) else {
+        return CString::new("Unable to convert hash to UTF-8 string.")
+            .unwrap()
+            .into_raw();
+    };
+
+    glide_core::scripts_container::remove_script(hash_str);
+    std::ptr::null_mut()
+}
+
+/// Free an error message from a failed drop_script call.
+///
+/// # Parameters
+///
+/// * `error`: The error to free.
+///
+/// # Safety
+///
+/// * `error` must be an error returned by [`drop_script`].
+/// * This function must be called exactly once per error.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn free_drop_script_error(error: *mut c_char) {
+    if !error.is_null() {
+        _ = unsafe { CString::from_raw(error) };
+    }
+}
+
 /// Execute a cluster scan request.
 ///
 /// # Safety
