@@ -11,7 +11,7 @@ use glide_core::{
 };
 use std::{
     ffi::{CStr, CString, c_char, c_void},
-    slice,
+    slice::from_raw_parts,
     sync::Arc,
 };
 use tokio::runtime::{Builder, Runtime};
@@ -444,9 +444,9 @@ pub unsafe extern "C" fn init(level: Option<Level>, file_name: *const c_char) ->
 ///
 /// # Safety
 /// * `client_ptr` must be a valid Client pointer from create_client
-/// * `cursor` must be a valid C string
+/// * `cursor` must be "0" for initial scan or a valid cursor ID from previous scan
 /// * `args` and `arg_lengths` must be valid arrays of length `arg_count`
-/// * `args` array format: alternating parameter names and values (e.g., [b"MATCH", pattern, b"COUNT", count_str])
+/// * `args` format: [b"MATCH", pattern, b"COUNT", count, b"TYPE", type] (all optional)
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn request_cluster_scan(
     client_ptr: *const c_void,
@@ -456,6 +456,7 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
     args: *const usize,
     arg_lengths: *const u64,
 ) {
+    // Build client and add panic guard.
     let client = unsafe {
         Arc::increment_strong_count(client_ptr);
         Arc::from_raw(client_ptr as *mut Client)
@@ -468,12 +469,24 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
         callback_index,
     };
 
+    // Build arguments and get the cluster scan state.
     let cursor_id = unsafe { CStr::from_ptr(cursor) }
         .to_str()
         .unwrap_or("0")
         .to_owned();
 
-    let cluster_scan_args = unsafe { parse_cluster_scan_args(args, arg_lengths, arg_count) };
+    let cluster_scan_args = match unsafe {
+        build_cluster_scan_args(
+            arg_count,
+            args,
+            arg_lengths,
+            core.failure_callback,
+            callback_index,
+        )
+    } {
+        Some(args) => args,
+        None => return,
+    };
 
     let scan_state_cursor =
         match glide_core::cluster_scan_container::get_cluster_scan_cursor(cursor_id) {
@@ -481,8 +494,9 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
             Err(_error) => redis::ScanStateRC::new(),
         };
 
+    // Run cluster scan.
     client.runtime.spawn(async move {
-        let mut panic_guard = PanicGuard {
+        let mut async_panic_guard = PanicGuard {
             panicked: true,
             failure_callback: core.failure_callback,
             callback_index,
@@ -502,12 +516,13 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
                 report_error(
                     core.failure_callback,
                     callback_index,
-                    error_message(&err),
-                    error_type(&err),
+                    glide_core::errors::error_message(&err),
+                    glide_core::errors::error_type(&err),
                 );
             },
         };
-        panic_guard.panicked = false;
+
+        async_panic_guard.panicked = false;
     });
 
     panic_guard.panicked = false;
@@ -531,69 +546,168 @@ pub unsafe extern "C" fn remove_cluster_scan_cursor(cursor_id: *const c_char) {
     }
 }
 
-/// Parse cluster scan arguments from C-style arrays.
+/// Build cluster scan arguments from C-style arrays.
 ///
 /// # Safety
 /// * `args` and `arg_lengths` must be valid arrays of length `arg_count`
 /// * Each pointer in `args` must point to valid memory of the corresponding length
-unsafe fn parse_cluster_scan_args(
+unsafe fn build_cluster_scan_args(
+    arg_count: u64,
     args: *const usize,
     arg_lengths: *const u64,
-    arg_count: u64,
-) -> redis::ClusterScanArgs {
+    failure_callback: FailureCallback,
+    callback_index: usize,
+) -> Option<redis::ClusterScanArgs> {
     if arg_count == 0 {
-        return redis::ClusterScanArgs::builder().build();
+        return Some(redis::ClusterScanArgs::builder().build());
     }
 
-    let mut pattern: Option<&[u8]> = None;
-    let mut object_type: Option<&[u8]> = None;
-    let mut count: Option<&[u8]> = None;
+    let arg_vec = unsafe { convert_double_pointer_to_vec(args, arg_count, arg_lengths) };
 
-    let mut i = 0;
-    while i < arg_count as usize {
-        let arg_ptr = unsafe { *args.add(i) as *const u8 };
-        let arg_len = unsafe { *arg_lengths.add(i) as usize };
-        let arg = unsafe { slice::from_raw_parts(arg_ptr, arg_len) };
+    let mut pattern: &[u8] = &[];
+    let mut object_type: &[u8] = &[];
+    let mut count: &[u8] = &[];
 
-        match arg {
-            b"MATCH" if i + 1 < arg_count as usize => {
-                i += 1;
-                let pattern_ptr = unsafe { *args.add(i) as *const u8 };
-                let pattern_len = unsafe { *arg_lengths.add(i) as usize };
-                pattern = Some(unsafe { slice::from_raw_parts(pattern_ptr, pattern_len) });
+    let mut iter = arg_vec.iter().peekable();
+    while let Some(arg) = iter.next() {
+        match *arg {
+            b"MATCH" => match iter.next() {
+                Some(pat) => pattern = pat,
+                None => {
+                    unsafe {
+                        report_error(
+                            failure_callback,
+                            callback_index,
+                            "No argument following MATCH.".into(),
+                            RequestErrorType::Unspecified,
+                        );
+                    }
+                    return None;
+                }
+            },
+            b"TYPE" => match iter.next() {
+                Some(obj_type) => object_type = obj_type,
+                None => {
+                    unsafe {
+                        report_error(
+                            failure_callback,
+                            callback_index,
+                            "No argument following TYPE.".into(),
+                            RequestErrorType::Unspecified,
+                        );
+                    }
+                    return None;
+                }
+            },
+            b"COUNT" => match iter.next() {
+                Some(c) => count = c,
+                None => {
+                    unsafe {
+                        report_error(
+                            failure_callback,
+                            callback_index,
+                            "No argument following COUNT.".into(),
+                            RequestErrorType::Unspecified,
+                        );
+                    }
+                    return None;
+                }
+            },
+            _ => {
+                unsafe {
+                    report_error(
+                        failure_callback,
+                        callback_index,
+                        "Unknown cluster scan argument".into(),
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return None;
             }
-            b"TYPE" if i + 1 < arg_count as usize => {
-                i += 1;
-                let type_ptr = unsafe { *args.add(i) as *const u8 };
-                let type_len = unsafe { *arg_lengths.add(i) as usize };
-                object_type = Some(unsafe { slice::from_raw_parts(type_ptr, type_len) });
-            }
-            b"COUNT" if i + 1 < arg_count as usize => {
-                i += 1;
-                let count_ptr = unsafe { *args.add(i) as *const u8 };
-                let count_len = unsafe { *arg_lengths.add(i) as usize };
-                count = Some(unsafe { slice::from_raw_parts(count_ptr, count_len) });
-            }
-            _ => {}
         }
-        i += 1;
     }
 
-    let mut builder = redis::ClusterScanArgs::builder();
-    if let Some(pattern) = pattern {
-        builder = builder.with_match_pattern(pattern);
-    }
-    if let Some(count_bytes) = count {
-        if let Ok(count_str) = std::str::from_utf8(count_bytes) {
-            if let Ok(count_val) = count_str.parse::<u32>() {
-                builder = builder.with_count(count_val);
+    // Convert back to proper types
+    let converted_count = match std::str::from_utf8(count) {
+        Ok(v) => {
+            if !count.is_empty() {
+                match v.parse::<u32>() {
+                    Ok(v) => v,
+                    Err(_) => {
+                        unsafe {
+                            report_error(
+                                failure_callback,
+                                callback_index,
+                                "Invalid COUNT value".into(),
+                                RequestErrorType::Unspecified,
+                            );
+                        }
+                        return None;
+                    }
+                }
+            } else {
+                10 // default count value
             }
         }
-    }
-    if let Some(type_bytes) = object_type {
-        if let Ok(type_str) = std::str::from_utf8(type_bytes) {
-            builder = builder.with_object_type(redis::ObjectType::from(type_str.to_string()));
+        Err(_) => {
+            unsafe {
+                report_error(
+                    failure_callback,
+                    callback_index,
+                    "Invalid UTF-8 in COUNT argument".into(),
+                    RequestErrorType::Unspecified,
+                );
+            }
+            return None;
         }
+    };
+
+    let converted_type = match std::str::from_utf8(object_type) {
+        Ok(v) => redis::ObjectType::from(v.to_string()),
+        Err(_) => {
+            unsafe {
+                report_error(
+                    failure_callback,
+                    callback_index,
+                    "Invalid UTF-8 in TYPE argument".into(),
+                    RequestErrorType::Unspecified,
+                );
+            }
+            return None;
+        }
+    };
+
+    let mut cluster_scan_args_builder = redis::ClusterScanArgs::builder();
+    if !count.is_empty() {
+        cluster_scan_args_builder = cluster_scan_args_builder.with_count(converted_count);
     }
-    builder.build()
+    if !pattern.is_empty() {
+        cluster_scan_args_builder = cluster_scan_args_builder.with_match_pattern(pattern);
+    }
+    if !object_type.is_empty() {
+        cluster_scan_args_builder = cluster_scan_args_builder.with_object_type(converted_type);
+    }
+    Some(cluster_scan_args_builder.build())
+}
+
+/// Converts a double pointer to a vec.
+///
+/// # Safety
+///
+/// `convert_double_pointer_to_vec` returns a `Vec` of u8 slice which holds pointers of C
+/// strings. The returned `Vec<&'a [u8]>` is meant to be copied into Rust code. Storing them
+/// for later use will cause the program to crash as the pointers will be freed by the caller.
+unsafe fn convert_double_pointer_to_vec<'a>(
+    data: *const usize,
+    len: u64,
+    data_len: *const u64,
+) -> Vec<&'a [u8]> {
+    let string_ptrs = unsafe { from_raw_parts(data, len as usize) };
+    let string_lengths = unsafe { from_raw_parts(data_len, len as usize) };
+    let mut result = Vec::<&[u8]>::with_capacity(string_ptrs.len());
+    for (i, &str_ptr) in string_ptrs.iter().enumerate() {
+        let slice = unsafe { from_raw_parts(str_ptr as *const u8, string_lengths[i] as usize) };
+        result.push(slice);
+    }
+    result
 }
