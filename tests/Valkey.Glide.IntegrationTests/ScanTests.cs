@@ -101,31 +101,45 @@ public class ScanTests(TestConfiguration config)
         await client.KeyDeleteAsync([matchStringKey, matchListKey, otherStringKey]);
     }
 
+    [Fact]
+    public async Task TestScanAsync_InvalidCursorId()
+    {
+        var standaloneClient = TestConfiguration.DefaultStandaloneClient();
+        var exception = await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(async () =>
+        {
+            await standaloneClient.ScanAsync("invalid");
+        });
+        Assert.Contains("invalid cursor", exception.Message, StringComparison.OrdinalIgnoreCase);
+
+        var clusterClient = TestConfiguration.DefaultClusterClient();
+        exception = await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(async () =>
+        {
+            await clusterClient.ScanAsync(new ClusterScanCursor("invalid"));
+        });
+        Assert.Contains("invalid cursor", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ScanOptions? options = null)
     {
         var allKeys = new List<ValkeyKey>();
 
-        if (client is GlideClient standaloneClient)
+        if (client is GlideClient)
         {
             string cursor = "0";
             do
             {
-                (cursor, var keys) = await standaloneClient.ScanAsync(cursor, options);
+                (cursor, var keys) = await ((GlideClient)client).ScanAsync(cursor, options);
                 allKeys.AddRange(keys);
             } while (cursor != "0");
         }
-        else if (client is GlideClusterClient clusterClient)
+        else
         {
             var cursor = ClusterScanCursor.InitialCursor();
             while (!cursor.IsFinished)
             {
-                (cursor, var keys) = await clusterClient.ScanAsync(cursor, options);
+                (cursor, var keys) = await ((GlideClusterClient)client).ScanAsync(cursor, options);
                 allKeys.AddRange(keys);
             }
-        }
-        else
-        {
-            throw new ArgumentException($"Unsupported client type: {client.GetType()}");
         }
 
         return [.. allKeys];

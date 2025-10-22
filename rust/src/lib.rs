@@ -469,12 +469,31 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
         callback_index,
     };
 
-    // Build arguments and get the cluster scan state.
+    // Get the cluster scan state.
     let cursor_id = unsafe { CStr::from_ptr(cursor) }
         .to_str()
         .unwrap_or("0")
         .to_owned();
 
+    let scan_state_cursor = if cursor_id == "0" {
+        redis::ScanStateRC::new()
+    } else {
+        match glide_core::cluster_scan_container::get_cluster_scan_cursor(cursor_id.clone()) {
+            Ok(existing_cursor) => existing_cursor,
+            Err(_error) => {
+                unsafe {
+                    (core.failure_callback)(
+                        callback_index,
+                        format!("Invalid cursor ID: {}", cursor_id).as_ptr() as *const c_char,
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return;
+            }
+        }
+    };
+
+    // Build cluster scan arguments.
     let cluster_scan_args = match unsafe {
         build_cluster_scan_args(
             arg_count,
@@ -487,12 +506,6 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
         Some(args) => args,
         None => return,
     };
-
-    let scan_state_cursor =
-        match glide_core::cluster_scan_container::get_cluster_scan_cursor(cursor_id) {
-            Ok(existing_cursor) => existing_cursor,
-            Err(_error) => redis::ScanStateRC::new(),
-        };
 
     // Run cluster scan.
     client.runtime.spawn(async move {
