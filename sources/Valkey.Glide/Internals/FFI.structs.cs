@@ -212,7 +212,8 @@ internal partial class FFI
             AuthenticationInfo? authenticationInfo,
             uint databaseId,
             ConnectionConfiguration.Protocol? protocol,
-            string? clientName)
+            string? clientName,
+            bool lazyConnect = false)
         {
             _addresses = addresses;
             _request = new()
@@ -235,6 +236,7 @@ internal partial class FFI
                 HasProtocol = protocol.HasValue,
                 Protocol = protocol ?? default,
                 ClientName = clientName,
+                LazyConnect = lazyConnect,
             };
         }
 
@@ -770,6 +772,8 @@ internal partial class FFI
         public ConnectionConfiguration.Protocol Protocol;
         [MarshalAs(UnmanagedType.LPStr)]
         public string? ClientName;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool LazyConnect;
         // TODO more config params, see ffi.rs
     }
 

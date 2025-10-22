@@ -53,14 +53,12 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer);
         client._clientPointer = await message; // This will throw an error thru failure callback if any
 
-        if (client._clientPointer != IntPtr.Zero)
+        if (client._clientPointer == IntPtr.Zero)
         {
-            // Initialize server version after successful connection
-            await client.InitializeServerVersionAsync();
-            return client;
+            throw new ConnectionException("Failed creating a client");
         }
 
-        throw new ConnectionException("Failed creating a client");
+        return client;
     }
 
     protected BaseClient()
@@ -127,6 +125,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         // All memory allocated is auto-freed by `using` operator
     }
+    protected Version? ParseServerVersion(string response)
+    {
+        var versionMatch = System.Text.RegularExpressions.Regex.Match(response, @"(?:valkey_version|redis_version):([\d\.]+)");
+        return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
+    }
     #endregion protected methods
 
     #region private methods
@@ -145,7 +148,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     internal void SetInfo(string info) => _clientInfo = info;
 
-    protected abstract Task InitializeServerVersionAsync();
+    protected abstract Task<Version> GetServerVersionAsync();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void SuccessAction(ulong index, IntPtr ptr);
@@ -169,6 +172,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
     protected Version? _serverVersion; // cached server version
+    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
 
     #endregion private fields
 }

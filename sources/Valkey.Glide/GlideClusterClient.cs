@@ -301,21 +301,21 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
         return await Command(Request.Select(index), Route.Random);
     }
 
-    protected override async Task InitializeServerVersionAsync()
+    protected override async Task<Version> GetServerVersionAsync()
     {
-        try
+        if (_serverVersion == null)
         {
-            var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]).ToClusterValue(true), Route.Random);
-            var versionMatch = System.Text.RegularExpressions.Regex.Match(infoResponse.SingleValue, @"(?:valkey_version|redis_version):([\d\.]+)");
-            if (versionMatch.Success)
+            try
             {
-                _serverVersion = new Version(versionMatch.Groups[1].Value);
+                var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]).ToClusterValue(true), Route.Random);
+                _serverVersion = ParseServerVersion(infoResponse.SingleValue) ?? DefaultServerVersion;
+            }
+            catch
+            {
+                _serverVersion = DefaultServerVersion;
             }
         }
-        catch
-        {
-            // If we can't get version, assume newer version (use SORT_RO)
-            _serverVersion = new Version(8, 0, 0);
-        }
+
+        return _serverVersion;
     }
 }
