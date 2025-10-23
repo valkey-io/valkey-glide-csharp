@@ -262,12 +262,12 @@ public class CommandTests
 
             // Hash Commands
             () => Assert.Equal(new string[] { "HGET", "key", "field" }, Request.HashGetAsync("key", "field").GetArgs()),
-            () => Assert.Equal(new string[] { "HMGET", "key", "field1", "field2" }, Request.HashGetAsync("key", new ValkeyValue[] { "field1", "field2" }).GetArgs()),
+            () => Assert.Equal(["HMGET", "key", "field1", "field2"], Request.HashGetAsync("key", ["field1", "field2"]).GetArgs()),
             () => Assert.Equal(new string[] { "HGETALL", "key" }, Request.HashGetAllAsync("key").GetArgs()),
-            () => Assert.Equal(new string[] { "HMSET", "key", "field1", "value1", "field2", "value2" }, Request.HashSetAsync("key", new HashEntry[] { new HashEntry("field1", "value1"), new HashEntry("field2", "value2") }).GetArgs()),
-            () => Assert.Equal(new string[] { "HMSET", "key", "field", "value" }, Request.HashSetAsync("key", new HashEntry[] { new HashEntry("field", "value") }).GetArgs()),
+            () => Assert.Equal(["HMSET", "key", "field1", "value1", "field2", "value2"], Request.HashSetAsync("key", [new HashEntry("field1", "value1"), new HashEntry("field2", "value2")]).GetArgs()),
+            () => Assert.Equal(["HMSET", "key", "field", "value"], Request.HashSetAsync("key", [new HashEntry("field", "value")]).GetArgs()),
             () => Assert.Equal(new string[] { "HDEL", "key", "field" }, Request.HashDeleteAsync("key", "field").GetArgs()),
-            () => Assert.Equal(new string[] { "HDEL", "key", "field1", "field2" }, Request.HashDeleteAsync("key", new ValkeyValue[] { "field1", "field2" }).GetArgs()),
+            () => Assert.Equal(["HDEL", "key", "field1", "field2"], Request.HashDeleteAsync("key", ["field1", "field2"]).GetArgs()),
             () => Assert.Equal(new string[] { "HEXISTS", "key", "field" }, Request.HashExistsAsync("key", "field").GetArgs()),
             () => Assert.Equal(new string[] { "HINCRBY", "key", "field", "5" }, Request.HashIncrementAsync("key", "field", 5L).GetArgs()),
             () => Assert.Equal(new string[] { "HINCRBY", "key", "field", "1" }, Request.HashIncrementAsync("key", "field", 1L).GetArgs()),
@@ -286,7 +286,7 @@ public class CommandTests
 
             // Geospatial Commands
             () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo")).GetArgs()),
-            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo", "15.087268999999999", "37.502668999999997", "Catania"], Request.GeoAddAsync("key", new GeoEntry[] { new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoEntry(15.087269, 37.502669, "Catania") }).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo", "15.087268999999999", "37.502668999999997", "Catania"], Request.GeoAddAsync("key", [new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoEntry(15.087269, 37.502669, "Catania")]).GetArgs()),
             () => Assert.Equal(["GEOADD", "key", "NX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_DOES_NOT_EXIST)).GetArgs()),
             () => Assert.Equal(["GEOADD", "key", "XX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS)).GetArgs()),
             () => Assert.Equal(["GEOADD", "key", "CH", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(true)).GetArgs()),
@@ -295,9 +295,9 @@ public class CommandTests
             () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "mi"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Miles).GetArgs()),
             () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "ft"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Feet).GetArgs()),
             () => Assert.Equal(["GEOHASH", "key", "Palermo"], Request.GeoHashAsync("key", "Palermo").GetArgs()),
-            () => Assert.Equal(["GEOHASH", "key", "Palermo", "Catania"], Request.GeoHashAsync("key", new ValkeyValue[] { "Palermo", "Catania" }).GetArgs()),
+            () => Assert.Equal(["GEOHASH", "key", "Palermo", "Catania"], Request.GeoHashAsync("key", ["Palermo", "Catania"]).GetArgs()),
             () => Assert.Equal(["GEOPOS", "key", "Palermo"], Request.GeoPositionAsync("key", "Palermo").GetArgs()),
-            () => Assert.Equal(["GEOPOS", "key", "Palermo", "Catania"], Request.GeoPositionAsync("key", new ValkeyValue[] { "Palermo", "Catania" }).GetArgs()),
+            () => Assert.Equal(["GEOPOS", "key", "Palermo", "Catania"], Request.GeoPositionAsync("key", ["Palermo", "Catania"]).GetArgs()),
             () => Assert.Equal(["GEOSEARCH", "key", "FROMMEMBER", "Palermo", "BYRADIUS", "100", "km"], Request.GeoSearchAsync("key", "Palermo", new GeoSearchCircle(100, GeoUnit.Kilometers)).GetArgs()),
             () => Assert.Equal(["GEOSEARCH", "key", "FROMLONLAT", "13.361389000000001", "38.115555999999998", "BYRADIUS", "200", "m"], Request.GeoSearchAsync("key", new GeoPosition(13.361389, 38.115556), new GeoSearchCircle(200, GeoUnit.Meters)).GetArgs()),
             () => Assert.Equal(["GEOSEARCH", "key", "FROMMEMBER", "Palermo", "BYBOX", "300", "400", "km"], Request.GeoSearchAsync("key", "Palermo", new GeoSearchBox(400, 300, GeoUnit.Kilometers)).GetArgs()),
@@ -370,12 +370,12 @@ public class CommandTests
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
 
             // Server Management Command Converters
-            () => Assert.Equal(new KeyValuePair<string, string>[] { new("maxmemory", "100mb") }, Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
+            () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
             () => Assert.Equal(Array.Empty<KeyValuePair<string, string>>(), Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
             () => Assert.Equal(100L, Request.DatabaseSizeAsync().Converter(100L)),
             () => Assert.Equal(0L, Request.DatabaseSizeAsync().Converter(0L)),
             () => Assert.Equal(DateTime.UnixEpoch.AddSeconds(1609459200), Request.LastSaveAsync().Converter(1609459200L)),
-            () => Assert.Equal(DateTime.UnixEpoch.AddSeconds(1609459200).AddTicks(123456 * 10), Request.TimeAsync().Converter(new object[] { "1609459200", "123456" })),
+            () => Assert.Equal(DateTime.UnixEpoch.AddSeconds(1609459200).AddTicks(123456 * 10), Request.TimeAsync().Converter(["1609459200", "123456"])),
             () => Assert.Equal("Valkey 7.0.0", Request.LolwutAsync().Converter("Valkey 7.0.0")),
             () => Assert.Equal("test_value", Request.StringGetSetExpiry("test_key", new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Converter(new GlideString("test_value")).ToString()),
             () => Assert.Equal("common", Request.StringLongestCommonSubsequence("key1", "key2").Converter(new GlideString("common")).ToString()),
@@ -457,8 +457,8 @@ public class CommandTests
             () => Assert.False(Request.KeyPersistAsync("key").Converter(false)),
             () => Assert.NotNull(Request.KeyDumpAsync("key").Converter("dumpdata")),
             () => Assert.Null(Request.KeyDumpAsync("key").Converter(null)),
-            () => Assert.Equal("OK", Request.KeyRestoreAsync("key", new byte[0]).Converter("OK")),
-            () => Assert.Equal("OK", Request.KeyRestoreDateTimeAsync("key", new byte[0]).Converter("OK")),
+            () => Assert.Equal("OK", Request.KeyRestoreAsync("key", []).Converter("OK")),
+            () => Assert.Equal("OK", Request.KeyRestoreDateTimeAsync("key", []).Converter("OK")),
             () => Assert.True(Request.KeyTouchAsync("key").Converter(1L)),
             () => Assert.False(Request.KeyTouchAsync("key").Converter(0L)),
             () => Assert.Equal(2L, Request.KeyTouchAsync(["key1", "key2"]).Converter(2L)),
@@ -483,19 +483,19 @@ public class CommandTests
             // SCAN Commands Converters
             () =>
             {
-                var result = Request.ScanAsync(0).Converter(new object[] { 0L, new object[] { (gs)"key1", (gs)"key2" } });
+                var result = Request.ScanAsync(0).Converter([0L, new object[] { (gs)"key1", (gs)"key2" }]);
                 Assert.Equal(0L, result.Item1);
                 Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()).ToArray());
             },
             () =>
             {
-                var result = Request.ScanAsync(10).Converter(new object[] { 5L, new object[] { (gs)"test" } });
+                var result = Request.ScanAsync(10).Converter([5L, new object[] { (gs)"test" }]);
                 Assert.Equal(5L, result.Item1);
                 Assert.Equal(["test"], result.Item2.Select(k => k.ToString()).ToArray());
             },
             () =>
             {
-                var result = Request.ScanAsync(0).Converter(new object[] { 0L, Array.Empty<object>() });
+                var result = Request.ScanAsync(0).Converter([0L, Array.Empty<object>()]);
                 Assert.Equal(0L, result.Item1);
                 Assert.Empty(result.Item2);
             },
@@ -530,7 +530,7 @@ public class CommandTests
             // Hash Commands
             () => Assert.Equal<GlideString>("value", Request.HashGetAsync("key", "field").Converter("value")),
             () => Assert.Equal(ValkeyValue.Null, Request.HashGetAsync("key", "field").Converter(null)),
-            () => Assert.Equal("OK", Request.HashSetAsync("key", new HashEntry[] { new HashEntry("field", "value") }).Converter("OK")),
+            () => Assert.Equal("OK", Request.HashSetAsync("key", [new HashEntry("field", "value")]).Converter("OK")),
             () => Assert.True(Request.HashDeleteAsync("key", "field").Converter(1L)),
             () => Assert.False(Request.HashDeleteAsync("key", "field").Converter(0L)),
             () => Assert.Equal(2L, Request.HashDeleteAsync("key", ["field1", "field2"]).Converter(2L)),
@@ -669,26 +669,26 @@ public class CommandTests
             {"field3", (gs)"value3" },
         };
 
-        object[] testObjectNestedArray = new object[]
-         {
-            new object[] {(gs)"field1", (gs)"value1" },
-            new object[] {(gs)"field2", (gs)"value2" },
-            new object[] {(gs)"field3", (gs)"value3" },
-         };
+        object[] testObjectNestedArray =
+         [
+            new object[] { (gs)"field1", (gs)"value1" },
+            new object[] { (gs)"field2", (gs)"value2" },
+            new object[] { (gs)"field3", (gs)"value3" },
+         ];
 
         // Test for HashValuesAsync and HashRandomFieldsAsync
-        object[] testObjectArray = new object[]
-        {
+        object[] testObjectArray =
+        [
             (gs)"value1",
             (gs)"value2",
             (gs)"value3"
-        };
+        ];
 
         Assert.Multiple(
             // Test HashGetAsync with multiple fields
             () =>
             {
-                ValkeyValue[] result = Request.HashGetAsync("key", new ValkeyValue[] { "field1", "field2", "field3" }).Converter(testList.ToArray());
+                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter(testList.ToArray());
                 Assert.Equal(3, result.Length);
                 Assert.Equal("value1", result[0]);
                 Assert.Equal("value2", result[1]);
