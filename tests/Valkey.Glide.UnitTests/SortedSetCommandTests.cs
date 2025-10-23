@@ -437,7 +437,7 @@ public class SortedSetCommandTests
             // Test SortedSetScoresAsync converter
             () =>
             {
-                object[] testScoresResponse = [10.5, null, 8.25];
+                object[] testScoresResponse = [10.5, null!, 8.25];
                 double?[] result = Request.SortedSetScoresAsync("key", ["member1", "member2", "member3"]).Converter(testScoresResponse);
                 Assert.Equal(3, result.Length);
                 Assert.Equal(10.5, result[0]);
