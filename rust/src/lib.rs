@@ -446,7 +446,7 @@ pub unsafe extern "C" fn init(level: Option<Level>, file_name: *const c_char) ->
 /// * `client_ptr` must be a valid Client pointer from create_client
 /// * `cursor` must be "0" for initial scan or a valid cursor ID from previous scan
 /// * `args` and `arg_lengths` must be valid arrays of length `arg_count`
-/// * `args` format: [b"MATCH", pattern, b"COUNT", count, b"TYPE", type] (all optional)
+/// * `args` format: [b"MATCH", pattern_arg, b"COUNT", count, b"TYPE", type] (all optional)
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn request_cluster_scan(
     client_ptr: *const c_void,
@@ -577,15 +577,16 @@ unsafe fn build_cluster_scan_args(
 
     let arg_vec = unsafe { convert_double_pointer_to_vec(args, arg_count, arg_lengths) };
 
-    let mut pattern: &[u8] = &[];
-    let mut object_type: &[u8] = &[];
-    let mut count: &[u8] = &[];
+    // Parse arguments from vector.
+    let mut pattern_arg: &[u8] = &[];
+    let mut type_arg: &[u8] = &[];
+    let mut count_arg: &[u8] = &[];
 
     let mut iter = arg_vec.iter().peekable();
     while let Some(arg) = iter.next() {
         match *arg {
             b"MATCH" => match iter.next() {
-                Some(pat) => pattern = pat,
+                Some(p) => pattern_arg = p,
                 None => {
                     unsafe {
                         report_error(
@@ -599,7 +600,7 @@ unsafe fn build_cluster_scan_args(
                 }
             },
             b"TYPE" => match iter.next() {
-                Some(obj_type) => object_type = obj_type,
+                Some(t) => type_arg = t,
                 None => {
                     unsafe {
                         report_error(
@@ -613,7 +614,7 @@ unsafe fn build_cluster_scan_args(
                 }
             },
             b"COUNT" => match iter.next() {
-                Some(c) => count = c,
+                Some(c) => count_arg = c,
                 None => {
                     unsafe {
                         report_error(
@@ -640,66 +641,66 @@ unsafe fn build_cluster_scan_args(
         }
     }
 
-    // Convert back to proper types
-    let converted_count = match std::str::from_utf8(count) {
-        Ok(v) => {
-            if !count.is_empty() {
-                match v.parse::<u32>() {
-                    Ok(v) => v,
-                    Err(_) => {
-                        unsafe {
-                            report_error(
-                                failure_callback,
-                                callback_index,
-                                "Invalid COUNT value".into(),
-                                RequestErrorType::Unspecified,
-                            );
-                        }
-                        return None;
-                    }
-                }
-            } else {
-                10 // default count value
-            }
-        }
-        Err(_) => {
-            unsafe {
-                report_error(
-                    failure_callback,
-                    callback_index,
-                    "Invalid UTF-8 in COUNT argument".into(),
-                    RequestErrorType::Unspecified,
-                );
-            }
-            return None;
-        }
-    };
-
-    let converted_type = match std::str::from_utf8(object_type) {
-        Ok(v) => redis::ObjectType::from(v.to_string()),
-        Err(_) => {
-            unsafe {
-                report_error(
-                    failure_callback,
-                    callback_index,
-                    "Invalid UTF-8 in TYPE argument".into(),
-                    RequestErrorType::Unspecified,
-                );
-            }
-            return None;
-        }
-    };
-
+    // Build cluster scan arguments.
     let mut cluster_scan_args_builder = redis::ClusterScanArgs::builder();
-    if !count.is_empty() {
-        cluster_scan_args_builder = cluster_scan_args_builder.with_count(converted_count);
+
+    if !pattern_arg.is_empty() {
+        cluster_scan_args_builder = cluster_scan_args_builder.with_match_pattern(pattern_arg);
     }
-    if !pattern.is_empty() {
-        cluster_scan_args_builder = cluster_scan_args_builder.with_match_pattern(pattern);
-    }
-    if !object_type.is_empty() {
+
+    if !type_arg.is_empty() {
+        let converted_type = match std::str::from_utf8(type_arg) {
+            Ok(t) => redis::ObjectType::from(t.to_string()),
+            Err(_) => {
+                unsafe {
+                    report_error(
+                        failure_callback,
+                        callback_index,
+                        "Invalid UTF-8 in TYPE argument".into(),
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return None;
+            }
+        };
+
         cluster_scan_args_builder = cluster_scan_args_builder.with_object_type(converted_type);
     }
+
+    if !count_arg.is_empty() {
+        let count_str = match std::str::from_utf8(count_arg) {
+            Ok(c) => c,
+            Err(_) => {
+                unsafe {
+                    report_error(
+                        failure_callback,
+                        callback_index,
+                        "Invalid UTF-8 in COUNT argument".into(),
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return None;
+            }
+        };
+
+        let converted_count = match count_str.parse::<u32>() {
+            Ok(c) => c,
+            Err(_) => {
+                unsafe {
+                    report_error(
+                        failure_callback,
+                        callback_index,
+                        "Invalid COUNT value".into(),
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return None;
+            }
+        };
+
+        cluster_scan_args_builder = cluster_scan_args_builder.with_count(converted_count);
+    }
+
     Some(cluster_scan_args_builder.build())
 }
 

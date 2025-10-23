@@ -178,7 +178,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
         string currentCursor = cursor.ToString();
-        long currentOffset = pageOffset;
+        int currentOffset = pageOffset;
 
         do
         {
@@ -190,7 +190,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
 
             if (currentOffset > 0)
             {
-                keys = [.. keys.Skip(pageOffset)];
+                keys = [.. keys.Skip(currentOffset)];
                 currentOffset = 0;
             }
 
