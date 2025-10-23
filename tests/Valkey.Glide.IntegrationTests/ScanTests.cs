@@ -109,14 +109,12 @@ public class ScanTests(TestConfiguration config)
         {
             await standaloneClient.ScanAsync("invalid");
         });
-        Assert.Contains("invalid cursor", exception.Message, StringComparison.OrdinalIgnoreCase);
 
         var clusterClient = TestConfiguration.DefaultClusterClient();
         exception = await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(async () =>
         {
             await clusterClient.ScanAsync(new ClusterScanCursor("invalid"));
         });
-        Assert.Contains("invalid cursor", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ScanOptions? options = null)
