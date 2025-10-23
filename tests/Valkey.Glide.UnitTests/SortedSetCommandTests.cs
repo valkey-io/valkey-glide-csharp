@@ -49,7 +49,7 @@ public class SortedSetCommandTests
 
             // SortedSetRemove - Multiple Members
             () => Assert.Equal(["ZREM", "key", "member1", "member2", "member3"], Request.SortedSetRemoveAsync("key", ["member1", "member2", "member3"]).GetArgs()),
-            () => Assert.Equal(["ZREM", "key"], Request.SortedSetRemoveAsync("key", Array.Empty<ValkeyValue>()).GetArgs()),
+            () => Assert.Equal(["ZREM", "key"], Request.SortedSetRemoveAsync("key", []).GetArgs()),
             () => Assert.Equal(["ZREM", "key", "", " ", "null", "0", "-1"], Request.SortedSetRemoveAsync("key", ["", " ", "null", "0", "-1"]).GetArgs()),
 
             // SortedSetCard

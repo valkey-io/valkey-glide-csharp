@@ -114,7 +114,7 @@ public class CommandTests
             () => Assert.Equal(["SISMEMBER", "mykey", "value"], Request.SetContainsAsync("mykey", "value").GetArgs()),
             () => Assert.Equal(["SISMEMBER", "test:set", "test-member"], Request.SetContainsAsync("test:set", "test-member").GetArgs()),
             () => Assert.Equal(["SMISMEMBER", "key", "member1", "member2", "member3"], Request.SetContainsAsync("key", ["member1", "member2", "member3"]).GetArgs()),
-            () => Assert.Equal(["SMISMEMBER", "key"], Request.SetContainsAsync("key", Array.Empty<ValkeyValue>()).GetArgs()),
+            () => Assert.Equal(["SMISMEMBER", "key"], Request.SetContainsAsync("key", []).GetArgs()),
             () => Assert.Equal(["SMISMEMBER", "key", "", " ", "null", "0", "-1"], Request.SetContainsAsync("key", ["", " ", "null", "0", "-1"]).GetArgs()),
             () => Assert.Equal(["SRANDMEMBER", "key"], Request.SetRandomMemberAsync("key").GetArgs()),
             () => Assert.Equal(["SRANDMEMBER", "mykey"], Request.SetRandomMemberAsync("mykey").GetArgs()),
@@ -371,7 +371,7 @@ public class CommandTests
 
             // Server Management Command Converters
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
-            () => Assert.Equal(Array.Empty<KeyValuePair<string, string>>(), Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
+            () => Assert.Equal([], Request.ConfigGetAsync("nonexistent").Converter([])),
             () => Assert.Equal(100L, Request.DatabaseSizeAsync().Converter(100L)),
             () => Assert.Equal(0L, Request.DatabaseSizeAsync().Converter(0L)),
             () => Assert.Equal(DateTime.UnixEpoch.AddSeconds(1609459200), Request.LastSaveAsync().Converter(1609459200L)),
@@ -495,7 +495,7 @@ public class CommandTests
             },
             () =>
             {
-                var result = Request.ScanAsync(0).Converter([0L, Array.Empty<object>()]);
+                var result = Request.ScanAsync(0).Converter([0L, []]);
                 Assert.Equal(0L, result.Item1);
                 Assert.Empty(result.Item2);
             },
