@@ -5,12 +5,12 @@ using static Valkey.Glide.Commands.Constants.Constants;
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Options for the SCAN command.
+/// Options for the scan commands.
 /// </summary>
 public class ScanOptions
 {
     /// <summary>
-    /// Pattern to match keys against.
+    /// Pattern to filter keys against.
     /// </summary>
     public string? MatchPattern { get; set; }
 
@@ -20,14 +20,14 @@ public class ScanOptions
     public long? Count { get; set; }
 
     /// <summary>
-    /// Filter keys by their data type.
+    /// Type to filter keys against.
     /// </summary>
     public ValkeyType? Type { get; set; }
 
     /// <summary>
-    /// Converts the options to an array of string arguments.
+    /// Converts the options to an array of string arguments for scan commands.
     /// </summary>
-    /// <returns>Array of string arguments for the SCAN command.</returns>
+    /// <returns>Array of string arguments.</returns>
     internal string[] ToArgs()
     {
         List<string> args = [];
