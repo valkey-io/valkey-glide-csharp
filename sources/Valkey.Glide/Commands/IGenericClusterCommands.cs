@@ -261,9 +261,6 @@ public interface IGenericClusterCommands
     /// an updated cursor that the user needs to use as the cursor argument in the next call. The iteration
     /// terminates when <see cref="ClusterScanCursor.IsFinished"/> returns <c>true</c>.
     /// </para>
-    /// <para>
-    /// Cursor resources are automatically cleaned up when used in the next scan call. No manual cleanup is required.
-    /// </para>
     /// </summary>
     /// <param name="cursor">The cursor for iteration.</param>
     /// <param name="options">Optional scan options for filtering results.</param>

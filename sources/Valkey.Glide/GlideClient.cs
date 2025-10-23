@@ -186,7 +186,7 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
             if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
             if (pageSize > 0) options.Count = pageSize;
 
-            (currentCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, options));
+            (currentCursor, ValkeyKey[] keys) = await ScanAsync(currentCursor, options);
 
             if (currentOffset > 0)
             {
@@ -201,6 +201,9 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
 
         } while (currentCursor != "0");
     }
+
+    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
+        => await Command(Request.ScanAsync(cursor, options));
 
     protected override async Task<Version> GetServerVersionAsync()
     {
@@ -219,7 +222,4 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
 
         return _serverVersion;
     }
-
-    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
-        => await Command(Request.ScanAsync(cursor, options));
 }
