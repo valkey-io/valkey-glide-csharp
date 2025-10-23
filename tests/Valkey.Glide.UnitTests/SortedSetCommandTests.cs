@@ -376,7 +376,7 @@ public class SortedSetCommandTests
 
             () =>
             {
-                SortedSetEntry[] emptyScoreResult = Request.SortedSetRangeByRankWithScoresAsync("key").Converter(new Dictionary<GlideString, object>());
+                SortedSetEntry[] emptyScoreResult = Request.SortedSetRangeByRankWithScoresAsync("key").Converter([]);
                 Assert.Empty(emptyScoreResult);
             },
 
@@ -521,7 +521,7 @@ public class SortedSetCommandTests
             // Test empty arrays
             () =>
             {
-                SortedSetEntry[] emptyResult = Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1"]).Converter(new Dictionary<GlideString, object>());
+                SortedSetEntry[] emptyResult = Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1"]).Converter([]);
                 Assert.Empty(emptyResult);
             },
 

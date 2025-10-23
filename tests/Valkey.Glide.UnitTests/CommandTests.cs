@@ -555,13 +555,13 @@ public class CommandTests
             () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, 2, TimeSpan.FromSeconds(1)).Converter(null).IsNull),
             () => Assert.False(Request.ListBlockingPopAsync(["mylist"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"value1" } } }).IsNull),
             () => Assert.False(Request.ListBlockingPopAsync(["list2"], ListSide.Right, 3, TimeSpan.FromSeconds(2)).Converter(new Dictionary<GlideString, object> { { (GlideString)"list2", new object[] { (GlideString)"elem1", (GlideString)"elem2" } } }).IsNull),
-            () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new Dictionary<GlideString, object>()).IsNull),
+            () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter([]).IsNull),
             () => Assert.True(Request.ListLeftPopAsync(["key1", "key2"], 2).Converter(null).IsNull),
             () => Assert.True(Request.ListRightPopAsync(["key1", "key2"], 3).Converter(null).IsNull),
             () => Assert.False(Request.ListLeftPopAsync(["mylist"], 1).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"left_value" } } }).IsNull),
             () => Assert.False(Request.ListRightPopAsync(["list2"], 2).Converter(new Dictionary<GlideString, object> { { (GlideString)"list2", new object[] { (GlideString)"right1", (GlideString)"right2" } } }).IsNull),
-            () => Assert.True(Request.ListLeftPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull),
-            () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter(new Dictionary<GlideString, object>()).IsNull),
+            () => Assert.True(Request.ListLeftPopAsync(["empty"], 1).Converter([]).IsNull),
+            () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter([]).IsNull),
 
             // HyperLogLog Command Converters
             () => Assert.True(Request.HyperLogLogAddAsync("key", "element").Converter(true)),
@@ -613,11 +613,12 @@ public class CommandTests
     [Fact]
     public void ValidateSetCommandHashSetConverters()
     {
-        HashSet<object> testHashSet = new HashSet<object> {
+        HashSet<object> testHashSet =
+        [
             (gs)"member1",
             (gs)"member2",
             (gs)"member3"
-        };
+        ];
 
         Assert.Multiple([
             () => {
@@ -656,11 +657,12 @@ public class CommandTests
     public void ValidateHashCommandConverters()
     {
         // Test for HashGetAsync with multiple fields
-        List<object> testList = new List<object> {
+        List<object> testList =
+        [
             (gs)"value1",
             (gs)"value2",
             null
-        };
+        ];
 
         // Test for HashGetAllAsync and HashRandomFieldsWithValuesAsync
         Dictionary<GlideString, object> testKvpList = new Dictionary<GlideString, object> {
