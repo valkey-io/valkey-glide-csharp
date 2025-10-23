@@ -177,24 +177,33 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
-        long currentCursor = cursor;
+        string currentCursor = cursor.ToString();
         int currentOffset = pageOffset;
 
         do
         {
-            (long nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, pattern, pageSize));
+            var options = new ScanOptions();
+            if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
+            if (pageSize > 0) options.Count = pageSize;
 
-            IEnumerable<ValkeyKey> keysToYield = currentOffset > 0 ? keys.Skip(currentOffset) : keys;
+            (currentCursor, ValkeyKey[] keys) = await ScanAsync(currentCursor, options);
 
-            foreach (ValkeyKey key in keysToYield)
+            if (currentOffset > 0)
+            {
+                keys = [.. keys.Skip(currentOffset)];
+                currentOffset = 0;
+            }
+
+            foreach (ValkeyKey key in keys)
             {
                 yield return key;
             }
 
-            currentCursor = nextCursor;
-            currentOffset = 0;
-        } while (currentCursor != 0);
+        } while (currentCursor != "0");
     }
+
+    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
+        => await Command(Request.ScanAsync(cursor, options));
 
     protected override async Task<Version> GetServerVersionAsync()
     {

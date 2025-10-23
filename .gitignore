@@ -143,10 +143,11 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
-# IDE generaged files
+# IDE generated files
 .vs
 .vscode
 .kiro/
+.amazonq/
 
 _NCrunch*
 

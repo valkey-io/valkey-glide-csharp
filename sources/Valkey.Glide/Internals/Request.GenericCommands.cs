@@ -318,25 +318,19 @@ internal partial class Request
     public static Cmd<bool, bool> KeyMoveAsync(ValkeyKey key, int database)
         => Simple<bool>(RequestType.Move, [key.ToGlideString(), database.ToGlideString()]);
 
-    public static Cmd<object[], (long, ValkeyKey[])> ScanAsync(long cursor, ValkeyValue pattern = default, long pageSize = 0)
+    public static Cmd<object[], (string, ValkeyKey[])> ScanAsync(string cursor, ScanOptions? options = null)
     {
         List<GlideString> args = [cursor.ToGlideString()];
 
-        if (!pattern.IsNull)
+        if (options != null)
         {
-            args.AddRange([Constants.MatchKeyword.ToGlideString(), pattern.ToGlideString()]);
-        }
-
-        if (pageSize > 0)
-        {
-            args.AddRange([Constants.CountKeyword.ToGlideString(), pageSize.ToGlideString()]);
+            args.AddRange(options.ToArgs().Select(arg => arg.ToGlideString()));
         }
 
         return new(RequestType.Scan, [.. args], false, arr =>
         {
-            object[] scanArray = arr;
-            long nextCursor = scanArray[0] is long l ? l : long.Parse(scanArray[0].ToString() ?? "0");
-            ValkeyKey[] keys = [.. ((object[])scanArray[1]).Cast<GlideString>().Select(gs => new ValkeyKey(gs))];
+            string nextCursor = arr[0].ToString() ?? "0";
+            ValkeyKey[] keys = [.. ((object[])arr[1]).Select(item => new ValkeyKey(item.ToString()))];
             return (nextCursor, keys);
         });
     }

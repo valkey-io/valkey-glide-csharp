@@ -132,6 +132,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     }
     #endregion protected methods
 
+    #region protected fields
+    protected Version? _serverVersion; // cached server version
+    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
+    #endregion protected fields
+
     #region private methods
     private void SuccessCallback(ulong index, IntPtr ptr) =>
         // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
@@ -149,6 +154,77 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     internal void SetInfo(string info) => _clientInfo = info;
 
     protected abstract Task<Version> GetServerVersionAsync();
+
+    protected async Task<(string cursor, ValkeyKey[] keys)> ClusterScanCommand(string cursor, string[] args)
+    {
+        var message = _messageContainer.GetMessageForCall();
+        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor);
+
+        IntPtr[]? argPtrs = null;
+        IntPtr argsPtr = IntPtr.Zero;
+        IntPtr argLengthsPtr = IntPtr.Zero;
+
+        try
+        {
+            if (args.Length > 0)
+            {
+                // 1. Get a pointer to the array of argument string pointers.
+                // Example: if args = ["MATCH", "key*"], then argPtrs[0] points
+                // to "MATCH", argPtrs[1] points to "key*", and argsPtr points
+                // to the argsPtrs array.
+                argPtrs = [.. args.Select(Marshal.StringToHGlobalAnsi)];
+                argsPtr = Marshal.AllocHGlobal(IntPtr.Size * args.Length);
+                Marshal.Copy(argPtrs, 0, argsPtr, args.Length);
+
+                // 2. Get a pointer to an array of argument string lengths.
+                // Example: if args = ["MATCH", "key*"], then argLengths[0] = 5
+                // (length of "MATCH"), argLengths[1] = 4 (length of "key*"),
+                // and argLengthsPtr points to the argLengths array.
+                var argLengths = args.Select(arg => (ulong)arg.Length).ToArray();
+                argLengthsPtr = Marshal.AllocHGlobal(sizeof(ulong) * args.Length);
+                Marshal.Copy(argLengths.Select(l => (long)l).ToArray(), 0, argLengthsPtr, args.Length);
+            }
+
+            // Submit request to Rust and wait for response.
+            RequestClusterScanFfi(_clientPointer, (ulong)message.Index, cursorPtr, (ulong)args.Length, argsPtr, argLengthsPtr);
+            IntPtr response = await message;
+
+            try
+            {
+                var result = HandleResponse(response);
+                var array = (object[])result!;
+                var nextCursor = array[0]!.ToString()!;
+                var keys = ((object[])array[1]!).Select(k => new ValkeyKey(k!.ToString())).ToArray();
+                return (nextCursor, keys);
+            }
+            finally
+            {
+                FreeResponse(response);
+            }
+        }
+        finally
+        {
+            // Clean up args memory
+            if (argLengthsPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(argLengthsPtr);
+            }
+
+            if (argsPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(argsPtr);
+            }
+
+            if (argPtrs != null)
+            {
+                Array.ForEach(argPtrs, Marshal.FreeHGlobal);
+            }
+
+            // Clean up cursor in Rust
+            RemoveClusterScanCursorFfi(cursorPtr);
+            Marshal.FreeHGlobal(cursorPtr);
+        }
+    }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void SuccessAction(ulong index, IntPtr ptr);
@@ -171,8 +247,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private readonly MessageContainer _messageContainer;
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
-    protected Version? _serverVersion; // cached server version
-    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
 
     #endregion private fields
 }
