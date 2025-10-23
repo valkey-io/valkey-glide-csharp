@@ -485,13 +485,13 @@ public class CommandTests
             {
                 var result = Request.ScanAsync(0).Converter([0L, new object[] { (gs)"key1", (gs)"key2" }]);
                 Assert.Equal(0L, result.Item1);
-                Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()).ToArray());
+                Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()));
             },
             () =>
             {
                 var result = Request.ScanAsync(10).Converter([5L, new object[] { (gs)"test" }]);
                 Assert.Equal(5L, result.Item1);
-                Assert.Equal(["test"], result.Item2.Select(k => k.ToString()).ToArray());
+                Assert.Equal(["test"], result.Item2.Select(k => k.ToString()));
             },
             () =>
             {
@@ -553,13 +553,13 @@ public class CommandTests
             () => Assert.Equal(ValkeyValue.Null, Request.ListBlockingMoveAsync("src", "dest", ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(2)).Converter(null)),
             () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(null).IsNull),
             () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, 2, TimeSpan.FromSeconds(1)).Converter(null).IsNull),
-            () => Assert.False(Request.ListBlockingPopAsync(["mylist"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"value1" } } }).IsNull),
-            () => Assert.False(Request.ListBlockingPopAsync(["list2"], ListSide.Right, 3, TimeSpan.FromSeconds(2)).Converter(new Dictionary<GlideString, object> { { (GlideString)"list2", new object[] { (GlideString)"elem1", (GlideString)"elem2" } } }).IsNull),
+            () => Assert.False(Request.ListBlockingPopAsync(["mylist"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new() { { (GlideString)"mylist", new object[] { (GlideString)"value1" } } }).IsNull),
+            () => Assert.False(Request.ListBlockingPopAsync(["list2"], ListSide.Right, 3, TimeSpan.FromSeconds(2)).Converter(new() { { (GlideString)"list2", new object[] { (GlideString)"elem1", (GlideString)"elem2" } } }).IsNull),
             () => Assert.True(Request.ListBlockingPopAsync(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter([]).IsNull),
             () => Assert.True(Request.ListLeftPopAsync(["key1", "key2"], 2).Converter(null).IsNull),
             () => Assert.True(Request.ListRightPopAsync(["key1", "key2"], 3).Converter(null).IsNull),
-            () => Assert.False(Request.ListLeftPopAsync(["mylist"], 1).Converter(new Dictionary<GlideString, object> { { (GlideString)"mylist", new object[] { (GlideString)"left_value" } } }).IsNull),
-            () => Assert.False(Request.ListRightPopAsync(["list2"], 2).Converter(new Dictionary<GlideString, object> { { (GlideString)"list2", new object[] { (GlideString)"right1", (GlideString)"right2" } } }).IsNull),
+            () => Assert.False(Request.ListLeftPopAsync(["mylist"], 1).Converter(new() { { (GlideString)"mylist", new object[] { (GlideString)"left_value" } } }).IsNull),
+            () => Assert.False(Request.ListRightPopAsync(["list2"], 2).Converter(new() { { (GlideString)"list2", new object[] { (GlideString)"right1", (GlideString)"right2" } } }).IsNull),
             () => Assert.True(Request.ListLeftPopAsync(["empty"], 1).Converter([]).IsNull),
             () => Assert.True(Request.ListRightPopAsync(["empty"], 1).Converter([]).IsNull),
 
@@ -665,7 +665,7 @@ public class CommandTests
         ];
 
         // Test for HashGetAllAsync and HashRandomFieldsWithValuesAsync
-        Dictionary<GlideString, object> testKvpList = new Dictionary<GlideString, object> {
+        Dictionary<GlideString, object> testKvpList = new() {
             {"field1", (gs)"value1" },
             {"field2", (gs)"value2" },
             {"field3", (gs)"value3" },
@@ -690,7 +690,7 @@ public class CommandTests
             // Test HashGetAsync with multiple fields
             () =>
             {
-                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter(testList.ToArray());
+                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter([.. testList]);
                 Assert.Equal(3, result.Length);
                 Assert.Equal("value1", result[0]);
                 Assert.Equal("value2", result[1]);

@@ -279,7 +279,8 @@ public class SortedSetCommandTests
         ];
 
         // Test data for SortedSetRangeByRankWithScoresAsync and SortedSetRangeByScoreWithScoresAsync
-        Dictionary<GlideString, object> testScoreDict = new Dictionary<GlideString, object> {
+        Dictionary<GlideString, object> testScoreDict = new()
+        {
             {"member1", 10.5},
             {"member2", 8.25},
             {"member3", 15.0}
@@ -335,7 +336,7 @@ public class SortedSetCommandTests
                     Assert.IsType<double>(entry.Score);
                 }
                 // Validate specific values (sorted by score)
-                SortedSetEntry[] sortedResults = result.OrderBy(e => e.Score).ToArray();
+                SortedSetEntry[] sortedResults = [.. result.OrderBy(e => e.Score)];
                 Assert.Equal("member2", result[0].Element);
                 Assert.Equal(8.25, result[0].Score);
                 Assert.Equal("member1", result[1].Element);
@@ -387,7 +388,7 @@ public class SortedSetCommandTests
                 Assert.Equal(3, result.Length);
                 Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
                 // Check that entries are sorted by score
-                SortedSetEntry[] sortedResults = result.OrderBy(e => e.Score).ToArray();
+                SortedSetEntry[] sortedResults = [.. result.OrderBy(e => e.Score)];
                 Assert.Equal("member2", sortedResults[0].Element);
                 Assert.Equal(8.25, sortedResults[0].Score);
                 Assert.Equal("member1", sortedResults[1].Element);
@@ -528,7 +529,7 @@ public class SortedSetCommandTests
             // Test SortedSetPopAsync converter - single element (max)
             () =>
             {
-                Dictionary<GlideString, object> testPopMaxDict = new Dictionary<GlideString, object>
+                Dictionary<GlideString, object> testPopMaxDict = new()
                 {
                     { (GlideString)"member1", 10.5 }
                 };
@@ -548,7 +549,7 @@ public class SortedSetCommandTests
             // Test SortedSetPopAsync converter - multiple elements (max)
             () =>
             {
-                Dictionary<GlideString, object> testPopMaxDict = new Dictionary<GlideString, object>
+                Dictionary<GlideString, object> testPopMaxDict = new()
                 {
                     { (GlideString)"member1", 10.5 },
                     { (GlideString)"member2", 8.25 }
@@ -564,7 +565,7 @@ public class SortedSetCommandTests
             // Test SortedSetPopAsync converter - single element (min)
             () =>
             {
-                Dictionary<GlideString, object> testPopMinDict = new Dictionary<GlideString, object>
+                Dictionary<GlideString, object> testPopMinDict = new()
                 {
                     { (GlideString)"member1", 8.25 }
                 };
