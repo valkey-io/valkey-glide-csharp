@@ -1,6 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Xunit;
+
 
 using static Valkey.Glide.ConnectionConfiguration;
 
@@ -147,7 +147,7 @@ public class ReadFromTests
 
         // Assert
         Assert.NotNull(cloned.ReadFrom);
-        Assert.Equal(original.ReadFrom.Value.Strategy, cloned.ReadFrom.Value.Strategy);
+        Assert.Equal(original.ReadFrom!.Value.Strategy, cloned.ReadFrom!.Value.Strategy);
         Assert.Equal(original.ReadFrom.Value.Az, cloned.ReadFrom.Value.Az);
     }
 
@@ -691,7 +691,7 @@ public class ReadFromTests
     [InlineData("PREFERREPLICA")]
     [InlineData("azaffinity")]
     [InlineData("AzAffinityReplicasAndPrimary")]
-    public async Task ConnectionString_CaseInsensitiveReadFromParsing(string strategyString)
+    public Task ConnectionString_CaseInsensitiveReadFromParsing(string strategyString)
     {
         // Arrange
         ReadFromStrategy expectedStrategy = Enum.Parse<ReadFromStrategy>(strategyString, ignoreCase: true);
@@ -706,6 +706,7 @@ public class ReadFromTests
         ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
         Assert.NotNull(parsedConfig.ReadFrom);
         Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
+        return Task.CompletedTask;
     }
 
     [Theory]
@@ -714,7 +715,7 @@ public class ReadFromTests
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
     [InlineData(null, null)] // Null ReadFrom test case
-    public async Task RoundTripSerialization_MaintainsConfigurationIntegrity(ReadFromStrategy? strategy, string? az)
+    public Task RoundTripSerialization_MaintainsConfigurationIntegrity(ReadFromStrategy? strategy, string? az)
     {
         // Arrange
         ConfigurationOptions originalConfig = new ConfigurationOptions();
@@ -735,5 +736,6 @@ public class ReadFromTests
         // Verify functional equivalence between original and parsed configurations
         Assert.Equal(originalConfig.ReadFrom?.Strategy, parsedConfig.ReadFrom?.Strategy);
         Assert.Equal(originalConfig.ReadFrom?.Az, parsedConfig.ReadFrom?.Az);
+        return Task.CompletedTask;
     }
 }
