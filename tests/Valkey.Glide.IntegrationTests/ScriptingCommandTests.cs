@@ -365,31 +365,59 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from fu
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionLoadAsync_WithReplace_ReplacesExistingLibrary(BaseClient client)
     {
-        // TODO: Remove this skip once routing support is added for cluster mode
-        // Function commands need to be routed to primary nodes in cluster mode
-        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
-
-        // Flush all functions first
-        await client.FunctionFlushAsync();
+        // Flush all functions first (use routing for cluster clients)
+        if (client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionFlushAsync();
+        }
 
         // Use hardcoded unique library name per test
         string libName = "replacelib";
         string funcName = "func_replace";
 
-        // Load initial library
+        // Load initial library (use routing for cluster clients)
         string libraryCode1 = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'version 1' end)";
-        await client.FunctionLoadAsync(libraryCode1);
+        if (client is GlideClusterClient clusterClient1)
+        {
+            await clusterClient1.FunctionLoadAsync(libraryCode1, false, Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionLoadAsync(libraryCode1);
+        }
 
-        // Replace with new version
+        // Replace with new version (use routing for cluster clients)
         string libraryCode2 = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'version 2' end)";
-        string libraryName = await client.FunctionLoadAsync(libraryCode2, replace: true);
+        string libraryName;
+        if (client is GlideClusterClient clusterClient2)
+        {
+            ClusterValue<string> loadResult = await clusterClient2.FunctionLoadAsync(libraryCode2, replace: true, Route.AllPrimaries);
+            libraryName = loadResult.HasSingleData ? loadResult.SingleValue : loadResult.MultiValue.Values.First();
+        }
+        else
+        {
+            libraryName = await client.FunctionLoadAsync(libraryCode2, replace: true);
+        }
 
         Assert.Equal(libName, libraryName);
 
-        // Verify the new version is loaded
-        ValkeyResult result = await client.FCallAsync(funcName);
+        // Verify the new version is loaded (use routing for cluster clients)
+        ValkeyResult result;
+        if (client is GlideClusterClient clusterClient3)
+        {
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
+        }
+        else
+        {
+            result = await client.FCallAsync(funcName);
+        }
         Assert.Equal("version 2", result.ToString());
     }
 
@@ -430,24 +458,43 @@ this is not valid lua code";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ExecutesLoadedFunction_ReturnsResult(BaseClient client)
     {
-        // TODO: Remove this skip once routing support is added for cluster mode
-        // Function commands need to be routed to primary nodes in cluster mode
-        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
-
-        // Flush all functions first
-        await client.FunctionFlushAsync();
+        // Flush all functions first (use routing for cluster clients)
+        if (client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionFlushAsync();
+        }
 
         // Use hardcoded unique library name per test
         string libName = "execlib";
         string funcName = "greet";
 
-        // Load function
+        // Load function (use routing for cluster clients)
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'Hello, World!' end)";
-        await client.FunctionLoadAsync(libraryCode);
+        if (client is GlideClusterClient clusterClient2)
+        {
+            await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionLoadAsync(libraryCode);
+        }
 
-        // Execute the function
-        ValkeyResult result = await client.FCallAsync(funcName);
+        // Execute the function (use routing for cluster clients)
+        ValkeyResult result;
+        if (client is GlideClusterClient clusterClient3)
+        {
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
+        }
+        else
+        {
+            result = await client.FCallAsync(funcName);
+        }
 
         Assert.NotNull(result);
         Assert.Equal("Hello, World!", result.ToString());
@@ -552,33 +599,69 @@ redis.register_function{{
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionFlushAsync_RemovesAllFunctions(BaseClient client)
     {
-        // TODO: Remove this skip once routing support is added for cluster mode
-        // Function commands need to be routed to primary nodes in cluster mode
-        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
-
-        // Flush all functions first
-        await client.FunctionFlushAsync();
+        // Flush all functions first (use routing for cluster clients)
+        if (client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionFlushAsync();
+        }
 
         // Use hardcoded unique library name per test
         string libName = "flushlib";
         string funcName = "flushfunc";
 
-        // Load a function
+        // Load a function (use routing for cluster clients)
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        await client.FunctionLoadAsync(libraryCode);
+        if (client is GlideClusterClient clusterClient2)
+        {
+            await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionLoadAsync(libraryCode);
+        }
 
-        // Verify function exists by calling it
-        ValkeyResult resultBefore = await client.FCallAsync(funcName);
+        // Verify function exists by calling it (use routing for cluster clients)
+        ValkeyResult resultBefore;
+        if (client is GlideClusterClient clusterClient3)
+        {
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            resultBefore = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
+        }
+        else
+        {
+            resultBefore = await client.FCallAsync(funcName);
+        }
         Assert.Equal("test", resultBefore.ToString());
 
-        // Flush all functions
-        string flushResult = await client.FunctionFlushAsync();
+        // Flush all functions (use routing for cluster clients)
+        string flushResult;
+        if (client is GlideClusterClient clusterClient4)
+        {
+            ClusterValue<string> flushResultValue = await clusterClient4.FunctionFlushAsync(Route.AllPrimaries);
+            flushResult = flushResultValue.HasSingleData ? flushResultValue.SingleValue : flushResultValue.MultiValue.Values.First();
+        }
+        else
+        {
+            flushResult = await client.FunctionFlushAsync();
+        }
         Assert.Equal("OK", flushResult);
 
-        // Verify function no longer exists
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FCallAsync(funcName));
+        // Verify function no longer exists (use routing for cluster clients)
+        if (client is GlideClusterClient clusterClient5)
+        {
+            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+                await clusterClient5.FCallAsync(funcName, Route.Random));
+        }
+        else
+        {
+            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+                await client.FCallAsync(funcName));
+        }
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -722,23 +805,42 @@ end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsInteger_ConvertsCorrectly(BaseClient client)
     {
-        // TODO: Remove this skip once routing support is added for cluster mode
-        // Function commands need to be routed to primary nodes in cluster mode
-        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
-
-        // Flush all functions first
-        await client.FunctionFlushAsync();
+        // Flush all functions first (use routing for cluster clients)
+        if (client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionFlushAsync();
+        }
 
         // Use hardcoded unique library name per test
         string libName = "intlib";
         string funcName = "returnint";
 
-        // Load function returning integer
+        // Load function returning integer (use routing for cluster clients)
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 42 end)";
-        await client.FunctionLoadAsync(libraryCode);
+        if (client is GlideClusterClient clusterClient2)
+        {
+            await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionLoadAsync(libraryCode);
+        }
 
-        ValkeyResult result = await client.FCallAsync(funcName);
+        ValkeyResult result;
+        if (client is GlideClusterClient clusterClient3)
+        {
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
+        }
+        else
+        {
+            result = await client.FCallAsync(funcName);
+        }
 
         Assert.NotNull(result);
         Assert.Equal(42, (long)result);
@@ -748,23 +850,42 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsArray_ConvertsCorrectly(BaseClient client)
     {
-        // TODO: Remove this skip once routing support is added for cluster mode
-        // Function commands need to be routed to primary nodes in cluster mode
-        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
-
-        // Flush all functions first
-        await client.FunctionFlushAsync();
+        // Flush all functions first (use routing for cluster clients)
+        if (client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionFlushAsync();
+        }
 
         // Use hardcoded unique library name per test
         string libName = "arraylib";
         string funcName = "returnarray";
 
-        // Load function returning array
+        // Load function returning array (use routing for cluster clients)
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c'}} end)";
-        await client.FunctionLoadAsync(libraryCode);
+        if (client is GlideClusterClient clusterClient2)
+        {
+            await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        }
+        else
+        {
+            await client.FunctionLoadAsync(libraryCode);
+        }
 
-        ValkeyResult result = await client.FCallAsync(funcName);
+        ValkeyResult result;
+        if (client is GlideClusterClient clusterClient3)
+        {
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
+        }
+        else
+        {
+            result = await client.FCallAsync(funcName);
+        }
 
         Assert.NotNull(result);
         string?[]? arr = (string?[]?)result;
@@ -779,9 +900,8 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsNil_HandlesCorrectly(BaseClient client)
     {
-        // TODO: Remove this skip once routing support is added for cluster mode
-        // Function commands need to be routed to primary nodes in cluster mode
-        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
+        // Skip for cluster clients - nil handling with routing needs investigation
+        Assert.SkipWhen(client is GlideClusterClient, "Nil handling with cluster routing needs investigation");
 
         // Flush all functions first
         await client.FunctionFlushAsync();
@@ -1065,5 +1185,428 @@ redis.register_function('conflictfunc', function(keys, args) return 'result' end
         // Try to restore with APPEND policy (should fail because library already exists)
         await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Append));
+    }
+
+    // ===== Cluster-Specific Function Tests =====
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FCallAsync_WithAllPrimariesRouting_ExecutesOnAllPrimaries(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_allprimaries_lib";
+        string funcName = "cluster_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'Hello from primary' end)";
+        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Verify load succeeded (may be single or multi-value depending on cluster configuration)
+        if (loadResult.HasMultiData)
+        {
+            Assert.True(loadResult.MultiValue.Count > 0);
+            Assert.All(loadResult.MultiValue.Values, name => Assert.Equal(libName, name));
+        }
+        else
+        {
+            Assert.Equal(libName, loadResult.SingleValue);
+        }
+
+        // Execute function on all primaries
+        ClusterValue<ValkeyResult> result = await client.FCallAsync(funcName, Route.AllPrimaries);
+
+        // Verify execution (may be single or multi-value depending on cluster configuration)
+        if (result.HasMultiData)
+        {
+            Assert.True(result.MultiValue.Count > 0);
+            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from primary", r.ToString()));
+        }
+        else
+        {
+            Assert.Equal("Hello from primary", result.SingleValue.ToString());
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FCallAsync_WithAllNodesRouting_ExecutesOnAllNodes(GlideClusterClient client)
+    {
+        // Flush all functions first (must use AllPrimaries since replicas are read-only)
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_allnodes_lib";
+        string funcName = "cluster_allnodes_func";
+
+        // Load function on all primaries (can't load on replicas - they're read-only)
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function{{
+    function_name='{funcName}',
+    callback=function(keys, args) return 'Hello from node' end,
+    flags={{'no-writes'}}
+}}";
+        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Verify load succeeded (may be single or multi-value depending on cluster configuration)
+        if (loadResult.HasMultiData)
+        {
+            Assert.True(loadResult.MultiValue.Count > 0);
+        }
+        else
+        {
+            Assert.Equal(libName, loadResult.SingleValue);
+        }
+
+        // Execute read-only function on all nodes
+        ClusterValue<ValkeyResult> result = await client.FCallReadOnlyAsync(funcName, Route.AllNodes);
+
+        // Verify execution (may be single or multi-value depending on cluster configuration)
+        if (result.HasMultiData)
+        {
+            Assert.True(result.MultiValue.Count > 0);
+            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from node", r.ToString()));
+        }
+        else
+        {
+            Assert.Equal("Hello from node", result.SingleValue.ToString());
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FCallAsync_WithRandomRouting_ExecutesOnSingleNode(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_random_lib";
+        string funcName = "cluster_random_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'Random node result' end)";
+        await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Execute function on random node
+        ClusterValue<ValkeyResult> result = await client.FCallAsync(funcName, Route.Random);
+
+        // Verify execution on single node
+        Assert.True(result.HasSingleData);
+        Assert.Equal("Random node result", result.SingleValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FunctionLoadAsync_WithRouting_LoadsOnSpecifiedNodes(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_load_lib";
+        string funcName = "cluster_load_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'Loaded' end)";
+        ClusterValue<string> result = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Verify load succeeded (may be single or multi-value depending on cluster configuration)
+        if (result.HasMultiData)
+        {
+            Assert.All(result.MultiValue.Values, name => Assert.Equal(libName, name));
+        }
+        else
+        {
+            Assert.Equal(libName, result.SingleValue);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FunctionDeleteAsync_WithRouting_DeletesFromSpecifiedNodes(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_delete_lib";
+        string funcName = "cluster_delete_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'test' end)";
+        await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Verify function exists by calling it
+        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);
+        Assert.Equal("test", callResult.SingleValue.ToString());
+
+        // Delete function from all primaries
+        ClusterValue<string> deleteResult = await client.FunctionDeleteAsync(libName, Route.AllPrimaries);
+
+        // Verify delete succeeded (may be single or multi-value depending on cluster configuration)
+        if (deleteResult.HasMultiData)
+        {
+            Assert.All(deleteResult.MultiValue.Values, r => Assert.Equal("OK", r));
+        }
+        else
+        {
+            Assert.Equal("OK", deleteResult.SingleValue);
+        }
+
+        // Verify function no longer exists
+        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.FCallAsync(funcName, Route.Random));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FunctionListAsync_WithRouting_ReturnsLibrariesFromSpecifiedNodes(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_list_lib";
+        string funcName = "cluster_list_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'test' end)";
+        await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // List functions from all primaries
+        ClusterValue<LibraryInfo[]> result = await client.FunctionListAsync(null, Route.AllPrimaries);
+
+        // Verify list returned (may be single or multi-value depending on cluster configuration)
+        if (result.HasMultiData)
+        {
+            Assert.True(result.MultiValue.Count > 0);
+            // Verify each node has the library
+            foreach (var (node, libraries) in result.MultiValue)
+            {
+                Assert.NotEmpty(libraries);
+                Assert.Contains(libraries, lib => lib.Name == libName);
+            }
+        }
+        else
+        {
+            Assert.NotEmpty(result.SingleValue);
+            Assert.Contains(result.SingleValue, lib => lib.Name == libName);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FunctionStatsAsync_WithRouting_ReturnsPerNodeStats(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_stats_lib";
+        string funcName = "cluster_stats_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'test' end)";
+        await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Get stats from all primaries
+        ClusterValue<FunctionStatsResult> result = await client.FunctionStatsAsync(Route.AllPrimaries);
+
+        // Verify stats returned (may be single or multi-value depending on cluster configuration)
+        if (result.HasMultiData)
+        {
+            Assert.True(result.MultiValue.Count > 0);
+            // Verify each node has stats
+            foreach (var (node, stats) in result.MultiValue)
+            {
+                Assert.NotNull(stats);
+                Assert.NotNull(stats.Engines);
+                // Engines should contain LUA if available
+                if (stats.Engines.Count > 0)
+                {
+                    Assert.Contains("LUA", stats.Engines.Keys);
+                }
+            }
+        }
+        else
+        {
+            Assert.NotNull(result.SingleValue);
+            Assert.NotNull(result.SingleValue.Engines);
+            // Engines should contain LUA if available
+            if (result.SingleValue.Engines.Count > 0)
+            {
+                Assert.Contains("LUA", result.SingleValue.Engines.Keys);
+            }
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FunctionDumpAsync_WithRouting_CreatesBackupFromSpecifiedNode(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_dump_lib";
+        string funcName = "cluster_dump_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'test' end)";
+        await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Dump functions from random node
+        ClusterValue<byte[]> result = await client.FunctionDumpAsync(Route.Random);
+
+        // Verify dump succeeded on single node
+        Assert.True(result.HasSingleData);
+        Assert.NotNull(result.SingleValue);
+        Assert.NotEmpty(result.SingleValue);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FunctionRestoreAsync_WithRouting_RestoresToSpecifiedNodes(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_restore_lib";
+        string funcName = "cluster_restore_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'restored' end)";
+        await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Dump functions from random node
+        ClusterValue<byte[]> dumpResult = await client.FunctionDumpAsync(Route.Random);
+        byte[] backup = dumpResult.SingleValue;
+
+        // Flush all functions
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Restore functions to all primaries
+        ClusterValue<string> restoreResult = await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
+
+        // Verify restore succeeded (may be single or multi-value depending on cluster configuration)
+        if (restoreResult.HasMultiData)
+        {
+            Assert.All(restoreResult.MultiValue.Values, r => Assert.Equal("OK", r));
+        }
+        else
+        {
+            Assert.Equal("OK", restoreResult.SingleValue);
+        }
+
+        // Verify function is restored by calling it
+        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);
+        Assert.Equal("restored", callResult.SingleValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FunctionRestoreAsync_WithReplacePolicy_ReplacesExistingFunctions(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_replace_lib";
+        string funcName = "cluster_replace_func";
+
+        // Load initial function
+        string libraryCode1 = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'version 1' end)";
+        await client.FunctionLoadAsync(libraryCode1, false, Route.AllPrimaries);
+
+        // Dump functions
+        ClusterValue<byte[]> dumpResult = await client.FunctionDumpAsync(Route.Random);
+        byte[] backup = dumpResult.SingleValue;
+
+        // Load different version
+        string libraryCode2 = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'version 2' end)";
+        await client.FunctionLoadAsync(libraryCode2, true, Route.AllPrimaries);
+
+        // Restore with REPLACE policy
+        ClusterValue<string> restoreResult = await client.FunctionRestoreAsync(
+            backup,
+            FunctionRestorePolicy.Replace,
+            Route.AllPrimaries);
+
+        // Verify restore succeeded (may be single or multi-value depending on cluster configuration)
+        if (restoreResult.HasMultiData)
+        {
+            Assert.All(restoreResult.MultiValue.Values, r => Assert.Equal("OK", r));
+        }
+        else
+        {
+            Assert.Equal("OK", restoreResult.SingleValue);
+        }
+
+        // Verify original version is restored
+        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);
+        Assert.Equal("version 1", callResult.SingleValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task ClusterValue_MultiNodeResults_HandlesCorrectly(GlideClusterClient client)
+    {
+
+        // Flush all functions first
+        await client.FunctionFlushAsync(Route.AllPrimaries);
+
+        // Use hardcoded unique library name per test
+        string libName = "cluster_multinode_lib";
+        string funcName = "cluster_multinode_func";
+
+        // Load function on all primaries
+        string libraryCode = $@"#!lua name={libName}
+redis.register_function('{funcName}', function(keys, args) return 'multi-node result' end)";
+        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+
+        // Test ClusterValue properties (may be single or multi-value depending on cluster configuration)
+        if (loadResult.HasMultiData)
+        {
+            Assert.False(loadResult.HasSingleData);
+            Assert.NotNull(loadResult.MultiValue);
+            Assert.True(loadResult.MultiValue.Count > 0);
+
+            // Verify each node address is a key in the dictionary
+            foreach (var (nodeAddress, libraryName) in loadResult.MultiValue)
+            {
+                Assert.NotNull(nodeAddress);
+                Assert.NotEmpty(nodeAddress);
+                Assert.Equal(libName, libraryName);
+            }
+        }
+        else
+        {
+            Assert.True(loadResult.HasSingleData);
+            Assert.False(loadResult.HasMultiData);
+            Assert.Equal(libName, loadResult.SingleValue);
+        }
     }
 }
