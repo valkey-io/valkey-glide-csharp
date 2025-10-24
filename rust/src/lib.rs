@@ -550,6 +550,131 @@ pub unsafe extern "C" fn free_drop_script_error(error: *mut c_char) {
     }
 }
 
+/// Executes a Lua script using EVALSHA with automatic fallback to EVAL.
+///
+/// # Parameters
+///
+/// * `client_ptr`: Pointer to a valid `GlideClient` returned from [`create_client`].
+/// * `callback_index`: Unique identifier for the callback.
+/// * `hash`: SHA1 hash of the script as a null-terminated C string.
+/// * `keys_count`: Number of keys in the keys array.
+/// * `keys`: Array of pointers to key data.
+/// * `keys_len`: Array of key lengths.
+/// * `args_count`: Number of arguments in the args array.
+/// * `args`: Array of pointers to argument data.
+/// * `args_len`: Array of argument lengths.
+/// * `route_bytes`: Optional routing information (not used, reserved for future).
+/// * `route_bytes_len`: Length of route_bytes.
+///
+/// # Safety
+///
+/// * `client_ptr` must not be `null` and must be obtained from [`create_client`].
+/// * `hash` must be a valid null-terminated C string.
+/// * `keys` and `keys_len` must be valid arrays of size `keys_count`, or both null if `keys_count` is 0.
+/// * `args` and `args_len` must be valid arrays of size `args_count`, or both null if `args_count` is 0.
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn invoke_script(
+    client_ptr: *const c_void,
+    callback_index: usize,
+    hash: *const c_char,
+    keys_count: usize,
+    keys: *const usize,
+    keys_len: *const usize,
+    args_count: usize,
+    args: *const usize,
+    args_len: *const usize,
+    _route_bytes: *const u8,
+    _route_bytes_len: usize,
+) {
+    let client = unsafe {
+        Arc::increment_strong_count(client_ptr);
+        Arc::from_raw(client_ptr as *mut Client)
+    };
+    let core = client.core.clone();
+
+    let mut panic_guard = PanicGuard {
+        panicked: true,
+        failure_callback: core.failure_callback,
+        callback_index,
+    };
+
+    // Convert hash to Rust string
+    let hash_str = match unsafe { CStr::from_ptr(hash).to_str() } {
+        Ok(s) => s.to_string(),
+        Err(e) => {
+            unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    format!("Invalid hash string: {}", e),
+                    RequestErrorType::Unspecified,
+                );
+            }
+            return;
+        }
+    };
+
+    // Convert keys
+    let keys_vec: Vec<&[u8]> = if !keys.is_null() && !keys_len.is_null() && keys_count > 0 {
+        let key_ptrs = unsafe { std::slice::from_raw_parts(keys as *const *const u8, keys_count) };
+        let key_lens = unsafe { std::slice::from_raw_parts(keys_len, keys_count) };
+        key_ptrs
+            .iter()
+            .zip(key_lens.iter())
+            .map(|(&ptr, &len)| unsafe { std::slice::from_raw_parts(ptr, len) })
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    // Convert args
+    let args_vec: Vec<&[u8]> = if !args.is_null() && !args_len.is_null() && args_count > 0 {
+        let arg_ptrs = unsafe { std::slice::from_raw_parts(args as *const *const u8, args_count) };
+        let arg_lens = unsafe { std::slice::from_raw_parts(args_len, args_count) };
+        arg_ptrs
+            .iter()
+            .zip(arg_lens.iter())
+            .map(|(&ptr, &len)| unsafe { std::slice::from_raw_parts(ptr, len) })
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    client.runtime.spawn(async move {
+        let mut panic_guard = PanicGuard {
+            panicked: true,
+            failure_callback: core.failure_callback,
+            callback_index,
+        };
+
+        let result = core
+            .client
+            .clone()
+            .invoke_script(&hash_str, &keys_vec, &args_vec, None)
+            .await;
+
+        match result {
+            Ok(value) => {
+                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
+                unsafe { (core.success_callback)(callback_index, ptr) };
+            }
+            Err(err) => unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    error_message(&err),
+                    error_type(&err),
+                );
+            },
+        };
+        panic_guard.panicked = false;
+        drop(panic_guard);
+    });
+
+    panic_guard.panicked = false;
+    drop(panic_guard);
+}
+
 /// Execute a cluster scan request.
 ///
 /// # Safety
