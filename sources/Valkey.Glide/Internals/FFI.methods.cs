@@ -46,6 +46,21 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "free_drop_script_error")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void FreeDropScriptError(IntPtr errorBuffer);
+
+    [LibraryImport("libglide_rs", EntryPoint = "invoke_script")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void InvokeScriptFfi(
+        IntPtr client,
+        ulong index,
+        IntPtr hash,
+        ulong keysCount,
+        IntPtr keys,
+        IntPtr keysLen,
+        ulong argsCount,
+        IntPtr args,
+        IntPtr argsLen,
+        IntPtr routeInfo,
+        ulong routeInfoLen);
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
     public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -73,5 +88,19 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_drop_script_error")]
     public static extern void FreeDropScriptError(IntPtr errorBuffer);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "invoke_script")]
+    public static extern void InvokeScriptFfi(
+        IntPtr client,
+        ulong index,
+        IntPtr hash,
+        ulong keysCount,
+        IntPtr keys,
+        IntPtr keysLen,
+        ulong argsCount,
+        IntPtr args,
+        IntPtr argsLen,
+        IntPtr routeInfo,
+        ulong routeInfoLen);
 #endif
 }
