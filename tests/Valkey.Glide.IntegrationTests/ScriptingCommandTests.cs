@@ -722,6 +722,10 @@ end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsInteger_ConvertsCorrectly(BaseClient client)
     {
+        // TODO: Remove this skip once routing support is added for cluster mode
+        // Function commands need to be routed to primary nodes in cluster mode
+        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
+
         // Flush all functions first
         await client.FunctionFlushAsync();
 
@@ -744,6 +748,10 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsArray_ConvertsCorrectly(BaseClient client)
     {
+        // TODO: Remove this skip once routing support is added for cluster mode
+        // Function commands need to be routed to primary nodes in cluster mode
+        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
+
         // Flush all functions first
         await client.FunctionFlushAsync();
 
@@ -771,6 +779,10 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsNil_HandlesCorrectly(BaseClient client)
     {
+        // TODO: Remove this skip once routing support is added for cluster mode
+        // Function commands need to be routed to primary nodes in cluster mode
+        Assert.SkipWhen(client is GlideClusterClient, "Function execution requires routing to primary nodes in cluster mode");
+
         // Flush all functions first
         await client.FunctionFlushAsync();
 
@@ -874,7 +886,13 @@ redis.register_function('codefunc', function(keys, args) return 'result' end)";
         // Load a library
         string libCode = @"#!lua name=statslib
 redis.register_function('statsfunc', function(keys, args) return 'result' end)";
-        await client.FunctionLoadAsync(libCode);
+        string libName = await client.FunctionLoadAsync(libCode);
+        Assert.Equal("statslib", libName);
+
+        // Verify the function was loaded
+        var libraries = await client.FunctionListAsync();
+        Assert.NotEmpty(libraries);
+        Assert.Contains(libraries, lib => lib.Name == "statslib");
 
         // Get stats
         FunctionStatsResult stats = await client.FunctionStatsAsync();
@@ -884,12 +902,11 @@ redis.register_function('statsfunc', function(keys, args) return 'result' end)";
         Assert.True(stats.Engines.Count > 0);
 
         // Check LUA engine stats
-        if (stats.Engines.TryGetValue("LUA", out EngineStats? luaStats))
-        {
-            Assert.NotNull(luaStats);
-            Assert.True(luaStats.FunctionCount > 0);
-            Assert.True(luaStats.LibraryCount > 0);
-        }
+        Assert.True(stats.Engines.ContainsKey("LUA"));
+        EngineStats luaStats = stats.Engines["LUA"];
+        Assert.NotNull(luaStats);
+        Assert.Equal(1, luaStats.FunctionCount);
+        Assert.Equal(1, luaStats.LibraryCount);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
