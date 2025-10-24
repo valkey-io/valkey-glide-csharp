@@ -3,13 +3,12 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Policy for restoring function libraries.
+/// Policy for restoring functions from a backup.
 /// </summary>
 public enum FunctionRestorePolicy
 {
     /// <summary>
-    /// Append functions without replacing existing ones.
-    /// Throws error if library already exists.
+    /// Append functions without replacing existing ones. Fails if a library already exists.
     /// </summary>
     Append,
 
@@ -19,7 +18,7 @@ public enum FunctionRestorePolicy
     Flush,
 
     /// <summary>
-    /// Overwrite conflicting functions.
+    /// Overwrite conflicting functions with the restored versions.
     /// </summary>
     Replace
 }
