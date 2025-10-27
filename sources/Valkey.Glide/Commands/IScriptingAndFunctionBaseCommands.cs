@@ -295,4 +295,65 @@ public interface IScriptingAndFunctionBaseCommands
         FlushMode mode,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
+
+    // ===== StackExchange.Redis Compatibility Methods =====
+
+    /// <summary>
+    /// Evaluates a Lua script on the server (StackExchange.Redis compatibility).
+    /// </summary>
+    /// <param name="script">The Lua script to evaluate.</param>
+    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
+    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <remarks>
+    /// This method uses EVAL to execute the script. For better performance with repeated executions,
+    /// consider using LuaScript.Prepare() or pre-loading scripts with IServer.ScriptLoadAsync().
+    /// </remarks>
+    Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Evaluates a pre-loaded Lua script on the server using its SHA1 hash (StackExchange.Redis compatibility).
+    /// </summary>
+    /// <param name="hash">The SHA1 hash of the script to evaluate.</param>
+    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
+    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <remarks>
+    /// This method uses EVALSHA to execute the script by its hash. If the script is not cached on the server,
+    /// a NOSCRIPT error will be thrown. Use IServer.ScriptLoadAsync() to pre-load scripts.
+    /// </remarks>
+    Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Evaluates a LuaScript with named parameter support (StackExchange.Redis compatibility).
+    /// </summary>
+    /// <param name="script">The LuaScript to evaluate.</param>
+    /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <remarks>
+    /// This method extracts parameter values from the provided object and passes them to the script.
+    /// Parameters of type ValkeyKey are treated as keys (KEYS array), while other types are treated
+    /// as arguments (ARGV array).
+    /// </remarks>
+    Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Evaluates a pre-loaded LuaScript using EVALSHA (StackExchange.Redis compatibility).
+    /// </summary>
+    /// <param name="script">The LoadedLuaScript to evaluate.</param>
+    /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <remarks>
+    /// This method uses EVALSHA to execute the script by its hash. If the script is not cached on the server,
+    /// a NOSCRIPT error will be thrown.
+    /// </remarks>
+    Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None);
 }

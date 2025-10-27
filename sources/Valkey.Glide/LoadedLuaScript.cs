@@ -25,16 +25,18 @@ public sealed class LoadedLuaScript
     /// </summary>
     /// <param name="script">The LuaScript that was loaded.</param>
     /// <param name="hash">The SHA1 hash of the script.</param>
-    internal LoadedLuaScript(LuaScript script, byte[] hash)
+    /// <param name="loadedExecutableScript">The actual executable script that was loaded on the server (with placeholders replaced).</param>
+    internal LoadedLuaScript(LuaScript script, byte[] hash, string loadedExecutableScript)
     {
         Script = script ?? throw new ArgumentNullException(nameof(script));
         Hash = hash ?? throw new ArgumentNullException(nameof(hash));
+        LoadedExecutableScript = loadedExecutableScript ?? throw new ArgumentNullException(nameof(loadedExecutableScript));
     }
 
     /// <summary>
     /// Gets the LuaScript that was loaded.
     /// </summary>
-    private LuaScript Script { get; }
+    internal LuaScript Script { get; }
 
     /// <summary>
     /// Gets the original script text with @parameter syntax.
@@ -50,6 +52,12 @@ public sealed class LoadedLuaScript
     /// Gets the SHA1 hash of the script.
     /// </summary>
     public byte[] Hash { get; }
+
+    /// <summary>
+    /// Gets the actual executable script that was loaded on the server (with placeholders replaced).
+    /// This is the script that corresponds to the Hash and should be used for execution.
+    /// </summary>
+    internal string LoadedExecutableScript { get; }
 
     /// <summary>
     /// Evaluates the loaded script using EVALSHA synchronously.

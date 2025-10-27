@@ -262,17 +262,23 @@ public sealed class LuaScript
             throw new ArgumentNullException(nameof(server));
         }
 
+        // Replace placeholders in the executable script using a heuristic
+        // We assume parameters named "key", "keys", or starting with "key" are keys
+        string scriptToLoad = ScriptParameterMapper.ReplacePlaceholdersWithHeuristic(ExecutableScript, Arguments);
+
         // Call IServer.ScriptLoad (will be implemented in task 15.2)
         // For now, we'll use Execute to call SCRIPT LOAD directly
-        ValkeyResult result = server.Execute("SCRIPT", ["LOAD", ExecutableScript], flags);
-        byte[]? hash = (byte[]?)result;
+        ValkeyResult result = server.Execute("SCRIPT", ["LOAD", scriptToLoad], flags);
+        string? hashString = (string?)result;
 
-        if (hash == null)
+        if (string.IsNullOrEmpty(hashString))
         {
-            throw new InvalidOperationException("SCRIPT LOAD returned null hash");
+            throw new InvalidOperationException("SCRIPT LOAD returned null or empty hash");
         }
 
-        return new LoadedLuaScript(this, hash);
+        // Convert hex string to byte array
+        byte[] hash = Convert.FromHexString(hashString);
+        return new LoadedLuaScript(this, hash, scriptToLoad);
     }
 
     /// <summary>
@@ -301,17 +307,23 @@ public sealed class LuaScript
             throw new ArgumentNullException(nameof(server));
         }
 
+        // Replace placeholders in the executable script using a heuristic
+        // We assume parameters named "key", "keys", or starting with "key" are keys
+        string scriptToLoad = ScriptParameterMapper.ReplacePlaceholdersWithHeuristic(ExecutableScript, Arguments);
+
         // Call IServer.ScriptLoadAsync (will be implemented in task 15.2)
         // For now, we'll use ExecuteAsync to call SCRIPT LOAD directly
-        ValkeyResult result = await server.ExecuteAsync("SCRIPT", ["LOAD", ExecutableScript], flags).ConfigureAwait(false);
-        byte[]? hash = (byte[]?)result;
+        ValkeyResult result = await server.ExecuteAsync("SCRIPT", ["LOAD", scriptToLoad], flags).ConfigureAwait(false);
+        string? hashString = (string?)result;
 
-        if (hash == null)
+        if (string.IsNullOrEmpty(hashString))
         {
-            throw new InvalidOperationException("SCRIPT LOAD returned null hash");
+            throw new InvalidOperationException("SCRIPT LOAD returned null or empty hash");
         }
 
-        return new LoadedLuaScript(this, hash);
+        // Convert hex string to byte array
+        byte[] hash = Convert.FromHexString(hashString);
+        return new LoadedLuaScript(this, hash, scriptToLoad);
     }
 }
 ///

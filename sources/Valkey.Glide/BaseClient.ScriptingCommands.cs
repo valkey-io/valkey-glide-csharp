@@ -273,4 +273,106 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await Command(Request.FunctionFlushAsync(mode));
     }
+
+    // ===== StackExchange.Redis Compatibility Methods =====
+
+    /// <inheritdoc/>
+    public async Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        if (string.IsNullOrEmpty(script))
+        {
+            throw new ArgumentException("Script cannot be null or empty", nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Use the optimized InvokeScript path via Script object
+        using Script scriptObj = new(script);
+
+        // Convert keys and values to string arrays
+        string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
+        string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
+
+        // Use InvokeScriptInternalAsync for automatic EVALSHA→EVAL optimization
+        return await InvokeScriptInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        if (hash == null || hash.Length == 0)
+        {
+            throw new ArgumentException("Hash cannot be null or empty", nameof(hash));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Convert hash to hex string
+        string hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+
+        // Convert keys and values to string arrays
+        string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
+        string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
+
+        // Use InvokeScriptInternalAsync (will use EVALSHA directly, no fallback since we don't have source)
+        return await InvokeScriptInternalAsync(hashString, keyStrings, valueStrings, null);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        if (script == null)
+        {
+            throw new ArgumentNullException(nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Replace placeholders in the executable script with KEYS/ARGV references
+        string executableScript = parameters != null
+            ? ScriptParameterMapper.ReplacePlaceholders(script.ExecutableScript, script.Arguments, parameters)
+            : script.ExecutableScript;
+
+        // Extract parameters from the object
+        (ValkeyKey[] keys, ValkeyValue[] args) = script.ExtractParametersInternal(parameters, null);
+
+        // Convert to string arrays
+        string[]? keyStrings = keys.Length > 0 ? [.. keys.Select(k => k.ToString())] : null;
+        string[]? valueStrings = args.Length > 0 ? [.. args.Select(v => v.ToString())] : null;
+
+        // Create a Script object from the executable script and use InvokeScript
+        // This will automatically load the script if needed (EVALSHA with fallback to EVAL)
+        using Script scriptObj = new(executableScript);
+        return await InvokeScriptInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        if (script == null)
+        {
+            throw new ArgumentNullException(nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Extract parameters from the object using the internal LuaScript
+        (ValkeyKey[] keys, ValkeyValue[] args) = script.Script.ExtractParametersInternal(parameters, null);
+
+        // Convert to string arrays
+        string[]? keyStrings = keys.Length > 0 ? [.. keys.Select(k => k.ToString())] : null;
+        string[]? valueStrings = args.Length > 0 ? [.. args.Select(v => v.ToString())] : null;
+
+        // Convert the hash from byte[] to hex string
+        // The hash in LoadedLuaScript is the hash of the script that was actually loaded on the server
+        string hashString = BitConverter.ToString(script.Hash).Replace("-", "").ToLowerInvariant();
+
+        // Use InvokeScriptInternalAsync with the hash from LoadedLuaScript
+        // The script was already loaded on the server, so EVALSHA will work
+        return await InvokeScriptInternalAsync(hashString, keyStrings, valueStrings, null);
+    }
 }

@@ -54,6 +54,93 @@ internal static class ScriptParameterMapper
     }
 
     /// <summary>
+    /// Replaces parameter placeholders in the executable script with KEYS/ARGV references.
+    /// </summary>
+    /// <param name="executableScript">The script with {PARAM_i} placeholders.</param>
+    /// <param name="parameterNames">The parameter names in order.</param>
+    /// <param name="parameters">The parameter object.</param>
+    /// <returns>The script with placeholders replaced by KEYS[i] and ARGV[i] references.</returns>
+    internal static string ReplacePlaceholders(string executableScript, string[] parameterNames, object parameters)
+    {
+        Type paramType = parameters.GetType();
+
+        // Build a mapping from parameter index to KEYS/ARGV reference
+        var replacements = new Dictionary<int, string>();
+        int keyIndex = 1; // Lua arrays are 1-based
+        int argIndex = 1;
+
+        for (int i = 0; i < parameterNames.Length; i++)
+        {
+            string paramName = parameterNames[i];
+
+            // Get the parameter's type
+            var property = paramType.GetProperty(paramName,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var field = paramType.GetField(paramName,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+            Type memberType = property?.PropertyType ?? field!.FieldType;
+
+            // Determine if this is a key or argument based on type
+            if (IsKeyType(memberType))
+            {
+                replacements[i] = $"KEYS[{keyIndex++}]";
+            }
+            else
+            {
+                replacements[i] = $"ARGV[{argIndex++}]";
+            }
+        }
+
+        // Replace placeholders
+        foreach (var kvp in replacements)
+        {
+            executableScript = executableScript.Replace($"{{PARAM_{kvp.Key}}}", kvp.Value);
+        }
+
+        return executableScript;
+    }
+
+    /// <summary>
+    /// Replaces parameter placeholders using a heuristic to determine which are keys.
+    /// Parameters named "key", "keys", or starting with "key" (case-insensitive) are treated as keys.
+    /// </summary>
+    /// <param name="executableScript">The script with {PARAM_i} placeholders.</param>
+    /// <param name="parameterNames">The parameter names in order.</param>
+    /// <returns>The script with placeholders replaced by KEYS[i] and ARGV[i] references.</returns>
+    internal static string ReplacePlaceholdersWithHeuristic(string executableScript, string[] parameterNames)
+    {
+        var replacements = new Dictionary<int, string>();
+        int keyIndex = 1; // Lua arrays are 1-based
+        int argIndex = 1;
+
+        for (int i = 0; i < parameterNames.Length; i++)
+        {
+            string paramName = parameterNames[i].ToLowerInvariant();
+
+            // Heuristic: parameters named "key", "keys", or starting with "key" are keys
+            bool isKey = paramName == "key" || paramName == "keys" || paramName.StartsWith("key");
+
+            if (isKey)
+            {
+                replacements[i] = $"KEYS[{keyIndex++}]";
+            }
+            else
+            {
+                replacements[i] = $"ARGV[{argIndex++}]";
+            }
+        }
+
+        // Replace placeholders
+        foreach (var kvp in replacements)
+        {
+            executableScript = executableScript.Replace($"{{PARAM_{kvp.Key}}}", kvp.Value);
+        }
+
+        return executableScript;
+    }
+
+    /// <summary>
     /// Validates that a parameter object has all required properties and they are of valid types.
     /// </summary>
     /// <param name="type">The type of the parameter object.</param>

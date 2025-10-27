@@ -11,9 +11,10 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
+        string loadedScript = script.ExecutableScript;
 
         // Act
-        LoadedLuaScript loaded = new(script, hash);
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Assert
         Assert.NotNull(loaded);
@@ -27,9 +28,10 @@ public class LoadedLuaScriptTests
     {
         // Arrange
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
+        string loadedScript = "return 1";
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(null!, hash));
+        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(null!, hash, loadedScript));
     }
 
     [Fact]
@@ -38,9 +40,10 @@ public class LoadedLuaScriptTests
         // Arrange
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
+        string loadedScript = script.ExecutableScript;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(script, null!));
+        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(script, null!, loadedScript));
     }
 
     [Fact]
@@ -50,7 +53,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         string originalScript = loaded.OriginalScript;
@@ -66,7 +70,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         string executableScript = loaded.ExecutableScript;
@@ -83,7 +88,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         byte[] returnedHash = loaded.Hash;
@@ -99,7 +105,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => loaded.Evaluate(null!));
@@ -112,7 +119,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => loaded.EvaluateAsync(null!));
@@ -125,7 +133,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         byte[] returnedHash = loaded.Hash;
@@ -145,10 +154,12 @@ public class LoadedLuaScriptTests
         LuaScript script2 = LuaScript.Prepare(scriptText2);
         byte[] hash1 = [0x12, 0x34, 0x56, 0x78];
         byte[] hash2 = [0x9A, 0xBC, 0xDE, 0xF0];
+        string loadedScript1 = script1.ExecutableScript;
+        string loadedScript2 = script2.ExecutableScript;
 
         // Act
-        LoadedLuaScript loaded1 = new(script1, hash1);
-        LoadedLuaScript loaded2 = new(script2, hash2);
+        LoadedLuaScript loaded1 = new(script1, hash1, loadedScript1);
+        LoadedLuaScript loaded2 = new(script2, hash2, loadedScript2);
 
         // Assert
         Assert.NotEqual(loaded1.OriginalScript, loaded2.OriginalScript);
@@ -168,7 +179,8 @@ public class LoadedLuaScriptTests
         ";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         string originalScript = loaded.OriginalScript;
@@ -184,7 +196,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return 'hello world'";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         string executableScript = loaded.ExecutableScript;
@@ -200,7 +213,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         byte[] returnedHash = loaded.Hash;
@@ -218,7 +232,8 @@ public class LoadedLuaScriptTests
         byte[] hash = [0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
                        0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
                        0x11, 0x22, 0x33, 0x44];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         byte[] returnedHash = loaded.Hash;
@@ -235,7 +250,8 @@ public class LoadedLuaScriptTests
         string scriptText = "return redis.call('GET', @key)";
         LuaScript script = LuaScript.Prepare(scriptText);
         byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        LoadedLuaScript loaded = new(script, hash);
+        string loadedScript = script.ExecutableScript;
+        LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act
         string originalScript1 = loaded.OriginalScript;

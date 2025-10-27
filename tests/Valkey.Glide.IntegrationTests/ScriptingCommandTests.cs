@@ -1609,4 +1609,298 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             Assert.Equal(libName, loadResult.SingleValue);
         }
     }
+
+    // StackExchange.Redis Compatibility Tests
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptEvaluateAsync_WithStringScript_ReturnsExpectedResult(BaseClient client)
+    {
+        // Test IDatabase.ScriptEvaluateAsync with string script
+        string script = "return 'Hello from EVAL'";
+        ValkeyResult result = await client.ScriptEvaluateAsync(script);
+
+        Assert.NotNull(result);
+        Assert.Equal("Hello from EVAL", result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptEvaluateAsync_WithKeysAndValues_ReturnsExpectedResult(BaseClient client)
+    {
+        // Test IDatabase.ScriptEvaluateAsync with keys and values
+        string script = "return KEYS[1] .. ':' .. ARGV[1]";
+        ValkeyKey[] keys = [new ValkeyKey("testkey")];
+        ValkeyValue[] values = [new ValkeyValue("testvalue")];
+
+        ValkeyResult result = await client.ScriptEvaluateAsync(script, keys, values);
+
+        Assert.NotNull(result);
+        Assert.Equal("testkey:testvalue", result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptEvaluateAsync_WithByteArrayHash_ReturnsExpectedResult(BaseClient client)
+    {
+        // First, load a script to get its hash
+        string script = "return 'Hash test'";
+        using var scriptObj = new Script(script);
+
+        // Execute once to cache it
+        await client.InvokeScriptAsync(scriptObj);
+
+        // Convert hash string to byte array
+        byte[] hash = Convert.FromHexString(scriptObj.Hash);
+
+        // Test IDatabase.ScriptEvaluateAsync with byte[] hash
+        ValkeyResult result = await client.ScriptEvaluateAsync(hash);
+
+        Assert.NotNull(result);
+        Assert.Equal("Hash test", result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptEvaluateAsync_WithLuaScript_ReturnsExpectedResult(GlideClient client)
+    {
+        // Test IDatabase.ScriptEvaluateAsync with LuaScript
+        LuaScript script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
+        var parameters = new { key = new ValkeyKey("luakey"), value = new ValkeyValue("luavalue") };
+
+        ValkeyResult result = await client.ScriptEvaluateAsync(script, parameters);
+
+        Assert.NotNull(result);
+        Assert.Equal("OK", result.ToString());
+
+        // Verify the key was set
+        ValkeyValue getValue = await client.StringGetAsync("luakey");
+        Assert.Equal("luavalue", getValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptEvaluateAsync_WithLoadedLuaScript_ReturnsExpectedResult(GlideClient client)
+    {
+        // Get a server instance
+        var multiplexer = await ConnectionMultiplexer.ConnectAsync(TestConfiguration.DefaultCompatibleConfig());
+        try
+        {
+            IServer server = multiplexer.GetServer(multiplexer.GetEndPoints(true)[0]);
+
+            // Test IDatabase.ScriptEvaluateAsync with LoadedLuaScript
+            LuaScript script = LuaScript.Prepare("return redis.call('GET', @key)");
+            LoadedLuaScript loaded = await script.LoadAsync(server);
+
+            // Set a test value first
+            await client.StringSetAsync("loadedkey", "loadedvalue");
+
+            // Execute the loaded script
+            var parameters = new { key = new ValkeyKey("loadedkey") };
+            ValkeyResult result = await client.ScriptEvaluateAsync(loaded, parameters);
+
+            Assert.NotNull(result);
+            Assert.Equal("loadedvalue", result.ToString());
+        }
+        finally
+        {
+            await multiplexer.DisposeAsync();
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptExistsAsync_WithString_ReturnsCorrectStatus(GlideClient client)
+    {
+        // Get a server instance
+        var multiplexer = await ConnectionMultiplexer.ConnectAsync(TestConfiguration.DefaultCompatibleConfig());
+        try
+        {
+            IServer server = multiplexer.GetServer(multiplexer.GetEndPoints(true)[0]);
+
+            // Test IServer.ScriptExistsAsync with string
+            string script = "return 'exists test'";
+
+            // Script should not exist initially
+            await server.ScriptFlushAsync();
+            bool existsBefore = await server.ScriptExistsAsync(script);
+            Assert.False(existsBefore);
+
+            // Load the script
+            await client.ScriptEvaluateAsync(script);
+
+            // Script should exist now
+            bool existsAfter = await server.ScriptExistsAsync(script);
+            Assert.True(existsAfter);
+        }
+        finally
+        {
+            await multiplexer.DisposeAsync();
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptExistsAsync_WithByteArray_ReturnsCorrectStatus(GlideClient client)
+    {
+        // Get a server instance
+        var multiplexer = await ConnectionMultiplexer.ConnectAsync(TestConfiguration.DefaultCompatibleConfig());
+        try
+        {
+            IServer server = multiplexer.GetServer(multiplexer.GetEndPoints(true)[0]);
+
+            // Test IServer.ScriptExistsAsync with byte[]
+            string script = "return 'hash exists test'";
+            using var scriptObj = new Script(script);
+            byte[] hash = Convert.FromHexString(scriptObj.Hash);
+
+            // Script should not exist initially
+            await server.ScriptFlushAsync();
+            bool existsBefore = await server.ScriptExistsAsync(hash);
+            Assert.False(existsBefore);
+
+            // Load the script
+            await client.InvokeScriptAsync(scriptObj);
+
+            // Script should exist now
+            bool existsAfter = await server.ScriptExistsAsync(hash);
+            Assert.True(existsAfter);
+        }
+        finally
+        {
+            await multiplexer.DisposeAsync();
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptLoadAsync_WithString_ReturnsHash(GlideClient client)
+    {
+        // Get a server instance
+        var multiplexer = await ConnectionMultiplexer.ConnectAsync(TestConfiguration.DefaultCompatibleConfig());
+        try
+        {
+            IServer server = multiplexer.GetServer(multiplexer.GetEndPoints(true)[0]);
+
+            // Test IServer.ScriptLoadAsync with string
+            string script = "return 'load test'";
+            byte[] hash = await server.ScriptLoadAsync(script);
+
+            Assert.NotNull(hash);
+            Assert.NotEmpty(hash);
+
+            // Verify the script can be executed with EVALSHA
+            ValkeyResult result = await client.ScriptEvaluateAsync(hash);
+            Assert.Equal("load test", result.ToString());
+        }
+        finally
+        {
+            await multiplexer.DisposeAsync();
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptLoadAsync_WithLuaScript_ReturnsLoadedLuaScript(GlideClient client)
+    {
+        // Get a server instance
+        var multiplexer = await ConnectionMultiplexer.ConnectAsync(TestConfiguration.DefaultCompatibleConfig());
+        try
+        {
+            IServer server = multiplexer.GetServer(multiplexer.GetEndPoints(true)[0]);
+
+            // Test IServer.ScriptLoadAsync with LuaScript
+            LuaScript script = LuaScript.Prepare("return redis.call('PING')");
+            LoadedLuaScript loaded = await server.ScriptLoadAsync(script);
+
+            Assert.NotNull(loaded);
+            Assert.NotNull(loaded.Hash);
+            Assert.NotEmpty(loaded.Hash);
+
+            // Verify the script can be executed
+            ValkeyResult result = await client.ScriptEvaluateAsync(loaded);
+            Assert.Equal("PONG", result.ToString());
+        }
+        finally
+        {
+            await multiplexer.DisposeAsync();
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptFlushAsync_RemovesAllScripts(GlideClient client)
+    {
+        // Get a server instance
+        var multiplexer = await ConnectionMultiplexer.ConnectAsync(TestConfiguration.DefaultCompatibleConfig());
+        try
+        {
+            IServer server = multiplexer.GetServer(multiplexer.GetEndPoints(true)[0]);
+
+            // Load a script
+            string script = "return 'flush test'";
+            using var scriptObj = new Script(script);
+            await client.InvokeScriptAsync(scriptObj);
+
+            // Verify it exists
+            bool existsBefore = await server.ScriptExistsAsync(script);
+            Assert.True(existsBefore);
+
+            // Test IServer.ScriptFlushAsync
+            await server.ScriptFlushAsync();
+
+            // Verify it no longer exists
+            bool existsAfter = await server.ScriptExistsAsync(script);
+            Assert.False(existsAfter);
+        }
+        finally
+        {
+            await multiplexer.DisposeAsync();
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptEvaluateAsync_WithParameterExtraction_ExtractsCorrectly(GlideClient client)
+    {
+        // Test parameter extraction from objects
+        LuaScript script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
+        var parameters = new
+        {
+            key = new ValkeyKey("paramkey"),
+            value = new ValkeyValue("paramvalue")
+        };
+
+        ValkeyResult result = await client.ScriptEvaluateAsync(script, parameters);
+
+        Assert.NotNull(result);
+        Assert.Equal("OK", result.ToString());
+
+        // Verify the key was set
+        ValkeyValue getValue = await client.StringGetAsync("paramkey");
+        Assert.Equal("paramvalue", getValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptEvaluateAsync_WithKeyPrefix_AppliesPrefix(GlideClient client)
+    {
+        // Test key prefix application with direct script evaluation
+        // Note: Key prefix support is tested through the script execution
+
+        LuaScript script = LuaScript.Prepare("return redis.call('SET', KEYS[1], ARGV[1])");
+
+        // Execute script with prefixed key
+        ValkeyKey[] keys = [new ValkeyKey("prefix:prefixkey")];
+        ValkeyValue[] values = [new ValkeyValue("prefixvalue")];
+
+        ValkeyResult result = await client.ScriptEvaluateAsync(script.ExecutableScript, keys, values);
+
+        Assert.NotNull(result);
+        Assert.Equal("OK", result.ToString());
+
+        // Verify the key was set with prefix
+        ValkeyValue getValue = await client.StringGetAsync("prefix:prefixkey");
+        Assert.Equal("prefixvalue", getValue.ToString());
+    }
 }

@@ -36,7 +36,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object?, ValkeyResult> EvalAsync(string script, string[]? keys = null, string[]? args = null)
     {
-        var cmdArgs = new List<GlideString> { script };
+        List<GlideString> cmdArgs = [script];
 
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
