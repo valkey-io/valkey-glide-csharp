@@ -561,6 +561,14 @@ pub unsafe extern "C" fn remove_cluster_scan_cursor(cursor_id: *const c_char) {
 
 /// Build cluster scan arguments from C-style arrays.
 ///
+/// # Arguments
+///
+/// * `arg_count` - The number of arguments in the arrays
+/// * `args` - Pointer to an array of pointers to argument data
+/// * `arg_lengths` - Pointer to an array of argument lengths
+/// * `failure_callback` - Callback function to invoke on error
+/// * `callback_index` - Index to pass to the callback function
+///
 /// # Safety
 /// * `args` and `arg_lengths` must be valid arrays of length `arg_count`
 /// * Each pointer in `args` must point to valid memory of the corresponding length
@@ -575,7 +583,7 @@ unsafe fn build_cluster_scan_args(
         return Some(redis::ClusterScanArgs::builder().build());
     }
 
-    let arg_vec = unsafe { convert_double_pointer_to_vec(args, arg_count, arg_lengths) };
+    let arg_vec = unsafe { convert_string_pointer_array_to_vector(args, arg_count, arg_lengths) };
 
     // Parse arguments from vector.
     let mut pattern_arg: &[u8] = &[];
@@ -704,24 +712,32 @@ unsafe fn build_cluster_scan_args(
     Some(cluster_scan_args_builder.build())
 }
 
-/// Converts a double pointer to a vec.
+/// Converts an array of pointers to strings to a vector of strings.
+///
+/// # Arguments
+///
+/// * `data` - Pointer to an array of pointers to string data
+/// * `len` - The number of strings in the array
+/// * `data_len` - Pointer to an array of string lengths
 ///
 /// # Safety
 ///
-/// `convert_double_pointer_to_vec` returns a `Vec` of u8 slice which holds pointers of C
+/// `convert_string_pointer_array_to_vector` returns a `Vec` of u8 slice which holds pointers of C
 /// strings. The returned `Vec<&'a [u8]>` is meant to be copied into Rust code. Storing them
 /// for later use will cause the program to crash as the pointers will be freed by the caller.
-unsafe fn convert_double_pointer_to_vec<'a>(
+unsafe fn convert_string_pointer_array_to_vector<'a>(
     data: *const usize,
     len: u64,
     data_len: *const u64,
 ) -> Vec<&'a [u8]> {
     let string_ptrs = unsafe { from_raw_parts(data, len as usize) };
     let string_lengths = unsafe { from_raw_parts(data_len, len as usize) };
+
     let mut result = Vec::<&[u8]>::with_capacity(string_ptrs.len());
     for (i, &str_ptr) in string_ptrs.iter().enumerate() {
         let slice = unsafe { from_raw_parts(str_ptr as *const u8, string_lengths[i] as usize) };
         result.push(slice);
     }
+
     result
 }
