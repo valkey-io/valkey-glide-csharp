@@ -155,6 +155,12 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     protected abstract Task<Version> GetServerVersionAsync();
 
+    /// <summary>
+    /// Executes a cluster scan command with the given cursor and arguments.
+    /// </summary>
+    /// <param name="cursor">The cursor for the scan iteration.</param>
+    /// <param name="args">Additional arguments for the scan command.</param>
+    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
     protected async Task<(string cursor, ValkeyKey[] keys)> ClusterScanCommand(string cursor, string[] args)
     {
         var message = _messageContainer.GetMessageForCall();

@@ -319,6 +319,14 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
         return _serverVersion;
     }
 
+    /// <summary>
+    /// Iterates incrementally over keys in the cluster.
+    /// </summary>
+    /// <param name="cursor">The cursor to use for this iteration.</param>
+    /// <param name="options">Optional scan options to filter results.</param>
+    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
+    /// <seealso cref="ClusterScanCursor"/>
+    /// <seealso cref="ScanOptions"/>
     public async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
     {
         string[] args = options?.ToArgs() ?? [];
