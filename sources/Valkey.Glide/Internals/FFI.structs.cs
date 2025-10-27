@@ -797,12 +797,39 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct AuthenticationInfo(string? username, string password)
+    internal struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
     {
         [MarshalAs(UnmanagedType.LPStr)]
         public string? Username = username;
         [MarshalAs(UnmanagedType.LPStr)]
-        public string Password = password;
+        public string? Password = password;
+        /// <summary>
+        /// IAM credentials for authentication. Mutually exclusive with password.
+        /// </summary>
+        public IamCredentials? IamCredentials = iamCredentials;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct IamCredentials(string clusterName, string region, uint serviceType, uint? refreshIntervalSeconds)
+    {
+        /// <summary>
+        /// The name of the cluster for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string ClusterName = clusterName;
+        /// <summary>
+        /// The AWS region for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string Region = region;
+        /// <summary>
+        /// The AWS service type for IAM authentication.
+        /// </summary>
+        public uint ServiceType = serviceType;
+        /// <summary>
+        /// The refresh interval in seconds for IAM authentication.
+        /// </summary>
+        public uint? RefreshIntervalSeconds = refreshIntervalSeconds;
     }
 
     internal enum TlsMode : uint
