@@ -131,7 +131,7 @@ jobs:
             - uses: actions/checkout@v5
 
             - name: Download published artifacts
-              uses: actions/download-artifact@v5
+              uses: actions/download-artifact@v6
               with:
                   path: bin
 
@@ -179,7 +179,7 @@ jobs:
             RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
         steps:
             - name: Download package
-              uses: actions/download-artifact@v5
+              uses: actions/download-artifact@v6
               with:
                   name: package
 
@@ -227,7 +227,7 @@ jobs:
 
             - name: Download package
               if: ${{ needs.publish.result == 'skipped' }}
-              uses: actions/download-artifact@v5
+              uses: actions/download-artifact@v6
               with:
                   name: package
                   path: nuget.local
