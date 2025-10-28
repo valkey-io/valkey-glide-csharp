@@ -29,6 +29,19 @@ public static class Errors
     }
 
     /// <summary>
+    /// An error returned by the Valkey server during script or function execution.
+    /// /// This includes Lua comtion errors, runtime errors, and script/function management errors.
+    /// </summary>
+    public sealed class ValkeyServerException : GlideException
+    {
+        public ValkeyServerException() : base() { }
+
+        public ValkeyServerException(string message) : base(message) { }
+
+        public ValkeyServerException(string message, Exception innerException) : base(message, innerException) { }
+    }
+
+    /// <summary>
     /// An error on Valkey service-side that is thrown when a transaction is aborted
     /// </summary>
     public sealed class ExecAbortException : GlideException
