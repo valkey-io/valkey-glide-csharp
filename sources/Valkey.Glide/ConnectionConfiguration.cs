@@ -1,5 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System;
 using System.Runtime.InteropServices;
 
 using Valkey.Glide.Internals;
@@ -214,7 +215,7 @@ public abstract class ConnectionConfiguration
             _ = connectionTimeout.HasValue ? builder.ConnectionTimeout = connectionTimeout.Value : new();
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
-            _ = (username ?? password) is not null ? builder.Authentication = (username, password!) : new();
+            _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
@@ -266,7 +267,7 @@ public abstract class ConnectionConfiguration
             _ = connectionTimeout.HasValue ? builder.ConnectionTimeout = connectionTimeout.Value : new();
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
-            _ = (username ?? password) is not null ? builder.Authentication = (username, password!) : new();
+            _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
@@ -443,29 +444,71 @@ public abstract class ConnectionConfiguration
         #endregion
         #region Authentication
         /// <summary>
-        /// Configure credentials for authentication process. If none are set, the client will not authenticate itself with the server.
+        /// Configure credentials for authentication process.
+        /// If none are set, the client will not authenticate itself with the server.
+        /// Supports both password-based and IAM authentication modes.
         /// </summary>
-        /// <value>
-        /// <c>username</c> - The username that will be used for authenticating connections to the servers. If not supplied, <c>"default"</c> will be used.<br />
-        /// <c>password</c> - The password that will be used for authenticating connections to the servers.
-        /// </value>
-        public (string? username, string password) Authentication
+        /// <param name="credentials">The server credentials for authentication.</param>
+        /// <returns>The builder instance for method chaining.</returns>
+        public T WithCredentials(ServerCredentials credentials)
         {
-            set => Config.AuthenticationInfo = new AuthenticationInfo
-                  (
-                      value.username,
-                      value.password
-                  );
+            if (credentials == null)
+            {
+                throw new ArgumentNullException(nameof(credentials));
+            }
+
+            IamCredentials? iamCredentials = null;
+            if (credentials.IamConfig != null)
+            {
+                iamCredentials = new IamCredentials(
+                    credentials.IamConfig.ClusterName,
+                    credentials.IamConfig.Region,
+                    (uint)credentials.IamConfig.ServiceType,
+                    (uint?)credentials.IamConfig.RefreshIntervalSeconds
+                );
+            }
+
+            Config.AuthenticationInfo = new AuthenticationInfo
+            (
+                credentials.Username,
+                credentials.Password,
+                iamCredentials
+            );
+
+            return (T)this;
         }
+
         /// <summary>
-        /// Configure credentials for authentication process. If none are set, the client will not authenticate itself with the server.
+        /// Configure server credentials for password-based authentication.
         /// </summary>
-        /// <param name="username">The username that will be used for authenticating connections to the servers. If not supplied, <c>"default"</c> will be used.</param>
-        /// <param name="password">The password that will be used for authenticating connections to the servers.</param>
+        /// <param name="username">The username for authentication. If null, "default" will be used.</param>
+        /// <param name="password">The password for authentication.</param>
+        /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string? username, string password)
         {
-            Authentication = (username, password);
-            return (T)this;
+            return WithCredentials(new ServerCredentials(username, password));
+        }
+
+        /// <summary>
+        /// Configure server credentials for password-based authentication.
+        /// Username "default" will be used.
+        /// </summary>
+        /// <param name="password">The password for authentication.</param>
+        /// <returns>The builder instance for method chaining.</returns>
+        public T WithAuthentication(string password)
+        {
+            return WithCredentials(new ServerCredentials(password));
+        }
+
+        /// <summary>
+        /// Configure server credentials for IAM authentication.
+        /// </summary>
+        /// <param name="username">The username for authentication.</param>
+        /// <param name="iamConfig">The IAM authentication configuration.</param>
+        /// <returns>The builder instance for method chaining.</returns>
+        public T WithAuthentication(string username, IamAuthConfig iamConfig)
+        {
+            return WithCredentials(new ServerCredentials(username, iamConfig));
         }
         #endregion
         #region Protocol
