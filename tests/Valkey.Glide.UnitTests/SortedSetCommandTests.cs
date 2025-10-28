@@ -1,11 +1,11 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Linq;
+
 
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
-using Xunit;
+
 
 namespace Valkey.Glide.UnitTests;
 
@@ -49,7 +49,7 @@ public class SortedSetCommandTests
 
             // SortedSetRemove - Multiple Members
             () => Assert.Equal(["ZREM", "key", "member1", "member2", "member3"], Request.SortedSetRemoveAsync("key", ["member1", "member2", "member3"]).GetArgs()),
-            () => Assert.Equal(["ZREM", "key"], Request.SortedSetRemoveAsync("key", Array.Empty<ValkeyValue>()).GetArgs()),
+            () => Assert.Equal(["ZREM", "key"], Request.SortedSetRemoveAsync("key", []).GetArgs()),
             () => Assert.Equal(["ZREM", "key", "", " ", "null", "0", "-1"], Request.SortedSetRemoveAsync("key", ["", " ", "null", "0", "-1"]).GetArgs()),
 
             // SortedSetCard
@@ -279,7 +279,8 @@ public class SortedSetCommandTests
         ];
 
         // Test data for SortedSetRangeByRankWithScoresAsync and SortedSetRangeByScoreWithScoresAsync
-        Dictionary<GlideString, object> testScoreDict = new Dictionary<GlideString, object> {
+        Dictionary<GlideString, object> testScoreDict = new()
+        {
             {"member1", 10.5},
             {"member2", 8.25},
             {"member3", 15.0}
@@ -335,7 +336,7 @@ public class SortedSetCommandTests
                     Assert.IsType<double>(entry.Score);
                 }
                 // Validate specific values (sorted by score)
-                SortedSetEntry[] sortedResults = result.OrderBy(e => e.Score).ToArray();
+                SortedSetEntry[] sortedResults = [.. result.OrderBy(e => e.Score)];
                 Assert.Equal("member2", result[0].Element);
                 Assert.Equal(8.25, result[0].Score);
                 Assert.Equal("member1", result[1].Element);
@@ -376,7 +377,7 @@ public class SortedSetCommandTests
 
             () =>
             {
-                SortedSetEntry[] emptyScoreResult = Request.SortedSetRangeByRankWithScoresAsync("key").Converter(new Dictionary<GlideString, object>());
+                SortedSetEntry[] emptyScoreResult = Request.SortedSetRangeByRankWithScoresAsync("key").Converter([]);
                 Assert.Empty(emptyScoreResult);
             },
 
@@ -387,7 +388,7 @@ public class SortedSetCommandTests
                 Assert.Equal(3, result.Length);
                 Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
                 // Check that entries are sorted by score
-                SortedSetEntry[] sortedResults = result.OrderBy(e => e.Score).ToArray();
+                SortedSetEntry[] sortedResults = [.. result.OrderBy(e => e.Score)];
                 Assert.Equal("member2", sortedResults[0].Element);
                 Assert.Equal(8.25, sortedResults[0].Score);
                 Assert.Equal("member1", sortedResults[1].Element);
@@ -436,7 +437,7 @@ public class SortedSetCommandTests
             // Test SortedSetScoresAsync converter
             () =>
             {
-                object[] testScoresResponse = [10.5, null, 8.25];
+                object[] testScoresResponse = [10.5, null!, 8.25];
                 double?[] result = Request.SortedSetScoresAsync("key", ["member1", "member2", "member3"]).Converter(testScoresResponse);
                 Assert.Equal(3, result.Length);
                 Assert.Equal(10.5, result[0]);
@@ -521,14 +522,14 @@ public class SortedSetCommandTests
             // Test empty arrays
             () =>
             {
-                SortedSetEntry[] emptyResult = Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1"]).Converter(new Dictionary<GlideString, object>());
+                SortedSetEntry[] emptyResult = Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1"]).Converter([]);
                 Assert.Empty(emptyResult);
             },
 
             // Test SortedSetPopAsync converter - single element (max)
             () =>
             {
-                Dictionary<GlideString, object> testPopMaxDict = new Dictionary<GlideString, object>
+                Dictionary<GlideString, object> testPopMaxDict = new()
                 {
                     { (GlideString)"member1", 10.5 }
                 };
@@ -548,7 +549,7 @@ public class SortedSetCommandTests
             // Test SortedSetPopAsync converter - multiple elements (max)
             () =>
             {
-                Dictionary<GlideString, object> testPopMaxDict = new Dictionary<GlideString, object>
+                Dictionary<GlideString, object> testPopMaxDict = new()
                 {
                     { (GlideString)"member1", 10.5 },
                     { (GlideString)"member2", 8.25 }
@@ -564,7 +565,7 @@ public class SortedSetCommandTests
             // Test SortedSetPopAsync converter - single element (min)
             () =>
             {
-                Dictionary<GlideString, object> testPopMinDict = new Dictionary<GlideString, object>
+                Dictionary<GlideString, object> testPopMinDict = new()
                 {
                     { (GlideString)"member1", 8.25 }
                 };
