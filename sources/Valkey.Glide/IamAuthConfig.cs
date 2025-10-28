@@ -10,7 +10,7 @@ public class IamAuthConfig
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string ClusterName { get; set; }
+    public string ClusterName { get; set; } = string.Empty;
 
     /// <summary>
     /// The AWS service type.
@@ -20,7 +20,7 @@ public class IamAuthConfig
     /// <summary>
     /// The AWS region where the cluster is located.
     /// </summary>
-    public string Region { get; set; }
+    public string Region { get; set; } = string.Empty;
 
     /// <summary>
     /// Optional refresh interval in seconds.
