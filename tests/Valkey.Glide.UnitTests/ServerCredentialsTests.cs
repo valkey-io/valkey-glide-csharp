@@ -39,12 +39,7 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_IamAuth_CreatesCorrectly()
     {
-        var iamConfig = new IamAuthConfig
-        {
-            ClusterName = ClusterName,
-            ServiceType = ServiceType.ElastiCache,
-            Region = Region
-        };
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
         var credentials = new ServerCredentials(Username, iamConfig);
 
         Assert.Equal(Username, credentials.Username);
@@ -59,13 +54,7 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_IamAuthWithCustomRefresh_CreatesCorrectly()
     {
-        var iamConfig = new IamAuthConfig
-        {
-            ClusterName = ClusterName,
-            ServiceType = ServiceType.MemoryDB,
-            Region = Region,
-            RefreshIntervalSeconds = 600
-        };
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, 600);
         var credentials = new ServerCredentials("iamUser", iamConfig);
 
         Assert.Equal(ServiceType.MemoryDB, credentials.IamConfig.ServiceType);
@@ -82,12 +71,7 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_NullUsernameForIamAuth_ThrowsArgumentNullException()
     {
-        var iamConfig = new IamAuthConfig
-        {
-            ClusterName = ClusterName,
-            ServiceType = ServiceType.ElastiCache,
-            Region = Region
-        };
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamConfig));
     }
 
