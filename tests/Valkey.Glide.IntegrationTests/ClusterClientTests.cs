@@ -572,8 +572,9 @@ public class ClusterClientTests(TestConfiguration config)
             "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"
         );
 
-        string sourceKey = Guid.NewGuid().ToString();
-        string destKey = Guid.NewGuid().ToString();
+        string hashTag = Guid.NewGuid().ToString();
+        string sourceKey = $"{{hashTag}}{Guid.NewGuid()}";
+        string destKey = $"{{hashTag}}{Guid.NewGuid()}";
         string value = "test_value";
 
         // Set a key in the current database

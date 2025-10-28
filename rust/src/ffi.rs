@@ -112,10 +112,12 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) },
+        lib_name: option_env!("GLIDE_NAME").map(|s| s.to_string()),
         authentication_info: if config.has_authentication_info {
             Some(AuthenticationInfo {
                 username: unsafe { ptr_to_opt_str(config.authentication_info.username) },
                 password: unsafe { ptr_to_opt_str(config.authentication_info.password) },
+                iam_config: None,
             })
         } else {
             None
@@ -149,6 +151,7 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         lazy_connect: config.lazy_connect,
+        refresh_topology_from_initial_nodes: false,
         // TODO below
         periodic_checks: None,
         pubsub_subscriptions: None,
