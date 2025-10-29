@@ -50,7 +50,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         IntPtr response = await message;
         try
         {
-            HandleServerValue(HandleResponse(response), false, (string s) => s);
+            HandleResponse(response);
         }
         finally
         {
