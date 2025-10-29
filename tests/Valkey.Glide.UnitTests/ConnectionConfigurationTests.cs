@@ -73,34 +73,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithAuthentication_UsernameClusterServiceRegionRefreshInterval()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region, RefreshIntervalSeconds);
-
-        var config = builder.Build();
-        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
-        var iamCredentials = authenticationInfo.IamCredentials!.Value;
-
-        Assert.Equal(Username, authenticationInfo.Username);
-        Assert.Null(authenticationInfo.Password);
-        Assert.Equal(ClusterName, iamCredentials.ClusterName);
-        Assert.Equal(Region, iamCredentials.Region);
-        Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
-        Assert.Equal(RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
-
-        // Username, cluster name, and region cannot be null.
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds));
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, null!, ServiceType.ElastiCache, Region, RefreshIntervalSeconds));
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, ClusterName, ServiceType.ElastiCache, null!, RefreshIntervalSeconds));
-    }
-
-    [Fact]
     public void WithAuthentication_MultipleCalls_LastWins()
     {
         // Password-based authentication last.
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region);
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds);
+        builder.WithAuthentication(Username, iamConfig);
         builder.WithAuthentication(Username, Password);
 
         var config = builder.Build();
@@ -113,7 +91,7 @@ public class ConnectionConfigurationTests
         // IAM authentication last.
         builder = new StandaloneClientConfigurationBuilder();
         builder.WithAuthentication(Username, Password);
-        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region, RefreshIntervalSeconds);
+        builder.WithAuthentication(Username, iamConfig);
 
         config = builder.Build();
         authenticationInfo = config!.Request.AuthenticationInfo!.Value;
