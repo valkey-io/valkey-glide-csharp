@@ -43,7 +43,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// This method is only available when the client is configured with IAM authentication.
     /// </summary>
     /// <returns>A task that completes when the refresh attempt finishes.</returns>
-    /// <exception cref="ConnectionException">Thrown if IAM authentication is not configured.</exception>
     public async Task RefreshIamTokenAsync()
     {
         Message message = _messageContainer.GetMessageForCall();

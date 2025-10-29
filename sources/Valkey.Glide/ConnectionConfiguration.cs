@@ -389,8 +389,8 @@ public abstract class ConnectionConfiguration
         /// <inheritdoc cref="UseTls" />
         public T WithTls()
         {
-            UseTls = true;
-            return (T)this;
+
+            return WithTls(true);
         }
         #endregion
         #region Request Timeout
