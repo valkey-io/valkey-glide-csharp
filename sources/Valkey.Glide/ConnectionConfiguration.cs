@@ -465,11 +465,18 @@ public abstract class ConnectionConfiguration
             IamCredentials? iamCredentials = null;
             if (credentials.IamConfig != null)
             {
+                var serviceType = credentials.IamConfig.ServiceType switch
+                {
+                    ServiceType.ElastiCache => FFI.ServiceType.ElastiCache,
+                    ServiceType.MemoryDB => FFI.ServiceType.MemoryDB,
+                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamConfig.ServiceType))
+                };
+
                 iamCredentials = new IamCredentials(
                     credentials.IamConfig.ClusterName,
                     credentials.IamConfig.Region,
-                    (uint)credentials.IamConfig.ServiceType,
-                    (uint?)credentials.IamConfig.RefreshIntervalSeconds
+                    serviceType,
+                    credentials.IamConfig.RefreshIntervalSeconds
                 );
             }
 
@@ -525,7 +532,7 @@ public abstract class ConnectionConfiguration
         /// <param name="region">The AWS region where the cluster is located.</param>
         /// <param name="refreshIntervalSeconds">Optional refresh interval in seconds.</param>
         /// <returns>The builder instance for method chaining.</returns>
-        public T WithAuthentication(string username, string clusterName, ServiceType serviceType, string region, int? refreshIntervalSeconds = null)
+        public T WithAuthentication(string username, string clusterName, ServiceType serviceType, string region, uint? refreshIntervalSeconds = null)
         {
             var iamConfig = new IamAuthConfig(clusterName, serviceType, region, refreshIntervalSeconds);
             return WithCredentials(new ServerCredentials(username, iamConfig));

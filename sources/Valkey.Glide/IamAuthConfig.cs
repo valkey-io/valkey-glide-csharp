@@ -9,7 +9,7 @@ namespace Valkey.Glide;
 /// <param name="serviceType">The AWS service type.</param>
 /// <param name="region">The AWS region where the cluster is located.</param>
 /// <param name="refreshIntervalSeconds">Optional refresh interval in seconds.</param>
-public class IamAuthConfig(string clusterName, ServiceType serviceType, string region, int? refreshIntervalSeconds = null)
+public class IamAuthConfig(string clusterName, ServiceType serviceType, string region, uint? refreshIntervalSeconds = null)
 {
     /// <summary>
     /// The name of the cluster.
@@ -29,5 +29,5 @@ public class IamAuthConfig(string clusterName, ServiceType serviceType, string r
     /// <summary>
     /// Optional refresh interval in seconds.
     /// </summary>
-    public int? RefreshIntervalSeconds { get; set; } = refreshIntervalSeconds;
+    public uint? RefreshIntervalSeconds { get; set; } = refreshIntervalSeconds;
 }

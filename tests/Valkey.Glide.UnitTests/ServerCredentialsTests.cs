@@ -1,11 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
-
-using Valkey.Glide;
-
-using Xunit;
-
 namespace Valkey.Glide.UnitTests;
 
 public class ServerCredentialsTests
@@ -17,7 +11,7 @@ public class ServerCredentialsTests
     private const string Region = "testRegion";
 
     [Fact]
-    public void ServerCredentials_UsernamePassword_CreatesCorrectly()
+    public void ServerCredentials_UsernamePassword()
     {
         var credentials = new ServerCredentials(Username, Password);
 
@@ -28,7 +22,7 @@ public class ServerCredentialsTests
     }
 
     [Fact]
-    public void ServerCredentials_PasswordOnly_CreatesCorrectly()
+    public void ServerCredentials_PasswordOnly()
     {
         var credentials = new ServerCredentials(Password);
 
@@ -39,47 +33,38 @@ public class ServerCredentialsTests
     }
 
     [Fact]
-    public void ServerCredentials_IamAuth_CreatesCorrectly()
+    public void ServerCredentials_UsernameIamAuthConfig()
     {
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
         var credentials = new ServerCredentials(Username, iamConfig);
 
         Assert.Equal(Username, credentials.Username);
         Assert.Null(credentials.Password);
-        Assert.Equal(ClusterName, credentials.IamConfig.ClusterName);
-        Assert.Equal(ServiceType.ElastiCache, credentials.IamConfig.ServiceType);
-        Assert.Equal(Region, credentials.IamConfig.Region);
-        Assert.Null(credentials.IamConfig.RefreshIntervalSeconds);
+        Assert.Equal(ClusterName, credentials.IamConfig!.ClusterName);
+        Assert.Equal(ServiceType.ElastiCache, credentials.IamConfig!.ServiceType);
+        Assert.Equal(Region, credentials.IamConfig!.Region);
+        Assert.Null(credentials.IamConfig!.RefreshIntervalSeconds);
         Assert.True(credentials.IsIamAuth());
     }
 
     [Fact]
-    public void ServerCredentials_IamAuthWithCustomRefresh_CreatesCorrectly()
+    public void ServerCredentials_UsernameIamAuthConfigWithCustomRefresh()
     {
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, 600);
         var credentials = new ServerCredentials("iamUser", iamConfig);
 
-        Assert.Equal(ServiceType.MemoryDB, credentials.IamConfig.ServiceType);
-        Assert.Equal(600, credentials.IamConfig.RefreshIntervalSeconds);
+        Assert.Equal(ServiceType.MemoryDB, credentials.IamConfig!.ServiceType);
+        Assert.Equal(600u, credentials.IamConfig!.RefreshIntervalSeconds);
         Assert.True(credentials.IsIamAuth());
     }
 
     [Fact]
-    public void ServerCredentials_NullPassword_ThrowsArgumentNullException()
+    public void ServerCredentials_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!));
-    }
+        Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
 
-    [Fact]
-    public void ServerCredentials_NullUsernameForIamAuth_ThrowsArgumentNullException()
-    {
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamConfig));
-    }
-
-    [Fact]
-    public void ServerCredentials_NullIamAuthConfig_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => new ServerCredentials("user", (IamAuthConfig)null!));
     }
 }

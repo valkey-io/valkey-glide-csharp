@@ -1,8 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide;
-
-using Xunit;
+using Valkey.Glide.Internals;
 
 using static Valkey.Glide.ConnectionConfiguration;
 
@@ -15,7 +13,7 @@ public class ConnectionConfigurationTests
     private const string Password = "testPassword";
     private const string ClusterName = "testClusterName";
     private const string Region = "testRegion";
-    private const int refreshIntervalSeconds = 600;
+    private const uint RefreshIntervalSeconds = 600;
 
     [Fact]
     public void WithAuthentication_UsernamePassword()
@@ -24,14 +22,14 @@ public class ConnectionConfigurationTests
         builder.WithAuthentication(Username, Password);
 
         var config = builder.Build();
-        var authenticationInfo = config.Request.AuthenticationInfo.Value;
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.Null(authenticationInfo.IamCredentials);
 
         // Password cannot be null.
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null!));
     }
 
     [Fact]
@@ -41,60 +39,60 @@ public class ConnectionConfigurationTests
         builder.WithAuthentication(Password);
 
         var config = builder.Build();
-        var authenticationInfo = config.Request.AuthenticationInfo.Value;
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
 
         Assert.Null(authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.Null(authenticationInfo.IamCredentials);
 
         // Password cannot be null.
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication((string)null));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!));
     }
 
     [Fact]
     public void WithAuthentication_UsernameIamAuthConfig_ConfiguresCorrectly()
     {
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, refreshIntervalSeconds);
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds);
         var builder = new StandaloneClientConfigurationBuilder();
         builder.WithAuthentication(Username, iamConfig);
 
         var config = builder.Build();
-        var authenticationInfo = config.Request.AuthenticationInfo.Value;
-        var iamCredentials = authenticationInfo.IamCredentials.Value;
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
+        var iamCredentials = authenticationInfo.IamCredentials!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Null(authenticationInfo.Password);
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
-        Assert.Equal((uint)ServiceType.ElastiCache, iamCredentials.ServiceType);
+        Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.Equal(600u, iamCredentials.RefreshIntervalSeconds);
 
         // Username and IamAuthConfig cannot be null.
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication((string)null, iamConfig));
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
     }
 
     [Fact]
     public void WithAuthentication_UsernameClusterServiceRegionRefreshInterval()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region, refreshIntervalSeconds);
+        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region, RefreshIntervalSeconds);
 
         var config = builder.Build();
-        var authenticationInfo = config.Request.AuthenticationInfo.Value;
-        var iamCredentials = authenticationInfo.IamCredentials.Value;
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
+        var iamCredentials = authenticationInfo.IamCredentials!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Null(authenticationInfo.Password);
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
-        Assert.Equal((uint)ServiceType.MemoryDB, iamCredentials.ServiceType);
-        Assert.Equal((uint)refreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
+        Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
+        Assert.Equal(RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
 
         // Username, cluster name, and region cannot be null.
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication((string)null, ClusterName, ServiceType.ElastiCache, Region, refreshIntervalSeconds));
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null, ServiceType.ElastiCache, Region, refreshIntervalSeconds));
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, ClusterName, ServiceType.ElastiCache, (string)null, refreshIntervalSeconds));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, null!, ServiceType.ElastiCache, Region, RefreshIntervalSeconds));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, ClusterName, ServiceType.ElastiCache, null!, RefreshIntervalSeconds));
     }
 
     [Fact]
@@ -106,7 +104,7 @@ public class ConnectionConfigurationTests
         builder.WithAuthentication(Username, Password);
 
         var config = builder.Build();
-        var authenticationInfo = config.Request.AuthenticationInfo.Value;
+        var authenticationInfo = config.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
@@ -115,17 +113,17 @@ public class ConnectionConfigurationTests
         // IAM authentication last.
         builder = new StandaloneClientConfigurationBuilder();
         builder.WithAuthentication(Username, Password);
-        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region, refreshIntervalSeconds);
+        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region, RefreshIntervalSeconds);
 
         config = builder.Build();
-        authenticationInfo = config.Request.AuthenticationInfo.Value;
-        var iamCredentials = authenticationInfo.IamCredentials.Value;
+        authenticationInfo = config!.Request.AuthenticationInfo!.Value;
+        var iamCredentials = authenticationInfo.IamCredentials!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Null(authenticationInfo.Password);
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
-        Assert.Equal((uint)ServiceType.MemoryDB, iamCredentials.ServiceType);
+        Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.Null(iamCredentials.RefreshIntervalSeconds);
     }
 
@@ -138,18 +136,18 @@ public class ConnectionConfigurationTests
         builder.WithCredentials(credentials);
 
         var config = builder.Build();
-        var authenticationInfo = config.Request.AuthenticationInfo.Value;
-        var iamCredentials = authenticationInfo.IamCredentials.Value;
+        var authenticationInfo = config.Request.AuthenticationInfo!.Value;
+        var iamCredentials = authenticationInfo.IamCredentials!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Null(authenticationInfo.Password);
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
-        Assert.Equal((uint)ServiceType.MemoryDB, iamCredentials.ServiceType);
+        Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.Null(iamCredentials.RefreshIntervalSeconds);
 
         // Credentials cannot be null.
-        Assert.Throws<ArgumentNullException>(() => builder.WithCredentials((ServerCredentials)null));
+        Assert.Throws<ArgumentNullException>(() => builder.WithCredentials(null!));
     }
 
     [Fact]
@@ -165,7 +163,7 @@ public class ConnectionConfigurationTests
         builder.WithCredentials(passwordServerCredentials);
 
         var config = builder.Build();
-        var authenticationInfo = config.Request.AuthenticationInfo.Value;
+        var authenticationInfo = config.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
@@ -177,14 +175,14 @@ public class ConnectionConfigurationTests
         builder.WithCredentials(iamServerCredentials);
 
         config = builder.Build();
-        authenticationInfo = config.Request.AuthenticationInfo.Value;
-        var iamCredentials = authenticationInfo.IamCredentials.Value;
+        authenticationInfo = config!.Request.AuthenticationInfo!.Value;
+        var iamCredentials = authenticationInfo.IamCredentials!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Null(authenticationInfo.Password);
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
-        Assert.Equal((uint)ServiceType.MemoryDB, iamCredentials.ServiceType);
+        Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.Null(iamCredentials.RefreshIntervalSeconds);
     }
 }
