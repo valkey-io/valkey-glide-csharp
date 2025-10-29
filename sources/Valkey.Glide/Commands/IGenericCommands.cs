@@ -194,8 +194,4 @@ public interface IGenericCommands
     /// </example>
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
     Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null);
-
-
-
-
 }

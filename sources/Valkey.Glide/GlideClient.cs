@@ -91,10 +91,6 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
         return await Command(Request.Ping(message));
     }
 
-
-
-
-
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
