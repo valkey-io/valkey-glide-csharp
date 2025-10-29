@@ -188,14 +188,19 @@ public class CommandTests
             () => Assert.Equal(["MOVE", "key", "1"], Request.KeyMoveAsync("key", 1).GetArgs()),
 
             // SCAN Commands
-            () => Assert.Equal(["SCAN", "0"], Request.ScanAsync(0).GetArgs()),
-            () => Assert.Equal(["SCAN", "10"], Request.ScanAsync(10).GetArgs()),
-            () => Assert.Equal(["SCAN", "0", "MATCH", "pattern*"], Request.ScanAsync(0, "pattern*").GetArgs()),
-            () => Assert.Equal(["SCAN", "5", "MATCH", "test*"], Request.ScanAsync(5, "test*").GetArgs()),
-            () => Assert.Equal(["SCAN", "0", "COUNT", "10"], Request.ScanAsync(0, pageSize: 10).GetArgs()),
-            () => Assert.Equal(["SCAN", "5", "COUNT", "20"], Request.ScanAsync(5, pageSize: 20).GetArgs()),
-            () => Assert.Equal(["SCAN", "0", "MATCH", "pattern*", "COUNT", "10"], Request.ScanAsync(0, "pattern*", 10).GetArgs()),
-            () => Assert.Equal(["SCAN", "10", "MATCH", "*suffix", "COUNT", "5"], Request.ScanAsync(10, "*suffix", 5).GetArgs()),
+            () => Assert.Equal(["SCAN", "0"], Request.ScanAsync("0").GetArgs()),
+            () => Assert.Equal(["SCAN", "10"], Request.ScanAsync("10").GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "MATCH", "pattern*"], Request.ScanAsync("0", new ScanOptions { MatchPattern = "pattern*" }).GetArgs()),
+            () => Assert.Equal(["SCAN", "5", "MATCH", "test*"], Request.ScanAsync("5", new ScanOptions { MatchPattern = "test*" }).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "COUNT", "10"], Request.ScanAsync("0", new ScanOptions { Count = 10 }).GetArgs()),
+            () => Assert.Equal(["SCAN", "5", "COUNT", "20"], Request.ScanAsync("5", new ScanOptions { Count = 20 }).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "TYPE", "string"], Request.ScanAsync("0", new ScanOptions { Type = ValkeyType.String }).GetArgs()),
+            () => Assert.Equal(["SCAN", "5", "TYPE", "list"], Request.ScanAsync("5", new ScanOptions { Type = ValkeyType.List }).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "TYPE", "set"], Request.ScanAsync("0", new ScanOptions { Type = ValkeyType.Set }).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "TYPE", "zset"], Request.ScanAsync("0", new ScanOptions { Type = ValkeyType.SortedSet }).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "TYPE", "hash"], Request.ScanAsync("0", new ScanOptions { Type = ValkeyType.Hash }).GetArgs()),
+            () => Assert.Equal(["SCAN", "0", "TYPE", "stream"], Request.ScanAsync("0", new ScanOptions { Type = ValkeyType.Stream }).GetArgs()),
+            () => Assert.Equal(["SCAN", "10", "MATCH", "key*", "COUNT", "20", "TYPE", "string"], Request.ScanAsync("10", new ScanOptions { MatchPattern = "key*", Count = 20, Type = ValkeyType.String }).GetArgs()),
 
             // WAIT Commands
             () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, 1000).GetArgs()),
@@ -483,20 +488,20 @@ public class CommandTests
             // SCAN Commands Converters
             () =>
             {
-                var result = Request.ScanAsync(0).Converter([0L, new object[] { (gs)"key1", (gs)"key2" }]);
-                Assert.Equal(0L, result.Item1);
-                Assert.Equal(["key1", "key2"], result.Item2.Select(k => k.ToString()));
+                var result = Request.ScanAsync("0").Converter(["0", new object[] { (gs)"key1", (gs)"key2" }]);
+                Assert.Equal("0", result.Item1);
+                Assert.Equal([new ValkeyKey("key1"), new ValkeyKey("key2")], result.Item2);
             },
             () =>
             {
-                var result = Request.ScanAsync(10).Converter([5L, new object[] { (gs)"test" }]);
-                Assert.Equal(5L, result.Item1);
-                Assert.Equal(["test"], result.Item2.Select(k => k.ToString()));
+                var result = Request.ScanAsync("10").Converter(["5", new object[] { (gs)"test" }]);
+                Assert.Equal("5", result.Item1);
+                Assert.Equal([new ValkeyKey("test")], result.Item2);
             },
             () =>
             {
-                var result = Request.ScanAsync(0).Converter([0L, Array.Empty<object>()]);
-                Assert.Equal(0L, result.Item1);
+                var result = Request.ScanAsync("0").Converter(["0", Array.Empty<object>()]);
+                Assert.Equal("0", result.Item1);
                 Assert.Empty(result.Item2);
             },
 

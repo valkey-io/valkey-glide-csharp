@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Runtime.InteropServices;
+
 using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
@@ -7,6 +9,8 @@ using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.Internals.FFI;
+using static Valkey.Glide.Internals.ResponseHandler;
 using static Valkey.Glide.Pipeline.Options;
 using static Valkey.Glide.Route;
 
@@ -317,5 +321,97 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
         }
 
         return _serverVersion;
+    }
+
+    /// <summary>
+    /// Iterates incrementally over keys in the cluster.
+    /// </summary>
+    /// <param name="cursor">The cursor to use for this iteration.</param>
+    /// <param name="options">Optional scan options to filter results.</param>
+    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
+    /// <seealso cref="ClusterScanCursor"/>
+    /// <seealso cref="ScanOptions"/>
+    public async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
+    {
+        string[] args = options?.ToArgs() ?? [];
+        var (nextCursorId, keys) = await ClusterScanCommand(cursor.CursorId, args);
+        return (new ClusterScanCursor(nextCursorId), keys);
+    }
+
+    /// <summary>
+    /// Executes a cluster scan command with the given cursor and arguments.
+    /// </summary>
+    /// <param name="cursor">The cursor for the scan iteration.</param>
+    /// <param name="args">Additional arguments for the scan command.</param>
+    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
+    private async Task<(string cursor, ValkeyKey[] keys)> ClusterScanCommand(string cursor, string[] args)
+    {
+        var message = MessageContainer.GetMessageForCall();
+        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor);
+
+        IntPtr[]? argPtrs = null;
+        IntPtr argsPtr = IntPtr.Zero;
+        IntPtr argLengthsPtr = IntPtr.Zero;
+
+        try
+        {
+            if (args.Length > 0)
+            {
+                // 1. Get a pointer to the array of argument string pointers.
+                // Example: if args = ["MATCH", "key*"], then argPtrs[0] points
+                // to "MATCH", argPtrs[1] points to "key*", and argsPtr points
+                // to the argsPtrs array.
+                argPtrs = [.. args.Select(Marshal.StringToHGlobalAnsi)];
+                argsPtr = Marshal.AllocHGlobal(IntPtr.Size * args.Length);
+                Marshal.Copy(argPtrs, 0, argsPtr, args.Length);
+
+                // 2. Get a pointer to an array of argument string lengths.
+                // Example: if args = ["MATCH", "key*"], then argLengths[0] = 5
+                // (length of "MATCH"), argLengths[1] = 4 (length of "key*"),
+                // and argLengthsPtr points to the argLengths array.
+                var argLengths = args.Select(arg => (ulong)arg.Length).ToArray();
+                argLengthsPtr = Marshal.AllocHGlobal(sizeof(ulong) * args.Length);
+                Marshal.Copy(argLengths.Select(l => (long)l).ToArray(), 0, argLengthsPtr, args.Length);
+            }
+
+            // Submit request to Rust and wait for response.
+            RequestClusterScanFfi(ClientPointer, (ulong)message.Index, cursorPtr, (ulong)args.Length, argsPtr, argLengthsPtr);
+            IntPtr response = await message;
+
+            try
+            {
+                var result = HandleResponse(response);
+                var array = (object[])result!;
+                var nextCursor = array[0]!.ToString()!;
+                var keys = ((object[])array[1]!).Select(k => new ValkeyKey(k!.ToString())).ToArray();
+                return (nextCursor, keys);
+            }
+            finally
+            {
+                FreeResponse(response);
+            }
+        }
+        finally
+        {
+            // Clean up args memory
+            if (argLengthsPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(argLengthsPtr);
+            }
+
+            if (argsPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(argsPtr);
+            }
+
+            if (argPtrs != null)
+            {
+                Array.ForEach(argPtrs, Marshal.FreeHGlobal);
+            }
+
+            // Clean up cursor in Rust
+            RemoveClusterScanCursorFfi(cursorPtr);
+            Marshal.FreeHGlobal(cursorPtr);
+        }
     }
 }

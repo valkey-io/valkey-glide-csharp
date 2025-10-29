@@ -91,10 +91,6 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
         return await Command(Request.Ping(message));
     }
 
-
-
-
-
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
@@ -177,24 +173,34 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
-        long currentCursor = cursor;
+        var options = new ScanOptions();
+        if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
+        if (pageSize > 0) options.Count = pageSize;
+
+        string currentCursor = cursor.ToString();
+        ValkeyKey[] keys;
         int currentOffset = pageOffset;
 
         do
         {
-            (long nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, pattern, pageSize));
+            (currentCursor, keys) = await ScanAsync(currentCursor, options);
 
-            IEnumerable<ValkeyKey> keysToYield = currentOffset > 0 ? keys.Skip(currentOffset) : keys;
+            if (currentOffset > 0)
+            {
+                keys = [.. keys.Skip(currentOffset)];
+                currentOffset = 0;
+            }
 
-            foreach (ValkeyKey key in keysToYield)
+            foreach (ValkeyKey key in keys)
             {
                 yield return key;
             }
 
-            currentCursor = nextCursor;
-            currentOffset = 0;
-        } while (currentCursor != 0);
+        } while (currentCursor != "0");
     }
+
+    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
+        => await Command(Request.ScanAsync(cursor, options));
 
     protected override async Task<Version> GetServerVersionAsync()
     {
