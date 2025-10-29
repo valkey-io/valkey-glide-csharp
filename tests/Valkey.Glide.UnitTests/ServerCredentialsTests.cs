@@ -61,10 +61,13 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_ThrowsArgumentNullException()
     {
+        // Password-based authentication.
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!));
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
 
+        // IAM authentication.
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamConfig));
+        Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
     }
 }
