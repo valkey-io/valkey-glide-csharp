@@ -14,7 +14,7 @@ public class IamAuthConfig(string clusterName, ServiceType serviceType, string r
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string ClusterName { get; set; } = clusterName;
+    public string ClusterName { get; set; } = clusterName ?? throw new ArgumentNullException(nameof(clusterName));
 
     /// <summary>
     /// The AWS service type.
@@ -24,7 +24,7 @@ public class IamAuthConfig(string clusterName, ServiceType serviceType, string r
     /// <summary>
     /// The AWS region where the cluster is located.
     /// </summary>
-    public string Region { get; set; } = region;
+    public string Region { get; set; } = region ?? throw new ArgumentNullException(nameof(region));
 
     /// <summary>
     /// Optional refresh interval in seconds.

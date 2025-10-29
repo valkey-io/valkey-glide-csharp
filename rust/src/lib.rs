@@ -798,7 +798,7 @@ pub unsafe extern "C-unwind" fn refresh_iam_token(
             },
         };
         async_panic_guard.panicked = false;
-        drop(panic_guard);
+        drop(async_panic_guard);
     });
 
     panic_guard.panicked = false;

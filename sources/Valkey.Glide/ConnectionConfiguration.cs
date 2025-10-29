@@ -515,6 +515,21 @@ public abstract class ConnectionConfiguration
         {
             return WithCredentials(new ServerCredentials(username, iamConfig));
         }
+
+        /// <summary>
+        /// Configure server credentials for IAM authentication.
+        /// </summary>
+        /// <param name="username">The username for authentication.</param>
+        /// <param name="clusterName">The name of the ElastiCache or MemoryDB cluster.</param>
+        /// <param name="serviceType">The AWS service type (ElastiCache or MemoryDB).</param>
+        /// <param name="region">The AWS region where the cluster is located.</param>
+        /// <param name="refreshIntervalSeconds">Optional refresh interval in seconds.</param>
+        /// <returns>The builder instance for method chaining.</returns>
+        public T WithAuthentication(string username, string clusterName, ServiceType serviceType, string region, int? refreshIntervalSeconds = null)
+        {
+            var iamConfig = new IamAuthConfig(clusterName, serviceType, region, refreshIntervalSeconds);
+            return WithCredentials(new ServerCredentials(username, iamConfig));
+        }
         #endregion
         #region Protocol
         /// <summary>
