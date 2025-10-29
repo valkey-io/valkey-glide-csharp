@@ -741,3 +741,27 @@ unsafe fn convert_string_pointer_array_to_vector<'a>(
 
     result
 }
+
+/// Manually refresh the IAM authentication token.
+///
+/// This function triggers an immediate refresh of the IAM token and updates the connection.
+/// It is only available if the client was created with IAM authentication.
+///
+/// # Arguments
+///
+/// * `client_ptr` - A pointer to a valid client returned from [`create_client`].
+/// * `callback_index` - A unique identifier for the callback to be called when the command completes.
+///
+/// # Safety
+///
+/// * `client_ptr` must not be `null`.
+/// * `client_ptr` must be able to be safely casted to a valid [`Arc<Client>`] via [`Arc::from_raw`]. See the safety documentation of [`Arc::from_raw`].
+/// * This function should only be called with a `client_ptr` created by [`create_client`], before [`close_client`] was called with the pointer.
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn refresh_iam_token(
+    client_ptr: *const c_void,
+    callback_index: usize,
+) {
+    // TODO: Implement IAM token refresh functionality
+    panic!("refresh_iam_token is not yet implemented");
+}
