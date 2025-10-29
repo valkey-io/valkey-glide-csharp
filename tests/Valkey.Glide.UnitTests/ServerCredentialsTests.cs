@@ -1,8 +1,10 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System;
-using Xunit;
+
 using Valkey.Glide;
+
+using Xunit;
 
 namespace Valkey.Glide.UnitTests;
 

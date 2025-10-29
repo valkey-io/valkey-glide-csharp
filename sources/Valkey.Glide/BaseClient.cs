@@ -38,6 +38,27 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     public override int GetHashCode() => (int)ClientPointer;
 
+    /// <summary>
+    /// Manually refresh the IAM authentication token.
+    /// This method is only available when the client is configured with IAM authentication.
+    /// </summary>
+    /// <returns>A task that completes when the refresh attempt finishes.</returns>
+    /// <exception cref="ConnectionException">Thrown if IAM authentication is not configured.</exception>
+    public async Task RefreshIamTokenAsync()
+    {
+        Message message = _messageContainer.GetMessageForCall();
+        RefreshIamTokenFfi(_clientPointer, (ulong)message.Index);
+        IntPtr response = await message;
+        try
+        {
+            HandleServerValue(HandleResponse(response), false, (string s) => s);
+        }
+        finally
+        {
+            FreeResponse(response);
+        }
+    }
+
     #endregion public methods
 
     #region protected methods

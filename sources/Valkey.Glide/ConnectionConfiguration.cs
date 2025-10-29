@@ -181,13 +181,14 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Configuration for a standalone client.
         /// </summary>
-        /// <inheritdoc cref="ClientConfigurationBuilder{T}.WithAuthentication(string?, string)" />
         /// <param name="addresses"><inheritdoc cref="ClientConfigurationBuilder{T}.Addresses" path="/summary" /></param>
         /// <param name="useTls"><inheritdoc cref="ClientConfigurationBuilder{T}.UseTls" path="/summary" /></param>
         /// <param name="requestTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.RequestTimeout" path="/summary" /></param>
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
+        /// <param name="username">The username for authentication.</param>
+        /// <param name="password">The password for authentication.</param>
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
@@ -233,13 +234,14 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Configuration for a cluster client.
         /// </summary>
-        /// <inheritdoc cref="ClientConfigurationBuilder{T}.WithAuthentication(string?, string)" />
         /// <param name="addresses"><inheritdoc cref="ClientConfigurationBuilder{T}.Addresses" path="/summary" /></param>
         /// <param name="useTls"><inheritdoc cref="ClientConfigurationBuilder{T}.UseTls" path="/summary" /></param>
         /// <param name="requestTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.RequestTimeout" path="/summary" /></param>
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
+        /// <param name="username">The username for authentication.</param>
+        /// <param name="password">The password for authentication.</param>
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
@@ -284,6 +286,10 @@ public abstract class ConnectionConfiguration
     {
         internal ConnectionConfig Config;
 
+        /// <summary>
+        /// Initializes a new instance of the ClientConfigurationBuilder class.
+        /// </summary>
+        /// <param name="clusterMode">Whether this is a cluster mode configuration.</param>
         protected ClientConfigurationBuilder(bool clusterMode)
         {
             Config = new ConnectionConfig { ClusterMode = clusterMode };
@@ -610,6 +616,9 @@ public abstract class ConnectionConfiguration
     /// </summary>
     public class StandaloneClientConfigurationBuilder : ClientConfigurationBuilder<StandaloneClientConfigurationBuilder>
     {
+        /// <summary>
+        /// Initializes a new instance of the StandaloneClientConfigurationBuilder class.
+        /// </summary>
         public StandaloneClientConfigurationBuilder() : base(false) { }
 
         /// <summary>
@@ -624,6 +633,9 @@ public abstract class ConnectionConfiguration
     /// </summary>
     public class ClusterClientConfigurationBuilder : ClientConfigurationBuilder<ClusterClientConfigurationBuilder>
     {
+        /// <summary>
+        /// Initializes a new instance of the ClusterClientConfigurationBuilder class.
+        /// </summary>
         public ClusterClientConfigurationBuilder() : base(true) { }
 
         /// <summary>
