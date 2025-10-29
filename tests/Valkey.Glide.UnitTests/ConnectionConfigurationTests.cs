@@ -98,6 +98,38 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
+    public void WithAuthentication_MultipleCalls_LastWins()
+    {
+        // Password-based authentication last.
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region);
+        builder.WithAuthentication(Username, Password);
+
+        var config = builder.Build();
+        var authenticationInfo = config.Request.AuthenticationInfo.Value;
+
+        Assert.Equal(Username, authenticationInfo.Username);
+        Assert.Equal(Password, authenticationInfo.Password);
+        Assert.Null(authenticationInfo.IamCredentials);
+
+        // IAM authentication last.
+        builder = new StandaloneClientConfigurationBuilder();
+        builder.WithAuthentication(Username, Password);
+        builder.WithAuthentication(Username, ClusterName, ServiceType.MemoryDB, Region, refreshIntervalSeconds);
+
+        config = builder.Build();
+        authenticationInfo = config.Request.AuthenticationInfo.Value;
+        var iamCredentials = authenticationInfo.IamCredentials.Value;
+
+        Assert.Equal(Username, authenticationInfo.Username);
+        Assert.Null(authenticationInfo.Password);
+        Assert.Equal(ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(Region, iamCredentials.Region);
+        Assert.Equal((uint)ServiceType.MemoryDB, iamCredentials.ServiceType);
+        Assert.Null(iamCredentials.RefreshIntervalSeconds);
+    }
+
+    [Fact]
     public void WithCredentials()
     {
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region);
@@ -118,5 +150,41 @@ public class ConnectionConfigurationTests
 
         // Credentials cannot be null.
         Assert.Throws<ArgumentNullException>(() => builder.WithCredentials((ServerCredentials)null));
+    }
+
+    [Fact]
+    public void WithCredentials_MultipleCalls_LastWins()
+    {
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region);
+        var iamServerCredentials = new ServerCredentials(Username, iamConfig);
+        var passwordServerCredentials = new ServerCredentials(Username, Password);
+
+        // Password-based authentication last.
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithCredentials(iamServerCredentials);
+        builder.WithCredentials(passwordServerCredentials);
+
+        var config = builder.Build();
+        var authenticationInfo = config.Request.AuthenticationInfo.Value;
+
+        Assert.Equal(Username, authenticationInfo.Username);
+        Assert.Equal(Password, authenticationInfo.Password);
+        Assert.Null(authenticationInfo.IamCredentials);
+
+        // IAM authentication last.
+        builder = new StandaloneClientConfigurationBuilder();
+        builder.WithCredentials(passwordServerCredentials);
+        builder.WithCredentials(iamServerCredentials);
+
+        config = builder.Build();
+        authenticationInfo = config.Request.AuthenticationInfo.Value;
+        var iamCredentials = authenticationInfo.IamCredentials.Value;
+
+        Assert.Equal(Username, authenticationInfo.Username);
+        Assert.Null(authenticationInfo.Password);
+        Assert.Equal(ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(Region, iamCredentials.Region);
+        Assert.Equal((uint)ServiceType.MemoryDB, iamCredentials.ServiceType);
+        Assert.Null(iamCredentials.RefreshIntervalSeconds);
     }
 }
