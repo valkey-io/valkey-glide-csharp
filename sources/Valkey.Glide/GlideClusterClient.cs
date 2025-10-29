@@ -324,6 +324,21 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
     }
 
     /// <summary>
+    /// Iterates incrementally over keys in the cluster.
+    /// </summary>
+    /// <param name="cursor">The cursor to use for this iteration.</param>
+    /// <param name="options">Optional scan options to filter results.</param>
+    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
+    /// <seealso cref="ClusterScanCursor"/>
+    /// <seealso cref="ScanOptions"/>
+    public async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
+    {
+        string[] args = options?.ToArgs() ?? [];
+        var (nextCursorId, keys) = await ClusterScanCommand(cursor.CursorId, args);
+        return (new ClusterScanCursor(nextCursorId), keys);
+    }
+
+    /// <summary>
     /// Executes a cluster scan command with the given cursor and arguments.
     /// </summary>
     /// <param name="cursor">The cursor for the scan iteration.</param>
@@ -398,20 +413,5 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
             RemoveClusterScanCursorFfi(cursorPtr);
             Marshal.FreeHGlobal(cursorPtr);
         }
-    }
-
-    /// <summary>
-    /// Iterates incrementally over keys in the cluster.
-    /// </summary>
-    /// <param name="cursor">The cursor to use for this iteration.</param>
-    /// <param name="options">Optional scan options to filter results.</param>
-    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
-    /// <seealso cref="ClusterScanCursor"/>
-    /// <seealso cref="ScanOptions"/>
-    public async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
-    {
-        string[] args = options?.ToArgs() ?? [];
-        var (nextCursorId, keys) = await ClusterScanCommand(cursor.CursorId, args);
-        return (new ClusterScanCursor(nextCursorId), keys);
     }
 }
