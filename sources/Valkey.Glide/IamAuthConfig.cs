@@ -5,40 +5,29 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration for IAM authentication with AWS services.
 /// </summary>
-public class IamAuthConfig
+/// <param name="clusterName">The name of the cluster.</param>
+/// <param name="serviceType">The AWS service type.</param>
+/// <param name="region">The AWS region where the cluster is located.</param>
+/// <param name="refreshIntervalSeconds">Optional refresh interval in seconds.</param>
+public class IamAuthConfig(string clusterName, ServiceType serviceType, string region, int? refreshIntervalSeconds = null)
 {
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string ClusterName { get; set; } = string.Empty;
+    public string ClusterName { get; set; } = clusterName;
 
     /// <summary>
     /// The AWS service type.
     /// </summary>
-    public ServiceType ServiceType { get; set; }
+    public ServiceType ServiceType { get; set; } = serviceType;
 
     /// <summary>
     /// The AWS region where the cluster is located.
     /// </summary>
-    public string Region { get; set; } = string.Empty;
+    public string Region { get; set; } = region;
 
     /// <summary>
     /// Optional refresh interval in seconds.
     /// </summary>
-    public int? RefreshIntervalSeconds { get; set; }
-
-    /// <summary>
-    /// Creates IAM authentication configuration.
-    /// </summary>
-    /// <param name="clusterName">The name of the cluster.</param>
-    /// <param name="serviceType">The AWS service type.</param>
-    /// <param name="region">The AWS region where the cluster is located.</param>
-    /// <param name="refreshIntervalSeconds">Optional refresh interval in seconds.</param>
-    public IamAuthConfig(string clusterName, ServiceType serviceType, string region, int? refreshIntervalSeconds = null)
-    {
-        ClusterName = clusterName;
-        ServiceType = serviceType;
-        Region = region;
-        RefreshIntervalSeconds = refreshIntervalSeconds;
-    }
+    public int? RefreshIntervalSeconds { get; set; } = refreshIntervalSeconds;
 }
