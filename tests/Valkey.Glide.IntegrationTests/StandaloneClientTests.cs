@@ -1,8 +1,9 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
+using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -75,6 +76,9 @@ public class StandaloneClientTests(TestConfiguration config)
 
         _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
             .WithReadFrom(new ConnectionConfiguration.ReadFrom(ConnectionConfiguration.ReadFromStrategy.Primary)).Build());
+
+        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
+            .WithLazyConnect(true).Build());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -480,5 +484,71 @@ public class StandaloneClientTests(TestConfiguration config)
         // Should contain version information (could be Redis or Valkey)
         Assert.True(result.Contains("Redis", StringComparison.OrdinalIgnoreCase) ||
                    result.Contains("Valkey", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task LazyConnect()
+    {
+        string serverName = $"test_{Guid.NewGuid():N}";
+
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerManager.StartStandaloneServer(serverName);
+            var configBuilder = new StandaloneClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port);
+            var eagerConfig = configBuilder.WithLazyConnect(false).Build();
+            var lazyConfig = configBuilder.WithLazyConnect(true).Build();
+
+            // Create reference client.
+            using var referenceClient = await GlideClient.CreateClient(eagerConfig);
+            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            // Create lazy client (does not connect immediately).
+            using var lazyClient = await GlideClient.CreateClient(lazyConfig);
+            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            Assert.Equal(initialCount, connectCount);
+
+            // First command establishes connection.
+            await lazyClient.PingAsync();
+            var commandCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            Assert.True(connectCount < commandCount);
+        }
+        finally
+        {
+            ServerManager.StopServer(serverName);
+        }
+    }
+
+    [Fact]
+    public async Task EagerConnect()
+    {
+        string serverName = $"test_{Guid.NewGuid():N}";
+
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerManager.StartStandaloneServer(serverName);
+            var eagerConfig = new StandaloneClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port)
+                .WithLazyConnect(false)
+                .Build();
+
+            // Create reference client.
+            using var referenceClient = await GlideClient.CreateClient(eagerConfig);
+            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            // Create eager client (connects immediately).
+            using var eagerClient = await GlideClient.CreateClient(eagerConfig);
+            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            Assert.True(initialCount < connectCount);
+        }
+        finally
+        {
+            ServerManager.StopServer(serverName);
+        }
     }
 }
