@@ -45,8 +45,8 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// <returns>A task that completes when the refresh attempt finishes.</returns>
     public async Task RefreshIamTokenAsync()
     {
-        Message message = _messageContainer.GetMessageForCall();
-        RefreshIamTokenFfi(_clientPointer, (ulong)message.Index);
+        Message message = MessageContainer.GetMessageForCall();
+        RefreshIamTokenFfi(ClientPointer, (ulong)message.Index);
         IntPtr response = await message;
         try
         {

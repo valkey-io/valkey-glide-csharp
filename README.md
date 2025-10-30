@@ -101,18 +101,19 @@ Console.WriteLine($"User: {user}");
 var passwordConfig = new StandaloneClientConfigurationBuilder()
     .WithAddress(host, port)
     .WithAuthentication("username", "password")
-    .WithTls(false)
+    .WithTls()
     .Build();
 
-using var client = await GlideClient.CreateClient(passwordConfig);
+using var passwordClient = await GlideClient.CreateClient(passwordConfig);
 
 // IAM authentication.
+var iamAuthConfig = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
 var iamConfig = new ClusterClientConfigurationBuilder()
     .WithAddress(host, port)
-    .WithAuthentication("username", "my-cluster", ServiceType.ElastiCache, "us-east-1")
+    .WithAuthentication("username", iamAuthConfig)
     .Build();
 
-using var client = await GlideClient.CreateClient(iamConfig);
+using var iamClient = await GlideClient.CreateClient(iamConfig);
 ```
 
 ## Core API Examples

@@ -797,50 +797,50 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
+    internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
     {
         /// <summary>
         /// Username for authentication.
         /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string? Username = username;
+        public readonly string? Username = username;
 
         /// <summary>
         /// Password for authentication.
         /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string? Password = password;
+        public readonly string? Password = password;
 
         /// <summary>
         /// IAM credentials for authentication.
         /// </summary>
-        public IamCredentials? IamCredentials = iamCredentials;
+        public readonly IamCredentials? IamCredentials = iamCredentials;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
+    internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
     {
         /// <summary>
         /// The name of the cluster for IAM authentication.
         /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string ClusterName = clusterName;
+        public readonly string ClusterName = clusterName;
 
         /// <summary>
         /// The AWS region for IAM authentication.
         /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string Region = region;
+        public readonly string Region = region;
 
         /// <summary>
         /// The AWS service type for IAM authentication.
         /// </summary>
-        public ServiceType ServiceType = serviceType;
+        public readonly ServiceType ServiceType = serviceType;
 
         /// <summary>
         /// The refresh interval in seconds for IAM authentication.
         /// </summary>
-        public uint? RefreshIntervalSeconds = refreshIntervalSeconds;
+        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds;
     }
 
     internal enum ServiceType : uint

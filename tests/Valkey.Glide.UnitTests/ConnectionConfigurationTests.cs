@@ -77,7 +77,7 @@ public class ConnectionConfigurationTests
     {
         // Password-based authentication last.
         var builder = new StandaloneClientConfigurationBuilder();
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds);
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region);
         builder.WithAuthentication(Username, iamConfig);
         builder.WithAuthentication(Username, Password);
 
