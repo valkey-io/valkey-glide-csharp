@@ -449,18 +449,14 @@ public abstract class ConnectionConfiguration
         #endregion
         #region Authentication
         /// <summary>
-        /// Configure credentials for authentication process.
-        /// If none are set, the client will not authenticate itself with the server.
-        /// Supports both password-based and IAM authentication modes.
+        /// Configure server credentials for authentication process.
+        /// Supports both password-based and IAM authentication.
         /// </summary>
         /// <param name="credentials">The server credentials for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithCredentials(ServerCredentials credentials)
         {
-            if (credentials == null)
-            {
-                throw new ArgumentNullException(nameof(credentials));
-            }
+            ArgumentNullException.ThrowIfNull(credentials);
 
             IamCredentials? iamCredentials = null;
             if (credentials.IamConfig != null)
@@ -502,8 +498,7 @@ public abstract class ConnectionConfiguration
         }
 
         /// <summary>
-        /// Configure server credentials for password-based authentication.
-        /// Username "default" will be used.
+        /// Configure server credentials for password-based authentication with username "default".
         /// </summary>
         /// <param name="password">The password for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
