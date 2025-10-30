@@ -95,6 +95,7 @@ public static class Constants
     public const string ByKeyword = "BY";
     public const string GetKeyword = "GET";
     public const string StoreKeyword = "STORE";
+    /// <summary>
     /// Keyword for hash field expiration commands.
     /// </summary>
     public const string FieldsKeyword = "FIELDS";
