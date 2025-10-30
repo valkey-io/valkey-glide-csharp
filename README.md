@@ -106,11 +106,12 @@ var passwordConfig = new StandaloneClientConfigurationBuilder()
 
 using var passwordClient = await GlideClient.CreateClient(passwordConfig);
 
-// IAM authentication.
+// IAM authentication with TLS.
 var iamAuthConfig = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
 var iamConfig = new ClusterClientConfigurationBuilder()
     .WithAddress(host, port)
     .WithAuthentication("username", iamAuthConfig)
+    .WithTls(true)
     .Build();
 
 using var iamClient = await GlideClient.CreateClient(iamConfig);
