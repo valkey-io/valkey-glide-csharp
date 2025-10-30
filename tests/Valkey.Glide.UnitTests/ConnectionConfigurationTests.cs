@@ -174,26 +174,28 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void RefreshTopologyFromInitialNodes()
+    public void RefreshTopologyFromInitialNodes_Default()
     {
-        ClusterClientConfigurationBuilder builder;
-        ClusterClientConfiguration config;
-
-        // Default (false).
-        builder = new ClusterClientConfigurationBuilder();
-        config = builder.Build();
+        var builder = new ClusterClientConfigurationBuilder();
+        var config = builder.Build();
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
+    }
 
-        // Set to true.
-        builder = new ClusterClientConfigurationBuilder();
+    [Fact]
+    public void RefreshTopologyFromInitialNodes_True()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
         builder.WithRefreshTopologyFromInitialNodes(true);
-        config = builder.Build();
+        var config = builder.Build();
         Assert.True(config.Request.RefreshTopologyFromInitialNodes);
+    }
 
-        // Set to false.
-        builder = new ClusterClientConfigurationBuilder();
+    [Fact]
+    public void RefreshTopologyFromInitialNodes_False()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
         builder.WithRefreshTopologyFromInitialNodes(false);
-        config = builder.Build();
+        var config = builder.Build();
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
     }
 }
