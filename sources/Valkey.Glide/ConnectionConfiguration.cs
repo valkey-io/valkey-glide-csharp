@@ -25,9 +25,24 @@ public abstract class ConnectionConfiguration
         public Protocol? Protocol;
         public string? ClientName;
         public bool LazyConnect;
+        public bool RefreshTopologyFromInitialNodes;
 
         internal FFI.ConnectionConfig ToFfi() =>
-            new(Addresses, TlsMode, ClusterMode, (uint?)RequestTimeout?.TotalMilliseconds, (uint?)ConnectionTimeout?.TotalMilliseconds, ReadFrom, RetryStrategy, AuthenticationInfo, DatabaseId, Protocol, ClientName, LazyConnect);
+            new(
+                Addresses,
+                TlsMode,
+                ClusterMode,
+                (uint?)RequestTimeout?.TotalMilliseconds,
+                (uint?)ConnectionTimeout?.TotalMilliseconds,
+                ReadFrom,
+                RetryStrategy,
+                AuthenticationInfo,
+                DatabaseId,
+                Protocol,
+                ClientName,
+                LazyConnect,
+                RefreshTopologyFromInitialNodes
+            );
     }
 
     /// <summary>
@@ -639,6 +654,30 @@ public abstract class ConnectionConfiguration
         /// Initializes a new instance of the ClusterClientConfigurationBuilder class.
         /// </summary>
         public ClusterClientConfigurationBuilder() : base(true) { }
+
+        #region Refresh Topology
+        /// <summary>
+        /// Enables refreshing the cluster topology using only the initial nodes.
+        /// <para />
+        /// When this option is enabled, all topology updates (both the periodic checks and on-demand
+        /// refreshes triggered by topology changes) will query only the initial nodes provided when
+        /// creating the client, rather than using the internal cluster view.
+        /// <para />
+        /// If not set, defaults to <c>false</c> (uses internal cluster view for topology refresh).
+        /// </summary>
+        public bool RefreshTopologyFromInitialNodes
+        {
+            get => Config.RefreshTopologyFromInitialNodes;
+            set => Config.RefreshTopologyFromInitialNodes = value;
+        }
+
+        /// <inheritdoc cref="RefreshTopologyFromInitialNodes" />
+        public ClusterClientConfigurationBuilder WithRefreshTopologyFromInitialNodes(bool refreshTopologyFromInitialNodes)
+        {
+            RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes;
+            return this;
+        }
+        #endregion
 
         /// <summary>
         /// Complete the configuration with given settings.
