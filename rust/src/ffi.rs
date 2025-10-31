@@ -71,6 +71,7 @@ pub struct ConnectionConfig {
     pub protocol: redis::ProtocolVersion,
     /// zero pointer is valid, means no client name is given (`None`)
     pub client_name: *const c_char,
+    pub lazy_connect: bool,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -111,10 +112,12 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) },
+        lib_name: option_env!("GLIDE_NAME").map(|s| s.to_string()),
         authentication_info: if config.has_authentication_info {
             Some(AuthenticationInfo {
                 username: unsafe { ptr_to_opt_str(config.authentication_info.username) },
                 password: unsafe { ptr_to_opt_str(config.authentication_info.password) },
+                iam_config: None,
             })
         } else {
             None
@@ -147,11 +150,12 @@ pub(crate) unsafe fn create_connection_request(
         } else {
             None
         },
+        lazy_connect: config.lazy_connect,
+        refresh_topology_from_initial_nodes: false,
         // TODO below
         periodic_checks: None,
         pubsub_subscriptions: None,
         inflight_requests_limit: None,
-        lazy_connect: false,
     }
 }
 
@@ -313,7 +317,7 @@ pub(crate) unsafe fn create_route(
 /// * `data`, `data_len` and also each pointer stored in `data` must be able to be safely casted to a valid to a slice of the corresponding type via [`from_raw_parts`].
 ///   See the safety documentation of [`from_raw_parts`].
 /// * The caller is responsible of freeing the allocated memory.
-pub(crate) unsafe fn convert_double_pointer_to_vec<'a>(
+pub(crate) unsafe fn convert_string_pointer_array_to_vector<'a>(
     data: *const *const u8,
     len: usize,
     data_len: *const usize,
@@ -526,11 +530,11 @@ pub struct BatchOptionsInfo {
 /// * `cmd_ptr` must be able to be safely casted to a valid [`CmdInfo`]
 /// * `args` and `args_len` in a referred [`CmdInfo`] structure must not be `null`.
 /// * `data` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string pointers.
-/// * `args_len` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string lengths. See the safety documentation of [`convert_double_pointer_to_vec`].
+/// * `args_len` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string lengths. See the safety documentation of [`convert_string_pointer_array_to_vector`].
 pub(crate) unsafe fn create_cmd(ptr: *const CmdInfo) -> Result<Cmd, String> {
     let info = unsafe { *ptr };
     let arg_vec =
-        unsafe { convert_double_pointer_to_vec(info.args, info.arg_count, info.args_len) };
+        unsafe { convert_string_pointer_array_to_vector(info.args, info.arg_count, info.args_len) };
 
     let Some(mut cmd) = info.request_type.get_command() else {
         return Err("Couldn't fetch command type".into());

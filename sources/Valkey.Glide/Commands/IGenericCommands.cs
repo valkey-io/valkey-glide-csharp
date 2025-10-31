@@ -1,5 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Errors;
@@ -167,7 +168,30 @@ public interface IGenericCommands
     /// </returns>
     Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options);
 
-
-
-
+    /// <summary>
+    /// Incrementally iterates over the matching keys in the database.
+    /// <para>
+    /// The SCAN command is a cursor-based iterator. An iteration starts when the cursor
+    /// is set to <c>"0"</c>. At every call of the command, the
+    /// server returns an updated cursor that the user needs to use as the cursor argument in the next
+    /// call. The iteration terminates when the cursor is <c>"0"</c>.
+    /// </para>
+    /// </summary>
+    /// <param name="cursor">The cursor for iteration.</param>
+    /// <param name="options">Optional scan options for filtering results.</param>
+    /// <returns>The next cursor and an array of matching keys.</returns>
+    /// <example>
+    /// <code>
+    /// var allKeys = new List&lt;ValkeyKey&gt;();
+    /// string cursor = "0";
+    ///
+    /// do
+    /// {
+    ///     (cursor, var keys) = await client.ScanAsync(cursor);
+    ///     allKeys.AddRange(keys);
+    /// } while (cursor != "0");
+    /// </code>
+    /// </example>
+    /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
+    Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null);
 }
