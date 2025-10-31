@@ -314,7 +314,26 @@ public class CommandTests
             () => Assert.Equal(["PFCOUNT", "key"], Request.HyperLogLogLengthAsync("key").GetArgs()),
             () => Assert.Equal(["PFCOUNT", "key1", "key2", "key3"], Request.HyperLogLogLengthAsync(["key1", "key2", "key3"]).GetArgs()),
             () => Assert.Equal(["PFMERGE", "dest", "src1", "src2"], Request.HyperLogLogMergeAsync("dest", "src1", "src2").GetArgs()),
-            () => Assert.Equal(["PFMERGE", "dest", "src1", "src2", "src3"], Request.HyperLogLogMergeAsync("dest", ["src1", "src2", "src3"]).GetArgs())
+            () => Assert.Equal(["PFMERGE", "dest", "src1", "src2", "src3"], Request.HyperLogLogMergeAsync("dest", ["src1", "src2", "src3"]).GetArgs()),
+
+            // Bitmap Commands
+            () => Assert.Equal(["GETBIT", "key", "0"], Request.GetBitAsync("key", 0).GetArgs()),
+            () => Assert.Equal(["GETBIT", "key", "100"], Request.GetBitAsync("key", 100).GetArgs()),
+            () => Assert.Equal(["SETBIT", "key", "0", "1"], Request.SetBitAsync("key", 0, true).GetArgs()),
+            () => Assert.Equal(["SETBIT", "key", "5", "0"], Request.SetBitAsync("key", 5, false).GetArgs()),
+            () => Assert.Equal(["BITCOUNT", "key", "0", "-1"], Request.BitCountAsync("key", 0, -1, StringIndexType.Byte).GetArgs()),
+            () => Assert.Equal(["BITCOUNT", "key", "1", "5", "BIT"], Request.BitCountAsync("key", 1, 5, StringIndexType.Bit).GetArgs()),
+            () => Assert.Equal(["BITPOS", "key", "1", "0", "-1"], Request.BitPositionAsync("key", true, 0, -1, StringIndexType.Byte).GetArgs()),
+            () => Assert.Equal(["BITPOS", "key", "0", "2", "10", "BIT"], Request.BitPositionAsync("key", false, 2, 10, StringIndexType.Bit).GetArgs()),
+            () => Assert.Equal(["BITOP", "AND", "dest", "key1", "key2"], Request.BitOperationAsync(Bitwise.And, "dest", "key1", "key2").GetArgs()),
+            () => Assert.Equal(["BITOP", "OR", "dest", "key1", "key2", "key3"], Request.BitOperationAsync(Bitwise.Or, "dest", ["key1", "key2", "key3"]).GetArgs()),
+            () => Assert.Equal(["BITOP", "XOR", "dest", "key1", "key2"], Request.BitOperationAsync(Bitwise.Xor, "dest", ["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["BITOP", "NOT", "dest", "key1"], Request.BitOperationAsync(Bitwise.Not, "dest", ["key1"]).GetArgs()),
+            () => Assert.Equal(["BITFIELD", "key", "GET", "u8", "0"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0))]).GetArgs()),
+            () => Assert.Equal(["BITFIELD", "key", "SET", "i16", "#1", "100"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Signed(16), new BitFieldOptions.BitOffsetMultiplier(1), 100)]).GetArgs()),
+            () => Assert.Equal(["BITFIELD", "key", "INCRBY", "u32", "8", "5"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(32), new BitFieldOptions.BitOffset(8), 5)]).GetArgs()),
+            () => Assert.Equal(["BITFIELD", "key", "OVERFLOW", "WRAP", "SET", "u8", "0", "255"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldOverflow(BitFieldOptions.OverflowType.Wrap), new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 255)]).GetArgs()),
+            () => Assert.Equal(["BITFIELDREADONLY", "key", "GET", "u8", "0", "GET", "i4", "8"], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(4), new BitFieldOptions.BitOffset(8))]).GetArgs())
         );
     }
 
@@ -577,7 +596,21 @@ public class CommandTests
             () => Assert.Equal(0L, Request.HyperLogLogLengthAsync("key").Converter(0L)),
             () => Assert.Equal(100L, Request.HyperLogLogLengthAsync(["key1", "key2"]).Converter(100L)),
             () => Assert.Equal("OK", Request.HyperLogLogMergeAsync("dest", "src1", "src2").Converter("OK")),
-            () => Assert.Equal("OK", Request.HyperLogLogMergeAsync("dest", ["src1", "src2"]).Converter("OK"))
+            () => Assert.Equal("OK", Request.HyperLogLogMergeAsync("dest", ["src1", "src2"]).Converter("OK")),
+
+            // Bitmap Command Converters
+            () => Assert.True(Request.GetBitAsync("key", 0).Converter(1L)),
+            () => Assert.False(Request.GetBitAsync("key", 0).Converter(0L)),
+            () => Assert.True(Request.SetBitAsync("key", 0, true).Converter(1L)),
+            () => Assert.False(Request.SetBitAsync("key", 0, false).Converter(0L)),
+            () => Assert.Equal(26L, Request.BitCountAsync("key", 0, -1, StringIndexType.Byte).Converter(26L)),
+            () => Assert.Equal(0L, Request.BitCountAsync("key", 0, -1, StringIndexType.Byte).Converter(0L)),
+            () => Assert.Equal(2L, Request.BitPositionAsync("key", true, 0, -1, StringIndexType.Byte).Converter(2L)),
+            () => Assert.Equal(-1L, Request.BitPositionAsync("key", true, 0, -1, StringIndexType.Byte).Converter(-1L)),
+            () => Assert.Equal(6L, Request.BitOperationAsync(Bitwise.And, "dest", "key1", "key2").Converter(6L)),
+            () => Assert.Equal(0L, Request.BitOperationAsync(Bitwise.Or, "dest", ["key1", "key2"]).Converter(0L)),
+            () => Assert.Equal([65L, 0L, 100L], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 100)]).Converter([65L, null!, 100L])),
+            () => Assert.Equal([65L, 4L], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(0))]).Converter([65L, 4L]))
         );
     }
 

@@ -1,0 +1,41 @@
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+namespace Valkey.Glide.Pipeline;
+
+/// <summary>
+/// Supports commands for the "Bitmap Commands" group for batch requests.
+/// </summary>
+internal interface IBatchBitmapCommands
+{
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringGetBitAsync(ValkeyKey, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringGetBitAsync(ValkeyKey, long, CommandFlags)" /></returns>
+    IBatch StringGetBit(ValkeyKey key, long offset);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringSetBitAsync(ValkeyKey, long, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringSetBitAsync(ValkeyKey, long, bool, CommandFlags)" /></returns>
+    IBatch StringSetBit(ValkeyKey key, long offset, bool value);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitCountAsync(ValkeyKey, long, long, StringIndexType, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitCountAsync(ValkeyKey, long, long, StringIndexType, CommandFlags)" /></returns>
+    IBatch StringBitCount(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType, CommandFlags)" /></returns>
+    IBatch StringBitPosition(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
+    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey[], CommandFlags)" /></returns>
+    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldSubCommand[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldSubCommand[], CommandFlags)" /></returns>
+    IBatch StringBitField(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldSubCommand[] subCommands);
+
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldReadOnlyAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldReadOnlyAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[], CommandFlags)" /></returns>
+    IBatch StringBitFieldReadOnly(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands);
+}
