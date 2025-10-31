@@ -116,7 +116,7 @@ jobs:
 
             - name: Find or create rolling failure issue
               id: ensure_issue
-              uses: actions/github-script@v7
+              uses: actions/github-script@v8
               env:
                   SUMMARY_PATH: ${{ steps.aggregate.outputs.summary_path }}
               with:
