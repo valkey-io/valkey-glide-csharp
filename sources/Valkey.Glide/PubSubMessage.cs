@@ -33,24 +33,14 @@ public sealed class PubSubMessage
     /// <exception cref="ArgumentException">Thrown when message or channel is empty.</exception>
     public PubSubMessage(string message, string channel)
     {
-        if (message == null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
-
-        if (channel == null)
-        {
-            throw new ArgumentNullException(nameof(channel));
-        }
-
         if (string.IsNullOrEmpty(message))
         {
-            throw new ArgumentException("Message cannot be empty", nameof(message));
+            throw new ArgumentException("Message is required and cannot be empty", nameof(message));
         }
 
         if (string.IsNullOrEmpty(channel))
         {
-            throw new ArgumentException("Channel cannot be empty", nameof(channel));
+            throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
         }
 
         Message = message;
@@ -68,34 +58,19 @@ public sealed class PubSubMessage
     /// <exception cref="ArgumentException">Thrown when message, channel, or pattern is empty.</exception>
     public PubSubMessage(string message, string channel, string pattern)
     {
-        if (message == null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
-
-        if (channel == null)
-        {
-            throw new ArgumentNullException(nameof(channel));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
         if (string.IsNullOrEmpty(message))
         {
-            throw new ArgumentException("Message cannot be empty", nameof(message));
+            throw new ArgumentException("Message is required and cannot be empty", nameof(message));
         }
 
         if (string.IsNullOrEmpty(channel))
         {
-            throw new ArgumentException("Channel cannot be empty", nameof(channel));
+            throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
         }
 
         if (string.IsNullOrEmpty(pattern))
         {
-            throw new ArgumentException("Pattern cannot be empty", nameof(pattern));
+            throw new ArgumentException("Pattern is required and cannot be empty", nameof(pattern));
         }
 
         Message = message;
