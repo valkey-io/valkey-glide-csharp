@@ -54,6 +54,17 @@ public abstract partial class BaseClient : IBitmapCommands
     public async Task<long[]> StringBitFieldAsync(ValkeyKey key, BitFieldOptions.IBitFieldSubCommand[] subCommands, CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Check if all subcommands are read-only (GET operations)
+        bool allReadOnly = subCommands.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
+
+        if (allReadOnly)
+        {
+            // Convert to read-only subcommands and use BITFIELD_RO
+            var readOnlyCommands = subCommands.Cast<BitFieldOptions.IBitFieldReadOnlySubCommand>().ToArray();
+            return await Command(Request.BitFieldReadOnlyAsync(key, readOnlyCommands));
+        }
+
         return await Command(Request.BitFieldAsync(key, subCommands));
     }
 

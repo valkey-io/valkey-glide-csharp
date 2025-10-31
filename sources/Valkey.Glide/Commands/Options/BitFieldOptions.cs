@@ -37,97 +37,60 @@ public static class BitFieldOptions
     /// <summary>
     /// Regular bit offset.
     /// </summary>
-    public class BitOffset : IBitOffset
+    /// <param name="offset">The bit offset value.</param>
+    public class BitOffset(long offset) : IBitOffset
     {
-        private readonly long _offset;
-
-        public BitOffset(long offset) => _offset = offset;
-        public string GetOffset() => _offset.ToString();
+        public string GetOffset() => offset.ToString();
     }
 
     /// <summary>
     /// Offset multiplied by encoding width (prefixed with #).
     /// </summary>
-    public class BitOffsetMultiplier : IBitOffset
+    /// <param name="multiplier">The multiplier value.</param>
+    public class BitOffsetMultiplier(long multiplier) : IBitOffset
     {
-        private readonly long _multiplier;
-
-        public BitOffsetMultiplier(long multiplier) => _multiplier = multiplier;
-        public string GetOffset() => $"#{_multiplier}";
+        public string GetOffset() => $"#{multiplier}";
     }
 
     /// <summary>
     /// GET subcommand for reading bits from the string.
     /// </summary>
-    public class BitFieldGet : IBitFieldReadOnlySubCommand
+    /// <param name="encoding">The bit field encoding.</param>
+    /// <param name="offset">The bit field offset.</param>
+    public class BitFieldGet(string encoding, IBitOffset offset) : IBitFieldReadOnlySubCommand
     {
-        private readonly string _encoding;
-        private readonly IBitOffset _offset;
-
-        public BitFieldGet(string encoding, IBitOffset offset)
-        {
-            _encoding = encoding;
-            _offset = offset;
-        }
-
-        public string[] ToArgs() => ["GET", _encoding, _offset.GetOffset()];
+        public string[] ToArgs() => ["GET", encoding, offset.GetOffset()];
     }
 
     /// <summary>
     /// SET subcommand for setting bits in the string.
     /// </summary>
-    public class BitFieldSet : IBitFieldSubCommand
+    /// <param name="encoding">The bit field encoding.</param>
+    /// <param name="offset">The bit field offset.</param>
+    /// <param name="value">The value to set.</param>
+    public class BitFieldSet(string encoding, IBitOffset offset, long value) : IBitFieldSubCommand
     {
-        private readonly string _encoding;
-        private readonly IBitOffset _offset;
-        private readonly long _value;
-
-        public BitFieldSet(string encoding, IBitOffset offset, long value)
-        {
-            _encoding = encoding;
-            _offset = offset;
-            _value = value;
-        }
-
-        public string[] ToArgs() => ["SET", _encoding, _offset.GetOffset(), _value.ToString()];
+        public string[] ToArgs() => ["SET", encoding, offset.GetOffset(), value.ToString()];
     }
 
     /// <summary>
     /// INCRBY subcommand for incrementing bits in the string.
     /// </summary>
-    public class BitFieldIncrBy : IBitFieldSubCommand
+    /// <param name="encoding">The bit field encoding.</param>
+    /// <param name="offset">The bit field offset.</param>
+    /// <param name="increment">The increment value.</param>
+    public class BitFieldIncrBy(string encoding, IBitOffset offset, long increment) : IBitFieldSubCommand
     {
-        private readonly string _encoding;
-        private readonly IBitOffset _offset;
-        private readonly long _increment;
-
-        public BitFieldIncrBy(string encoding, IBitOffset offset, long increment)
-        {
-            _encoding = encoding;
-            _offset = offset;
-            _increment = increment;
-        }
-
-        public string[] ToArgs() => ["INCRBY", _encoding, _offset.GetOffset(), _increment.ToString()];
+        public string[] ToArgs() => ["INCRBY", encoding, offset.GetOffset(), increment.ToString()];
     }
 
     /// <summary>
     /// OVERFLOW subcommand for controlling overflow behavior.
     /// </summary>
-    public class BitFieldOverflow : IBitFieldSubCommand
+    /// <param name="overflowType">The overflow behavior type.</param>
+    public class BitFieldOverflow(OverflowType overflowType) : IBitFieldSubCommand
     {
-        private readonly OverflowType _overflowType;
-
-        /// <summary>
-        /// Creates an OVERFLOW subcommand.
-        /// </summary>
-        /// <param name="overflowType">The overflow behavior type.</param>
-        public BitFieldOverflow(OverflowType overflowType)
-        {
-            _overflowType = overflowType;
-        }
-
-        public string[] ToArgs() => ["OVERFLOW", _overflowType.ToString().ToUpper()];
+        public string[] ToArgs() => ["OVERFLOW", overflowType.ToString().ToUpper()];
     }
 
     /// <summary>
