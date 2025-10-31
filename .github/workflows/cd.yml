@@ -113,7 +113,7 @@ jobs:
 
             - name: Upload artifacts to publish
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: ${{ matrix.host.TARGET }}
                   if-no-files-found: error
@@ -164,7 +164,7 @@ jobs:
                   SkipCargo: true
 
             - name: Upload artifacts to publish
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: package
                   if-no-files-found: error
@@ -279,7 +279,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: test-reports-${{ matrix.host.TARGET }}
                   path: |

@@ -137,7 +137,7 @@ jobs:
             - name: Upload ORT results
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: ort_results
                   path: |
@@ -162,7 +162,7 @@ jobs:
 
             - name: Upload the final package list
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: final-package-list-${{ steps.date.outputs.date }}
                   path: |
@@ -171,7 +171,7 @@ jobs:
 
             - name: Upload the skipped package list
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: skipped-package-list-${{ steps.date.outputs.date }}
                   path: |
@@ -180,7 +180,7 @@ jobs:
 
             - name: Upload the unknown/unapproved package list
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: unapproved-package-list-${{ steps.date.outputs.date }}
                   path: |

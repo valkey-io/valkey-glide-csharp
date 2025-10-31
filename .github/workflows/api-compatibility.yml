@@ -85,7 +85,7 @@ jobs:
 
             - name: Upload API Diff Report (net8.0)
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: api-diff-net8.0
                   path: api-diff/api-changes-net8.0.html
