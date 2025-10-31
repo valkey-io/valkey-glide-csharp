@@ -814,7 +814,9 @@ internal partial class FFI
         /// <summary>
         /// IAM credentials for authentication.
         /// </summary>
-        public readonly IamCredentials? IamCredentials = iamCredentials;
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasIamCredentials = iamCredentials.HasValue;
+        public readonly IamCredentials IamCredentials = iamCredentials ?? default;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
@@ -840,7 +842,8 @@ internal partial class FFI
         /// <summary>
         /// The refresh interval in seconds for IAM authentication.
         /// </summary>
-        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds;
+        public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
+        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
     }
 
     internal enum ServiceType : uint
