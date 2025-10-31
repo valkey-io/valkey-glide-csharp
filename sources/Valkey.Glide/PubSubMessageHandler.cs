@@ -17,7 +17,7 @@ internal sealed class PubSubMessageHandler : IDisposable
 {
     private readonly MessageCallback? _callback;
     private readonly object? _context;
-    private readonly PubSubMessageQueue _queue;
+    private PubSubMessageQueue? _queue;
     private readonly object _lock = new();
     private volatile bool _disposed;
 
@@ -30,7 +30,7 @@ internal sealed class PubSubMessageHandler : IDisposable
     {
         _callback = callback;
         _context = context;
-        _queue = new PubSubMessageQueue();
+        // Queue will be lazily initialized only when needed (i.e., when no callback is provided)
     }
 
     /// <summary>
@@ -51,10 +51,11 @@ internal sealed class PubSubMessageHandler : IDisposable
         }
         else
         {
-            // Route to queue
+            // Route to queue - initialize if needed
+            var queue = GetOrCreateQueue();
             try
             {
-                _queue.EnqueueMessage(message);
+                queue.EnqueueMessage(message);
             }
             catch (ObjectDisposedException)
             {
@@ -74,9 +75,32 @@ internal sealed class PubSubMessageHandler : IDisposable
     {
         ThrowIfDisposed();
 
-        return _callback != null
-            ? throw new InvalidOperationException("Cannot access message queue when callback is configured. Use callback mode or queue mode, not both.")
-            : _queue;
+        if (_callback != null)
+        {
+            throw new InvalidOperationException("Cannot access message queue when callback is configured. Use callback mode or queue mode, not both.");
+        }
+
+        return GetOrCreateQueue();
+    }
+
+    /// <summary>
+    /// Gets or creates the message queue instance. Used internally for lazy initialization.
+    /// </summary>
+    /// <returns>The message queue instance.</returns>
+    private PubSubMessageQueue GetOrCreateQueue()
+    {
+        if (_queue == null)
+        {
+            lock (_lock)
+            {
+                if (_queue == null && !_disposed)
+                {
+                    _queue = new PubSubMessageQueue();
+                }
+            }
+        }
+
+        return _queue ?? throw new ObjectDisposedException(nameof(PubSubMessageHandler));
     }
 
     /// <summary>
@@ -123,15 +147,18 @@ internal sealed class PubSubMessageHandler : IDisposable
             _disposed = true;
         }
 
-        // Dispose the message queue
-        try
+        // Dispose the message queue if it was created
+        if (_queue != null)
         {
-            _queue.Dispose();
-        }
-        catch (Exception ex)
-        {
-            // Log disposal errors but don't throw to ensure cleanup completes
-            Logger.Log(Level.Warn, "PubSubMessageHandler", "Error during PubSub message queue disposal", ex);
+            try
+            {
+                _queue.Dispose();
+            }
+            catch (Exception ex)
+            {
+                // Log disposal errors but don't throw to ensure cleanup completes
+                Logger.Log(Level.Warn, "PubSubMessageHandler", "Error during PubSub message queue disposal", ex);
+            }
         }
     }
 
