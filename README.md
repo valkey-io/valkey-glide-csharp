@@ -97,13 +97,24 @@ Console.WriteLine($"User: {user}");
 ### With Authentication and TLS
 
 ```csharp
-var config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("secure-server.example.com", 6380)
+// Password-based authentication with TLS.
+var passwordConfig = new StandaloneClientConfigurationBuilder()
+    .WithAddress(host, port)
     .WithAuthentication("username", "password")
     .WithTls()
     .Build();
 
-using var client = await GlideClient.CreateClient(config);
+using var passwordClient = await GlideClient.CreateClient(passwordConfig);
+
+// IAM authentication with TLS.
+var iamAuthConfig = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
+var iamConfig = new ClusterClientConfigurationBuilder()
+    .WithAddress(host, port)
+    .WithAuthentication("username", iamAuthConfig)
+    .WithTls(true)
+    .Build();
+
+using var iamClient = await GlideClient.CreateClient(iamConfig);
 ```
 
 ## Core API Examples

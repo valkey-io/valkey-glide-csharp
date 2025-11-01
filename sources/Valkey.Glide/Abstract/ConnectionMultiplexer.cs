@@ -180,7 +180,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         config.UseTls = configuration.Ssl;
         _ = configuration.ConnectTimeout.HasValue ? config.ConnectionTimeout = TimeSpan.FromMilliseconds(configuration.ConnectTimeout.Value) : new();
         _ = configuration.ResponseTimeout.HasValue ? config.RequestTimeout = TimeSpan.FromMilliseconds(configuration.ResponseTimeout.Value) : new();
-        _ = (configuration.User ?? configuration.Password) is not null ? config.Authentication = (configuration.User, configuration.Password!) : new();
+        _ = (configuration.User ?? configuration.Password) is not null ? config.WithAuthentication(configuration.User, configuration.Password!) : new();
         _ = configuration.ClientName is not null ? config.ClientName = configuration.ClientName : "";
         if (configuration.Protocol is not null)
         {

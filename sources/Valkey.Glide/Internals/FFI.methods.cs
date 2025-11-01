@@ -38,6 +38,10 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "remove_cluster_scan_cursor")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RemoveClusterScanCursorFfi(IntPtr cursorId);
+
+    [LibraryImport("libglide_rs", EntryPoint = "refresh_iam_token")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void RefreshIamTokenFfi(IntPtr client, ulong index);
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
     public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -59,5 +63,7 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "remove_cluster_scan_cursor")]
     public static extern void RemoveClusterScanCursorFfi(IntPtr cursorId);
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "refresh_iam_token")]
+    public static extern void RefreshIamTokenFfi(IntPtr client, ulong index);
 #endif
 }

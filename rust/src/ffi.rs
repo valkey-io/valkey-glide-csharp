@@ -7,8 +7,7 @@ use std::{
 
 use glide_core::{
     client::{
-        AuthenticationInfo, ConnectionRequest, ConnectionRetryStrategy, NodeAddress,
-        ReadFrom as coreReadFrom, TlsMode,
+        ConnectionRequest, ConnectionRetryStrategy, NodeAddress, ReadFrom as coreReadFrom, TlsMode,
     },
     request_type::RequestType,
 };
@@ -65,7 +64,7 @@ pub struct ConnectionConfig {
     pub has_connection_retry_strategy: bool,
     pub connection_retry_strategy: ConnectionRetryStrategy,
     pub has_authentication_info: bool,
-    pub authentication_info: Credentials,
+    pub authentication_info: AuthenticationInfo,
     pub database_id: u32,
     pub has_protocol: bool,
     pub protocol: redis::ProtocolVersion,
@@ -114,10 +113,32 @@ pub(crate) unsafe fn create_connection_request(
         client_name: unsafe { ptr_to_opt_str(config.client_name) },
         lib_name: option_env!("GLIDE_NAME").map(|s| s.to_string()),
         authentication_info: if config.has_authentication_info {
-            Some(AuthenticationInfo {
-                username: unsafe { ptr_to_opt_str(config.authentication_info.username) },
-                password: unsafe { ptr_to_opt_str(config.authentication_info.password) },
-                iam_config: None,
+            let auth_info = config.authentication_info;
+            let iam_config = if auth_info.has_iam_credentials {
+                Some(glide_core::client::IamAuthenticationConfig {
+                    cluster_name: unsafe { ptr_to_str(auth_info.iam_credentials.cluster_name) },
+                    region: unsafe { ptr_to_str(auth_info.iam_credentials.region) },
+                    service_type: match auth_info.iam_credentials.service_type {
+                        ServiceType::ElastiCache => glide_core::iam::ServiceType::ElastiCache,
+                        ServiceType::MemoryDB => glide_core::iam::ServiceType::MemoryDB,
+                    },
+                    refresh_interval_seconds: if auth_info
+                        .iam_credentials
+                        .has_refresh_interval_seconds
+                    {
+                        Some(auth_info.iam_credentials.refresh_interval_seconds)
+                    } else {
+                        None
+                    },
+                })
+            } else {
+                None
+            };
+
+            Some(glide_core::client::AuthenticationInfo {
+                username: unsafe { ptr_to_opt_str(auth_info.username) },
+                password: unsafe { ptr_to_opt_str(auth_info.password) },
+                iam_config,
             })
         } else {
             None
@@ -210,11 +231,29 @@ pub enum ReadFromStrategy {
 /// A mirror of [`AuthenticationInfo`] adopted for FFI.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct Credentials {
-    /// zero pointer is valid, means no username is given (`None`)
+pub struct AuthenticationInfo {
     pub username: *const c_char,
-    /// zero pointer is valid, means no password is given (`None`)
     pub password: *const c_char,
+    pub has_iam_credentials: bool,
+    pub iam_credentials: IamCredentials,
+}
+
+/// A mirror of [`IamCredentials`] adopted for FFI.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct IamCredentials {
+    pub cluster_name: *const c_char,
+    pub region: *const c_char,
+    pub service_type: ServiceType,
+    pub has_refresh_interval_seconds: bool,
+    pub refresh_interval_seconds: u32,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub enum ServiceType {
+    ElastiCache = 0,
+    MemoryDB = 1,
 }
 
 #[repr(C)]
