@@ -328,5 +328,5 @@ jobs:
 
             - name: Format
               run: |
-                  dotnet format --verify-no-changes --verbosity diagnostic --no-restore
+                  dotnet format --verify-no-changes --verbosity diagnostic
                   dotnet build --configuration Lint --framework net8.0
