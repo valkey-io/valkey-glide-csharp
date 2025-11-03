@@ -287,7 +287,7 @@ jobs:
                       valkey-glide/utils/clusters/**
 
     lint:
-        timeout-minutes: 10
+        timeout-minutes: 20
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
@@ -328,5 +328,5 @@ jobs:
 
             - name: Format
               run: |
-                  dotnet format --verify-no-changes --verbosity diagnostic
+                  dotnet format --verify-no-changes --verbosity diagnostic --no-restore
                   dotnet build --configuration Lint --framework net8.0
