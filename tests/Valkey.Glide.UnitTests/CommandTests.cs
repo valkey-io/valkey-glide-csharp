@@ -308,6 +308,7 @@ public class CommandTests
             () => Assert.Equal(["GEOSEARCH", "key", "FROMMEMBER", "Palermo", "BYBOX", "300", "400", "km"], Request.GeoSearchAsync("key", "Palermo", new GeoSearchBox(400, 300, GeoUnit.Kilometers)).GetArgs()),
             () => Assert.Equal(["GEOSEARCHSTORE", "dest", "key", "FROMMEMBER", "Palermo", "BYRADIUS", "100", "km"], Request.GeoSearchAndStoreAsync("key", "dest", "Palermo", new GeoSearchCircle(100, GeoUnit.Kilometers), -1, true, null, false).GetArgs()),
             () => Assert.Equal(["GEOSEARCHSTORE", "dest", "key", "FROMLONLAT", "13.361389000000001", "38.115555999999998", "BYRADIUS", "200", "m", "STOREDIST"], Request.GeoSearchAndStoreAsync("key", "dest", new GeoPosition(13.361389, 38.115556), new GeoSearchCircle(200, GeoUnit.Meters), -1, true, null, true).GetArgs()),
+
             // HyperLogLog Commands
             () => Assert.Equal(["PFADD", "key", "element"], Request.HyperLogLogAddAsync("key", "element").GetArgs()),
             () => Assert.Equal(["PFADD", "key", "element1", "element2", "element3"], Request.HyperLogLogAddAsync("key", ["element1", "element2", "element3"]).GetArgs()),
@@ -333,7 +334,37 @@ public class CommandTests
             () => Assert.Equal(["BITFIELD", "key", "SET", "i16", "#1", "100"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Signed(16), new BitFieldOptions.BitOffsetMultiplier(1), 100)]).GetArgs()),
             () => Assert.Equal(["BITFIELD", "key", "INCRBY", "u32", "8", "5"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(32), new BitFieldOptions.BitOffset(8), 5)]).GetArgs()),
             () => Assert.Equal(["BITFIELD", "key", "OVERFLOW", "WRAP", "SET", "u8", "0", "255"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldOverflow(BitFieldOptions.OverflowType.Wrap), new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 255)]).GetArgs()),
-            () => Assert.Equal(["BITFIELDREADONLY", "key", "GET", "u8", "0", "GET", "i4", "8"], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(4), new BitFieldOptions.BitOffset(8))]).GetArgs())
+            () => Assert.Equal(["BITFIELDREADONLY", "key", "GET", "u8", "0", "GET", "i4", "8"], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(4), new BitFieldOptions.BitOffset(8))]).GetArgs()),
+            
+            // Hash Field Expire Commands (Valkey 9.0+)
+            () => Assert.Equal(["HGETEX", "key", "EX", "60", "FIELDS", "2", "field1", "field2"], Request.HashGetExAsync("key", ["field1", "field2"], new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PX", "5000", "FIELDS", "1", "field1"], Request.HashGetExAsync("key", ["field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.Milliseconds(5000))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "EXAT", "1609459200", "FIELDS", "1", "field1"], Request.HashGetExAsync("key", ["field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.UnixSeconds(1609459200))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetExAsync("key", ["field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.UnixMilliseconds(1609459200000))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PERSIST", "FIELDS", "1", "field1"], Request.HashGetExAsync("key", ["field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.Persist())).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "EX", "60", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" }, { "field2", "value2" } }, new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60))).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PX", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions().SetExpiry(ExpirySet.Milliseconds(5000))).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "EXAT", "60", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" }, { "field2", "value2" } }, new HashSetExOptions().SetExpiry(ExpirySet.UnixSeconds(60))).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PXAT", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions().SetExpiry(ExpirySet.UnixMilliseconds(5000))).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "KEEPTTL", "FIELDS", "1", "field1", "value1"], Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions().SetExpiry(ExpirySet.KeepExisting())).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "FNX", "FIELDS", "1", "field1", "value1"], Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions().SetOnlyIfNoneExist()).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "FXX", "FIELDS", "1", "field1", "value1"], Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions().SetOnlyIfAllExist()).GetArgs()),
+            () => Assert.Equal(["HPERSIST", "key", "FIELDS", "2", "field1", "field2"], Request.HashPersistAsync("key", ["field1", "field2"]).GetArgs()),
+            () => Assert.Equal(["HEXPIRE", "key", "60", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", 60, ["field1", "field2"], new HashFieldExpirationConditionOptions()).GetArgs()),
+            () => Assert.Equal(["HEXPIRE", "key", "60", "NX", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", 60, ["field1", "field2"], new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasNoExpiry)).GetArgs()),
+            () => Assert.Equal(["HEXPIRE", "key", "60", "XX", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", 60, ["field1", "field2"], new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasExistingExpiry)).GetArgs()),
+            () => Assert.Equal(["HEXPIRE", "key", "60", "GT", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", 60, ["field1", "field2"], new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.NewExpiryGreaterThanCurrent)).GetArgs()),
+            () => Assert.Equal(["HEXPIRE", "key", "60", "LT", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", 60, ["field1", "field2"], new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.NewExpiryLessThanCurrent)).GetArgs()),
+            () => Assert.Equal(["HPEXPIRE", "key", "5000", "FIELDS", "2", "field1", "field2"], Request.HashPExpireAsync("key", 5000, ["field1", "field2"], new HashFieldExpirationConditionOptions()).GetArgs()),
+            () => Assert.Equal(["HPEXPIRE", "key", "5000", "NX", "FIELDS", "2", "field1", "field2"], Request.HashPExpireAsync("key", 5000, ["field1", "field2"], new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasNoExpiry)).GetArgs()),
+            () => Assert.Equal(["HEXPIREAT", "key", "1609459200", "FIELDS", "2", "field1", "field2"], Request.HashExpireAtAsync("key", 1609459200, ["field1", "field2"], new HashFieldExpirationConditionOptions()).GetArgs()),
+            () => Assert.Equal(["HEXPIREAT", "key", "1609459200", "NX", "FIELDS", "2", "field1", "field2"], Request.HashExpireAtAsync("key", 1609459200, ["field1", "field2"], new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasNoExpiry)).GetArgs()),
+            () => Assert.Equal(["HPEXPIREAT", "key", "1609459200000", "FIELDS", "2", "field1", "field2"], Request.HashPExpireAtAsync("key", 1609459200000, ["field1", "field2"], new HashFieldExpirationConditionOptions()).GetArgs()),
+            () => Assert.Equal(["HPEXPIREAT", "key", "1609459200000", "NX", "FIELDS", "2", "field1", "field2"], Request.HashPExpireAtAsync("key", 1609459200000, ["field1", "field2"], new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasNoExpiry)).GetArgs()),
+            () => Assert.Equal(["HEXPIRETIME", "key", "FIELDS", "2", "field1", "field2"], Request.HashExpireTimeAsync("key", ["field1", "field2"]).GetArgs()),
+            () => Assert.Equal(["HPEXPIRETIME", "key", "FIELDS", "2", "field1", "field2"], Request.HashPExpireTimeAsync("key", ["field1", "field2"]).GetArgs()),
+            () => Assert.Equal(["HTTL", "key", "FIELDS", "2", "field1", "field2"], Request.HashTtlAsync("key", ["field1", "field2"]).GetArgs()),
+            () => Assert.Equal(["HPTTL", "key", "FIELDS", "2", "field1", "field2"], Request.HashPTtlAsync("key", ["field1", "field2"]).GetArgs())
         );
     }
 
@@ -567,6 +598,21 @@ public class CommandTests
             () => Assert.Equal([], Request.HashKeysAsync("nonexistent").Converter([])),
             () => Assert.Equal(5L, Request.HashLengthAsync("key").Converter(5L)),
             () => Assert.Equal(10L, Request.HashStringLengthAsync("key", "field").Converter(10L)),
+
+            // Hash Field Expire Commands converters (Valkey 9.0+)
+            () => Assert.Equal(new ValkeyValue[] { "value1", "value2" }, Request.HashGetExAsync("key", ["field1", "field2"], new HashGetExOptions()).Converter([(gs)"value1", (gs)"value2"])),
+            () => Assert.Null(Request.HashGetExAsync("key", ["field1"], new HashGetExOptions()).Converter(null!)),
+            () => Assert.Equal(1L, Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions()).Converter(1L)),
+            () => Assert.Equal(0L, Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions()).Converter(0L)),
+            () => Assert.Equal([1L, -1L, -2L], Request.HashPersistAsync("key", ["field1", "field2", "field3"]).Converter([1L, -1L, -2L])),
+            () => Assert.Equal([1L, 0L, -2L], Request.HashExpireAsync("key", 60, ["field1", "field2", "field3"], new HashFieldExpirationConditionOptions()).Converter([1L, 0L, -2L])),
+            () => Assert.Equal([1L, 0L, -2L], Request.HashPExpireAsync("key", 5000, ["field1", "field2", "field3"], new HashFieldExpirationConditionOptions()).Converter([1L, 0L, -2L])),
+            () => Assert.Equal([1L, 0L, -2L], Request.HashExpireAtAsync("key", 1609459200, ["field1", "field2", "field3"], new HashFieldExpirationConditionOptions()).Converter([1L, 0L, -2L])),
+            () => Assert.Equal([1L, 0L, -2L], Request.HashPExpireAtAsync("key", 1609459200000, ["field1", "field2", "field3"], new HashFieldExpirationConditionOptions()).Converter([1L, 0L, -2L])),
+            () => Assert.Equal([1609459200L, -1L, -2L], Request.HashExpireTimeAsync("key", ["field1", "field2", "field3"]).Converter([1609459200L, -1L, -2L])),
+            () => Assert.Equal([1609459200000L, -1L, -2L], Request.HashPExpireTimeAsync("key", ["field1", "field2", "field3"]).Converter([1609459200000L, -1L, -2L])),
+            () => Assert.Equal([60L, -1L, -2L], Request.HashTtlAsync("key", ["field1", "field2", "field3"]).Converter([60L, -1L, -2L])),
+            () => Assert.Equal([5000L, -1L, -2L], Request.HashPTtlAsync("key", ["field1", "field2", "field3"]).Converter([5000L, -1L, -2L])),
 
             // List Commands converters
             () => Assert.Equal(["key", "value"], Request.ListBlockingLeftPopAsync(["key"], TimeSpan.FromSeconds(1)).Converter([(gs)"key", (gs)"value"])!),
