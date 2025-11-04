@@ -2,8 +2,6 @@
 
 using Valkey.Glide.Commands.Options;
 
-using Valkey.Glide.Commands.Options;
-
 namespace Valkey.Glide.IntegrationTests;
 
 internal class BatchTestUtils

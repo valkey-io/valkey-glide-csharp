@@ -335,7 +335,7 @@ public class CommandTests
             () => Assert.Equal(["BITFIELD", "key", "INCRBY", "u32", "8", "5"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(32), new BitFieldOptions.BitOffset(8), 5)]).GetArgs()),
             () => Assert.Equal(["BITFIELD", "key", "OVERFLOW", "WRAP", "SET", "u8", "0", "255"], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldOverflow(BitFieldOptions.OverflowType.Wrap), new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 255)]).GetArgs()),
             () => Assert.Equal(["BITFIELDREADONLY", "key", "GET", "u8", "0", "GET", "i4", "8"], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(4), new BitFieldOptions.BitOffset(8))]).GetArgs()),
-            
+
             // Hash Field Expire Commands (Valkey 9.0+)
             () => Assert.Equal(["HGETEX", "key", "EX", "60", "FIELDS", "2", "field1", "field2"], Request.HashGetExAsync("key", ["field1", "field2"], new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60))).GetArgs()),
             () => Assert.Equal(["HGETEX", "key", "PX", "5000", "FIELDS", "1", "field1"], Request.HashGetExAsync("key", ["field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.Milliseconds(5000))).GetArgs()),
