@@ -482,12 +482,14 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
             Ok(existing_cursor) => existing_cursor,
             Err(_error) => {
                 unsafe {
-                    (core.failure_callback)(
+                    report_error(
+                        core.failure_callback,
                         callback_index,
-                        format!("Invalid cursor ID: {}", cursor_id).as_ptr() as *const c_char,
+                        format!("Invalid cursor ID: {}", cursor_id),
                         RequestErrorType::Unspecified,
                     );
                 }
+                panic_guard.panicked = false;
                 return;
             }
         }
@@ -504,7 +506,10 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
         )
     } {
         Some(args) => args,
-        None => return,
+        None => {
+            panic_guard.panicked = false;
+            return;
+        }
     };
 
     // Run cluster scan.
