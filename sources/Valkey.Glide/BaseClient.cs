@@ -58,6 +58,38 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Update the current connection with a new password or remove the password.
+    /// </summary>
+    /// <param name="password">The new password to update the connection with, or <c>null</c> to remove the password</param>
+    /// <param name="immediateAuth">If <c>true</c>, authenticate immediately with the new password</param>
+    /// <returns>A task that completes when the password update finishes</returns>
+    /// <exception cref="RequestException">Thrown when <paramref name="immediateAuth"/> is <c>true</c> and <paramref name="password"/> is <c>null</c></exception>
+    public async Task UpdateConnectionPasswordAsync(string? password, bool immediateAuth = false)
+    {
+        Message message = MessageContainer.GetMessageForCall();
+        IntPtr passwordPtr = (password == null) ? IntPtr.Zero : Marshal.StringToHGlobalAnsi(password);
+        try
+        {
+            UpdateConnectionPasswordFfi(ClientPointer, (ulong)message.Index, passwordPtr, immediateAuth);
+            IntPtr response = await message;
+            try
+            {
+                HandleResponse(response);
+            }
+            finally
+            {
+                FreeResponse(response);
+            }
+        }
+        finally
+        {
+            if (passwordPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(passwordPtr);
+            }
+        }
+    }
     #endregion public methods
 
     #region protected methods
