@@ -213,7 +213,8 @@ internal partial class FFI
             uint databaseId,
             ConnectionConfiguration.Protocol? protocol,
             string? clientName,
-            bool lazyConnect = false)
+            bool lazyConnect = false,
+            bool refreshTopologyFromInitialNodes = false)
         {
             _addresses = addresses;
             _request = new()
@@ -237,6 +238,7 @@ internal partial class FFI
                 Protocol = protocol ?? default,
                 ClientName = clientName,
                 LazyConnect = lazyConnect,
+                RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
             };
         }
 
@@ -785,6 +787,8 @@ internal partial class FFI
         public string? ClientName;
         [MarshalAs(UnmanagedType.U1)]
         public bool LazyConnect;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool RefreshTopologyFromInitialNodes;
         // TODO more config params, see ffi.rs
     }
 
@@ -797,12 +801,59 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct AuthenticationInfo(string? username, string password)
+    internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
     {
+        /// <summary>
+        /// Username for authentication.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string? Username = username;
+        public readonly string? Username = username;
+
+        /// <summary>
+        /// Password for authentication.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string Password = password;
+        public readonly string? Password = password;
+
+        /// <summary>
+        /// IAM credentials for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasIamCredentials = iamCredentials.HasValue;
+        public readonly IamCredentials IamCredentials = iamCredentials ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
+    {
+        /// <summary>
+        /// The name of the cluster for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string ClusterName = clusterName;
+
+        /// <summary>
+        /// The AWS region for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Region = region;
+
+        /// <summary>
+        /// The AWS service type for IAM authentication.
+        /// </summary>
+        public readonly ServiceType ServiceType = serviceType;
+
+        /// <summary>
+        /// The refresh interval in seconds for IAM authentication.
+        /// </summary>
+        public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
+        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
+    }
+
+    internal enum ServiceType : uint
+    {
+        ElastiCache = 0,
+        MemoryDB = 1,
     }
 
     internal enum TlsMode : uint
