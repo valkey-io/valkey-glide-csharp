@@ -1037,10 +1037,85 @@ pub unsafe extern "C-unwind" fn refresh_iam_token(
                 );
             },
         };
+
         async_panic_guard.panicked = false;
-        drop(async_panic_guard);
     });
 
     panic_guard.panicked = false;
-    drop(panic_guard);
+}
+
+/// Update connection password
+///
+/// # Arguments
+/// * `client_ptr` - Pointer to the client
+/// * `callback_index` - Callback index for async response
+/// * `password` - New password (null for password removal)
+/// * `immediate_auth` - Whether to authenticate immediately
+///
+/// # Safety
+/// * `client_ptr` must be a valid pointer to a Client
+/// * `password` must be a valid C string or null
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn update_connection_password(
+    client_ptr: *const c_void,
+    callback_index: usize,
+    password: *const c_char,
+    immediate_auth: bool,
+) {
+    // Build client and add panic guard.
+    let client = unsafe {
+        Arc::increment_strong_count(client_ptr);
+        Arc::from_raw(client_ptr as *mut Client)
+    };
+    let core = client.core.clone();
+
+    let mut panic_guard = PanicGuard {
+        panicked: true,
+        failure_callback: core.failure_callback,
+        callback_index,
+    };
+
+    let password_opt = if password.is_null() {
+        None
+    } else {
+        Some(
+            unsafe { CStr::from_ptr(password) }
+                .to_str()
+                .expect("Can not read password argument.")
+                .to_owned(),
+        )
+    };
+
+    client.runtime.spawn(async move {
+        let mut async_panic_guard = PanicGuard {
+            panicked: true,
+            failure_callback: core.failure_callback,
+            callback_index,
+        };
+
+        let result = core
+            .client
+            .clone()
+            .update_connection_password(password_opt, immediate_auth)
+            .await;
+        match result {
+            Ok(_) => {
+                let response = ResponseValue::from_value(redis::Value::Okay);
+                let ptr = Box::into_raw(Box::new(response));
+                unsafe { (core.success_callback)(callback_index, ptr) };
+            }
+            Err(err) => unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    error_message(&err),
+                    error_type(&err),
+                );
+            },
+        };
+
+        async_panic_guard.panicked = false;
+    });
+
+    panic_guard.panicked = false;
 }
