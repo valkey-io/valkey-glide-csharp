@@ -104,16 +104,14 @@ public class ScanTests(TestConfiguration config)
     [Fact]
     public async Task TestScanAsync_InvalidCursorId()
     {
-        var standaloneClient = TestConfiguration.DefaultStandaloneClient();
-        var exception = await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(async () =>
+        await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(() =>
         {
-            await standaloneClient.ScanAsync("invalid");
+            return TestConfiguration.DefaultStandaloneClient().ScanAsync("invalid");
         });
 
-        var clusterClient = TestConfiguration.DefaultClusterClient();
-        exception = await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(async () =>
+        await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(() =>
         {
-            await clusterClient.ScanAsync(new ClusterScanCursor("invalid"));
+            return TestConfiguration.DefaultClusterClient().ScanAsync(new ClusterScanCursor("invalid"));
         });
     }
 
