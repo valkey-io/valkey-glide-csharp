@@ -746,3 +746,66 @@ unsafe fn convert_string_pointer_array_to_vector<'a>(
 
     result
 }
+
+/// Manually refresh the IAM authentication token.
+///
+/// This function triggers an immediate refresh of the IAM token and updates the connection.
+/// It is only available if the client was created with IAM authentication.
+///
+/// # Arguments
+///
+/// * `client_ptr` - A pointer to a valid client returned from [`create_client`].
+/// * `callback_index` - A unique identifier for the callback to be called when the command completes.
+///
+/// # Safety
+///
+/// * `client_ptr` must not be `null`.
+/// * `client_ptr` must be able to be safely casted to a valid [`Arc<Client>`] via [`Arc::from_raw`]. See the safety documentation of [`Arc::from_raw`].
+/// * This function should only be called with a `client_ptr` created by [`create_client`], before [`close_client`] was called with the pointer.
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn refresh_iam_token(
+    client_ptr: *const c_void,
+    callback_index: usize,
+) {
+    let client = unsafe {
+        Arc::increment_strong_count(client_ptr);
+        Arc::from_raw(client_ptr as *mut Client)
+    };
+    let core = client.core.clone();
+
+    let mut panic_guard = PanicGuard {
+        panicked: true,
+        failure_callback: core.failure_callback,
+        callback_index,
+    };
+
+    client.runtime.spawn(async move {
+        let mut async_panic_guard = PanicGuard {
+            panicked: true,
+            failure_callback: core.failure_callback,
+            callback_index,
+        };
+
+        let result = core.client.clone().refresh_iam_token().await;
+        match result {
+            Ok(()) => {
+                let response = ResponseValue::from_value(redis::Value::Okay);
+                let ptr = Box::into_raw(Box::new(response));
+                unsafe { (core.success_callback)(callback_index, ptr) };
+            }
+            Err(err) => unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    error_message(&err),
+                    error_type(&err),
+                );
+            },
+        };
+        async_panic_guard.panicked = false;
+        drop(async_panic_guard);
+    });
+
+    panic_guard.panicked = false;
+    drop(panic_guard);
+}
