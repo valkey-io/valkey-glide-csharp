@@ -213,7 +213,8 @@ internal partial class FFI
             uint databaseId,
             ConnectionConfiguration.Protocol? protocol,
             string? clientName,
-            bool lazyConnect = false)
+            bool lazyConnect = false,
+            bool refreshTopologyFromInitialNodes = false)
         {
             _addresses = addresses;
             _request = new()
@@ -237,6 +238,7 @@ internal partial class FFI
                 Protocol = protocol ?? default,
                 ClientName = clientName,
                 LazyConnect = lazyConnect,
+                RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
             };
         }
 
@@ -785,6 +787,8 @@ internal partial class FFI
         public string? ClientName;
         [MarshalAs(UnmanagedType.U1)]
         public bool LazyConnect;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool RefreshTopologyFromInitialNodes;
         // TODO more config params, see ffi.rs
     }
 

@@ -50,7 +50,7 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithAuthentication_UsernameIamAuthConfig_ConfiguresCorrectly()
+    public void WithAuthentication_UsernameIamAuthConfig()
     {
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds);
         var builder = new StandaloneClientConfigurationBuilder();
@@ -171,5 +171,31 @@ public class ConnectionConfigurationTests
         Assert.Equal(Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
+    }
+
+    [Fact]
+    public void RefreshTopologyFromInitialNodes_Default()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
+        var config = builder.Build();
+        Assert.False(config.Request.RefreshTopologyFromInitialNodes);
+    }
+
+    [Fact]
+    public void RefreshTopologyFromInitialNodes_True()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
+        builder.WithRefreshTopologyFromInitialNodes(true);
+        var config = builder.Build();
+        Assert.True(config.Request.RefreshTopologyFromInitialNodes);
+    }
+
+    [Fact]
+    public void RefreshTopologyFromInitialNodes_False()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
+        builder.WithRefreshTopologyFromInitialNodes(false);
+        var config = builder.Build();
+        Assert.False(config.Request.RefreshTopologyFromInitialNodes);
     }
 }
