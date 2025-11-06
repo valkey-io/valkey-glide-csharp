@@ -165,6 +165,11 @@ public class BitmapCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task BitCount_WithBitIndex_CountsCorrectly(BaseClient client)
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "BIT index type for BITCOUNT requires server version 7.0 or higher"
+        );
+
         string key = Guid.NewGuid().ToString();
 
         // Set multiple bits
@@ -214,6 +219,11 @@ public class BitmapCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task BitPosition_WithRange_FindsInRange(BaseClient client)
     {
+        Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
+            "BIT index type for BITPOS requires server version 7.0 or higher"
+        );
+
         string key = Guid.NewGuid().ToString();
 
         // Set multiple bits: bit 1 and bit 9
