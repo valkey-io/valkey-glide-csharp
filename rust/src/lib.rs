@@ -1059,7 +1059,7 @@ pub unsafe extern "C-unwind" fn refresh_iam_token(
 pub unsafe extern "C-unwind" fn update_connection_password(
     client_ptr: *const c_void,
     callback_index: usize,
-    password: *const c_char,
+    password_ptr: *const c_char,
     immediate_auth: bool,
 ) {
     // Build client and add panic guard.
@@ -1075,17 +1075,34 @@ pub unsafe extern "C-unwind" fn update_connection_password(
         callback_index,
     };
 
-    let password_opt = if password.is_null() {
+    // Build password option.
+    let password = if password_ptr.is_null() {
         None
     } else {
-        Some(
-            unsafe { CStr::from_ptr(password) }
-                .to_str()
-                .expect("Can not read password argument.")
-                .to_owned(),
-        )
+        match unsafe { CStr::from_ptr(password_ptr).to_str() } {
+            Ok(password_str) => {
+                if password_str.is_empty() {
+                    None
+                } else {
+                    Some(password_str.into())
+                }
+            }
+            Err(_) => {
+                unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        "Invalid password argument".into(),
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                panic_guard.panicked = false;
+                return;
+            }
+        }
     };
 
+    // Run password update.
     client.runtime.spawn(async move {
         let mut async_panic_guard = PanicGuard {
             panicked: true,
@@ -1093,14 +1110,10 @@ pub unsafe extern "C-unwind" fn update_connection_password(
             callback_index,
         };
 
-        let result = core
-            .client
-            .clone()
-            .update_connection_password(password_opt, immediate_auth)
-            .await;
+        let result = core.client.clone().update_connection_password(password, immediate_auth).await;
         match result {
-            Ok(_) => {
-                let response = ResponseValue::from_value(redis::Value::Okay);
+            Ok(value) => {
+                let response = ResponseValue::from_value(value);
                 let ptr = Box::into_raw(Box::new(response));
                 unsafe { (core.success_callback)(callback_index, ptr) };
             }
