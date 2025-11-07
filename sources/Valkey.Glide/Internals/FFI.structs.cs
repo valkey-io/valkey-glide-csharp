@@ -875,6 +875,7 @@ internal partial class FFI
     /// </summary>
     /// <param name="script">The Lua script code.</param>
     /// <returns>The SHA1 hash of the script.</returns>
+    /// <exception cref="ArgumentException">Thrown when script is null or empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown when script storage fails.</exception>
     internal static string StoreScript(string script)
     {
@@ -926,6 +927,7 @@ internal partial class FFI
     /// Removes a script from Rust core storage.
     /// </summary>
     /// <param name="hash">The SHA1 hash of the script to remove.</param>
+    /// <exception cref="ArgumentException">Thrown when hash is null or empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown when script removal fails.</exception>
     internal static void DropScript(string hash)
     {

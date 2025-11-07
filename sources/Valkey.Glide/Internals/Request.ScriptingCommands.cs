@@ -13,20 +13,12 @@ internal partial class Request
     /// </summary>
     public static Cmd<object?, ValkeyResult> EvalShaAsync(string hash, string[]? keys = null, string[]? args = null)
     {
-        var cmdArgs = new List<GlideString> { hash };
+        List<GlideString> cmdArgs = new List<GlideString> { hash };
 
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
 
-        if (keys != null)
-        {
-            cmdArgs.AddRange(keys.Select(k => (GlideString)k));
-        }
-
-        if (args != null)
-        {
-            cmdArgs.AddRange(args.Select(a => (GlideString)a));
-        }
+        AddKeysAndArgs(cmdArgs, keys, args);
 
         return new(RequestType.EvalSha, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
     }
@@ -41,15 +33,7 @@ internal partial class Request
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
 
-        if (keys != null)
-        {
-            cmdArgs.AddRange(keys.Select(k => (GlideString)k));
-        }
-
-        if (args != null)
-        {
-            cmdArgs.AddRange(args.Select(a => (GlideString)a));
-        }
+        AddKeysAndArgs(cmdArgs, keys, args);
 
         return new(RequestType.Eval, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
     }
@@ -101,15 +85,7 @@ internal partial class Request
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
 
-        if (keys != null)
-        {
-            cmdArgs.AddRange(keys.Select(k => (GlideString)k));
-        }
-
-        if (args != null)
-        {
-            cmdArgs.AddRange(args.Select(a => (GlideString)a));
-        }
+        AddKeysAndArgs(cmdArgs, keys, args);
 
         return new(RequestType.FCall, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
     }
@@ -124,15 +100,7 @@ internal partial class Request
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
 
-        if (keys != null)
-        {
-            cmdArgs.AddRange(keys.Select(k => (GlideString)k));
-        }
-
-        if (args != null)
-        {
-            cmdArgs.AddRange(args.Select(a => (GlideString)a));
-        }
+        AddKeysAndArgs(cmdArgs, keys, args);
 
         return new(RequestType.FCallReadOnly, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
     }
@@ -232,6 +200,24 @@ internal partial class Request
         }
 
         return OK(RequestType.FunctionRestore, [.. cmdArgs]);
+    }
+
+    // ===== Helper Methods =====
+
+    /// <summary>
+    /// Adds keys and args to the command arguments list for script/function execution.
+    /// </summary>
+    private static void AddKeysAndArgs(List<GlideString> cmdArgs, string[]? keys, string[]? args)
+    {
+        if (keys != null)
+        {
+            cmdArgs.AddRange(keys.Select(k => (GlideString)k));
+        }
+
+        if (args != null)
+        {
+            cmdArgs.AddRange(args.Select(a => (GlideString)a));
+        }
     }
 
     // ===== Response Parsers =====
