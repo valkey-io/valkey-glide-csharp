@@ -13,6 +13,7 @@ public sealed class PubSubMessageQueue : IDisposable
 {
     private readonly ConcurrentQueue<PubSubMessage> _messages;
     private readonly SemaphoreSlim _messageAvailable;
+    private readonly CancellationTokenSource _disposalCts;
     private readonly object _lock = new();
     private volatile bool _disposed;
 
@@ -23,6 +24,7 @@ public sealed class PubSubMessageQueue : IDisposable
     {
         _messages = new ConcurrentQueue<PubSubMessage>();
         _messageAvailable = new SemaphoreSlim(0);
+        _disposalCts = new CancellationTokenSource();
     }
 
     /// <summary>
@@ -62,10 +64,23 @@ public sealed class PubSubMessageQueue : IDisposable
     {
         ThrowIfDisposed();
 
-        // Wait for a message to be available
-        await _messageAvailable.WaitAsync(cancellationToken).ConfigureAwait(false);
+        // Combine user cancellation with disposal cancellation
+        using CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _disposalCts.Token);
 
-        // Check if disposed after waiting
+        try
+        {
+            // Wait for a message to be available
+            await _messageAvailable.WaitAsync(combined.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_disposalCts.Token.IsCancellationRequested)
+        {
+            // Convert disposal cancellation to ObjectDisposedException for consistent API
+            throw new ObjectDisposedException(nameof(PubSubMessageQueue));
+        }
+
+        // Check if disposed after waiting (additional safety check)
         ThrowIfDisposed();
 
         // Try to dequeue the message
@@ -144,20 +159,19 @@ public sealed class PubSubMessageQueue : IDisposable
             _disposed = true;
         }
 
-        // Release all waiting threads
+        // Cancel all waiting operations - this wakes up ALL waiting threads immediately
         try
         {
-            // Release as many times as there are potentially waiting threads
-            // This ensures all waiting GetMessageAsync calls will complete
-            int releaseCount = Math.Max(1, _messageAvailable.CurrentCount + 10);
-            _ = _messageAvailable.Release(releaseCount);
+            _disposalCts.Cancel();
         }
-        catch (SemaphoreFullException)
+        catch (ObjectDisposedException)
         {
-            // Ignore if semaphore is already at maximum
+            // CancellationTokenSource was already disposed, ignore
         }
 
+        // Dispose resources
         _messageAvailable.Dispose();
+        _disposalCts.Dispose();
     }
 
     /// <summary>
