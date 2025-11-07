@@ -18,17 +18,11 @@ public class BitmapCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, "A");
 
         // Test bit positions in 'A' (01000001)
-        bool bit0 = await client.StringGetBitAsync(key, 0); // Should be false (0)
-        bool bit1 = await client.StringGetBitAsync(key, 1); // Should be true (1)
-        bool bit2 = await client.StringGetBitAsync(key, 2); // Should be false (0)
-        bool bit6 = await client.StringGetBitAsync(key, 6); // Should be false (0)
-        bool bit7 = await client.StringGetBitAsync(key, 7); // Should be true (1)
-
-        Assert.False(bit0);
-        Assert.True(bit1);
-        Assert.False(bit2);
-        Assert.False(bit6);
-        Assert.True(bit7);
+        Assert.False(await client.StringGetBitAsync(key, 0));
+        Assert.True(await client.StringGetBitAsync(key, 1));
+        Assert.False(await client.StringGetBitAsync(key, 2));
+        Assert.False(await client.StringGetBitAsync(key, 6));
+        Assert.True(await client.StringGetBitAsync(key, 7));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
