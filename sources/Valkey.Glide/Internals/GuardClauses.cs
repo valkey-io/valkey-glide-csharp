@@ -32,6 +32,9 @@ internal static class GuardClauses
     /// <exception cref="NotImplementedException">Thrown when <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     public static void ThrowIfCommandFlags(CommandFlags flags)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        if (flags != CommandFlags.None)
+        {
+            throw new NotImplementedException("Command flags are not supported by GLIDE");
+        }
     }
 }
