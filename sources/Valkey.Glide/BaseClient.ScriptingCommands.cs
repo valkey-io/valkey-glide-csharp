@@ -19,6 +19,11 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
+        if (script == null)
+        {
+            throw new ArgumentNullException(nameof(script));
+        }
+
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await InvokeScriptInternalAsync(script.Hash, null, null, null);
     }
@@ -30,6 +35,16 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
+        if (script == null)
+        {
+            throw new ArgumentNullException(nameof(script));
+        }
+
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
         return await InvokeScriptInternalAsync(script.Hash, options.Keys, options.Args, null);
     }
@@ -43,17 +58,23 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         // Convert hash to C string
         IntPtr hashPtr = Marshal.StringToHGlobalAnsi(hash);
 
+        // Track allocated memory for cleanup
+        IntPtr[]? keyPtrs = null;
+        IntPtr keysPtr = IntPtr.Zero;
+        IntPtr keysLenPtr = IntPtr.Zero;
+        IntPtr[]? argPtrs = null;
+        IntPtr argsPtr = IntPtr.Zero;
+        IntPtr argsLenPtr = IntPtr.Zero;
+
         try
         {
             // Prepare keys
-            IntPtr keysPtr = IntPtr.Zero;
-            IntPtr keysLenPtr = IntPtr.Zero;
             ulong keysCount = 0;
 
             if (keys != null && keys.Length > 0)
             {
                 keysCount = (ulong)keys.Length;
-                IntPtr[] keyPtrs = new IntPtr[keys.Length];
+                keyPtrs = new IntPtr[keys.Length];
                 ulong[] keyLens = new ulong[keys.Length];
 
                 for (int i = 0; i < keys.Length; i++)
@@ -72,14 +93,12 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             }
 
             // Prepare args
-            IntPtr argsPtr = IntPtr.Zero;
-            IntPtr argsLenPtr = IntPtr.Zero;
             ulong argsCount = 0;
 
             if (args != null && args.Length > 0)
             {
                 argsCount = (ulong)args.Length;
-                IntPtr[] argPtrs = new IntPtr[args.Length];
+                argPtrs = new IntPtr[args.Length];
                 ulong[] argLens = new ulong[args.Length];
 
                 for (int i = 0; i < args.Length; i++)
@@ -129,12 +148,70 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         }
         finally
         {
-            // Free allocated memory
-            if (hashPtr != IntPtr.Zero)
+            FreeScriptMemory(hashPtr, keyPtrs, keysPtr, keysLenPtr, argPtrs, argsPtr, argsLenPtr);
+        }
+    }
+
+    /// <summary>
+    /// Frees all allocated memory for script invocation.
+    /// </summary>
+    private static void FreeScriptMemory(
+        IntPtr hashPtr,
+        IntPtr[]? keyPtrs,
+        IntPtr keysPtr,
+        IntPtr keysLenPtr,
+        IntPtr[]? argPtrs,
+        IntPtr argsPtr,
+        IntPtr argsLenPtr)
+    {
+        // Free hash
+        if (hashPtr != IntPtr.Zero)
+        {
+            Marshal.FreeHGlobal(hashPtr);
+        }
+
+        // Free individual key strings
+        if (keyPtrs != null)
+        {
+            foreach (IntPtr ptr in keyPtrs)
             {
-                Marshal.FreeHGlobal(hashPtr);
+                if (ptr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(ptr);
+                }
             }
-            // TODO: Free keys and args memory
+        }
+
+        // Free keys array and lengths
+        if (keysPtr != IntPtr.Zero)
+        {
+            Marshal.FreeHGlobal(keysPtr);
+        }
+        if (keysLenPtr != IntPtr.Zero)
+        {
+            Marshal.FreeHGlobal(keysLenPtr);
+        }
+
+        // Free individual arg strings
+        if (argPtrs != null)
+        {
+            foreach (IntPtr ptr in argPtrs)
+            {
+                if (ptr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(ptr);
+                }
+            }
+        }
+
+        // Free args array and lengths
+        if (argsPtr != IntPtr.Zero)
+        {
+            Marshal.FreeHGlobal(argsPtr);
+        }
+        if (argsLenPtr != IntPtr.Zero)
+        {
+            Marshal.FreeHGlobal(argsLenPtr);
         }
     }
 
@@ -280,14 +357,10 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     public async Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
         CommandFlags flags = CommandFlags.None)
     {
-        if (string.IsNullOrEmpty(script))
-        {
-            throw new ArgumentException("Script cannot be null or empty", nameof(script));
-        }
-
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
         // Use the optimized InvokeScript path via Script object
+        // Script constructor will validate the script parameter
         using Script scriptObj = new(script);
 
         // Convert keys and values to string arrays
@@ -302,15 +375,10 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     public async Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
         CommandFlags flags = CommandFlags.None)
     {
-        if (hash == null || hash.Length == 0)
-        {
-            throw new ArgumentException("Hash cannot be null or empty", nameof(hash));
-        }
-
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
         // Convert hash to hex string
-        string hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        string hashString = Convert.ToHexStringLower(hash);
 
         // Convert keys and values to string arrays
         string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
@@ -369,7 +437,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
 
         // Convert the hash from byte[] to hex string
         // The hash in LoadedLuaScript is the hash of the script that was actually loaded on the server
-        string hashString = BitConverter.ToString(script.Hash).Replace("-", "").ToLowerInvariant();
+        string hashString = Convert.ToHexStringLower(script.Hash);
 
         // Use InvokeScriptInternalAsync with the hash from LoadedLuaScript
         // The script was already loaded on the server, so EVALSHA will work
