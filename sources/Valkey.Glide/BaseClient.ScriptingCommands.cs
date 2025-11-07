@@ -69,52 +69,10 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         try
         {
             // Prepare keys
-            ulong keysCount = 0;
-
-            if (keys != null && keys.Length > 0)
-            {
-                keysCount = (ulong)keys.Length;
-                keyPtrs = new IntPtr[keys.Length];
-                ulong[] keyLens = new ulong[keys.Length];
-
-                for (int i = 0; i < keys.Length; i++)
-                {
-                    byte[] keyBytes = System.Text.Encoding.UTF8.GetBytes(keys[i]);
-                    keyPtrs[i] = Marshal.AllocHGlobal(keyBytes.Length);
-                    Marshal.Copy(keyBytes, 0, keyPtrs[i], keyBytes.Length);
-                    keyLens[i] = (ulong)keyBytes.Length;
-                }
-
-                keysPtr = Marshal.AllocHGlobal(IntPtr.Size * keys.Length);
-                Marshal.Copy(keyPtrs, 0, keysPtr, keys.Length);
-
-                keysLenPtr = Marshal.AllocHGlobal(sizeof(ulong) * keys.Length);
-                Marshal.Copy(keyLens.Select(l => (long)l).ToArray(), 0, keysLenPtr, keys.Length);
-            }
+            ulong keysCount = PrepareStringArrayForFFI(keys, out keyPtrs, out keysPtr, out keysLenPtr);
 
             // Prepare args
-            ulong argsCount = 0;
-
-            if (args != null && args.Length > 0)
-            {
-                argsCount = (ulong)args.Length;
-                argPtrs = new IntPtr[args.Length];
-                ulong[] argLens = new ulong[args.Length];
-
-                for (int i = 0; i < args.Length; i++)
-                {
-                    byte[] argBytes = System.Text.Encoding.UTF8.GetBytes(args[i]);
-                    argPtrs[i] = Marshal.AllocHGlobal(argBytes.Length);
-                    Marshal.Copy(argBytes, 0, argPtrs[i], argBytes.Length);
-                    argLens[i] = (ulong)argBytes.Length;
-                }
-
-                argsPtr = Marshal.AllocHGlobal(IntPtr.Size * args.Length);
-                Marshal.Copy(argPtrs, 0, argsPtr, args.Length);
-
-                argsLenPtr = Marshal.AllocHGlobal(sizeof(ulong) * args.Length);
-                Marshal.Copy(argLens.Select(l => (long)l).ToArray(), 0, argsLenPtr, args.Length);
-            }
+            ulong argsCount = PrepareStringArrayForFFI(args, out argPtrs, out argsPtr, out argsLenPtr);
 
             // Prepare route (null for now)
             IntPtr routePtr = IntPtr.Zero;
@@ -150,6 +108,50 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         {
             FreeScriptMemory(hashPtr, keyPtrs, keysPtr, keysLenPtr, argPtrs, argsPtr, argsLenPtr);
         }
+    }
+
+    /// <summary>
+    /// Prepares string array for FFI by allocating unmanaged memory and marshalling data.
+    /// </summary>
+    /// <param name="items">Array of strings to prepare.</param>
+    /// <param name="itemPtrs">Output array of pointers to individual string data.</param>
+    /// <param name="itemsPtr">Output pointer to array of string pointers.</param>
+    /// <param name="itemsLenPtr">Output pointer to array of string lengths.</param>
+    /// <returns>Count of items prepared.</returns>
+    private static ulong PrepareStringArrayForFFI(
+        string[]? items,
+        out IntPtr[]? itemPtrs,
+        out IntPtr itemsPtr,
+        out IntPtr itemsLenPtr)
+    {
+        itemPtrs = null;
+        itemsPtr = IntPtr.Zero;
+        itemsLenPtr = IntPtr.Zero;
+
+        if (items == null || items.Length == 0)
+        {
+            return 0;
+        }
+
+        ulong count = (ulong)items.Length;
+        itemPtrs = new IntPtr[items.Length];
+        ulong[] itemLens = new ulong[items.Length];
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            byte[] itemBytes = System.Text.Encoding.UTF8.GetBytes(items[i]);
+            itemPtrs[i] = Marshal.AllocHGlobal(itemBytes.Length);
+            Marshal.Copy(itemBytes, 0, itemPtrs[i], itemBytes.Length);
+            itemLens[i] = (ulong)itemBytes.Length;
+        }
+
+        itemsPtr = Marshal.AllocHGlobal(IntPtr.Size * items.Length);
+        Marshal.Copy(itemPtrs, 0, itemsPtr, items.Length);
+
+        itemsLenPtr = Marshal.AllocHGlobal(sizeof(ulong) * items.Length);
+        Marshal.Copy(itemLens.Select(l => (long)l).ToArray(), 0, itemsLenPtr, items.Length);
+
+        return count;
     }
 
     /// <summary>
