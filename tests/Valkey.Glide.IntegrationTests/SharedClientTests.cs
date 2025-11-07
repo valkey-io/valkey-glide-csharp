@@ -1,7 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Pipeline;
-
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(SharedClientTests))]
@@ -56,6 +54,4 @@ public class SharedClientTests(TestConfiguration config)
 
         Task.WaitAll([.. operations]);
     }
-
-
 }
