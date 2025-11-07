@@ -121,9 +121,9 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             ulong routeLen = 0;
 
             // Call FFI
-            Message message = _messageContainer.GetMessageForCall();
+            Message message = MessageContainer.GetMessageForCall();
             FFI.InvokeScriptFfi(
-                _clientPointer,
+                ClientPointer,
                 (ulong)message.Index,
                 hashPtr,
                 keysCount,
