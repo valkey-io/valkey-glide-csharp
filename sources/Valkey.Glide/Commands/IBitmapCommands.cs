@@ -36,7 +36,7 @@ public interface IBitmapCommands
     /// <param name="offset">The offset in the string to set the bit at.</param>
     /// <param name="value">The bit value to set (true for 1, false for 0).</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The original bit value stored at offset.</returns>
+    /// <returns>The original bit value stored at offset. Returns false if the key does not exist or if the offset is beyond the string length.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -141,7 +141,7 @@ public interface IBitmapCommands
     /// <param name="key">The key of the string.</param>
     /// <param name="subCommands">The subcommands to execute (GET, SET, INCRBY).</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of results from the executed subcommands.</returns>
+    /// <returns>An array of results from the executed subcommands. Null responses from the server are converted to 0.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -166,7 +166,7 @@ public interface IBitmapCommands
     /// <param name="key">The key of the string.</param>
     /// <param name="subCommands">The GET subcommands to execute.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of results from the executed GET subcommands.</returns>
+    /// <returns>An array of results from the executed GET subcommands. Null responses from the server are converted to 0.</returns>
     /// <remarks>
     /// <example>
     /// <code>

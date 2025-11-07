@@ -2,6 +2,8 @@
 
 using Valkey.Glide.Commands.Options;
 
+using static Valkey.Glide.Errors;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class BitmapCommandTests(TestConfiguration config)
@@ -54,6 +56,19 @@ public class BitmapCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetBit_NegativeOffset_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Set a string
+        await client.StringSetAsync(key, "A");
+
+        // Test negative offset - should throw an exception
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StringGetBitAsync(key, -1));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetBit_SetsAndReturnsOriginalValue(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -88,6 +103,16 @@ public class BitmapCommandTests(TestConfiguration config)
         // Verify key was created and bit is set
         bool currentBit = await client.StringGetBitAsync(key, 0);
         Assert.True(currentBit);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetBit_NegativeOffset_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test negative offset - should throw an exception
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StringSetBitAsync(key, -1, true));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -493,14 +518,14 @@ public class BitmapCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task BitField_AutoOptimization_UsesReadOnlyForGetOperations(BaseClient client)
+    public async Task BitField_WithReadOnlyAndMixedOperations_WorksCorrectly(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
         // Set initial value "A" (ASCII 65 = 01000001)
         await client.StringSetAsync(key, "A");
 
-        // Test with only GET operations - should automatically use BITFIELD_RO
+        // Test with only GET operations
         var readOnlySubCommands = new BitFieldOptions.IBitFieldSubCommand[]
         {
             new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
@@ -508,7 +533,6 @@ public class BitmapCommandTests(TestConfiguration config)
             new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(4))
         };
 
-        // This should internally use BITFIELD_RO since all commands are GET
         long[] results = await client.StringBitFieldAsync(key, readOnlySubCommands);
 
         Assert.Equal(3, results.Length);
@@ -516,7 +540,7 @@ public class BitmapCommandTests(TestConfiguration config)
         Assert.Equal(4, results[1]);   // First 4 bits: 0100 = 4
         Assert.Equal(1, results[2]);   // Next 4 bits: 0001 = 1
 
-        // Test with mixed operations - should use regular BITFIELD
+        // Test with mixed operations
         var mixedSubCommands = new BitFieldOptions.IBitFieldSubCommand[]
         {
             new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),

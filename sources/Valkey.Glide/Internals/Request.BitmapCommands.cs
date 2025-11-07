@@ -12,9 +12,9 @@ internal partial class Request
         => new(RequestType.GetBit, [key.ToGlideString(), offset.ToGlideString()], false, response => response != 0);
 
     public static Cmd<long, bool> SetBitAsync(ValkeyKey key, long offset, bool value)
-        => new(RequestType.SetBit, [key.ToGlideString(), offset.ToGlideString(), (value ? 1 : 0).ToGlideString()], false, response => response != 0);
+        => new(RequestType.SetBit, [key.ToGlideString(), offset.ToGlideString(), value.ToGlideString()], false, response => response != 0);
 
-    public static Cmd<long, long> BitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte)
+    public static Cmd<long, long> BitCountAsync(ValkeyKey key, long start, long end, StringIndexType indexType)
     {
         List<GlideString> args = [key.ToGlideString(), start.ToGlideString(), end.ToGlideString()];
         if (indexType != StringIndexType.Byte)
@@ -24,9 +24,9 @@ internal partial class Request
         return Simple<long>(RequestType.BitCount, [.. args]);
     }
 
-    public static Cmd<long, long> BitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte)
+    public static Cmd<long, long> BitPositionAsync(ValkeyKey key, bool bit, long start, long end, StringIndexType indexType)
     {
-        List<GlideString> args = [key.ToGlideString(), (bit ? 1 : 0).ToGlideString(), start.ToGlideString(), end.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), bit.ToGlideString(), start.ToGlideString(), end.ToGlideString()];
         if (indexType != StringIndexType.Byte)
         {
             args.Add(indexType.ToLiteral().ToGlideString());

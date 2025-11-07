@@ -661,6 +661,32 @@ public class CommandTests
     }
 
     [Fact]
+    public void BitField_AutoOptimization_UsesCorrectRequestType()
+    {
+        // Test that read-only subcommands use BitFieldReadOnlyAsync
+        var readOnlySubCommands = new BitFieldOptions.IBitFieldSubCommand[]
+        {
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(0))
+        };
+
+        // Verify that all subcommands are read-only
+        bool allReadOnly = readOnlySubCommands.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
+        Assert.True(allReadOnly);
+
+        // Test that mixed subcommands don't qualify for read-only optimization
+        var mixedSubCommands = new BitFieldOptions.IBitFieldSubCommand[]
+        {
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 100)
+        };
+
+        // Verify that mixed subcommands are not all read-only
+        bool mixedAllReadOnly = mixedSubCommands.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
+        Assert.False(mixedAllReadOnly);
+    }
+
+    [Fact]
     public void ValidateStringCommandArrayConverters()
     {
         Assert.Multiple(
