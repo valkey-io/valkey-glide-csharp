@@ -46,7 +46,7 @@ internal class Database : GlideClient, IDatabase
 
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object>? args, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         object? res = await Command(Request.CustomCommand([command, .. args?.Select(a => a.ToString()!) ?? []]));
         return ValkeyResult.Create(res);
     }

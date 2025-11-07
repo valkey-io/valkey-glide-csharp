@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide;
 
 internal class ValkeyTransaction : ValkeyBatch, ITransaction
@@ -24,7 +26,7 @@ internal class ValkeyTransaction : ValkeyBatch, ITransaction
 
     public async Task<bool> ExecuteAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         await ExecuteImpl();
         return _tcs.Task.Result is not null;
     }
