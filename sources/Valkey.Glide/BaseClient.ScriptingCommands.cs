@@ -377,8 +377,8 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
 
-        // Convert hash to hex string
-        string hashString = Convert.ToHexStringLower(hash);
+        // Convert hash to hex string (lowercase)
+        string hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
 
         // Convert keys and values to string arrays
         string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
@@ -437,7 +437,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
 
         // Convert the hash from byte[] to hex string
         // The hash in LoadedLuaScript is the hash of the script that was actually loaded on the server
-        string hashString = Convert.ToHexStringLower(script.Hash);
+        string hashString = BitConverter.ToString(script.Hash).Replace("-", "").ToLowerInvariant();
 
         // Use InvokeScriptInternalAsync with the hash from LoadedLuaScript
         // The script was already loaded on the server, so EVALSHA will work
