@@ -40,9 +40,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.ScriptExistsAsync(sha1Hashes).ToClusterValue(isSingleNode), route);
+        return await Command(Request.ScriptExistsAsync(sha1Hashes).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -52,9 +50,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.ScriptFlushAsync().ToClusterValue(isSingleNode), route);
+        return await Command(Request.ScriptFlushAsync().ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -65,9 +61,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.ScriptFlushAsync(mode).ToClusterValue(isSingleNode), route);
+        return await Command(Request.ScriptFlushAsync(mode).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -77,9 +71,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.ScriptKillAsync().ToClusterValue(isSingleNode), route);
+        return await Command(Request.ScriptKillAsync().ToClusterValue(route), route);
     }
 
     // ===== Function Execution with Routing =====
@@ -92,9 +84,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FCallAsync(function, null, null).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FCallAsync(function, null, null).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -106,9 +96,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FCallAsync(function, null, args).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FCallAsync(function, null, args).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -119,9 +107,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FCallReadOnlyAsync(function, null, null).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FCallReadOnlyAsync(function, null, null).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -133,9 +119,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FCallReadOnlyAsync(function, null, args).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FCallReadOnlyAsync(function, null, args).ToClusterValue(route), route);
     }
 
     // ===== Function Management with Routing =====
@@ -149,9 +133,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionLoadAsync(libraryCode, replace).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionLoadAsync(libraryCode, replace).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -162,9 +144,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionDeleteAsync(libraryName).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionDeleteAsync(libraryName).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -174,9 +154,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionFlushAsync().ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionFlushAsync().ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -187,9 +165,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionFlushAsync(mode).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionFlushAsync(mode).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -199,9 +175,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionKillAsync().ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionKillAsync().ToClusterValue(route), route);
     }
 
     // ===== Function Inspection with Routing =====
@@ -214,9 +188,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionListAsync(query).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionListAsync(query).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -226,9 +198,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionStatsAsync().ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionStatsAsync().ToClusterValue(route), route);
     }
 
     // ===== Function Persistence with Routing =====
@@ -240,9 +210,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionDumpAsync().ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionDumpAsync().ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -253,9 +221,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionRestoreAsync(payload, null).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionRestoreAsync(payload, null).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -267,8 +233,6 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        bool isSingleNode = route is Route.SingleNodeRoute;
-        return await Command(Request.FunctionRestoreAsync(payload, policy).ToClusterValue(isSingleNode), route);
+        return await Command(Request.FunctionRestoreAsync(payload, policy).ToClusterValue(route), route);
     }
 }

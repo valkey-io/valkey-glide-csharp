@@ -81,6 +81,13 @@ internal class Cmd<R, T> : ICmd
         => new(Request, ArgsArray.Args, IsNullable, ResponseConverters.MakeClusterValueHandler(Converter, isSingleValue));
 
     /// <summary>
+    /// Convert a command to one which handles a <see cref="ClusterValue{T}" />.
+    /// </summary>
+    /// <param name="route">The route to determine if this is a single-node operation.</param>
+    public Cmd<object, ClusterValue<T>> ToClusterValue(Route route)
+        => ToClusterValue(route is Route.SingleNodeRoute);
+
+    /// <summary>
     /// Get full command line including command name.
     /// </summary>
     public string[] GetArgs() => Request == RequestType.CustomCommand
