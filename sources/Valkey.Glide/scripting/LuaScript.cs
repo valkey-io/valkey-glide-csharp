@@ -61,12 +61,12 @@ public sealed class LuaScript
     /// <remarks>
     /// The Prepare method caches scripts using weak references. If a script is no longer
     /// referenced elsewhere, it may be garbage collected and will be re-parsed on next use.
-    ///
-    /// Example:
+    /// </remarks>
+    /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
     /// </code>
-    /// </remarks>
+    /// </example>
     public static LuaScript Prepare(string script)
     {
         if (string.IsNullOrEmpty(script))
@@ -128,13 +128,13 @@ public sealed class LuaScript
     /// This method extracts parameter values from the provided object and passes them to the script.
     /// Parameters of type ValkeyKey are treated as keys (KEYS array), while other types are treated
     /// as arguments (ARGV array).
-    ///
-    /// Example:
+    /// </remarks>
+    /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
     /// var result = script.Evaluate(db, new { key = new ValkeyKey("mykey"), value = "myvalue" });
     /// </code>
-    /// </remarks>
+    /// </example>
     public ValkeyResult Evaluate(IDatabase db, object? parameters = null,
         ValkeyKey? withKeyPrefix = null, CommandFlags flags = CommandFlags.None)
     {
@@ -145,8 +145,7 @@ public sealed class LuaScript
 
         (ValkeyKey[] keys, ValkeyValue[] args) = ExtractParametersInternal(parameters, withKeyPrefix);
 
-        // Call IDatabase.ScriptEvaluate (will be implemented in task 15.1)
-        // For now, we'll use Execute to call EVAL directly
+        // Use Execute to call EVAL directly
         List<object> evalArgs = [ExecutableScript];
         evalArgs.Add(keys.Length);
         evalArgs.AddRange(keys.Cast<object>());
@@ -169,13 +168,13 @@ public sealed class LuaScript
     /// This method extracts parameter values from the provided object and passes them to the script.
     /// Parameters of type ValkeyKey are treated as keys (KEYS array), while other types are treated
     /// as arguments (ARGV array).
-    ///
-    /// Example:
+    /// </remarks>
+    /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
     /// var result = await script.EvaluateAsync(db, new { key = new ValkeyKey("mykey"), value = "myvalue" });
     /// </code>
-    /// </remarks>
+    /// </example>
     public async Task<ValkeyResult> EvaluateAsync(IDatabaseAsync db, object? parameters = null,
         ValkeyKey? withKeyPrefix = null, CommandFlags flags = CommandFlags.None)
     {
@@ -186,8 +185,6 @@ public sealed class LuaScript
 
         (ValkeyKey[] keys, ValkeyValue[] args) = ExtractParametersInternal(parameters, withKeyPrefix);
 
-        // Call IDatabaseAsync.ScriptEvaluateAsync (will be implemented in task 15.1)
-        // For now, we'll use ExecuteAsync to call EVAL directly
         List<object> evalArgs = [ExecutableScript];
         evalArgs.Add(keys.Length);
         evalArgs.AddRange(keys.Cast<object>());
@@ -243,18 +240,18 @@ public sealed class LuaScript
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A LoadedLuaScript instance that can be used to execute the script via EVALSHA.</returns>
     /// <exception cref="ArgumentNullException">Thrown when server is null.</exception>
-    ///  /// <remarks>
-    /// This meth script onto the server using the SCRIPT LOAD command.
+    /// <remarks>
+    /// This method loads the script onto the server using the SCRIPT LOAD command.
     /// The returned LoadedLuaScript contains the SHA1 hash and can be used to execute
     /// the script more efficiently using EVALSHA.
-    ///
-    /// Example:
+    /// </remarks>
+    /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('GET', @key)");
     /// var loaded = script.Load(server);
     /// var result = loaded.Evaluate(db, new { key = "mykey" });
     /// </code>
-    /// </remarks>
+    /// </example>
     public LoadedLuaScript Load(IServer server, CommandFlags flags = CommandFlags.None)
     {
         if (server == null)
@@ -266,18 +263,8 @@ public sealed class LuaScript
         // We assume parameters named "key", "keys", or starting with "key" are keys
         string scriptToLoad = ScriptParameterMapper.ReplacePlaceholdersWithHeuristic(ExecutableScript, Arguments);
 
-        // Call IServer.ScriptLoad (will be implemented in task 15.2)
-        // For now, we'll use Execute to call SCRIPT LOAD directly
-        ValkeyResult result = server.Execute("SCRIPT", ["LOAD", scriptToLoad], flags);
-        string? hashString = (string?)result;
-
-        if (string.IsNullOrEmpty(hashString))
-        {
-            throw new InvalidOperationException("SCRIPT LOAD returned null or empty hash");
-        }
-
-        // Convert hex string to byte array
-        byte[] hash = Convert.FromHexString(hashString);
+        // Load the script and get its hash
+        byte[] hash = server.ScriptLoadAsync(scriptToLoad, flags).GetAwaiter().GetResult();
         return new LoadedLuaScript(this, hash, scriptToLoad);
     }
 
@@ -292,14 +279,14 @@ public sealed class LuaScript
     /// This method loads the script onto the server using the SCRIPT LOAD command.
     /// The returned LoadedLuaScript contains the SHA1 hash and can be used to execute
     /// the script more efficiently using EVALSHA.
-    ///
-    /// Example:
+    /// </remarks>
+    /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('GET', @key)");
     /// var loaded = await script.LoadAsync(server);
     /// var result = await loaded.EvaluateAsync(db, new { key = "mykey" });
     /// </code>
-    /// </remarks>
+    /// </example>
     public async Task<LoadedLuaScript> LoadAsync(IServer server, CommandFlags flags = CommandFlags.None)
     {
         if (server == null)
@@ -311,18 +298,8 @@ public sealed class LuaScript
         // We assume parameters named "key", "keys", or starting with "key" are keys
         string scriptToLoad = ScriptParameterMapper.ReplacePlaceholdersWithHeuristic(ExecutableScript, Arguments);
 
-        // Call IServer.ScriptLoadAsync (will be implemented in task 15.2)
-        // For now, we'll use ExecuteAsync to call SCRIPT LOAD directly
-        ValkeyResult result = await server.ExecuteAsync("SCRIPT", ["LOAD", scriptToLoad], flags).ConfigureAwait(false);
-        string? hashString = (string?)result;
-
-        if (string.IsNullOrEmpty(hashString))
-        {
-            throw new InvalidOperationException("SCRIPT LOAD returned null or empty hash");
-        }
-
-        // Convert hex string to byte array
-        byte[] hash = Convert.FromHexString(hashString);
+        // Load the script and get its hash
+        byte[] hash = await server.ScriptLoadAsync(scriptToLoad, flags).ConfigureAwait(false);
         return new LoadedLuaScript(this, hash, scriptToLoad);
     }
 }
