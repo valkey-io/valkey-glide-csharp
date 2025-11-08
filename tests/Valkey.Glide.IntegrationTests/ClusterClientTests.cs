@@ -546,7 +546,7 @@ public class ClusterClientTests(TestConfiguration config)
     {
         Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "MOVE command for Cluster Client requires Valkey 9.0+ with multi-database support"
+            "Key Move for clusters added in Valkey 9"
         );
 
         string key = Guid.NewGuid().ToString();
@@ -567,9 +567,10 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyCopyAsync(GlideClusterClient client)
     {
+        // Multi-database support in cluster mode is only available in Valkey 9.0.0+
         Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"
+            "Copying to another database in cluster mode is supported since Valkey 9.0.0"
         );
 
         string hashTag = Guid.NewGuid().ToString();

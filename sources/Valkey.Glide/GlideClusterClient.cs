@@ -20,7 +20,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Client used for connection to cluster servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
-public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands
+public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands
 {
     private GlideClusterClient() { }
 

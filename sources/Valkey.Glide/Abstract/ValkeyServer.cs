@@ -158,4 +158,83 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.LolwutAsync(), MakeRoute());
     }
+
+    public async Task<bool> ScriptExistsAsync(string script, CommandFlags flags = CommandFlags.None)
+    {
+        if (string.IsNullOrEmpty(script))
+        {
+            throw new ArgumentException("Script cannot be null or empty", nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Calculate SHA1 hash of the script
+        using Script scriptObj = new(script);
+        string hash = scriptObj.Hash;
+
+        // Call SCRIPT EXISTS with the hash
+        bool[] results = await _conn.Command(Request.ScriptExistsAsync([hash]), MakeRoute());
+        return results.Length > 0 && results[0];
+    }
+
+    public async Task<bool> ScriptExistsAsync(byte[] sha1, CommandFlags flags = CommandFlags.None)
+    {
+        if (sha1 == null || sha1.Length == 0)
+        {
+            throw new ArgumentException("SHA1 hash cannot be null or empty", nameof(sha1));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Convert byte array to hex string
+        string hash = BitConverter.ToString(sha1).Replace("-", "").ToLowerInvariant();
+
+        // Call SCRIPT EXISTS with the hash
+        bool[] results = await _conn.Command(Request.ScriptExistsAsync([hash]), MakeRoute());
+        return results.Length > 0 && results[0];
+    }
+
+    public async Task<byte[]> ScriptLoadAsync(string script, CommandFlags flags = CommandFlags.None)
+    {
+        if (string.IsNullOrEmpty(script))
+        {
+            throw new ArgumentException("Script cannot be null or empty", nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Use custom command to call SCRIPT LOAD
+        ValkeyResult result = await ExecuteAsync("SCRIPT", ["LOAD", script], flags);
+        string? hashString = (string?)result;
+
+        if (string.IsNullOrEmpty(hashString))
+        {
+            throw new InvalidOperationException("SCRIPT LOAD returned null or empty hash");
+        }
+
+        // Convert hex string to byte array
+        return Convert.FromHexString(hashString);
+    }
+
+    public async Task<LoadedLuaScript> ScriptLoadAsync(LuaScript script, CommandFlags flags = CommandFlags.None)
+    {
+        if (script == null)
+        {
+            throw new ArgumentNullException(nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Load the executable script
+        byte[] hash = await ScriptLoadAsync(script.ExecutableScript, flags);
+        return new LoadedLuaScript(script, hash, script.ExecutableScript);
+    }
+
+    public async Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Call SCRIPT FLUSH (default is SYNC mode)
+        _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
+    }
 }
