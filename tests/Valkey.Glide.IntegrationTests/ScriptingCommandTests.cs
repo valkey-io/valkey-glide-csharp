@@ -173,6 +173,8 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptShowAsync_CachedScript_ReturnsSourceCode(BaseClient client)
     {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "SCRIPT SHOW is supported since Valkey 8.0.0");
+
         // Load a script
         string scriptCode = "return 'show test'";
         using var script = new Script(scriptCode);
@@ -189,6 +191,8 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptShowAsync_NonCachedScript_ReturnsNull(BaseClient client)
     {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "SCRIPT SHOW is supported since Valkey 8.0.0");
+
         // Flush scripts first
         await client.ScriptFlushAsync();
 

@@ -567,11 +567,10 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyCopyAsync(GlideClusterClient client)
     {
-        // TODO: Temporarily skipped - will be fixed in separate multi-database PR
-        // See GitHub issue for multi-database cluster support
+        // Multi-database support in cluster mode is only available in Valkey 9.0.0+
         Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION >= new Version("9.0.0"),
-            "Temporarily skipped - multi-database cluster tests will be fixed in separate PR"
+            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
+            "Copying to another database in cluster mode is supported since Valkey 9.0.0"
         );
 
         string hashTag = Guid.NewGuid().ToString();
