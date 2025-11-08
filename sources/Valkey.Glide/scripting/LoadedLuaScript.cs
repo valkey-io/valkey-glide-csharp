@@ -88,16 +88,12 @@ public sealed class LoadedLuaScript
             throw new ArgumentNullException(nameof(db));
         }
 
+        // Note: withKeyPrefix is not supported by the ScriptEvaluate API
+        // We need to extract parameters with prefix applied and call ScriptEvaluate with keys/values
         (ValkeyKey[] keys, ValkeyValue[] args) = Script.ExtractParametersInternal(parameters, withKeyPrefix);
 
-        // Call IDatabase.ScriptEvaluate with hash (will be implemented in task 15.1)
-        // For now, we'll use Execute to call EVALSHA directly
-        List<object> evalArgs = [Hash];
-        evalArgs.Add(keys.Length);
-        evalArgs.AddRange(keys.Cast<object>());
-        evalArgs.AddRange(args.Cast<object>());
-
-        return db.Execute("EVALSHA", evalArgs, flags);
+        // Use the proper ScriptEvaluate method with hash
+        return db.ScriptEvaluate(Hash, keys, args, flags);
     }
 
     /// <summary>
@@ -129,15 +125,11 @@ public sealed class LoadedLuaScript
             throw new ArgumentNullException(nameof(db));
         }
 
+        // Note: withKeyPrefix is not supported by the ScriptEvaluateAsync API
+        // We need to extract parameters with prefix applied and call ScriptEvaluateAsync with keys/values
         (ValkeyKey[] keys, ValkeyValue[] args) = Script.ExtractParametersInternal(parameters, withKeyPrefix);
 
-        // Call IDatabaseAsync.ScriptEvaluateAsync with hash (will be implemented in task 15.1)
-        // For now, we'll use ExecuteAsync to call EVALSHA directly
-        List<object> evalArgs = [Hash];
-        evalArgs.Add(keys.Length);
-        evalArgs.AddRange(keys.Cast<object>());
-        evalArgs.AddRange(args.Cast<object>());
-
-        return await db.ExecuteAsync("EVALSHA", evalArgs, flags).ConfigureAwait(false);
+        // Use the proper ScriptEvaluateAsync method with hash
+        return await db.ScriptEvaluateAsync(Hash, keys, args, flags).ConfigureAwait(false);
     }
 }

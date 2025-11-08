@@ -29,4 +29,22 @@ public interface IDatabase : IDatabaseAsync
     /// <param name="asyncState">The async state is not supported by GLIDE.</param>
     /// <returns>The created transaction.</returns>
     ITransaction CreateTransaction(object? asyncState = null);
+
+    // ===== StackExchange.Redis Compatibility Methods (Synchronous) =====
+
+    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(string, ValkeyKey[], ValkeyValue[], CommandFlags)"/>
+    ValkeyResult ScriptEvaluate(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(byte[], ValkeyKey[], ValkeyValue[], CommandFlags)"/>
+    ValkeyResult ScriptEvaluate(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(LuaScript, object?, CommandFlags)"/>
+    ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(LoadedLuaScript, object?, CommandFlags)"/>
+    ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None);
 }

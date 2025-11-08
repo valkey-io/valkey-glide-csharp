@@ -445,4 +445,34 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         // The script was already loaded on the server, so EVALSHA will work
         return await InvokeScriptInternalAsync(hashString, keyStrings, valueStrings, null);
     }
+
+    // ===== Synchronous Wrappers =====
+
+    /// <inheritdoc/>
+    public ValkeyResult ScriptEvaluate(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        return ScriptEvaluateAsync(script, keys, values, flags).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc/>
+    public ValkeyResult ScriptEvaluate(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        return ScriptEvaluateAsync(hash, keys, values, flags).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc/>
+    public ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        return ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc/>
+    public ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null,
+        CommandFlags flags = CommandFlags.None)
+    {
+        return ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
+    }
 }
