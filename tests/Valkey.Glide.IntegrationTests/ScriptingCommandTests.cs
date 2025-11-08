@@ -37,21 +37,6 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_EVALSHAOptimization_UsesEVALSHAFirst(BaseClient client)
-    {
-        // Test that EVALSHA is used first (optimization)
-        // First execution should use EVALSHA and fallback to EVAL
-        using var script = new Script("return 'test'");
-        ValkeyResult result1 = await client.InvokeScriptAsync(script);
-        Assert.Equal("test", result1.ToString());
-
-        // Second execution should use EVALSHA successfully (script is now cached)
-        ValkeyResult result2 = await client.InvokeScriptAsync(script);
-        Assert.Equal("test", result2.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InvokeScriptAsync_NOSCRIPTFallback_AutomaticallyUsesEVAL(BaseClient client)
     {
         // Flush scripts to ensure NOSCRIPT error

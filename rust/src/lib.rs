@@ -616,26 +616,26 @@ pub unsafe extern "C-unwind" fn invoke_script(
 
     // Convert keys
     let keys_vec: Vec<&[u8]> = if !keys.is_null() && !keys_len.is_null() && keys_count > 0 {
-        let key_ptrs = unsafe { std::slice::from_raw_parts(keys as *const *const u8, keys_count) };
-        let key_lens = unsafe { std::slice::from_raw_parts(keys_len, keys_count) };
-        key_ptrs
-            .iter()
-            .zip(key_lens.iter())
-            .map(|(&ptr, &len)| unsafe { std::slice::from_raw_parts(ptr, len) })
-            .collect()
+        unsafe {
+            ffi::convert_string_pointer_array_to_vector(
+                keys as *const *const u8,
+                keys_count,
+                keys_len,
+            )
+        }
     } else {
         Vec::new()
     };
 
     // Convert args
     let args_vec: Vec<&[u8]> = if !args.is_null() && !args_len.is_null() && args_count > 0 {
-        let arg_ptrs = unsafe { std::slice::from_raw_parts(args as *const *const u8, args_count) };
-        let arg_lens = unsafe { std::slice::from_raw_parts(args_len, args_count) };
-        arg_ptrs
-            .iter()
-            .zip(arg_lens.iter())
-            .map(|(&ptr, &len)| unsafe { std::slice::from_raw_parts(ptr, len) })
-            .collect()
+        unsafe {
+            ffi::convert_string_pointer_array_to_vector(
+                args as *const *const u8,
+                args_count,
+                args_len,
+            )
+        }
     } else {
         Vec::new()
     };
