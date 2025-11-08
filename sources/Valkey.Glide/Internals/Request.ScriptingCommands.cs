@@ -80,7 +80,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object?, ValkeyResult> FCallAsync(string function, string[]? keys = null, string[]? args = null)
     {
-        List<GlideString> cmdArgs = new List<GlideString> { function };
+        List<GlideString> cmdArgs = [function];
 
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
@@ -95,7 +95,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object?, ValkeyResult> FCallReadOnlyAsync(string function, string[]? keys = null, string[]? args = null)
     {
-        List<GlideString> cmdArgs = new List<GlideString> { function };
+        List<GlideString> cmdArgs = [function];
 
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
@@ -112,7 +112,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<GlideString, string> FunctionLoadAsync(string libraryCode, bool replace)
     {
-        List<GlideString> cmdArgs = new List<GlideString>();
+        List<GlideString> cmdArgs = [];
         if (replace)
         {
             cmdArgs.Add("REPLACE");
@@ -141,7 +141,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListQuery? query = null)
     {
-        List<GlideString> cmdArgs = new List<GlideString>();
+        List<GlideString> cmdArgs = [];
 
         if (query?.LibraryName != null)
         {
@@ -186,7 +186,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<string, string> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
     {
-        List<GlideString> cmdArgs = new List<GlideString> { payload };
+        List<GlideString> cmdArgs = [payload];
 
         if (policy.HasValue)
         {
@@ -224,14 +224,14 @@ internal partial class Request
 
     private static LibraryInfo[] ParseFunctionListResponse(object[] response)
     {
-        List<LibraryInfo> libraries = new List<LibraryInfo>();
+        List<LibraryInfo> libraries = [];
 
         foreach (object libObj in response)
         {
             string? name = null;
             string? engine = null;
             string? code = null;
-            List<FunctionInfo> functions = new List<FunctionInfo>();
+            List<FunctionInfo> functions = [];
 
             // Handle both RESP2 (array) and RESP3 (dictionary) formats
             if (libObj is Dictionary<GlideString, object> libDict)
@@ -296,7 +296,7 @@ internal partial class Request
             {
                 string? funcName = null;
                 string? funcDesc = null;
-                List<string> funcFlags = new List<string>();
+                List<string> funcFlags = [];
 
                 if (funcObj is Dictionary<GlideString, object> funcDict)
                 {
@@ -376,7 +376,7 @@ internal partial class Request
         }
 
         // Now parse the node's stats
-        Dictionary<string, EngineStats> engines = new Dictionary<string, EngineStats>();
+        Dictionary<string, EngineStats> engines = [];
         RunningScriptInfo? runningScript = null;
 
         if (nodeData is Dictionary<GlideString, object> nodeDict)
@@ -426,7 +426,7 @@ internal partial class Request
     {
         string? name = null;
         string? command = null;
-        List<string> args = new List<string>();
+        List<string> args = [];
         long durationMs = 0;
 
         if (value is Dictionary<GlideString, object> scriptDict)
