@@ -13,7 +13,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object?, ValkeyResult> EvalShaAsync(string hash, string[]? keys = null, string[]? args = null)
     {
-        List<GlideString> cmdArgs = new List<GlideString> { hash };
+        List<GlideString> cmdArgs = [hash];
 
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
@@ -80,7 +80,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object?, ValkeyResult> FCallAsync(string function, string[]? keys = null, string[]? args = null)
     {
-        var cmdArgs = new List<GlideString> { function };
+        List<GlideString> cmdArgs = new List<GlideString> { function };
 
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
@@ -95,7 +95,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object?, ValkeyResult> FCallReadOnlyAsync(string function, string[]? keys = null, string[]? args = null)
     {
-        var cmdArgs = new List<GlideString> { function };
+        List<GlideString> cmdArgs = new List<GlideString> { function };
 
         int numKeys = keys?.Length ?? 0;
         cmdArgs.Add(numKeys.ToString());
@@ -112,7 +112,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<GlideString, string> FunctionLoadAsync(string libraryCode, bool replace)
     {
-        var cmdArgs = new List<GlideString>();
+        List<GlideString> cmdArgs = new List<GlideString>();
         if (replace)
         {
             cmdArgs.Add("REPLACE");
@@ -141,7 +141,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListQuery? query = null)
     {
-        var cmdArgs = new List<GlideString>();
+        List<GlideString> cmdArgs = new List<GlideString>();
 
         if (query?.LibraryName != null)
         {
@@ -186,7 +186,7 @@ internal partial class Request
     /// </summary>
     public static Cmd<string, string> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
     {
-        var cmdArgs = new List<GlideString> { payload };
+        List<GlideString> cmdArgs = new List<GlideString> { payload };
 
         if (policy.HasValue)
         {
@@ -224,20 +224,20 @@ internal partial class Request
 
     private static LibraryInfo[] ParseFunctionListResponse(object[] response)
     {
-        var libraries = new List<LibraryInfo>();
+        List<LibraryInfo> libraries = new List<LibraryInfo>();
 
         foreach (object libObj in response)
         {
             string? name = null;
             string? engine = null;
             string? code = null;
-            var functions = new List<FunctionInfo>();
+            List<FunctionInfo> functions = new List<FunctionInfo>();
 
             // Handle both RESP2 (array) and RESP3 (dictionary) formats
             if (libObj is Dictionary<GlideString, object> libDict)
             {
                 // RESP3 format - dictionary
-                foreach (var kvp in libDict)
+                foreach (KeyValuePair<GlideString, object> kvp in libDict)
                 {
                     string key = kvp.Key.ToString();
                     object value = kvp.Value;
@@ -296,12 +296,12 @@ internal partial class Request
             {
                 string? funcName = null;
                 string? funcDesc = null;
-                var funcFlags = new List<string>();
+                List<string> funcFlags = new List<string>();
 
                 if (funcObj is Dictionary<GlideString, object> funcDict)
                 {
                     // RESP3 format
-                    foreach (var kvp in funcDict)
+                    foreach (KeyValuePair<GlideString, object> kvp in funcDict)
                     {
                         ProcessFunctionField(kvp.Key.ToString(), kvp.Value, ref funcName, ref funcDesc, funcFlags);
                     }
@@ -376,13 +376,13 @@ internal partial class Request
         }
 
         // Now parse the node's stats
-        var engines = new Dictionary<string, EngineStats>();
+        Dictionary<string, EngineStats> engines = new Dictionary<string, EngineStats>();
         RunningScriptInfo? runningScript = null;
 
         if (nodeData is Dictionary<GlideString, object> nodeDict)
         {
             // RESP3 format
-            foreach (var kvp in nodeDict)
+            foreach (KeyValuePair<GlideString, object> kvp in nodeDict)
             {
                 string key = kvp.Key.ToString();
                 object value = kvp.Value;
@@ -426,13 +426,13 @@ internal partial class Request
     {
         string? name = null;
         string? command = null;
-        var args = new List<string>();
+        List<string> args = new List<string>();
         long durationMs = 0;
 
         if (value is Dictionary<GlideString, object> scriptDict)
         {
             // RESP3 format
-            foreach (var kvp in scriptDict)
+            foreach (KeyValuePair<GlideString, object> kvp in scriptDict)
             {
                 ProcessRunningScriptField(kvp.Key.ToString(), kvp.Value, ref name, ref command, args, ref durationMs);
             }
@@ -483,7 +483,7 @@ internal partial class Request
         if (value is Dictionary<GlideString, object> enginesDict)
         {
             // RESP3 format
-            foreach (var kvp in enginesDict)
+            foreach (KeyValuePair<GlideString, object> kvp in enginesDict)
             {
                 string engineName = kvp.Key.ToString();
                 ParseEngineData(engineName, kvp.Value, engines);
@@ -510,7 +510,7 @@ internal partial class Request
         if (value is Dictionary<GlideString, object> engineDict)
         {
             // RESP3 format
-            foreach (var kvp in engineDict)
+            foreach (KeyValuePair<GlideString, object> kvp in engineDict)
             {
                 ProcessEngineField(kvp.Key.ToString(), kvp.Value, ref functionCount, ref libraryCount);
             }
