@@ -30,7 +30,7 @@ public static class Errors
 
     /// <summary>
     /// An error returned by the Valkey server during script or function execution.
-    /// /// This includes Lua comtion errors, runtime errors, and script/function management errors.
+    /// This includes Lua comtion errors, runtime errors, and script/function management errors.
     /// </summary>
     public sealed class ValkeyServerException : GlideException
     {
