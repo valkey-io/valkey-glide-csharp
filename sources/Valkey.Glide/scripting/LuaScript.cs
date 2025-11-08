@@ -143,15 +143,12 @@ public sealed class LuaScript
             throw new ArgumentNullException(nameof(db));
         }
 
+        // Note: withKeyPrefix is not supported by the ScriptEvaluate API
+        // We need to extract parameters with prefix applied and call ScriptEvaluate with keys/values
         (ValkeyKey[] keys, ValkeyValue[] args) = ExtractParametersInternal(parameters, withKeyPrefix);
 
-        // Use Execute to call EVAL directly
-        List<object> evalArgs = [ExecutableScript];
-        evalArgs.Add(keys.Length);
-        evalArgs.AddRange(keys.Cast<object>());
-        evalArgs.AddRange(args.Cast<object>());
-
-        return db.Execute("EVAL", evalArgs, flags);
+        // Use the proper ScriptEvaluate method
+        return db.ScriptEvaluate(ExecutableScript, keys, args, flags);
     }
 
     /// <summary>
@@ -183,14 +180,12 @@ public sealed class LuaScript
             throw new ArgumentNullException(nameof(db));
         }
 
+        // Note: withKeyPrefix is not supported by the ScriptEvaluateAsync API
+        // We need to extract parameters with prefix applied and call ScriptEvaluateAsync with keys/values
         (ValkeyKey[] keys, ValkeyValue[] args) = ExtractParametersInternal(parameters, withKeyPrefix);
 
-        List<object> evalArgs = [ExecutableScript];
-        evalArgs.Add(keys.Length);
-        evalArgs.AddRange(keys.Cast<object>());
-        evalArgs.AddRange(args.Cast<object>());
-
-        return await db.ExecuteAsync("EVAL", evalArgs, flags).ConfigureAwait(false);
+        // Use the proper ScriptEvaluateAsync method
+        return await db.ScriptEvaluateAsync(ExecutableScript, keys, args, flags).ConfigureAwait(false);
     }
 
     /// <summary>
