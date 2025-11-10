@@ -964,4 +964,27 @@ internal partial class FFI
             }
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct OpenTelemetryConfigFFI
+    {
+        public IntPtr traces;
+        public IntPtr metrics;
+        public bool hasFlushInterval;
+        public long flushIntervalMs;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct TracesConfigFFI
+    {
+        public IntPtr endpoint;
+        public bool hasSamplePercentage;
+        public uint samplePercentage;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MetricsConfigFFI
+    {
+        public IntPtr endpoint;
+    }
 }
