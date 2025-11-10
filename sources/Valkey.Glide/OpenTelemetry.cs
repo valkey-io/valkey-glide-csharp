@@ -106,4 +106,16 @@ public static class OpenTelemetry
 
         return (Random.NextDouble() * 100) < percentage;
     }
+
+    /// <summary>
+    /// Clear the OpenTelemetry configuration.
+    /// Used for testing only.
+    /// </summary>
+    internal static void Clear()
+    {
+        lock (Lock)
+        {
+            s_config = null;
+        }
+    }
 }
