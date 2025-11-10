@@ -1185,6 +1185,7 @@ internal partial class FFI
             }
         }
     }
+
     /// <summary>
     /// Enum representing the type of push notification received from the server.
     /// This matches the <c>PushKind</c> enum in <c>rust/src/ffi.rs</c>, which is an FFI-safe
@@ -1222,5 +1223,26 @@ internal partial class FFI
         PushSSubscribe = 11,
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct OpenTelemetryConfigFFI
+    {
+        public IntPtr traces;
+        public IntPtr metrics;
+        public bool hasFlushInterval;
+        public long flushIntervalMs;
+    }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct TracesConfigFFI
+    {
+        public IntPtr endpoint;
+        public bool hasSamplePercentage;
+        public uint samplePercentage;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MetricsConfigFFI
+    {
+        public IntPtr endpoint;
+    }
 }
