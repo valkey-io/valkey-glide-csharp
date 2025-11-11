@@ -1530,8 +1530,8 @@ pub unsafe extern "C" fn init_open_telemetry(
     }
 }
 
-/// Creates an OpenTelemetry span for the given request type and returns a pointer to it.
-/// Returns 0 if span creation fails.
+/// Creates an OpenTelemetry span for the given request type.
+/// Returns a pointer to the new span, or 0 if span creation fails.
 ///
 /// # Parameters
 /// * `request_type`: The type of request to create a span for
@@ -1549,8 +1549,49 @@ pub extern "C" fn create_open_telemetry_span(request_type: u32) -> u64 {
 
     // Create span and convert to pointer
     let span = GlideOpenTelemetry::new_span(&command_name);
-    let span_ptr = Arc::into_raw(Arc::new(span));
-    span_ptr as u64
+    return Arc::into_raw(Arc::new(span)) as u64;
+}
+
+/// Creates an OpenTelemetry span with the given request type as a child of the provided parent span.
+/// Returns a pointer to the new span, or 0 if span creation fails.
+///
+/// # Parameters
+/// * `request_type`: The type of request to create a span for
+/// * `parent_span_ptr`: A pointer to the parent span
+///
+/// # Returns
+/// * A u64 pointer to the created child span, or 0 if creation fails
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn create_open_telemetry_span_with_parent(
+    request_type: u32,
+    parent_span_ptr: u64,
+) -> u64 {
+    let request_type: RequestType = unsafe { std::mem::transmute(request_type) };
+
+    let command_name = match get_command_name(request_type) {
+        Some(name) => name,
+        None => return 0 as u64,
+    };
+
+    // Fallback if parent span is zero: create independent span.
+    if parent_span_ptr == 0 {
+        let span = GlideOpenTelemetry::new_span(&command_name);
+        let span_ptr = Arc::into_raw(Arc::new(span));
+        return span_ptr as u64;
+    }
+
+    // Convert parent pointer to GlideSpan and use existing add_span method.
+    let span = match unsafe { GlideOpenTelemetry::span_from_pointer(parent_span_ptr) } {
+        // Use existing add_span method to create child span
+        Ok(parent_span) => match parent_span.add_span(&command_name) {
+            Ok(child_span) => child_span,
+            Err(_) => GlideOpenTelemetry::new_span(&command_name),
+        },
+        Err(_) => GlideOpenTelemetry::new_span(&command_name),
+    };
+
+    // Convert span to pointer and return
+    return Arc::into_raw(Arc::new(span)) as u64;
 }
 
 /// Returns the command name for the given request type.
