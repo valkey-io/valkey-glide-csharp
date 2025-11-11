@@ -1,5 +1,10 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System;
+using System.Runtime.InteropServices;
+
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -33,8 +38,11 @@ public static class OpenTelemetry
                 return;
             }
 
-            // TODO: Call FFI to initialize Rust core
             s_config = config;
+
+            // Initialize via FFI
+            InitInternal();
+
             Logger.Log(Level.Info, "GlideOpenTelemetry", "OpenTelemetry initialized");
         }
     }
@@ -116,6 +124,39 @@ public static class OpenTelemetry
         lock (Lock)
         {
             s_config = null;
+        }
+    }
+
+    /// <summary>
+    /// Initialize OpenTelemetry via FFI.
+    /// </summary>
+    private static void InitInternal()
+    {
+        var config = s_config!;
+
+        var ffiConfig = new FFI.OpenTelemetryConfig(
+            config.Traces != null ? new FFI.TracesConfig(config.Traces.Endpoint, config.Traces.SamplePercentage) : null,
+            config.Metrics != null ? new FFI.MetricsConfig(config.Metrics.Endpoint) : null,
+            config.FlushInterval.HasValue ? (uint)config.FlushInterval.Value.TotalMilliseconds : null
+        );
+
+        // Marshal the config to unmanaged memory
+        var configPtr = Marshal.AllocHGlobal(Marshal.SizeOf<FFI.OpenTelemetryConfig>());
+        try
+        {
+            Marshal.StructureToPtr(ffiConfig, configPtr, false);
+            var errorPtr = FFI.InitOpenTelemetryFfi(configPtr);
+            
+            if (errorPtr != IntPtr.Zero)
+            {
+                var errorMessage = Marshal.PtrToStringAnsi(errorPtr);
+                Marshal.FreeHGlobal(errorPtr);
+                throw new InvalidOperationException($"Failed to initialize OpenTelemetry: {errorMessage}");
+            }
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(configPtr);
         }
     }
 }
