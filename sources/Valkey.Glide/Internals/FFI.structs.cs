@@ -1201,7 +1201,7 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct MetricsConfig(string endpoint)
+    internal readonly struct MetricsConfig(string endpoint)
     {
         /// <summary>
         /// Endpoint for OpenTelemetry metrics.
