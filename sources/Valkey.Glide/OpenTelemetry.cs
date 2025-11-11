@@ -146,7 +146,7 @@ public static class OpenTelemetry
         {
             Marshal.StructureToPtr(ffiConfig, configPtr, false);
             var errorPtr = FFI.InitOpenTelemetryFfi(configPtr);
-            
+
             if (errorPtr != IntPtr.Zero)
             {
                 var errorMessage = Marshal.PtrToStringAnsi(errorPtr);
