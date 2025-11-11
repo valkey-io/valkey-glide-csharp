@@ -114,7 +114,6 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong CreateBatchOpenTelemetrySpanFfi();
 
-    // TODO
     [LibraryImport("libglide_rs", EntryPoint = "create_batch_open_telemetry_span_with_parent")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong CreateBatchOpenTelemetrySpanWithParentFfi(ulong parentSpanPtr);
@@ -189,7 +188,6 @@ internal partial class FFI
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_open_telemetry_span")]
     public static extern ulong CreateBatchOpenTelemetrySpanFfi();
 
-    // TODO
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_open_telemetry_span_with_parent")]
     public static extern ulong CreateBatchOpenTelemetrySpanWithParentFfi(ulong parentSpanPtr);
 

@@ -1598,10 +1598,74 @@ pub unsafe extern "C" fn create_open_telemetry_span_with_parent(
 /// * A u64 pointer to the created span, or 0 if span creation fails.
 #[unsafe(no_mangle)]
 pub extern "C" fn create_batch_open_telemetry_span() -> u64 {
-
     let command_name = "Batch";
     let span = GlideOpenTelemetry::new_span(command_name);
     return Arc::into_raw(Arc::new(span)) as u64;
+}
+
+/// Creates an OpenTelemetry batch span with a parent span and returns a pointer to the span as u64.
+/// Returns 0 on failure.
+///
+/// # Parameters
+/// * `parent_span_ptr`: A pointer to the parent span
+///
+/// # Returns
+/// * A u64 pointer to the created child batch span, or 0 if creation fails
+///
+/// # Safety
+/// * `parent_span_ptr` must be a valid pointer to a span, or 0
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn create_batch_open_telemetry_span_with_parent(parent_span_ptr: u64) -> u64 {
+    let command_name = "Batch";
+
+    // Handle parent span pointer validation with graceful fallback
+    if parent_span_ptr == 0 {
+        // Create independent batch span as fallback
+        let span = GlideOpenTelemetry::new_span(command_name);
+        let span_ptr = Arc::into_raw(Arc::new(span));
+        return span_ptr as u64;
+    }
+
+    // Convert parent pointer to GlideSpan and create child span
+    let span = match unsafe { GlideOpenTelemetry::span_from_pointer(parent_span_ptr) } {
+        Ok(parent_span) => {
+            // Use existing add_span method to create child span
+            match parent_span.add_span(command_name) {
+                Ok(child_span) => child_span,
+                Err(_) => {
+                    // Graceful fallback: create independent span
+                    GlideOpenTelemetry::new_span(command_name)
+                }
+            }
+        }
+        Err(_) => {
+            // Graceful fallback: create independent span
+            GlideOpenTelemetry::new_span(command_name)
+        }
+    };
+
+    // Convert span to pointer and return
+    let span_ptr = Arc::into_raw(Arc::new(span));
+    span_ptr as u64
+}
+
+/// Drops an OpenTelemetry span given its pointer as u64.
+///
+/// # Parameters
+/// * `span_ptr`: A pointer to the span to drop
+///
+/// # Safety
+/// * `span_ptr` must be a valid pointer to a span created by the create_open_telemetry_span functions, or 0
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn drop_open_telemetry_span(span_ptr: u64) {
+    // Validate span pointer
+    if span_ptr == 0 {
+        return;
+    }
+
+    // Convert pointer back to Arc and drop it
+    let _span = unsafe { Arc::from_raw(span_ptr as *const GlideSpan) };
+    // Arc automatically drops when it goes out of scope
 }
 
 /// Returns the command name for the given request type.
