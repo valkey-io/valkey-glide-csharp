@@ -13,7 +13,9 @@ use glide_core::{
     GlideOpenTelemetrySignalsExporter,
     client::Client as GlideClient,
     errors::{RequestErrorType, error_message, error_type},
+    request_type::RequestType,
 };
+use redis::cluster_routing::Routable;
 use std::{
     ffi::{CStr, CString, c_char, c_void},
     slice::from_raw_parts,
@@ -1526,4 +1528,81 @@ pub unsafe extern "C" fn init_open_telemetry(
             CString::new(error_msg).unwrap().into_raw()
         }
     }
+}
+
+/// Creates an OpenTelemetry span for the given request type and returns a pointer to it.
+/// Returns 0 if span creation fails.
+///
+/// # Parameters
+/// * `request_type`: The type of request to create a span for
+///
+/// # Returns
+/// * A u64 pointer to the created span, or 0 if creation fails
+#[unsafe(no_mangle)]
+pub extern "C" fn create_open_telemetry_span(request_type: u32) -> u64 {
+    let request_type: RequestType = unsafe { std::mem::transmute(request_type) };
+
+    let command_name = match get_command_name(request_type) {
+        Some(name) => name,
+        None => return 0 as u64,
+    };
+
+    // Create span and convert to pointer
+    let span = GlideOpenTelemetry::new_span(&command_name);
+    let span_ptr = Arc::into_raw(Arc::new(span));
+    span_ptr as u64
+}
+
+/// Returns the command name for the given request type.
+/// Returns None if the command name cannot be determined.
+fn get_command_name(request_type: RequestType) -> Option<String> {
+    // Validate request type and extract command.
+    let cmd = match request_type.get_command() {
+        Some(cmd) => cmd,
+        None => {
+            logger_core::log_error(
+                "ffi_otel",
+                "create_otel_span: RequestType has no command available",
+            );
+            return None;
+        }
+    };
+
+    // Validate command bytes.
+    let cmd_bytes = match cmd.command() {
+        Some(bytes) => bytes,
+        None => {
+            logger_core::log_error(
+                "ffi_otel",
+                "create_otel_span: Command has no bytes available",
+            );
+            return None;
+        }
+    };
+
+    // Validate UTF-8 encoding.
+    let command_name = match std::str::from_utf8(cmd_bytes.as_slice()) {
+        Ok(name) => name,
+        Err(e) => {
+            logger_core::log_error(
+                "ffi_otel",
+                format!("create_otel_span: Command bytes are not valid UTF-8: {e}"),
+            );
+            return None;
+        }
+    };
+
+    // Validate command name length (reasonable limit to prevent abuse)
+    if command_name.len() > 256 {
+        logger_core::log_error(
+            "ffi_otel",
+            format!(
+                "create_otel_span: Command name too long ({} chars), max 256",
+                command_name.len()
+            ),
+        );
+        return None;
+    }
+
+    Some(command_name.to_string())
 }

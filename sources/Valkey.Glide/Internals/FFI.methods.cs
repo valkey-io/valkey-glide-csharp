@@ -102,7 +102,6 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial IntPtr InitOpenTelemetryFfi(IntPtr config);
 
-    // TODO
     [LibraryImport("libglide_rs", EntryPoint = "create_open_telemetry_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong CreateOpenTelemetrySpanFfi(uint requestType);
@@ -183,7 +182,6 @@ internal partial class FFI
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init_open_telemetry")]
     public static extern IntPtr InitOpenTelemetryFfi(IntPtr config);
 
-    // TODO
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_open_telemetry_span")]
     public static extern ulong CreateOpenTelemetrySpanFfi(uint requestType);
 
