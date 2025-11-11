@@ -1531,13 +1531,12 @@ pub unsafe extern "C" fn init_open_telemetry(
 }
 
 /// Creates an OpenTelemetry span for the given request type.
-/// Returns a pointer to the new span, or 0 if span creation fails.
 ///
 /// # Parameters
 /// * `request_type`: The type of request to create a span for
 ///
 /// # Returns
-/// * A u64 pointer to the created span, or 0 if creation fails
+/// * A u64 pointer to the created span, or 0 if span creation fails.
 #[unsafe(no_mangle)]
 pub extern "C" fn create_open_telemetry_span(request_type: u32) -> u64 {
     let request_type: RequestType = unsafe { std::mem::transmute(request_type) };
@@ -1553,14 +1552,13 @@ pub extern "C" fn create_open_telemetry_span(request_type: u32) -> u64 {
 }
 
 /// Creates an OpenTelemetry span with the given request type as a child of the provided parent span.
-/// Returns a pointer to the new span, or 0 if span creation fails.
 ///
 /// # Parameters
 /// * `request_type`: The type of request to create a span for
 /// * `parent_span_ptr`: A pointer to the parent span
 ///
 /// # Returns
-/// * A u64 pointer to the created child span, or 0 if creation fails
+/// * A u64 pointer to the created span, or 0 if span creation fails.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn create_open_telemetry_span_with_parent(
     request_type: u32,
@@ -1591,6 +1589,18 @@ pub unsafe extern "C" fn create_open_telemetry_span_with_parent(
     };
 
     // Convert span to pointer and return
+    return Arc::into_raw(Arc::new(span)) as u64;
+}
+
+/// Creates an OpenTelemetry batch span.
+///
+/// # Returns
+/// * A u64 pointer to the created span, or 0 if span creation fails.
+#[unsafe(no_mangle)]
+pub extern "C" fn create_batch_open_telemetry_span() -> u64 {
+
+    let command_name = "Batch";
+    let span = GlideOpenTelemetry::new_span(command_name);
     return Arc::into_raw(Arc::new(span)) as u64;
 }
 
