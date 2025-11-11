@@ -98,27 +98,32 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RefreshIamTokenFfi(IntPtr client, ulong index);
 
-    [LibraryImport("libglide_rs", EntryPoint = "init_otel")]
+    [LibraryImport("libglide_rs", EntryPoint = "init_open_telemetry")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial IntPtr InitOpenTelemetryFfi(IntPtr config);
 
-    [LibraryImport("libglide_rs", EntryPoint = "create_otel_span")]
+    // TODO
+    [LibraryImport("libglide_rs", EntryPoint = "create_open_telemetry_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong CreateOpenTelemetrySpanFfi(uint requestType);
 
-    [LibraryImport("libglide_rs", EntryPoint = "create_otel_span_with_parent")]
+    // TODO
+    [LibraryImport("libglide_rs", EntryPoint = "create_open_telemetry_span_with_parent")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong CreateOpenTelemetrySpanWithParentFfi(uint requestType, ulong parentSpanPtr);
 
-    [LibraryImport("libglide_rs", EntryPoint = "create_batch_otel_span")]
+    // TODO
+    [LibraryImport("libglide_rs", EntryPoint = "create_batch_open_telemetry_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong CreateBatchOpenTelemetrySpanFfi();
 
-    [LibraryImport("libglide_rs", EntryPoint = "create_batch_otel_span_with_parent")]
+    // TODO
+    [LibraryImport("libglide_rs", EntryPoint = "create_batch_open_telemetry_span_with_parent")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong CreateBatchOpenTelemetrySpanWithParentFfi(ulong parentSpanPtr);
 
-    [LibraryImport("libglide_rs", EntryPoint = "drop_otel_span")]
+    // TODO
+    [LibraryImport("libglide_rs", EntryPoint = "drop_open_telemetry_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void DropOpenTelemetrySpanFfi(ulong spanPtr);
 #else
@@ -175,22 +180,27 @@ internal partial class FFI
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "refresh_iam_token")]
     public static extern void RefreshIamTokenFfi(IntPtr client, ulong index);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init_otel")]
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init_open_telemetry")]
     public static extern IntPtr InitOpenTelemetryFfi(IntPtr config);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span")]
+    // TODO
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_open_telemetry_span")]
     public static extern ulong CreateOpenTelemetrySpanFfi(uint requestType);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span_with_parent")]
+    // TODO
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_open_telemetry_span_with_parent")]
     public static extern ulong CreateOpenTelemetrySpanWithParentFfi(uint requestType, ulong parentSpanPtr);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span")]
+    // TODO
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_open_telemetry_span")]
     public static extern ulong CreateBatchOpenTelemetrySpanFfi();
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span_with_parent")]
+    // TODO
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_open_telemetry_span_with_parent")]
     public static extern ulong CreateBatchOpenTelemetrySpanWithParentFfi(ulong parentSpanPtr);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_otel_span")]
+    // TODO
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_open_telemetry_span")]
     public static extern void DropOpenTelemetrySpanFfi(ulong spanPtr);
 #endif
 }

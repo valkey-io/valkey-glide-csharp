@@ -7,15 +7,42 @@ use ffi::{
     get_pipeline_options,
 };
 use glide_core::{
+    // OpenTelemtry
+    GlideOpenTelemetry,
+    GlideOpenTelemetryConfigBuilder,
+    GlideOpenTelemetrySignalsExporter,
     client::Client as GlideClient,
     errors::{RequestErrorType, error_message, error_type},
 };
 use std::{
     ffi::{CStr, CString, c_char, c_void},
     slice::from_raw_parts,
+    str::FromStr,
     sync::Arc,
 };
 use tokio::runtime::{Builder, Runtime};
+
+#[repr(C)]
+pub struct OpenTelemetryConfigFFI {
+    pub has_traces: bool,
+    pub traces: TracesConfigFFI,
+    pub has_metrics: bool,
+    pub metrics: MetricsConfigFFI,
+    pub has_flush_interval: bool,
+    pub flush_interval_ms: u32,
+}
+
+#[repr(C)]
+pub struct TracesConfigFFI {
+    pub endpoint: *const c_char,
+    pub has_sample_percentage: bool,
+    pub sample_percentage: u32,
+}
+
+#[repr(C)]
+pub struct MetricsConfigFFI {
+    pub endpoint: *const c_char,
+}
 
 #[repr(C)]
 pub enum Level {
@@ -1409,4 +1436,94 @@ pub unsafe extern "C-unwind" fn update_connection_password(
     });
 
     panic_guard.panicked = false;
+}
+
+// ========================================================================================
+// OpenTelemetry
+// ========================================================================================
+
+/// Initializes OpenTelemetry with the given configuration.
+///
+/// # Arguments
+/// * `config` - A pointer to an OpenTelemetryConfig struct containing the configuration.
+///
+/// # Returns
+/// * `null` on success
+/// * A pointer to a C string containing an error message on failure. The caller is responsible for freeing this string.
+///
+/// # Safety
+/// * `config` must be a valid pointer to an OpenTelemetryConfig struct.
+/// * The configuration and its underlying pointers must remain valid until the function returns.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn init_open_telemetry(
+    config: *const OpenTelemetryConfigFFI,
+) -> *const c_char {
+    let config = unsafe { &*config };
+    let mut otel_config = GlideOpenTelemetryConfigBuilder::default();
+
+    // Configure traces if provided.
+    if config.has_traces {
+        let endpoint = unsafe { CStr::from_ptr(config.traces.endpoint) }
+            .to_string_lossy()
+            .to_string();
+
+        match GlideOpenTelemetrySignalsExporter::from_str(&endpoint) {
+            Ok(exporter) => {
+                let sample_percentage = if config.traces.has_sample_percentage {
+                    Some(config.traces.sample_percentage)
+                } else {
+                    None
+                };
+                otel_config = otel_config.with_trace_exporter(exporter, sample_percentage);
+            }
+            Err(e) => {
+                let error_msg = format!("Invalid traces configuration: {e}");
+                return CString::new(error_msg).unwrap().into_raw();
+            }
+        }
+    }
+
+    // Configure metrics if provided.
+    if config.has_metrics {
+        let endpoint = unsafe { CStr::from_ptr(config.metrics.endpoint) }
+            .to_string_lossy()
+            .to_string();
+
+        match GlideOpenTelemetrySignalsExporter::from_str(&endpoint) {
+            Ok(exporter) => {
+                otel_config = otel_config.with_metrics_exporter(exporter);
+            }
+            Err(e) => {
+                let error_msg = format!("Invalid metrics configuration: {e}");
+                return CString::new(error_msg).unwrap().into_raw();
+            }
+        }
+    }
+
+    // Configure flush interval if provided.
+    if config.has_flush_interval {
+        otel_config = otel_config.with_flush_interval(std::time::Duration::from_millis(
+            config.flush_interval_ms as u64,
+        ));
+    }
+
+    // Initialize OpenTelemetry synchronously.
+    match glide_core::client::get_or_init_runtime() {
+        Ok(glide_runtime) => {
+            match glide_runtime
+                .runtime
+                .block_on(async { GlideOpenTelemetry::initialise(otel_config.build()) })
+            {
+                Ok(_) => std::ptr::null(), // Success
+                Err(e) => {
+                    let error_msg = format!("Failed to initialize OpenTelemetry: {e}");
+                    CString::new(error_msg).unwrap().into_raw()
+                }
+            }
+        }
+        Err(e) => {
+            let error_msg = format!("Failed to get runtime: {e}");
+            CString::new(error_msg).unwrap().into_raw()
+        }
+    }
 }
