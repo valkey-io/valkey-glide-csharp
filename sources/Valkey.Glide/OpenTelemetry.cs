@@ -14,7 +14,6 @@ public static class OpenTelemetry
 {
     private static readonly object Lock = new();
     private static OpenTelemetryConfig? s_config;
-    private static readonly Random Random = new();
 
     /// <summary>
     /// Initialize OpenTelemetry with the provided configuration.

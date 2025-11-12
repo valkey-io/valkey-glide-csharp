@@ -17,20 +17,16 @@ public class OpenTelemetryTests : IDisposable
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
-    private static TracesFile? s_traces;
+    private static readonly string TracesFilePath = System.IO.Path.GetTempFileName();
+    private static readonly string TracesEndPoint = $"file://{TracesFilePath}";
 
-    public OpenTelemetryTests()
+    private TracesFile Traces { get; }
+
+    static OpenTelemetryTests()
     {
-        if (s_traces != null)
-        {
-            return;
-        }
-
         // Initialize OpenTelemetry and traces file.
-        s_traces = new TracesFile();
-
         var tracesConfig = TracesConfig.CreateBuilder()
-            .WithEndpoint(s_traces.EndPoint)
+            .WithEndpoint($"file://{TracesFilePath}")
             .WithSamplePercentage(SamplePercentageNone)
             .Build();
 
@@ -42,11 +38,16 @@ public class OpenTelemetryTests : IDisposable
         OpenTelemetry.Init(config);
     }
 
+    public OpenTelemetryTests()
+    {
+        Traces = new TracesFile(TracesFilePath, TracesEndPoint);
+    }
+
     public void Dispose()
     {
-        // Disable tracing and clear traces file.
+        // Disable tracing and delete traces file.
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
-        s_traces!.Clear();
+        Traces.Dispose();
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -55,7 +56,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(null);
         await ExecuteSetGetDelete(client);
-        s_traces!.AssertSpanNames([]);
+        Traces!.AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -64,7 +65,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteSetGetDelete(client);
-        s_traces!.AssertSpanNames([]);
+        Traces!.AssertSpanNames([]);
     }
 
 
@@ -74,7 +75,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteSetGetDelete(client);
-        s_traces!.AssertSpanNames(["SET", "GET", "DEL"]);
+        Traces!.AssertSpanNames(["SET", "GET", "DEL"]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -83,7 +84,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(null);
         await ExecuteBatchSetGetDelete(client);
-        s_traces!.AssertSpanNames([]);
+        Traces!.AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -92,7 +93,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteBatchSetGetDelete(client);
-        s_traces!.AssertSpanNames([]);
+        Traces!.AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -101,7 +102,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteBatchSetGetDelete(client);
-        s_traces!.AssertSpanNames(["Batch"]);
+        Traces!.AssertSpanNames(["Batch"]);
     }
 
     private async Task ExecuteSetGetDelete(BaseClient client)
@@ -143,23 +144,17 @@ public class OpenTelemetryTests : IDisposable
     /// <summary>
     /// Temporary file for storing traces.
     /// </summary>
-    private sealed class TracesFile
+    private readonly struct TracesFile(string path, string endPoint) : IDisposable
     {
-        public string Path { get; }
-        public string EndPoint { get; }
+        public readonly string Path = path;
+        public readonly string EndPoint = endPoint;
 
-        public TracesFile()
-        {
-            Path = System.IO.Path.GetTempFileName();
-            EndPoint = $"file://{Path}";
-        }
-
-        public void Dispose()
+        public readonly void Dispose()
         {
             File.Delete(Path);
         }
 
-        public void AssertSpanNames(List<string> expectedSpanNames)
+        public readonly void AssertSpanNames(List<string> expectedSpanNames)
         {
             var actualSpanNames = new List<string>();
             foreach (var line in File.ReadAllLines(Path))
@@ -172,11 +167,6 @@ public class OpenTelemetryTests : IDisposable
             }
 
             Assert.Equal(expectedSpanNames, actualSpanNames);
-        }
-
-        public void Clear()
-        {
-            File.WriteAllText(Path, string.Empty);
         }
     }
 }
