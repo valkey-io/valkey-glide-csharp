@@ -1,7 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Text.Json;
-using Xunit;
+
 using Valkey.Glide.Pipeline;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -17,20 +17,20 @@ public class OpenTelemetryTests : IDisposable
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
-    private static TracesFile Traces;
+    private static TracesFile? s_traces;
 
     public OpenTelemetryTests()
     {
-        if (Traces != null)
+        if (s_traces != null)
         {
             return;
         }
 
         // Initialize OpenTelemetry and traces file.
-        Traces = new TracesFile();
+        s_traces = new TracesFile();
 
         var tracesConfig = TracesConfig.CreateBuilder()
-            .WithEndpoint(Traces.EndPoint)
+            .WithEndpoint(s_traces.EndPoint)
             .WithSamplePercentage(SamplePercentageNone)
             .Build();
 
@@ -46,7 +46,7 @@ public class OpenTelemetryTests : IDisposable
     {
         // Disable tracing and clear traces file.
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
-        Traces.Clear();
+        s_traces!.Clear();
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -55,7 +55,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(null);
         await ExecuteSetGetDelete(client);
-        Traces.AssertSpanNames([]);
+        s_traces!.AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -64,7 +64,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteSetGetDelete(client);
-        Traces.AssertSpanNames([]);
+        s_traces!.AssertSpanNames([]);
     }
 
 
@@ -74,7 +74,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteSetGetDelete(client);
-        Traces.AssertSpanNames(["SET", "GET", "DEL"]);
+        s_traces!.AssertSpanNames(["SET", "GET", "DEL"]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -83,7 +83,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(null);
         await ExecuteBatchSetGetDelete(client);
-        Traces.AssertSpanNames([]);
+        s_traces!.AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -92,7 +92,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteBatchSetGetDelete(client);
-        Traces.AssertSpanNames([]);
+        s_traces!.AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -101,7 +101,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteBatchSetGetDelete(client);
-        Traces.AssertSpanNames(["Batch"]);
+        s_traces!.AssertSpanNames(["Batch"]);
     }
 
     private async Task ExecuteSetGetDelete(BaseClient client)
