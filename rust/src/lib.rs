@@ -1542,30 +1542,7 @@ pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
         None => return std::ptr::null(),
     };
 
-    return create_span(&command_name, std::ptr::null());
-}
-
-/// Creates an OpenTelemetry span with the given request type as a child of the provided parent span.
-///
-/// # Parameters
-/// * `request_type`: The type of request to create a span for
-/// * `parent_span_ptr`: A pointer to the parent span
-///
-/// # Returns
-/// * A pointer to the created span, or null if span creation fails.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn create_otel_span_with_parent(
-    request_type: u32,
-    parent_span_ptr: *const c_void,
-) -> *const c_void {
-    let request_type: RequestType = unsafe { std::mem::transmute(request_type) };
-
-    let command_name = match get_command_name(request_type) {
-        Some(name) => name,
-        None => return std::ptr::null(),
-    };
-
-    return create_span(&command_name, parent_span_ptr);
+    return create_span(&command_name);
 }
 
 /// Creates an OpenTelemetry batch span.
@@ -1575,24 +1552,7 @@ pub unsafe extern "C" fn create_otel_span_with_parent(
 #[unsafe(no_mangle)]
 pub extern "C" fn create_batch_otel_span() -> *const c_void {
     let command_name = "Batch";
-    return create_span(&command_name, std::ptr::null());
-}
-
-/// Creates an OpenTelemetry batch span with a parent span and returns a pointer to the span as u64.
-/// Returns 0 on failure.
-///
-/// # Parameters
-/// * `parent_span_ptr`: A pointer to the parent span
-///
-/// # Returns
-/// * A pointer to the created child batch span, or 0 if creation fails
-///
-/// # Safety
-/// * `parent_span_ptr` must be a valid pointer to a span, or 0
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn create_batch_otel_span_with_parent(parent_span_ptr: *const c_void) -> *const c_void {
-    let command_name = "Batch";
-    return create_span(&command_name, parent_span_ptr);
+    return create_span(&command_name);
 }
 
 /// Drops an OpenTelemetry span given its pointer as u64.
@@ -1694,58 +1654,15 @@ fn get_command_name(request_type: RequestType) -> Option<String> {
 }
 
 /// Returns a new span for the given command name.
-/// If a non-zero parent span pointer is provided, the new span is created as a child of the parent span.
-fn create_span(command_name: &str, parent_span_ptr: *const c_void) -> *const c_void {
-    // Create new span without parent.
-    if parent_span_ptr.is_null() {
-        let span = GlideOpenTelemetry::new_span(&command_name);
-        let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
-
-        logger_core::log_debug(
-            "ffi_otel",
-            format!(
-                "create_span: Successfully created span '{command_name}' with pointer {:p}",
-                span_ptr
-            ),
-        );
-
-        return span_ptr;
-    }
-
-    // Convert parent pointer to GlideSpan and use existing add_span method.
-    let span = match unsafe { GlideOpenTelemetry::span_from_pointer(parent_span_ptr as u64) } {
-        Ok(parent_span) => match parent_span.add_span(&command_name) {
-            Ok(child_span) => child_span,
-            Err(e) => {
-                logger_core::log_warn(
-                    "ffi_otel",
-                    format!(
-                        "create_span: Failed to create child span '{command_name}' with parent {:p}: {e}. Creating independent span as fallback.",
-                        parent_span_ptr
-                    ),
-                );
-                return create_span(&command_name, std::ptr::null());
-            }
-        },
-        Err(e) => {
-            logger_core::log_warn(
-                "ffi_otel",
-                format!(
-                    "create_span: Invalid parent span pointer {:p}: {e}. Creating independent span as fallback.",
-                    parent_span_ptr
-                ),
-            );
-            return create_span(&command_name, std::ptr::null());
-        }
-    };
-
+fn create_span(command_name: &str) -> *const c_void {
+    let span = GlideOpenTelemetry::new_span(&command_name);
     let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
 
     logger_core::log_debug(
         "ffi_otel",
         format!(
-            "create_span: Successfully created span '{command_name}' with parent {:p}, child pointer {:p}",
-            parent_span_ptr, span_ptr
+            "create_span: Successfully created span '{command_name}' with pointer {:p}",
+            span_ptr
         ),
     );
 
