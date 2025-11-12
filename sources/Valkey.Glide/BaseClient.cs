@@ -205,14 +205,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         if (OpenTelemetry.ShouldSample())
         {
             uint requestType = (uint)command.Request;
-            try
-            {
-                span = CreateOpenTelemetrySpanFfi(requestType);
-            }
-            catch
-            {
-                // Ignore OpenTelemetry errors
-            }
+            span = CreateOpenTelemetrySpanFfi(requestType);
         }
 
         IntPtr response = IntPtr.Zero;
