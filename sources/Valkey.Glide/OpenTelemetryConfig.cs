@@ -116,15 +116,15 @@ public sealed class TracesConfig
     /// </summary>
     /// <param name="percentage">The sample percentage (0-100).</param>
     /// <exception cref="ArgumentException">Thrown if percentage is greater than 100.</exception>
-    internal void SetSamplePercentage(uint percentage)
+    internal void SetSamplePercentage(uint? percentage)
     {
         ValidateSamplePercentage(percentage);
         SamplePercentage = percentage;
     }
 
-    private static void ValidateSamplePercentage(uint percentage)
+    private static void ValidateSamplePercentage(uint? percentage)
     {
-        if (percentage > MaxSamplePercentage)
+        if (percentage.HasValue && (percentage > MaxSamplePercentage))
         {
             throw new ArgumentException($"Sample percentage must be between 0 and {MaxSamplePercentage}", nameof(percentage));
         }
