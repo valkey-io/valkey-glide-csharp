@@ -28,32 +28,32 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
             using var client = await GlideClient.CreateClient(config);
             using var adminClient = await GlideClient.CreateClient(config);
 
-            VerifyConnection(client);
-            VerifyConnection(adminClient);
+            await VerifyConnection(client);
+            await VerifyConnection(adminClient);
 
             // Update client connection password.
             await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
 
-            VerifyConnection(client); // No reconnect
+            await VerifyConnection(client); // No reconnect
 
             // Update server password and kill all clients.
             await adminClient.ConfigSetAsync("requirepass", Password);
             await adminClient.CustomCommand(KillClientCommandArgs);
             Task.Delay(1000).Wait();
 
-            VerifyConnection(client); // Reconnect
+            await VerifyConnection(client); // Reconnect
 
             // Clear client connection password.
             await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-            VerifyConnection(client); // No reconnect
+            await VerifyConnection(client); // No reconnect
 
             // Clear server password and kill all clients.
             await adminClient.ConfigSetAsync("requirepass", "");
             await adminClient.CustomCommand(KillClientCommandArgs);
             Task.Delay(1000).Wait();
 
-            VerifyConnection(client); // Reconnect
+            await VerifyConnection(client); // Reconnect
         }
         finally
         {
@@ -75,7 +75,7 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
 
             using var client = await GlideClient.CreateClient(config);
 
-            VerifyConnection(client);
+            await VerifyConnection(client);
 
             // Update server password.
             await client.ConfigSetAsync("requirepass", Password);
@@ -84,7 +84,7 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
             // Update client connection password.
             await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
 
-            VerifyConnection(client);
+            await VerifyConnection(client);
 
             // Clear server password.
             await client.ConfigSetAsync("requirepass", "");
@@ -93,7 +93,7 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
             // Clear client connection password.
             await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-            VerifyConnection(client);
+            await VerifyConnection(client);
         }
         finally
         {
@@ -125,32 +125,32 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
             using var client = await GlideClusterClient.CreateClient(config);
             using var adminClient = await GlideClusterClient.CreateClient(config);
 
-            VerifyConnection(client);
-            VerifyConnection(adminClient);
+            await VerifyConnection(client);
+            await VerifyConnection(adminClient);
 
             // Update client connection password.
             await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
 
-            VerifyConnection(client); // No reconnect
+            await VerifyConnection(client); // No reconnect
 
             // Update server password and kill all clients.
             await adminClient.ConfigSetAsync("requirepass", Password);
             await adminClient.CustomCommand(KillClientCommandArgs);
             Task.Delay(1000).Wait();
 
-            VerifyConnection(client); // Reconnect
+            await VerifyConnection(client); // Reconnect
 
             // Clear client connection password.
             await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-            VerifyConnection(client); // No reconnect
+            await VerifyConnection(client); // No reconnect
 
             // Clear server password and kill all clients.
             await adminClient.ConfigSetAsync("requirepass", "");
             await adminClient.CustomCommand(KillClientCommandArgs);
             Task.Delay(1000).Wait();
 
-            VerifyConnection(client); // Reconnect
+            await VerifyConnection(client); // Reconnect
         }
         finally
         {
@@ -172,7 +172,7 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
 
             using var client = await GlideClusterClient.CreateClient(config);
 
-            VerifyConnection(client);
+            await VerifyConnection(client);
 
             // Update server password.
             await client.ConfigSetAsync("requirepass", Password, Route.AllNodes);
@@ -181,7 +181,7 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
             // Update client connection password.
             await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
 
-            VerifyConnection(client);
+            await VerifyConnection(client);
 
             // Clear server password.
             await client.ConfigSetAsync("requirepass", "", Route.AllNodes);
@@ -190,7 +190,7 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
             // Clear client connection password.
             await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-            VerifyConnection(client);
+            await VerifyConnection(client);
         }
         finally
         {
@@ -207,12 +207,12 @@ public class UpdateConnectionPasswordTests(TestConfiguration config)
         await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync(InvalidPassword, immediateAuth: true));
     }
 
-    private static async void VerifyConnection(GlideClient client)
+    private static async Task VerifyConnection(GlideClient client)
     {
         Assert.True(await client.PingAsync() > TimeSpan.Zero);
     }
 
-    private static async void VerifyConnection(GlideClusterClient client)
+    private static async Task VerifyConnection(GlideClusterClient client)
     {
         Assert.True(await client.PingAsync() > TimeSpan.Zero);
     }
