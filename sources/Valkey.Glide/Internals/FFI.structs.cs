@@ -951,8 +951,8 @@ internal partial class FFI
         /// Sample percentage for OpenTelemetry traces.
         /// </summary>
         [MarshalAs(UnmanagedType.U1)]
-        public bool HasSamplePercentage = samplePercentage.HasValue;
-        public uint SamplePercentage = samplePercentage ?? default;
+        public readonly bool HasSamplePercentage = samplePercentage.HasValue;
+        public readonly uint SamplePercentage = samplePercentage ?? default;
     }
 
     [StructLayout(LayoutKind.Sequential)]
