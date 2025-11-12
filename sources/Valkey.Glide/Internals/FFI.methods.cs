@@ -70,6 +70,9 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RemoveClusterScanCursorFfi(IntPtr cursorId);
 
+    [LibraryImport("libglide_rs", EntryPoint = "update_connection_password")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void UpdateConnectionPasswordFfi(IntPtr client, ulong index, IntPtr password, [MarshalAs(UnmanagedType.U1)] bool immediateAuth);
 
     [LibraryImport("libglide_rs", EntryPoint = "refresh_iam_token")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -101,7 +104,7 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_drop_script_error")]
     public static extern void FreeDropScriptError(IntPtr errorBuffer);
-	
+
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "invoke_script")]
     public static extern void InvokeScriptFfi(
         IntPtr client,
@@ -121,7 +124,10 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "remove_cluster_scan_cursor")]
     public static extern void RemoveClusterScanCursorFfi(IntPtr cursorId);
-	
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "update_connection_password")]
+    public static extern void UpdateConnectionPasswordFfi(IntPtr client, ulong index, IntPtr password, [MarshalAs(UnmanagedType.U1)] bool immediateAuth);
+
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "refresh_iam_token")]
     public static extern void RefreshIamTokenFfi(IntPtr client, ulong index);
 #endif

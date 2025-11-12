@@ -1037,10 +1037,98 @@ pub unsafe extern "C-unwind" fn refresh_iam_token(
                 );
             },
         };
+
         async_panic_guard.panicked = false;
-        drop(async_panic_guard);
     });
 
     panic_guard.panicked = false;
-    drop(panic_guard);
+}
+
+/// Update connection password
+///
+/// # Arguments
+/// * `client_ptr` - Pointer to the client
+/// * `callback_index` - Callback index for async response
+/// * `password` - New password (null for password removal)
+/// * `immediate_auth` - Whether to authenticate immediately
+///
+/// # Safety
+/// * `client_ptr` must be a valid pointer to a Client
+/// * `password` must be a valid C string or null
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn update_connection_password(
+    client_ptr: *const c_void,
+    callback_index: usize,
+    password_ptr: *const c_char,
+    immediate_auth: bool,
+) {
+    // Build client and add panic guard.
+    let client = unsafe {
+        Arc::increment_strong_count(client_ptr);
+        Arc::from_raw(client_ptr as *mut Client)
+    };
+    let core = client.core.clone();
+
+    let mut panic_guard = PanicGuard {
+        panicked: true,
+        failure_callback: core.failure_callback,
+        callback_index,
+    };
+
+    // Build password option.
+    let password = if password_ptr.is_null() {
+        None
+    } else {
+        match unsafe { CStr::from_ptr(password_ptr).to_str() } {
+            Ok(password_str) => {
+                if password_str.is_empty() {
+                    None
+                } else {
+                    Some(password_str.into())
+                }
+            }
+            Err(_) => {
+                unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        "Invalid password argument".into(),
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                panic_guard.panicked = false;
+                return;
+            }
+        }
+    };
+
+    // Run password update.
+    client.runtime.spawn(async move {
+        let mut async_panic_guard = PanicGuard {
+            panicked: true,
+            failure_callback: core.failure_callback,
+            callback_index,
+        };
+
+        let result = core.client.clone().update_connection_password(password, immediate_auth).await;
+        match result {
+            Ok(value) => {
+                let response = ResponseValue::from_value(value);
+                let ptr = Box::into_raw(Box::new(response));
+                unsafe { (core.success_callback)(callback_index, ptr) };
+            }
+            Err(err) => unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    error_message(&err),
+                    error_type(&err),
+                );
+            },
+        };
+
+        async_panic_guard.panicked = false;
+    });
+
+    panic_guard.panicked = false;
 }

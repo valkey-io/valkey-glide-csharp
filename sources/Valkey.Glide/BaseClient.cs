@@ -58,6 +58,66 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Update the current connection with a new password.
+    /// </summary>
+    /// <param name="password">The new password to update the connection with</param>
+    /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after updating password</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="password"/> is <c>null</c> or empty.</exception>
+    /// <returns>A task that completes when the password is updated</returns>
+    public async Task UpdateConnectionPasswordAsync(string password, bool immediateAuth = false)
+    {
+        if (password == null)
+        {
+            throw new ArgumentException("Password cannot be null", nameof(password));
+        }
+
+        if (password.Length == 0)
+        {
+            throw new ArgumentException("Password cannot be empty", nameof(password));
+        }
+
+        Message message = MessageContainer.GetMessageForCall();
+        IntPtr passwordPtr = Marshal.StringToHGlobalAnsi(password);
+        try
+        {
+            UpdateConnectionPasswordFfi(ClientPointer, (ulong)message.Index, passwordPtr, immediateAuth);
+            IntPtr response = await message;
+            try
+            {
+                HandleResponse(response);
+            }
+            finally
+            {
+                FreeResponse(response);
+            }
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(passwordPtr);
+        }
+    }
+
+    /// <summary>
+    /// Clear the password from the current connection.
+    /// </summary>
+    /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after clearing password</param>
+    /// <returns>A task that completes when the password is cleared</returns>
+    public async Task ClearConnectionPasswordAsync(bool immediateAuth = false)
+    {
+        Message message = MessageContainer.GetMessageForCall();
+
+        UpdateConnectionPasswordFfi(ClientPointer, (ulong)message.Index, IntPtr.Zero, immediateAuth);
+        IntPtr response = await message;
+        try
+        {
+            HandleResponse(response);
+        }
+        finally
+        {
+            FreeResponse(response);
+        }
+    }
     #endregion public methods
 
     #region protected methods
