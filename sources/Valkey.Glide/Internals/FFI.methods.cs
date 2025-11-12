@@ -106,17 +106,9 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial IntPtr CreateOpenTelemetrySpanFfi(uint requestType);
 
-    [LibraryImport("libglide_rs", EntryPoint = "create_otel_span_with_parent")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial IntPtr CreateOpenTelemetrySpanWithParentFfi(uint requestType, IntPtr parentSpanPtr);
-
     [LibraryImport("libglide_rs", EntryPoint = "create_batch_otel_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial IntPtr CreateBatchOpenTelemetrySpanFfi();
-
-    [LibraryImport("libglide_rs", EntryPoint = "create_batch_otel_span_with_parent")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial IntPtr CreateBatchOpenTelemetrySpanWithParentFfi(IntPtr parentSpanPtr);
 
     [LibraryImport("libglide_rs", EntryPoint = "drop_otel_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -181,14 +173,8 @@ internal partial class FFI
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span")]
     public static extern IntPtr CreateOpenTelemetrySpanFfi(uint requestType);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span_with_parent")]
-    public static extern IntPtr CreateOpenTelemetrySpanWithParentFfi(uint requestType, IntPtr parentSpanPtr);
-
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span")]
     public static extern IntPtr CreateBatchOpenTelemetrySpanFfi();
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span_with_parent")]
-    public static extern IntPtr CreateBatchOpenTelemetrySpanWithParentFfi(IntPtr parentSpanPtr);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_otel_span")]
     public static extern void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
