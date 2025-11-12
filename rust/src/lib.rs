@@ -1542,7 +1542,7 @@ pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
         None => return std::ptr::null(),
     };
 
-    return create_span(&command_name);
+    create_span(&command_name);
 }
 
 /// Creates an OpenTelemetry batch span.
@@ -1552,7 +1552,7 @@ pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
 #[unsafe(no_mangle)]
 pub extern "C" fn create_batch_otel_span() -> *const c_void {
     let command_name = "Batch";
-    return create_span(&command_name);
+    create_span(&command_name);
 }
 
 /// Drops an OpenTelemetry span given its pointer as u64.
@@ -1666,5 +1666,5 @@ fn create_span(command_name: &str) -> *const c_void {
         ),
     );
 
-    return span_ptr;
+    span_ptr
 }
