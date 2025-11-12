@@ -231,14 +231,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             // 7. Drop span if created
             if (span != IntPtr.Zero)
             {
-                try
-                {
-                    DropOpenTelemetrySpanFfi(span);
-                }
-                catch
-                {
-                    // Ignore OpenTelemetry errors
-                }
+                DropOpenTelemetrySpanFfi(span);
             }
 
             // 8. Free response if created
