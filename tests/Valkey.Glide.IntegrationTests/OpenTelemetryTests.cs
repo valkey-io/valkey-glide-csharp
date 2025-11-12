@@ -1,25 +1,37 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Text.Json;
-
+using Xunit;
 using Valkey.Glide.Pipeline;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class OpenTelemetryTests
+[CollectionDefinition(nameof(OpenTelemetrySequentialCollection), DisableParallelization = true)]
+public class OpenTelemetrySequentialCollection { }
+
+[Collection(nameof(OpenTelemetrySequentialCollection))]
+public class OpenTelemetryTests : IDisposable
 {
     private static readonly uint SamplePercentageNone = 0;
     private static readonly uint SamplePercentageAll = 100;
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
-    private static readonly TracesFile Traces = new();
+    private static TracesFile Traces;
 
     public OpenTelemetryTests()
     {
-        // Initialize OpenTelemetry.
+        if (Traces != null)
+        {
+            return;
+        }
+
+        // Initialize OpenTelemetry and traces file.
+        Traces = new TracesFile();
+
         var tracesConfig = TracesConfig.CreateBuilder()
             .WithEndpoint(Traces.EndPoint)
+            .WithSamplePercentage(SamplePercentageNone)
             .Build();
 
         var config = OpenTelemetryConfig.CreateBuilder()
@@ -28,8 +40,12 @@ public class OpenTelemetryTests
             .Build();
 
         OpenTelemetry.Init(config);
+    }
 
-        // Clear traces file.
+    public void Dispose()
+    {
+        // Disable tracing and clear traces file.
+        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         Traces.Clear();
     }
 
@@ -61,6 +77,33 @@ public class OpenTelemetryTests
         Traces.AssertSpanNames(["SET", "GET", "DEL"]);
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task Batch_WhenSamplingNull_NoSpans(BaseClient client)
+    {
+        OpenTelemetry.SetSamplePercentage(null);
+        await ExecuteBatchSetGetDelete(client);
+        Traces.AssertSpanNames([]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task Batch_WhenSamplingNone_NoSpans(BaseClient client)
+    {
+        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
+        await ExecuteBatchSetGetDelete(client);
+        Traces.AssertSpanNames([]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task Batch_WhenSamplingAll_CreateSpans(BaseClient client)
+    {
+        OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
+        await ExecuteBatchSetGetDelete(client);
+        Traces.AssertSpanNames(["Batch"]);
+    }
+
     private async Task ExecuteSetGetDelete(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -72,13 +115,8 @@ public class OpenTelemetryTests
         await Task.Delay(WaitInterval);
     }
 
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task Batch_WhenSamplingNull_NoSpans(BaseClient client)
+    private async Task ExecuteBatchSetGetDelete(BaseClient client)
     {
-        OpenTelemetry.SetSamplePercentage(null);
-
         string key = Guid.NewGuid().ToString();
         if (client is GlideClient standaloneClient)
         {
@@ -100,70 +138,6 @@ public class OpenTelemetryTests
         }
 
         await Task.Delay(WaitInterval);
-
-        Traces.AssertSpanNames([]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task Batch_WhenSamplingNone_NoSpans(BaseClient client)
-    {
-        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
-
-        string key = Guid.NewGuid().ToString();
-        if (client is GlideClient standaloneClient)
-        {
-            var batch = new Batch(isAtomic: false);
-            batch.StringSetAsync(key, "value");
-            batch.StringGetAsync(key);
-            batch.KeyDelete(key);
-
-            await standaloneClient.Exec(batch, raiseOnError: true);
-        }
-        else if (client is GlideClusterClient clusterClient)
-        {
-            var batch = new ClusterBatch(isAtomic: false);
-            batch.StringSetAsync(key, "value");
-            batch.StringGetAsync(key);
-            batch.KeyDelete(key);
-
-            await clusterClient.Exec(batch, raiseOnError: true);
-        }
-
-        await Task.Delay(WaitInterval);
-
-        Traces.AssertSpanNames([]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task Batch_WhenSamplingAll_CreateSpans(BaseClient client)
-    {
-        OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
-
-        string key = Guid.NewGuid().ToString();
-        if (client is GlideClient standaloneClient)
-        {
-            var batch = new Batch(isAtomic: false);
-            batch.StringSetAsync(key, "value");
-            batch.StringGetAsync(key);
-            batch.KeyDelete(key);
-
-            await standaloneClient.Exec(batch, raiseOnError: true);
-        }
-        else if (client is GlideClusterClient clusterClient)
-        {
-            var batch = new ClusterBatch(isAtomic: false);
-            batch.StringSetAsync(key, "value");
-            batch.StringGetAsync(key);
-            batch.KeyDelete(key);
-
-            await clusterClient.Exec(batch, raiseOnError: true);
-        }
-
-        await Task.Delay(WaitInterval);
-
-        Traces.AssertSpanNames(["Batch"]);
     }
 
     /// <summary>
@@ -187,7 +161,6 @@ public class OpenTelemetryTests
 
         public void AssertSpanNames(List<string> expectedSpanNames)
         {
-            // Get spans from file.
             var actualSpanNames = new List<string>();
             foreach (var line in File.ReadAllLines(Path))
             {
@@ -198,7 +171,6 @@ public class OpenTelemetryTests
                 }
             }
 
-            // Verify span names.
             Assert.Equal(expectedSpanNames, actualSpanNames);
         }
 
