@@ -112,7 +112,7 @@ public static class OpenTelemetry
             return false;
         }
 
-        return (Random.NextDouble() * 100) < percentage;
+        return (Random.Shared.Next(100)) < percentage;
     }
 
     /// <summary>
