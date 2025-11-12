@@ -104,23 +104,23 @@ internal partial class FFI
 
     [LibraryImport("libglide_rs", EntryPoint = "create_otel_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial ulong CreateOpenTelemetrySpanFfi(uint requestType);
+    public static partial IntPtr CreateOpenTelemetrySpanFfi(uint requestType);
 
     [LibraryImport("libglide_rs", EntryPoint = "create_otel_span_with_parent")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial ulong CreateOpenTelemetrySpanWithParentFfi(uint requestType, ulong parentSpanPtr);
+    public static partial IntPtr CreateOpenTelemetrySpanWithParentFfi(uint requestType, IntPtr parentSpanPtr);
 
     [LibraryImport("libglide_rs", EntryPoint = "create_batch_otel_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial ulong CreateBatchOpenTelemetrySpanFfi();
+    public static partial IntPtr CreateBatchOpenTelemetrySpanFfi();
 
     [LibraryImport("libglide_rs", EntryPoint = "create_batch_otel_span_with_parent")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial ulong CreateBatchOpenTelemetrySpanWithParentFfi(ulong parentSpanPtr);
+    public static partial IntPtr CreateBatchOpenTelemetrySpanWithParentFfi(IntPtr parentSpanPtr);
 
     [LibraryImport("libglide_rs", EntryPoint = "drop_otel_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void DropOpenTelemetrySpanFfi(ulong spanPtr);
+    public static partial void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
     public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -179,18 +179,18 @@ internal partial class FFI
     public static extern IntPtr InitOpenTelemetryFfi(IntPtr config);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span")]
-    public static extern ulong CreateOpenTelemetrySpanFfi(uint requestType);
+    public static extern IntPtr CreateOpenTelemetrySpanFfi(uint requestType);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span_with_parent")]
-    public static extern ulong CreateOpenTelemetrySpanWithParentFfi(uint requestType, ulong parentSpanPtr);
+    public static extern IntPtr CreateOpenTelemetrySpanWithParentFfi(uint requestType, IntPtr parentSpanPtr);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span")]
-    public static extern ulong CreateBatchOpenTelemetrySpanFfi();
+    public static extern IntPtr CreateBatchOpenTelemetrySpanFfi();
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span_with_parent")]
-    public static extern ulong CreateBatchOpenTelemetrySpanWithParentFfi(ulong parentSpanPtr);
+    public static extern IntPtr CreateBatchOpenTelemetrySpanWithParentFfi(IntPtr parentSpanPtr);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_otel_span")]
-    public static extern void DropOpenTelemetrySpanFfi(ulong spanPtr);
+    public static extern void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
 #endif
 }

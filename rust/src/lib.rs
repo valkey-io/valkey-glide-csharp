@@ -1532,17 +1532,17 @@ pub unsafe extern "C" fn init_otel(config: *const OpenTelemetryConfigFFI) -> *co
 /// * `request_type`: The type of request to create a span for
 ///
 /// # Returns
-/// * A u64 pointer to the created span, or 0 if span creation fails.
+/// * A pointer to the created span, or null if span creation fails.
 #[unsafe(no_mangle)]
-pub extern "C" fn create_otel_span(request_type: u32) -> u64 {
+pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
     let request_type: RequestType = unsafe { std::mem::transmute(request_type) };
 
     let command_name = match get_command_name(request_type) {
         Some(name) => name,
-        None => return 0 as u64,
+        None => return std::ptr::null(),
     };
 
-    return create_span(&command_name, 0);
+    return create_span(&command_name, std::ptr::null());
 }
 
 /// Creates an OpenTelemetry span with the given request type as a child of the provided parent span.
@@ -1552,17 +1552,17 @@ pub extern "C" fn create_otel_span(request_type: u32) -> u64 {
 /// * `parent_span_ptr`: A pointer to the parent span
 ///
 /// # Returns
-/// * A u64 pointer to the created span, or 0 if span creation fails.
+/// * A pointer to the created span, or null if span creation fails.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn create_otel_span_with_parent(
     request_type: u32,
-    parent_span_ptr: u64,
-) -> u64 {
+    parent_span_ptr: *const c_void,
+) -> *const c_void {
     let request_type: RequestType = unsafe { std::mem::transmute(request_type) };
 
     let command_name = match get_command_name(request_type) {
         Some(name) => name,
-        None => return 0 as u64,
+        None => return std::ptr::null(),
     };
 
     return create_span(&command_name, parent_span_ptr);
@@ -1571,11 +1571,11 @@ pub unsafe extern "C" fn create_otel_span_with_parent(
 /// Creates an OpenTelemetry batch span.
 ///
 /// # Returns
-/// * A u64 pointer to the created span, or 0 if span creation fails.
+/// * A pointer to the created span, or null if span creation fails.
 #[unsafe(no_mangle)]
-pub extern "C" fn create_batch_otel_span() -> u64 {
+pub extern "C" fn create_batch_otel_span() -> *const c_void {
     let command_name = "Batch";
-    return create_span(&command_name, 0);
+    return create_span(&command_name, std::ptr::null());
 }
 
 /// Creates an OpenTelemetry batch span with a parent span and returns a pointer to the span as u64.
@@ -1585,12 +1585,12 @@ pub extern "C" fn create_batch_otel_span() -> u64 {
 /// * `parent_span_ptr`: A pointer to the parent span
 ///
 /// # Returns
-/// * A u64 pointer to the created child batch span, or 0 if creation fails
+/// * A pointer to the created child batch span, or 0 if creation fails
 ///
 /// # Safety
 /// * `parent_span_ptr` must be a valid pointer to a span, or 0
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn create_batch_otel_span_with_parent(parent_span_ptr: u64) -> u64 {
+pub unsafe extern "C" fn create_batch_otel_span_with_parent(parent_span_ptr: *const c_void) -> *const c_void {
     let command_name = "Batch";
     return create_span(&command_name, parent_span_ptr);
 }
@@ -1603,9 +1603,9 @@ pub unsafe extern "C" fn create_batch_otel_span_with_parent(parent_span_ptr: u64
 /// # Safety
 /// * `span_ptr` must be a valid pointer to a span created by the create_otel_span functions, or 0
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn drop_otel_span(span_ptr: u64) {
-    if span_ptr == 0 {
-        logger_core::log_debug("ffi_otel", "drop_otel_span: Ignoring null span pointer (0)");
+pub unsafe extern "C" fn drop_otel_span(span_ptr: *const c_void) {
+    if span_ptr.is_null() {
+        logger_core::log_debug("ffi_otel", "drop_otel_span: Ignoring null span pointer");
         return;
     }
 
@@ -1621,7 +1621,8 @@ pub unsafe extern "C" fn drop_otel_span(span_ptr: u64) {
                 logger_core::log_debug(
                     "ffi_otel",
                     format!(
-                        "drop_otel_span: Successfully dropped span with pointer 0x{span_ptr:x}",
+                        "drop_otel_span: Successfully dropped span with pointer {:p}",
+                        span_ptr
                     ),
                 );
             }
@@ -1629,7 +1630,8 @@ pub unsafe extern "C" fn drop_otel_span(span_ptr: u64) {
                 logger_core::log_error(
                     "ffi_otel",
                     format!(
-                        "drop_otel_span: Panic occurred while dropping span pointer 0x{span_ptr:x} - likely invalid pointer",
+                        "drop_otel_span: Panic occurred while dropping span pointer {:p} - likely invalid pointer",
+                        span_ptr
                     ),
                 );
             }
@@ -1693,16 +1695,17 @@ fn get_command_name(request_type: RequestType) -> Option<String> {
 
 /// Returns a new span for the given command name.
 /// If a non-zero parent span pointer is provided, the new span is created as a child of the parent span.
-fn create_span(command_name: &str, parent_span_ptr: u64) -> u64 {
+fn create_span(command_name: &str, parent_span_ptr: *const c_void) -> *const c_void {
     // Create new span without parent.
-    if parent_span_ptr == 0 {
+    if parent_span_ptr.is_null() {
         let span = GlideOpenTelemetry::new_span(&command_name);
-        let span_ptr = Arc::into_raw(Arc::new(span)) as u64;
+        let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
 
         logger_core::log_debug(
             "ffi_otel",
             format!(
-                "create_span: Successfully created span '{command_name}' with pointer 0x{span_ptr:x}",
+                "create_span: Successfully created span '{command_name}' with pointer {:p}",
+                span_ptr
             ),
         );
 
@@ -1710,36 +1713,39 @@ fn create_span(command_name: &str, parent_span_ptr: u64) -> u64 {
     }
 
     // Convert parent pointer to GlideSpan and use existing add_span method.
-    let span = match unsafe { GlideOpenTelemetry::span_from_pointer(parent_span_ptr) } {
+    let span = match unsafe { GlideOpenTelemetry::span_from_pointer(parent_span_ptr as u64) } {
         Ok(parent_span) => match parent_span.add_span(&command_name) {
             Ok(child_span) => child_span,
             Err(e) => {
                 logger_core::log_warn(
                     "ffi_otel",
                     format!(
-                        "create_span: Failed to create child span '{command_name}' with parent 0x{parent_span_ptr:x}: {e}. Creating independent span as fallback.",
+                        "create_span: Failed to create child span '{command_name}' with parent {:p}: {e}. Creating independent span as fallback.",
+                        parent_span_ptr
                     ),
                 );
-                return create_span(&command_name, 0);
+                return create_span(&command_name, std::ptr::null());
             }
         },
         Err(e) => {
             logger_core::log_warn(
                 "ffi_otel",
                 format!(
-                    "create_span: Invalid parent span pointer 0x{parent_span_ptr:x}: {e}. Creating independent span as fallback.",
+                    "create_span: Invalid parent span pointer {:p}: {e}. Creating independent span as fallback.",
+                    parent_span_ptr
                 ),
             );
-            return create_span(&command_name, 0);
+            return create_span(&command_name, std::ptr::null());
         }
     };
 
-    let span_ptr = Arc::into_raw(Arc::new(span)) as u64;
+    let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
 
     logger_core::log_debug(
         "ffi_otel",
         format!(
-            "create_span: Successfully created span '{command_name}' with parent 0x{parent_span_ptr:x}, child pointer 0x{span_ptr:x}",
+            "create_span: Successfully created span '{command_name}' with parent {:p}, child pointer {:p}",
+            parent_span_ptr, span_ptr
         ),
     );
 
