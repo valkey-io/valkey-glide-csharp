@@ -6,10 +6,13 @@ using Valkey.Glide.Pipeline;
 
 namespace Valkey.Glide.IntegrationTests;
 
-[CollectionDefinition(nameof(OpenTelemetrySequentialCollection), DisableParallelization = true)]
-public class OpenTelemetrySequentialCollection { }
+// By default, XUnit tests run sequentially within a collection (by default, each class is a
+// collection), but in parallel across collections. To prevent other tests from polluting the
+// OpenTelemetry traces, we define a new collection with parallelization disabled.
+[CollectionDefinition(nameof(OpenTelemetryCollection), DisableParallelization = true)]
+public class OpenTelemetryCollection { }
 
-[Collection(nameof(OpenTelemetrySequentialCollection))]
+[Collection(nameof(OpenTelemetryCollection))]
 public class OpenTelemetryTests : IDisposable
 {
     private static readonly uint SamplePercentageNone = 0;
@@ -20,9 +23,10 @@ public class OpenTelemetryTests : IDisposable
     private TracesFile Traces { get; }
     private static readonly string TracesFilePath = System.IO.Path.GetTempFileName();
 
+    // When class loads, initialize OpenTelemetry.
     static OpenTelemetryTests()
     {
-        // Initialize OpenTelemetry and traces file.
+
         var tracesConfig = TracesConfig.CreateBuilder()
             .WithEndpoint($"file://{TracesFilePath}")
             .WithSamplePercentage(SamplePercentageNone)
@@ -36,14 +40,15 @@ public class OpenTelemetryTests : IDisposable
         OpenTelemetry.Init(config);
     }
 
+    // Before each test, initialize traces file.
     public OpenTelemetryTests()
     {
         Traces = new TracesFile(TracesFilePath);
     }
 
+    // After each test. disbaled traces and dispose of traces file.
     public void Dispose()
     {
-        // Disable tracing and clear traces file.
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         Traces.Dispose();
     }
@@ -103,6 +108,7 @@ public class OpenTelemetryTests : IDisposable
         Traces!.AssertSpanNames(["Batch"]);
     }
 
+    // Executes SET, GET, and DEL commands on the given client.
     private async Task ExecuteSetGetDelete(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -114,6 +120,7 @@ public class OpenTelemetryTests : IDisposable
         await Task.Delay(WaitInterval);
     }
 
+    // Executes SET, GET, and DEL commands in a batch on the given client.
     private async Task ExecuteBatchSetGetDelete(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -139,9 +146,7 @@ public class OpenTelemetryTests : IDisposable
         await Task.Delay(WaitInterval);
     }
 
-    /// <summary>
-    /// Temporary file for storing traces.
-    /// </summary>
+    // Temporary file for storing traces.
     private readonly struct TracesFile : IDisposable
     {
         private readonly string _path;
@@ -150,13 +155,12 @@ public class OpenTelemetryTests : IDisposable
         {
             _path = path;
 
-            // Ensure file exists and is initially empty
+            // Ensure file exists and is initially empty.
             File.WriteAllText(path, string.Empty);
         }
 
         public readonly void Dispose()
         {
-            // Delete the temporary file.
             File.Delete(_path);
         }
 
