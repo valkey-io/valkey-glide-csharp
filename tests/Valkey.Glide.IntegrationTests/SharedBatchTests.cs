@@ -88,8 +88,8 @@ public class SharedBatchTests
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(GetTestClientWithAtomic))]
-    public async Task WatchTransactionTest(BaseClient client, bool isAtomic)
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task WatchTransactionTest(BaseClient client)
     {
         string key1 = "{key}-1" + Guid.NewGuid();
         string key2 = "{key}-2" + Guid.NewGuid();
@@ -97,17 +97,17 @@ public class SharedBatchTests
         string foobarString = "foobar";
         string helloString = "hello";
         ValkeyKey[] keys = [key1, key2, key3];
-        
+
         bool isCluster = client is GlideClusterClient;
-        
+
         // Returns null when a watched key is modified before transaction execution
         string watchResult = isCluster
             ? await ((GlideClusterClient)client).WatchAsync(keys)
             : await ((GlideClient)client).WatchAsync(keys);
         Assert.Equal("OK", watchResult);
-        
+
         await client.StringSetAsync(key2, helloString);
-        
+
         object?[]? execResult;
         if (isCluster)
         {
@@ -125,30 +125,30 @@ public class SharedBatchTests
                     .StringSetAsync(key3, foobarString);
             execResult = await ((GlideClient)client).Exec(batch, true);
         }
-        
+
         // The transaction should fail (return null) because key2 was modified after being watched
         Assert.Null(execResult);
-        
+
         // Verify the key values: transaction was aborted, so only key2 (set before transaction) should have a value
         var key1Value = await client.StringGetAsync(key1);
         var key2Value = await client.StringGetAsync(key2);
         var key3Value = await client.StringGetAsync(key3);
-        
+
         Assert.True(key1Value.IsNull); // key1 should not be set
         Assert.Equal(helloString, key2Value); // key2 should have the value set before transaction
         Assert.True(key3Value.IsNull); // key3 should not be set
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(GetTestClientWithAtomic))]
-    public async Task UnwatchTest(BaseClient client, bool isAtomic)
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task UnwatchTest(BaseClient client)
     {
         string key1 = "{key}-1" + Guid.NewGuid();
         string key2 = "{key}-2" + Guid.NewGuid();
         string foobarString = "foobar";
         string helloString = "hello";
         ValkeyKey[] keys = [key1, key2];
-        
+
         bool isCluster = client is GlideClusterClient;
 
         // UNWATCH returns OK when there are no watched keys
@@ -171,7 +171,7 @@ public class SharedBatchTests
             ? await ((GlideClusterClient)client).UnwatchAsync()
             : await ((GlideClient)client).UnwatchAsync();
         Assert.Equal("OK", unwatchResult);
-        
+
         object?[]? execResult;
         if (isCluster)
         {
@@ -185,7 +185,7 @@ public class SharedBatchTests
             _ = batch.StringSetAsync(key1, foobarString).StringSetAsync(key2, foobarString);
             execResult = await ((GlideClient)client).Exec(batch, true);
         }
-        
+
         Assert.NotNull(execResult); // Transaction should succeed after unwatch
         Assert.Equal(2, execResult.Length);
         Assert.Equal(foobarString, await client.StringGetAsync(key1));

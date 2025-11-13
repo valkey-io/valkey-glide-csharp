@@ -652,7 +652,7 @@ public class CommandTests
             () => Assert.Equal("ERROR", Request.Watch(["key1"]).Converter("ERROR")),
             () => Assert.Equal("OK", Request.Unwatch().Converter("OK")),
             () => Assert.Equal("ERROR", Request.Unwatch().Converter("ERROR")),
-          
+
             // Bitmap Command Converters
             () => Assert.True(Request.GetBitAsync("key", 0).Converter(1L)),
             () => Assert.False(Request.GetBitAsync("key", 0).Converter(0L)),
