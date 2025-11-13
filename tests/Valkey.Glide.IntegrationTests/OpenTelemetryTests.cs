@@ -17,15 +17,14 @@ public class OpenTelemetryTests : IDisposable
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
-    private static readonly string s_tracesFilePath = System.IO.Path.GetTempFileName();
-
     private TracesFile Traces { get; }
+    private static readonly string TracesFilePath = System.IO.Path.GetTempFileName();
 
     static OpenTelemetryTests()
     {
         // Initialize OpenTelemetry and traces file.
         var tracesConfig = TracesConfig.CreateBuilder()
-            .WithEndpoint($"file://{s_tracesFilePath}")
+            .WithEndpoint($"file://{TracesFilePath}")
             .WithSamplePercentage(SamplePercentageNone)
             .Build();
 
@@ -39,7 +38,7 @@ public class OpenTelemetryTests : IDisposable
 
     public OpenTelemetryTests()
     {
-        Traces = new TracesFile(s_tracesFilePath);
+        Traces = new TracesFile(TracesFilePath);
     }
 
     public void Dispose()
