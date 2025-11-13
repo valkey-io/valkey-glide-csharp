@@ -41,7 +41,11 @@ internal partial class FFI
 
     [LibraryImport("libglide_rs", EntryPoint = "free_response")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void FreeResponse(IntPtr response);
+    public static partial void FreeResponse(IntPtr responsePtr);
+
+    [LibraryImport("libglide_rs", EntryPoint = "free_string")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void FreeString(IntPtr strPtr);
 
     [LibraryImport("libglide_rs", EntryPoint = "create_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -62,10 +66,6 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "free_script_hash_buffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void FreeScriptHashBuffer(IntPtr hashBuffer);
-
-    [LibraryImport("libglide_rs", EntryPoint = "free_drop_script_error")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void FreeDropScriptError(IntPtr errorBuffer);
 
     [LibraryImport("libglide_rs", EntryPoint = "invoke_script")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -121,7 +121,10 @@ internal partial class FFI
     public static extern void BatchFfi(IntPtr client, ulong index, IntPtr batch, [MarshalAs(UnmanagedType.U1)] bool raiseOnError, IntPtr opts);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_response")]
-    public static extern void FreeResponse(IntPtr response);
+    public static extern void FreeResponse(IntPtr responsePtr);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_string")]
+    public static extern void FreeString(IntPtr strPtr);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_client")]
     public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback);

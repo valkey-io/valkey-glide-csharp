@@ -17,8 +17,7 @@ public class OpenTelemetryTests : IDisposable
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
-    private static readonly string TracesFilePath = System.IO.Path.GetTempFileName();
-    private static readonly string TracesEndPoint = $"file://{TracesFilePath}";
+    private static readonly string s_tracesFilePath = System.IO.Path.GetTempFileName();
 
     private TracesFile Traces { get; }
 
@@ -26,7 +25,7 @@ public class OpenTelemetryTests : IDisposable
     {
         // Initialize OpenTelemetry and traces file.
         var tracesConfig = TracesConfig.CreateBuilder()
-            .WithEndpoint($"file://{TracesFilePath}")
+            .WithEndpoint($"file://{s_tracesFilePath}")
             .WithSamplePercentage(SamplePercentageNone)
             .Build();
 
@@ -40,12 +39,12 @@ public class OpenTelemetryTests : IDisposable
 
     public OpenTelemetryTests()
     {
-        Traces = new TracesFile(TracesFilePath, TracesEndPoint);
+        Traces = new TracesFile(s_tracesFilePath);
     }
 
     public void Dispose()
     {
-        // Disable tracing and delete traces file.
+        // Disable tracing and clear traces file.
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         Traces.Dispose();
     }
@@ -144,20 +143,30 @@ public class OpenTelemetryTests : IDisposable
     /// <summary>
     /// Temporary file for storing traces.
     /// </summary>
-    private readonly struct TracesFile(string path, string endPoint) : IDisposable
+    private readonly struct TracesFile : IDisposable
     {
-        public readonly string Path = path;
-        public readonly string EndPoint = endPoint;
+        private readonly string _path;
+
+        public TracesFile(string path)
+        {
+            _path = path;
+
+            // Ensure file exists and is initially empty
+            File.WriteAllText(path, string.Empty);
+        }
 
         public readonly void Dispose()
         {
-            File.Delete(Path);
+            // Delete the temporary file.
+            File.Delete(_path);
         }
 
         public readonly void AssertSpanNames(List<string> expectedSpanNames)
         {
+            var lines = File.ReadAllLines(_path);
+
             var actualSpanNames = new List<string>();
-            foreach (var line in File.ReadAllLines(Path))
+            foreach (var line in lines)
             {
                 using var doc = JsonDocument.Parse(line);
                 if (doc.RootElement.TryGetProperty("name", out var nameElement))

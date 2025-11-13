@@ -1112,7 +1112,7 @@ internal partial class FFI
         {
             if (errorBuffer != IntPtr.Zero)
             {
-                FreeDropScriptError(errorBuffer);
+                FreeString(errorBuffer);
             }
         }
     }
@@ -1184,7 +1184,7 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct TracesConfig(string endpoint, uint? samplePercentage)
+    internal readonly struct TracesConfig(string endpoint, uint? samplePercentage)
     {
         /// <summary>
         /// Endpoint for OpenTelemetry traces.

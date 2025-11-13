@@ -676,6 +676,17 @@ pub unsafe extern "C" fn free_response(ptr: *mut ResponseValue) {
     }
 }
 
+/// Frees memory allocated for a C string.
+///
+/// # Parameters
+/// * `str_ptr`: Pointer to the C string to free.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn free_string(str_ptr: *mut c_char) {
+    if !str_ptr.is_null() {
+        unsafe { let _ = CString::from_raw(str_ptr); };
+    }
+}
+
 impl From<logger_core::Level> for Level {
     fn from(level: logger_core::Level) -> Self {
         match level {
@@ -836,23 +847,6 @@ pub unsafe extern "C" fn drop_script(hash: *mut u8, len: usize) -> *mut c_char {
 
     glide_core::scripts_container::remove_script(hash_str);
     std::ptr::null_mut()
-}
-
-/// Free an error message from a failed drop_script call.
-///
-/// # Parameters
-///
-/// * `error`: The error to free.
-///
-/// # Safety
-///
-/// * `error` must be an error returned by [`drop_script`].
-/// * This function must be called exactly once per error.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn free_drop_script_error(error: *mut c_char) {
-    if !error.is_null() {
-        _ = unsafe { CString::from_raw(error) };
-    }
 }
 
 /// Executes a Lua script using EVALSHA with automatic fallback to EVAL.
@@ -1535,14 +1529,12 @@ pub unsafe extern "C" fn init_otel(config: *const OpenTelemetryConfigFFI) -> *co
 /// * A pointer to the created span, or null if span creation fails.
 #[unsafe(no_mangle)]
 pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
-    let request_type: RequestType = unsafe { std::mem::transmute(request_type) };
-
     let command_name = match get_command_name(request_type) {
         Some(name) => name,
         None => return std::ptr::null(),
     };
 
-    create_span(&command_name);
+    create_span(&command_name)
 }
 
 /// Creates an OpenTelemetry batch span.
@@ -1552,7 +1544,7 @@ pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
 #[unsafe(no_mangle)]
 pub extern "C" fn create_batch_otel_span() -> *const c_void {
     let command_name = "Batch";
-    create_span(&command_name);
+    create_span(&command_name)
 }
 
 /// Drops an OpenTelemetry span given its pointer as u64.
@@ -1599,9 +1591,11 @@ pub unsafe extern "C" fn drop_otel_span(span_ptr: *const c_void) {
     }
 }
 
-/// Returns the command name for the given request type.
+/// Returns the command name for the given request type value.
 /// Returns None if the command name cannot be determined.
-fn get_command_name(request_type: RequestType) -> Option<String> {
+fn get_command_name(request_type_u32: u32) -> Option<String> {
+    let request_type = unsafe { std::mem::transmute::<u32, RequestType>(request_type_u32) };
+
     // Validate request type and extract command.
     let cmd = match request_type.get_command() {
         Some(cmd) => cmd,
