@@ -46,6 +46,13 @@ public static class GlideStringExtensions
             : new(@double.ToString("G17", System.Globalization.CultureInfo.InvariantCulture));
 
     /// <summary>
+    /// Convert a <paramref name="bool"/> to a <see cref="GlideString" /> ("1" for true, "0" for false).
+    /// </summary>
+    /// <param name="bool">A <see langword="bool" /> to convert.</param>
+    /// <returns>A <see cref="GlideString" />.</returns>
+    public static GlideString ToGlideString(this bool @bool) => new(@bool ? "1" : "0");
+
+    /// <summary>
     /// Convert a <paramref name="bytes"/> to a <see cref="GlideString" />.
     /// </summary>
     /// <param name="bytes">A <see langword="byte[]" /> to convert.</param>

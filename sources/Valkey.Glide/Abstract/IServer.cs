@@ -249,4 +249,55 @@ public interface IServer
     /// </example>
     /// </remarks>
     Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None);
-}
+
+    /// <summary>
+    /// Checks if a script exists in the server's script cache.
+    /// </summary>
+    /// <param name="script">The Lua script to check.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing true if the script exists in the cache, false otherwise.</returns>
+    /// <remarks>
+    /// This method calculates the SHA1 hash of the script and checks if it exists in the server's cache.
+    /// </remarks>
+    Task<bool> ScriptExistsAsync(string script, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Checks if a script exists in the server's script cache by its SHA1 hash.
+    /// </summary>
+    /// <param name="sha1">The SHA1 hash of the script to check.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing true if the script exists in the cache, false otherwise.</returns>
+    Task<bool> ScriptExistsAsync(byte[] sha1, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Loads a Lua script onto the server and returns its SHA1 hash.
+    /// </summary>
+    /// <param name="script">The Lua script to load.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing the SHA1 hash of the loaded script.</returns>
+    /// <remarks>
+    /// The script is cached on the server and can be executed using EVALSHA with the returned hash.
+    /// </remarks>
+    Task<byte[]> ScriptLoadAsync(string script, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Loads a LuaScript onto the server and returns a LoadedLuaScript.
+    /// </summary>
+    /// <param name="script">The LuaScript to load.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation, containing a LoadedLuaScript instance.</returns>
+    /// <remarks>
+    /// The script is cached on the server and can be executed using the returned LoadedLuaScript.
+    /// </remarks>
+    Task<LoadedLuaScript> ScriptLoadAsync(LuaScript script, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Removes all scripts from the server's script cache.
+    /// </summary>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// After calling this method, all scripts must be reloaded before they can be executed with EVALSHA.
+    /// </remarks>
+    Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None);
+} ///

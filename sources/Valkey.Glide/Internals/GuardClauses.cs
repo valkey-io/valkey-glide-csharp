@@ -24,4 +24,17 @@ internal static class GuardClauses
                 throw new ArgumentException(when + " is not valid in this context; the permitted values are: Always, NotExists");
         }
     }
+
+    /// <summary>
+    /// Throws a <see cref="NotImplementedException"/> if command flags are specified.
+    /// </summary>
+    /// <param name="flags">The command flags to validate.</param>
+    /// <exception cref="NotImplementedException">Thrown when <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    public static void ThrowIfCommandFlags(CommandFlags flags)
+    {
+        if (flags != CommandFlags.None)
+        {
+            throw new NotImplementedException("Command flags are not supported by GLIDE");
+        }
+    }
 }
