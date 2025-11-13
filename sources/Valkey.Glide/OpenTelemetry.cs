@@ -137,7 +137,7 @@ public static class OpenTelemetry
             if (errorPtr != IntPtr.Zero)
             {
                 var errorMessage = Marshal.PtrToStringAnsi(errorPtr);
-                Marshal.FreeHGlobal(errorPtr);
+                FFI.FreeString(errorPtr);
                 throw new InvalidOperationException($"Failed to initialize OpenTelemetry: {errorMessage}");
             }
         }
