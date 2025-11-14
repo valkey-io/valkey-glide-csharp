@@ -28,8 +28,7 @@ public interface ITransactionBaseCommands
     /// </para>
     /// <example>
     /// <code>
-    /// bool result = await client.WatchAsync(["sampleKey"]);
-    /// // result is "OK"
+    /// await client.WatchAsync(["sampleKey"]);
     /// 
     /// // Execute transaction
     /// var batch = new Batch(true)
