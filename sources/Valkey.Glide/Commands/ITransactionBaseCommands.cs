@@ -12,8 +12,7 @@ public interface ITransactionBaseCommands
     /// <summary>
     /// Marks the given keys to be watched for conditional execution of a transaction. Transactions
     /// will only execute commands if the watched keys are not modified before execution of the
-    /// transaction. Keys that do not exist are watched as if they were empty. Duplicate keys in
-    /// the array are allowed and will be watched.
+    /// transaction. Keys that do not exist are watched as if they were empty.
     /// </summary>
     /// <param name="keys">The keys to watch.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
