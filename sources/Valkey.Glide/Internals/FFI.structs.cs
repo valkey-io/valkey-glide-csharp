@@ -800,62 +800,6 @@ internal partial class FFI
         public ushort Port;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
-    {
-        /// <summary>
-        /// Username for authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string? Username = username;
-
-        /// <summary>
-        /// Password for authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string? Password = password;
-
-        /// <summary>
-        /// IAM credentials for authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.U1)]
-        public readonly bool HasIamCredentials = iamCredentials.HasValue;
-        public readonly IamCredentials IamCredentials = iamCredentials ?? default;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
-    {
-        /// <summary>
-        /// The name of the cluster for IAM authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string ClusterName = clusterName;
-
-        /// <summary>
-        /// The AWS region for IAM authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string Region = region;
-
-        /// <summary>
-        /// The AWS service type for IAM authentication.
-        /// </summary>
-        public readonly ServiceType ServiceType = serviceType;
-
-        /// <summary>
-        /// The refresh interval in seconds for IAM authentication.
-        /// </summary>
-        public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
-        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
-    }
-
-    internal enum ServiceType : uint
-    {
-        ElastiCache = 0,
-        MemoryDB = 1,
-    }
-
     internal enum TlsMode : uint
     {
         NoTls = 0,
@@ -960,8 +904,124 @@ internal partial class FFI
         {
             if (errorBuffer != IntPtr.Zero)
             {
-                FreeDropScriptError(errorBuffer);
+                FreeString(errorBuffer);
             }
         }
+    }
+
+    // ========================================================================================
+    // OpenTelemetry
+    // ========================================================================================
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, uint? flushIntervalMs)
+    {
+        /// <summary>
+        /// Traces configuration for OpenTelemetry.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasTraces = traces.HasValue;
+        public readonly TracesConfig Traces = traces ?? default;
+
+        /// <summary>
+        /// Metrics configuration for OpenTelemetry.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasMetrics = metrics.HasValue;
+        public readonly MetricsConfig Metrics = metrics ?? default;
+
+        /// <summary>
+        /// The flush interval in milliseconds for OpenTelemetry.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasFlushIntervalMs = flushIntervalMs.HasValue;
+        public readonly uint? FlushIntervalMs = flushIntervalMs ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct TracesConfig(string endpoint, uint? samplePercentage)
+    {
+        /// <summary>
+        /// Endpoint for OpenTelemetry traces.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Endpoint = endpoint;
+
+        /// <summary>
+        /// Sample percentage for OpenTelemetry traces.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasSamplePercentage = samplePercentage.HasValue;
+        public readonly uint SamplePercentage = samplePercentage ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct MetricsConfig(string endpoint)
+    {
+        /// <summary>
+        /// Endpoint for OpenTelemetry metrics.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Endpoint = endpoint;
+    }
+
+    // ========================================================================================
+    // Authentication
+    // ========================================================================================
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
+    {
+        /// <summary>
+        /// Username for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string? Username = username;
+
+        /// <summary>
+        /// Password for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string? Password = password;
+
+        /// <summary>
+        /// IAM credentials for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasIamCredentials = iamCredentials.HasValue;
+        public readonly IamCredentials IamCredentials = iamCredentials ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
+    {
+        /// <summary>
+        /// The name of the cluster for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string ClusterName = clusterName;
+
+        /// <summary>
+        /// The AWS region for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Region = region;
+
+        /// <summary>
+        /// The AWS service type for IAM authentication.
+        /// </summary>
+        public readonly ServiceType ServiceType = serviceType;
+
+        /// <summary>
+        /// The refresh interval in seconds for IAM authentication.
+        /// </summary>
+        public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
+        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
+    }
+
+    internal enum ServiceType : uint
+    {
+        ElastiCache = 0,
+        MemoryDB = 1,
     }
 }
