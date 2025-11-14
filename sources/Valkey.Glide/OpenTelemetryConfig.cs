@@ -93,7 +93,8 @@ public sealed class OpenTelemetryConfig
 /// </summary>
 public sealed class TracesConfig
 {
-    private const uint MaxSamplePercentage = 100;
+    internal const uint DefaultSamplePercentage = 1u; // Exposed internally for testing.
+    private const uint MaxSamplePercentage = 100u;
 
     /// <summary>
     /// The endpoint for traces export.
@@ -102,10 +103,11 @@ public sealed class TracesConfig
 
     /// <summary>
     /// The percentage of requests to sample (0-100).
+    /// If not specified, defaults to 1 percent.
     /// </summary>
-    public uint? SamplePercentage { get; private set; }
+    public uint SamplePercentage { get; private set; }
 
-    private TracesConfig(string endpoint, uint? samplePercentage)
+    private TracesConfig(string endpoint, uint samplePercentage)
     {
         Endpoint = endpoint;
         SamplePercentage = samplePercentage;
@@ -116,17 +118,17 @@ public sealed class TracesConfig
     /// </summary>
     /// <param name="percentage">The sample percentage (0-100).</param>
     /// <exception cref="ArgumentException">Thrown if percentage is greater than 100.</exception>
-    internal void SetSamplePercentage(uint? percentage)
+    internal void SetSamplePercentage(uint percentage)
     {
         ValidateSamplePercentage(percentage);
         SamplePercentage = percentage;
     }
 
-    private static void ValidateSamplePercentage(uint? percentage)
+    private static void ValidateSamplePercentage(uint percentage)
     {
-        if (percentage.HasValue && (percentage > MaxSamplePercentage))
+        if (percentage > MaxSamplePercentage)
         {
-            throw new ArgumentException($"Sample percentage must be between 0 and {MaxSamplePercentage}", nameof(percentage));
+            throw new ArgumentException($"Sample percentage cannot be greater than {MaxSamplePercentage}", nameof(percentage));
         }
     }
 
@@ -141,7 +143,7 @@ public sealed class TracesConfig
     public sealed class Builder
     {
         private string? _endpoint;
-        private uint? _samplePercentage;
+        private uint _samplePercentage = DefaultSamplePercentage;
 
         /// <summary>
         /// Sets the endpoint for traces export.
@@ -165,6 +167,7 @@ public sealed class TracesConfig
         public Builder WithSamplePercentage(uint samplePercentage)
         {
             ValidateSamplePercentage(samplePercentage);
+
             _samplePercentage = samplePercentage;
             return this;
         }
