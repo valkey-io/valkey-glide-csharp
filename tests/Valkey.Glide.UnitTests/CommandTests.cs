@@ -771,7 +771,7 @@ public class CommandTests
         [
             (gs)"value1",
             (gs)"value2",
-            null
+            null!,
         ];
 
         // Test for HashGetAllAsync and HashRandomFieldsWithValuesAsync
