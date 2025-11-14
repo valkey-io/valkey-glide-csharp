@@ -101,10 +101,14 @@ public class SharedBatchTests
         bool isCluster = client is GlideClusterClient;
 
         // Returns null when a watched key is modified before transaction execution
-        string watchResult = isCluster
-            ? await ((GlideClusterClient)client).WatchAsync(keys)
-            : await ((GlideClient)client).WatchAsync(keys);
-        Assert.Equal("OK", watchResult);
+        if (isCluster)
+        {
+            await ((GlideClusterClient)client).WatchAsync(keys);
+        }
+        else
+        {
+            await ((GlideClient)client).WatchAsync(keys);
+        }
 
         await client.StringSetAsync(key2, helloString);
 
@@ -151,11 +155,15 @@ public class SharedBatchTests
 
         bool isCluster = client is GlideClusterClient;
 
-        // UNWATCH returns OK when there are no watched keys
-        string unwatchResult = isCluster
-            ? await ((GlideClusterClient)client).UnwatchAsync()
-            : await ((GlideClient)client).UnwatchAsync();
-        Assert.Equal("OK", unwatchResult);
+        // UNWATCH succeeds when there are no watched keys
+        if (isCluster)
+        {
+            await ((GlideClusterClient)client).UnwatchAsync();
+        }
+        else
+        {
+            await ((GlideClient)client).UnwatchAsync();
+        }
 
         // Transaction executes successfully after modifying a watched key then calling UNWATCH
         if (isCluster)
@@ -167,10 +175,14 @@ public class SharedBatchTests
             await ((GlideClient)client).WatchAsync(keys);
         }
         await client.StringSetAsync(key2, helloString);
-        unwatchResult = isCluster
-            ? await ((GlideClusterClient)client).UnwatchAsync()
-            : await ((GlideClient)client).UnwatchAsync();
-        Assert.Equal("OK", unwatchResult);
+        if (isCluster)
+        {
+            await ((GlideClusterClient)client).UnwatchAsync();
+        }
+        else
+        {
+            await ((GlideClient)client).UnwatchAsync();
+        }
 
         object?[]? execResult;
         if (isCluster)

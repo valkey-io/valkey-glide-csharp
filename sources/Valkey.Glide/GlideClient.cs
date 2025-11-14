@@ -202,16 +202,16 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
-    public async Task<string> WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await Command(Request.Watch(keys));
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Watch(keys));
     }
 
-    public async Task<string> UnwatchAsync(CommandFlags flags = CommandFlags.None)
+    public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await Command(Request.Unwatch());
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Unwatch());
     }
 
     protected override async Task<Version> GetServerVersionAsync()

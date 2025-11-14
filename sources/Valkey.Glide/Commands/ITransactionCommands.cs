@@ -14,7 +14,7 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// automatically flush all previously watched keys.
     /// </summary>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>"OK" if the keys were successfully unwatched.</returns>
+    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
@@ -23,5 +23,5 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/unwatch/"/>
-    Task<string> UnwatchAsync(CommandFlags flags = CommandFlags.None);
+    Task UnwatchAsync(CommandFlags flags = CommandFlags.None);
 }

@@ -12,11 +12,12 @@ public interface ITransactionBaseCommands
     /// <summary>
     /// Marks the given keys to be watched for conditional execution of a transaction. Transactions
     /// will only execute commands if the watched keys are not modified before execution of the
-    /// transaction.
+    /// transaction. Keys that do not exist are watched as if they were empty. Duplicate keys in
+    /// the array are allowed and will be watched.
     /// </summary>
     /// <param name="keys">The keys to watch.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>"OK" if the keys were successfully watched.</returns>
+    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <remarks>
     /// <para>
     /// In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
@@ -49,5 +50,5 @@ public interface ITransactionBaseCommands
     /// </example>
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/watch/"/>
-    Task<string> WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
 }

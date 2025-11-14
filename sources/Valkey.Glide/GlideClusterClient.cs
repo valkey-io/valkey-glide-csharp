@@ -305,22 +305,22 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         return await Command(Request.Select(index), Route.Random);
     }
 
-    public async Task<string> WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await Command(Request.Watch(keys));
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Watch(keys));
     }
 
-    public async Task<string> UnwatchAsync(CommandFlags flags = CommandFlags.None)
+    public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await Command(Request.Unwatch(), AllPrimaries);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Unwatch(), AllPrimaries);
     }
 
-    public async Task<string> UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None)
+    public async Task UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-        return await Command(Request.Unwatch(), route);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Unwatch(), route);
     }
 
     protected override async Task<Version> GetServerVersionAsync()

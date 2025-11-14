@@ -15,16 +15,16 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// The command will be routed to all primary nodes.
     /// </summary>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>"OK" if the keys were successfully unwatched.</returns>
+    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
-    /// string result = await client.UnwatchAsync();
-    /// // result is "OK", "sampleKey" is no longer watched on all primary nodes
+    /// await client.UnwatchAsync();
+    /// // "sampleKey" is no longer watched on all primary nodes
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/unwatch/"/>
-    Task<string> UnwatchAsync(CommandFlags flags = CommandFlags.None);
+    Task UnwatchAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Flushes all the previously watched keys for a transaction. Executing a transaction will
@@ -33,14 +33,14 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>"OK" if the keys were successfully unwatched.</returns>
+    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
-    /// string result = await client.UnwatchAsync(Route.AllPrimaries);
-    /// // result is "OK", "sampleKey" is no longer watched on all primary nodes
+    /// await client.UnwatchAsync(Route.AllPrimaries);
+    /// // "sampleKey" is no longer watched on all primary nodes
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/unwatch/"/>
-    Task<string> UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None);
 }
