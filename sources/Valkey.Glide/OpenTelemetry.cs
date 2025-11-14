@@ -71,12 +71,12 @@ public static class OpenTelemetry
 
     /// <summary>
     /// Set the sample percentage for traces at runtime.
-    /// If sample percentage is set to zero or null, sampling is disabled.
     /// </summary>
     /// <param name="percentage">The sample percentage (0-100).</param>
-    /// <exception cref="InvalidOperationException">Thrown if OpenTelemetry is not initialized or traces are not configured.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if percentage is null.</exception>
     /// <exception cref="ArgumentException">Thrown if percentage is greater than 100.</exception>
-    public static void SetSamplePercentage(uint? percentage)
+    /// <exception cref="InvalidOperationException">Thrown if OpenTelemetry is not initialized or traces are not configured.</exception>
+    public static void SetSamplePercentage(uint percentage)
     {
         if (!IsInitialized())
         {
@@ -106,12 +106,19 @@ public static class OpenTelemetry
         }
 
         var percentage = GetSamplePercentage();
-        if (percentage == null || percentage == 0)
-        {
-            return false;
-        }
-
         return (Random.Shared.Next(100)) < percentage;
+    }
+
+    /// <summary>
+    /// Clear the OpenTelemetry configuration.
+    /// For testing purposes only.
+    /// </summary>
+    internal static void Clear()
+    {
+        lock (Lock)
+        {
+            s_config = null;
+        }
     }
 
     /// <summary>

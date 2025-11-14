@@ -93,7 +93,7 @@ public class OpenTelemetryConfigTests
                 .Build();
 
             Assert.Equal(Endpoint, config.Endpoint);
-            Assert.Null(config.SamplePercentage);
+            Assert.Equal(TracesConfig.DefaultSamplePercentage, config.SamplePercentage);
         }
 
         [Fact]

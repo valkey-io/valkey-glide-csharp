@@ -15,30 +15,13 @@ public class OpenTelemetryCollection { }
 [Collection(nameof(OpenTelemetryCollection))]
 public class OpenTelemetryTests : IDisposable
 {
-    private static readonly uint SamplePercentageNone = 0;
-    private static readonly uint SamplePercentageAll = 100;
+    private static readonly uint SamplePercentageNone = 0u;
+    private static readonly uint SamplePercentageAll = 100u;
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
     private TracesFile Traces { get; }
     private static readonly string TracesFilePath = System.IO.Path.GetTempFileName();
-
-    // When class loads, initialize OpenTelemetry.
-    static OpenTelemetryTests()
-    {
-
-        var tracesConfig = TracesConfig.CreateBuilder()
-            .WithEndpoint($"file://{TracesFilePath}")
-            .WithSamplePercentage(SamplePercentageNone)
-            .Build();
-
-        var config = OpenTelemetryConfig.CreateBuilder()
-            .WithTraces(tracesConfig)
-            .WithFlushInterval(FlushInterval)
-            .Build();
-
-        OpenTelemetry.Init(config);
-    }
 
     // Before each test, initialize traces file.
     public OpenTelemetryTests()
@@ -46,27 +29,18 @@ public class OpenTelemetryTests : IDisposable
         Traces = new TracesFile(TracesFilePath);
     }
 
-    // After each test. disbaled traces and dispose of traces file.
+    // After each test, clear OpenTelemetry and dispose of traces file.
     public void Dispose()
     {
-        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
+        OpenTelemetry.Clear();
         Traces.Dispose();
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task Commands_WhenSamplingNull_NoSpans(BaseClient client)
-    {
-        OpenTelemetry.SetSamplePercentage(null);
-        await ExecuteSetGetDelete(client);
-        Traces!.AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Commands_WhenSamplingNone_NoSpans(BaseClient client)
     {
-        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
+        InitializeOpenTelemetry(SamplePercentageNone);
         await ExecuteSetGetDelete(client);
         Traces!.AssertSpanNames([]);
     }
@@ -76,25 +50,16 @@ public class OpenTelemetryTests : IDisposable
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Commands_WhenSamplingAll_CreateSpans(BaseClient client)
     {
-        OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
+        InitializeOpenTelemetry(SamplePercentageAll);
         await ExecuteSetGetDelete(client);
         Traces!.AssertSpanNames(["SET", "GET", "DEL"]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task Batch_WhenSamplingNull_NoSpans(BaseClient client)
-    {
-        OpenTelemetry.SetSamplePercentage(null);
-        await ExecuteBatchSetGetDelete(client);
-        Traces!.AssertSpanNames([]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Batch_WhenSamplingNone_NoSpans(BaseClient client)
     {
-        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
+        InitializeOpenTelemetry(SamplePercentageNone);
         await ExecuteBatchSetGetDelete(client);
         Traces!.AssertSpanNames([]);
     }
@@ -103,9 +68,24 @@ public class OpenTelemetryTests : IDisposable
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Batch_WhenSamplingAll_CreateSpans(BaseClient client)
     {
-        OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
+        InitializeOpenTelemetry(SamplePercentageAll);
         await ExecuteBatchSetGetDelete(client);
         Traces!.AssertSpanNames(["Batch"]);
+    }
+
+    private static void InitializeOpenTelemetry(uint samplePercentage)
+    {
+        var tracesConfig = TracesConfig.CreateBuilder()
+            .WithEndpoint($"file://{TracesFilePath}")
+            .WithSamplePercentage(samplePercentage)
+            .Build();
+
+        var config = OpenTelemetryConfig.CreateBuilder()
+            .WithTraces(tracesConfig)
+            .WithFlushInterval(FlushInterval)
+            .Build();
+
+        OpenTelemetry.Init(config);
     }
 
     // Executes SET, GET, and DEL commands on the given client.
