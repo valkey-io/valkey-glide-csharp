@@ -14,7 +14,7 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// automatically flush all previously watched keys.
     /// </summary>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);

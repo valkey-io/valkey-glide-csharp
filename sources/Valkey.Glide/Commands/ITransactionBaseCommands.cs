@@ -16,7 +16,7 @@ public interface ITransactionBaseCommands
     /// </summary>
     /// <param name="keys">The keys to watch.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <remarks>
     /// <para>
     /// In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command

@@ -15,7 +15,7 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// The command will be routed to all primary nodes.
     /// </summary>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
@@ -33,7 +33,7 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
