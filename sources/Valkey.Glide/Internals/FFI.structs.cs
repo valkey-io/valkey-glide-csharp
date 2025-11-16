@@ -252,9 +252,9 @@ internal partial class FFI
 
             if (_pubSubConfig != null)
             {
-                int channelCount = _pubSubConfig.Subscriptions.TryGetValue(0, out HashSet<string>? channels) ? channels.Count : 0;
-                int patternCount = _pubSubConfig.Subscriptions.TryGetValue(1, out HashSet<string>? patterns) ? patterns.Count : 0;
-                int shardedChannelCount = _pubSubConfig.Subscriptions.TryGetValue(2, out HashSet<string>? shardedChannels) ? shardedChannels.Count : 0;
+                int channelCount = _pubSubConfig.Subscriptions.TryGetValue(0, out ISet<string>? channels) ? channels.Count : 0;
+                int patternCount = _pubSubConfig.Subscriptions.TryGetValue(1, out ISet<string>? patterns) ? patterns.Count : 0;
+                int shardedChannelCount = _pubSubConfig.Subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) ? shardedChannels.Count : 0;
 
                 FreeStringArray(_pubSubChannelsPtr, channelCount);
                 FreeStringArray(_pubSubPatternsPtr, patternCount);
@@ -308,7 +308,7 @@ internal partial class FFI
             var pubSubInfo = new PubSubConfigInfo();
 
             // Marshal exact channels (mode 0)
-            if (config.Subscriptions.TryGetValue(0, out HashSet<string>? channels) && channels.Count > 0)
+            if (config.Subscriptions.TryGetValue(0, out ISet<string>? channels) && channels.Count > 0)
             {
                 _pubSubChannelsPtr = MarshalStringArray(channels);
                 pubSubInfo.ChannelsPtr = _pubSubChannelsPtr;
@@ -316,7 +316,7 @@ internal partial class FFI
             }
 
             // Marshal patterns (mode 1)
-            if (config.Subscriptions.TryGetValue(1, out HashSet<string>? patterns) && patterns.Count > 0)
+            if (config.Subscriptions.TryGetValue(1, out ISet<string>? patterns) && patterns.Count > 0)
             {
                 _pubSubPatternsPtr = MarshalStringArray(patterns);
                 pubSubInfo.PatternsPtr = _pubSubPatternsPtr;
@@ -324,7 +324,7 @@ internal partial class FFI
             }
 
             // Marshal sharded channels (mode 2) - only for cluster clients
-            if (config.Subscriptions.TryGetValue(2, out HashSet<string>? shardedChannels) && shardedChannels.Count > 0)
+            if (config.Subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
             {
                 _pubSubShardedChannelsPtr = MarshalStringArray(shardedChannels);
                 pubSubInfo.ShardedChannelsPtr = _pubSubShardedChannelsPtr;

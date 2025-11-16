@@ -361,7 +361,7 @@ public class PubSubSubscriptionConfigTests
     {
         // Arrange
         var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = [];
+        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string>();
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => config.Validate());
@@ -373,7 +373,7 @@ public class PubSubSubscriptionConfigTests
     {
         // Arrange
         var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = [null!];
+        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string> { null! };
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => config.Validate());
@@ -385,7 +385,7 @@ public class PubSubSubscriptionConfigTests
     {
         // Arrange
         var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = [""];
+        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string> { "" };
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => config.Validate());
@@ -397,7 +397,7 @@ public class PubSubSubscriptionConfigTests
     {
         // Arrange
         var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = ["   "];
+        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string> { "   " };
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => config.Validate());
