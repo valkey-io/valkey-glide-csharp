@@ -13,6 +13,7 @@ namespace Valkey.Glide.UnitTests;
 public class PubSubFFIMemoryLeakTests
 {
     [Fact]
+    [Trait("Category", "LongRunning")]
     public void ProcessLargeVolumeMessages_NoMemoryLeak_MemoryUsageRemainsBounded()
     {
         // Arrange
@@ -77,6 +78,7 @@ public class PubSubFFIMemoryLeakTests
     }
 
     [Fact]
+    [Trait("Category", "LongRunning")]
     public void ProcessVariousMessageSizes_NoMemoryLeak_ConsistentBehavior()
     {
         // Arrange
@@ -132,6 +134,7 @@ public class PubSubFFIMemoryLeakTests
     }
 
     [Fact]
+    [Trait("Category", "LongRunning")]
     public void ProcessMessagesUnderGCPressure_NoMemoryLeak_StableUnderPressure()
     {
         // Arrange
@@ -188,6 +191,7 @@ public class PubSubFFIMemoryLeakTests
     }
 
     [Fact]
+    [Trait("Category", "LongRunning")]
     public void ProcessConcurrentMessages_NoMemoryLeak_ThreadSafeMemoryManagement()
     {
         // Arrange
@@ -257,6 +261,7 @@ public class PubSubFFIMemoryLeakTests
     }
 
     [Fact]
+    [Trait("Category", "LongRunning")]
     public void ProcessExtendedDuration_NoMemoryLeak_StableOverTime()
     {
         // Arrange

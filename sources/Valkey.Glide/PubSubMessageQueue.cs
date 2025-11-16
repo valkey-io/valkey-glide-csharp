@@ -169,6 +169,10 @@ public sealed class PubSubMessageQueue : IDisposable
             // CancellationTokenSource was already disposed, ignore
         }
 
+        // Give cancellation a moment to propagate before disposing resources
+        // This ensures waiting tasks have time to observe the cancellation
+        Thread.Sleep(10);
+
         // Dispose resources
         _messageAvailable.Dispose();
         _disposalCts.Dispose();

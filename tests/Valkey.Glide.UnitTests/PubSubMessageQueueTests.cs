@@ -388,19 +388,27 @@ public class PubSubMessageQueueTests
     public async Task DisposeDuringAsyncOperation_CancelsWaitingOperations()
     {
         // Arrange
-        using var queue = new PubSubMessageQueue();
+        var queue = new PubSubMessageQueue();
 
         // Start a task that will wait for a message
         Task<PubSubMessage> waitingTask = queue.GetMessageAsync();
 
         // Ensure the task is waiting
-        await Task.Delay(50);
+        await Task.Delay(100);
         Assert.False(waitingTask.IsCompleted);
 
         // Act
         queue.Dispose();
 
-        // Assert
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => waitingTask);
+        // Assert - Wait for the task to complete with a timeout
+        Task completedTask = await Task.WhenAny(waitingTask, Task.Delay(TimeSpan.FromSeconds(5)));
+
+        Assert.Same(waitingTask, completedTask); // Ensure waitingTask completed, not the timeout
+        Assert.True(waitingTask.IsCompleted);
+        Assert.True(waitingTask.IsFaulted);
+
+        // Verify the exception type
+        Exception? exception = waitingTask.Exception?.InnerException;
+        Assert.IsType<ObjectDisposedException>(exception);
     }
 }

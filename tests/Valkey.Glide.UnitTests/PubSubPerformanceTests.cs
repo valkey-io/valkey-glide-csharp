@@ -214,6 +214,7 @@ public class PubSubPerformanceTests
     }
 
     [Fact]
+    [Trait("Category", "LongRunning")]
     public void ChannelBasedProcessing_LongRunning_MaintainsStablePerformance()
     {
         // Arrange

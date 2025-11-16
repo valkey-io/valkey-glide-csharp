@@ -106,6 +106,11 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
             throw new ArgumentOutOfRangeException(nameof(mode), "Invalid PubSub channel mode for standalone client");
         }
 
+        if (string.IsNullOrWhiteSpace(channelOrPattern))
+        {
+            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
+        }
+
         uint modeValue = (uint)mode;
         if (!Subscriptions.ContainsKey(modeValue))
         {
@@ -177,6 +182,11 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
         if (!Enum.IsDefined(typeof(PubSubClusterChannelMode), mode))
         {
             throw new ArgumentOutOfRangeException(nameof(mode), "Invalid PubSub channel mode for cluster client");
+        }
+
+        if (string.IsNullOrWhiteSpace(channelOrPattern))
+        {
+            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
         }
 
         uint modeValue = (uint)mode;
