@@ -809,7 +809,7 @@ public class CommandTests
             // Test HashGetAsync with multiple fields
             () =>
             {
-                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter([.. testList]);
+                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter((object[])testList.ToArray()!);
                 Assert.Equal(3, result.Length);
                 Assert.Equal("value1", result[0]);
                 Assert.Equal("value2", result[1]);
