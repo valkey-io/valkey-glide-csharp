@@ -84,6 +84,8 @@ public abstract class BasePubSubSubscriptionConfig
 /// </summary>
 public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionConfig
 {
+    private static readonly HashSet<uint> s_validModes = new(Enum.GetValues<PubSubChannelMode>().Select(m => (uint)m));
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StandalonePubSubSubscriptionConfig"/> class.
     /// </summary>
@@ -149,7 +151,7 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
         // Ensure only valid modes for standalone clients are used
         foreach (uint mode in Subscriptions.Keys)
         {
-            if (mode is not ((uint)PubSubChannelMode.Exact) and not ((uint)PubSubChannelMode.Pattern))
+            if (!s_validModes.Contains(mode))
             {
                 throw new ArgumentException($"Subscription mode {mode} is not valid for standalone clients");
             }
@@ -162,6 +164,8 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
 /// </summary>
 public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConfig
 {
+    private static readonly HashSet<uint> s_validModes = new(Enum.GetValues<PubSubClusterChannelMode>().Select(m => (uint)m));
+
     /// <summary>
     /// /// Initializes a ne of the <see cref="ClusterPubSubSubscriptionConfig"/> class.
     /// </summary>
@@ -235,9 +239,7 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
         // Ensure only valid modes for cluster clients are used
         foreach (uint mode in Subscriptions.Keys)
         {
-            if (mode is not ((uint)PubSubClusterChannelMode.Exact) and
-                not ((uint)PubSubClusterChannelMode.Pattern) and
-                not ((uint)PubSubClusterChannelMode.Sharded))
+            if (!s_validModes.Contains(mode))
             {
                 throw new ArgumentException($"Subscription mode {mode} is not valid for cluster clients");
             }
