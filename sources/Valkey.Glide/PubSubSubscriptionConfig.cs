@@ -101,11 +101,6 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
     /// <exception cref="ArgumentOutOfRangeException">Thrown when mode is not valid for standalone clients.</exception>
     public StandalonePubSubSubscriptionConfig WithSubscription(PubSubChannelMode mode, string channelOrPattern)
     {
-        if (string.IsNullOrWhiteSpace(channelOrPattern))
-        {
-            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
-        }
-
         if (!Enum.IsDefined(typeof(PubSubChannelMode), mode))
         {
             throw new ArgumentOutOfRangeException(nameof(mode), "Invalid PubSub channel mode for standalone client");
@@ -182,11 +177,6 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
     /// <exception cref="ArgumentOutOfRangeException">Thrown when mode is not valid for cluster clients.</exception>
     public ClusterPubSubSubscriptionConfig WithSubscription(PubSubClusterChannelMode mode, string channelOrPattern)
     {
-        if (string.IsNullOrWhiteSpace(channelOrPattern))
-        {
-            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
-        }
-
         if (!Enum.IsDefined(typeof(PubSubClusterChannelMode), mode))
         {
             throw new ArgumentOutOfRangeException(nameof(mode), "Invalid PubSub channel mode for cluster client");

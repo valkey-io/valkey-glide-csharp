@@ -33,12 +33,12 @@ public sealed class PubSubMessage
     /// <exception cref="ArgumentException">Thrown when message or channel is empty.</exception>
     public PubSubMessage(string message, string channel)
     {
-        if (string.IsNullOrEmpty(message))
+        if (string.IsNullOrWhiteSpace(message))
         {
             throw new ArgumentException("Message is required and cannot be empty", nameof(message));
         }
 
-        if (string.IsNullOrEmpty(channel))
+        if (string.IsNullOrWhiteSpace(channel))
         {
             throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
         }
@@ -58,17 +58,17 @@ public sealed class PubSubMessage
     /// <exception cref="ArgumentException">Thrown when message, channel, or pattern is empty.</exception>
     public PubSubMessage(string message, string channel, string pattern)
     {
-        if (string.IsNullOrEmpty(message))
+        if (string.IsNullOrWhiteSpace(message))
         {
             throw new ArgumentException("Message is required and cannot be empty", nameof(message));
         }
 
-        if (string.IsNullOrEmpty(channel))
+        if (string.IsNullOrWhiteSpace(channel))
         {
             throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
         }
 
-        if (string.IsNullOrEmpty(pattern))
+        if (string.IsNullOrWhiteSpace(pattern))
         {
             throw new ArgumentException("Pattern is required and cannot be empty", nameof(pattern));
         }
