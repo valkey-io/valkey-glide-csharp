@@ -776,7 +776,7 @@ public class CommandTests
     public void ValidateHashCommandConverters()
     {
         // Test for HashGetAsync with multiple fields
-        List<object> testList =
+        List<object?> testList =
         [
             (gs)"value1",
             (gs)"value2",
