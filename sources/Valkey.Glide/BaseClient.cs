@@ -209,13 +209,10 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
             // Write to channel (non-blocking with backpressure)
             Channel<PubSubMessage>? channel = _messageChannel;
-            if (channel != null)
+            if (channel != null && !channel.Writer.TryWrite(message))
             {
-                if (!channel.Writer.TryWrite(message))
-                {
-                    Logger.Log(Level.Warn, "PubSubCallback",
-                        $"PubSub message channel full, message dropped for channel {message.Channel}");
-                }
+                Logger.Log(Level.Warn, "PubSubCallback",
+                    $"PubSub message channel full, message dropped for channel {message.Channel}");
             }
         }
         catch (Exception ex)
