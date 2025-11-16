@@ -33,7 +33,7 @@ public abstract class BasePubSubSubscriptionConfig
 {
     internal MessageCallback? Callback { get; set; }
     internal object? Context { get; set; }
-    internal Dictionary<uint, List<string>> Subscriptions { get; set; } = [];
+    internal Dictionary<uint, HashSet<string>> Subscriptions { get; set; } = [];
     internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
@@ -61,7 +61,7 @@ public abstract class BasePubSubSubscriptionConfig
             throw new ArgumentException("At least one subscription must be configured");
         }
 
-        foreach (KeyValuePair<uint, List<string>> kvp in Subscriptions)
+        foreach (KeyValuePair<uint, HashSet<string>> kvp in Subscriptions)
         {
             if (kvp.Value == null || kvp.Value.Count == 0)
             {
@@ -112,10 +112,7 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
             Subscriptions[modeValue] = [];
         }
 
-        if (!Subscriptions[modeValue].Contains(channelOrPattern))
-        {
-            Subscriptions[modeValue].Add(channelOrPattern);
-        }
+        Subscriptions[modeValue].Add(channelOrPattern);
 
         return this;
     }
@@ -188,10 +185,7 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
             Subscriptions[modeValue] = [];
         }
 
-        if (!Subscriptions[modeValue].Contains(channelOrPattern))
-        {
-            Subscriptions[modeValue].Add(channelOrPattern);
-        }
+        Subscriptions[modeValue].Add(channelOrPattern);
 
         return this;
     }
