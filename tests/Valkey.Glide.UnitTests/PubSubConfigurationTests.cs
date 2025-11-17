@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 
-using Xunit;
-
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;

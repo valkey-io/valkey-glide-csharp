@@ -2,8 +2,6 @@
 
 using System.Threading.Tasks;
 
-using Xunit;
-
 namespace Valkey.Glide.UnitTests;
 
 public class PubSubMessageHandlerTests

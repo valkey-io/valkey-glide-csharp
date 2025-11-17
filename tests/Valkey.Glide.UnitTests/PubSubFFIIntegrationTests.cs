@@ -3,10 +3,6 @@
 using System;
 using System.Runtime.InteropServices;
 
-using Valkey.Glide.Internals;
-
-using Xunit;
-
 namespace Valkey.Glide.UnitTests;
 
 public class PubSubFFIIntegrationTests
