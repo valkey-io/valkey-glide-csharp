@@ -56,7 +56,7 @@ internal class Cmd<R, T> : ICmd
 
     public Cmd ToFfi() => new(Request, ArgsArray.Args);
 
-    public new string ToString() => $"{Request} [{string.Join(' ', ArgsArray.Args.ToStrings())}]";
+    public new string ToString() => $"{Request} [{string.Join(' ', ArgsArray.Args?.ToStrings() ?? Array.Empty<string>())}]";
 
     public Cmd(RequestType request, GlideString[] args, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
     {

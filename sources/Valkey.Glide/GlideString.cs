@@ -78,35 +78,35 @@ public static class GlideStringExtensions
     /// </summary>
     /// <param name="strings">An array of <see langword="string" />s to convert.</param>
     /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this string[] strings) => [.. strings.Select(s => new GlideString(s))];
+    public static GlideString[] ToGlideStrings(this string[]? strings) => strings is null ? [] : [.. strings.Select(s => new GlideString(s))];
 
     /// <summary>
     /// Convert an array of <see langword="byte[]" />s to an <see langword="GlideString[]" />.
     /// </summary>
     /// <param name="strings">An array of <see langword="byte[]" />s to convert.</param>
     /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this byte[][] strings) => [.. strings.Select(s => new GlideString(s))];
+    public static GlideString[] ToGlideStrings(this byte[][]? strings) => strings is null ? [] : [.. strings.Select(s => new GlideString(s))];
 
     /// <summary>
     /// Convert an <see langword="Section[]" /> to an <see langword="GlideString[]" />.
     /// </summary>
     /// <param name="strings">An array of <see langword="string" />s to convert.</param>
     /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this Section[] strings) => [.. strings.Select(s => new GlideString(s.ToString()))];
+    public static GlideString[] ToGlideStrings(this Section[]? strings) => strings is null ? [] : [.. strings.Select(s => new GlideString(s.ToString()))];
 
     /// <summary>
     /// Convert an <see langword="ValkeyKey[]" /> to an <see langword="GlideString[]" />.
     /// </summary>
     /// <param name="keys">An array of <see langword="ValkeyKey" />s to convert.</param>
     /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this ValkeyKey[] keys) => [.. keys.Select(k => (GlideString)k)];
+    public static GlideString[] ToGlideStrings(this ValkeyKey[]? keys) => keys is null ? [] : [.. keys.Select(k => (GlideString)k)];
 
     /// <summary>
     /// Convert an <see langword="ValkeyValue[]" /> to an <see langword="GlideString[]" />.
     /// </summary>
     /// <param name="values">An array of <see langword="ValkeyValue" />s to convert.</param>
     /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this ValkeyValue[] values) => [.. values.Select(v => (GlideString)v)];
+    public static GlideString[] ToGlideStrings(this ValkeyValue[]? values) => values is null ? [] : [.. values.Select(v => (GlideString)v)];
 
     /// <summary>
     /// Convert an <see langword="GlideString[]" /> to an <see langword="string[]" />.<br />
@@ -115,14 +115,14 @@ public static class GlideStringExtensions
     /// </summary>
     /// <param name="strings">An array of <see cref="GlideString" />s to convert.</param>
     /// <returns>An array of <see langword="string" />s.</returns>
-    public static string[] ToStrings(this GlideString[] strings) => [.. strings.Select(s => s.ToString())];
+    public static string[] ToStrings(this GlideString[]? strings) => strings is null ? [] : [.. strings.Select(s => s.ToString())];
 
     /// <summary>
     /// Convert an <see langword="GlideString[]" /> to an array of <see langword="byte[]" />.<br />
     /// </summary>
     /// <param name="strings">An array of <see cref="GlideString" />s to convert.</param>
     /// <returns>An array of <see langword="byte[]" />.</returns>
-    public static byte[][] ToByteArrays(this GlideString[] strings) => [.. strings.Select(s => s.Bytes)];
+    public static byte[][] ToByteArrays(this GlideString[]? strings) => strings is null ? [] : [.. strings.Select(s => s.Bytes)];
 }
 
 /// <summary>
@@ -158,6 +158,7 @@ public sealed class GlideString : IComparable<GlideString>
     public GlideString(byte[] bytes)
     {
         _canConvertToString = null;
+        bytes ??= [];
         Bytes = bytes;
         Str = $"Value isn't convertible to string: [{string.Join(' ', [.. bytes.Select(b => $"{b:X2}")])}]";
     }
@@ -169,8 +170,8 @@ public sealed class GlideString : IComparable<GlideString>
     public GlideString(string @string)
     {
         _canConvertToString = true;
-        Str = @string;
-        Bytes = Encoding.UTF8.GetBytes(@string);
+        Str = @string ?? string.Empty;
+        Bytes = @string is null ? [] : Encoding.UTF8.GetBytes(@string);
     }
 
     /// <inheritdoc cref="GlideString(byte[])" />
@@ -321,7 +322,8 @@ public sealed class GlideString : IComparable<GlideString>
         return this == (GlideString)obj;
     }
 
-    public static bool operator ==(GlideString left, GlideString right) => left.Bytes.SequenceEqual(right.Bytes);
+    public static bool operator ==(GlideString? left, GlideString? right) => 
+        left is null ? right is null : right is not null && left.Bytes.SequenceEqual(right.Bytes);
 
     public static bool operator !=(GlideString left, GlideString right) => !(left == right);
 

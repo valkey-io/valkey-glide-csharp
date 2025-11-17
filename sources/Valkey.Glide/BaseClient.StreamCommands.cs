@@ -32,4 +32,16 @@ public partial class BaseClient : IStreamCommands
             limit,
             mode));
     }
+
+    public async Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, long? count = null, long? block = null, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await Command(Request.StreamReadAsync(key, position, count, block));
+    }
+
+    public async Task<ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, long? count = null, long? block = null, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await Command(Request.StreamReadAsync(streamPositions, count, block));
+    }
 }

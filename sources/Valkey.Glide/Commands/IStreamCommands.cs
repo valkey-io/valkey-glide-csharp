@@ -41,4 +41,29 @@ public interface IStreamCommands
     /// <returns>The ID of the added entry.</returns>
     /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
     Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Reads entries from a single stream starting from a given position.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xread"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="position">The position from which to start reading. Use "0-0" to read from the beginning.</param>
+    /// <param name="count">The maximum number of entries to return.</param>
+    /// <param name="block">The maximum time to block waiting for entries (in milliseconds). Use null for non-blocking.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of stream entries, or an empty array if no entries are available.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
+    Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, long? count = null, long? block = null, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Reads entries from multiple streams starting from given positions.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xread"/>
+    /// <param name="streamPositions">Array of stream keys and their starting positions.</param>
+    /// <param name="count">The maximum number of entries to return per stream.</param>
+    /// <param name="block">The maximum time to block waiting for entries (in milliseconds). Use null for non-blocking.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of streams with their entries, or an empty array if no entries are available.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
+    Task<ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, long? count = null, long? block = null, CommandFlags flags = CommandFlags.None);
 }
