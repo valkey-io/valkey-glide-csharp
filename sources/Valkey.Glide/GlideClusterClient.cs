@@ -20,7 +20,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Client used for connection to cluster servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
-public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands
+public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands, ITransactionClusterCommands
 {
     private GlideClusterClient() { }
 
@@ -303,6 +303,24 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Select(index), Route.Random);
+    }
+
+    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Watch(keys));
+    }
+
+    public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Unwatch(), AllPrimaries);
+    }
+
+    public async Task UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Unwatch(), route);
     }
 
     protected override async Task<Version> GetServerVersionAsync()
