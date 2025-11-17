@@ -14,7 +14,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Client used for connection to standalone servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
-public class GlideClient : BaseClient, IGenericCommands, IServerManagementCommands, IConnectionManagementCommands
+public partial class GlideClient : BaseClient, IGenericCommands, IServerManagementCommands, IConnectionManagementCommands
 {
     internal GlideClient() { }
 
@@ -75,142 +75,148 @@ public class GlideClient : BaseClient, IGenericCommands, IServerManagementComman
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Echo(message));
     }
 
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Ping());
     }
 
     public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Ping(message));
     }
 
-
-
-
-
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ConfigGetAsync(pattern));
     }
 
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigRewriteAsync());
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.DatabaseSizeAsync(database));
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushDatabaseAsync(database));
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LastSaveAsync());
     }
 
     public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.TimeAsync());
     }
 
     public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LolwutAsync());
     }
 
     public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientGetName());
     }
 
     public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientId());
     }
 
     public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Select(index));
     }
 
     public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
-        long currentCursor = cursor;
+        var options = new ScanOptions();
+        if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
+        if (pageSize > 0) options.Count = pageSize;
+
+        string currentCursor = cursor.ToString();
+        ValkeyKey[] keys;
         int currentOffset = pageOffset;
 
         do
         {
-            (long nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, pattern, pageSize));
+            (currentCursor, keys) = await ScanAsync(currentCursor, options);
 
-            IEnumerable<ValkeyKey> keysToYield = currentOffset > 0 ? keys.Skip(currentOffset) : keys;
+            if (currentOffset > 0)
+            {
+                keys = [.. keys.Skip(currentOffset)];
+                currentOffset = 0;
+            }
 
-            foreach (ValkeyKey key in keysToYield)
+            foreach (ValkeyKey key in keys)
             {
                 yield return key;
             }
 
-            currentCursor = nextCursor;
-            currentOffset = 0;
-        } while (currentCursor != 0);
+        } while (currentCursor != "0");
     }
 
-    protected override async Task InitializeServerVersionAsync()
+    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
+        => await Command(Request.ScanAsync(cursor, options));
+
+    protected override async Task<Version> GetServerVersionAsync()
     {
-        try
+        if (_serverVersion == null)
         {
-            var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]));
-            var versionMatch = System.Text.RegularExpressions.Regex.Match(infoResponse, @"(?:valkey_version|redis_version):([\d\.]+)");
-            if (versionMatch.Success)
+            try
             {
-                _serverVersion = new Version(versionMatch.Groups[1].Value);
+                var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]));
+                _serverVersion = ParseServerVersion(infoResponse) ?? DefaultServerVersion;
+            }
+            catch
+            {
+                _serverVersion = DefaultServerVersion;
             }
         }
-        catch
-        {
-            // If we can't get version, assume newer version (use SORT_RO)
-            _serverVersion = new Version(8, 0, 0);
-        }
+
+        return _serverVersion;
     }
 }

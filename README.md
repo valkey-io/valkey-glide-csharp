@@ -29,10 +29,10 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 
 Valkey GLIDE for C# is API-compatible with the following engine versions:
 
-| Engine Type           |  6.2  |  7.0  |   7.1  |  7.2  |  8.0  |  8.1  |
-|-----------------------|-------|-------|--------|-------|-------|-------|
-| Valkey                |   -   |   -   |   -    |   V   |   V   |   V   |
-| Redis                 |   V   |   V   |   V    |   V   |   -   |   -   |
+| Engine Type           |  6.2  |  7.0  |   7.1  |  7.2  |  8.0  |  8.1  |  9.0  |
+|-----------------------|-------|-------|--------|-------|-------|-------|-------|
+| Valkey                |   -   |   -   |   -    |   V   |   V   |   V   |   V   |
+| Redis                 |   V   |   V   |   V    |   V   |   -   |   -   |   -   |
 
 ## Installation
 
@@ -97,13 +97,24 @@ Console.WriteLine($"User: {user}");
 ### With Authentication and TLS
 
 ```csharp
-var config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("secure-server.example.com", 6380)
+// Password-based authentication with TLS.
+var passwordConfig = new StandaloneClientConfigurationBuilder()
+    .WithAddress(host, port)
     .WithAuthentication("username", "password")
     .WithTls()
     .Build();
 
-using var client = await GlideClient.CreateClient(config);
+using var passwordClient = await GlideClient.CreateClient(passwordConfig);
+
+// IAM authentication with TLS.
+var iamAuthConfig = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
+var iamConfig = new ClusterClientConfigurationBuilder()
+    .WithAddress(host, port)
+    .WithAuthentication("username", iamAuthConfig)
+    .WithTls(true)
+    .Build();
+
+using var iamClient = await GlideClient.CreateClient(iamConfig);
 ```
 
 ## Core API Examples

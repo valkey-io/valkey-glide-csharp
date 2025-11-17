@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Runtime.InteropServices;
+
 using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
@@ -7,6 +9,8 @@ using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.Internals.FFI;
+using static Valkey.Glide.Internals.ResponseHandler;
 using static Valkey.Glide.Pipeline.Options;
 using static Valkey.Glide.Route;
 
@@ -16,7 +20,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Client used for connection to cluster servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
-public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands
+public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands
 {
     private GlideClusterClient() { }
 
@@ -84,91 +88,91 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
 
     public async Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Echo(message).ToClusterValue(route is SingleNodeRoute), route);
     }
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Echo(message), Route.Random);
     }
 
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Ping(), AllPrimaries);
     }
 
     public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Ping(message), AllPrimaries);
     }
 
     public async Task<TimeSpan> PingAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Ping(), route);
     }
 
     public async Task<TimeSpan> PingAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Ping(message), route);
     }
 
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ConfigGetAsync(pattern).ToClusterValue(false), Route.AllPrimaries);
     }
 
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ConfigGetAsync(pattern).ToClusterValue(route is SingleNodeRoute), route);
     }
 
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
     }
 
     public async Task ConfigResetStatisticsAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigResetStatisticsAsync(), route);
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigRewriteAsync(), Route.Random);
     }
 
     public async Task ConfigRewriteAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigRewriteAsync(), route);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
     public async Task<Dictionary<string, long>> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
         ClusterValue<long> result = await Command(Request.DatabaseSizeAsync(database).ToClusterValue(false), AllPrimaries);
         if (result.HasMultiData)
@@ -183,40 +187,40 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
 
     public async Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
         return await Command(Request.DatabaseSizeAsync(database).ToClusterValue(route is SingleNodeRoute), route);
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
     }
 
     public async Task FlushAllDatabasesAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushAllDatabasesAsync(), route);
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
         _ = await Command(Request.FlushDatabaseAsync(database), AllPrimaries);
     }
 
     public async Task FlushDatabaseAsync(Route route, int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
         _ = await Command(Request.FlushDatabaseAsync(database), route);
     }
 
     public async Task<Dictionary<string, DateTime>> LastSaveAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         ClusterValue<DateTime> result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
@@ -228,13 +232,13 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
 
     public async Task<ClusterValue<DateTime>> LastSaveAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LastSaveAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
 
     public async Task<Dictionary<string, DateTime>> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         ClusterValue<DateTime> result = await Command(Request.TimeAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
@@ -246,13 +250,13 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
 
     public async Task<ClusterValue<DateTime>> TimeAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.TimeAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
 
     public async Task<Dictionary<string, string>> LolwutAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         ClusterValue<string> result = await Command(Request.LolwutAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
@@ -264,7 +268,7 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
 
     public async Task<ClusterValue<string>> LolwutAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
 
@@ -273,49 +277,141 @@ public sealed class GlideClusterClient : BaseClient, IGenericClusterCommands, IS
 
     public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientGetName(), Route.Random);
     }
 
     public async Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientGetNameCluster(route), route);
     }
 
     public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientId(), Route.Random);
     }
 
     public async Task<ClusterValue<long>> ClientIdAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientId().ToClusterValue(route is SingleNodeRoute), route);
     }
 
     public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Select(index), Route.Random);
     }
 
-    protected override async Task InitializeServerVersionAsync()
+    protected override async Task<Version> GetServerVersionAsync()
     {
-        try
+        if (_serverVersion == null)
         {
-            var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]).ToClusterValue(true), Route.Random);
-            var versionMatch = System.Text.RegularExpressions.Regex.Match(infoResponse.SingleValue, @"(?:valkey_version|redis_version):([\d\.]+)");
-            if (versionMatch.Success)
+            try
             {
-                _serverVersion = new Version(versionMatch.Groups[1].Value);
+                var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]).ToClusterValue(true), Route.Random);
+                _serverVersion = ParseServerVersion(infoResponse.SingleValue) ?? DefaultServerVersion;
+            }
+            catch
+            {
+                _serverVersion = DefaultServerVersion;
             }
         }
-        catch
+
+        return _serverVersion;
+    }
+
+    /// <summary>
+    /// Iterates incrementally over keys in the cluster.
+    /// </summary>
+    /// <param name="cursor">The cursor to use for this iteration.</param>
+    /// <param name="options">Optional scan options to filter results.</param>
+    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
+    /// <seealso cref="ClusterScanCursor"/>
+    /// <seealso cref="ScanOptions"/>
+    public async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
+    {
+        string[] args = options?.ToArgs() ?? [];
+        var (nextCursorId, keys) = await ClusterScanCommand(cursor.CursorId, args);
+        return (new ClusterScanCursor(nextCursorId), keys);
+    }
+
+    /// <summary>
+    /// Executes a cluster scan command with the given cursor and arguments.
+    /// </summary>
+    /// <param name="cursor">The cursor for the scan iteration.</param>
+    /// <param name="args">Additional arguments for the scan command.</param>
+    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
+    private async Task<(string cursor, ValkeyKey[] keys)> ClusterScanCommand(string cursor, string[] args)
+    {
+        var message = MessageContainer.GetMessageForCall();
+        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor);
+
+        IntPtr[]? argPtrs = null;
+        IntPtr argsPtr = IntPtr.Zero;
+        IntPtr argLengthsPtr = IntPtr.Zero;
+
+        try
         {
-            // If we can't get version, assume newer version (use SORT_RO)
-            _serverVersion = new Version(8, 0, 0);
+            if (args.Length > 0)
+            {
+                // 1. Get a pointer to the array of argument string pointers.
+                // Example: if args = ["MATCH", "key*"], then argPtrs[0] points
+                // to "MATCH", argPtrs[1] points to "key*", and argsPtr points
+                // to the argsPtrs array.
+                argPtrs = [.. args.Select(Marshal.StringToHGlobalAnsi)];
+                argsPtr = Marshal.AllocHGlobal(IntPtr.Size * args.Length);
+                Marshal.Copy(argPtrs, 0, argsPtr, args.Length);
+
+                // 2. Get a pointer to an array of argument string lengths.
+                // Example: if args = ["MATCH", "key*"], then argLengths[0] = 5
+                // (length of "MATCH"), argLengths[1] = 4 (length of "key*"),
+                // and argLengthsPtr points to the argLengths array.
+                var argLengths = args.Select(arg => (ulong)arg.Length).ToArray();
+                argLengthsPtr = Marshal.AllocHGlobal(sizeof(ulong) * args.Length);
+                Marshal.Copy(argLengths.Select(l => (long)l).ToArray(), 0, argLengthsPtr, args.Length);
+            }
+
+            // Submit request to Rust and wait for response.
+            RequestClusterScanFfi(ClientPointer, (ulong)message.Index, cursorPtr, (ulong)args.Length, argsPtr, argLengthsPtr);
+            IntPtr response = await message;
+
+            try
+            {
+                var result = HandleResponse(response);
+                var array = (object[])result!;
+                var nextCursor = array[0]!.ToString()!;
+                var keys = ((object[])array[1]!).Select(k => new ValkeyKey(k!.ToString())).ToArray();
+                return (nextCursor, keys);
+            }
+            finally
+            {
+                FreeResponse(response);
+            }
+        }
+        finally
+        {
+            // Clean up args memory
+            if (argLengthsPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(argLengthsPtr);
+            }
+
+            if (argsPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(argsPtr);
+            }
+
+            if (argPtrs != null)
+            {
+                Array.ForEach(argPtrs, Marshal.FreeHGlobal);
+            }
+
+            // Clean up cursor in Rust
+            RemoveClusterScanCursorFfi(cursorPtr);
+            Marshal.FreeHGlobal(cursorPtr);
         }
     }
 }

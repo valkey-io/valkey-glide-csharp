@@ -24,10 +24,27 @@ public abstract class ConnectionConfiguration
         public uint DatabaseId;
         public Protocol? Protocol;
         public string? ClientName;
+        public bool LazyConnect;
+        public bool RefreshTopologyFromInitialNodes;
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
 
         internal FFI.ConnectionConfig ToFfi() =>
-            new(Addresses, TlsMode, ClusterMode, (uint?)RequestTimeout?.TotalMilliseconds, (uint?)ConnectionTimeout?.TotalMilliseconds, ReadFrom, RetryStrategy, AuthenticationInfo, DatabaseId, Protocol, ClientName, PubSubSubscriptions);
+            new(
+                Addresses,
+                TlsMode,
+                ClusterMode,
+                (uint?)RequestTimeout?.TotalMilliseconds,
+                (uint?)ConnectionTimeout?.TotalMilliseconds,
+                ReadFrom,
+                RetryStrategy,
+                AuthenticationInfo,
+                DatabaseId,
+                Protocol,
+                ClientName,
+                LazyConnect,
+                RefreshTopologyFromInitialNodes,
+				PubSubSubscriptions
+            );
     }
 
     /// <summary>
@@ -172,7 +189,7 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Configuration for a standalone client. <br />
     /// Use <see cref="StandaloneClientConfigurationBuilder" /> or
-    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, uint?, Protocol?, string?)" /> to create an instance.
+    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, uint?, Protocol?, string?, bool)" /> to create an instance.
     /// </summary>
     public sealed class StandaloneClientConfiguration : BaseClientConfiguration
     {
@@ -181,16 +198,18 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Configuration for a standalone client.
         /// </summary>
-        /// <inheritdoc cref="ClientConfigurationBuilder{T}.WithAuthentication(string?, string)" />
         /// <param name="addresses"><inheritdoc cref="ClientConfigurationBuilder{T}.Addresses" path="/summary" /></param>
         /// <param name="useTls"><inheritdoc cref="ClientConfigurationBuilder{T}.UseTls" path="/summary" /></param>
         /// <param name="requestTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.RequestTimeout" path="/summary" /></param>
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
+        /// <param name="username">The username for authentication.</param>
+        /// <param name="password">The password for authentication.</param>
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
+        /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
         public StandaloneClientConfiguration(
             List<(string? host, ushort? port)> addresses,
             bool? useTls = null,
@@ -202,7 +221,8 @@ public abstract class ConnectionConfiguration
             string? password = null,
             uint? databaseId = null,
             Protocol? protocol = null,
-            string? clientName = null
+            string? clientName = null,
+            bool lazyConnect = false
             )
         {
             StandaloneClientConfigurationBuilder builder = new();
@@ -212,10 +232,11 @@ public abstract class ConnectionConfiguration
             _ = connectionTimeout.HasValue ? builder.ConnectionTimeout = connectionTimeout.Value : new();
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
-            _ = (username ?? password) is not null ? builder.Authentication = (username, password!) : new();
+            _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
+            builder.LazyConnect = lazyConnect;
             Request = builder.Build().Request;
         }
     }
@@ -230,16 +251,18 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Configuration for a cluster client.
         /// </summary>
-        /// <inheritdoc cref="ClientConfigurationBuilder{T}.WithAuthentication(string?, string)" />
         /// <param name="addresses"><inheritdoc cref="ClientConfigurationBuilder{T}.Addresses" path="/summary" /></param>
         /// <param name="useTls"><inheritdoc cref="ClientConfigurationBuilder{T}.UseTls" path="/summary" /></param>
         /// <param name="requestTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.RequestTimeout" path="/summary" /></param>
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
+        /// <param name="username">The username for authentication.</param>
+        /// <param name="password">The password for authentication.</param>
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
+        /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
         public ClusterClientConfiguration(
             List<(string? host, ushort? port)> addresses,
             bool? useTls = null,
@@ -251,7 +274,8 @@ public abstract class ConnectionConfiguration
             string? password = null,
             uint? databaseId = null,
             Protocol? protocol = null,
-            string? clientName = null
+            string? clientName = null,
+            bool lazyConnect = false
             )
         {
             ClusterClientConfigurationBuilder builder = new();
@@ -261,10 +285,11 @@ public abstract class ConnectionConfiguration
             _ = connectionTimeout.HasValue ? builder.ConnectionTimeout = connectionTimeout.Value : new();
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
-            _ = (username ?? password) is not null ? builder.Authentication = (username, password!) : new();
+            _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
+            builder.LazyConnect = lazyConnect;
             Request = builder.Build().Request;
         }
     }
@@ -278,6 +303,10 @@ public abstract class ConnectionConfiguration
     {
         internal ConnectionConfig Config;
 
+        /// <summary>
+        /// Initializes a new instance of the ClientConfigurationBuilder class.
+        /// </summary>
+        /// <param name="clusterMode">Whether this is a cluster mode configuration.</param>
         protected ClientConfigurationBuilder(bool clusterMode)
         {
             Config = new ConnectionConfig { ClusterMode = clusterMode };
@@ -377,8 +406,8 @@ public abstract class ConnectionConfiguration
         /// <inheritdoc cref="UseTls" />
         public T WithTls()
         {
-            UseTls = true;
-            return (T)this;
+
+            return WithTls(true);
         }
         #endregion
         #region Request Timeout
@@ -437,29 +466,73 @@ public abstract class ConnectionConfiguration
         #endregion
         #region Authentication
         /// <summary>
-        /// Configure credentials for authentication process. If none are set, the client will not authenticate itself with the server.
+        /// Configure server credentials for authentication process.
+        /// Supports both password-based and IAM authentication.
         /// </summary>
-        /// <value>
-        /// <c>username</c> - The username that will be used for authenticating connections to the servers. If not supplied, <c>"default"</c> will be used.<br />
-        /// <c>password</c> - The password that will be used for authenticating connections to the servers.
-        /// </value>
-        public (string? username, string password) Authentication
+        /// <param name="credentials">The server credentials for authentication.</param>
+        /// <returns>The builder instance for method chaining.</returns>
+        public T WithCredentials(ServerCredentials credentials)
         {
-            set => Config.AuthenticationInfo = new AuthenticationInfo
-                  (
-                      value.username,
-                      value.password
-                  );
+            ArgumentNullException.ThrowIfNull(credentials);
+
+            IamCredentials? iamCredentials = null;
+            if (credentials.IamConfig != null)
+            {
+                var serviceType = credentials.IamConfig.ServiceType switch
+                {
+                    ServiceType.ElastiCache => FFI.ServiceType.ElastiCache,
+                    ServiceType.MemoryDB => FFI.ServiceType.MemoryDB,
+                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamConfig.ServiceType))
+                };
+
+                iamCredentials = new IamCredentials(
+                    credentials.IamConfig.ClusterName,
+                    credentials.IamConfig.Region,
+                    serviceType,
+                    credentials.IamConfig.RefreshIntervalSeconds
+                );
+            }
+
+            Config.AuthenticationInfo = new AuthenticationInfo
+            (
+                credentials.Username,
+                credentials.Password,
+                iamCredentials
+            );
+
+            return (T)this;
         }
+
         /// <summary>
-        /// Configure credentials for authentication process. If none are set, the client will not authenticate itself with the server.
+        /// Configure server credentials for password-based authentication.
         /// </summary>
-        /// <param name="username">The username that will be used for authenticating connections to the servers. If not supplied, <c>"default"</c> will be used.</param>
-        /// <param name="password">The password that will be used for authenticating connections to the servers.</param>
+        /// <param name="username">The username for authentication. If null, "default" will be used.</param>
+        /// <param name="password">The password for authentication.</param>
+        /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string? username, string password)
         {
-            Authentication = (username, password);
-            return (T)this;
+            return WithCredentials(new ServerCredentials(username, password));
+        }
+
+        /// <summary>
+        /// Configure server credentials for password-based authentication with username "default".
+        /// </summary>
+        /// <param name="password">The password for authentication.</param>
+        /// <returns>The builder instance for method chaining.</returns>
+        public T WithAuthentication(string password)
+        {
+            return WithCredentials(new ServerCredentials(password));
+        }
+
+        /// <summary>
+        /// Configure server credentials for IAM authentication.
+        /// </summary>
+        /// <param name="username">The username for authentication.</param>
+        /// <param name="iamConfig">The IAM authentication configuration.</param>
+        /// <returns>The builder instance for method chaining.</returns>
+        public T WithAuthentication(string username, IamAuthConfig iamConfig)
+        {
+            return WithCredentials(new ServerCredentials(username, iamConfig));
         }
         #endregion
         #region Protocol
@@ -535,6 +608,24 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
         #endregion
+        #region Lazy Connect
+        /// <summary>
+        /// Configure whether to defer connections until the first command is executed.<br />
+        /// If not explicitly set, a default value of <c>false</c> will be used.
+        /// </summary>
+        public bool LazyConnect
+        {
+            get => Config.LazyConnect;
+            set => Config.LazyConnect = value;
+        }
+
+        /// <inheritdoc cref="LazyConnect" />
+        public T WithLazyConnect(bool lazyConnect)
+        {
+            LazyConnect = lazyConnect;
+            return (T)this;
+        }
+        #endregion
 
         internal ConnectionConfig Build() => Config;
     }
@@ -544,6 +635,9 @@ public abstract class ConnectionConfiguration
     /// </summary>
     public class StandaloneClientConfigurationBuilder : ClientConfigurationBuilder<StandaloneClientConfigurationBuilder>
     {
+        /// <summary>
+        /// Initializes a new instance of the StandaloneClientConfigurationBuilder class.
+        /// </summary>
         public StandaloneClientConfigurationBuilder() : base(false) { }
 
         /// <summary>
@@ -575,7 +669,34 @@ public abstract class ConnectionConfiguration
     /// </summary>
     public class ClusterClientConfigurationBuilder : ClientConfigurationBuilder<ClusterClientConfigurationBuilder>
     {
+        /// <summary>
+        /// Initializes a new instance of the ClusterClientConfigurationBuilder class.
+        /// </summary>
         public ClusterClientConfigurationBuilder() : base(true) { }
+
+        #region Refresh Topology
+        /// <summary>
+        /// Enables refreshing the cluster topology using only the initial nodes.
+        /// <para />
+        /// When this option is enabled, all topology updates (both the periodic checks and on-demand
+        /// refreshes triggered by topology changes) will query only the initial nodes provided when
+        /// creating the client, rather than using the internal cluster view.
+        /// <para />
+        /// If not set, defaults to <c>false</c> (uses internal cluster view for topology refresh).
+        /// </summary>
+        public bool RefreshTopologyFromInitialNodes
+        {
+            get => Config.RefreshTopologyFromInitialNodes;
+            set => Config.RefreshTopologyFromInitialNodes = value;
+        }
+
+        /// <inheritdoc cref="RefreshTopologyFromInitialNodes" />
+        public ClusterClientConfigurationBuilder WithRefreshTopologyFromInitialNodes(bool refreshTopologyFromInitialNodes)
+        {
+            RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes;
+            return this;
+        }
+        #endregion
 
         /// <summary>
         /// Complete the configuration with given settings.

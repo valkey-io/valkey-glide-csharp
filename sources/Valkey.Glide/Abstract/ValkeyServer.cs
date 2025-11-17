@@ -30,7 +30,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(a => a.ToString()!) ?? []]), MakeRoute());
         return ValkeyResult.Create(res);
     }
@@ -53,7 +53,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public Task<string?> InfoRawAsync(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         InfoOptions.Section[] sections = section.Type == ValkeyValue.StorageType.Null ? [] :
             [Enum.Parse<InfoOptions.Section>(section.ToString(), true)];
 
@@ -71,91 +71,170 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.Ping(), MakeRoute());
     }
 
     public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.Ping(message), MakeRoute());
     }
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.Echo(message), MakeRoute());
     }
 
     public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.ClientGetName(), MakeRoute());
     }
 
     public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.ClientId(), MakeRoute());
     }
 
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.ConfigGetAsync(pattern), MakeRoute());
     }
 
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
     }
 
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.DatabaseSizeAsync(database), MakeRoute());
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.LastSaveAsync(), MakeRoute());
     }
 
     public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.TimeAsync(), MakeRoute());
     }
 
     public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await _conn.Command(Request.LolwutAsync(), MakeRoute());
+    }
+
+    public async Task<bool> ScriptExistsAsync(string script, CommandFlags flags = CommandFlags.None)
+    {
+        if (string.IsNullOrEmpty(script))
+        {
+            throw new ArgumentException("Script cannot be null or empty", nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Calculate SHA1 hash of the script
+        using Script scriptObj = new(script);
+        string hash = scriptObj.Hash;
+
+        // Call SCRIPT EXISTS with the hash
+        bool[] results = await _conn.Command(Request.ScriptExistsAsync([hash]), MakeRoute());
+        return results.Length > 0 && results[0];
+    }
+
+    public async Task<bool> ScriptExistsAsync(byte[] sha1, CommandFlags flags = CommandFlags.None)
+    {
+        if (sha1 == null || sha1.Length == 0)
+        {
+            throw new ArgumentException("SHA1 hash cannot be null or empty", nameof(sha1));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Convert byte array to hex string
+        string hash = BitConverter.ToString(sha1).Replace("-", "").ToLowerInvariant();
+
+        // Call SCRIPT EXISTS with the hash
+        bool[] results = await _conn.Command(Request.ScriptExistsAsync([hash]), MakeRoute());
+        return results.Length > 0 && results[0];
+    }
+
+    public async Task<byte[]> ScriptLoadAsync(string script, CommandFlags flags = CommandFlags.None)
+    {
+        if (string.IsNullOrEmpty(script))
+        {
+            throw new ArgumentException("Script cannot be null or empty", nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Use custom command to call SCRIPT LOAD
+        ValkeyResult result = await ExecuteAsync("SCRIPT", ["LOAD", script], flags);
+        string? hashString = (string?)result;
+
+        if (string.IsNullOrEmpty(hashString))
+        {
+            throw new InvalidOperationException("SCRIPT LOAD returned null or empty hash");
+        }
+
+        // Convert hex string to byte array
+        return Convert.FromHexString(hashString);
+    }
+
+    public async Task<LoadedLuaScript> ScriptLoadAsync(LuaScript script, CommandFlags flags = CommandFlags.None)
+    {
+        if (script == null)
+        {
+            throw new ArgumentNullException(nameof(script));
+        }
+
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Load the executable script
+        byte[] hash = await ScriptLoadAsync(script.ExecutableScript, flags);
+        return new LoadedLuaScript(script, hash, script.ExecutableScript);
+    }
+
+    public async Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None)
+    {
+        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+
+        // Call SCRIPT FLUSH (default is SYNC mode)
+        _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
     }
 }

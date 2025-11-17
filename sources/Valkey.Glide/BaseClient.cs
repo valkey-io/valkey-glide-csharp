@@ -23,7 +23,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         GC.SuppressFinalize(this);
         lock (_lock)
         {
-            if (_clientPointer == IntPtr.Zero)
+            if (ClientPointer == IntPtr.Zero)
             {
                 return;
             }
@@ -31,18 +31,98 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             // Clean up PubSub resources
             CleanupPubSubResources();
 
-            _messageContainer.DisposeWithError(null);
-            CloseClientFfi(_clientPointer);
-            _clientPointer = IntPtr.Zero;
+            MessageContainer.DisposeWithError(null);
+            CloseClientFfi(ClientPointer);
+            ClientPointer = IntPtr.Zero;
         }
     }
 
     public async ValueTask DisposeAsync() => await Task.Run(Dispose);
 
-    public override string ToString() => $"{GetType().Name} {{ 0x{_clientPointer:X} {_clientInfo} }}";
+    public override string ToString() => $"{GetType().Name} {{ 0x{ClientPointer:X} {_clientInfo} }}";
 
-    public override int GetHashCode() => (int)_clientPointer;
+    public override int GetHashCode() => (int)ClientPointer;
 
+    /// <summary>
+    /// Manually refresh the IAM authentication token.
+    /// This method is only available when the client is configured with IAM authentication.
+    /// </summary>
+    /// <returns>A task that completes when the refresh attempt finishes.</returns>
+    public async Task RefreshIamTokenAsync()
+    {
+        Message message = MessageContainer.GetMessageForCall();
+        RefreshIamTokenFfi(ClientPointer, (ulong)message.Index);
+        IntPtr response = await message;
+        try
+        {
+            HandleResponse(response);
+        }
+        finally
+        {
+            FreeResponse(response);
+        }
+    }
+
+    /// <summary>
+    /// Update the current connection with a new password.
+    /// </summary>
+    /// <param name="password">The new password to update the connection with</param>
+    /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after updating password</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="password"/> is <c>null</c> or empty.</exception>
+    /// <returns>A task that completes when the password is updated</returns>
+    public async Task UpdateConnectionPasswordAsync(string password, bool immediateAuth = false)
+    {
+        if (password == null)
+        {
+            throw new ArgumentException("Password cannot be null", nameof(password));
+        }
+
+        if (password.Length == 0)
+        {
+            throw new ArgumentException("Password cannot be empty", nameof(password));
+        }
+
+        Message message = MessageContainer.GetMessageForCall();
+        IntPtr passwordPtr = Marshal.StringToHGlobalAnsi(password);
+        try
+        {
+            UpdateConnectionPasswordFfi(ClientPointer, (ulong)message.Index, passwordPtr, immediateAuth);
+            IntPtr response = await message;
+            try
+            {
+                HandleResponse(response);
+            }
+            finally
+            {
+                FreeResponse(response);
+            }
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(passwordPtr);
+        }
+    }
+
+    /// <summary>
+    /// Clear the password from the current connection.
+    /// </summary>
+    /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after clearing password</param>
+    /// <returns>A task that completes when the password is cleared</returns>
+    public async Task ClearConnectionPasswordAsync(bool immediateAuth = false)
+    {
+        Message message = MessageContainer.GetMessageForCall();
+
+        UpdateConnectionPasswordFfi(ClientPointer, (ulong)message.Index, IntPtr.Zero, immediateAuth);
+        IntPtr response = await message;
+        try
+        {
+            HandleResponse(response);
+        }
+        finally
+        {
+            FreeResponse(response);
+        }
+    }
     /// <summary>
     /// Get the PubSub message queue for manual message retrieval.
     /// Returns null if no PubSub subscriptions are configured.
@@ -83,21 +163,18 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         }
 
         using FFI.ConnectionConfig request = config.Request.ToFfi();
-        Message message = client._messageContainer.GetMessageForCall();
+        Message message = client.MessageContainer.GetMessageForCall();
         CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer, pubsubCallbackPointer);
-        client._clientPointer = await message; // This will throw an error thru failure callback if any
+        client.ClientPointer = await message; // This will throw an error thru failure callback if any
 
-        if (client._clientPointer != IntPtr.Zero)
+        if (client.ClientPointer == IntPtr.Zero)
         {
-            // Initialize PubSub handler if subscriptions are configured
-            client.InitializePubSubHandler(config.Request.PubSubSubscriptions);
-
-            // Initialize server version after successful connection
-            await client.InitializeServerVersionAsync();
-            return client;
+            throw new ConnectionException("Failed creating a client");
         }
+         // Initialize PubSub handler if subscriptions are configured
+        client.InitializePubSubHandler(config.Request.PubSubSubscriptions);
 
-        throw new ConnectionException("Failed creating a client");
+        return client;
     }
 
     protected BaseClient()
@@ -105,7 +182,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         _successCallbackDelegate = SuccessCallback;
         _failureCallbackDelegate = FailureCallback;
         _pubsubCallbackDelegate = PubSubCallback;
-        _messageContainer = new(this);
+        MessageContainer = new(this);
     }
 
     protected internal delegate T ResponseHandler<T>(IntPtr response);
@@ -123,8 +200,8 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         using FFI.Route? ffiRoute = route?.ToFfi();
 
         // 3. Sumbit request to the rust part
-        Message message = _messageContainer.GetMessageForCall();
-        CommandFfi(_clientPointer, (ulong)message.Index, cmd.ToPtr(), ffiRoute?.ToPtr() ?? IntPtr.Zero);
+        Message message = MessageContainer.GetMessageForCall();
+        CommandFfi(ClientPointer, (ulong)message.Index, cmd.ToPtr(), ffiRoute?.ToPtr() ?? IntPtr.Zero);
 
         // 4. Get a response and Handle it
         IntPtr response = await message;
@@ -149,8 +226,8 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         using FFI.BatchOptions? ffiOptions = options?.ToFfi();
 
         // 3. Sumbit request to the rust part
-        Message message = _messageContainer.GetMessageForCall();
-        BatchFfi(_clientPointer, (ulong)message.Index, ffiBatch.ToPtr(), raiseOnError, ffiOptions?.ToPtr() ?? IntPtr.Zero);
+        Message message = MessageContainer.GetMessageForCall();
+        BatchFfi(ClientPointer, (ulong)message.Index, ffiBatch.ToPtr(), raiseOnError, ffiOptions?.ToPtr() ?? IntPtr.Zero);
 
         // 4. Get a response and Handle it
         IntPtr response = await message;
@@ -165,18 +242,34 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         // All memory allocated is auto-freed by `using` operator
     }
+    protected Version? ParseServerVersion(string response)
+    {
+        var versionMatch = System.Text.RegularExpressions.Regex.Match(response, @"(?:valkey_version|redis_version):([\d\.]+)");
+        return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
+    }
     #endregion protected methods
+
+    #region protected fields
+    protected Version? _serverVersion; // cached server version
+    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
+    #endregion protected fields
+
+    #region internal fields
+    /// Raw pointer to the underlying native client.
+    internal IntPtr ClientPointer;
+    internal readonly MessageContainer MessageContainer;
+    #endregion internal fields
 
     #region private methods
     private void SuccessCallback(ulong index, IntPtr ptr) =>
         // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
-        Task.Run(() => _messageContainer.GetMessage((int)index).SetResult(ptr));
+        Task.Run(() => MessageContainer.GetMessage((int)index).SetResult(ptr));
 
     private void FailureCallback(ulong index, IntPtr strPtr, RequestErrorType errType)
     {
         string str = Marshal.PtrToStringAnsi(strPtr)!;
         // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
-        _ = Task.Run(() => _messageContainer.GetMessage((int)index).SetException(Create(errType, str)));
+        _ = Task.Run(() => MessageContainer.GetMessage((int)index).SetException(Create(errType, str)));
     }
 
     private void PubSubCallback(
@@ -278,7 +371,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     internal void SetInfo(string info) => _clientInfo = info;
 
-    protected abstract Task InitializeServerVersionAsync();
+    protected abstract Task<Version> GetServerVersionAsync();
 
     /// <summary>
     /// Initializes PubSub message handling if PubSub subscriptions are configured.
@@ -483,12 +576,8 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// and held in order to prevent the cost of marshalling on each function call.
     private readonly PubSubAction _pubsubCallbackDelegate;
 
-    /// Raw pointer to the underlying native client.
-    private IntPtr _clientPointer;
-    private readonly MessageContainer _messageContainer;
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
-    protected Version? _serverVersion; // cached server version
 
     /// PubSub message handler for routing messages to callbacks or queues.
     /// Uses volatile to ensure visibility across threads without locking on every read.

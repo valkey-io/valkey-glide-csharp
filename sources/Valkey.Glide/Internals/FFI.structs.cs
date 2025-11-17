@@ -217,6 +217,8 @@ internal partial class FFI
             uint databaseId,
             ConnectionConfiguration.Protocol? protocol,
             string? clientName,
+            bool lazyConnect = false,
+            bool refreshTopologyFromInitialNodes = false)
             BasePubSubSubscriptionConfig? pubSubSubscriptions)
         {
             _addresses = addresses;
@@ -241,6 +243,8 @@ internal partial class FFI
                 HasProtocol = protocol.HasValue,
                 Protocol = protocol ?? default,
                 ClientName = clientName,
+                LazyConnect = lazyConnect,
+                RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
                 HasPubSubConfig = pubSubSubscriptions != null,
                 PubSubConfig = new PubSubConfigInfo()
             };
@@ -629,6 +633,17 @@ internal partial class FFI
         HSetNX = 614,
         HStrlen = 615,
         HVals = 616,
+        HSetEx = 617,
+        HGetEx = 618,
+        HExpire = 619,
+        HExpireAt = 620,
+        HPExpire = 621,
+        HPExpireAt = 622,
+        HPersist = 623,
+        HTtl = 624,
+        HPTtl = 625,
+        HExpireTime = 626,
+        HPExpireTime = 627,
 
         //// HyperLogLog commands
         PfAdd = 701,
@@ -965,6 +980,9 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.LPStr)]
         public string? ClientName;
         [MarshalAs(UnmanagedType.U1)]
+        public bool LazyConnect;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool RefreshTopologyFromInitialNodes;
         public bool HasPubSubConfig;
         public PubSubConfigInfo PubSubConfig;
         // TODO more config params, see ffi.rs
@@ -990,14 +1008,60 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct AuthenticationInfo(string? username, string password)
+    internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
     {
+        /// <summary>
+        /// Username for authentication.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string? Username = username;
+        public readonly string? Username = username;
+
+        /// <summary>
+        /// Password for authentication.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string Password = password;
+        public readonly string? Password = password;
+
+        /// <summary>
+        /// IAM credentials for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasIamCredentials = iamCredentials.HasValue;
+        public readonly IamCredentials IamCredentials = iamCredentials ?? default;
     }
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
+    {
+        /// <summary>
+        /// The name of the cluster for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string ClusterName = clusterName;
+
+        /// <summary>
+        /// The AWS region for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Region = region;
+
+        /// <summary>
+        /// The AWS service type for IAM authentication.
+        /// </summary>
+        public readonly ServiceType ServiceType = serviceType;
+
+        /// <summary>
+        /// The refresh interval in seconds for IAM authentication.
+        /// </summary>
+        public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
+        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
+    }
+
+    internal enum ServiceType : uint
+    {
+        ElastiCache = 0,
+        MemoryDB = 1,
+    }
     /// <summary>
     /// FFI structure for PubSub message data received from native code.
     /// </summary>
@@ -1018,6 +1082,108 @@ internal partial class FFI
         SecureTls = 2,
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ScriptHashBuffer
+    {
+        public IntPtr Ptr;
+        public UIntPtr Len;
+        public UIntPtr Capacity;
+    }
+
+    /// <summary>
+    /// Stores a script in Rust core and returns its SHA1 hash.
+    /// </summary>
+    /// <param name="script">The Lua script code.</param>
+    /// <returns>The SHA1 hash of the script.</returns>
+    /// <exception cref="ArgumentException">Thrown when script is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when script storage fails.</exception>
+    internal static string StoreScript(string script)
+    {
+        if (string.IsNullOrEmpty(script))
+        {
+            throw new ArgumentException("Script cannot be null or empty", nameof(script));
+        }
+
+        byte[] scriptBytes = System.Text.Encoding.UTF8.GetBytes(script);
+        IntPtr hashBufferPtr = IntPtr.Zero;
+
+        try
+        {
+            unsafe
+            {
+                fixed (byte* scriptPtr = scriptBytes)
+                {
+                    hashBufferPtr = StoreScriptFfi((IntPtr)scriptPtr, (UIntPtr)scriptBytes.Length);
+                }
+            }
+
+            if (hashBufferPtr == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Failed to store script in Rust core");
+            }
+
+            // Read the ScriptHashBuffer struct
+            ScriptHashBuffer buffer = Marshal.PtrToStructure<ScriptHashBuffer>(hashBufferPtr);
+
+            // Read the hash bytes from the buffer
+            byte[] hashBytes = new byte[(int)buffer.Len];
+            Marshal.Copy(buffer.Ptr, hashBytes, 0, (int)buffer.Len);
+
+            // Convert to string
+            string hash = System.Text.Encoding.UTF8.GetString(hashBytes);
+
+            return hash;
+        }
+        finally
+        {
+            if (hashBufferPtr != IntPtr.Zero)
+            {
+                FreeScriptHashBuffer(hashBufferPtr);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes a script from Rust core storage.
+    /// </summary>
+    /// <param name="hash">The SHA1 hash of the script to remove.</param>
+    /// <exception cref="ArgumentException">Thrown when hash is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when script removal fails.</exception>
+    internal static void DropScript(string hash)
+    {
+        if (string.IsNullOrEmpty(hash))
+        {
+            throw new ArgumentException("Hash cannot be null or empty", nameof(hash));
+        }
+
+        byte[] hashBytes = System.Text.Encoding.UTF8.GetBytes(hash);
+        IntPtr errorBuffer = IntPtr.Zero;
+
+        try
+        {
+            unsafe
+            {
+                fixed (byte* hashPtr = hashBytes)
+                {
+                    errorBuffer = DropScriptFfi((IntPtr)hashPtr, (UIntPtr)hashBytes.Length);
+                }
+            }
+
+            if (errorBuffer != IntPtr.Zero)
+            {
+                string error = Marshal.PtrToStringAnsi(errorBuffer)
+                    ?? "Unknown error dropping script";
+                throw new InvalidOperationException($"Failed to drop script: {error}");
+            }
+        }
+        finally
+        {
+            if (errorBuffer != IntPtr.Zero)
+            {
+                FreeDropScriptError(errorBuffer);
+            }
+        }
+    }
     /// <summary>
     /// Enum representing the type of push notification received from the server.
     /// This matches the <c>PushKind</c> enum in <c>rust/src/ffi.rs</c>, which is an FFI-safe

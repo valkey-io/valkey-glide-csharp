@@ -31,6 +31,8 @@ x64/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+
+
 *_i.c
 *_p.c
 *_i.h
@@ -143,15 +145,20 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
-# IDE generaged files
+# IDE generated files
 .vs
 .vscode
 .kiro/
+.amazonq/
 
 _NCrunch*
 
 glide-logs/
 
-# Test results and coverage reports
+# Code Coverage Reports
+[Rr]eports/
+
 testresults/
-reports/
+
+# Temporary submodules (not for commit)
+StackExchange-Redis/

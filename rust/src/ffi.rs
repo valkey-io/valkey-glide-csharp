@@ -65,14 +65,16 @@ pub struct ConnectionConfig {
     pub has_connection_retry_strategy: bool,
     pub connection_retry_strategy: ConnectionRetryStrategy,
     pub has_authentication_info: bool,
-    pub authentication_info: Credentials,
+    pub authentication_info: AuthenticationInfo,
     pub database_id: u32,
     pub has_protocol: bool,
     pub protocol: redis::ProtocolVersion,
     /// zero pointer is valid, means no client name is given (`None`)
     pub client_name: *const c_char,
+    pub lazy_connect: bool,
     pub has_pubsub_config: bool,
     pub pubsub_config: PubSubConfigInfo,
+    
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -190,10 +192,34 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) },
+        lib_name: option_env!("GLIDE_NAME").map(|s| s.to_string()),
         authentication_info: if config.has_authentication_info {
-            Some(AuthenticationInfo {
-                username: unsafe { ptr_to_opt_str(config.authentication_info.username) },
-                password: unsafe { ptr_to_opt_str(config.authentication_info.password) },
+            let auth_info = config.authentication_info;
+            let iam_config = if auth_info.has_iam_credentials {
+                Some(glide_core::client::IamAuthenticationConfig {
+                    cluster_name: unsafe { ptr_to_str(auth_info.iam_credentials.cluster_name) },
+                    region: unsafe { ptr_to_str(auth_info.iam_credentials.region) },
+                    service_type: match auth_info.iam_credentials.service_type {
+                        ServiceType::ElastiCache => glide_core::iam::ServiceType::ElastiCache,
+                        ServiceType::MemoryDB => glide_core::iam::ServiceType::MemoryDB,
+                    },
+                    refresh_interval_seconds: if auth_info
+                        .iam_credentials
+                        .has_refresh_interval_seconds
+                    {
+                        Some(auth_info.iam_credentials.refresh_interval_seconds)
+                    } else {
+                        None
+                    },
+                })
+            } else {
+                None
+            };
+
+            Some(glide_core::client::AuthenticationInfo {
+                username: unsafe { ptr_to_opt_str(auth_info.username) },
+                password: unsafe { ptr_to_opt_str(auth_info.password) },
+                iam_config,
             })
         } else {
             None
@@ -226,6 +252,8 @@ pub(crate) unsafe fn create_connection_request(
         } else {
             None
         },
+        lazy_connect: config.lazy_connect,
+        refresh_topology_from_initial_nodes: false,
         pubsub_subscriptions: if config.has_pubsub_config {
             let subscriptions = unsafe { convert_pubsub_config(&config.pubsub_config) };
             if subscriptions.is_empty() {
@@ -239,7 +267,6 @@ pub(crate) unsafe fn create_connection_request(
         // TODO below
         periodic_checks: None,
         inflight_requests_limit: None,
-        lazy_connect: false,
     }
 }
 
@@ -294,11 +321,29 @@ pub enum ReadFromStrategy {
 /// A mirror of [`AuthenticationInfo`] adopted for FFI.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct Credentials {
-    /// zero pointer is valid, means no username is given (`None`)
+pub struct AuthenticationInfo {
     pub username: *const c_char,
-    /// zero pointer is valid, means no password is given (`None`)
     pub password: *const c_char,
+    pub has_iam_credentials: bool,
+    pub iam_credentials: IamCredentials,
+}
+
+/// A mirror of [`IamCredentials`] adopted for FFI.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct IamCredentials {
+    pub cluster_name: *const c_char,
+    pub region: *const c_char,
+    pub service_type: ServiceType,
+    pub has_refresh_interval_seconds: bool,
+    pub refresh_interval_seconds: u32,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub enum ServiceType {
+    ElastiCache = 0,
+    MemoryDB = 1,
 }
 
 #[repr(C)]
@@ -401,7 +446,7 @@ pub(crate) unsafe fn create_route(
 /// * `data`, `data_len` and also each pointer stored in `data` must be able to be safely casted to a valid to a slice of the corresponding type via [`from_raw_parts`].
 ///   See the safety documentation of [`from_raw_parts`].
 /// * The caller is responsible of freeing the allocated memory.
-pub(crate) unsafe fn convert_double_pointer_to_vec<'a>(
+pub(crate) unsafe fn convert_string_pointer_array_to_vector<'a>(
     data: *const *const u8,
     len: usize,
     data_len: *const usize,
@@ -614,11 +659,11 @@ pub struct BatchOptionsInfo {
 /// * `cmd_ptr` must be able to be safely casted to a valid [`CmdInfo`]
 /// * `args` and `args_len` in a referred [`CmdInfo`] structure must not be `null`.
 /// * `data` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string pointers.
-/// * `args_len` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string lengths. See the safety documentation of [`convert_double_pointer_to_vec`].
+/// * `args_len` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string lengths. See the safety documentation of [`convert_string_pointer_array_to_vector`].
 pub(crate) unsafe fn create_cmd(ptr: *const CmdInfo) -> Result<Cmd, String> {
     let info = unsafe { *ptr };
     let arg_vec =
-        unsafe { convert_double_pointer_to_vec(info.args, info.arg_count, info.args_len) };
+        unsafe { convert_string_pointer_array_to_vector(info.args, info.arg_count, info.args_len) };
 
     let Some(mut cmd) = info.request_type.get_command() else {
         return Err("Couldn't fetch command type".into());

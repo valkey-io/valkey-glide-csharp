@@ -1,6 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -1388,6 +1388,55 @@ internal class BatchTestUtils
         _ = batch.HashDelete(key2, ["multi1", "multi2"]);
         testData.Add(new(2L, "HashDelete(key2, [multi1, multi2])"));
 
+        // Hash Field Expire Commands (Valkey 9.0+)
+        if (TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
+        {
+            string expireKey = $"{atomicPrefix}expire-{Guid.NewGuid()}";
+
+            // Set up data for expire tests
+            _ = batch.HashSet(expireKey, "expire_field1", "expire_value1");
+            testData.Add(new(true, "HashSet(expireKey, expire_field1, expire_value1)"));
+
+            _ = batch.HashSet(expireKey, "expire_field2", "expire_value2");
+            testData.Add(new(true, "HashSet(expireKey, expire_field2, expire_value2)"));
+
+            // Test HGETEX
+            _ = batch.HashGetEx(expireKey, ["expire_field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60)));
+            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGetEx(expireKey, [expire_field1], 60s)"));
+
+            // Test HSETEX
+            _ = batch.HashSetEx(expireKey, new Dictionary<ValkeyValue, ValkeyValue> { { "setex_field", "setex_value" } }, new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60)));
+            testData.Add(new(true, "HashSetEx(expireKey, {setex_field: setex_value}, 60s)"));
+
+            // Test HEXPIRE
+            _ = batch.HashExpire(expireKey, 30, ["expire_field1"], new HashFieldExpirationConditionOptions());
+            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, 30, [expire_field1])"));
+
+            // Test HPEXPIRE
+            _ = batch.HashPExpire(expireKey, 5000, ["expire_field2"], new HashFieldExpirationConditionOptions());
+            testData.Add(new(new long[] { 1 }, "HashPExpire(expireKey, 5000, [expire_field2])"));
+
+            // Test HTTL
+            _ = batch.HashTtl(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashTtl(expireKey, [expire_field1, expire_field2])", true));
+
+            // Test HPTTL
+            _ = batch.HashPTtl(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashPTtl(expireKey, [expire_field1, expire_field2])", true));
+
+            // Test HPERSIST
+            _ = batch.HashPersist(expireKey, ["expire_field1"]);
+            testData.Add(new(new long[] { 1 }, "HashPersist(expireKey, [expire_field1])"));
+
+            // Test HEXPIRETIME
+            _ = batch.HashExpireTime(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
+
+            // Test HPEXPIRETIME
+            _ = batch.HashPExpireTime(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<long>(), "HashPExpireTime(expireKey, [expire_field1, expire_field2])", true));
+        }
+
         return testData;
     }
 
@@ -1453,6 +1502,94 @@ internal class BatchTestUtils
         return testData;
     }
 
+    public static List<TestInfo> CreateBitmapTest(Pipeline.IBatch batch, bool isAtomic)
+    {
+        List<TestInfo> testData = [];
+        string prefix = "{bitmapKey}-";
+        string atomicPrefix = isAtomic ? prefix : "";
+        string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
+        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+
+        // Test StringSetBit and StringGetBit
+        _ = batch.StringSetBit(key1, 7, true);
+        testData.Add(new(false, "StringSetBit(key1, 7, true)"));
+
+        _ = batch.StringGetBit(key1, 7);
+        testData.Add(new(true, "StringGetBit(key1, 7)"));
+
+        _ = batch.StringSetBit(key1, 15, true);
+        testData.Add(new(false, "StringSetBit(key1, 15, true)"));
+
+        _ = batch.StringGetBit(key1, 0);
+        testData.Add(new(false, "StringGetBit(key1, 0)"));
+
+        // Test StringBitCount
+        _ = batch.StringBitCount(key1);
+        testData.Add(new(2L, "StringBitCount(key1)"));
+
+        _ = batch.StringBitCount(key1, 0, 1);
+        testData.Add(new(2L, "StringBitCount(key1, 0, 1)"));
+
+        // Test StringBitPosition
+        _ = batch.StringBitPosition(key1, true);
+        testData.Add(new(7L, "StringBitPosition(key1, true)"));
+
+        _ = batch.StringBitPosition(key1, false);
+        testData.Add(new(0L, "StringBitPosition(key1, false)"));
+
+        // Test StringBitOperation - use explicit prefix for cluster mode
+        string bitOpKey1 = $"{prefix}bitop1-{Guid.NewGuid()}";
+        string bitOpKey2 = $"{prefix}bitop2-{Guid.NewGuid()}";
+        string bitOpDest = $"{prefix}bitopdest-{Guid.NewGuid()}";
+
+        _ = batch.StringSetBit(bitOpKey1, 7, true);
+        testData.Add(new(false, "StringSetBit(bitOpKey1, 7, true)"));
+
+        _ = batch.StringSetBit(bitOpKey1, 15, true);
+        testData.Add(new(false, "StringSetBit(bitOpKey1, 15, true)"));
+
+        _ = batch.StringSetBit(bitOpKey2, 3, true);
+        testData.Add(new(false, "StringSetBit(bitOpKey2, 3, true)"));
+
+        _ = batch.StringBitOperation(Bitwise.And, bitOpDest, bitOpKey1, bitOpKey2);
+        testData.Add(new(2L, "StringBitOperation(AND, bitOpDest, bitOpKey1, bitOpKey2)"));
+
+        _ = batch.StringBitCount(bitOpDest);
+        testData.Add(new(0L, "StringBitCount(bitOpDest) after AND"));
+
+        _ = batch.StringBitOperation(Bitwise.Or, bitOpDest, bitOpKey1, bitOpKey2);
+        testData.Add(new(2L, "StringBitOperation(OR, bitOpDest, bitOpKey1, bitOpKey2)"));
+
+        _ = batch.StringBitCount(bitOpDest);
+        testData.Add(new(3L, "StringBitCount(bitOpDest) after OR"));
+
+        // Test StringBitField - bit 7 set = value 1 in first byte
+        _ = batch.StringBitField(key1, [
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0))
+        ]);
+        testData.Add(new(new long[] { 1L }, "StringBitField(key1, GET u8 0)"));
+
+        _ = batch.StringBitField(key1, [
+            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 255)
+        ]);
+        testData.Add(new(new long[] { 1L }, "StringBitField(key1, SET u8 8 255)"));
+
+        _ = batch.StringBitField(key1, [
+            new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 1)
+        ]);
+        testData.Add(new(new long[] { 0L }, "StringBitField(key1, INCRBY u8 8 1)"));
+
+        // Test StringBitFieldReadOnly
+        _ = batch.StringBitFieldReadOnly(key1, [
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
+            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8))
+        ]);
+        testData.Add(new(new long[] { 1L, 0L }, "StringBitFieldReadOnly(key1, GET u8 0, GET u8 8)"));
+
+        return testData;
+    }
+
     public static TheoryData<BatchTestData> GetTestClientWithAtomic =>
         [.. TestConfiguration.TestClients.SelectMany(r => new[] { true, false }.SelectMany(isAtomic =>
             new BatchTestData[] {
@@ -1463,6 +1600,7 @@ internal class BatchTestUtils
                 new("List commands", r.Data, CreateListTest, isAtomic),
                 new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
                 new("Geospatial commands", r.Data, CreateGeospatialTest, isAtomic),
+                new("Bitmap commands", r.Data, CreateBitmapTest, isAtomic),
                 new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
                 new("Server Management commands", r.Data, CreateServerManagementTest, isAtomic)
             }))];

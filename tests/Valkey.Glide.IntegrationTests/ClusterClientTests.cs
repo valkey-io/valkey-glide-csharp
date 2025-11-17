@@ -5,6 +5,7 @@ using System.Text;
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
+using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
 
@@ -545,7 +546,7 @@ public class ClusterClientTests(TestConfiguration config)
     {
         Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "MOVE command for Cluster Client requires Valkey 9.0+ with multi-database support"
+            "Key Move for clusters added in Valkey 9"
         );
 
         string key = Guid.NewGuid().ToString();
@@ -566,13 +567,15 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyCopyAsync(GlideClusterClient client)
     {
+        // Multi-database support in cluster mode is only available in Valkey 9.0.0+
         Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"
+            "Copying to another database in cluster mode is supported since Valkey 9.0.0"
         );
 
-        string sourceKey = Guid.NewGuid().ToString();
-        string destKey = Guid.NewGuid().ToString();
+        string hashTag = Guid.NewGuid().ToString();
+        string sourceKey = $"{{hashTag}}{Guid.NewGuid()}";
+        string destKey = $"{{hashTag}}{Guid.NewGuid()}";
         string value = "test_value";
 
         // Set a key in the current database
@@ -584,5 +587,71 @@ public class ClusterClientTests(TestConfiguration config)
 
         // Verify the source key still exists in the current database
         Assert.True(await client.KeyExistsAsync(sourceKey));
+    }
+
+    [Fact]
+    public async Task LazyConnect()
+    {
+        string serverName = $"test_{Guid.NewGuid():N}";
+
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerManager.StartClusterServer(serverName);
+            var configBuilder = new ClusterClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port);
+            var eagerConfig = configBuilder.WithLazyConnect(false).Build();
+            var lazyConfig = configBuilder.WithLazyConnect(true).Build();
+
+            // Create reference client.
+            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
+            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            // Create lazy client (does not connect immediately).
+            using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
+            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            Assert.Equal(initialCount, connectCount);
+
+            // First command establishes connection.
+            await lazyClient.PingAsync();
+            var commandCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            Assert.True(connectCount < commandCount);
+        }
+        finally
+        {
+            ServerManager.StopServer(serverName);
+        }
+    }
+
+    [Fact]
+    public async Task EagerConnect()
+    {
+        string serverName = $"test_{Guid.NewGuid():N}";
+
+        try
+        {
+            // Create dedicated server.
+            var addresses = ServerManager.StartClusterServer(serverName);
+            var eagerConfig = new ClusterClientConfigurationBuilder()
+                .WithAddress(addresses[0].host, addresses[0].port)
+                .WithLazyConnect(false)
+                .Build();
+
+            // Create reference client.
+            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
+            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            // Create eager client (connects immediately).
+            using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
+            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+
+            Assert.True(initialCount < connectCount);
+        }
+        finally
+        {
+            ServerManager.StopServer(serverName);
+        }
     }
 }
