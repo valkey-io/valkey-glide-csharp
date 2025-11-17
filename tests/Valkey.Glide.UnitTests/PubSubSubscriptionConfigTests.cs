@@ -323,36 +323,6 @@ public class PubSubSubscriptionConfigTests
 
     #endregion
 
-    #region MessageCallback Tests
-
-    [Fact]
-    public void MessageCallback_CanBeInvoked()
-    {
-        // Arrange
-        bool messageReceived = false;
-        PubSubMessage? receivedMessage = null;
-        object? receivedContext = null;
-
-        void Callback(PubSubMessage message, object? context)
-        {
-            messageReceived = true;
-            receivedMessage = message;
-            receivedContext = context;
-        }
-
-        var testMessage = new PubSubMessage("test-message", "test-channel");
-        string testContext = "test-context";
-
-        // Act
-        callback(testMessage, testContext);
-
-        // Assert
-        Assert.True(messageReceived);
-        Assert.Same(testMessage, receivedMessage);
-        Assert.Same(testContext, receivedContext);
-    }
-
-    #endregion
 
     #region Validation Tests
 
