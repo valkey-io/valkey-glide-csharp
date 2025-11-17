@@ -17,8 +17,7 @@ internal sealed class PubSubMessageHandler : IDisposable
 {
     private readonly MessageCallback? _callback;
     private readonly object? _context;
-    private PubSubMessageQueue? _queue;
-    private readonly object _lock = new();
+    private readonly Lazy<PubSubMessageQueue> _queue;
     private volatile bool _disposed;
 
     /// <summary>
@@ -30,7 +29,7 @@ internal sealed class PubSubMessageHandler : IDisposable
     {
         _callback = callback;
         _context = context;
-        // Queue will be lazily initialized only when needed (i.e., when no callback is provided)
+        _queue = new Lazy<PubSubMessageQueue>(() => new PubSubMessageQueue(), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
     /// <summary>
@@ -87,20 +86,11 @@ internal sealed class PubSubMessageHandler : IDisposable
     /// Gets or creates the message queue instance. Used internally for lazy initialization.
     /// </summary>
     /// <returns>The message queue instance.</returns>
+    /// <exception cref="ObjectDisposedException">Thrown when the handler has been disposed.</exception>
     private PubSubMessageQueue GetOrCreateQueue()
     {
-        if (_queue == null)
-        {
-            lock (_lock)
-            {
-                if (_queue == null && !_disposed)
-                {
-                    _queue = new PubSubMessageQueue();
-                }
-            }
-        }
-
-        return _queue ?? throw new ObjectDisposedException(nameof(PubSubMessageHandler));
+        ThrowIfDisposed();
+        return _queue.Value;
     }
 
     /// <summary>
@@ -137,22 +127,14 @@ internal sealed class PubSubMessageHandler : IDisposable
             return;
         }
 
-        lock (_lock)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-        }
+        _disposed = true;
 
         // Dispose the message queue if it was created
-        if (_queue != null)
+        if (_queue.IsValueCreated)
         {
             try
             {
-                _queue.Dispose();
+                _queue.Value.Dispose();
             }
             catch (Exception ex)
             {
