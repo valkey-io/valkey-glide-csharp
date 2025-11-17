@@ -2,8 +2,9 @@
 
 mod ffi;
 use ffi::{
-    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, ResponseValue, RouteInfo, create_cmd,
-    create_connection_request, create_pipeline, create_route, get_pipeline_options,
+    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, PushKind,
+    ResponseValue, RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
+    get_pipeline_options,
 };
 use glide_core::{
     client::Client as GlideClient,
@@ -29,6 +30,8 @@ pub enum Level {
 pub struct Client {
     runtime: Runtime,
     core: Arc<CommandExecutionCore>,
+    pubsub_shutdown: std::sync::Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+    pubsub_task: std::sync::Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 /// Success callback that is called when a command succeeds.
@@ -121,12 +124,15 @@ impl Drop for PanicGuard {
 /// * `config` must be a valid [`ConnectionConfig`] pointer. See the safety documentation of [`create_connection_request`].
 /// * `success_callback` and `failure_callback` must be valid pointers to the corresponding FFI functions.
 ///   See the safety documentation of [`SuccessCallback`] and [`FailureCallback`].
+/// * `pubsub_callback` is an optional callback. When provided, it must be a valid function pointer.
+///   See the safety documentation in the FFI module for PubSubCallback.
 #[allow(rustdoc::private_intra_doc_links)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn create_client(
     config: *const ConnectionConfig,
     success_callback: SuccessCallback,
     failure_callback: FailureCallback,
+    #[allow(unused_variables)] pubsub_callback: Option<PubSubCallback>,
 ) {
     let mut panic_guard = PanicGuard {
         panicked: true,
@@ -135,6 +141,7 @@ pub unsafe extern "C-unwind" fn create_client(
     };
 
     let request = unsafe { create_connection_request(config) };
+
     let runtime = Builder::new_multi_thread()
         .enable_all()
         .worker_threads(10)
@@ -143,7 +150,15 @@ pub unsafe extern "C-unwind" fn create_client(
         .unwrap();
 
     let _runtime_handle = runtime.enter();
-    let res = runtime.block_on(GlideClient::new(request, None));
+
+    // Set up push notification channel if PubSub subscriptions are configured
+    // The callback is optional - users can use queue-based message retrieval instead
+    let is_subscriber = request.pubsub_subscriptions.is_some();
+
+    let (push_tx, mut push_rx) = tokio::sync::mpsc::unbounded_channel();
+    let tx = if is_subscriber { Some(push_tx) } else { None };
+
+    let res = runtime.block_on(GlideClient::new(request, tx));
     match res {
         Ok(client) => {
             let core = Arc::new(CommandExecutionCore {
@@ -152,7 +167,56 @@ pub unsafe extern "C-unwind" fn create_client(
                 client,
             });
 
-            let client_ptr = Arc::into_raw(Arc::new(Client { runtime, core }));
+            // Set up graceful shutdown coordination for PubSub task
+            // Only spawn the callback task if a callback is provided
+            let (pubsub_shutdown, pubsub_task) = if is_subscriber && pubsub_callback.is_some() {
+                let callback = pubsub_callback.unwrap();
+                let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
+
+                let task_handle = runtime.spawn(async move {
+                    logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
+
+                    loop {
+                        tokio::select! {
+                            Some(push_msg) = push_rx.recv() => {
+                                unsafe {
+                                    process_push_notification(push_msg, callback);
+                                }
+                            }
+                            _ = &mut shutdown_rx => {
+                                logger_core::log(
+                                    logger_core::Level::Info,
+                                    "pubsub",
+                                    "PubSub task received shutdown signal",
+                                );
+                                break;
+                            }
+                        }
+                    }
+
+                    logger_core::log(
+                        logger_core::Level::Info,
+                        "pubsub",
+                        "PubSub task completed gracefully",
+                    );
+                });
+
+                (
+                    std::sync::Mutex::new(Some(shutdown_tx)),
+                    std::sync::Mutex::new(Some(task_handle)),
+                )
+            } else {
+                (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
+            };
+
+            let client_adapter = Arc::new(Client {
+                runtime,
+                core,
+                pubsub_shutdown,
+                pubsub_task,
+            });
+            let client_ptr = Arc::into_raw(client_adapter.clone());
+
             unsafe { success_callback(0, client_ptr as *const ResponseValue) };
         }
         Err(err) => {
@@ -171,9 +235,158 @@ pub unsafe extern "C-unwind" fn create_client(
     drop(panic_guard);
 }
 
+/// Processes a push notification message and calls the provided callback function.
+///
+/// This function extracts the message data from the PushInfo and invokes the C# callback
+/// with the appropriate parameters using scoped lifetime management to prevent memory leaks.
+///
+/// # Parameters
+/// - `push_msg`: The push notification message to process.
+/// - `pubsub_callback`: The callback function to invoke with the processed notification.
+///
+/// # Safety
+/// This function is unsafe because it:
+/// - Calls an FFI function (`pubsub_callback`) that may have undefined behavior
+/// - Assumes push_msg.data contains valid BulkString values
+///
+/// The caller must ensure:
+/// - `pubsub_callback` is a valid function pointer to a properly implemented callback
+/// - The callback copies data synchronously before returning
+///
+/// # Memory Safety
+/// This implementation uses scoped lifetime management instead of `std::mem::forget()`.
+/// Vec<u8> instances are kept alive during callback execution and automatically cleaned up
+/// when the function exits, preventing memory leaks.
+unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: PubSubCallback) {
+    use redis::Value;
+
+    // Convert all values to Vec<u8>, handling both BulkString and Int types
+    let strings: Vec<Vec<u8>> = push_msg
+        .data
+        .into_iter()
+        .map(|value| match value {
+            Value::BulkString(bytes) => bytes,
+            Value::Int(num) => num.to_string().into_bytes(),
+            Value::SimpleString(s) => s.into_bytes(),
+            _ => {
+                logger_core::log(
+                    logger_core::Level::Warn,
+                    "pubsub",
+                    &format!("Unexpected value type in PubSub message: {:?}", value),
+                );
+                Vec::new()
+            }
+        })
+        .collect();
+
+    // Store the kind to avoid move issues
+    let push_kind = push_msg.kind.clone();
+
+    // Validate message structure based on PushKind and convert to FFI kind
+    // The FFI PushKind enum is defined in ffi.rs and matches the C# PushKind enum in FFI.structs.cs
+    let (pattern, channel, message, kind) = match (push_kind.clone(), strings.len()) {
+        (redis::PushKind::Message, 2) => {
+            // Regular message: [channel, message]
+            (None, &strings[0], &strings[1], PushKind::Message)
+        }
+        (redis::PushKind::PMessage, 3) => {
+            // Pattern message: [pattern, channel, message]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PMessage,
+            )
+        }
+        (redis::PushKind::SMessage, 2) => {
+            // Sharded message: [channel, message]
+            (None, &strings[0], &strings[1], PushKind::SMessage)
+        }
+        (redis::PushKind::Subscribe, 2) => {
+            // Subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::Subscribe)
+        }
+        (redis::PushKind::PSubscribe, 3) => {
+            // Pattern subscribe confirmation: [pattern, channel, count]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PSubscribe,
+            )
+        }
+        (redis::PushKind::SSubscribe, 2) => {
+            // Sharded subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::SSubscribe)
+        }
+        (redis::PushKind::Unsubscribe, 2) => {
+            // Unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::Unsubscribe)
+        }
+        (redis::PushKind::PUnsubscribe, 3) => {
+            // Pattern unsubscribe confirmation: [pattern, channel, count]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PUnsubscribe,
+            )
+        }
+        (redis::PushKind::SUnsubscribe, 2) => {
+            // Sharded unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::SUnsubscribe)
+        }
+        (redis::PushKind::Disconnection, _) => {
+            logger_core::log(
+                logger_core::Level::Info,
+                "pubsub",
+                "PubSub disconnection received",
+            );
+            return;
+        }
+        (kind, len) => {
+            logger_core::log(
+                logger_core::Level::Error,
+                "pubsub",
+                &format!(
+                    "Invalid PubSub message structure: kind={:?}, len={}",
+                    kind, len
+                ),
+            );
+            return;
+        }
+    };
+
+    // Prepare pointers while keeping strings alive
+    let pattern_ptr = pattern.map(|p| p.as_ptr()).unwrap_or(std::ptr::null());
+    let pattern_len = pattern.map(|p| p.len() as u64).unwrap_or(0);
+    let channel_ptr = channel.as_ptr();
+    let channel_len = channel.len() as u64;
+    let message_ptr = message.as_ptr();
+    let message_len = message.len() as u64;
+
+    // Call callback while strings are still alive
+    unsafe {
+        pubsub_callback(
+            kind,
+            message_ptr,
+            message_len,
+            channel_ptr,
+            channel_len,
+            pattern_ptr,
+            pattern_len,
+        );
+    }
+
+    // Vec<u8> instances are automatically cleaned up here
+    // No memory leak, no use-after-free
+}
+
 /// Closes the given client, deallocating it from the heap.
 /// This function should only be called once per pointer created by [`create_client`].
 /// After calling this function the `client_ptr` is not in a valid state.
+///
+/// Implements graceful shutdown coordination for PubSub tasks with timeout.
 ///
 /// # Safety
 ///
@@ -182,6 +395,71 @@ pub unsafe extern "C-unwind" fn create_client(
 #[unsafe(no_mangle)]
 pub extern "C" fn close_client(client_ptr: *const c_void) {
     assert!(!client_ptr.is_null());
+
+    // Get a reference to the client to access shutdown coordination
+    let client = unsafe { &*(client_ptr as *const Client) };
+
+    // Take ownership of shutdown sender and signal graceful shutdown
+    if let Ok(mut guard) = client.pubsub_shutdown.lock() {
+        if let Some(shutdown_tx) = guard.take() {
+            logger_core::log(
+                logger_core::Level::Debug,
+                "pubsub",
+                "Signaling PubSub task to shutdown",
+            );
+
+            // Send shutdown signal (ignore error if receiver already dropped)
+            let _ = shutdown_tx.send(());
+        }
+    }
+
+    // Take ownership of task handle and wait for completion with timeout
+    if let Ok(mut guard) = client.pubsub_task.lock() {
+        if let Some(task_handle) = guard.take() {
+            let timeout = std::time::Duration::from_secs(5);
+
+            logger_core::log(
+                logger_core::Level::Debug,
+                "pubsub",
+                &format!(
+                    "Waiting for PubSub task to complete (timeout: {:?})",
+                    timeout
+                ),
+            );
+
+            let result = client
+                .runtime
+                .block_on(async { tokio::time::timeout(timeout, task_handle).await });
+
+            match result {
+                Ok(Ok(())) => {
+                    logger_core::log(
+                        logger_core::Level::Info,
+                        "pubsub",
+                        "PubSub task completed successfully",
+                    );
+                }
+                Ok(Err(e)) => {
+                    logger_core::log(
+                        logger_core::Level::Warn,
+                        "pubsub",
+                        &format!("PubSub task completed with error: {:?}", e),
+                    );
+                }
+                Err(_) => {
+                    logger_core::log(
+                        logger_core::Level::Warn,
+                        "pubsub",
+                        &format!(
+                            "PubSub task did not complete within timeout ({:?})",
+                            timeout
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
     // This will bring the strong count down to 0 once all client requests are done.
     unsafe { Arc::decrement_strong_count(client_ptr as *const Client) };
 }

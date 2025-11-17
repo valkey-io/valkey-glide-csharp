@@ -10,6 +10,26 @@ namespace Valkey.Glide.Internals;
 
 internal partial class FFI
 {
+    /// <summary>
+    /// FFI callback delegate for PubSub message reception matching the Rust FFI signature.
+    /// </summary>
+    /// <param name="pushKind">The type of push notification received.</param>
+    /// <param name="messagePtr">Pointer to the raw message bytes.</param>
+    /// <param name="messageLen">The length of the message data in bytes.</param>
+    /// <param name="channelPtr">Pointer to the raw channel name bytes.</param>
+    /// <param name="channelLen">The length of the channel name in bytes.</param>
+    /// <param name="patternPtr">Pointer to the raw pattern bytes (null if no pattern).</param>
+    /// <param name="patternLen">The length of the pattern in bytes (0 if no pattern).</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate void PubSubMessageCallback(
+        uint pushKind,
+        IntPtr messagePtr,
+        ulong messageLen,
+        IntPtr channelPtr,
+        ulong channelLen,
+        IntPtr patternPtr,
+        ulong patternLen);
+
 #if NET8_0_OR_GREATER
     [LibraryImport("libglide_rs", EntryPoint = "command")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -25,7 +45,7 @@ internal partial class FFI
 
     [LibraryImport("libglide_rs", EntryPoint = "create_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback);
+    public static partial void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback);
 
     [LibraryImport("libglide_rs", EntryPoint = "close_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -88,7 +108,7 @@ internal partial class FFI
     public static extern void FreeResponse(IntPtr response);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_client")]
-    public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback);
+    public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
     public static extern void CloseClientFfi(IntPtr client);
