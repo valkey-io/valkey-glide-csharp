@@ -123,6 +123,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             FreeResponse(response);
         }
     }
+
     /// <summary>
     /// Get the PubSub message queue for manual message retrieval.
     /// Returns null if no PubSub subscriptions are configured.
@@ -171,7 +172,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         {
             throw new ConnectionException("Failed creating a client");
         }
-         // Initialize PubSub handler if subscriptions are configured
+        // Initialize PubSub handler if subscriptions are configured
         client.InitializePubSubHandler(config.Request.PubSubSubscriptions);
 
         return client;

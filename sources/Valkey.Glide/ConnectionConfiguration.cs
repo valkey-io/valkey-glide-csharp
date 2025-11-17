@@ -43,7 +43,7 @@ public abstract class ConnectionConfiguration
                 ClientName,
                 LazyConnect,
                 RefreshTopologyFromInitialNodes,
-				PubSubSubscriptions
+                PubSubSubscriptions
             );
     }
 

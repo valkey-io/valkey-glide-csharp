@@ -33,7 +33,7 @@ public abstract class BasePubSubSubscriptionConfig
 {
     internal MessageCallback? Callback { get; set; }
     internal object? Context { get; set; }
-    internal Dictionary<uint, ISet<string>> Subscriptions { get; set; } = new Dictionary<uint, ISet<string>>();
+    internal Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
     internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
@@ -84,7 +84,7 @@ public abstract class BasePubSubSubscriptionConfig
 /// </summary>
 public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionConfig
 {
-    private static readonly HashSet<uint> s_validModes = new(Enum.GetValues<PubSubChannelMode>().Select(m => (uint)m));
+    private static readonly HashSet<uint> ValidModes = [.. Enum.GetValues<PubSubChannelMode>().Select(m => (uint)m)];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StandalonePubSubSubscriptionConfig"/> class.
@@ -151,7 +151,7 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
         // Ensure only valid modes for standalone clients are used
         foreach (uint mode in Subscriptions.Keys)
         {
-            if (!s_validModes.Contains(mode))
+            if (!ValidModes.Contains(mode))
             {
                 throw new ArgumentException($"Subscription mode {mode} is not valid for standalone clients");
             }
@@ -164,7 +164,7 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
 /// </summary>
 public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConfig
 {
-    private static readonly HashSet<uint> s_validModes = new(Enum.GetValues<PubSubClusterChannelMode>().Select(m => (uint)m));
+    private static readonly HashSet<uint> ValidModes = [.. Enum.GetValues<PubSubClusterChannelMode>().Select(m => (uint)m)];
 
     /// <summary>
     /// /// Initializes a ne of the <see cref="ClusterPubSubSubscriptionConfig"/> class.
@@ -239,7 +239,7 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
         // Ensure only valid modes for cluster clients are used
         foreach (uint mode in Subscriptions.Keys)
         {
-            if (!s_validModes.Contains(mode))
+            if (!ValidModes.Contains(mode))
             {
                 throw new ArgumentException($"Subscription mode {mode} is not valid for cluster clients");
             }
