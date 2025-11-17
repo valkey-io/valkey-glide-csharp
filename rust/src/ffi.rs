@@ -72,6 +72,7 @@ pub struct ConnectionConfig {
     /// zero pointer is valid, means no client name is given (`None`)
     pub client_name: *const c_char,
     pub lazy_connect: bool,
+    pub refresh_topology_from_initial_nodes: bool,
     pub has_pubsub_config: bool,
     pub pubsub_config: PubSubConfigInfo,
     /*
@@ -252,7 +253,7 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         lazy_connect: config.lazy_connect,
-        refresh_topology_from_initial_nodes: false,
+        refresh_topology_from_initial_nodes: config.refresh_topology_from_initial_nodes,
         pubsub_subscriptions: if config.has_pubsub_config {
             let subscriptions = unsafe { convert_pubsub_config(&config.pubsub_config) };
             if subscriptions.is_empty() {
@@ -800,7 +801,3 @@ pub type PubSubCallback = unsafe extern "C" fn(
     pattern_ptr: *const u8,
     pattern_len: u64,
 );
-
-// PubSub callback functions removed - using instance-based callbacks instead.
-// The pubsub_callback parameter in create_client will be used to configure glide-core's
-// PubSub message handler when full integration is implemented.

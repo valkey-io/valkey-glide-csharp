@@ -24,12 +24,12 @@ internal partial class FFI
     internal delegate void PubSubMessageCallback(
         uint pushKind,
         IntPtr messagePtr,
-        long messageLen,
+        ulong messageLen,
         IntPtr channelPtr,
-        long channelLen,
+        ulong channelLen,
         IntPtr patternPtr,
-        long patternLen);
-		
+        ulong patternLen);
+
 #if NET8_0_OR_GREATER
     [LibraryImport("libglide_rs", EntryPoint = "command")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

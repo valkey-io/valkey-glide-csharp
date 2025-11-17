@@ -983,6 +983,7 @@ internal partial class FFI
         public bool LazyConnect;
         [MarshalAs(UnmanagedType.U1)]
         public bool RefreshTopologyFromInitialNodes;
+        [MarshalAs(UnmanagedType.U1)]
         public bool HasPubSubConfig;
         public PubSubConfigInfo PubSubConfig;
         // TODO more config params, see ffi.rs
