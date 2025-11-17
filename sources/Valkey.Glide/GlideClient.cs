@@ -14,7 +14,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Client used for connection to standalone servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
-public partial class GlideClient : BaseClient, IGenericCommands, IServerManagementCommands, IConnectionManagementCommands
+public partial class GlideClient : BaseClient, IGenericCommands, IServerManagementCommands, IConnectionManagementCommands, ITransactionCommands
 {
     internal GlideClient() { }
 
@@ -201,6 +201,18 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
 
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
+
+    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Watch(keys));
+    }
+
+    public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Unwatch());
+    }
 
     protected override async Task<Version> GetServerVersionAsync()
     {

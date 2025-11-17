@@ -450,7 +450,7 @@ public abstract class Condition
 
         internal override List<ICmd> CreateCommands()
             => [
-                Request.CustomCommand(["WATCH", key]),
+                Request.Watch([key]),
                 Request.CustomCommand([cmd.ToString(), key, expectedValue]),
             ];
 
@@ -495,7 +495,7 @@ public abstract class Condition
 
         internal sealed override List<ICmd> CreateCommands()
             => [
-                Request.CustomCommand(["WATCH", key]),
+                Request.Watch([key]),
                 Request.CustomCommand(cmd == ValkeyCommand.GET
                     ? [cmd.ToString(), key]
                     : [cmd.ToString(), key, memberName]
@@ -540,7 +540,7 @@ public abstract class Condition
 
         internal sealed override List<ICmd> CreateCommands()
             => [
-                Request.CustomCommand(["WATCH", key]),
+                Request.Watch([key]),
                 Request.CustomCommand([ValkeyCommand.LINDEX.ToString(), key, index.ToString()]),
             ];
 
@@ -588,7 +588,7 @@ public abstract class Condition
 
         internal sealed override List<ICmd> CreateCommands()
             => [
-                Request.CustomCommand(["WATCH", key]),
+                Request.Watch([key]),
                 Request.CustomCommand([cmd.ToString(), key]),
             ];
 
@@ -624,7 +624,7 @@ public abstract class Condition
 
         internal sealed override List<ICmd> CreateCommands()
             => [
-                Request.CustomCommand(["WATCH", key]),
+                Request.Watch([key]),
                 Request.CustomCommand(["ZCOUNT", key, min, max]),
             ];
 
@@ -658,7 +658,7 @@ public abstract class Condition
 
         internal sealed override List<ICmd> CreateCommands()
             => [
-                Request.CustomCommand(["WATCH", key]),
+                Request.Watch([key]),
                 Request.CustomCommand(["ZCOUNT", key, sortedSetScore, sortedSetScore]),
             ];
 
