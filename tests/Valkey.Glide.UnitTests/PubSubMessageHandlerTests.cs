@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Threading.Tasks;
-
 namespace Valkey.Glide.UnitTests;
 
 public class PubSubMessageHandlerTests

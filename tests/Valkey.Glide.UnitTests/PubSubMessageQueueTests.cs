@@ -2,8 +2,6 @@
 
 using System.Collections.Concurrent;
 
-using Valkey.Glide;
-
 namespace Valkey.Glide.UnitTests;
 
 public class PubSubMessageQueueTests
