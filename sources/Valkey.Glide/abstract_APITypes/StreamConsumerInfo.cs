@@ -1,4 +1,6 @@
-﻿namespace Valkey.Glide;
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+namespace Valkey.Glide;
 
 /// <summary>
 /// Describes a consumer within a consumer group, retrieved using the XINFO CONSUMERS command.

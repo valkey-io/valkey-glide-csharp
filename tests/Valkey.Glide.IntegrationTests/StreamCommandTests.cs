@@ -228,4 +228,80 @@ public class StreamCommandTests
         ValkeyValue id = await client.StreamAddAsync(key, "field", "value", messageId: "1000000000000-0");
         Assert.Equal("1000000000000-0", id.ToString());
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_AllEntries(BaseClient client)
+    {
+        string key = "{StreamRange}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Read all entries
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Equal(3, entries.Length);
+        Assert.Equal("value1", entries[0]["field"].ToString());
+        Assert.Equal("value2", entries[1]["field"].ToString());
+        Assert.Equal("value3", entries[2]["field"].ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_WithRange(BaseClient client)
+    {
+        string key = "{StreamRange}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Read from id1 to id2
+        StreamEntry[] entries = await client.StreamRangeAsync(key, start: id1, end: id2);
+        Assert.Equal(2, entries.Length);
+        Assert.Equal(id1.ToString(), entries[0].Id.ToString());
+        Assert.Equal(id2.ToString(), entries[1].Id.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_WithCount(BaseClient client)
+    {
+        string key = "{StreamRange}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field", "value1");
+        await client.StreamAddAsync(key, "field", "value2");
+        await client.StreamAddAsync(key, "field", "value3");
+        
+        // Read only 2 entries
+        StreamEntry[] entries = await client.StreamRangeAsync(key, count: 2);
+        Assert.Equal(2, entries.Length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_Descending(BaseClient client)
+    {
+        string key = "{StreamRange}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field", "value1");
+        await client.StreamAddAsync(key, "field", "value2");
+        await client.StreamAddAsync(key, "field", "value3");
+        
+        // Read in ascending order first to verify entries exist
+        StreamEntry[] ascEntries = await client.StreamRangeAsync(key);
+        Assert.Equal(3, ascEntries.Length);
+        
+        // Read in descending order (most recent first) - XREVRANGE uses + to -
+        StreamEntry[] entries = await client.StreamRangeAsync(key, start: "+", end: "-", order: Order.Descending);
+        Assert.Equal(3, entries.Length);
+        Assert.Equal("value3", entries[0]["field"].ToString());
+        Assert.Equal("value2", entries[1]["field"].ToString());
+        Assert.Equal("value1", entries[2]["field"].ToString());
+    }
 }

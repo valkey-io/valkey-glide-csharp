@@ -1,9 +1,11 @@
-﻿using System;
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using System;
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// Result of the <see href="https://valkey.io/commands/xautoclaim/">XAUTOCLAIM</see> command with the <c>JUSTID</c> option.
+/// Result of the XAUTOCLAIM command with the JUSTID option.
 /// </summary>
 public readonly struct StreamAutoClaimIdsOnlyResult
 {
@@ -15,7 +17,7 @@ public readonly struct StreamAutoClaimIdsOnlyResult
     }
 
     /// <summary>
-    /// A null <see cref="StreamAutoClaimIdsOnlyResult"/>, indicating no results.
+    /// A null StreamAutoClaimIdsOnlyResult, indicating no results.
     /// </summary>
     public static StreamAutoClaimIdsOnlyResult Null { get; } = new StreamAutoClaimIdsOnlyResult(ValkeyValue.Null, Array.Empty<ValkeyValue>(), Array.Empty<ValkeyValue>());
 

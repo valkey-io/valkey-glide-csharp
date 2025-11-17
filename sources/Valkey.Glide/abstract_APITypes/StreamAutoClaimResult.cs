@@ -1,9 +1,11 @@
-﻿using System;
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using System;
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// Result of the <see href="https://valkey.io/commands/xautoclaim/">XAUTOCLAIM</see> command.
+/// Result of the XAUTOCLAIM command.
 /// </summary>
 public readonly struct StreamAutoClaimResult
 {
@@ -15,7 +17,7 @@ public readonly struct StreamAutoClaimResult
     }
 
     /// <summary>
-    /// A null <see cref="StreamAutoClaimResult"/>, indicating no results.
+    /// A null StreamAutoClaimResult, indicating no results.
     /// </summary>
     public static StreamAutoClaimResult Null { get; } = new StreamAutoClaimResult(ValkeyValue.Null, Array.Empty<StreamEntry>(), Array.Empty<ValkeyValue>());
 
@@ -30,7 +32,7 @@ public readonly struct StreamAutoClaimResult
     public ValkeyValue NextStartId { get; }
 
     /// <summary>
-    /// An array of <see cref="StreamEntry"/> for the successfully claimed entries.
+    /// An array of StreamEntry for the successfully claimed entries.
     /// </summary>
     public StreamEntry[] ClaimedEntries { get; }
 
