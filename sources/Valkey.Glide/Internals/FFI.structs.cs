@@ -399,6 +399,11 @@ internal partial class FFI
                 throw new ArgumentException("Invalid message data: pointer is null");
             }
 
+            if (messageLen == 0)
+            {
+                throw new ArgumentException("Invalid message data: length is zero");
+            }
+
             if (channelPtr == IntPtr.Zero)
             {
                 throw new ArgumentException("Invalid channel data: pointer is null");
@@ -411,10 +416,7 @@ internal partial class FFI
 
             // Marshal message bytes to string
             byte[] messageBytes = new byte[messageLen];
-            if (messageLen > 0)
-            {
-                Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
-            }
+            Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
             string message = System.Text.Encoding.UTF8.GetString(messageBytes);
 
             if (string.IsNullOrEmpty(message))
