@@ -6,14 +6,20 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
-    public static Cmd<GlideString, ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue messageId, long? maxLength, bool useApproximateMaxLength, NameValueEntry[] streamPairs, long? limit, StreamTrimMode mode)
+    public static Cmd<GlideString, ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue messageId, long? maxLength, ValkeyValue minId, bool useApproximateTrimming, NameValueEntry[] streamPairs, long? limit, StreamTrimMode mode, bool noMakeStream)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        // Add MAXLEN trimming options if specified
+        // Add NOMKSTREAM if specified
+        if (noMakeStream)
+        {
+            args.Add("NOMKSTREAM".ToGlideString());
+        }
+
+        // Add trimming options (MAXLEN or MINID)
         if (maxLength.HasValue)
         {
-            if (useApproximateMaxLength)
+            if (useApproximateTrimming)
             {
                 args.Add("MAXLEN".ToGlideString());
                 args.Add("~".ToGlideString());
@@ -25,7 +31,27 @@ internal partial class Request
             args.Add(maxLength.Value.ToGlideString());
 
             // Add LIMIT if specified and approximate trimming is used
-            if (limit.HasValue && useApproximateMaxLength)
+            if (limit.HasValue && useApproximateTrimming)
+            {
+                args.Add("LIMIT".ToGlideString());
+                args.Add(limit.Value.ToGlideString());
+            }
+        }
+        else if (!minId.IsNull)
+        {
+            if (useApproximateTrimming)
+            {
+                args.Add("MINID".ToGlideString());
+                args.Add("~".ToGlideString());
+            }
+            else
+            {
+                args.Add("MINID".ToGlideString());
+            }
+            args.Add(minId.ToGlideString());
+
+            // Add LIMIT if specified and approximate trimming is used
+            if (limit.HasValue && useApproximateTrimming)
             {
                 args.Add("LIMIT".ToGlideString());
                 args.Add(limit.Value.ToGlideString());
@@ -42,10 +68,10 @@ internal partial class Request
             args.Add(pair.Value.ToGlideString());
         }
 
-        return new(RequestType.XAdd, [.. args], false, response => (ValkeyValue)response);
+        return new(RequestType.XAdd, [.. args], true, response => (ValkeyValue)response);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, long? count, long? block)
+    public static Cmd<object, StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? count, int? block)
     {
         List<GlideString> args = [];
 
@@ -68,7 +94,7 @@ internal partial class Request
         return new Cmd<object, StreamEntry[]>(RequestType.XRead, [.. args], false, ConvertSingleStreamRead, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object, ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, long? count, long? block)
+    public static Cmd<object, ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, int? count, int? block)
     {
         List<GlideString> args = [];
 

@@ -135,4 +135,97 @@ public class StreamCommandTests
         Assert.Single(entries);
         Assert.Equal("value2", entries[0]["field"].ToString());
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_NoMakeStream_StreamDoesNotExist(BaseClient client)
+    {
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        
+        // Try to add to non-existent stream with NOMKSTREAM - should return null
+        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value", noMakeStream: true);
+        Assert.True(messageId.IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_NoMakeStream_StreamExists(BaseClient client)
+    {
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        
+        // Create stream first
+        await client.StreamAddAsync(key, "field", "value1");
+        
+        // Add to existing stream with NOMKSTREAM - should succeed
+        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value2", noMakeStream: true);
+        Assert.False(messageId.IsNull);
+        Assert.Contains("-", messageId.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_WithMinId(BaseClient client)
+    {
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        
+        // Add 3 entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Add another entry with MINID set to id2 - should trim entries older than id2
+        ValkeyValue id4 = await client.StreamAddAsync(key, "field", "value4", minId: id2);
+        Assert.False(id4.IsNull);
+        
+        // Verify entries - should have id2, id3, id4 (id1 should be trimmed)
+        StreamEntry[] entries = await client.StreamReadAsync(key, "0-0");
+        Assert.True(entries.Length >= 3);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_WithMinIdApproximate(BaseClient client)
+    {
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        await client.StreamAddAsync(key, "field", "value2");
+        
+        // Add with approximate MINID trimming
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3", minId: id1, useApproximateTrimming: true);
+        Assert.False(id3.IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_WithTimestampAutoSequence(BaseClient client)
+    {
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        
+        // Use <ms>-* format to auto-generate sequence number for specific timestamp
+        long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1", messageId: $"{timestamp}-*");
+        Assert.False(id1.IsNull);
+        Assert.StartsWith($"{timestamp}-", id1.ToString());
+        
+        // Add another with same timestamp - should get incremented sequence
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2", messageId: $"{timestamp}-*");
+        Assert.False(id2.IsNull);
+        Assert.StartsWith($"{timestamp}-", id2.ToString());
+        
+        // Verify IDs are different (different sequences)
+        Assert.NotEqual(id1.ToString(), id2.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_WithExplicitId(BaseClient client)
+    {
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        
+        // Add with explicit ID
+        ValkeyValue id = await client.StreamAddAsync(key, "field", "value", messageId: "1000000000000-0");
+        Assert.Equal("1000000000000-0", id.ToString());
+    }
 }
