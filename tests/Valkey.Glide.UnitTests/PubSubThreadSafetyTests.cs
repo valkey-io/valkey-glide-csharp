@@ -251,10 +251,10 @@ public class PubSubThreadSafetyTests
             method?.Invoke(this, new object?[] { config });
         }
 
-        protected override Task InitializeServerVersionAsync()
+        protected override Task<Version> GetServerVersionAsync()
         {
             _serverVersion = new Version(7, 2, 0);
-            return Task.CompletedTask;
+            return Task.FromResult(_serverVersion);
         }
     }
 }

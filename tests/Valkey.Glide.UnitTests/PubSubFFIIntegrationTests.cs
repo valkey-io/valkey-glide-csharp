@@ -131,7 +131,7 @@ public class PubSubFFIIntegrationTests
                     (ulong)channel.Length,
                     IntPtr.Zero,
                     0));
-            Assert.Contains("PubSub message content cannot be null or empty after marshaling", ex.Message);
+            Assert.Contains("Invalid message data: length is zero", ex.Message);
         }
         finally
         {
@@ -208,9 +208,9 @@ public class PubSubFFIIntegrationTests
     // Mock class for testing
     private class MockBaseClient : BaseClient
     {
-        protected override Task InitializeServerVersionAsync()
+        protected override Task<Version> GetServerVersionAsync()
         {
-            return Task.CompletedTask;
+            return Task.FromResult(new Version(7, 2, 0));
         }
 
         internal override void HandlePubSubMessage(PubSubMessage message)

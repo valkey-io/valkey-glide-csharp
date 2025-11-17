@@ -218,8 +218,8 @@ internal partial class FFI
             ConnectionConfiguration.Protocol? protocol,
             string? clientName,
             bool lazyConnect = false,
-            bool refreshTopologyFromInitialNodes = false)
-            BasePubSubSubscriptionConfig? pubSubSubscriptions)
+            bool refreshTopologyFromInitialNodes = false,
+            BasePubSubSubscriptionConfig? pubSubSubscriptions = null)
         {
             _addresses = addresses;
             _pubSubConfig = pubSubSubscriptions;
@@ -246,7 +246,7 @@ internal partial class FFI
                 LazyConnect = lazyConnect,
                 RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
                 HasPubSubConfig = pubSubSubscriptions != null,
-                PubSubConfig = new PubSubConfigInfo()
+                PubSubConfig = pubSubSubscriptions != null ? MarshalPubSubConfig(pubSubSubscriptions) : new PubSubConfigInfo()
             };
         }
 

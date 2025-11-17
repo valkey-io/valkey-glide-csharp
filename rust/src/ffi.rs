@@ -7,8 +7,8 @@ use std::{
 
 use glide_core::{
     client::{
-        AuthenticationInfo, ConnectionRequest, ConnectionRetryStrategy, NodeAddress,
-        ReadFrom as coreReadFrom, TlsMode,
+        AuthenticationInfo as CoreAuthenticationInfo, ConnectionRequest, ConnectionRetryStrategy,
+        NodeAddress, ReadFrom as coreReadFrom, TlsMode,
     },
     request_type::RequestType,
 };
@@ -74,7 +74,6 @@ pub struct ConnectionConfig {
     pub lazy_connect: bool,
     pub has_pubsub_config: bool,
     pub pubsub_config: PubSubConfigInfo,
-    
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -216,7 +215,7 @@ pub(crate) unsafe fn create_connection_request(
                 None
             };
 
-            Some(glide_core::client::AuthenticationInfo {
+            Some(CoreAuthenticationInfo {
                 username: unsafe { ptr_to_opt_str(auth_info.username) },
                 password: unsafe { ptr_to_opt_str(auth_info.password) },
                 iam_config,
