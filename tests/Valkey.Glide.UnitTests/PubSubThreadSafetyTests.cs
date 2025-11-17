@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Xunit;
@@ -248,7 +247,7 @@ public class PubSubThreadSafetyTests
             // Use reflection to call private InitializePubSubHandler method
             var method = typeof(BaseClient).GetMethod("InitializePubSubHandler",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            method?.Invoke(this, new object?[] { config });
+            method?.Invoke(this, [config]);
         }
 
         protected override Task<Version> GetServerVersionAsync()

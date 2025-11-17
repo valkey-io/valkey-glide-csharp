@@ -333,12 +333,12 @@ public class PubSubSubscriptionConfigTests
         PubSubMessage? receivedMessage = null;
         object? receivedContext = null;
 
-        MessageCallback callback = (message, context) =>
+        void Callback(PubSubMessage message, object? context)
         {
             messageReceived = true;
             receivedMessage = message;
             receivedContext = context;
-        };
+        }
 
         var testMessage = new PubSubMessage("test-message", "test-channel");
         string testContext = "test-context";

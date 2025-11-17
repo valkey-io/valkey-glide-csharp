@@ -3,8 +3,6 @@
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
-
-
 namespace Valkey.Glide.UnitTests;
 
 public class CommandTests
@@ -767,7 +765,7 @@ public class CommandTests
     public void ValidateHashCommandConverters()
     {
         // Test for HashGetAsync with multiple fields
-        List<object> testList =
+        List<object?> testList =
         [
             (gs)"value1",
             (gs)"value2",

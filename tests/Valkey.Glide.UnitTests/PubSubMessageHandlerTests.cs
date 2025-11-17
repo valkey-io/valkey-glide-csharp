@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Threading;
 using System.Threading.Tasks;
 
 using Xunit;
@@ -103,7 +102,7 @@ public class PubSubMessageHandlerTests
     public void HandleMessage_MultipleMessages_InvokesCallbackInOrder()
     {
         // Arrange
-        List<PubSubMessage> receivedMessages = new List<PubSubMessage>();
+        List<PubSubMessage> receivedMessages = [];
         MessageCallback callback = new MessageCallback((msg, ctx) => receivedMessages.Add(msg));
 
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
@@ -230,7 +229,7 @@ public class PubSubMessageHandlerTests
     public void HandleMessage_ConcurrentAccess_HandlesCorrectly()
     {
         // Arrange
-        List<PubSubMessage> receivedMessages = new List<PubSubMessage>();
+        List<PubSubMessage> receivedMessages = [];
         object lockObject = new object();
         MessageCallback callback = new MessageCallback((msg, ctx) =>
         {
@@ -241,15 +240,15 @@ public class PubSubMessageHandlerTests
         });
 
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
-        PubSubMessage[] messages = new[]
-        {
+        PubSubMessage[] messages =
+        [
             new PubSubMessage("message1", "channel1"),
             new PubSubMessage("message2", "channel2"),
             new PubSubMessage("message3", "channel3")
-        };
+        ];
 
         // Act
-        Task[] tasks = messages.Select(msg => Task.Run(() => handler.HandleMessage(msg))).ToArray();
+        Task[] tasks = [.. messages.Select(msg => Task.Run(() => handler.HandleMessage(msg)))];
         Task.WaitAll(tasks);
 
         // Assert

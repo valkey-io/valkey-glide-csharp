@@ -52,7 +52,7 @@ public class PubSubFFIMemoryLeakTests
                 // Early detection of memory leaks
                 if (memoryGrowth > maxMemoryGrowthBytes)
                 {
-                    Assert.True(false,
+                    Assert.Fail(
                         $"Memory leak detected after {i:N0} messages. " +
                         $"Memory grew by {memoryGrowth:N0} bytes, exceeding limit of {maxMemoryGrowthBytes:N0} bytes.");
                 }
@@ -240,7 +240,7 @@ public class PubSubFFIMemoryLeakTests
         {
             if (exceptions[i] != null)
             {
-                throw new AggregateException($"Thread {i} failed", exceptions[i]);
+                throw new AggregateException($"Thread {i} failed", exceptions[i]!);
             }
         }
 
