@@ -182,11 +182,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private void PubSubCallback(
         uint pushKind,
         IntPtr messagePtr,
-        long messageLen,
+        ulong messageLen,
         IntPtr channelPtr,
-        long channelLen,
+        ulong channelLen,
         IntPtr patternPtr,
-        long patternLen)
+        ulong patternLen)
     {
         try
         {
@@ -243,11 +243,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private static PubSubMessage MarshalPubSubMessage(
         PushKind pushKind,
         IntPtr messagePtr,
-        long messageLen,
+        ulong messageLen,
         IntPtr channelPtr,
-        long channelLen,
+        ulong channelLen,
         IntPtr patternPtr,
-        long patternLen)
+        ulong patternLen)
     {
         // Marshal the raw byte pointers to byte arrays
         byte[] messageBytes = new byte[messageLen];
@@ -462,11 +462,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     private delegate void PubSubAction(
         uint pushKind,
         IntPtr messagePtr,
-        long messageLen,
+        ulong messageLen,
         IntPtr channelPtr,
-        long channelLen,
+        ulong channelLen,
         IntPtr patternPtr,
-        long patternLen);
+        ulong patternLen);
     #endregion private methods
 
     #region private fields

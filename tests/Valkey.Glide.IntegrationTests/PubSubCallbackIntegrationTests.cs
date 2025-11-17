@@ -40,7 +40,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
         // Arrange
         string testChannel = $"test-channel-{Guid.NewGuid()}";
         string testMessage = "Hello from integration test!";
-        bool messageReceived = false;
         PubSubMessage? receivedMessage = null;
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
@@ -48,7 +47,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
             .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
             {
                 receivedMessage = message;
-                messageReceived = true;
                 _messageReceivedEvent.Set();
             });
 
@@ -78,7 +76,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
 
         // Assert
         Assert.True(received, "Message should have been received within timeout");
-        Assert.True(messageReceived, "Callback should have been invoked");
         Assert.NotNull(receivedMessage);
         Assert.Equal(testMessage, receivedMessage.Message);
         Assert.Equal(testChannel, receivedMessage.Channel);
@@ -88,16 +85,9 @@ public class PubSubCallbackIntegrationTests : IDisposable
     [Fact]
     public async Task EndToEndMessageFlow_WithClusterClient_ProcessesMessagesCorrectly()
     {
-        // Skip if no cluster hosts available
-        if (TestConfiguration.CLUSTER_HOSTS.Count == 0)
-        {
-            return;
-        }
-
         // Arrange
         string testChannel = $"test-cluster-channel-{Guid.NewGuid()}";
         string testMessage = "Hello from cluster integration test!";
-        bool messageReceived = false;
         PubSubMessage? receivedMessage = null;
 
         ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
@@ -105,7 +95,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
             .WithCallback<ClusterPubSubSubscriptionConfig>((message, context) =>
             {
                 receivedMessage = message;
-                messageReceived = true;
                 _messageReceivedEvent.Set();
             });
 
@@ -135,7 +124,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
 
         // Assert
         Assert.True(received, "Message should have been received within timeout");
-        Assert.True(messageReceived, "Callback should have been invoked");
         Assert.NotNull(receivedMessage);
         Assert.Equal(testMessage, receivedMessage.Message);
         Assert.Equal(testChannel, receivedMessage.Channel);
@@ -149,7 +137,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
         string testPattern = "news.*";
         string testChannel = $"news.sports.{Guid.NewGuid()}";
         string testMessage = "Breaking sports news!";
-        bool messageReceived = false;
         PubSubMessage? receivedMessage = null;
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
@@ -157,7 +144,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
             .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
             {
                 receivedMessage = message;
-                messageReceived = true;
                 _messageReceivedEvent.Set();
             });
 
@@ -187,7 +173,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
 
         // Assert
         Assert.True(received, "Pattern message should have been received within timeout");
-        Assert.True(messageReceived, "Callback should have been invoked for pattern message");
         Assert.NotNull(receivedMessage);
         Assert.Equal(testMessage, receivedMessage.Message);
         Assert.Equal(testChannel, receivedMessage.Channel);
@@ -258,7 +243,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
     {
         // Arrange
         string testChannel = $"async-test-{Guid.NewGuid()}";
-        List<TimeSpan> callbackDurations = [];
         List<TimeSpan> processingDurations = [];
         int messagesProcessed = 0;
 
@@ -621,7 +605,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
         string testPattern = "events.*";
         string testChannel = $"events.user.{Guid.NewGuid()}";
         string testMessage = "User event occurred";
-        bool messageReceived = false;
         PubSubMessage? receivedMessage = null;
 
         ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
@@ -629,7 +612,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
             .WithCallback<ClusterPubSubSubscriptionConfig>((message, context) =>
             {
                 receivedMessage = message;
-                messageReceived = true;
                 _messageReceivedEvent.Set();
             });
 
@@ -662,7 +644,6 @@ public class PubSubCallbackIntegrationTests : IDisposable
 
         // Assert
         Assert.True(received, "Pattern message should be received");
-        Assert.True(messageReceived);
         Assert.NotNull(receivedMessage);
         Assert.Equal(testMessage, receivedMessage.Message);
         Assert.Equal(testChannel, receivedMessage.Channel);

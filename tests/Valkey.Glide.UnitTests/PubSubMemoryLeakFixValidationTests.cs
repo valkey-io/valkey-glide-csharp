@@ -65,11 +65,11 @@ public class PubSubMemoryLeakFixValidationTests
             PubSubMessage result = FFI.MarshalPubSubMessage(
                 FFI.PushKind.PushPMessage,
                 messagePtr,
-                message.Length,
+                (ulong)message.Length,
                 channelPtr,
-                channel.Length,
+                (ulong)channel.Length,
                 patternPtr,
-                pattern.Length);
+                (ulong)pattern.Length);
 
             // Assert
             Assert.Equal(message, result.Message);
@@ -101,9 +101,9 @@ public class PubSubMemoryLeakFixValidationTests
             PubSubMessage result = FFI.MarshalPubSubMessage(
                 FFI.PushKind.PushSMessage,
                 messagePtr,
-                message.Length,
+                (ulong)message.Length,
                 channelPtr,
-                channel.Length,
+                (ulong)channel.Length,
                 IntPtr.Zero,
                 0);
 
@@ -136,11 +136,11 @@ public class PubSubMemoryLeakFixValidationTests
             PubSubMessage result = FFI.MarshalPubSubMessage(
                 pushKind,
                 messagePtr,
-                message.Length,
+                (ulong)message.Length,
                 channelPtr,
-                channel.Length,
+                (ulong)channel.Length,
                 patternPtr,
-                pattern?.Length ?? 0);
+                (ulong)(pattern?.Length ?? 0));
 
             // Verify the message was marshaled correctly
             if (result.Message != message || result.Channel != channel || result.Pattern != pattern)

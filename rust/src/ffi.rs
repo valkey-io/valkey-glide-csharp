@@ -682,26 +682,79 @@ pub(crate) unsafe fn get_pipeline_options(
     )
 }
 
+/// FFI-safe version of [`redis::PushKind`] for C# interop.
+/// This enum maps to the `PushKind` enum in `sources/Valkey.Glide/Internals/FFI.structs.cs`.
+///
+/// The `#[repr(u32)]` attribute ensures a stable memory layout compatible with C# marshaling.
+/// Each variant corresponds to a specific Redis/Valkey PubSub notification type.
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PushKind {
+    /// Disconnection notification sent from the library when connection is closed.
+    Disconnection = 0,
+    /// Other/unknown push notification type.
+    Other = 1,
+    /// Cache invalidation notification received when a key is changed/deleted.
+    Invalidate = 2,
+    /// Regular channel message received via SUBSCRIBE.
+    Message = 3,
+    /// Pattern-based message received via PSUBSCRIBE.
+    PMessage = 4,
+    /// Sharded channel message received via SSUBSCRIBE.
+    SMessage = 5,
+    /// Unsubscribe confirmation.
+    Unsubscribe = 6,
+    /// Pattern unsubscribe confirmation.
+    PUnsubscribe = 7,
+    /// Sharded unsubscribe confirmation.
+    SUnsubscribe = 8,
+    /// Subscribe confirmation.
+    Subscribe = 9,
+    /// Pattern subscribe confirmation.
+    PSubscribe = 10,
+    /// Sharded subscribe confirmation.
+    SSubscribe = 11,
+}
+
+impl From<&redis::PushKind> for PushKind {
+    fn from(kind: &redis::PushKind) -> Self {
+        match kind {
+            redis::PushKind::Disconnection => PushKind::Disconnection,
+            redis::PushKind::Other(_) => PushKind::Other,
+            redis::PushKind::Invalidate => PushKind::Invalidate,
+            redis::PushKind::Message => PushKind::Message,
+            redis::PushKind::PMessage => PushKind::PMessage,
+            redis::PushKind::SMessage => PushKind::SMessage,
+            redis::PushKind::Unsubscribe => PushKind::Unsubscribe,
+            redis::PushKind::PUnsubscribe => PushKind::PUnsubscribe,
+            redis::PushKind::SUnsubscribe => PushKind::SUnsubscribe,
+            redis::PushKind::Subscribe => PushKind::Subscribe,
+            redis::PushKind::PSubscribe => PushKind::PSubscribe,
+            redis::PushKind::SSubscribe => PushKind::SSubscribe,
+        }
+    }
+}
+
 /// FFI callback function type for PubSub messages.
 /// This callback is invoked by Rust when a PubSub message is received.
 /// The callback signature matches the C# expectations for marshaling PubSub data.
 ///
 /// # Parameters
-/// * `push_kind` - The type of push notification (message, pmessage, smessage, etc.)
+/// * `push_kind` - The type of push notification. See [`PushKind`] for valid values.
 /// * `message_ptr` - Pointer to the raw message bytes
-/// * `message_len` - Length of the message data in bytes
+/// * `message_len` - Length of the message data in bytes (unsigned, cannot be negative)
 /// * `channel_ptr` - Pointer to the raw channel name bytes
-/// * `channel_len` - Length of the channel name in bytes
+/// * `channel_len` - Length of the channel name in bytes (unsigned, cannot be negative)
 /// * `pattern_ptr` - Pointer to the raw pattern bytes (null if no pattern)
-/// * `pattern_len` - Length of the pattern in bytes (0 if no pattern)
+/// * `pattern_len` - Length of the pattern in bytes (unsigned, 0 if no pattern)
 pub type PubSubCallback = unsafe extern "C" fn(
-    push_kind: u32,
+    push_kind: PushKind,
     message_ptr: *const u8,
-    message_len: i64,
+    message_len: u64,
     channel_ptr: *const u8,
-    channel_len: i64,
+    channel_len: u64,
     pattern_ptr: *const u8,
-    pattern_len: i64,
+    pattern_len: u64,
 );
 
 // PubSub callback functions removed - using instance-based callbacks instead.

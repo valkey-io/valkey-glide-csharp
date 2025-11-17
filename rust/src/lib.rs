@@ -2,8 +2,8 @@
 
 mod ffi;
 use ffi::{
-    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, ResponseValue,
-    RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
+    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, PushKind,
+    ResponseValue, RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
     get_pipeline_options,
 };
 use glide_core::{
@@ -282,43 +282,58 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
     let push_kind = push_msg.kind.clone();
 
     // Validate message structure based on PushKind and convert to FFI kind
-    // These values MUST match the C# PushKind enum in FFI.structs.cs
+    // The FFI PushKind enum is defined in ffi.rs and matches the C# PushKind enum in FFI.structs.cs
     let (pattern, channel, message, kind) = match (push_kind.clone(), strings.len()) {
         (redis::PushKind::Message, 2) => {
-            // Regular message: [channel, message] -> PushMessage = 3
-            (None, &strings[0], &strings[1], 3u32)
+            // Regular message: [channel, message]
+            (None, &strings[0], &strings[1], PushKind::Message)
         }
         (redis::PushKind::PMessage, 3) => {
-            // Pattern message: [pattern, channel, message] -> PushPMessage = 4
-            (Some(&strings[0]), &strings[1], &strings[2], 4u32)
+            // Pattern message: [pattern, channel, message]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PMessage,
+            )
         }
         (redis::PushKind::SMessage, 2) => {
-            // Sharded message: [channel, message] -> PushSMessage = 5
-            (None, &strings[0], &strings[1], 5u32)
+            // Sharded message: [channel, message]
+            (None, &strings[0], &strings[1], PushKind::SMessage)
         }
         (redis::PushKind::Subscribe, 2) => {
-            // Subscribe confirmation: [channel, count] -> PushSubscribe = 9
-            (None, &strings[0], &strings[1], 9u32)
+            // Subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::Subscribe)
         }
         (redis::PushKind::PSubscribe, 3) => {
-            // Pattern subscribe confirmation: [pattern, channel, count] -> PushPSubscribe = 10
-            (Some(&strings[0]), &strings[1], &strings[2], 10u32)
+            // Pattern subscribe confirmation: [pattern, channel, count]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PSubscribe,
+            )
         }
         (redis::PushKind::SSubscribe, 2) => {
-            // Sharded subscribe confirmation: [channel, count] -> PushSSubscribe = 11
-            (None, &strings[0], &strings[1], 11u32)
+            // Sharded subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::SSubscribe)
         }
         (redis::PushKind::Unsubscribe, 2) => {
-            // Unsubscribe confirmation: [channel, count] -> PushUnsubscribe = 6
-            (None, &strings[0], &strings[1], 6u32)
+            // Unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::Unsubscribe)
         }
         (redis::PushKind::PUnsubscribe, 3) => {
-            // Pattern unsubscribe confirmation: [pattern, channel, count] -> PushPUnsubscribe = 7
-            (Some(&strings[0]), &strings[1], &strings[2], 7u32)
+            // Pattern unsubscribe confirmation: [pattern, channel, count]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PUnsubscribe,
+            )
         }
         (redis::PushKind::SUnsubscribe, 2) => {
-            // Sharded unsubscribe confirmation: [channel, count] -> PushSUnsubscribe = 8
-            (None, &strings[0], &strings[1], 8u32)
+            // Sharded unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::SUnsubscribe)
         }
         (redis::PushKind::Disconnection, _) => {
             logger_core::log(
@@ -343,11 +358,11 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
 
     // Prepare pointers while keeping strings alive
     let pattern_ptr = pattern.map(|p| p.as_ptr()).unwrap_or(std::ptr::null());
-    let pattern_len = pattern.map(|p| p.len() as i64).unwrap_or(0);
+    let pattern_len = pattern.map(|p| p.len() as u64).unwrap_or(0);
     let channel_ptr = channel.as_ptr();
-    let channel_len = channel.len() as i64;
+    let channel_len = channel.len() as u64;
     let message_ptr = message.as_ptr();
-    let message_len = message.len() as i64;
+    let message_len = message.len() as u64;
 
     // Call callback while strings are still alive
     unsafe {

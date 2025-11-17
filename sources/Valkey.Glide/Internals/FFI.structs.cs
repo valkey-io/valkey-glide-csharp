@@ -375,21 +375,21 @@ internal partial class FFI
     /// </summary>
     /// <param name="pushKind">The type of push notification.</param>
     /// <param name="messagePtr">Pointer to the raw message bytes.</param>
-    /// <param name="messageLen">The length of the message data in bytes.</param>
+    /// <param name="messageLen">The length of the message data in bytes (unsigned).</param>
     /// <param name="channelPtr">Pointer to the raw channel name bytes.</param>
-    /// <param name="channelLen">The length of the channel name in bytes.</param>
+    /// <param name="channelLen">The length of the channel name in bytes (unsigned).</param>
     /// <param name="patternPtr">Pointer to the raw pattern bytes (null if no pattern).</param>
-    /// <param name="patternLen">The length of the pattern in bytes (0 if no pattern).</param>
+    /// <param name="patternLen">The length of the pattern in bytes (unsigned, 0 if no pattern).</param>
     /// <returns>A managed PubSubMessage object.</returns>
     /// <exception cref="ArgumentException">Thrown when the parameters are invalid or marshaling fails.</exception>
     internal static PubSubMessage MarshalPubSubMessage(
         PushKind pushKind,
         IntPtr messagePtr,
-        long messageLen,
+        ulong messageLen,
         IntPtr channelPtr,
-        long channelLen,
+        ulong channelLen,
         IntPtr patternPtr,
-        long patternLen)
+        ulong patternLen)
     {
         try
         {
@@ -404,14 +404,9 @@ internal partial class FFI
                 throw new ArgumentException("Invalid channel data: pointer is null");
             }
 
-            if (messageLen < 0)
+            if (channelLen == 0)
             {
-                throw new ArgumentException("Invalid message data: length cannot be negative");
-            }
-
-            if (channelLen <= 0)
-            {
-                throw new ArgumentException("Invalid channel data: pointer is null or length is zero");
+                throw new ArgumentException("Invalid channel data: length is zero");
             }
 
             // Marshal message bytes to string
@@ -1023,21 +1018,26 @@ internal partial class FFI
 
     /// <summary>
     /// Enum representing the type of push notification received from the server.
-    /// This matches the PushKind enum in the Rust FFI layer.
+    /// This matches the <c>PushKind</c> enum in <c>rust/src/ffi.rs</c>, which is an FFI-safe
+    /// version of the <c>redis::PushKind</c> enum from glide-core.
     /// </summary>
+    /// <remarks>
+    /// The numeric values must remain stable as they are part of the FFI contract between
+    /// C# and Rust. Each variant corresponds to a specific Redis/Valkey PubSub notification type.
+    /// </remarks>
     internal enum PushKind
     {
-        /// <summary>Disconnection notification.</summary>
+        /// <summary>Disconnection notification sent from the library when connection is closed.</summary>
         PushDisconnection = 0,
         /// <summary>Other/unknown push notification type.</summary>
         PushOther = 1,
-        /// <summary>Cache invalidation notification.</summary>
+        /// <summary>Cache invalidation notification received when a key is changed/deleted.</summary>
         PushInvalidate = 2,
-        /// <summary>Regular channel message (SUBSCRIBE).</summary>
+        /// <summary>Regular channel message received via SUBSCRIBE.</summary>
         PushMessage = 3,
-        /// <summary>Pattern-based message (PSUBSCRIBE).</summary>
+        /// <summary>Pattern-based message received via PSUBSCRIBE.</summary>
         PushPMessage = 4,
-        /// <summary>Sharded channel message (SSUBSCRIBE).</summary>
+        /// <summary>Sharded channel message received via SSUBSCRIBE.</summary>
         PushSMessage = 5,
         /// <summary>Unsubscribe confirmation.</summary>
         PushUnsubscribe = 6,

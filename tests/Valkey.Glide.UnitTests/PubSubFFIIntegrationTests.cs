@@ -27,9 +27,9 @@ public class PubSubFFIIntegrationTests
             PubSubMessage result = FFI.MarshalPubSubMessage(
                 FFI.PushKind.PushMessage,
                 messagePtr,
-                message.Length,
+                (ulong)message.Length,
                 channelPtr,
-                channel.Length,
+                (ulong)channel.Length,
                 IntPtr.Zero,
                 0);
 
@@ -63,11 +63,11 @@ public class PubSubFFIIntegrationTests
             PubSubMessage result = FFI.MarshalPubSubMessage(
                 FFI.PushKind.PushPMessage,
                 messagePtr,
-                message.Length,
+                (ulong)message.Length,
                 channelPtr,
-                channel.Length,
+                (ulong)channel.Length,
                 patternPtr,
-                pattern.Length);
+                (ulong)pattern.Length);
 
             // Assert
             Assert.Equal("pattern message", result.Message);
@@ -98,7 +98,7 @@ public class PubSubFFIIntegrationTests
                     IntPtr.Zero,
                     0,
                     channelPtr,
-                    channel.Length,
+                    (ulong)channel.Length,
                     IntPtr.Zero,
                     0));
             Assert.Contains("Invalid message data", ex.Message);
@@ -126,9 +126,9 @@ public class PubSubFFIIntegrationTests
                 FFI.MarshalPubSubMessage(
                     FFI.PushKind.PushMessage,
                     messagePtr,
-                    message.Length,
+                    (ulong)message.Length,
                     channelPtr,
-                    channel.Length,
+                    (ulong)channel.Length,
                     IntPtr.Zero,
                     0));
             Assert.Contains("PubSub message content cannot be null or empty after marshaling", ex.Message);
@@ -157,12 +157,12 @@ public class PubSubFFIIntegrationTests
                 FFI.MarshalPubSubMessage(
                     FFI.PushKind.PushMessage,
                     messagePtr,
-                    message.Length,
+                    (ulong)message.Length,
                     channelPtr,
-                    channel.Length,
+                    (ulong)channel.Length,
                     IntPtr.Zero,
                     0));
-            Assert.Contains("Invalid channel data: pointer is null or length is zero", ex.Message);
+            Assert.Contains("Invalid channel data: length is zero", ex.Message);
         }
         finally
         {
@@ -187,9 +187,9 @@ public class PubSubFFIIntegrationTests
             PubSubMessage result = FFI.MarshalPubSubMessage(
                 FFI.PushKind.PushSMessage,
                 messagePtr,
-                message.Length,
+                (ulong)message.Length,
                 channelPtr,
-                channel.Length,
+                (ulong)channel.Length,
                 IntPtr.Zero,
                 0);
 
