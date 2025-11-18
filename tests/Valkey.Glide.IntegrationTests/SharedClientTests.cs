@@ -10,7 +10,7 @@ public class SharedClientTests(TestConfiguration config)
 
     // Large argument test constants.
     private static readonly string SmallString = new("0");
-    private static readonly string LargeString = new('0', 1 << 16); // 64KB (2^16 characters)
+    private static readonly string LargeString = new('0', 1 << 16); // 64 KiB (65,536 characters)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
