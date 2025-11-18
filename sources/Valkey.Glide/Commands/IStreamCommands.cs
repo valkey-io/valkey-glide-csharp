@@ -201,9 +201,13 @@ public interface IStreamCommands
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
     /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="idleTimeInMs">Set the idle time (last delivery time) of the message.</param>
+    /// <param name="timeUnixMs">Set the idle time to a specific Unix time in milliseconds.</param>
+    /// <param name="retryCount">Set the retry counter to the specified value.</param>
+    /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of claimed stream entries.</returns>
-    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Claims pending messages for a consumer, returning only IDs.
@@ -214,9 +218,13 @@ public interface IStreamCommands
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
     /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="idleTimeInMs">Set the idle time (last delivery time) of the message.</param>
+    /// <param name="timeUnixMs">Set the idle time to a specific Unix time in milliseconds.</param>
+    /// <param name="retryCount">Set the retry counter to the specified value.</param>
+    /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of claimed message IDs.</returns>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Automatically claims pending messages.
@@ -245,6 +253,38 @@ public interface IStreamCommands
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>Result containing next start ID, claimed IDs, and deleted IDs.</returns>
     Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the number of entries in a stream.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xlen"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of entries in the stream.</returns>
+    Task<long> StreamLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Removes one or more messages from a stream.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xdel"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="messageIds">Array of message IDs to delete.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of messages deleted.</returns>
+    Task<long> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Trims the stream to a specified size.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xtrim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="maxLength">The maximum length of the stream. Mutually exclusive with minId.</param>
+    /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
+    /// <param name="useApproximateTrimming">If true, uses approximate trimming (~) for better performance.</param>
+    /// <param name="limit">The maximum number of entries to trim. Only applicable when useApproximateTrimming is true.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>The number of entries deleted.</returns>
+    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns stream information.

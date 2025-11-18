@@ -4,7 +4,7 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
-internal class BatchTestUtils
+internal partial class BatchTestUtils
 {
     public static List<TestInfo> CreateStringTest(Pipeline.IBatch batch, bool isAtomic)
     {
@@ -1601,6 +1601,7 @@ internal class BatchTestUtils
                 new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
                 new("Geospatial commands", r.Data, CreateGeospatialTest, isAtomic),
                 new("Bitmap commands", r.Data, CreateBitmapTest, isAtomic),
+                new("Stream commands", r.Data, CreateStreamTest, isAtomic),
                 new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
                 new("Server Management commands", r.Data, CreateServerManagementTest, isAtomic)
             }))];

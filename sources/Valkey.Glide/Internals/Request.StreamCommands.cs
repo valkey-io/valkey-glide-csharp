@@ -464,22 +464,60 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, params ValkeyValue[] messageIds)
+    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id.ToGlideString());
         }
+        if (idleTimeInMs.HasValue)
+        {
+            args.Add("IDLE".ToGlideString());
+            args.Add(idleTimeInMs.Value.ToGlideString());
+        }
+        if (timeUnixMs.HasValue)
+        {
+            args.Add("TIME".ToGlideString());
+            args.Add(timeUnixMs.Value.ToGlideString());
+        }
+        if (retryCount.HasValue)
+        {
+            args.Add("RETRYCOUNT".ToGlideString());
+            args.Add(retryCount.Value.ToGlideString());
+        }
+        if (force)
+        {
+            args.Add("FORCE".ToGlideString());
+        }
         return new(RequestType.XClaim, [.. args], false, ConvertXRangeResponse);
     }
 
-    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, params ValkeyValue[] messageIds)
+    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id.ToGlideString());
+        }
+        if (idleTimeInMs.HasValue)
+        {
+            args.Add("IDLE".ToGlideString());
+            args.Add(idleTimeInMs.Value.ToGlideString());
+        }
+        if (timeUnixMs.HasValue)
+        {
+            args.Add("TIME".ToGlideString());
+            args.Add(timeUnixMs.Value.ToGlideString());
+        }
+        if (retryCount.HasValue)
+        {
+            args.Add("RETRYCOUNT".ToGlideString());
+            args.Add(retryCount.Value.ToGlideString());
+        }
+        if (force)
+        {
+            args.Add("FORCE".ToGlideString());
         }
         args.Add("JUSTID".ToGlideString());
         return new(RequestType.XClaim, [.. args], false, ConvertClaimIdsOnly);
@@ -637,5 +675,102 @@ internal partial class Request
             result[i] = new StreamConsumerInfo(name, pending, idle);
         }
         return result;
+    }
+
+    public static Cmd<long, long> StreamLengthAsync(ValkeyKey key)
+    {
+        return new(RequestType.XLen, [key.ToGlideString()], false, response => response);
+    }
+
+    public static Cmd<long, long> StreamDeleteAsync(ValkeyKey key, params ValkeyValue[] messageIds)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        foreach (var id in messageIds)
+        {
+            args.Add(id.ToGlideString());
+        }
+        return new(RequestType.XDel, [.. args], false, response => response);
+    }
+
+    public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, long? maxLength, ValkeyValue minId, bool useApproximateTrimming, long? limit)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        
+        if (maxLength.HasValue)
+        {
+            args.Add("MAXLEN".ToGlideString());
+            if (useApproximateTrimming) args.Add("~".ToGlideString());
+            args.Add(maxLength.Value.ToGlideString());
+        }
+        else if (!minId.IsNull)
+        {
+            args.Add("MINID".ToGlideString());
+            if (useApproximateTrimming) args.Add("~".ToGlideString());
+            args.Add(minId.ToGlideString());
+        }
+        
+        if (limit.HasValue && useApproximateTrimming)
+        {
+            args.Add("LIMIT".ToGlideString());
+            args.Add(limit.Value.ToGlideString());
+        }
+        
+        return new(RequestType.XTrim, [.. args], false, response => response);
+    }
+
+    public static Cmd<object, StreamInfo> StreamInfoAsync(ValkeyKey key)
+    {
+        return new(RequestType.XInfoStream, [key.ToGlideString()], false, ConvertStreamInfo);
+    }
+
+    private static StreamInfo ConvertStreamInfo(object response)
+    {
+        var length = 0;
+        var radixTreeKeys = 0;
+        var radixTreeNodes = 0;
+        var groups = 0;
+        var firstEntry = default(StreamEntry);
+        var lastEntry = default(StreamEntry);
+        var lastGeneratedId = default(ValkeyValue);
+        
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+            {
+                var key = kvp.Key.ToString();
+                var value = kvp.Value;
+                switch (key)
+                {
+                    case "length": length = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
+                    case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)value; break;
+                    case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? int.Parse(gs3.ToString()) : (int)(long)value; break;
+                    case "groups": groups = value is GlideString gs4 ? int.Parse(gs4.ToString()) : (int)(long)value; break;
+                    case "first-entry": firstEntry = value is object[] arr ? ConvertStreamEntries([arr])[0] : default; break;
+                    case "last-entry": lastEntry = value is object[] arr2 ? ConvertStreamEntries([arr2])[0] : default; break;
+                    case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
+                }
+            }
+        }
+        else
+        {
+            var infoArray = (object[])response;
+            for (int i = 0; i < infoArray.Length; i += 2)
+            {
+                var key = ((GlideString)infoArray[i]).ToString();
+                var value = infoArray[i + 1];
+                switch (key)
+                {
+                    case "length": length = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
+                    case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)value; break;
+                    case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? int.Parse(gs3.ToString()) : (int)(long)value; break;
+                    case "groups": groups = value is GlideString gs4 ? int.Parse(gs4.ToString()) : (int)(long)value; break;
+                    case "first-entry": firstEntry = value is object[] arr ? ConvertStreamEntries([arr])[0] : default; break;
+                    case "last-entry": lastEntry = value is object[] arr2 ? ConvertStreamEntries([arr2])[0] : default; break;
+                    case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
+                }
+            }
+        }
+        
+        return new StreamInfo(length, radixTreeKeys, radixTreeNodes, groups, firstEntry, lastEntry, lastGeneratedId);
     }
 }

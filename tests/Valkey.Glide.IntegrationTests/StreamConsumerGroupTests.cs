@@ -399,4 +399,81 @@ public class StreamConsumerGroupTests
         Assert.Equal("consumer2", consumers[1].Name);
         Assert.Equal(1, consumers[1].PendingMessageCount);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_WithIdleTime(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry and create group
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        
+        // Consumer1 reads message
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        // Consumer2 claims with IDLE parameter
+        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1], idleTimeInMs: 5000);
+        Assert.Single(claimed);
+        Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_WithRetryCount(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry and create group
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        
+        // Consumer1 reads message
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        // Consumer2 claims with RETRYCOUNT parameter
+        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1], retryCount: 10);
+        Assert.Single(claimed);
+        
+        // Verify retry count was set
+        StreamPendingMessageInfo[] pending = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer2");
+        Assert.Single(pending);
+        Assert.Equal(10, pending[0].DeliveryCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_WithForce(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry and create group
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        
+        // Claim message without reading it first (using FORCE)
+        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer1", 0, [id1], force: true);
+        Assert.Single(claimed);
+        Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimIdsOnlyAsync_WithOptionalParams(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry and create group
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        
+        // Consumer1 reads message
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        // Consumer2 claims with optional parameters
+        ValkeyValue[] claimedIds = await client.StreamClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, [id1], idleTimeInMs: 1000, retryCount: 5);
+        Assert.Single(claimedIds);
+        Assert.Equal(id1.ToString(), claimedIds[0].ToString());
+    }
 }
