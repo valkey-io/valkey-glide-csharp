@@ -8,19 +8,28 @@ public class SharedClientTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
+    private static readonly string SmallString = new("0");
+    private static readonly string VeryLargeString = new('0', 1 << 16); // 64KB (2^16 characters)
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task HandleVeryLargeInput(BaseClient client)
+    public async Task HandleVeryLargeKey(BaseClient client)
     {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-        const int expectedSize = 2 << 23;
+        await StringCommandTests.GetAndSetValuesAsync(client, VeryLargeString, SmallString);
+    }
 
-        while (value.Length < expectedSize)
-        {
-            value += value;
-        }
-        await StringCommandTests.GetAndSetValuesAsync(client, key, value);
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task HandleVeryLargeValue(BaseClient client)
+    {
+        await StringCommandTests.GetAndSetValuesAsync(client, SmallString, VeryLargeString);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task HandleVeryLargeKeyAndValue(BaseClient client)
+    {
+        await StringCommandTests.GetAndSetValuesAsync(client, VeryLargeString, VeryLargeString);
     }
 
     // This test is slow, but it caught timing and releasing issues in the past,
