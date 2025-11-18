@@ -200,19 +200,38 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         // 2. Allocate memory for route
         using FFI.Route? ffiRoute = route?.ToFfi();
 
-        // 3. Sumbit request to the rust part
-        Message message = MessageContainer.GetMessageForCall();
-        CommandFfi(ClientPointer, (ulong)message.Index, cmd.ToPtr(), ffiRoute?.ToPtr() ?? IntPtr.Zero);
+        // 3. Create OpenTelemetry span if sampling
+        IntPtr span = IntPtr.Zero;
+        if (OpenTelemetry.ShouldSample())
+        {
+            uint requestType = (uint)command.Request;
+            span = CreateOpenTelemetrySpanFfi(requestType);
+        }
 
-        // 4. Get a response and Handle it
-        IntPtr response = await message;
+        IntPtr response = IntPtr.Zero;
         try
         {
+            // 4. Submit request to the rust part
+            Message message = MessageContainer.GetMessageForCall();
+            CommandFfi(ClientPointer, (ulong)message.Index, cmd.ToPtr(), ffiRoute?.ToPtr() ?? IntPtr.Zero);
+
+            // 5. Get a response and Handle it
+            response = await message;
             return HandleServerValue(HandleResponse(response), command.IsNullable, command.Converter, command.AllowConverterToHandleNull);
         }
         finally
         {
-            FreeResponse(response);
+            // 7. Drop span if created
+            if (span != IntPtr.Zero)
+            {
+                DropOpenTelemetrySpanFfi(span);
+            }
+
+            // 8. Free response if created
+            if (response != IntPtr.Zero)
+            {
+                FreeResponse(response);
+            }
         }
 
         // All memory allocated is auto-freed by `using` operator
@@ -226,19 +245,37 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         // 2. Allocate memory for options
         using FFI.BatchOptions? ffiOptions = options?.ToFfi();
 
-        // 3. Sumbit request to the rust part
-        Message message = MessageContainer.GetMessageForCall();
-        BatchFfi(ClientPointer, (ulong)message.Index, ffiBatch.ToPtr(), raiseOnError, ffiOptions?.ToPtr() ?? IntPtr.Zero);
+        // 3. Create OpenTelemetry span if sampling
+        IntPtr span = IntPtr.Zero;
+        if (OpenTelemetry.ShouldSample())
+        {
+            span = CreateBatchOpenTelemetrySpanFfi();
+        }
 
-        // 4. Get a response and Handle it
-        IntPtr response = await message;
+        IntPtr response = IntPtr.Zero;
         try
         {
+            // 4. Submit request to the rust part
+            Message message = MessageContainer.GetMessageForCall();
+            BatchFfi(ClientPointer, (ulong)message.Index, ffiBatch.ToPtr(), raiseOnError, ffiOptions?.ToPtr() ?? IntPtr.Zero);
+
+            // 5. Get a response and Handle it
+            response = await message;
             return batch.ConvertResponse(HandleServerValue(HandleResponse(response), true, (object?[]? o) => o));
         }
         finally
         {
-            FreeResponse(response);
+            // 6. Drop span if created
+            if (span != IntPtr.Zero)
+            {
+                DropOpenTelemetrySpanFfi(span);
+            }
+
+            // 7. Free response if created
+            if (response != IntPtr.Zero)
+            {
+                FreeResponse(response);
+            }
         }
 
         // All memory allocated is auto-freed by `using` operator

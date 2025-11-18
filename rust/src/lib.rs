@@ -7,15 +7,42 @@ use ffi::{
     get_pipeline_options,
 };
 use glide_core::{
+    GlideOpenTelemetry, GlideOpenTelemetryConfigBuilder, GlideOpenTelemetrySignalsExporter,
+    GlideSpan,
     client::Client as GlideClient,
     errors::{RequestErrorType, error_message, error_type},
+    request_type::RequestType,
 };
+use redis::cluster_routing::Routable;
 use std::{
     ffi::{CStr, CString, c_char, c_void},
     slice::from_raw_parts,
+    str::FromStr,
     sync::Arc,
 };
 use tokio::runtime::{Builder, Runtime};
+
+#[repr(C)]
+pub struct OpenTelemetryConfigFFI {
+    pub has_traces: bool,
+    pub traces: TracesConfigFFI,
+    pub has_metrics: bool,
+    pub metrics: MetricsConfigFFI,
+    pub has_flush_interval: bool,
+    pub flush_interval_ms: u32,
+}
+
+#[repr(C)]
+pub struct TracesConfigFFI {
+    pub endpoint: *const c_char,
+    pub has_sample_percentage: bool,
+    pub sample_percentage: u32,
+}
+
+#[repr(C)]
+pub struct MetricsConfigFFI {
+    pub endpoint: *const c_char,
+}
 
 #[repr(C)]
 pub enum Level {
@@ -649,6 +676,17 @@ pub unsafe extern "C" fn free_response(ptr: *mut ResponseValue) {
     }
 }
 
+/// Frees memory allocated for a C string.
+///
+/// # Parameters
+/// * `str_ptr`: Pointer to the C string to free.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn free_string(str_ptr: *mut c_char) {
+    if !str_ptr.is_null() {
+        unsafe { let _ = CString::from_raw(str_ptr); };
+    }
+}
+
 impl From<logger_core::Level> for Level {
     fn from(level: logger_core::Level) -> Self {
         match level {
@@ -809,23 +847,6 @@ pub unsafe extern "C" fn drop_script(hash: *mut u8, len: usize) -> *mut c_char {
 
     glide_core::scripts_container::remove_script(hash_str);
     std::ptr::null_mut()
-}
-
-/// Free an error message from a failed drop_script call.
-///
-/// # Parameters
-///
-/// * `error`: The error to free.
-///
-/// # Safety
-///
-/// * `error` must be an error returned by [`drop_script`].
-/// * This function must be called exactly once per error.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn free_drop_script_error(error: *mut c_char) {
-    if !error.is_null() {
-        _ = unsafe { CString::from_raw(error) };
-    }
 }
 
 /// Executes a Lua script using EVALSHA with automatic fallback to EVAL.
@@ -1409,4 +1430,235 @@ pub unsafe extern "C-unwind" fn update_connection_password(
     });
 
     panic_guard.panicked = false;
+}
+
+// ========================================================================================
+// OpenTelemetry
+// ========================================================================================
+
+/// Initializes OpenTelemetry with the given configuration.
+///
+/// # Arguments
+/// * `config` - A pointer to an OpenTelemetryConfig struct containing the configuration.
+///
+/// # Returns
+/// * `null` on success
+/// * A pointer to a C string containing an error message on failure. The caller is responsible for freeing this string.
+///
+/// # Safety
+/// * `config` must be a valid pointer to an OpenTelemetryConfig struct.
+/// * The configuration and its underlying pointers must remain valid until the function returns.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn init_otel(config: *const OpenTelemetryConfigFFI) -> *const c_char {
+    let config = unsafe { &*config };
+    let mut otel_config = GlideOpenTelemetryConfigBuilder::default();
+
+    // Configure traces if provided.
+    if config.has_traces {
+        let endpoint = unsafe { CStr::from_ptr(config.traces.endpoint) }
+            .to_string_lossy()
+            .to_string();
+
+        match GlideOpenTelemetrySignalsExporter::from_str(&endpoint) {
+            Ok(exporter) => {
+                let sample_percentage = if config.traces.has_sample_percentage {
+                    Some(config.traces.sample_percentage)
+                } else {
+                    None
+                };
+                otel_config = otel_config.with_trace_exporter(exporter, sample_percentage);
+            }
+            Err(e) => {
+                let error_msg = format!("Invalid traces configuration: {e}");
+                return CString::new(error_msg).unwrap().into_raw();
+            }
+        }
+    }
+
+    // Configure metrics if provided.
+    if config.has_metrics {
+        let endpoint = unsafe { CStr::from_ptr(config.metrics.endpoint) }
+            .to_string_lossy()
+            .to_string();
+
+        match GlideOpenTelemetrySignalsExporter::from_str(&endpoint) {
+            Ok(exporter) => {
+                otel_config = otel_config.with_metrics_exporter(exporter);
+            }
+            Err(e) => {
+                let error_msg = format!("Invalid metrics configuration: {e}");
+                return CString::new(error_msg).unwrap().into_raw();
+            }
+        }
+    }
+
+    // Configure flush interval if provided.
+    if config.has_flush_interval {
+        otel_config = otel_config.with_flush_interval(std::time::Duration::from_millis(
+            config.flush_interval_ms as u64,
+        ));
+    }
+
+    // Initialize OpenTelemetry synchronously.
+    match glide_core::client::get_or_init_runtime() {
+        Ok(glide_runtime) => {
+            match glide_runtime
+                .runtime
+                .block_on(async { GlideOpenTelemetry::initialise(otel_config.build()) })
+            {
+                Ok(_) => std::ptr::null(), // Success
+                Err(e) => {
+                    let error_msg = format!("Failed to initialize OpenTelemetry: {e}");
+                    CString::new(error_msg).unwrap().into_raw()
+                }
+            }
+        }
+        Err(e) => {
+            let error_msg = format!("Failed to get runtime: {e}");
+            CString::new(error_msg).unwrap().into_raw()
+        }
+    }
+}
+
+/// Creates an OpenTelemetry span for the given request type.
+///
+/// # Parameters
+/// * `request_type`: The type of request to create a span for
+///
+/// # Returns
+/// * A pointer to the created span, or null if span creation fails.
+#[unsafe(no_mangle)]
+pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
+    let command_name = match get_command_name(request_type) {
+        Some(name) => name,
+        None => return std::ptr::null(),
+    };
+
+    create_span(&command_name)
+}
+
+/// Creates an OpenTelemetry batch span.
+///
+/// # Returns
+/// * A pointer to the created span, or null if span creation fails.
+#[unsafe(no_mangle)]
+pub extern "C" fn create_batch_otel_span() -> *const c_void {
+    let command_name = "Batch";
+    create_span(&command_name)
+}
+
+/// Drops an OpenTelemetry span given its pointer as u64.
+///
+/// # Parameters
+/// * `span_ptr`: A pointer to the span to drop
+///
+/// # Safety
+/// * `span_ptr` must be a valid pointer to a span created by the create_otel_span functions, or 0
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn drop_otel_span(span_ptr: *const c_void) {
+    if span_ptr.is_null() {
+        logger_core::log_debug("ffi_otel", "drop_otel_span: Ignoring null span pointer");
+        return;
+    }
+
+    // Attempt to safely drop the span
+    unsafe {
+        // Use std::panic::catch_unwind to handle potential panics during Arc::from_raw
+        let result = std::panic::catch_unwind(|| {
+            Arc::from_raw(span_ptr as *const GlideSpan);
+        });
+
+        match result {
+            Ok(_) => {
+                logger_core::log_debug(
+                    "ffi_otel",
+                    format!(
+                        "drop_otel_span: Successfully dropped span with pointer {:p}",
+                        span_ptr
+                    ),
+                );
+            }
+            Err(_) => {
+                logger_core::log_error(
+                    "ffi_otel",
+                    format!(
+                        "drop_otel_span: Panic occurred while dropping span pointer {:p} - likely invalid pointer",
+                        span_ptr
+                    ),
+                );
+            }
+        }
+    }
+}
+
+/// Returns the command name for the given request type value.
+/// Returns None if the command name cannot be determined.
+fn get_command_name(request_type_u32: u32) -> Option<String> {
+    let request_type = unsafe { std::mem::transmute::<u32, RequestType>(request_type_u32) };
+
+    // Validate request type and extract command.
+    let cmd = match request_type.get_command() {
+        Some(cmd) => cmd,
+        None => {
+            logger_core::log_error(
+                "ffi_otel",
+                "get_command_name: RequestType has no command available",
+            );
+            return None;
+        }
+    };
+
+    // Validate command bytes.
+    let cmd_bytes = match cmd.command() {
+        Some(bytes) => bytes,
+        None => {
+            logger_core::log_error(
+                "ffi_otel",
+                "get_command_name: Command has no bytes available",
+            );
+            return None;
+        }
+    };
+
+    // Validate UTF-8 encoding.
+    let command_name = match std::str::from_utf8(cmd_bytes.as_slice()) {
+        Ok(name) => name,
+        Err(e) => {
+            logger_core::log_error(
+                "ffi_otel",
+                format!("get_command_name: Command bytes are not valid UTF-8: {e}"),
+            );
+            return None;
+        }
+    };
+
+    // Validate command name length (reasonable limit to prevent abuse)
+    if command_name.len() > 256 {
+        logger_core::log_error(
+            "ffi_otel",
+            format!(
+                "get_command_name: Command name too long ({} chars), max 256",
+                command_name.len()
+            ),
+        );
+        return None;
+    }
+
+    Some(command_name.to_string())
+}
+
+/// Returns a new span for the given command name.
+fn create_span(command_name: &str) -> *const c_void {
+    let span = GlideOpenTelemetry::new_span(&command_name);
+    let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
+
+    logger_core::log_debug(
+        "ffi_otel",
+        format!(
+            "create_span: Successfully created span '{command_name}' with pointer {:p}",
+            span_ptr
+        ),
+    );
+
+    span_ptr
 }
