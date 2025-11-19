@@ -476,4 +476,41 @@ public class StreamConsumerGroupTests
         Assert.Single(claimedIds);
         Assert.Equal(id1.ToString(), claimedIds[0].ToString());
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamConsumerGroupSetPositionAsync_WithEntriesRead(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Create group and read all messages
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        // No more new messages
+        StreamEntry[] entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        Assert.Empty(entries);
+        
+        // Reset position to id2 with entriesRead=10 (Valkey 7.0+)
+        bool result = await client.StreamConsumerGroupSetPositionAsync(key, "mygroup", id2, entriesRead: 10);
+        Assert.True(result);
+        
+        // Should now be able to read id3
+        entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        Assert.Single(entries);
+        Assert.Equal(id3.ToString(), entries[0].Id.ToString());
+        
+        // Verify entriesRead was set (if server supports it)
+        StreamGroupInfo[] groups = await client.StreamGroupInfoAsync(key);
+        if (groups[0].EntriesRead.HasValue)
+        {
+            // After reading one more message, it should be 11
+            Assert.True(groups[0].EntriesRead.Value >= 10);
+        }
+    }
 }

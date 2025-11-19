@@ -131,9 +131,10 @@ public interface IStreamCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to start reading. Use "$" for new messages, "0" for all messages.</param>
     /// <param name="createStream">If true, creates the stream if it doesn't exist.</param>
+    /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>True if the group was created, false otherwise.</returns>
-    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, CommandFlags flags = CommandFlags.None);
+    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Destroys a consumer group.
@@ -163,9 +164,10 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to read.</param>
+    /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>True if successful, false otherwise.</returns>
-    Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, CommandFlags flags = CommandFlags.None);
+    Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads entries from a stream for a consumer group.
@@ -430,6 +432,16 @@ public interface IStreamCommands
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>Information about the stream.</returns>
     Task<StreamInfo> StreamInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns detailed stream information including entries, groups, and consumers.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xinfo-stream"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="count">Maximum number of entries to return. If null, returns all entries.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>Dictionary containing detailed stream information with keys like "length", "entries", "groups", etc.</returns>
+    Task<Dictionary<string, object>> StreamInfoFullAsync(ValkeyKey key, int? count = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns consumer group information for a stream.

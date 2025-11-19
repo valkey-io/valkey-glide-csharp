@@ -40,8 +40,9 @@ public class StreamCommandTests
             () => Assert.Equal(["XTRIM", "key", "MINID", "0-1"], Request.StreamTrimAsync("key", null, "0-1", false, null).GetArgs()),
 
             // StreamCreateConsumerGroup
-            () => Assert.Equal(["XGROUPCREATE", "key", "group", "$", "MKSTREAM"], Request.StreamCreateConsumerGroupAsync("key", "group", default, true).GetArgs()),
-            () => Assert.Equal(["XGROUPCREATE", "key", "group", "0"], Request.StreamCreateConsumerGroupAsync("key", "group", "0", false).GetArgs()),
+            () => Assert.Equal(["XGROUPCREATE", "key", "group", "$", "MKSTREAM"], Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).GetArgs()),
+            () => Assert.Equal(["XGROUPCREATE", "key", "group", "0"], Request.StreamCreateConsumerGroupAsync("key", "group", "0", false, null).GetArgs()),
+            () => Assert.Equal(["XGROUPCREATE", "key", "group", "0", "ENTRIESREAD", "10"], Request.StreamCreateConsumerGroupAsync("key", "group", "0", false, 10).GetArgs()),
 
             // StreamDeleteConsumerGroup
             () => Assert.Equal(["XGROUPDESTROY", "key", "group"], Request.StreamDeleteConsumerGroupAsync("key", "group").GetArgs()),
@@ -50,7 +51,8 @@ public class StreamCommandTests
             () => Assert.Equal(["XGROUPDELCONSUMER", "key", "group", "consumer"], Request.StreamDeleteConsumerAsync("key", "group", "consumer").GetArgs()),
 
             // StreamConsumerGroupSetPosition
-            () => Assert.Equal(["XGROUPSETID", "key", "group", "0-0"], Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0").GetArgs()),
+            () => Assert.Equal(["XGROUPSETID", "key", "group", "0-0"], Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", null).GetArgs()),
+            () => Assert.Equal(["XGROUPSETID", "key", "group", "0-0", "ENTRIESREAD", "5"], Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", 5).GetArgs()),
 
             // StreamReadGroup
             () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key", ">"], Request.StreamReadGroupAsync("key", "group", "consumer", default, null, false).GetArgs()),
@@ -113,7 +115,7 @@ public class StreamCommandTests
             () => Assert.Equal(10L, Request.StreamTrimAsync("key", 100, default, false, null).Converter(10L)),
 
             // StreamCreateConsumerGroup
-            () => Assert.True(Request.StreamCreateConsumerGroupAsync("key", "group", default, true).Converter("OK")),
+            () => Assert.True(Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).Converter("OK")),
 
             // StreamDeleteConsumerGroup
             () => Assert.True(Request.StreamDeleteConsumerGroupAsync("key", "group").Converter(true)),
@@ -123,7 +125,7 @@ public class StreamCommandTests
             () => Assert.Equal(5L, Request.StreamDeleteConsumerAsync("key", "group", "consumer").Converter(5L)),
 
             // StreamConsumerGroupSetPosition
-            () => Assert.True(Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0").Converter("OK")),
+            () => Assert.True(Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", null).Converter("OK")),
 
             // StreamAcknowledge
             () => Assert.Equal(2L, Request.StreamAcknowledgeAsync("key", "group", ["1-0", "2-0"]).Converter(2L))

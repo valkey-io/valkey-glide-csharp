@@ -71,13 +71,13 @@ public partial class BaseClient : IStreamCommands
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamCreateConsumerGroupAsync(key, groupName, position, false, flags);
+        return await StreamCreateConsumerGroupAsync(key, groupName, position, false, null, flags);
     }
 
-    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamCreateConsumerGroupAsync(key, groupName, position ?? default, createStream));
+        return await Command(Request.StreamCreateConsumerGroupAsync(key, groupName, position ?? default, createStream, entriesRead));
     }
 
     public async Task<bool> StreamDeleteConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None)
@@ -86,10 +86,10 @@ public partial class BaseClient : IStreamCommands
         return await Command(Request.StreamDeleteConsumerGroupAsync(key, groupName));
     }
 
-    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamConsumerGroupSetPositionAsync(key, groupName, position));
+        return await Command(Request.StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead));
     }
 
     public async Task<long> StreamDeleteConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None)
@@ -262,6 +262,12 @@ public partial class BaseClient : IStreamCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamInfoAsync(key));
+    }
+
+    public async Task<Dictionary<string, object>> StreamInfoFullAsync(ValkeyKey key, int? count = null, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await Command(Request.StreamInfoFullAsync(key, count));
     }
     
     public async Task<StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)

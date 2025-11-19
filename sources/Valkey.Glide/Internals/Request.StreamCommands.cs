@@ -364,13 +364,19 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<string, bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, bool createStream)
+    public static Cmd<string, bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, bool createStream, long? entriesRead)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.IsNull ? "$".ToGlideString() : position.ToGlideString()];
         
         if (createStream)
         {
             args.Add("MKSTREAM".ToGlideString());
+        }
+        
+        if (entriesRead.HasValue)
+        {
+            args.Add("ENTRIESREAD".ToGlideString());
+            args.Add(entriesRead.Value.ToGlideString());
         }
         
         return new(RequestType.XGroupCreate, [.. args], false, response => response == "OK");
@@ -381,9 +387,17 @@ internal partial class Request
         return new(RequestType.XGroupDestroy, [key.ToGlideString(), groupName.ToGlideString()], false, response => response);
     }
 
-    public static Cmd<string, bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position)
+    public static Cmd<string, bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead)
     {
-        return new(RequestType.XGroupSetId, [key.ToGlideString(), groupName.ToGlideString(), position.ToGlideString()], false, response => response == "OK");
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.ToGlideString()];
+        
+        if (entriesRead.HasValue)
+        {
+            args.Add("ENTRIESREAD".ToGlideString());
+            args.Add(entriesRead.Value.ToGlideString());
+        }
+        
+        return new(RequestType.XGroupSetId, [.. args], false, response => response == "OK");
     }
 
     public static Cmd<long, long> StreamDeleteConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
@@ -766,6 +780,41 @@ internal partial class Request
     public static Cmd<object, StreamInfo> StreamInfoAsync(ValkeyKey key)
     {
         return new(RequestType.XInfoStream, [key.ToGlideString()], false, ConvertStreamInfo);
+    }
+
+    public static Cmd<object, Dictionary<string, object>> StreamInfoFullAsync(ValkeyKey key, int? count)
+    {
+        List<GlideString> args = [key.ToGlideString(), "FULL".ToGlideString()];
+        if (count.HasValue)
+        {
+            args.Add("COUNT".ToGlideString());
+            args.Add(count.Value.ToGlideString());
+        }
+        return new(RequestType.XInfoStream, [.. args], false, ConvertStreamInfoFull);
+    }
+
+    private static Dictionary<string, object> ConvertStreamInfoFull(object response)
+    {
+        var result = new Dictionary<string, object>();
+        
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+            {
+                result[kvp.Key.ToString()] = kvp.Value;
+            }
+        }
+        else
+        {
+            var infoArray = (object[])response;
+            for (int i = 0; i < infoArray.Length; i += 2)
+            {
+                var key = ((GlideString)infoArray[i]).ToString();
+                result[key] = infoArray[i + 1];
+            }
+        }
+        
+        return result;
     }
 
     private static StreamInfo ConvertStreamInfo(object response)

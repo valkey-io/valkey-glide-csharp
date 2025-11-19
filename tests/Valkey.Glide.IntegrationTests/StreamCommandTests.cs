@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Errors;
+
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(StreamCommandTests))]
@@ -510,5 +512,371 @@ public class StreamCommandTests
         // Try to delete non-existent ID
         deleted = await client.StreamDeleteAsync(key, ["999-999"]);
         Assert.Equal(0, deleted);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamLengthAsync_Basic(BaseClient client)
+    {
+        string key = "{StreamMgmt}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamAddAsync(key, "field2", "value2");
+        await client.StreamAddAsync(key, "field3", "value3");
+        
+        // Get length
+        long length = await client.StreamLengthAsync(key);
+        Assert.Equal(3, length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteAsync_Basic(BaseClient client)
+    {
+        string key = "{StreamMgmt}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field2", "value2");
+        await client.StreamAddAsync(key, "field3", "value3");
+        
+        // Delete two entries
+        long deleted = await client.StreamDeleteAsync(key, [id1, id2]);
+        Assert.Equal(2, deleted);
+        
+        // Verify length
+        long length = await client.StreamLengthAsync(key);
+        Assert.Equal(1, length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamTrimAsync_MaxLength(BaseClient client)
+    {
+        string key = "{StreamMgmt}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamAddAsync(key, "field2", "value2");
+        await client.StreamAddAsync(key, "field3", "value3");
+        await client.StreamAddAsync(key, "field4", "value4");
+        await client.StreamAddAsync(key, "field5", "value5");
+        
+        // Trim to 2 entries
+        long trimmed = await client.StreamTrimAsync(key, maxLength: 2);
+        Assert.Equal(3, trimmed);
+        
+        // Verify length
+        long length = await client.StreamLengthAsync(key);
+        Assert.Equal(2, length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamTrimAsync_MinId(BaseClient client)
+    {
+        string key = "{StreamMgmt}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamAddAsync(key, "field2", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field3", "value3");
+        await client.StreamAddAsync(key, "field4", "value4");
+        
+        // Trim entries before id3
+        long trimmed = await client.StreamTrimAsync(key, minId: id3);
+        Assert.Equal(2, trimmed);
+        
+        // Verify length
+        long length = await client.StreamLengthAsync(key);
+        Assert.Equal(2, length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoAsync_Basic(BaseClient client)
+    {
+        string key = "{StreamMgmt}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamAddAsync(key, "field2", "value2");
+        await client.StreamAddAsync(key, "field3", "value3");
+        
+        // Create a consumer group
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        
+        // Get stream info
+        StreamInfo info = await client.StreamInfoAsync(key);
+        Assert.Equal(3, info.Length);
+        Assert.Equal(1, info.ConsumerGroupCount);
+        Assert.False(info.LastGeneratedId.IsNull);
+        Assert.Equal("value1", info.FirstEntry.Values[0].Value.ToString());
+        Assert.Equal("value3", info.LastEntry.Values[0].Value.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadAsync_NonStreamKey_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StringSetAsync(key, "not a stream");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamReadAsync(key, "0-0"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_GroupDoesNotExist_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StreamAddAsync(key, "field", "value");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamReadGroupAsync(key, "nonexistent", "consumer", ">"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_NonStreamKey_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StringSetAsync(key, "not a stream");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamReadGroupAsync(key, "group", "consumer", ">"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAsync_WrongKeyType_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StringSetAsync(key, "not a stream");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamAcknowledgeAsync(key, "group", "1-0"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAsync_NonExistentGroup_ReturnsZero(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        ValkeyValue id = await client.StreamAddAsync(key, "field", "value");
+        long ackCount = await client.StreamAcknowledgeAsync(key, "nonexistent", id);
+        Assert.Equal(0, ackCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingAsync_NonExistentKey_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamPendingAsync(key, "group"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingAsync_NonExistentGroup_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StreamAddAsync(key, "field", "value");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamPendingAsync(key, "nonexistent"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingAsync_WrongKeyType_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StringSetAsync(key, "not a stream");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamPendingAsync(key, "group"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_NonExistentGroup_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        ValkeyValue id = await client.StreamAddAsync(key, "field", "value");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamClaimAsync(key, "nonexistent", "consumer", 0, [id]));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_WrongKeyType_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StringSetAsync(key, "not a stream");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamClaimAsync(key, "group", "consumer", 0, ["1-0"]));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoAsync_NonExistentKey_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoAsync_WrongKeyType_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamError}" + Guid.NewGuid();
+        await client.StringSetAsync(key, "not a stream");
+        await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingMessagesAsync_WithRangeBounds(BaseClient client)
+    {
+        string key = "{StreamPending}" + Guid.NewGuid();
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", minId: "-", maxId: "+");
+        
+        Assert.Equal(3, messages.Length);
+        Assert.Equal(id1.ToString(), messages[0].MessageId.ToString());
+        Assert.Equal(id2.ToString(), messages[1].MessageId.ToString());
+        Assert.Equal(id3.ToString(), messages[2].MessageId.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingMessagesAsync_WithSpecificRange(BaseClient client)
+    {
+        string key = "{StreamPending}" + Guid.NewGuid();
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", minId: id1, maxId: id2);
+        
+        Assert.Equal(2, messages.Length);
+        Assert.Equal(id1.ToString(), messages[0].MessageId.ToString());
+        Assert.Equal(id2.ToString(), messages[1].MessageId.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingMessagesAsync_VerifyIdleTimeAndDeliveryCount(BaseClient client)
+    {
+        string key = "{StreamPending}" + Guid.NewGuid();
+        ValkeyValue id = await client.StreamAddAsync(key, "field", "value");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1");
+        
+        Assert.Single(messages);
+        Assert.True(messages[0].IdleTimeInMilliseconds >= 0);
+        Assert.Equal(1, messages[0].DeliveryCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAutoClaimAsync_DeletedEntriesDetection(BaseClient client)
+    {
+        string key = "{StreamAutoClaim}" + Guid.NewGuid();
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        await client.StreamDeleteAsync(key, [id2]);
+        
+        StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", 0, "0-0");
+        
+        Assert.Equal(2, result.ClaimedEntries.Length);
+        if (result.DeletedIds != null && result.DeletedIds.Length > 0)
+        {
+            Assert.Contains(result.DeletedIds, deletedId => deletedId.ToString() == id2.ToString());
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerGroupAsync_WithEntriesRead(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field", "value1");
+        await client.StreamAddAsync(key, "field", "value2");
+        await client.StreamAddAsync(key, "field", "value3");
+        
+        // Create group with entriesRead parameter (Valkey 7.0+)
+        bool created = await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0", entriesRead: 10);
+        Assert.True(created);
+        
+        // Verify group was created by checking group info
+        StreamGroupInfo[] groups = await client.StreamGroupInfoAsync(key);
+        Assert.Single(groups);
+        Assert.Equal("mygroup", groups[0].Name);
+        
+        // EntriesRead should be 10 if server supports it (Valkey 7.0+)
+        if (groups[0].EntriesRead.HasValue)
+        {
+            Assert.Equal(10, groups[0].EntriesRead.Value);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_Basic(BaseClient client)
+    {
+        string key = "{StreamInfo}" + Guid.NewGuid();
+        string groupName = "mygroup";
+        string consumer = "consumer1";
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field2", "value2");
+        
+        // Create group and read messages
+        await client.StreamCreateConsumerGroupAsync(key, groupName, "0");
+        await client.StreamReadGroupAsync(key, groupName, consumer, ">");
+        
+        // Get full stream info
+        Dictionary<string, object> info = await client.StreamInfoFullAsync(key);
+        
+        // Verify basic fields
+        Assert.True(info.ContainsKey("length"));
+        Assert.True(info.ContainsKey("entries"));
+        Assert.True(info.ContainsKey("groups"));
+        
+        // Verify length
+        long length = info["length"] is GlideString gs ? long.Parse(gs.ToString()) : (long)info["length"];
+        Assert.Equal(2, length);
+        
+        // Verify entries
+        object[] entries = (object[])info["entries"];
+        Assert.Equal(2, entries.Length);
+        
+        // Verify groups
+        object[] groups = (object[])info["groups"];
+        Assert.Single(groups);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_WithCount(BaseClient client)
+    {
+        string key = "{StreamInfo}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamAddAsync(key, "field2", "value2");
+        await client.StreamAddAsync(key, "field3", "value3");
+        
+        // Get full stream info with count=1
+        Dictionary<string, object> info = await client.StreamInfoFullAsync(key, count: 1);
+        
+        // Verify only 1 entry returned
+        object[] entries = (object[])info["entries"];
+        Assert.Single(entries);
     }
 }
