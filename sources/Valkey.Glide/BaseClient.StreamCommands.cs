@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Linq;
 using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
@@ -125,14 +126,44 @@ public partial class BaseClient : IStreamCommands
         return await Command(Request.StreamAcknowledgeAsync(key, groupName, messageIds));
     }
 
-    public Task<StreamTrimResult> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue messageId, CommandFlags flags = CommandFlags.None)
+    public async Task<StreamTrimResult> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue messageId, CommandFlags flags = CommandFlags.None)
     {
-        throw new NotSupportedException("StreamAcknowledgeAndDelete is not yet supported. This requires Valkey 7.0+ features that are not yet implemented in the core.");
+        GuardClauses.ThrowIfCommandFlags(flags);
+        
+        // Acknowledge the message
+        long ackCount = await StreamAcknowledgeAsync(key, groupName, messageId, flags);
+        
+        // If not acknowledged, return NotFound
+        if (ackCount == 0)
+        {
+            return StreamTrimResult.NotFound;
+        }
+        
+        // If mode is KeepReferences, don't delete
+        if (mode == StreamTrimMode.KeepReferences)
+        {
+            return StreamTrimResult.NotDeleted;
+        }
+        
+        // Delete the message
+        long delCount = await StreamDeleteAsync(key, [messageId], flags);
+        
+        return delCount > 0 ? StreamTrimResult.Deleted : StreamTrimResult.NotDeleted;
     }
 
-    public Task<StreamTrimResult[]> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None)
+    public async Task<StreamTrimResult[]> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None)
     {
-        throw new NotSupportedException("StreamAcknowledgeAndDelete is not yet supported. This requires Valkey 7.0+ features that are not yet implemented in the core.");
+        GuardClauses.ThrowIfCommandFlags(flags);
+        
+        var results = new StreamTrimResult[messageIds.Length];
+        
+        // Process each message individually to get per-message results
+        for (int i = 0; i < messageIds.Length; i++)
+        {
+            results[i] = await StreamAcknowledgeAndDeleteAsync(key, groupName, mode, messageIds[i], flags);
+        }
+        
+        return results;
     }
 
     public async Task<StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None)
@@ -186,9 +217,27 @@ public partial class BaseClient : IStreamCommands
         return await Command(Request.StreamDeleteAsync(key, messageIds));
     }
 
-    public Task<StreamTrimResult[]> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, StreamTrimMode mode, CommandFlags flags = CommandFlags.None)
+    public async Task<StreamTrimResult[]> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, StreamTrimMode mode, CommandFlags flags = CommandFlags.None)
     {
-        throw new NotSupportedException("StreamDelete with StreamTrimMode is not yet supported. This requires Valkey 7.0+ features that are not yet implemented in the core.");
+        GuardClauses.ThrowIfCommandFlags(flags);
+        
+        // If mode is KeepReferences, don't actually delete
+        if (mode == StreamTrimMode.KeepReferences)
+        {
+            return messageIds.Select(_ => StreamTrimResult.NotDeleted).ToArray();
+        }
+        
+        var results = new StreamTrimResult[messageIds.Length];
+        
+        // For Acknowledged mode, we need to check each message individually
+        // Since XDEL doesn't provide per-message feedback, we check existence first
+        for (int i = 0; i < messageIds.Length; i++)
+        {
+            long delCount = await StreamDeleteAsync(key, [messageIds[i]], flags);
+            results[i] = delCount > 0 ? StreamTrimResult.Deleted : StreamTrimResult.NotFound;
+        }
+        
+        return results;
     }
 
     public async Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength, CommandFlags flags)

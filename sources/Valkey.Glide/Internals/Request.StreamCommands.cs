@@ -149,18 +149,37 @@ internal partial class Request
                 var outerArray = kvp.Value as object[];
                 if (outerArray is null || outerArray.Length == 0) continue;
                 
-                var fieldValues = outerArray[0] as object[];
-                if (fieldValues is null || fieldValues.Length == 0) continue;
-                
-                var values = new NameValueEntry[fieldValues.Length / 2];
-                for (int i = 0; i < values.Length; i++)
+                // Check if this is the nested format for duplicate fields
+                if (outerArray.Length >= 2 && outerArray[0] is object[] && outerArray[1] is object[])
                 {
-                    values[i] = new NameValueEntry(
-                        (GlideString)fieldValues[i * 2],
-                        (GlideString)fieldValues[i * 2 + 1]
-                    );
+                    var valuesList = new List<NameValueEntry>();
+                    for (int i = 0; i < outerArray.Length; i++)
+                    {
+                        if (outerArray[i] is object[] fieldValuePair && fieldValuePair.Length == 2)
+                        {
+                            valuesList.Add(new NameValueEntry(
+                                (GlideString)fieldValuePair[0],
+                                (GlideString)fieldValuePair[1]
+                            ));
+                        }
+                    }
+                    entries.Add(new StreamEntry(entryId, valuesList.ToArray()));
                 }
-                entries.Add(new StreamEntry(entryId, values));
+                else
+                {
+                    var fieldValues = outerArray[0] as object[];
+                    if (fieldValues is null || fieldValues.Length == 0) continue;
+                    
+                    var values = new NameValueEntry[fieldValues.Length / 2];
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        values[i] = new NameValueEntry(
+                            (GlideString)fieldValues[i * 2],
+                            (GlideString)fieldValues[i * 2 + 1]
+                        );
+                    }
+                    entries.Add(new StreamEntry(entryId, values));
+                }
             }
             return [.. entries];
         }
@@ -301,19 +320,45 @@ internal partial class Request
             var id = (GlideString)entry[0];
             var fields = entry[1] as object[];
             
-            var values = fields is null ? [] : new NameValueEntry[fields.Length / 2];
-            if (fields is not null)
+            if (fields is null)
             {
-                for (int j = 0; j < values.Length; j++)
+                result[i] = new StreamEntry(id, []);
+                continue;
+            }
+            
+            var valuesList = new List<NameValueEntry>();
+            
+            // Check if this is the nested array format (each element is [field, value])
+            if (fields.Length > 0 && fields[0] is object[] firstElement && firstElement.Length == 2)
+            {
+                // Handle nested array structure where each field-value pair is a separate array
+                foreach (var field in fields)
                 {
-                    values[j] = new NameValueEntry(
-                        (GlideString)fields[j * 2],
-                        (GlideString)fields[j * 2 + 1]
-                    );
+                    if (field is object[] fieldValuePair && fieldValuePair.Length == 2)
+                    {
+                        valuesList.Add(new NameValueEntry(
+                            (GlideString)fieldValuePair[0],
+                            (GlideString)fieldValuePair[1]
+                        ));
+                    }
+                }
+            }
+            else
+            {
+                // Handle flattened array format (field1, value1, field2, value2, ...)
+                for (int j = 0; j < fields.Length; j += 2)
+                {
+                    if (j + 1 < fields.Length)
+                    {
+                        valuesList.Add(new NameValueEntry(
+                            (GlideString)fields[j],
+                            (GlideString)fields[j + 1]
+                        ));
+                    }
                 }
             }
             
-            result[i] = new StreamEntry(id, values);
+            result[i] = new StreamEntry(id, valuesList.ToArray());
         }
         
         return result;

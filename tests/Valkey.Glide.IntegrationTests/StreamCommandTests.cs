@@ -304,4 +304,211 @@ public class StreamCommandTests
         Assert.Equal("value2", entries[1]["field"].ToString());
         Assert.Equal("value1", entries[2]["field"].ToString());
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAndDeleteAsync_SingleMessage(BaseClient client)
+    {
+        string key = "{StreamAckDel}" + Guid.NewGuid();
+        string groupName = "mygroup";
+        string consumer = "consumer1";
+        
+        // Add entries and create consumer group
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, groupName, "0");
+        
+        // Read to add to PEL
+        await client.StreamReadGroupAsync(key, groupName, consumer, ">");
+        
+        // Acknowledge and delete with Acknowledged mode
+        StreamTrimResult result = await client.StreamAcknowledgeAndDeleteAsync(key, groupName, StreamTrimMode.Acknowledged, id1);
+        Assert.Equal(StreamTrimResult.Deleted, result);
+        
+        // Verify message was deleted
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Empty(entries);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAndDeleteAsync_MultipleMessages(BaseClient client)
+    {
+        string key = "{StreamAckDel}" + Guid.NewGuid();
+        string groupName = "mygroup";
+        string consumer = "consumer1";
+        
+        // Add entries and create consumer group
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        await client.StreamCreateConsumerGroupAsync(key, groupName, "0");
+        
+        // Read to add to PEL
+        await client.StreamReadGroupAsync(key, groupName, consumer, ">");
+        
+        // Acknowledge and delete multiple messages
+        StreamTrimResult[] results = await client.StreamAcknowledgeAndDeleteAsync(key, groupName, StreamTrimMode.Acknowledged, [id1, id2, id3]);
+        Assert.Equal(3, results.Length);
+        Assert.All(results, r => Assert.Equal(StreamTrimResult.Deleted, r));
+        
+        // Verify all messages were deleted
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Empty(entries);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAndDeleteAsync_KeepReferences(BaseClient client)
+    {
+        string key = "{StreamAckDel}" + Guid.NewGuid();
+        string groupName = "mygroup";
+        string consumer = "consumer1";
+        
+        // Add entry and create consumer group
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, groupName, "0");
+        
+        // Read to add to PEL
+        await client.StreamReadGroupAsync(key, groupName, consumer, ">");
+        
+        // Acknowledge but don't delete with KeepReferences mode
+        StreamTrimResult result = await client.StreamAcknowledgeAndDeleteAsync(key, groupName, StreamTrimMode.KeepReferences, id1);
+        Assert.Equal(StreamTrimResult.NotDeleted, result);
+        
+        // Verify message still exists
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Single(entries);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteAsync_WithStreamTrimMode(BaseClient client)
+    {
+        string key = "{StreamDel}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Delete with Acknowledged mode
+        StreamTrimResult[] results = await client.StreamDeleteAsync(key, [id1, id2], StreamTrimMode.Acknowledged);
+        Assert.Equal(2, results.Length);
+        Assert.All(results, r => Assert.Equal(StreamTrimResult.Deleted, r));
+        
+        // Verify messages were deleted
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Single(entries);
+        Assert.Equal(id3.ToString(), entries[0].Id.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteAsync_WithKeepReferences(BaseClient client)
+    {
+        string key = "{StreamDel}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        
+        // Try to delete with KeepReferences mode - should not delete
+        StreamTrimResult[] results = await client.StreamDeleteAsync(key, [id1, id2], StreamTrimMode.KeepReferences);
+        Assert.Equal(2, results.Length);
+        Assert.All(results, r => Assert.Equal(StreamTrimResult.NotDeleted, r));
+        
+        // Verify messages still exist
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Equal(2, entries.Length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamLengthAsync_And_StreamTrimAsync(BaseClient client)
+    {
+        string key = "{StreamLen}" + Guid.NewGuid();
+        string key2 = "{StreamLen}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamAddAsync(key, "field2", "value2");
+        await client.StreamAddAsync(key, "field3", "value3");
+        
+        // Verify length
+        long length = await client.StreamLengthAsync(key);
+        Assert.Equal(3, length);
+        
+        // Trim to 2 entries
+        long trimmed = await client.StreamTrimAsync(key, maxLength: 2);
+        Assert.Equal(1, trimmed);
+        
+        // Verify new length
+        length = await client.StreamLengthAsync(key);
+        Assert.Equal(2, length);
+        
+        // Trim to 1 entry with approximate trimming
+        trimmed = await client.StreamTrimAsync(key, maxLength: 1, useApproximateTrimming: true);
+        Assert.True(trimmed >= 0); // Approximate trimming may trim 0 or more
+        
+        // Key does not exist - returns 0
+        length = await client.StreamLengthAsync(key2);
+        Assert.Equal(0, length);
+        
+        trimmed = await client.StreamTrimAsync(key2, maxLength: 1);
+        Assert.Equal(0, trimmed);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_DuplicateFieldNames(BaseClient client)
+    {
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        string field = "myfield";
+        
+        // Add entry with duplicate field names
+        NameValueEntry[] entries = [
+            new NameValueEntry(field, "value1"),
+            new NameValueEntry(field, "value2")
+        ];
+        
+        ValkeyValue streamId = await client.StreamAddAsync(key, entries);
+        Assert.False(streamId.IsNull);
+        
+        // Read back - entry should exist
+        StreamEntry[] result = await client.StreamRangeAsync(key);
+        Assert.Single(result);
+        Assert.Equal(streamId.ToString(), result[0].Id.ToString());
+        
+        // Verify that duplicate fields are preserved
+        Assert.Equal(2, result[0].Values.Length);
+        Assert.Equal(field, result[0].Values[0].Name.ToString());
+        Assert.Equal("value1", result[0].Values[0].Value.ToString());
+        Assert.Equal(field, result[0].Values[1].Name.ToString());
+        Assert.Equal("value2", result[0].Values[1].Value.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteAsync_Standalone(BaseClient client)
+    {
+        string key = "{StreamDel}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Delete two entries
+        long deleted = await client.StreamDeleteAsync(key, [id1, id2]);
+        Assert.Equal(2, deleted);
+        
+        // Verify only one entry remains
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Single(entries);
+        Assert.Equal(id3.ToString(), entries[0].Id.ToString());
+        
+        // Try to delete non-existent ID
+        deleted = await client.StreamDeleteAsync(key, ["999-999"]);
+        Assert.Equal(0, deleted);
+    }
 }
