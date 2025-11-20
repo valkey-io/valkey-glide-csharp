@@ -37,7 +37,7 @@ internal class MessageContainer(BaseClient client)
         lock (_messages)
         {
             // Create a snapshot of incomplete messages to avoid collection modification during enumeration
-            List<Message> incompleteMessages = _messages.Where(message => !message.IsCompleted).ToList();
+            List<Message> incompleteMessages = [.. _messages.Where(message => !message.IsCompleted)];
 
             if (incompleteMessages.Count > 0)
             {
