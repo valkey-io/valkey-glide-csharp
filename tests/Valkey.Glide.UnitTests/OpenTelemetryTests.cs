@@ -2,13 +2,8 @@
 
 namespace Valkey.Glide.UnitTests;
 
-// By default, XUnit tests run sequentially within a collection (by default, each class
-// is a collection), but in parallel across collections. To prevent interference from
-// other tests, we define a new collection with parallelization disabled.
-[CollectionDefinition(nameof(OpenTelemetryUnitTests), DisableParallelization = true)]
-public class OpenTelemetryUnitTests { }
-
-[Collection(nameof(OpenTelemetryUnitTests))]
+[Collection(typeof(OpenTelemetryTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class OpenTelemetryTests : IDisposable
 {
     private const uint SamplePercentageMin = 0u;

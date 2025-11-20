@@ -6,13 +6,8 @@ using Valkey.Glide.Pipeline;
 
 namespace Valkey.Glide.IntegrationTests;
 
-// By default, XUnit tests run sequentially within a collection (by default, each class
-// is a collection), but in parallel across collections. To prevent interference from
-// other tests, we define a new collection with parallelization disabled.
-[CollectionDefinition(nameof(OpenTelemetryIntegrationTests), DisableParallelization = true)]
-public class OpenTelemetryIntegrationTests { }
-
-[Collection(nameof(OpenTelemetryIntegrationTests))]
+[Collection(typeof(OpenTelemetryTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class OpenTelemetryTests : IDisposable
 {
     private static readonly uint SamplePercentageNone = 0u;
