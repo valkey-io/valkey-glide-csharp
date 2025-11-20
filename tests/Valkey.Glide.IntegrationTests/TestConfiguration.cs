@@ -17,6 +17,12 @@ public class TestConfiguration : IDisposable
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
 
+    // Version check helper methods for test skipping
+    public static bool IsVersionLessThan(string version) => SERVER_VERSION < new Version(version);
+    public static bool IsVersionLessThan(int major, int minor = 0, int build = 0) => SERVER_VERSION < new Version(major, minor, build);
+    public static bool IsVersionAtLeast(string version) => SERVER_VERSION >= new Version(version);
+    public static bool IsVersionAtLeast(int major, int minor = 0, int build = 0) => SERVER_VERSION >= new Version(major, minor, build);
+
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
             .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)

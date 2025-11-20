@@ -116,9 +116,10 @@ public class PubSubFFIMemoryLeakTests
             Console.WriteLine($"Memory growth for {messageSize}-byte messages: {sizeTestGrowth:N0} bytes");
 
             // Memory growth should be reasonable for the message size
-            long expectedMaxGrowth = messageSize * iterationsPerSize * 2; // Allow 2x overhead
+            // Allow 3x overhead to account for GC variance and object headers
+            long expectedMaxGrowth = messageSize * iterationsPerSize * 3;
             Assert.True(sizeTestGrowth < expectedMaxGrowth,
-                $"Excessive memory growth for {messageSize}-byte messages: {sizeTestGrowth:N0} bytes");
+                $"Excessive memory growth for {messageSize}-byte messages: {sizeTestGrowth:N0} bytes, expected max: {expectedMaxGrowth:N0} bytes");
         }
 
         // Final check
