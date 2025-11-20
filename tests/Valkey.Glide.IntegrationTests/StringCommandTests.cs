@@ -713,9 +713,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceAsync_BasicTest(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -733,9 +731,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceAsync_NoCommonSubsequence(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -753,9 +749,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceAsync_NonExistentKeys(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -770,9 +764,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceLengthAsync_BasicTest(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -790,9 +782,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceLengthAsync_NoCommonSubsequence(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -810,9 +800,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceWithMatchesAsync_BasicTest(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -833,9 +821,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceWithMatchesAsync_WithMinLength(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -855,9 +841,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceWithMatchesAsync_NoMatches(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -878,9 +862,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceWithMatchesAsync_ValidateMatchDetails(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -925,9 +907,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceWithMatchesAsync_WithMinLengthFiltering(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -983,9 +963,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceWithMatchesAsync_DifferentIndices(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "LCS is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0"
         );
 
         // Use hash tags to ensure keys map to the same slot in cluster mode
