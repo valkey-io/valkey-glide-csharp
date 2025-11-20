@@ -1,9 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Internals;
-
-using Xunit;
-
 namespace Valkey.Glide.UnitTests;
 
 /// <summary>
@@ -209,7 +205,8 @@ public class PubSubCommandTests
         Cmd<object[], string[]> cmd = Request.PubSubChannels();
 
         // Simulate server response: ["channel1", "channel2", "channel3"]
-        object[] response = [
+        object[] response =
+        [
             (GlideString)"channel1",
             (GlideString)"channel2",
             (GlideString)"channel3"
@@ -230,7 +227,8 @@ public class PubSubCommandTests
         Cmd<object[], string[]> cmd = Request.PubSubShardChannels();
 
         // Simulate server response: ["shard1", "shard2"]
-        object[] response = [
+        object[] response =
+        [
             (GlideString)"shard1",
             (GlideString)"shard2"
         ];
@@ -262,13 +260,13 @@ public class PubSubCommandTests
             () =>
             {
                 Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> numSubCmd = Request.PubSubNumSub([]);
-                Dictionary<string, long> numSubResult = numSubCmd.Converter(new Dictionary<GlideString, object>());
+                Dictionary<string, long> numSubResult = numSubCmd.Converter([]);
                 Assert.Empty(numSubResult);
             },
             () =>
             {
                 Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> shardNumSubCmd = Request.PubSubShardNumSub([]);
-                Dictionary<string, long> shardNumSubResult = shardNumSubCmd.Converter(new Dictionary<GlideString, object>());
+                Dictionary<string, long> shardNumSubResult = shardNumSubCmd.Converter([]);
                 Assert.Empty(shardNumSubResult);
             }
         );

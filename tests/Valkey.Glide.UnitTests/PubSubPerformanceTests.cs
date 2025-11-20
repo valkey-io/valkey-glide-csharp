@@ -1,13 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Xunit;
 
 namespace Valkey.Glide.UnitTests;
 
@@ -205,8 +199,8 @@ public class PubSubPerformanceTests
         // Assert
         Assert.Equal(burstSize * burstCount, messagesReceived);
 
-        var avgBurstTime = burstTimes.Select(t => t.TotalMilliseconds).Average();
-        var maxBurstTime = burstTimes.Select(t => t.TotalMilliseconds).Max();
+        var avgBurstTime = burstTimes.Average(t => t.TotalMilliseconds);
+        var maxBurstTime = burstTimes.Max(t => t.TotalMilliseconds);
 
         // Verify burst handling is efficient
         Assert.True(avgBurstTime < 1000,
@@ -263,7 +257,7 @@ public class PubSubPerformanceTests
         var avgThroughput = throughputSamples.Average();
         var minThroughput = throughputSamples.Min();
         var maxThroughput = throughputSamples.Max();
-        var throughputStdDev = Math.Sqrt(throughputSamples.Select(t => Math.Pow(t - avgThroughput, 2)).Average());
+        var throughputStdDev = Math.Sqrt(throughputSamples.Average(t => Math.Pow(t - avgThroughput, 2)));
 
         // Verify stable performance over time
         Assert.True(avgThroughput >= targetRate * 0.8,
