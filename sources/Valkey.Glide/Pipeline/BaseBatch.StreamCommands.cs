@@ -34,7 +34,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamTrim(ValkeyKey, long?, ValkeyValue?, bool, long?)" />
     public T StreamTrim(ValkeyKey key, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null) =>
-        AddCmd(Request.StreamTrimAsync(key, maxLength, minId ?? default, useApproximateTrimming, limit));
+        AddCmd(Request.StreamTrimAsync(key, maxLength, minId ?? default, useApproximateTrimming, limit, StreamTrimMode.KeepReferences));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamCreateConsumerGroup(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?)" />
     public T StreamCreateConsumerGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null) =>

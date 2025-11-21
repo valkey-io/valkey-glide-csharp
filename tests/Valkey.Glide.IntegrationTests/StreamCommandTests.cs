@@ -176,7 +176,7 @@ public class StreamCommandTests
         ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
         
         // Add another entry with MINID set to id2 - should trim entries older than id2
-        ValkeyValue id4 = await client.StreamAddAsync(key, "field", "value4", minId: id2);
+        ValkeyValue id4 = await client.StreamAddAsync(key, "field", "value4", noMakeStream: false, minId: id2);
         Assert.False(id4.IsNull);
         
         // Verify entries - should have id2, id3, id4 (id1 should be trimmed)
@@ -195,7 +195,7 @@ public class StreamCommandTests
         await client.StreamAddAsync(key, "field", "value2");
         
         // Add with approximate MINID trimming
-        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3", minId: id1, useApproximateTrimming: true);
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3", useApproximateTrimming: true, noMakeStream: false, minId: id1);
         Assert.False(id3.IsNull);
     }
 
@@ -311,6 +311,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAcknowledgeAndDeleteAsync_SingleMessage(BaseClient client)
     {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.2.0"), "XACKDEL requires server version 8.2.0 or higher");
+        
         string key = "{StreamAckDel}" + Guid.NewGuid();
         string groupName = "mygroup";
         string consumer = "consumer1";
@@ -335,6 +337,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAcknowledgeAndDeleteAsync_MultipleMessages(BaseClient client)
     {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.2.0"), "XACKDEL requires server version 8.2.0 or higher");
+        
         string key = "{StreamAckDel}" + Guid.NewGuid();
         string groupName = "mygroup";
         string consumer = "consumer1";
@@ -362,6 +366,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAcknowledgeAndDeleteAsync_KeepReferences(BaseClient client)
     {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.2.0"), "XACKDEL requires server version 8.2.0 or higher");
+        
         string key = "{StreamAckDel}" + Guid.NewGuid();
         string groupName = "mygroup";
         string consumer = "consumer1";
@@ -386,6 +392,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamDeleteAsync_WithStreamTrimMode(BaseClient client)
     {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.2.0"), "XDEL with trim mode requires server version 8.2.0 or higher");
+        
         string key = "{StreamDel}" + Guid.NewGuid();
         
         // Add entries
@@ -408,6 +416,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamDeleteAsync_WithKeepReferences(BaseClient client)
     {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.2.0"), "XDEL with trim mode requires server version 8.2.0 or higher");
+        
         string key = "{StreamDel}" + Guid.NewGuid();
         
         // Add entries
@@ -734,7 +744,7 @@ public class StreamCommandTests
         await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
         await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
         
-        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", minId: "-", maxId: "+");
+        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", "-", "+");
         
         Assert.Equal(3, messages.Length);
         Assert.Equal(id1.ToString(), messages[0].MessageId.ToString());
@@ -753,7 +763,7 @@ public class StreamCommandTests
         await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
         await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
         
-        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", minId: id1, maxId: id2);
+        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", id1, id2);
         
         Assert.Equal(2, messages.Length);
         Assert.Equal(id1.ToString(), messages[0].MessageId.ToString());
@@ -878,5 +888,72 @@ public class StreamCommandTests
         // Verify only 1 entry returned
         object[] entries = (object[])info["entries"];
         Assert.Single(entries);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadAsync_WithPlusPosition(BaseClient client)
+    {
+        string key = "{StreamRead}" + Guid.NewGuid();
+        
+        // Add entries
+        await client.StreamAddAsync(key, "field", "value1");
+        await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue lastId = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Read from "+" (maximum ID) - returns only the last entry
+        StreamEntry[] entries = await client.StreamReadAsync(key, "+");
+        Assert.Single(entries);
+        Assert.Equal("value3", entries[0]["field"].ToString());
+        Assert.Equal(lastId.ToString(), entries[0].Id.ToString());
+        
+        // Add another entry
+        ValkeyValue newId = await client.StreamAddAsync(key, "field", "value4");
+        
+        // Read from "+" again - should now return the new last entry
+        entries = await client.StreamReadAsync(key, "+");
+        Assert.Single(entries);
+        Assert.Equal("value4", entries[0]["field"].ToString());
+        Assert.Equal(newId.ToString(), entries[0].Id.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_WithStreamTrimMode(BaseClient client)
+    {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.2.0"), "StreamTrimMode in XADD requires server version 8.2.0 or higher");
+        
+        string key = "{StreamAdd}" + Guid.NewGuid();
+        
+        // Add entries with Acknowledged mode and maxLength
+        await client.StreamAddAsync(key, "field", "value1", maxLength: 2, mode: StreamTrimMode.Acknowledged);
+        await client.StreamAddAsync(key, "field", "value2", maxLength: 2, mode: StreamTrimMode.Acknowledged);
+        await client.StreamAddAsync(key, "field", "value3", maxLength: 2, mode: StreamTrimMode.Acknowledged);
+        
+        // Should only have 2 entries due to maxLength
+        long length = await client.StreamLengthAsync(key);
+        Assert.Equal(2, length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamTrimByMinIdAsync_WithStreamTrimMode(BaseClient client)
+    {
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.2.0"), "StreamTrimMode in XTRIM requires server version 8.2.0 or higher");
+        
+        string key = "{StreamTrim}" + Guid.NewGuid();
+        
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
+        ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
+        
+        // Trim with Acknowledged mode
+        long trimmed = await client.StreamTrimByMinIdAsync(key, id2, mode: StreamTrimMode.Acknowledged);
+        Assert.Equal(1, trimmed);
+        
+        // Verify only 2 entries remain
+        long length = await client.StreamLengthAsync(key);
+        Assert.Equal(2, length);
     }
 }

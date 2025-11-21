@@ -45,15 +45,15 @@ public interface IStreamCommands
     /// <param name="streamValue">The field value.</param>
     /// <param name="messageId">The message ID. Use null or "*" for auto-generation, or "&lt;ms&gt;-*" to auto-generate sequence number for a specific timestamp.</param>
     /// <param name="maxLength">The maximum length of the stream. If specified, old entries will be trimmed. Mutually exclusive with minId.</param>
-    /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="useApproximateTrimming">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="limit">The maximum number of entries to trim. Only applicable when useApproximateTrimming is true.</param>
     /// <param name="mode">The trimming mode.</param>
     /// <param name="noMakeStream">If true, the stream will not be created if it doesn't exist. Returns null if stream doesn't exist.</param>
+    /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</returns>
     /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, bool noMakeStream = false, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Appends a new entry to a stream with multiple field-value pairs.
@@ -63,15 +63,15 @@ public interface IStreamCommands
     /// <param name="streamPairs">The field-value pairs to add.</param>
     /// <param name="messageId">The message ID. Use null or "*" for auto-generation, or "&lt;ms&gt;-*" to auto-generate sequence number for a specific timestamp.</param>
     /// <param name="maxLength">The maximum length of the stream. If specified, old entries will be trimmed. Mutually exclusive with minId.</param>
-    /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="useApproximateTrimming">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="limit">The maximum number of entries to trim. Only applicable when useApproximateTrimming is true.</param>
     /// <param name="mode">The trimming mode.</param>
     /// <param name="noMakeStream">If true, the stream will not be created if it doesn't exist. Returns null if stream doesn't exist.</param>
+    /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <param name="returns">The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</param>
     /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, bool noMakeStream = false, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads entries from a single stream starting from a given position.
@@ -204,6 +204,18 @@ public interface IStreamCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="consumerName">The consumer name.</param>
     /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of streams with their entries.</returns>
+    Task<ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags);
+
+    /// <summary>
+    /// Reads entries from multiple streams for a consumer group.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xreadgroup"/>
+    /// <param name="streamPositions">Array of stream keys and their starting positions.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name.</param>
+    /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
     /// <param name="noAck">If true, messages are not added to the pending entries list.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of streams with their entries.</returns>
@@ -303,6 +315,19 @@ public interface IStreamCommands
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
     /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of claimed stream entries.</returns>
+    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, CommandFlags flags);
+
+    /// <summary>
+    /// Claims pending messages for a consumer.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xclaim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="consumerGroup">The consumer group name.</param>
+    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="messageIds">Array of message IDs to claim.</param>
     /// <param name="idleTimeInMs">Set the idle time (last delivery time) of the message.</param>
     /// <param name="timeUnixMs">Set the idle time to a specific Unix time in milliseconds.</param>
     /// <param name="retryCount">Set the retry counter to the specified value.</param>
@@ -310,6 +335,19 @@ public interface IStreamCommands
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of claimed stream entries.</returns>
     Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Claims pending messages for a consumer, returning only IDs.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xclaim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="consumerGroup">The consumer group name.</param>
+    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>An array of claimed message IDs.</returns>
+    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, CommandFlags flags);
 
     /// <summary>
     /// Claims pending messages for a consumer, returning only IDs.
@@ -404,12 +442,12 @@ public interface IStreamCommands
     /// <seealso href="https://valkey.io/commands/xtrim"/>
     /// <param name="key">The key of the stream.</param>
     /// <param name="maxLength">The maximum length of the stream. Mutually exclusive with minId.</param>
-    /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="useApproximateTrimming">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="limit">The maximum number of entries to trim. Only applicable when useApproximateTrimming is true.</param>
+    /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of entries deleted.</returns>
-    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Trims the stream by minimum ID.

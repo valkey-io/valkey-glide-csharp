@@ -58,6 +58,12 @@ internal partial class Request
             }
         }
 
+        // Add mode if not KeepReferences
+        if (mode != StreamTrimMode.KeepReferences)
+        {
+            args.Add(GetModeString(mode).ToGlideString());
+        }
+
         // Add message ID
         args.Add(messageId.IsNull ? "*".ToGlideString() : messageId.ToGlideString());
 
@@ -465,6 +471,57 @@ internal partial class Request
         return new(RequestType.XAck, [.. args], false, response => response);
     }
 
+    public static Cmd<object[], StreamTrimResult> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue messageId)
+    {
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), GetModeString(mode).ToGlideString(), "IDS".ToGlideString(), "1".ToGlideString(), messageId.ToGlideString()];
+        return new(RequestType.XAckDel, [.. args], false, ConvertSingleAckDelResult);
+    }
+
+    public static Cmd<object[], StreamTrimResult[]> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue[] messageIds)
+    {
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), GetModeString(mode).ToGlideString(), "IDS".ToGlideString(), messageIds.Length.ToGlideString()];
+        foreach (var id in messageIds)
+        {
+            args.Add(id.ToGlideString());
+        }
+        return new(RequestType.XAckDel, [.. args], false, ConvertMultipleAckDelResult);
+    }
+
+    private static string GetModeString(StreamTrimMode mode) => mode switch
+    {
+        StreamTrimMode.Acknowledged => "ACKNOWLEDGED",
+        StreamTrimMode.KeepReferences => "KEEPREFERENCES",
+        _ => "KEEPREFERENCES"
+    };
+
+    private static StreamTrimResult ConvertSingleAckDelResult(object[] response)
+    {
+        if (response.Length == 0) return StreamTrimResult.NotFound;
+        var result = (long)response[0];
+        return result switch
+        {
+            0 => StreamTrimResult.NotFound,
+            1 => StreamTrimResult.Deleted,
+            _ => StreamTrimResult.NotDeleted
+        };
+    }
+
+    private static StreamTrimResult[] ConvertMultipleAckDelResult(object[] response)
+    {
+        var results = new StreamTrimResult[response.Length];
+        for (int i = 0; i < response.Length; i++)
+        {
+            var result = (long)response[i];
+            results[i] = result switch
+            {
+                0 => StreamTrimResult.NotFound,
+                1 => StreamTrimResult.Deleted,
+                _ => StreamTrimResult.NotDeleted
+            };
+        }
+        return results;
+    }
+
     public static Cmd<object[], StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName)
     {
         return new(RequestType.XPending, [key.ToGlideString(), groupName.ToGlideString()], false, ConvertStreamPendingInfo);
@@ -751,7 +808,17 @@ internal partial class Request
         return new(RequestType.XDel, [.. args], false, response => response);
     }
 
-    public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, long? maxLength, ValkeyValue minId, bool useApproximateTrimming, long? limit)
+    public static Cmd<object[], StreamTrimResult[]> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, StreamTrimMode mode)
+    {
+        List<GlideString> args = [key.ToGlideString(), GetModeString(mode).ToGlideString(), "IDS".ToGlideString(), messageIds.Length.ToGlideString()];
+        foreach (var id in messageIds)
+        {
+            args.Add(id.ToGlideString());
+        }
+        return new(RequestType.XDelEx, [.. args], false, ConvertMultipleAckDelResult);
+    }
+
+    public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, long? maxLength, ValkeyValue minId, bool useApproximateTrimming, long? limit, StreamTrimMode mode)
     {
         List<GlideString> args = [key.ToGlideString()];
         
@@ -772,6 +839,12 @@ internal partial class Request
         {
             args.Add("LIMIT".ToGlideString());
             args.Add(limit.Value.ToGlideString());
+        }
+        
+        // Add mode if not KeepReferences
+        if (mode != StreamTrimMode.KeepReferences)
+        {
+            args.Add(GetModeString(mode).ToGlideString());
         }
         
         return new(RequestType.XTrim, [.. args], false, response => response);
