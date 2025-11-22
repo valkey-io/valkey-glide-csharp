@@ -47,13 +47,12 @@ public interface IStreamCommands
     /// <param name="maxLength">The maximum length of the stream. If specified, old entries will be trimmed. Mutually exclusive with minId.</param>
     /// <param name="useApproximateTrimming">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="limit">The maximum number of entries to trim. Only applicable when useApproximateTrimming is true.</param>
-    /// <param name="mode">The trimming mode.</param>
     /// <param name="noMakeStream">If true, the stream will not be created if it doesn't exist. Returns null if stream doesn't exist.</param>
     /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</returns>
     /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Appends a new entry to a stream with multiple field-value pairs.
@@ -65,13 +64,12 @@ public interface IStreamCommands
     /// <param name="maxLength">The maximum length of the stream. If specified, old entries will be trimmed. Mutually exclusive with minId.</param>
     /// <param name="useApproximateTrimming">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="limit">The maximum number of entries to trim. Only applicable when useApproximateTrimming is true.</param>
-    /// <param name="mode">The trimming mode.</param>
     /// <param name="noMakeStream">If true, the stream will not be created if it doesn't exist. Returns null if stream doesn't exist.</param>
     /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <param name="returns">The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</param>
     /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads entries from a single stream starting from a given position.
@@ -244,30 +242,6 @@ public interface IStreamCommands
     Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Acknowledges and optionally deletes a message from a stream.
-    /// </summary>
-    /// <param name="key">The key of the stream.</param>
-    /// <param name="groupName">The consumer group name.</param>
-    /// <param name="mode">The trimming mode.</param>
-    /// <param name="messageId">The message ID to acknowledge.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The result of the operation.</returns>
-    /// <exception cref="NotSupportedException">This method is not yet supported.</exception>
-    Task<StreamTrimResult> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue messageId, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// Acknowledges and optionally deletes messages from a stream.
-    /// </summary>
-    /// <param name="key">The key of the stream.</param>
-    /// <param name="groupName">The consumer group name.</param>
-    /// <param name="mode">The trimming mode.</param>
-    /// <param name="messageIds">Array of message IDs to acknowledge.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>Array of results for each message.</returns>
-    /// <exception cref="NotSupportedException">This method is not yet supported.</exception>
-    Task<StreamTrimResult[]> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, StreamTrimMode mode, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
     /// Returns pending messages summary for a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xpending"/>
@@ -414,18 +388,6 @@ public interface IStreamCommands
     Task<long> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Removes one or more messages from a stream with trim mode.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xdel"/>
-    /// <param name="key">The key of the stream.</param>
-    /// <param name="messageIds">Array of message IDs to delete.</param>
-    /// <param name="mode">The trimming mode.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>Array of results for each message.</returns>
-    /// <exception cref="NotSupportedException">This method is not yet supported.</exception>
-    Task<StreamTrimResult[]> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, StreamTrimMode mode, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
     /// Trims the stream to a specified size.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xtrim"/>
@@ -457,10 +419,9 @@ public interface IStreamCommands
     /// <param name="minId">Trim entries with IDs lower than this.</param>
     /// <param name="useApproximateMaxLength">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="limit">The maximum number of entries to trim.</param>
-    /// <param name="mode">The trimming mode.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of entries deleted.</returns>
-    Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode mode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns stream information.

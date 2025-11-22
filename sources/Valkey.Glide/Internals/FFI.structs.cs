@@ -639,12 +639,10 @@ internal partial class FFI
 
         //// Stream commands
         XAck = 1401,
-        XAckDel = 1422,
         XAdd = 1402,
         XAutoClaim = 1403,
         XClaim = 1404,
         XDel = 1405,
-        XDelEx = 1423,
         XGroupCreate = 1406,
         XGroupCreateConsumer = 1407,
         XGroupDelConsumer = 1408,

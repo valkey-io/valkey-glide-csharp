@@ -11,11 +11,11 @@ public class StreamCommandTests
     {
         Assert.Multiple(
             // StreamAdd
-            () => Assert.Equal(["XADD", "key", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, StreamTrimMode.KeepReferences, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "1-0", "field1", "value1", "field2", "value2"], Request.StreamAddAsync("key", "1-0", null, default, false, [new NameValueEntry("field1", "value1"), new NameValueEntry("field2", "value2")], null, StreamTrimMode.KeepReferences, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "MAXLEN", "~", "1000", "*", "field", "value"], Request.StreamAddAsync("key", default, 1000, default, true, [new NameValueEntry("field", "value")], null, StreamTrimMode.KeepReferences, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "MINID", "~", "0-1", "*", "field", "value"], Request.StreamAddAsync("key", default, null, "0-1", true, [new NameValueEntry("field", "value")], null, StreamTrimMode.KeepReferences, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, StreamTrimMode.KeepReferences, true).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, false).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "1-0", "field1", "value1", "field2", "value2"], Request.StreamAddAsync("key", "1-0", null, default, false, [new NameValueEntry("field1", "value1"), new NameValueEntry("field2", "value2")], null, false).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "MAXLEN", "~", "1000", "*", "field", "value"], Request.StreamAddAsync("key", default, 1000, default, true, [new NameValueEntry("field", "value")], null, false).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "MINID", "~", "0-1", "*", "field", "value"], Request.StreamAddAsync("key", default, null, "0-1", true, [new NameValueEntry("field", "value")], null, false).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, true).GetArgs()),
 
             // StreamRead
             () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", null, null).GetArgs()),
@@ -35,9 +35,9 @@ public class StreamCommandTests
             () => Assert.Equal(["XDEL", "key", "1-0", "2-0"], Request.StreamDeleteAsync("key", ["1-0", "2-0"]).GetArgs()),
 
             // StreamTrim
-            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "1000"], Request.StreamTrimAsync("key", 1000, default, false, null, StreamTrimMode.KeepReferences).GetArgs()),
-            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "~", "1000"], Request.StreamTrimAsync("key", 1000, default, true, null, StreamTrimMode.KeepReferences).GetArgs()),
-            () => Assert.Equal(["XTRIM", "key", "MINID", "0-1"], Request.StreamTrimAsync("key", null, "0-1", false, null, StreamTrimMode.KeepReferences).GetArgs()),
+            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "1000"], Request.StreamTrimAsync("key", 1000, default, false, null).GetArgs()),
+            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "~", "1000"], Request.StreamTrimAsync("key", 1000, default, true, null).GetArgs()),
+            () => Assert.Equal(["XTRIM", "key", "MINID", "0-1"], Request.StreamTrimAsync("key", null, "0-1", false, null).GetArgs()),
 
             // StreamCreateConsumerGroup
             () => Assert.Equal(["XGROUPCREATE", "key", "group", "$", "MKSTREAM"], Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).GetArgs()),
@@ -100,8 +100,8 @@ public class StreamCommandTests
     {
         Assert.Multiple(
             // StreamAdd
-            () => Assert.Equal(new ValkeyValue("1-0"), Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("f", "v")], null, StreamTrimMode.KeepReferences, false).Converter("1-0")),
-            () => Assert.Equal(ValkeyValue.Null, Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("f", "v")], null, StreamTrimMode.KeepReferences, false).Converter(null!)),
+            () => Assert.Equal(new ValkeyValue("1-0"), Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("f", "v")], null, false).Converter("1-0")),
+            () => Assert.Equal(ValkeyValue.Null, Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("f", "v")], null, false).Converter(null!)),
 
             // StreamLength
             () => Assert.Equal(5L, Request.StreamLengthAsync("key").Converter(5L)),
@@ -112,7 +112,7 @@ public class StreamCommandTests
             () => Assert.Equal(0L, Request.StreamDeleteAsync("key", ["1-0"]).Converter(0L)),
 
             // StreamTrim
-            () => Assert.Equal(10L, Request.StreamTrimAsync("key", 100, default, false, null, StreamTrimMode.KeepReferences).Converter(10L)),
+            () => Assert.Equal(10L, Request.StreamTrimAsync("key", 100, default, false, null).Converter(10L)),
 
             // StreamCreateConsumerGroup
             () => Assert.True(Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).Converter("OK")),
