@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Errors;
+
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(StreamConsumerGroupTests))]
@@ -18,6 +20,48 @@ public class StreamConsumerGroupTests
         // Create consumer group
         bool created = await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
         Assert.True(created);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerGroupAsync_NonExistentStreamWithoutMkstream(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Try to create group on non-existent stream without MKSTREAM - should error
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0", createStream: false));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerGroupAsync_DuplicateGroup(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Create stream and group
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        
+        // Try to create same group again - should error with BUSYGROUP
+        var exception = await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0"));
+        Assert.Contains("BUSYGROUP", exception.Message);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerGroupAsync_WrongKeyType(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Set key as string
+        await client.StringSetAsync(key, "not_a_stream");
+        
+        // Try to create group on string key - should error
+        var exception = await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0", createStream: true));
+        Assert.Contains("WRONGTYPE", exception.Message);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -48,6 +92,20 @@ public class StreamConsumerGroupTests
         // Delete the group
         bool deleted = await client.StreamDeleteConsumerGroupAsync(key, "mygroup");
         Assert.True(deleted);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteConsumerGroupAsync_WrongKeyType(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Set key as string
+        await client.StringSetAsync(key, "not_a_stream");
+        
+        // Try to delete group on string key - should error
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamDeleteConsumerGroupAsync(key, "mygroup"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -138,6 +196,34 @@ public class StreamConsumerGroupTests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_NoGroup(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry but don't create group
+        await client.StreamAddAsync(key, "field1", "value1");
+        
+        // Try to read from non-existent group - should error with NOGROUP
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamReadGroupAsync(key, "nonexistent", "consumer1", ">"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_WrongKeyType(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Set key as string
+        await client.StringSetAsync(key, "not_a_stream");
+        
+        // Try to read from string key - should error
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamReadGroupAsync_MultiStream(BaseClient client)
     {
         string key1 = "{StreamGroup}" + Guid.NewGuid();
@@ -196,6 +282,22 @@ public class StreamConsumerGroupTests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAsync_WrongGroup(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry and create group
+        ValkeyValue id = await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        
+        // Try to acknowledge with wrong group name - returns 0
+        long ackCount = await client.StreamAcknowledgeAsync(key, "wronggroup", [id]);
+        Assert.Equal(0, ackCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamPendingAsync_Summary(BaseClient client)
     {
         string key = "{StreamGroup}" + Guid.NewGuid();
@@ -240,6 +342,34 @@ public class StreamConsumerGroupTests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingAsync_NoGroup(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry but don't create group
+        await client.StreamAddAsync(key, "field1", "value1");
+        
+        // Try to get pending from non-existent group - should error
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamPendingAsync(key, "nonexistent"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingAsync_WrongKeyType(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Set key as string
+        await client.StringSetAsync(key, "not_a_stream");
+        
+        // Try to get pending from string key - should error
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamPendingAsync(key, "mygroup"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamPendingMessagesAsync_WithMinIdle(BaseClient client)
     {
         string key = "{StreamGroup}" + Guid.NewGuid();
@@ -274,6 +404,34 @@ public class StreamConsumerGroupTests
         Assert.Single(claimed);
         Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
         Assert.Equal("value1", claimed[0].Values[0].Value.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_NoGroup(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Add entry but don't create group
+        ValkeyValue id = await client.StreamAddAsync(key, "field1", "value1");
+        
+        // Try to claim from non-existent group - should error
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamClaimAsync(key, "nonexistent", "consumer1", 0, [id]));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_WrongKeyType(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+        
+        // Set key as string
+        await client.StringSetAsync(key, "not_a_stream");
+        
+        // Try to claim from string key - should error
+        await Assert.ThrowsAsync<RequestException>(async () =>
+            await client.StreamClaimAsync(key, "mygroup", "consumer1", 0, ["1-0"]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
