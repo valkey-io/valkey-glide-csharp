@@ -140,7 +140,7 @@ internal partial class Request
                 var entryId = kvp.Key;
                 var outerArray = kvp.Value as object[];
                 if (outerArray is null || outerArray.Length == 0) continue;
-                
+
                 // Check if this is the nested format for duplicate fields
                 if (outerArray.Length >= 2 && outerArray[0] is object[] && outerArray[1] is object[])
                 {
@@ -155,13 +155,13 @@ internal partial class Request
                             ));
                         }
                     }
-                    entries.Add(new StreamEntry(entryId, valuesList.ToArray()));
+                    entries.Add(new StreamEntry(entryId, [.. valuesList]));
                 }
                 else
                 {
                     var fieldValues = outerArray[0] as object[];
                     if (fieldValues is null || fieldValues.Length == 0) continue;
-                    
+
                     var values = new NameValueEntry[fieldValues.Length / 2];
                     for (int i = 0; i < values.Length; i++)
                     {
@@ -175,7 +175,7 @@ internal partial class Request
             }
             return [.. entries];
         }
-        
+
         // Handle RESP2 array format
         return ConvertStreamEntries((object[])response);
     }
@@ -183,13 +183,13 @@ internal partial class Request
     private static StreamEntry[] ConvertSingleStreamRead(object response)
     {
         if (response is null) return [];
-        
+
         // Handle dictionary response (RESP3 format)
         // Structure: {stream_key => {entry_id => [field_value_pairs]}}
         if (response is Dictionary<GlideString, object> dict)
         {
             var allEntries = new List<StreamEntry>();
-            
+
             foreach (var streamKvp in dict)
             {
                 // streamKvp.Value should be a nested dictionary of {entry_id => field_values}
@@ -199,13 +199,13 @@ internal partial class Request
                     {
                         var entryId = entryKvp.Key; // This is the entry ID like "1763338493936-0"
                         var outerArray = entryKvp.Value as object[];
-                        
+
                         if (outerArray is null || outerArray.Length == 0) continue;
-                        
+
                         // The value is an array containing a single element which is the field-value array
                         var fieldValues = outerArray[0] as object[];
                         if (fieldValues is null || fieldValues.Length == 0) continue;
-                        
+
                         // Convert field-value array to NameValueEntry array
                         var values = new NameValueEntry[fieldValues.Length / 2];
                         for (int i = 0; i < values.Length; i++)
@@ -215,43 +215,43 @@ internal partial class Request
                                 (GlideString)fieldValues[i * 2 + 1]
                             );
                         }
-                        
+
                         allEntries.Add(new StreamEntry(entryId, values));
                     }
                 }
             }
-            
+
             return [.. allEntries];
         }
-        
+
         // Handle standalone response (array)
         var streams = (object[])response;
         if (streams.Length == 0) return [];
-        
+
         var streamData = (object[])streams[0];
         if (streamData.Length < 2) return [];
-        
+
         var entries = (object[])streamData[1];
         if (entries.Length == 0) return [];
-        
+
         return ConvertStreamEntries(entries);
     }
 
     private static ValkeyStream[] ConvertMultiStreamRead(object response)
     {
         if (response is null) return [];
-        
+
         // Handle dictionary response (RESP3 format)
         // Structure: {stream_key => {entry_id => [field_value_pairs]}}
         if (response is Dictionary<GlideString, object> dict)
         {
             var result = new List<ValkeyStream>();
-            
+
             foreach (var streamKvp in dict)
             {
                 var streamKey = new ValkeyKey(streamKvp.Key);
                 var entries = new List<StreamEntry>();
-                
+
                 // streamKvp.Value should be a nested dictionary of {entry_id => field_values}
                 if (streamKvp.Value is Dictionary<GlideString, object> entriesDict)
                 {
@@ -259,13 +259,13 @@ internal partial class Request
                     {
                         var entryId = entryKvp.Key;
                         var outerArray = entryKvp.Value as object[];
-                        
+
                         if (outerArray is null || outerArray.Length == 0) continue;
-                        
+
                         // The value is an array containing a single element which is the field-value array
                         var fieldValues = outerArray[0] as object[];
                         if (fieldValues is null || fieldValues.Length == 0) continue;
-                        
+
                         // Convert field-value array to NameValueEntry array
                         var values = new NameValueEntry[fieldValues.Length / 2];
                         for (int i = 0; i < values.Length; i++)
@@ -275,51 +275,51 @@ internal partial class Request
                                 (GlideString)fieldValues[i * 2 + 1]
                             );
                         }
-                        
+
                         entries.Add(new StreamEntry(entryId, values));
                     }
                 }
-                
+
                 result.Add(new ValkeyStream(streamKey, [.. entries]));
             }
-            
+
             return [.. result];
         }
-        
+
         // Handle standalone response (array)
         var streams = (object[])response;
         var resultArray = new ValkeyStream[streams.Length];
-        
+
         for (int i = 0; i < streams.Length; i++)
         {
             var streamData = (object[])streams[i];
             var key = new ValkeyKey((GlideString)streamData[0]);
             var entries = streamData[1] as object[];
-            
+
             resultArray[i] = new ValkeyStream(key, entries is null || entries.Length == 0 ? [] : ConvertStreamEntries(entries));
         }
-        
+
         return resultArray;
     }
 
     private static StreamEntry[] ConvertStreamEntries(object[] entries)
     {
         var result = new StreamEntry[entries.Length];
-        
+
         for (int i = 0; i < entries.Length; i++)
         {
             var entry = (object[])entries[i];
             var id = (GlideString)entry[0];
             var fields = entry[1] as object[];
-            
+
             if (fields is null)
             {
                 result[i] = new StreamEntry(id, []);
                 continue;
             }
-            
+
             var valuesList = new List<NameValueEntry>();
-            
+
             // Check if this is the nested array format (each element is [field, value])
             if (fields.Length > 0 && fields[0] is object[] firstElement && firstElement.Length == 2)
             {
@@ -349,28 +349,28 @@ internal partial class Request
                     }
                 }
             }
-            
-            result[i] = new StreamEntry(id, valuesList.ToArray());
+
+            result[i] = new StreamEntry(id, [.. valuesList]);
         }
-        
+
         return result;
     }
 
     public static Cmd<string, bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, bool createStream, long? entriesRead)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.IsNull ? "$".ToGlideString() : position.ToGlideString()];
-        
+
         if (createStream)
         {
             args.Add("MKSTREAM".ToGlideString());
         }
-        
+
         if (entriesRead.HasValue)
         {
             args.Add("ENTRIESREAD".ToGlideString());
             args.Add(entriesRead.Value.ToGlideString());
         }
-        
+
         return new(RequestType.XGroupCreate, [.. args], false, response => response == "OK");
     }
 
@@ -382,13 +382,13 @@ internal partial class Request
     public static Cmd<string, bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.ToGlideString()];
-        
+
         if (entriesRead.HasValue)
         {
             args.Add("ENTRIESREAD".ToGlideString());
             args.Add(entriesRead.Value.ToGlideString());
         }
-        
+
         return new(RequestType.XGroupSetId, [.. args], false, response => response == "OK");
     }
 
@@ -400,40 +400,40 @@ internal partial class Request
     public static Cmd<object, StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue position, int? count, bool noAck)
     {
         List<GlideString> args = ["GROUP".ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString()];
-        
+
         if (count.HasValue)
         {
             args.Add("COUNT".ToGlideString());
             args.Add(count.Value.ToGlideString());
         }
-        
+
         if (noAck)
         {
             args.Add("NOACK".ToGlideString());
         }
-        
+
         args.Add("STREAMS".ToGlideString());
         args.Add(key.ToGlideString());
         args.Add(position.IsNull ? ">".ToGlideString() : position.ToGlideString());
-        
+
         return new(RequestType.XReadGroup, [.. args], false, ConvertSingleStreamRead, allowConverterToHandleNull: true);
     }
 
     public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, bool noAck)
     {
         List<GlideString> args = ["GROUP".ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString()];
-        
+
         if (countPerStream.HasValue)
         {
             args.Add("COUNT".ToGlideString());
             args.Add(countPerStream.Value.ToGlideString());
         }
-        
+
         if (noAck)
         {
             args.Add("NOACK".ToGlideString());
         }
-        
+
         args.Add("STREAMS".ToGlideString());
         foreach (var sp in streamPositions)
         {
@@ -443,7 +443,7 @@ internal partial class Request
         {
             args.Add(sp.Position.ToGlideString());
         }
-        
+
         return new(RequestType.XReadGroup, [.. args], false, ConvertMultiStreamRead, allowConverterToHandleNull: true);
     }
 
@@ -644,7 +644,7 @@ internal partial class Request
             var lastDeliveredId = default(ValkeyValue);
             var entriesRead = (long?)null;
             var lag = (long?)null;
-            
+
             if (response[i] is Dictionary<GlideString, object> dict)
             {
                 foreach (var kvp in dict)
@@ -659,6 +659,7 @@ internal partial class Request
                         case "last-delivered-id": lastDeliveredId = (ValkeyValue)(GlideString)value; break;
                         case "entries-read": entriesRead = value is null ? null : value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
                         case "lag": lag = value is null ? null : value is GlideString gs4 ? long.Parse(gs4.ToString()) : (long)value; break;
+                        default: break;
                     }
                 }
             }
@@ -677,6 +678,7 @@ internal partial class Request
                         case "last-delivered-id": lastDeliveredId = (ValkeyValue)(GlideString)value; break;
                         case "entries-read": entriesRead = value is null ? null : value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
                         case "lag": lag = value is null ? null : value is GlideString gs4 ? long.Parse(gs4.ToString()) : (long)value; break;
+                        default: break;
                     }
                 }
             }
@@ -693,7 +695,7 @@ internal partial class Request
             var name = "";
             var pending = 0;
             var idle = 0L;
-            
+
             if (response[i] is Dictionary<GlideString, object> dict)
             {
                 foreach (var kvp in dict)
@@ -705,6 +707,7 @@ internal partial class Request
                         case "name": name = ((GlideString)value).ToString(); break;
                         case "pending": pending = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
                         case "idle": idle = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                        default: break;
                     }
                 }
             }
@@ -720,6 +723,7 @@ internal partial class Request
                         case "name": name = ((GlideString)value).ToString(); break;
                         case "pending": pending = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
                         case "idle": idle = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                        default: break;
                     }
                 }
             }
@@ -746,7 +750,7 @@ internal partial class Request
     public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, long? maxLength, ValkeyValue minId, bool useApproximateTrimming, long? limit)
     {
         List<GlideString> args = [key.ToGlideString()];
-        
+
         if (maxLength.HasValue)
         {
             args.Add("MAXLEN".ToGlideString());
@@ -759,13 +763,13 @@ internal partial class Request
             if (useApproximateTrimming) args.Add("~".ToGlideString());
             args.Add(minId.ToGlideString());
         }
-        
+
         if (limit.HasValue && useApproximateTrimming)
         {
             args.Add("LIMIT".ToGlideString());
             args.Add(limit.Value.ToGlideString());
         }
-        
+
         return new(RequestType.XTrim, [.. args], false, response => response);
     }
 
@@ -788,7 +792,7 @@ internal partial class Request
     private static Dictionary<string, object> ConvertStreamInfoFull(object response)
     {
         var result = new Dictionary<string, object>();
-        
+
         if (response is Dictionary<GlideString, object> dict)
         {
             foreach (var kvp in dict)
@@ -805,7 +809,7 @@ internal partial class Request
                 result[key] = infoArray[i + 1];
             }
         }
-        
+
         return result;
     }
 
@@ -818,7 +822,7 @@ internal partial class Request
         var firstEntry = default(StreamEntry);
         var lastEntry = default(StreamEntry);
         var lastGeneratedId = default(ValkeyValue);
-        
+
         if (response is Dictionary<GlideString, object> dict)
         {
             foreach (var kvp in dict)
@@ -834,6 +838,7 @@ internal partial class Request
                     case "first-entry": firstEntry = value is object[] arr ? ConvertStreamEntries([arr])[0] : default; break;
                     case "last-entry": lastEntry = value is object[] arr2 ? ConvertStreamEntries([arr2])[0] : default; break;
                     case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
+                    default: break;
                 }
             }
         }
@@ -853,10 +858,11 @@ internal partial class Request
                     case "first-entry": firstEntry = value is object[] arr ? ConvertStreamEntries([arr])[0] : default; break;
                     case "last-entry": lastEntry = value is object[] arr2 ? ConvertStreamEntries([arr2])[0] : default; break;
                     case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
+                    default: break;
                 }
             }
         }
-        
+
         return new StreamInfo(length, radixTreeKeys, radixTreeNodes, groups, firstEntry, lastEntry, lastGeneratedId);
     }
 }

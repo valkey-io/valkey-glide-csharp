@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Linq;
 using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
@@ -222,7 +221,7 @@ public partial class BaseClient : IStreamCommands
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamInfoFullAsync(key, count));
     }
-    
+
     public async Task<StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

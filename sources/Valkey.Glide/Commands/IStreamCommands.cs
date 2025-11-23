@@ -51,7 +51,7 @@ public interface IStreamCommands
     /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</returns>
-    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -67,8 +67,8 @@ public interface IStreamCommands
     /// <param name="noMakeStream">If true, the stream will not be created if it doesn't exist. Returns null if stream doesn't exist.</param>
     /// <param name="minId">Trim entries with IDs lower than this. Mutually exclusive with maxLength.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <param name="returns">The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</param>
-    /// <exception cref="RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <returns>The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>

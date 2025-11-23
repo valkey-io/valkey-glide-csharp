@@ -322,7 +322,7 @@ public sealed class GlideString : IComparable<GlideString>
         return this == (GlideString)obj;
     }
 
-    public static bool operator ==(GlideString? left, GlideString? right) => 
+    public static bool operator ==(GlideString? left, GlideString? right) =>
         left is null ? right is null : right is not null && left.Bytes.SequenceEqual(right.Bytes);
 
     public static bool operator !=(GlideString left, GlideString right) => !(left == right);

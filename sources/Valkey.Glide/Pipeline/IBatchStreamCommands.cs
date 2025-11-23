@@ -35,8 +35,8 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamDeleteAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
     IBatch StreamDelete(ValkeyKey key, ValkeyValue[] messageIds);
 
-    /// <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, ValkeyValue?, bool, long?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, ValkeyValue?, bool, long?, CommandFlags)" /></returns>
+    /// <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, bool, long?, ValkeyValue?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, bool, long?, ValkeyValue?, CommandFlags)" /></returns>
     IBatch StreamTrim(ValkeyKey key, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null);
 
     /// <inheritdoc cref="Commands.IStreamCommands.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
