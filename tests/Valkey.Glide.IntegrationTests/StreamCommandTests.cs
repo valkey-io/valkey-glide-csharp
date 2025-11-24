@@ -203,7 +203,7 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAddAsync_WithTimestampAutoSequence(BaseClient client)
     {
-        TestConfiguration.SkipTestIfServerVersionBelow("7.0.0");
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "Timestamp-* format requires server version 7.0.0 or higher");
 
         string key = "{StreamAdd}" + Guid.NewGuid();
 
@@ -686,7 +686,7 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamCreateConsumerGroupAsync_WithEntriesRead(BaseClient client)
     {
-        TestConfiguration.SkipTestIfServerVersionBelow("7.0.0");
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "ENTRIESREAD parameter requires server version 7.0.0 or higher");
 
         string key = "{StreamGroup}" + Guid.NewGuid();
 
@@ -771,7 +771,7 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamReadAsync_WithPlusPosition(BaseClient client)
     {
-        TestConfiguration.SkipTestIfServerVersionBelow("7.0.0");
+        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "+ position in XREAD requires server version 7.0.0 or higher");
 
         string key = "{StreamRead}" + Guid.NewGuid();
 
