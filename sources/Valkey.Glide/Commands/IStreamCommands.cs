@@ -460,4 +460,31 @@ public interface IStreamCommands
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of information about each consumer in the group.</returns>
     Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None);
+
+    // Obsolete methods - not supported by Valkey GLIDE
+
+    /// <summary>
+    /// This method is not implemented. Valkey does not support acknowledging and deleting messages in a single operation.
+    /// </summary>
+    [Obsolete("This method is not implemented. Use StreamAcknowledgeAsync followed by StreamDeleteAsync instead.", error: true)]
+    Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
+    /// </summary>
+    [Obsolete("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.", error: true)]
+    Task<long> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, object mode, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
+    /// </summary>
+    [Obsolete("This method is not implemented. Use StreamAddAsync without the mode parameter instead.", error: true)]
+    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateTrimming, long? limit, bool noMakeStream, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
+    /// </summary>
+    [Obsolete("This method is not implemented. Use StreamTrimAsync without the mode parameter instead.", error: true)]
+    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength, bool useApproximateTrimming, long? limit, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None);
+
 }

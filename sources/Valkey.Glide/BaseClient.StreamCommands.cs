@@ -233,4 +233,24 @@ public partial class BaseClient : IStreamCommands
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamConsumerInfoAsync(key, groupName));
     }
+
+    public Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None)
+    {
+        throw new NotSupportedException("This method is not implemented. Use StreamAcknowledgeAsync followed by StreamDeleteAsync instead.");
+    }
+
+    public Task<long> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, object mode, CommandFlags flags = CommandFlags.None)
+    {
+        throw new NotSupportedException("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.");
+    }
+
+    public Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateTrimming, long? limit, bool noMakeStream, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None)
+    {
+        throw new NotSupportedException("This method is not implemented. Use StreamAddAsync without the mode parameter instead.");
+    }
+
+    public Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength, bool useApproximateTrimming, long? limit, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None)
+    {
+        throw new NotSupportedException("This method is not implemented. Use StreamTrimAsync without the mode parameter instead.");
+    }
 }
