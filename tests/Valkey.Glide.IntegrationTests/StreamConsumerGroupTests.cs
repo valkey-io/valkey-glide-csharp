@@ -639,6 +639,8 @@ public class StreamConsumerGroupTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamConsumerGroupSetPositionAsync_WithEntriesRead(BaseClient client)
     {
+        TestConfiguration.SkipTestIfServerVersionBelow("7.0.0");
+
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries

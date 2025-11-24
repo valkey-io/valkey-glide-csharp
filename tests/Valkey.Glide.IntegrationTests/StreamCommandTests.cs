@@ -203,6 +203,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAddAsync_WithTimestampAutoSequence(BaseClient client)
     {
+        TestConfiguration.SkipTestIfServerVersionBelow("7.0.0");
+
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Use <ms>-* format to auto-generate sequence number for specific timestamp
@@ -684,6 +686,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamCreateConsumerGroupAsync_WithEntriesRead(BaseClient client)
     {
+        TestConfiguration.SkipTestIfServerVersionBelow("7.0.0");
+
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries
@@ -767,6 +771,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamReadAsync_WithPlusPosition(BaseClient client)
     {
+        TestConfiguration.SkipTestIfServerVersionBelow("7.0.0");
+
         string key = "{StreamRead}" + Guid.NewGuid();
 
         // Add entries
