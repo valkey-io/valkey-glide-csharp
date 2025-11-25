@@ -16,6 +16,12 @@ public static class OpenTelemetry
     private static OpenTelemetryConfig? s_config;
 
     /// <summary>
+    /// Internal delegate for FFI initialization.
+    /// For testing purposes only.
+    /// </summary>
+    internal static Func<IntPtr, IntPtr> InitOpenTelemetryFfi = FFI.InitOpenTelemetryFfi;
+
+    /// <summary>
     /// Initialize OpenTelemetry with the provided configuration.
     /// Can only be called once per process. Subsequent calls will be ignored.
     /// </summary>
@@ -112,6 +118,10 @@ public static class OpenTelemetry
     /// <summary>
     /// Clear the OpenTelemetry configuration.
     /// For testing purposes only.
+    ///
+    /// Note that this does not clear OpenTelemetry in the C# client: the underlying Rust
+    /// OpenTelemetry initialization remains active for the process lifetime. However,
+    /// by clearing the C# config, we ensure that no new spans are created.
     /// </summary>
     internal static void Clear()
     {
@@ -139,7 +149,7 @@ public static class OpenTelemetry
         try
         {
             Marshal.StructureToPtr(ffiConfig, configPtr, false);
-            var errorPtr = FFI.InitOpenTelemetryFfi(configPtr);
+            var errorPtr = InitOpenTelemetryFfi(configPtr);
 
             if (errorPtr != IntPtr.Zero)
             {
