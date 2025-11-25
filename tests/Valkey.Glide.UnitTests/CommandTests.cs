@@ -926,10 +926,9 @@ public class CommandTests
             () => Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, true).GetArgs()),
 
             // StreamRead
-            () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", null, null).GetArgs()),
-            () => Assert.Equal(["XREAD", "COUNT", "10", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", 10, null).GetArgs()),
-            () => Assert.Equal(["XREAD", "BLOCK", "1000", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", null, 1000).GetArgs()),
-            () => Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamReadAsync([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], null, null).GetArgs()),
+            () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", null).GetArgs()),
+            () => Assert.Equal(["XREAD", "COUNT", "10", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", 10).GetArgs()),
+            () => Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamReadAsync([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], null).GetArgs()),
 
             // StreamRange
             () => Assert.Equal(["XRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", "-", "+", null, Order.Ascending).GetArgs()),
