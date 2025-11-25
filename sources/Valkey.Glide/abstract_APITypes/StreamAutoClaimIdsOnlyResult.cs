@@ -5,7 +5,7 @@ using System;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Result of the XAUTOCLAIM command with the JUSTID option.
+/// Result of the <see href="https://valkey.io/commands/xautoclaim/">XAUTOCLAIM</see> command with the <c>JUSTID</c> option.
 /// </summary>
 public readonly struct StreamAutoClaimIdsOnlyResult
 {
@@ -17,7 +17,7 @@ public readonly struct StreamAutoClaimIdsOnlyResult
     }
 
     /// <summary>
-    /// A null StreamAutoClaimIdsOnlyResult, indicating no results.
+    /// A null <see cref="StreamAutoClaimIdsOnlyResult"/>, indicating no results.
     /// </summary>
     public static StreamAutoClaimIdsOnlyResult Null { get; } = new StreamAutoClaimIdsOnlyResult(ValkeyValue.Null, Array.Empty<ValkeyValue>(), Array.Empty<ValkeyValue>());
 

@@ -29,8 +29,8 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
     // Explicit interface implementations for IBatchStreamCommands
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamField, streamValue, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamPairs, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
-    IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count, int? block) => StreamRead(key, position, count, block);
-    IBatch IBatchStreamCommands.StreamRead(StreamPosition[] streamPositions, int? count, int? block) => StreamRead(streamPositions, count, block);
+    IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count) => StreamRead(key, position, count);
+    IBatch IBatchStreamCommands.StreamRead(StreamPosition[] streamPositions, int? count) => StreamRead(streamPositions, count);
     IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? start, ValkeyValue? end, int? count, Order order) => StreamRange(key, start, end, count, order);
     IBatch IBatchStreamCommands.StreamLength(ValkeyKey key) => StreamLength(key);
     IBatch IBatchStreamCommands.StreamDelete(ValkeyKey key, ValkeyValue[] messageIds) => StreamDelete(key, messageIds);

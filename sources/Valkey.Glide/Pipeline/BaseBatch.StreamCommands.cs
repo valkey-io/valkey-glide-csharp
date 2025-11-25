@@ -14,13 +14,13 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StreamAdd(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false) =>
         AddCmd(Request.StreamAddAsync(key, messageId ?? default, maxLength, minId ?? default, useApproximateTrimming, streamPairs, limit, noMakeStream));
 
-    /// <inheritdoc cref="IBatchStreamCommands.StreamRead(ValkeyKey, ValkeyValue, int?, int?)" />
-    public T StreamRead(ValkeyKey key, ValkeyValue position, int? count = null, int? block = null) =>
-        AddCmd(Request.StreamReadAsync(key, position, count, block));
+    /// <inheritdoc cref="IBatchStreamCommands.StreamRead(ValkeyKey, ValkeyValue, int?)" />
+    public T StreamRead(ValkeyKey key, ValkeyValue position, int? count = null) =>
+        AddCmd(Request.StreamReadAsync(key, position, count));
 
-    /// <inheritdoc cref="IBatchStreamCommands.StreamRead(StreamPosition[], int?, int?)" />
-    public T StreamRead(StreamPosition[] streamPositions, int? count = null, int? block = null) =>
-        AddCmd(Request.StreamReadAsync(streamPositions, count, block));
+    /// <inheritdoc cref="IBatchStreamCommands.StreamRead(StreamPosition[], int?)" />
+    public T StreamRead(StreamPosition[] streamPositions, int? count = null) =>
+        AddCmd(Request.StreamReadAsync(streamPositions, count));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamRange(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order)" />
     public T StreamRange(ValkeyKey key, ValkeyValue? start = null, ValkeyValue? end = null, int? count = null, Order order = Order.Ascending) =>
@@ -97,8 +97,8 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamField, streamValue, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamPairs, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
-    IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count, int? block) => StreamRead(key, position, count, block);
-    IBatch IBatchStreamCommands.StreamRead(StreamPosition[] streamPositions, int? count, int? block) => StreamRead(streamPositions, count, block);
+    IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count) => StreamRead(key, position, count);
+    IBatch IBatchStreamCommands.StreamRead(StreamPosition[] streamPositions, int? count) => StreamRead(streamPositions, count);
     IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? start, ValkeyValue? end, int? count, Order order) => StreamRange(key, start, end, count, order);
     IBatch IBatchStreamCommands.StreamLength(ValkeyKey key) => StreamLength(key);
     IBatch IBatchStreamCommands.StreamDelete(ValkeyKey key, ValkeyValue[] messageIds) => StreamDelete(key, messageIds);

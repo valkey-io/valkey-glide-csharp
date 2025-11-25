@@ -7,21 +7,21 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 internal interface IBatchStreamCommands
 {
-    /// <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, long?, bool, long?, bool, ValkeyValue?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, long?, bool, long?, bool, ValkeyValue?, CommandFlags)" /></returns>
+    /// <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, long?, bool, long?, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, long?, bool, long?, bool, CommandFlags)" /></returns>
     IBatch StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false);
 
-    /// <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, NameValueEntry[], ValkeyValue?, long?, bool, long?, bool, ValkeyValue?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, NameValueEntry[], ValkeyValue?, long?, bool, long?, bool, ValkeyValue?, CommandFlags)" /></returns>
+    /// <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, NameValueEntry[], ValkeyValue?, long?, bool, long?, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamAddAsync(ValkeyKey, NameValueEntry[], ValkeyValue?, long?, bool, long?, bool, CommandFlags)" /></returns>
     IBatch StreamAdd(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false);
 
-    /// <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(ValkeyKey, ValkeyValue, int?, int?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(ValkeyKey, ValkeyValue, int?, int?, CommandFlags)" /></returns>
-    IBatch StreamRead(ValkeyKey key, ValkeyValue position, int? count = null, int? block = null);
+    /// <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)" /></returns>
+    IBatch StreamRead(ValkeyKey key, ValkeyValue position, int? count = null);
 
-    /// <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(StreamPosition[], int?, int?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(StreamPosition[], int?, int?, CommandFlags)" /></returns>
-    IBatch StreamRead(StreamPosition[] streamPositions, int? count = null, int? block = null);
+    /// <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(StreamPosition[], int?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamReadAsync(StreamPosition[], int?, CommandFlags)" /></returns>
+    IBatch StreamRead(StreamPosition[] streamPositions, int? count = null);
 
     /// <inheritdoc cref="Commands.IStreamCommands.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order, CommandFlags)" /></returns>
@@ -35,8 +35,8 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamDeleteAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
     IBatch StreamDelete(ValkeyKey key, ValkeyValue[] messageIds);
 
-    /// <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, bool, long?, ValkeyValue?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, bool, long?, ValkeyValue?, CommandFlags)" /></returns>
+    /// <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, bool, long?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamTrimAsync(ValkeyKey, long?, bool, long?, CommandFlags)" /></returns>
     IBatch StreamTrim(ValkeyKey key, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null);
 
     /// <inheritdoc cref="Commands.IStreamCommands.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />

@@ -10,58 +10,72 @@ public partial class BaseClient : IStreamCommands
     public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, null, false, null, flags);
+        return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, null, false, flags);
     }
 
     public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, null, false, null, flags);
+        return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, null, false, flags);
     }
 
-    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, bool noMakeStream = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamAddAsync(
             key,
             messageId ?? default,
             maxLength,
-            minId ?? default,
-            useApproximateTrimming,
+            default,
+            useApproximateMaxLength,
             [new NameValueEntry(streamField, streamValue)],
             limit,
             noMakeStream));
     }
 
-    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, bool noMakeStream = false, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, bool noMakeStream = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamAddAsync(
             key,
             messageId ?? default,
             maxLength,
-            minId ?? default,
-            useApproximateTrimming,
+            default,
+            useApproximateMaxLength,
             streamPairs,
             limit,
             noMakeStream));
     }
 
-    public async Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? count = null, int? block = null, CommandFlags flags = CommandFlags.None)
+    public async Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamReadAsync(key, position, count, block));
+        return await Command(Request.StreamReadAsync(key, position, count));
     }
 
-    public async Task<ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, int? count = null, int? block = null, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamReadAsync(streamPositions, count, block));
+        return await Command(Request.StreamReadAsync(streamPositions, count));
     }
 
     public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? start = null, ValkeyValue? end = null, int? count = null, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        if (!start.HasValue)
+        {
+            if (order == Order.Ascending)
+                start = "-";
+            else
+                start = "+";
+        }
+        if (!end.HasValue)
+        {
+            if (order == Order.Ascending)
+                end = "+";
+            else
+                end = "-";
+        }
         return await Command(Request.StreamRangeAsync(key, start ?? "-", end ?? "+", count, order));
     }
 
@@ -94,6 +108,7 @@ public partial class BaseClient : IStreamCommands
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamDeleteConsumerAsync(key, groupName, consumerName));
     }
+
     public async Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -117,6 +132,7 @@ public partial class BaseClient : IStreamCommands
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck));
     }
+
     public async Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -195,13 +211,13 @@ public partial class BaseClient : IStreamCommands
     public async Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamTrimAsync(key, maxLength, useApproximateMaxLength, null, null, flags);
+        return await StreamTrimAsync(key, maxLength, useApproximateMaxLength, null, flags);
     }
 
-    public async Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateTrimming = false, long? limit = null, ValkeyValue? minId = null, CommandFlags flags = CommandFlags.None)
+    public async Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamTrimAsync(key, maxLength, minId ?? default, useApproximateTrimming, limit));
+        return await Command(Request.StreamTrimAsync(key, maxLength, default, useApproximateMaxLength, limit));
     }
 
     public async Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, CommandFlags flags = CommandFlags.None)
