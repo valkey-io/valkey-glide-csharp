@@ -2,19 +2,47 @@
 
 mod ffi;
 use ffi::{
-    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, ResponseValue, RouteInfo, create_cmd,
-    create_connection_request, create_pipeline, create_route, get_pipeline_options,
+    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, PushKind,
+    ResponseValue, RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
+    get_pipeline_options,
 };
 use glide_core::{
+    GlideOpenTelemetry, GlideOpenTelemetryConfigBuilder, GlideOpenTelemetrySignalsExporter,
+    GlideSpan,
     client::Client as GlideClient,
     errors::{RequestErrorType, error_message, error_type},
+    request_type::RequestType,
 };
+use redis::cluster_routing::Routable;
 use std::{
     ffi::{CStr, CString, c_char, c_void},
     slice::from_raw_parts,
+    str::FromStr,
     sync::Arc,
 };
 use tokio::runtime::{Builder, Runtime};
+
+#[repr(C)]
+pub struct OpenTelemetryConfigFFI {
+    pub has_traces: bool,
+    pub traces: TracesConfigFFI,
+    pub has_metrics: bool,
+    pub metrics: MetricsConfigFFI,
+    pub has_flush_interval: bool,
+    pub flush_interval_ms: u32,
+}
+
+#[repr(C)]
+pub struct TracesConfigFFI {
+    pub endpoint: *const c_char,
+    pub has_sample_percentage: bool,
+    pub sample_percentage: u32,
+}
+
+#[repr(C)]
+pub struct MetricsConfigFFI {
+    pub endpoint: *const c_char,
+}
 
 #[repr(C)]
 pub enum Level {
@@ -29,6 +57,8 @@ pub enum Level {
 pub struct Client {
     runtime: Runtime,
     core: Arc<CommandExecutionCore>,
+    pubsub_shutdown: std::sync::Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+    pubsub_task: std::sync::Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 /// Success callback that is called when a command succeeds.
@@ -121,12 +151,15 @@ impl Drop for PanicGuard {
 /// * `config` must be a valid [`ConnectionConfig`] pointer. See the safety documentation of [`create_connection_request`].
 /// * `success_callback` and `failure_callback` must be valid pointers to the corresponding FFI functions.
 ///   See the safety documentation of [`SuccessCallback`] and [`FailureCallback`].
+/// * `pubsub_callback` is an optional callback. When provided, it must be a valid function pointer.
+///   See the safety documentation in the FFI module for PubSubCallback.
 #[allow(rustdoc::private_intra_doc_links)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn create_client(
     config: *const ConnectionConfig,
     success_callback: SuccessCallback,
     failure_callback: FailureCallback,
+    #[allow(unused_variables)] pubsub_callback: Option<PubSubCallback>,
 ) {
     let mut panic_guard = PanicGuard {
         panicked: true,
@@ -135,6 +168,7 @@ pub unsafe extern "C-unwind" fn create_client(
     };
 
     let request = unsafe { create_connection_request(config) };
+
     let runtime = Builder::new_multi_thread()
         .enable_all()
         .worker_threads(10)
@@ -143,7 +177,15 @@ pub unsafe extern "C-unwind" fn create_client(
         .unwrap();
 
     let _runtime_handle = runtime.enter();
-    let res = runtime.block_on(GlideClient::new(request, None));
+
+    // Set up push notification channel if PubSub subscriptions are configured
+    // The callback is optional - users can use queue-based message retrieval instead
+    let is_subscriber = request.pubsub_subscriptions.is_some();
+
+    let (push_tx, mut push_rx) = tokio::sync::mpsc::unbounded_channel();
+    let tx = if is_subscriber { Some(push_tx) } else { None };
+
+    let res = runtime.block_on(GlideClient::new(request, tx));
     match res {
         Ok(client) => {
             let core = Arc::new(CommandExecutionCore {
@@ -152,7 +194,56 @@ pub unsafe extern "C-unwind" fn create_client(
                 client,
             });
 
-            let client_ptr = Arc::into_raw(Arc::new(Client { runtime, core }));
+            // Set up graceful shutdown coordination for PubSub task
+            // Only spawn the callback task if a callback is provided
+            let (pubsub_shutdown, pubsub_task) = if is_subscriber && pubsub_callback.is_some() {
+                let callback = pubsub_callback.unwrap();
+                let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
+
+                let task_handle = runtime.spawn(async move {
+                    logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
+
+                    loop {
+                        tokio::select! {
+                            Some(push_msg) = push_rx.recv() => {
+                                unsafe {
+                                    process_push_notification(push_msg, callback);
+                                }
+                            }
+                            _ = &mut shutdown_rx => {
+                                logger_core::log(
+                                    logger_core::Level::Info,
+                                    "pubsub",
+                                    "PubSub task received shutdown signal",
+                                );
+                                break;
+                            }
+                        }
+                    }
+
+                    logger_core::log(
+                        logger_core::Level::Info,
+                        "pubsub",
+                        "PubSub task completed gracefully",
+                    );
+                });
+
+                (
+                    std::sync::Mutex::new(Some(shutdown_tx)),
+                    std::sync::Mutex::new(Some(task_handle)),
+                )
+            } else {
+                (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
+            };
+
+            let client_adapter = Arc::new(Client {
+                runtime,
+                core,
+                pubsub_shutdown,
+                pubsub_task,
+            });
+            let client_ptr = Arc::into_raw(client_adapter.clone());
+
             unsafe { success_callback(0, client_ptr as *const ResponseValue) };
         }
         Err(err) => {
@@ -171,9 +262,158 @@ pub unsafe extern "C-unwind" fn create_client(
     drop(panic_guard);
 }
 
+/// Processes a push notification message and calls the provided callback function.
+///
+/// This function extracts the message data from the PushInfo and invokes the C# callback
+/// with the appropriate parameters using scoped lifetime management to prevent memory leaks.
+///
+/// # Parameters
+/// - `push_msg`: The push notification message to process.
+/// - `pubsub_callback`: The callback function to invoke with the processed notification.
+///
+/// # Safety
+/// This function is unsafe because it:
+/// - Calls an FFI function (`pubsub_callback`) that may have undefined behavior
+/// - Assumes push_msg.data contains valid BulkString values
+///
+/// The caller must ensure:
+/// - `pubsub_callback` is a valid function pointer to a properly implemented callback
+/// - The callback copies data synchronously before returning
+///
+/// # Memory Safety
+/// This implementation uses scoped lifetime management instead of `std::mem::forget()`.
+/// Vec<u8> instances are kept alive during callback execution and automatically cleaned up
+/// when the function exits, preventing memory leaks.
+unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: PubSubCallback) {
+    use redis::Value;
+
+    // Convert all values to Vec<u8>, handling both BulkString and Int types
+    let strings: Vec<Vec<u8>> = push_msg
+        .data
+        .into_iter()
+        .map(|value| match value {
+            Value::BulkString(bytes) => bytes,
+            Value::Int(num) => num.to_string().into_bytes(),
+            Value::SimpleString(s) => s.into_bytes(),
+            _ => {
+                logger_core::log(
+                    logger_core::Level::Warn,
+                    "pubsub",
+                    &format!("Unexpected value type in PubSub message: {:?}", value),
+                );
+                Vec::new()
+            }
+        })
+        .collect();
+
+    // Store the kind to avoid move issues
+    let push_kind = push_msg.kind.clone();
+
+    // Validate message structure based on PushKind and convert to FFI kind
+    // The FFI PushKind enum is defined in ffi.rs and matches the C# PushKind enum in FFI.structs.cs
+    let (pattern, channel, message, kind) = match (push_kind.clone(), strings.len()) {
+        (redis::PushKind::Message, 2) => {
+            // Regular message: [channel, message]
+            (None, &strings[0], &strings[1], PushKind::Message)
+        }
+        (redis::PushKind::PMessage, 3) => {
+            // Pattern message: [pattern, channel, message]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PMessage,
+            )
+        }
+        (redis::PushKind::SMessage, 2) => {
+            // Sharded message: [channel, message]
+            (None, &strings[0], &strings[1], PushKind::SMessage)
+        }
+        (redis::PushKind::Subscribe, 2) => {
+            // Subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::Subscribe)
+        }
+        (redis::PushKind::PSubscribe, 3) => {
+            // Pattern subscribe confirmation: [pattern, channel, count]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PSubscribe,
+            )
+        }
+        (redis::PushKind::SSubscribe, 2) => {
+            // Sharded subscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::SSubscribe)
+        }
+        (redis::PushKind::Unsubscribe, 2) => {
+            // Unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::Unsubscribe)
+        }
+        (redis::PushKind::PUnsubscribe, 3) => {
+            // Pattern unsubscribe confirmation: [pattern, channel, count]
+            (
+                Some(&strings[0]),
+                &strings[1],
+                &strings[2],
+                PushKind::PUnsubscribe,
+            )
+        }
+        (redis::PushKind::SUnsubscribe, 2) => {
+            // Sharded unsubscribe confirmation: [channel, count]
+            (None, &strings[0], &strings[1], PushKind::SUnsubscribe)
+        }
+        (redis::PushKind::Disconnection, _) => {
+            logger_core::log(
+                logger_core::Level::Info,
+                "pubsub",
+                "PubSub disconnection received",
+            );
+            return;
+        }
+        (kind, len) => {
+            logger_core::log(
+                logger_core::Level::Error,
+                "pubsub",
+                &format!(
+                    "Invalid PubSub message structure: kind={:?}, len={}",
+                    kind, len
+                ),
+            );
+            return;
+        }
+    };
+
+    // Prepare pointers while keeping strings alive
+    let pattern_ptr = pattern.map(|p| p.as_ptr()).unwrap_or(std::ptr::null());
+    let pattern_len = pattern.map(|p| p.len() as u64).unwrap_or(0);
+    let channel_ptr = channel.as_ptr();
+    let channel_len = channel.len() as u64;
+    let message_ptr = message.as_ptr();
+    let message_len = message.len() as u64;
+
+    // Call callback while strings are still alive
+    unsafe {
+        pubsub_callback(
+            kind,
+            message_ptr,
+            message_len,
+            channel_ptr,
+            channel_len,
+            pattern_ptr,
+            pattern_len,
+        );
+    }
+
+    // Vec<u8> instances are automatically cleaned up here
+    // No memory leak, no use-after-free
+}
+
 /// Closes the given client, deallocating it from the heap.
 /// This function should only be called once per pointer created by [`create_client`].
 /// After calling this function the `client_ptr` is not in a valid state.
+///
+/// Implements graceful shutdown coordination for PubSub tasks with timeout.
 ///
 /// # Safety
 ///
@@ -182,6 +422,71 @@ pub unsafe extern "C-unwind" fn create_client(
 #[unsafe(no_mangle)]
 pub extern "C" fn close_client(client_ptr: *const c_void) {
     assert!(!client_ptr.is_null());
+
+    // Get a reference to the client to access shutdown coordination
+    let client = unsafe { &*(client_ptr as *const Client) };
+
+    // Take ownership of shutdown sender and signal graceful shutdown
+    if let Ok(mut guard) = client.pubsub_shutdown.lock() {
+        if let Some(shutdown_tx) = guard.take() {
+            logger_core::log(
+                logger_core::Level::Debug,
+                "pubsub",
+                "Signaling PubSub task to shutdown",
+            );
+
+            // Send shutdown signal (ignore error if receiver already dropped)
+            let _ = shutdown_tx.send(());
+        }
+    }
+
+    // Take ownership of task handle and wait for completion with timeout
+    if let Ok(mut guard) = client.pubsub_task.lock() {
+        if let Some(task_handle) = guard.take() {
+            let timeout = std::time::Duration::from_secs(5);
+
+            logger_core::log(
+                logger_core::Level::Debug,
+                "pubsub",
+                &format!(
+                    "Waiting for PubSub task to complete (timeout: {:?})",
+                    timeout
+                ),
+            );
+
+            let result = client
+                .runtime
+                .block_on(async { tokio::time::timeout(timeout, task_handle).await });
+
+            match result {
+                Ok(Ok(())) => {
+                    logger_core::log(
+                        logger_core::Level::Info,
+                        "pubsub",
+                        "PubSub task completed successfully",
+                    );
+                }
+                Ok(Err(e)) => {
+                    logger_core::log(
+                        logger_core::Level::Warn,
+                        "pubsub",
+                        &format!("PubSub task completed with error: {:?}", e),
+                    );
+                }
+                Err(_) => {
+                    logger_core::log(
+                        logger_core::Level::Warn,
+                        "pubsub",
+                        &format!(
+                            "PubSub task did not complete within timeout ({:?})",
+                            timeout
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
     // This will bring the strong count down to 0 once all client requests are done.
     unsafe { Arc::decrement_strong_count(client_ptr as *const Client) };
 }
@@ -371,6 +676,17 @@ pub unsafe extern "C" fn free_response(ptr: *mut ResponseValue) {
     }
 }
 
+/// Frees memory allocated for a C string.
+///
+/// # Parameters
+/// * `str_ptr`: Pointer to the C string to free.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn free_string(str_ptr: *mut c_char) {
+    if !str_ptr.is_null() {
+        unsafe { let _ = CString::from_raw(str_ptr); };
+    }
+}
+
 impl From<logger_core::Level> for Level {
     fn from(level: logger_core::Level) -> Self {
         match level {
@@ -531,23 +847,6 @@ pub unsafe extern "C" fn drop_script(hash: *mut u8, len: usize) -> *mut c_char {
 
     glide_core::scripts_container::remove_script(hash_str);
     std::ptr::null_mut()
-}
-
-/// Free an error message from a failed drop_script call.
-///
-/// # Parameters
-///
-/// * `error`: The error to free.
-///
-/// # Safety
-///
-/// * `error` must be an error returned by [`drop_script`].
-/// * This function must be called exactly once per error.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn free_drop_script_error(error: *mut c_char) {
-    if !error.is_null() {
-        _ = unsafe { CString::from_raw(error) };
-    }
 }
 
 /// Executes a Lua script using EVALSHA with automatic fallback to EVAL.
@@ -1131,4 +1430,235 @@ pub unsafe extern "C-unwind" fn update_connection_password(
     });
 
     panic_guard.panicked = false;
+}
+
+// ========================================================================================
+// OpenTelemetry
+// ========================================================================================
+
+/// Initializes OpenTelemetry with the given configuration.
+///
+/// # Arguments
+/// * `config` - A pointer to an OpenTelemetryConfig struct containing the configuration.
+///
+/// # Returns
+/// * `null` on success
+/// * A pointer to a C string containing an error message on failure. The caller is responsible for freeing this string.
+///
+/// # Safety
+/// * `config` must be a valid pointer to an OpenTelemetryConfig struct.
+/// * The configuration and its underlying pointers must remain valid until the function returns.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn init_otel(config: *const OpenTelemetryConfigFFI) -> *const c_char {
+    let config = unsafe { &*config };
+    let mut otel_config = GlideOpenTelemetryConfigBuilder::default();
+
+    // Configure traces if provided.
+    if config.has_traces {
+        let endpoint = unsafe { CStr::from_ptr(config.traces.endpoint) }
+            .to_string_lossy()
+            .to_string();
+
+        match GlideOpenTelemetrySignalsExporter::from_str(&endpoint) {
+            Ok(exporter) => {
+                let sample_percentage = if config.traces.has_sample_percentage {
+                    Some(config.traces.sample_percentage)
+                } else {
+                    None
+                };
+                otel_config = otel_config.with_trace_exporter(exporter, sample_percentage);
+            }
+            Err(e) => {
+                let error_msg = format!("Invalid traces configuration: {e}");
+                return CString::new(error_msg).unwrap().into_raw();
+            }
+        }
+    }
+
+    // Configure metrics if provided.
+    if config.has_metrics {
+        let endpoint = unsafe { CStr::from_ptr(config.metrics.endpoint) }
+            .to_string_lossy()
+            .to_string();
+
+        match GlideOpenTelemetrySignalsExporter::from_str(&endpoint) {
+            Ok(exporter) => {
+                otel_config = otel_config.with_metrics_exporter(exporter);
+            }
+            Err(e) => {
+                let error_msg = format!("Invalid metrics configuration: {e}");
+                return CString::new(error_msg).unwrap().into_raw();
+            }
+        }
+    }
+
+    // Configure flush interval if provided.
+    if config.has_flush_interval {
+        otel_config = otel_config.with_flush_interval(std::time::Duration::from_millis(
+            config.flush_interval_ms as u64,
+        ));
+    }
+
+    // Initialize OpenTelemetry synchronously.
+    match glide_core::client::get_or_init_runtime() {
+        Ok(glide_runtime) => {
+            match glide_runtime
+                .runtime
+                .block_on(async { GlideOpenTelemetry::initialise(otel_config.build()) })
+            {
+                Ok(_) => std::ptr::null(), // Success
+                Err(e) => {
+                    let error_msg = format!("Failed to initialize OpenTelemetry: {e}");
+                    CString::new(error_msg).unwrap().into_raw()
+                }
+            }
+        }
+        Err(e) => {
+            let error_msg = format!("Failed to get runtime: {e}");
+            CString::new(error_msg).unwrap().into_raw()
+        }
+    }
+}
+
+/// Creates an OpenTelemetry span for the given request type.
+///
+/// # Parameters
+/// * `request_type`: The type of request to create a span for
+///
+/// # Returns
+/// * A pointer to the created span, or null if span creation fails.
+#[unsafe(no_mangle)]
+pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
+    let command_name = match get_command_name(request_type) {
+        Some(name) => name,
+        None => return std::ptr::null(),
+    };
+
+    create_span(&command_name)
+}
+
+/// Creates an OpenTelemetry batch span.
+///
+/// # Returns
+/// * A pointer to the created span, or null if span creation fails.
+#[unsafe(no_mangle)]
+pub extern "C" fn create_batch_otel_span() -> *const c_void {
+    let command_name = "Batch";
+    create_span(&command_name)
+}
+
+/// Drops an OpenTelemetry span given its pointer as u64.
+///
+/// # Parameters
+/// * `span_ptr`: A pointer to the span to drop
+///
+/// # Safety
+/// * `span_ptr` must be a valid pointer to a span created by the create_otel_span functions, or 0
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn drop_otel_span(span_ptr: *const c_void) {
+    if span_ptr.is_null() {
+        logger_core::log_debug("ffi_otel", "drop_otel_span: Ignoring null span pointer");
+        return;
+    }
+
+    // Attempt to safely drop the span
+    unsafe {
+        // Use std::panic::catch_unwind to handle potential panics during Arc::from_raw
+        let result = std::panic::catch_unwind(|| {
+            Arc::from_raw(span_ptr as *const GlideSpan);
+        });
+
+        match result {
+            Ok(_) => {
+                logger_core::log_debug(
+                    "ffi_otel",
+                    format!(
+                        "drop_otel_span: Successfully dropped span with pointer {:p}",
+                        span_ptr
+                    ),
+                );
+            }
+            Err(_) => {
+                logger_core::log_error(
+                    "ffi_otel",
+                    format!(
+                        "drop_otel_span: Panic occurred while dropping span pointer {:p} - likely invalid pointer",
+                        span_ptr
+                    ),
+                );
+            }
+        }
+    }
+}
+
+/// Returns the command name for the given request type value.
+/// Returns None if the command name cannot be determined.
+fn get_command_name(request_type_u32: u32) -> Option<String> {
+    let request_type = unsafe { std::mem::transmute::<u32, RequestType>(request_type_u32) };
+
+    // Validate request type and extract command.
+    let cmd = match request_type.get_command() {
+        Some(cmd) => cmd,
+        None => {
+            logger_core::log_error(
+                "ffi_otel",
+                "get_command_name: RequestType has no command available",
+            );
+            return None;
+        }
+    };
+
+    // Validate command bytes.
+    let cmd_bytes = match cmd.command() {
+        Some(bytes) => bytes,
+        None => {
+            logger_core::log_error(
+                "ffi_otel",
+                "get_command_name: Command has no bytes available",
+            );
+            return None;
+        }
+    };
+
+    // Validate UTF-8 encoding.
+    let command_name = match std::str::from_utf8(cmd_bytes.as_slice()) {
+        Ok(name) => name,
+        Err(e) => {
+            logger_core::log_error(
+                "ffi_otel",
+                format!("get_command_name: Command bytes are not valid UTF-8: {e}"),
+            );
+            return None;
+        }
+    };
+
+    // Validate command name length (reasonable limit to prevent abuse)
+    if command_name.len() > 256 {
+        logger_core::log_error(
+            "ffi_otel",
+            format!(
+                "get_command_name: Command name too long ({} chars), max 256",
+                command_name.len()
+            ),
+        );
+        return None;
+    }
+
+    Some(command_name.to_string())
+}
+
+/// Returns a new span for the given command name.
+fn create_span(command_name: &str) -> *const c_void {
+    let span = GlideOpenTelemetry::new_span(&command_name);
+    let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
+
+    logger_core::log_debug(
+        "ffi_otel",
+        format!(
+            "create_span: Successfully created span '{command_name}' with pointer {:p}",
+            span_ptr
+        ),
+    );
+
+    span_ptr
 }

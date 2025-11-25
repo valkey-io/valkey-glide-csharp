@@ -8,19 +8,67 @@ public class SharedClientTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
+    // Large argument test constants.
+    private static readonly string SmallString = new("0");
+    private static readonly string LargeString = new('0', 1 << 16); // 64 KiB (65,536 characters)
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task HandleVeryLargeInput(BaseClient client)
+    public async Task CommandsWithLargeKey(BaseClient client)
     {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-        const int expectedSize = 2 << 23;
+        await StringCommandTests.GetAndSetValuesAsync(client, LargeString, SmallString);
+    }
 
-        while (value.Length < expectedSize)
-        {
-            value += value;
-        }
-        await StringCommandTests.GetAndSetValuesAsync(client, key, value);
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task CommandsWithLargeValue(BaseClient client)
+    {
+        await StringCommandTests.GetAndSetValuesAsync(client, SmallString, LargeString);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task CommandsWithLargeKeyAndValue(BaseClient client)
+    {
+        await StringCommandTests.GetAndSetValuesAsync(client, LargeString, LargeString);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptWithLargeKey(BaseClient client)
+    {
+        using var script = new Script("return KEYS[1]");
+        var options = new ScriptOptions().WithKeys(LargeString);
+
+        var result = await client.InvokeScriptAsync(script, options);
+
+        Assert.Equal(LargeString, result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptWithLargeArgument(BaseClient client)
+    {
+        using var script = new Script("return ARGV[1]");
+        var options = new ScriptOptions().WithArgs(LargeString);
+
+        ValkeyResult result = await client.InvokeScriptAsync(script, options);
+
+        Assert.Equal(LargeString, result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ScriptWithLargeKeyAndArgument(BaseClient client)
+    {
+        using var script = new Script("return {KEYS[1], ARGV[1]}");
+        var options = new ScriptOptions()
+            .WithKeys(LargeString)
+            .WithArgs(LargeString);
+
+        var result = await client.InvokeScriptAsync(script, options);
+
+        Assert.Equal((string[])[LargeString, LargeString], result.AsStringArray());
     }
 
     // This test is slow, but it caught timing and releasing issues in the past,

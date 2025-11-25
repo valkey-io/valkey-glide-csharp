@@ -10,6 +10,26 @@ namespace Valkey.Glide.Internals;
 
 internal partial class FFI
 {
+    /// <summary>
+    /// FFI callback delegate for PubSub message reception matching the Rust FFI signature.
+    /// </summary>
+    /// <param name="pushKind">The type of push notification received.</param>
+    /// <param name="messagePtr">Pointer to the raw message bytes.</param>
+    /// <param name="messageLen">The length of the message data in bytes.</param>
+    /// <param name="channelPtr">Pointer to the raw channel name bytes.</param>
+    /// <param name="channelLen">The length of the channel name in bytes.</param>
+    /// <param name="patternPtr">Pointer to the raw pattern bytes (null if no pattern).</param>
+    /// <param name="patternLen">The length of the pattern in bytes (0 if no pattern).</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate void PubSubMessageCallback(
+        uint pushKind,
+        IntPtr messagePtr,
+        ulong messageLen,
+        IntPtr channelPtr,
+        ulong channelLen,
+        IntPtr patternPtr,
+        ulong patternLen);
+
 #if NET8_0_OR_GREATER
     [LibraryImport("libglide_rs", EntryPoint = "command")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -21,11 +41,15 @@ internal partial class FFI
 
     [LibraryImport("libglide_rs", EntryPoint = "free_response")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void FreeResponse(IntPtr response);
+    public static partial void FreeResponse(IntPtr responsePtr);
+
+    [LibraryImport("libglide_rs", EntryPoint = "free_string")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void FreeString(IntPtr strPtr);
 
     [LibraryImport("libglide_rs", EntryPoint = "create_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback);
+    public static partial void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback);
 
     [LibraryImport("libglide_rs", EntryPoint = "close_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -42,10 +66,6 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "free_script_hash_buffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void FreeScriptHashBuffer(IntPtr hashBuffer);
-
-    [LibraryImport("libglide_rs", EntryPoint = "free_drop_script_error")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void FreeDropScriptError(IntPtr errorBuffer);
 
     [LibraryImport("libglide_rs", EntryPoint = "invoke_script")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -77,6 +97,22 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "refresh_iam_token")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RefreshIamTokenFfi(IntPtr client, ulong index);
+
+    [LibraryImport("libglide_rs", EntryPoint = "init_otel")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr InitOpenTelemetryFfi(IntPtr config);
+
+    [LibraryImport("libglide_rs", EntryPoint = "create_otel_span")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr CreateOpenTelemetrySpanFfi(uint requestType);
+
+    [LibraryImport("libglide_rs", EntryPoint = "create_batch_otel_span")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr CreateBatchOpenTelemetrySpanFfi();
+
+    [LibraryImport("libglide_rs", EntryPoint = "drop_otel_span")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
     public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -85,10 +121,13 @@ internal partial class FFI
     public static extern void BatchFfi(IntPtr client, ulong index, IntPtr batch, [MarshalAs(UnmanagedType.U1)] bool raiseOnError, IntPtr opts);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_response")]
-    public static extern void FreeResponse(IntPtr response);
+    public static extern void FreeResponse(IntPtr responsePtr);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_string")]
+    public static extern void FreeString(IntPtr strPtr);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_client")]
-    public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback);
+    public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
     public static extern void CloseClientFfi(IntPtr client);
@@ -130,5 +169,17 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "refresh_iam_token")]
     public static extern void RefreshIamTokenFfi(IntPtr client, ulong index);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init_otel")]
+    public static extern IntPtr InitOpenTelemetryFfi(IntPtr config);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span")]
+    public static extern IntPtr CreateOpenTelemetrySpanFfi(uint requestType);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span")]
+    public static extern IntPtr CreateBatchOpenTelemetrySpanFfi();
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_otel_span")]
+    public static extern void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
 #endif
 }

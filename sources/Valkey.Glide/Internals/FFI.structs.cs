@@ -200,6 +200,10 @@ internal partial class FFI
     {
         private ConnectionRequest _request;
         private readonly List<NodeAddress> _addresses;
+        private readonly BasePubSubSubscriptionConfig? _pubSubConfig;
+        private IntPtr _pubSubChannelsPtr = IntPtr.Zero;
+        private IntPtr _pubSubPatternsPtr = IntPtr.Zero;
+        private IntPtr _pubSubShardedChannelsPtr = IntPtr.Zero;
 
         public ConnectionConfig(
             List<NodeAddress> addresses,
@@ -214,9 +218,11 @@ internal partial class FFI
             ConnectionConfiguration.Protocol? protocol,
             string? clientName,
             bool lazyConnect = false,
-            bool refreshTopologyFromInitialNodes = false)
+            bool refreshTopologyFromInitialNodes = false,
+            BasePubSubSubscriptionConfig? pubSubSubscriptions = null)
         {
             _addresses = addresses;
+            _pubSubConfig = pubSubSubscriptions;
             _request = new()
             {
                 AddressCount = (nuint)addresses.Count,
@@ -239,10 +245,47 @@ internal partial class FFI
                 ClientName = clientName,
                 LazyConnect = lazyConnect,
                 RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
+                HasPubSubConfig = pubSubSubscriptions != null,
+                PubSubConfig = pubSubSubscriptions != null ? MarshalPubSubConfig(pubSubSubscriptions) : new PubSubConfigInfo()
             };
         }
 
-        protected override void FreeMemory() => Marshal.FreeHGlobal(_request.Addresses);
+        protected override void FreeMemory()
+        {
+            Marshal.FreeHGlobal(_request.Addresses);
+
+            if (_pubSubConfig != null)
+            {
+                int channelCount = _pubSubConfig.Subscriptions.TryGetValue(0, out ISet<string>? channels) ? channels.Count : 0;
+                int patternCount = _pubSubConfig.Subscriptions.TryGetValue(1, out ISet<string>? patterns) ? patterns.Count : 0;
+                int shardedChannelCount = _pubSubConfig.Subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) ? shardedChannels.Count : 0;
+
+                FreeStringArray(_pubSubChannelsPtr, channelCount);
+                FreeStringArray(_pubSubPatternsPtr, patternCount);
+                FreeStringArray(_pubSubShardedChannelsPtr, shardedChannelCount);
+            }
+        }
+
+        private static void FreeStringArray(IntPtr arrayPtr, int count)
+        {
+            if (arrayPtr == IntPtr.Zero || count == 0)
+            {
+                return;
+            }
+
+            // Free each string in the array
+            for (int i = 0; i < count; i++)
+            {
+                IntPtr stringPtr = Marshal.ReadIntPtr(arrayPtr, i * IntPtr.Size);
+                if (stringPtr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(stringPtr);
+                }
+            }
+
+            // Free the array itself
+            Marshal.FreeHGlobal(arrayPtr);
+        }
 
         protected override IntPtr AllocateAndCopy()
         {
@@ -252,7 +295,69 @@ internal partial class FFI
             {
                 Marshal.StructureToPtr(_addresses[i], _request.Addresses + (i * addressSize), false);
             }
+
+            // Marshal PubSub configuration if present
+            if (_pubSubConfig != null)
+            {
+                _request.PubSubConfig = MarshalPubSubConfig(_pubSubConfig);
+            }
+
             return StructToPtr(_request);
+        }
+
+
+
+        private PubSubConfigInfo MarshalPubSubConfig(BasePubSubSubscriptionConfig config)
+        {
+            var pubSubInfo = new PubSubConfigInfo();
+
+            // Marshal exact channels (mode 0)
+            if (config.Subscriptions.TryGetValue(0, out ISet<string>? channels) && channels.Count > 0)
+            {
+                _pubSubChannelsPtr = MarshalStringArray(channels);
+                pubSubInfo.ChannelsPtr = _pubSubChannelsPtr;
+                pubSubInfo.ChannelCount = (uint)channels.Count;
+            }
+
+            // Marshal patterns (mode 1)
+            if (config.Subscriptions.TryGetValue(1, out ISet<string>? patterns) && patterns.Count > 0)
+            {
+                _pubSubPatternsPtr = MarshalStringArray(patterns);
+                pubSubInfo.PatternsPtr = _pubSubPatternsPtr;
+                pubSubInfo.PatternCount = (uint)patterns.Count;
+            }
+
+            // Marshal sharded channels (mode 2) - only for cluster clients
+            if (config.Subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
+            {
+                _pubSubShardedChannelsPtr = MarshalStringArray(shardedChannels);
+                pubSubInfo.ShardedChannelsPtr = _pubSubShardedChannelsPtr;
+                pubSubInfo.ShardedChannelCount = (uint)shardedChannels.Count;
+            }
+
+            return pubSubInfo;
+        }
+
+        private static IntPtr MarshalStringArray(ICollection<string> strings)
+        {
+            if (strings.Count == 0)
+            {
+                return IntPtr.Zero;
+            }
+
+            // Allocate array of string pointers
+            IntPtr arrayPtr = Marshal.AllocHGlobal(IntPtr.Size * strings.Count);
+
+            int i = 0;
+            foreach (string str in strings)
+            {
+                // Allocate and copy each string
+                IntPtr stringPtr = Marshal.StringToHGlobalAnsi(str);
+                Marshal.WriteIntPtr(arrayPtr, i * IntPtr.Size, stringPtr);
+                i++;
+            }
+
+            return arrayPtr;
         }
     }
 
@@ -268,6 +373,95 @@ internal partial class FFI
     private static T[] PoolRent<T>(int len) => ArrayPool<T>.Shared.Rent(len);
 
     private static void PoolReturn<T>(T[] arr) => ArrayPool<T>.Shared.Return(arr);
+
+    /// <summary>
+    /// Marshals raw byte arrays from FFI callback parameters to a managed PubSubMessage object.
+    /// </summary>
+    /// <param name="pushKind">The type of push notification.</param>
+    /// <param name="messagePtr">Pointer to the raw message bytes.</param>
+    /// <param name="messageLen">The length of the message data in bytes (unsigned).</param>
+    /// <param name="channelPtr">Pointer to the raw channel name bytes.</param>
+    /// <param name="channelLen">The length of the channel name in bytes (unsigned).</param>
+    /// <param name="patternPtr">Pointer to the raw pattern bytes (null if no pattern).</param>
+    /// <param name="patternLen">The length of the pattern in bytes (unsigned, 0 if no pattern).</param>
+    /// <returns>A managed PubSubMessage object.</returns>
+    /// <exception cref="ArgumentException">Thrown when the parameters are invalid or marshaling fails.</exception>
+    internal static PubSubMessage MarshalPubSubMessage(
+        PushKind pushKind,
+        IntPtr messagePtr,
+        ulong messageLen,
+        IntPtr channelPtr,
+        ulong channelLen,
+        IntPtr patternPtr,
+        ulong patternLen)
+    {
+        try
+        {
+            // Validate input parameters
+            if (messagePtr == IntPtr.Zero)
+            {
+                throw new ArgumentException("Invalid message data: pointer is null");
+            }
+
+            if (messageLen == 0)
+            {
+                throw new ArgumentException("Invalid message data: length is zero");
+            }
+
+            if (channelPtr == IntPtr.Zero)
+            {
+                throw new ArgumentException("Invalid channel data: pointer is null");
+            }
+
+            if (channelLen == 0)
+            {
+                throw new ArgumentException("Invalid channel data: length is zero");
+            }
+
+            // Marshal message bytes to string
+            byte[] messageBytes = new byte[messageLen];
+            Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
+            string message = System.Text.Encoding.UTF8.GetString(messageBytes);
+
+            if (string.IsNullOrEmpty(message))
+            {
+                throw new ArgumentException("PubSub message content cannot be null or empty after marshaling");
+            }
+
+            // Marshal channel bytes to string
+            byte[] channelBytes = new byte[channelLen];
+            Marshal.Copy(channelPtr, channelBytes, 0, (int)channelLen);
+            string channel = System.Text.Encoding.UTF8.GetString(channelBytes);
+
+            if (string.IsNullOrEmpty(channel))
+            {
+                throw new ArgumentException("PubSub channel name cannot be null or empty after marshaling");
+            }
+
+            // Marshal pattern bytes to string if present
+            string? pattern = null;
+            if (patternPtr != IntPtr.Zero && patternLen > 0)
+            {
+                byte[] patternBytes = new byte[patternLen];
+                Marshal.Copy(patternPtr, patternBytes, 0, (int)patternLen);
+                pattern = System.Text.Encoding.UTF8.GetString(patternBytes);
+
+                if (string.IsNullOrEmpty(pattern))
+                {
+                    throw new ArgumentException("PubSub pattern cannot be empty when pattern pointer is provided");
+                }
+            }
+
+            // Create PubSubMessage based on whether pattern is present
+            return pattern == null
+                ? new PubSubMessage(message, channel)
+                : new PubSubMessage(message, channel, pattern);
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            throw new ArgumentException($"Failed to marshal PubSub message from FFI callback parameters: {ex.Message}", ex);
+        }
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct CmdInfo
@@ -789,7 +983,21 @@ internal partial class FFI
         public bool LazyConnect;
         [MarshalAs(UnmanagedType.U1)]
         public bool RefreshTopologyFromInitialNodes;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasPubSubConfig;
+        public PubSubConfigInfo PubSubConfig;
         // TODO more config params, see ffi.rs
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PubSubConfigInfo
+    {
+        public IntPtr ChannelsPtr;
+        public uint ChannelCount;
+        public IntPtr PatternsPtr;
+        public uint PatternCount;
+        public IntPtr ShardedChannelsPtr;
+        public uint ShardedChannelCount;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
@@ -798,62 +1006,6 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.LPStr)]
         public string Host;
         public ushort Port;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
-    {
-        /// <summary>
-        /// Username for authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string? Username = username;
-
-        /// <summary>
-        /// Password for authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string? Password = password;
-
-        /// <summary>
-        /// IAM credentials for authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.U1)]
-        public readonly bool HasIamCredentials = iamCredentials.HasValue;
-        public readonly IamCredentials IamCredentials = iamCredentials ?? default;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
-    {
-        /// <summary>
-        /// The name of the cluster for IAM authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string ClusterName = clusterName;
-
-        /// <summary>
-        /// The AWS region for IAM authentication.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
-        public readonly string Region = region;
-
-        /// <summary>
-        /// The AWS service type for IAM authentication.
-        /// </summary>
-        public readonly ServiceType ServiceType = serviceType;
-
-        /// <summary>
-        /// The refresh interval in seconds for IAM authentication.
-        /// </summary>
-        public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
-        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
-    }
-
-    internal enum ServiceType : uint
-    {
-        ElastiCache = 0,
-        MemoryDB = 1,
     }
 
     internal enum TlsMode : uint
@@ -960,8 +1112,161 @@ internal partial class FFI
         {
             if (errorBuffer != IntPtr.Zero)
             {
-                FreeDropScriptError(errorBuffer);
+                FreeString(errorBuffer);
             }
         }
+    }
+
+    /// <summary>
+    /// Enum representing the type of push notification received from the server.
+    /// This matches the <c>PushKind</c> enum in <c>rust/src/ffi.rs</c>, which is an FFI-safe
+    /// version of the <c>redis::PushKind</c> enum from glide-core.
+    /// </summary>
+    /// <remarks>
+    /// The numeric values must remain stable as they are part of the FFI contract between
+    /// C# and Rust. Each variant corresponds to a specific Redis/Valkey PubSub notification type.
+    /// </remarks>
+    internal enum PushKind
+    {
+        /// <summary>Disconnection notification sent from the library when connection is closed.</summary>
+        PushDisconnection = 0,
+        /// <summary>Other/unknown push notification type.</summary>
+        PushOther = 1,
+        /// <summary>Cache invalidation notification received when a key is changed/deleted.</summary>
+        PushInvalidate = 2,
+        /// <summary>Regular channel message received via SUBSCRIBE.</summary>
+        PushMessage = 3,
+        /// <summary>Pattern-based message received via PSUBSCRIBE.</summary>
+        PushPMessage = 4,
+        /// <summary>Sharded channel message received via SSUBSCRIBE.</summary>
+        PushSMessage = 5,
+        /// <summary>Unsubscribe confirmation.</summary>
+        PushUnsubscribe = 6,
+        /// <summary>Pattern unsubscribe confirmation.</summary>
+        PushPUnsubscribe = 7,
+        /// <summary>Sharded unsubscribe confirmation.</summary>
+        PushSUnsubscribe = 8,
+        /// <summary>Subscribe confirmation.</summary>
+        PushSubscribe = 9,
+        /// <summary>Pattern subscribe confirmation.</summary>
+        PushPSubscribe = 10,
+        /// <summary>Sharded subscribe confirmation.</summary>
+        PushSSubscribe = 11,
+    }
+
+    // ========================================================================================
+    // OpenTelemetry
+    // ========================================================================================
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, uint? flushIntervalMs)
+    {
+        /// <summary>
+        /// Traces configuration for OpenTelemetry.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasTraces = traces.HasValue;
+        public readonly TracesConfig Traces = traces ?? default;
+
+        /// <summary>
+        /// Metrics configuration for OpenTelemetry.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasMetrics = metrics.HasValue;
+        public readonly MetricsConfig Metrics = metrics ?? default;
+
+        /// <summary>
+        /// The flush interval in milliseconds for OpenTelemetry.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasFlushIntervalMs = flushIntervalMs.HasValue;
+        public readonly uint? FlushIntervalMs = flushIntervalMs ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct TracesConfig(string endpoint, uint? samplePercentage)
+    {
+        /// <summary>
+        /// Endpoint for OpenTelemetry traces.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Endpoint = endpoint;
+
+        /// <summary>
+        /// Sample percentage for OpenTelemetry traces.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasSamplePercentage = samplePercentage.HasValue;
+        public readonly uint SamplePercentage = samplePercentage ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct MetricsConfig(string endpoint)
+    {
+        /// <summary>
+        /// Endpoint for OpenTelemetry metrics.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Endpoint = endpoint;
+    }
+
+    // ========================================================================================
+    // Authentication
+    // ========================================================================================
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
+    {
+        /// <summary>
+        /// Username for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string? Username = username;
+
+        /// <summary>
+        /// Password for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string? Password = password;
+
+        /// <summary>
+        /// IAM credentials for authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasIamCredentials = iamCredentials.HasValue;
+        public readonly IamCredentials IamCredentials = iamCredentials ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
+    {
+        /// <summary>
+        /// The name of the cluster for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string ClusterName = clusterName;
+
+        /// <summary>
+        /// The AWS region for IAM authentication.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public readonly string Region = region;
+
+        /// <summary>
+        /// The AWS service type for IAM authentication.
+        /// </summary>
+        public readonly ServiceType ServiceType = serviceType;
+
+        /// <summary>
+        /// The refresh interval in seconds for IAM authentication.
+        /// </summary>
+        public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
+        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
+    }
+
+    internal enum ServiceType : uint
+    {
+        ElastiCache = 0,
+        MemoryDB = 1,
     }
 }

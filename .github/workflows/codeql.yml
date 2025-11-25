@@ -34,7 +34,7 @@ jobs:
                   submodules: true
 
             - name: Initialize CodeQL
-              uses: github/codeql-action/init@v3
+              uses: github/codeql-action/init@v4
               with:
                   languages: csharp
                   build-mode: manual
@@ -50,6 +50,6 @@ jobs:
               run: dotnet build sources/Valkey.Glide/Valkey.Glide.csproj --configuration Lint --framework net8.0
 
             - name: Perform CodeQL Analysis
-              uses: github/codeql-action/analyze@v3
+              uses: github/codeql-action/analyze@v4
               with:
                   category: "/language:csharp"

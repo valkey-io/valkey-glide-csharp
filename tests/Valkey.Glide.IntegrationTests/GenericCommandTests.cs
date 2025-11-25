@@ -122,9 +122,7 @@ public class GenericCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyExpireTime(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "SetIntersectionLength is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "SetIntersectionLength is supported since 7.0.0"
         );
         string key = Guid.NewGuid().ToString();
         string value = "test_value";

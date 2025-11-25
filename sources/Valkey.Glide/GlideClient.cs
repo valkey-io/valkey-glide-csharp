@@ -202,6 +202,18 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
+    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Watch(keys));
+    }
+
+    public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = await Command(Request.Unwatch());
+    }
+
     protected override async Task<Version> GetServerVersionAsync()
     {
         if (_serverVersion == null)
