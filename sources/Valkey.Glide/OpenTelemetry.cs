@@ -18,6 +18,7 @@ public static class OpenTelemetry
     /// <summary>
     /// Internal delegate for FFI initialization.
     /// For testing purposes only.
+    /// See <see cref="T:Valkey.Glide.Tests.OpenTelemetryTests"/>.
     /// </summary>
     internal static Func<IntPtr, IntPtr> InitOpenTelemetryFfi = FFI.InitOpenTelemetryFfi;
 
@@ -118,10 +119,11 @@ public static class OpenTelemetry
     /// <summary>
     /// Clear the OpenTelemetry configuration.
     /// For testing purposes only.
+    /// See <see cref="T:Valkey.Glide.Tests.OpenTelemetryTests"/>.
     ///
-    /// Note that this does not clear OpenTelemetry in the C# client: the underlying Rust
-    /// OpenTelemetry initialization remains active for the process lifetime. However,
-    /// by clearing the C# config, we ensure that no new spans are created.
+    /// Note that this method only clear OpenTelemetry in the C#
+    /// client: the underlying Rust OpenTelemetry initialization
+    /// remains active for the process lifetime.
     /// </summary>
     internal static void Clear()
     {
