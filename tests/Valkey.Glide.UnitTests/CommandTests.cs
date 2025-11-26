@@ -960,6 +960,9 @@ public class CommandTests
             // StreamDeleteConsumerGroup
             () => Assert.Equal(["XGROUPDESTROY", "key", "group"], Request.StreamDeleteConsumerGroupAsync("key", "group").GetArgs()),
 
+            // StreamCreateConsumer
+            () => Assert.Equal(["XGROUPCREATECONSUMER", "key", "group", "consumer"], Request.StreamCreateConsumerAsync("key", "group", "consumer").GetArgs()),
+
             // StreamDeleteConsumer
             () => Assert.Equal(["XGROUPDELCONSUMER", "key", "group", "consumer"], Request.StreamDeleteConsumerAsync("key", "group", "consumer").GetArgs()),
 
@@ -1033,6 +1036,12 @@ public class CommandTests
             // StreamDeleteConsumerGroup
             () => Assert.True(Request.StreamDeleteConsumerGroupAsync("key", "group").Converter(true)),
             () => Assert.False(Request.StreamDeleteConsumerGroupAsync("key", "group").Converter(false)),
+
+            // StreamCreateConsumer
+            () => Assert.True(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(1L)),
+            () => Assert.False(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(0L)),
+            () => Assert.True(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(true)),
+            () => Assert.False(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(false)),
 
             // StreamDeleteConsumer
             () => Assert.Equal(5L, Request.StreamDeleteConsumerAsync("key", "group", "consumer").Converter(5L)),
