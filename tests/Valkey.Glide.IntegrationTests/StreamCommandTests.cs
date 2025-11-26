@@ -711,4 +711,84 @@ public class StreamCommandTests
         Assert.Equal(newId.ToString(), entries[0].Id.ToString());
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_EmptyStream(BaseClient client)
+    {
+        string key = "{StreamRange}" + Guid.NewGuid();
+        await client.StreamAddAsync(key, "field", "value");
+        await client.StreamTrimAsync(key, maxLength: 0);
+
+        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        Assert.Empty(entries);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadAsync_NoNewEntries(BaseClient client)
+    {
+        string key = "{StreamRead}" + Guid.NewGuid();
+        ValkeyValue id = await client.StreamAddAsync(key, "field", "value");
+
+        StreamEntry[] entries = await client.StreamReadAsync(key, id);
+        Assert.Empty(entries);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadAsync_MultipleStreams_EmptyResult(BaseClient client)
+    {
+        string key1 = "{StreamRead}" + Guid.NewGuid();
+        string key2 = "{StreamRead}" + Guid.NewGuid();
+        ValkeyValue id1 = await client.StreamAddAsync(key1, "field", "value1");
+        ValkeyValue id2 = await client.StreamAddAsync(key2, "field", "value2");
+
+        StreamPosition[] positions = [new StreamPosition(key1, id1), new StreamPosition(key2, id2)];
+        ValkeyStream[] streams = await client.StreamReadAsync(positions);
+        Assert.Empty(streams);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_MultipleFieldsPerEntry(BaseClient client)
+    {
+        string key = "{StreamRange}" + Guid.NewGuid();
+        NameValueEntry[] entries = [
+            new NameValueEntry("field1", "value1"),
+            new NameValueEntry("field2", "value2"),
+            new NameValueEntry("field3", "value3")
+        ];
+        await client.StreamAddAsync(key, entries);
+
+        StreamEntry[] result = await client.StreamRangeAsync(key);
+        Assert.Single(result);
+        Assert.Equal(3, result[0].Values.Length);
+        Assert.Equal("value1", result[0]["field1"].ToString());
+        Assert.Equal("value2", result[0]["field2"].ToString());
+        Assert.Equal("value3", result[0]["field3"].ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_DuplicateFieldNames(BaseClient client)
+    {
+        string key = "{StreamRange}" + Guid.NewGuid();
+        NameValueEntry[] entries = [
+            new NameValueEntry("field", "value1"),
+            new NameValueEntry("field", "value2"),
+            new NameValueEntry("field", "value3")
+        ];
+        await client.StreamAddAsync(key, entries);
+
+        StreamEntry[] result = await client.StreamRangeAsync(key);
+        Assert.Single(result);
+        Assert.Equal(3, result[0].Values.Length);
+        Assert.Equal("field", result[0].Values[0].Name.ToString());
+        Assert.Equal("value1", result[0].Values[0].Value.ToString());
+        Assert.Equal("field", result[0].Values[1].Name.ToString());
+        Assert.Equal("value2", result[0].Values[1].Value.ToString());
+        Assert.Equal("field", result[0].Values[2].Name.ToString());
+        Assert.Equal("value3", result[0].Values[2].Value.ToString());
+    }
+
 }
