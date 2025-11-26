@@ -18,16 +18,33 @@ public class OpenTelemetryTests : IDisposable
     private TracesFile Traces { get; }
     private static readonly string TracesFilePath = System.IO.Path.GetTempFileName();
 
-    // Before each test, initialize traces file.
-    public OpenTelemetryTests()
+    static OpenTelemetryTests()
     {
-        Traces = new TracesFile(TracesFilePath);
+        // Before any tests, initialize OpenTelemetry.
+        Assert.False(OpenTelemetry.IsInitialized());
+
+        var tracesConfig = TracesConfig.CreateBuilder()
+            .WithEndpoint($"file://{TracesFilePath}")
+            .Build();
+
+        var config = OpenTelemetryConfig.CreateBuilder()
+            .WithTraces(tracesConfig)
+            .WithFlushInterval(FlushInterval)
+            .Build();
+
+        OpenTelemetry.Init(config);
     }
 
-    // After each test, clear OpenTelemetry and dispose of traces file.
+    public OpenTelemetryTests()
+    {
+        // Before each test, initialize traces file.
+        Traces = new TracesFile();
+    }
+
     public void Dispose()
     {
-        OpenTelemetry.Clear();
+        // After each test, turn off tracing and dispose of traces file.
+        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         Traces.Dispose();
     }
 
@@ -35,7 +52,7 @@ public class OpenTelemetryTests : IDisposable
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Commands_WhenSamplingNone_NoSpans(BaseClient client)
     {
-        InitializeOpenTelemetry(SamplePercentageNone);
+        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteSetGetDelete(client);
         Traces!.AssertSpanNames([]);
     }
@@ -45,7 +62,7 @@ public class OpenTelemetryTests : IDisposable
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Commands_WhenSamplingAll_CreateSpans(BaseClient client)
     {
-        InitializeOpenTelemetry(SamplePercentageAll);
+        OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteSetGetDelete(client);
         Traces!.AssertSpanNames(["SET", "GET", "DEL"]);
     }
@@ -54,7 +71,7 @@ public class OpenTelemetryTests : IDisposable
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Batch_WhenSamplingNone_NoSpans(BaseClient client)
     {
-        InitializeOpenTelemetry(SamplePercentageNone);
+        OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteBatchSetGetDelete(client);
         Traces!.AssertSpanNames([]);
     }
@@ -63,24 +80,9 @@ public class OpenTelemetryTests : IDisposable
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Batch_WhenSamplingAll_CreateSpans(BaseClient client)
     {
-        InitializeOpenTelemetry(SamplePercentageAll);
+        OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteBatchSetGetDelete(client);
         Traces!.AssertSpanNames(["Batch"]);
-    }
-
-    private static void InitializeOpenTelemetry(uint samplePercentage)
-    {
-        var tracesConfig = TracesConfig.CreateBuilder()
-            .WithEndpoint($"file://{TracesFilePath}")
-            .WithSamplePercentage(samplePercentage)
-            .Build();
-
-        var config = OpenTelemetryConfig.CreateBuilder()
-            .WithTraces(tracesConfig)
-            .WithFlushInterval(FlushInterval)
-            .Build();
-
-        OpenTelemetry.Init(config);
     }
 
     // Executes SET, GET, and DEL commands on the given client.
@@ -124,24 +126,20 @@ public class OpenTelemetryTests : IDisposable
     // Temporary file for storing traces.
     private readonly struct TracesFile : IDisposable
     {
-        private readonly string _path;
-
-        public TracesFile(string path)
+        public TracesFile()
         {
-            _path = path;
-
             // Ensure file exists and is initially empty.
-            File.WriteAllText(path, string.Empty);
+            File.WriteAllText(TracesFilePath, string.Empty);
         }
 
         public readonly void Dispose()
         {
-            File.Delete(_path);
+            File.Delete(TracesFilePath);
         }
 
         public readonly void AssertSpanNames(List<string> expectedSpanNames)
         {
-            var lines = File.ReadAllLines(_path);
+            var lines = File.ReadAllLines(TracesFilePath);
 
             var actualSpanNames = new List<string>();
             foreach (var line in lines)

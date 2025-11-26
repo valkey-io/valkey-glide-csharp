@@ -10,11 +10,18 @@ public class OpenTelemetryTests : IDisposable
     private const uint SamplePercentageLow = 10u;
     private const uint SamplePercentageHigh = 90u;
     private const uint SamplePercentageMax = 100u;
-    private const string TestEndpoint = "http://localhost:4317";
+    private const string Endpoint = "ENDPOINT";
 
-    // After each test, clear OpenTelemetry.
+    public OpenTelemetryTests()
+    {
+        // Before each test, mock the FFI delegate to prevent actual initialization.
+        OpenTelemetry.InitOpenTelemetryFfi = MockInitOpenTelemetryFfi;
+    }
+
     public void Dispose()
     {
+        // After each test, clear configuration and reset the FFI delegate to the original.
+        OpenTelemetry.InitOpenTelemetryFfi = FFI.InitOpenTelemetryFfi;
         OpenTelemetry.Clear();
     }
 
@@ -28,7 +35,7 @@ public class OpenTelemetryTests : IDisposable
     public void Init_WithValidConfig_Succeeds()
     {
         var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .WithSamplePercentage(SamplePercentageLow)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
@@ -45,7 +52,7 @@ public class OpenTelemetryTests : IDisposable
     public void Init_CalledTwice_IgnoresSecondCall()
     {
         var traces1 = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .WithSamplePercentage(SamplePercentageLow)
             .Build();
         var config1 = OpenTelemetryConfig.CreateBuilder()
@@ -53,7 +60,7 @@ public class OpenTelemetryTests : IDisposable
             .Build();
 
         var traces2 = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .WithSamplePercentage(SamplePercentageHigh)
             .Build();
         var config2 = OpenTelemetryConfig.CreateBuilder()
@@ -83,7 +90,7 @@ public class OpenTelemetryTests : IDisposable
     public void GetSamplePercentage_WithTracesConfigured_ReturnsDefault()
     {
         var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
             .WithTraces(traces)
@@ -98,7 +105,7 @@ public class OpenTelemetryTests : IDisposable
     public void GetSamplePercentage_WithSamplePercentageConfigured_ReturnsPercentage()
     {
         var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .WithSamplePercentage(SamplePercentageLow)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
@@ -114,7 +121,7 @@ public class OpenTelemetryTests : IDisposable
     public void GetSamplePercentage_WithoutTracesConfigured_ReturnsNull()
     {
         var metrics = MetricsConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
             .WithMetrics(metrics)
@@ -135,7 +142,7 @@ public class OpenTelemetryTests : IDisposable
     public void SetSamplePercentage_WithoutTracesConfigured_ThrowsInvalidOperationException()
     {
         var metrics = MetricsConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
             .WithMetrics(metrics)
@@ -150,7 +157,7 @@ public class OpenTelemetryTests : IDisposable
     public void SetSamplePercentage_WithValidPercentage_UpdatesValue()
     {
         var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .WithSamplePercentage(SamplePercentageLow)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
@@ -167,7 +174,7 @@ public class OpenTelemetryTests : IDisposable
     public void SetSamplePercentage_WithInvalidPercentage_ThrowsArgumentException()
     {
         var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
             .WithTraces(traces)
@@ -182,7 +189,7 @@ public class OpenTelemetryTests : IDisposable
     public void SetSamplePercentage_WithMinPercentage_Succeeds()
     {
         var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
             .WithTraces(traces)
@@ -198,7 +205,7 @@ public class OpenTelemetryTests : IDisposable
     public void SetSamplePercentage_WithMaxPercentage_Succeeds()
     {
         var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
+            .WithEndpoint(Endpoint)
             .Build();
         var config = OpenTelemetryConfig.CreateBuilder()
             .WithTraces(traces)
@@ -210,21 +217,8 @@ public class OpenTelemetryTests : IDisposable
         Assert.Equal(SamplePercentageMax, OpenTelemetry.GetSamplePercentage());
     }
 
-    [Fact]
-    public void Clear_ResetsInitializationState()
+    private IntPtr MockInitOpenTelemetryFfi(IntPtr configPtr)
     {
-        var traces = TracesConfig.CreateBuilder()
-            .WithEndpoint(TestEndpoint)
-            .Build();
-        var config = OpenTelemetryConfig.CreateBuilder()
-            .WithTraces(traces)
-            .Build();
-
-        OpenTelemetry.Init(config);
-        Assert.True(OpenTelemetry.IsInitialized());
-
-        OpenTelemetry.Clear();
-        Assert.False(OpenTelemetry.IsInitialized());
-        Assert.Null(OpenTelemetry.GetSamplePercentage());
+        return IntPtr.Zero;
     }
 }
