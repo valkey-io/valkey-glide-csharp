@@ -136,6 +136,17 @@ public interface IStreamCommands
     Task<bool> StreamDeleteConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// Creates a consumer in a consumer group.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xgroup-createconsumer"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name to create.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>True if the consumer was created, false if it already existed.</returns>
+    Task<bool> StreamCreateConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Deletes a consumer from a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xgroup-delconsumer"/>

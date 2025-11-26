@@ -43,6 +43,9 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchStreamCommands.StreamDeleteConsumerGroup(ValkeyKey, ValkeyValue)" />
     public T StreamDeleteConsumerGroup(ValkeyKey key, ValkeyValue groupName) => AddCmd(Request.StreamDeleteConsumerGroupAsync(key, groupName));
 
+    /// <inheritdoc cref="IBatchStreamCommands.StreamCreateConsumer(ValkeyKey, ValkeyValue, ValkeyValue)" />
+    public T StreamCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName) => AddCmd(Request.StreamCreateConsumerAsync(key, groupName, consumerName));
+
     /// <inheritdoc cref="IBatchStreamCommands.StreamDeleteConsumer(ValkeyKey, ValkeyValue, ValkeyValue)" />
     public T StreamDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName) => AddCmd(Request.StreamDeleteConsumerAsync(key, groupName, consumerName));
 
@@ -102,6 +105,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStreamCommands.StreamTrim(ValkeyKey key, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit) => StreamTrim(key, maxLength, minId, useApproximateTrimming, limit);
     IBatch IBatchStreamCommands.StreamCreateConsumerGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, bool createStream, long? entriesRead) => StreamCreateConsumerGroup(key, groupName, position, createStream, entriesRead);
     IBatch IBatchStreamCommands.StreamDeleteConsumerGroup(ValkeyKey key, ValkeyValue groupName) => StreamDeleteConsumerGroup(key, groupName);
+    IBatch IBatchStreamCommands.StreamCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName) => StreamCreateConsumer(key, groupName, consumerName);
     IBatch IBatchStreamCommands.StreamDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName) => StreamDeleteConsumer(key, groupName, consumerName);
     IBatch IBatchStreamCommands.StreamConsumerGroupSetPosition(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead) => StreamConsumerGroupSetPosition(key, groupName, position, entriesRead);
     IBatch IBatchStreamCommands.StreamReadGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck) => StreamReadGroup(key, groupName, consumerName, position, count, noAck);

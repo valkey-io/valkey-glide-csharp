@@ -146,6 +146,44 @@ public class StreamConsumerGroupTests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerAsync_Basic(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+
+        // Add entry and create group
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+
+        // Create consumer
+        bool created = await client.StreamCreateConsumerAsync(key, "mygroup", "consumer1");
+        Assert.True(created);
+
+        // Verify consumer exists
+        StreamConsumerInfo[] consumers = await client.StreamConsumerInfoAsync(key, "mygroup");
+        Assert.Single(consumers);
+        Assert.Equal("consumer1", consumers[0].Name);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerAsync_AlreadyExists(BaseClient client)
+    {
+        string key = "{StreamGroup}" + Guid.NewGuid();
+
+        // Add entry and create group
+        await client.StreamAddAsync(key, "field1", "value1");
+        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+
+        // Create consumer first time
+        await client.StreamCreateConsumerAsync(key, "mygroup", "consumer1");
+
+        // Create same consumer again - should return false
+        bool created = await client.StreamCreateConsumerAsync(key, "mygroup", "consumer1");
+        Assert.False(created);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamDeleteConsumerAsync_NonExistentConsumer(BaseClient client)
     {
         string key = "{StreamGroup}" + Guid.NewGuid();

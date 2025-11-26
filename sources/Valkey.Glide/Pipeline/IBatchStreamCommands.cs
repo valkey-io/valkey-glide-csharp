@@ -47,6 +47,10 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamDeleteConsumerGroupAsync(ValkeyKey, ValkeyValue, CommandFlags)" /></returns>
     IBatch StreamDeleteConsumerGroup(ValkeyKey key, ValkeyValue groupName);
 
+    /// <inheritdoc cref="Commands.IStreamCommands.StreamCreateConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamCreateConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)" /></returns>
+    IBatch StreamCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName);
+
     /// <inheritdoc cref="Commands.IStreamCommands.StreamDeleteConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamDeleteConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)" /></returns>
     IBatch StreamDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName);

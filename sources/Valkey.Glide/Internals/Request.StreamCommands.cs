@@ -379,6 +379,11 @@ internal partial class Request
         return new(RequestType.XGroupSetId, [.. args], false, response => response == "OK");
     }
 
+    public static Cmd<object, bool> StreamCreateConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
+    {
+        return new(RequestType.XGroupCreateConsumer, [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString()], false, response => response is bool b ? b : (long)response == 1);
+    }
+
     public static Cmd<long, long> StreamDeleteConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
     {
         return new(RequestType.XGroupDelConsumer, [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString()], false, response => response);
