@@ -26,6 +26,11 @@ internal static class StreamConstants
     internal static readonly ValkeyValue AllMessages = "0";
 
     /// <summary>
+    /// The "0-0" value representing the minimum stream ID. Used in XREAD, XAUTOCLAIM, and other commands to start from the beginning.
+    /// </summary>
+    internal static readonly ValkeyValue MinimumId = "0-0";
+
+    /// <summary>
     /// The "-" value used in the XRANGE, XREAD, and XREADGROUP commands. Indicates the minimum message ID from the stream.
     /// </summary>
     internal static readonly ValkeyValue ReadMinValue = "-";
