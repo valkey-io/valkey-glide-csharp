@@ -1,9 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
-using Valkey.Glide.Internals;
-
-
 
 namespace Valkey.Glide.UnitTests;
 
@@ -644,6 +641,15 @@ public class CommandTests
             () => Assert.Equal("OK", Request.HyperLogLogMergeAsync("dest", "src1", "src2").Converter("OK")),
             () => Assert.Equal("OK", Request.HyperLogLogMergeAsync("dest", ["src1", "src2"]).Converter("OK")),
 
+            // Transaction Commands
+            () => Assert.Equal(["WATCH", "key1"], Request.Watch(["key1"]).GetArgs()),
+            () => Assert.Equal(["WATCH", "key1", "key2", "key3"], Request.Watch(["key1", "key2", "key3"]).GetArgs()),
+            () => Assert.Equal(["UNWATCH"], Request.Unwatch().GetArgs()),
+            () => Assert.Equal("OK", Request.Watch(["key1"]).Converter("OK")),
+            () => Assert.Equal("ERROR", Request.Watch(["key1"]).Converter("ERROR")),
+            () => Assert.Equal("OK", Request.Unwatch().Converter("OK")),
+            () => Assert.Equal("ERROR", Request.Unwatch().Converter("ERROR")),
+
             // Bitmap Command Converters
             () => Assert.True(Request.GetBitAsync("key", 0).Converter(1L)),
             () => Assert.False(Request.GetBitAsync("key", 0).Converter(0L)),
@@ -767,11 +773,11 @@ public class CommandTests
     public void ValidateHashCommandConverters()
     {
         // Test for HashGetAsync with multiple fields
-        List<object> testList =
+        List<object?> testList =
         [
             (gs)"value1",
             (gs)"value2",
-            null
+            null!,
         ];
 
         // Test for HashGetAllAsync and HashRandomFieldsWithValuesAsync
@@ -800,7 +806,7 @@ public class CommandTests
             // Test HashGetAsync with multiple fields
             () =>
             {
-                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter([.. testList]);
+                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter((object[])testList.ToArray()!);
                 Assert.Equal(3, result.Length);
                 Assert.Equal("value1", result[0]);
                 Assert.Equal("value2", result[1]);

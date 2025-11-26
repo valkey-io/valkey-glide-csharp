@@ -97,6 +97,8 @@ Console.WriteLine($"User: {user}");
 ### With Authentication and TLS
 
 ```csharp
+using Valkey.Glide;
+
 // Password-based authentication with TLS.
 var passwordConfig = new StandaloneClientConfigurationBuilder()
     .WithAddress(host, port)
@@ -115,6 +117,29 @@ var iamConfig = new ClusterClientConfigurationBuilder()
     .Build();
 
 using var iamClient = await GlideClient.CreateClient(iamConfig);
+```
+
+### With OpenTelemetry
+
+```csharp
+// Configure traces with sampling
+var tracesConfig = TracesConfig.CreateBuilder()
+    .WithEndpoint("http://localhost:4317")
+    .WithSamplePercentage(10)
+    .Build();
+
+// Configure metrics
+var metricsConfig = MetricsConfig.CreateBuilder()
+    .WithEndpoint("http://localhost:4317")
+    .Build();
+
+// Initialize OpenTelemetry (once per process)
+var otelConfig = OpenTelemetryConfig.CreateBuilder()
+    .WithTraces(tracesConfig)
+    .WithMetrics(metricsConfig)
+    .Build();
+
+OpenTelemetry.Init(otelConfig);
 ```
 
 ## Core API Examples

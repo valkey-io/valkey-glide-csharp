@@ -31,8 +31,7 @@ x64/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
-# Code Coverage Reports
-[Rr]eports/
+
 
 *_i.c
 *_p.c
@@ -156,8 +155,9 @@ _NCrunch*
 
 glide-logs/
 
-# Test results and reports
-reports/
+# Code Coverage Reports
+[Rr]eports/
+
 testresults/
 
 # Temporary submodules (not for commit)

@@ -43,7 +43,7 @@ public class AzAffinityTests(TestConfiguration config)
     [InlineData(ConnectionConfiguration.Protocol.RESP3)]
     public async Task TestRoutingWithAzAffinityStrategyTo1Replica(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
         using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
             TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
@@ -96,7 +96,7 @@ public class AzAffinityTests(TestConfiguration config)
     [InlineData(ConnectionConfiguration.Protocol.RESP3)]
     public async Task TestRoutingBySlotToReplicaWithAzAffinityStrategyToAllReplicas(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
         using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
             TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
@@ -153,7 +153,7 @@ public class AzAffinityTests(TestConfiguration config)
     [InlineData(ConnectionConfiguration.Protocol.RESP3)]
     public async Task TestAzAffinityNonExistingAz(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
         const int nGetCalls = 3;
 
@@ -187,7 +187,7 @@ public class AzAffinityTests(TestConfiguration config)
     [InlineData(ConnectionConfiguration.Protocol.RESP3)]
     public async Task TestAzAffinityReplicasAndPrimaryRoutesToPrimary(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
         using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
             TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());

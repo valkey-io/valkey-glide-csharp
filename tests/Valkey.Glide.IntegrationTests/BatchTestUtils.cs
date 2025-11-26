@@ -240,7 +240,7 @@ internal partial class BatchTestUtils
         _ = batch.StringGetSetExpiry(getSetExpiryKey2, futureTime);
         testData.Add(new(new ValkeyValue("expire-me-abs"), "StringGetSetExpiry(getSetExpiryKey2, futureTime)"));
 
-        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
             string lcsKey1 = $"{prefix}lcs1-{Guid.NewGuid()}";
             string lcsKey2 = $"{prefix}lcs2-{Guid.NewGuid()}";
@@ -356,7 +356,7 @@ internal partial class BatchTestUtils
         _ = batch.SetDifference([prefix + key1, prefix + key2]);
         testData.Add(new(Array.Empty<ValkeyValue>(), "SetDifference([prefix+key1, prefix+key2])", true));
 
-        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
             _ = batch.SetIntersectionLength([prefix + key1, prefix + key2]);
             testData.Add(new(1L, "SetIntersectionLength([prefix+key1, prefix+key2])"));
@@ -787,7 +787,7 @@ internal partial class BatchTestUtils
         testData.Add(new(4L, "SortedSetCombineAndStore(Union, combineDestKey, combineKey1, combineKey3)"));
 
         // Test SortedSetIntersectionLength (ZINTERCARD) - requires Redis 7.0+
-        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
             _ = batch.SortedSetIntersectionLength([combineKey1, combineKey3]);
             testData.Add(new(1L, "SortedSetIntersectionLength([combineKey1, combineKey3])"));
@@ -812,7 +812,7 @@ internal partial class BatchTestUtils
         testData.Add(new(2L, "SortedSetAdd(popKey, test data for pop)"));
 
         // Test SortedSetPop (ZMPOP) - requires Redis 7.0+
-        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
             _ = batch.SortedSetPop([popKey], 1);
             testData.Add(new(new SortedSetPopResult(popKey, [
@@ -1079,7 +1079,7 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "ListLength(trimKey2) after negative trim"));
 
         // Test LMPOP (ListLeftPop with multiple keys)
-        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
             string lmpopKey1 = $"{prefix}lmpop1-{Guid.NewGuid()}";
             string lmpopKey2 = $"{prefix}lmpop2-{Guid.NewGuid()}";
@@ -1212,7 +1212,7 @@ internal partial class BatchTestUtils
         _ = batch.ListBlockingMove(moveSource, moveDest, ListSide.Left, ListSide.Right, TimeSpan.FromMilliseconds(100));
         testData.Add(new(new ValkeyValue("move2"), "ListBlockingMove(moveSource, moveDest, Left, Right, 100ms)"));
 
-        if (TestConfiguration.SERVER_VERSION >= new Version("7.0.0"))
+        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
             // Push more data to moveSource for the blocking pop test
             _ = batch.ListRightPush(moveSource, "move3");
