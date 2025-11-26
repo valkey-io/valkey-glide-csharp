@@ -65,18 +65,18 @@ public partial class BaseClient : IStreamCommands
         if (!start.HasValue)
         {
             if (order == Order.Ascending)
-                start = "-";
+                start = StreamConstants.ReadMinValue;
             else
-                start = "+";
+                start = StreamConstants.ReadMaxValue;
         }
         if (!end.HasValue)
         {
             if (order == Order.Ascending)
-                end = "+";
+                end = StreamConstants.ReadMaxValue;
             else
-                end = "-";
+                end = StreamConstants.ReadMinValue;
         }
-        return await Command(Request.StreamRangeAsync(key, start ?? "-", end ?? "+", count, order));
+        return await Command(Request.StreamRangeAsync(key, start ?? StreamConstants.ReadMinValue, end ?? StreamConstants.ReadMaxValue, count, order));
     }
 
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags)
@@ -160,7 +160,7 @@ public partial class BaseClient : IStreamCommands
     public async Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, long? minIdleTimeInMs = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamPendingMessagesAsync(key, groupName, minId ?? "-", maxId ?? "+", count, consumerName, minIdleTimeInMs));
+        return await Command(Request.StreamPendingMessagesAsync(key, groupName, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, consumerName, minIdleTimeInMs));
     }
     public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, CommandFlags flags)
     {
@@ -230,12 +230,6 @@ public partial class BaseClient : IStreamCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamInfoAsync(key));
-    }
-
-    public async Task<Dictionary<string, object>> StreamInfoFullAsync(ValkeyKey key, int? count = null, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamInfoFullAsync(key, count));
     }
 
     public async Task<StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)

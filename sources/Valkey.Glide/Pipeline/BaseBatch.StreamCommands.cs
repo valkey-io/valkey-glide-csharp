@@ -86,9 +86,6 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchStreamCommands.StreamInfo(ValkeyKey)" />
     public T StreamInfo(ValkeyKey key) => AddCmd(Request.StreamInfoAsync(key));
 
-    /// <inheritdoc cref="IBatchStreamCommands.StreamInfoFull(ValkeyKey, int?)" />
-    public T StreamInfoFull(ValkeyKey key, int? count = null) => AddCmd(Request.StreamInfoFullAsync(key, count));
-
     /// <inheritdoc cref="IBatchStreamCommands.StreamGroupInfo(ValkeyKey)" />
     public T StreamGroupInfo(ValkeyKey key) => AddCmd(Request.StreamGroupInfoAsync(key));
 
@@ -117,7 +114,6 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStreamCommands.StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count) => StreamAutoClaim(key, consumerGroup, claimingConsumer, minIdleTimeInMs, startAtId, count);
     IBatch IBatchStreamCommands.StreamAutoClaimIdsOnly(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count) => StreamAutoClaimIdsOnly(key, consumerGroup, claimingConsumer, minIdleTimeInMs, startAtId, count);
     IBatch IBatchStreamCommands.StreamInfo(ValkeyKey key) => StreamInfo(key);
-    IBatch IBatchStreamCommands.StreamInfoFull(ValkeyKey key, int? count) => StreamInfoFull(key, count);
     IBatch IBatchStreamCommands.StreamGroupInfo(ValkeyKey key) => StreamGroupInfo(key);
     IBatch IBatchStreamCommands.StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName) => StreamConsumerInfo(key, groupName);
 }

@@ -684,61 +684,6 @@ public class StreamCommandTests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task StreamInfoFullAsync_Basic(BaseClient client)
-    {
-        string key = "{StreamInfo}" + Guid.NewGuid();
-        string groupName = "mygroup";
-        string consumer = "consumer1";
-
-        // Add entries
-        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
-        ValkeyValue id2 = await client.StreamAddAsync(key, "field2", "value2");
-
-        // Create group and read messages
-        await client.StreamCreateConsumerGroupAsync(key, groupName, StreamConstants.AllMessages);
-        await client.StreamReadGroupAsync(key, groupName, consumer, StreamConstants.UndeliveredMessages);
-
-        // Get full stream info
-        Dictionary<string, object> info = await client.StreamInfoFullAsync(key);
-
-        // Verify basic fields
-        Assert.True(info.ContainsKey("length"));
-        Assert.True(info.ContainsKey("entries"));
-        Assert.True(info.ContainsKey("groups"));
-
-        // Verify length
-        Assert.Equal(2L, (long)info["length"]);
-
-        // Verify entries
-        object[] entries = (object[])info["entries"];
-        Assert.Equal(2, entries.Length);
-
-        // Verify groups
-        object[] groups = (object[])info["groups"];
-        Assert.Single(groups);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task StreamInfoFullAsync_WithCount(BaseClient client)
-    {
-        string key = "{StreamInfo}" + Guid.NewGuid();
-
-        // Add entries
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamAddAsync(key, "field3", "value3");
-
-        // Get full stream info with count=1
-        Dictionary<string, object> info = await client.StreamInfoFullAsync(key, count: 1);
-
-        // Verify only 1 entry returned
-        object[] entries = (object[])info["entries"];
-        Assert.Single(entries);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamReadAsync_WithPlusPosition(BaseClient client)
     {
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "+ position in XREAD requires server version 7.0.0 or higher");

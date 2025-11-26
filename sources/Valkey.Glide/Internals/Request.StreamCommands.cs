@@ -737,50 +737,6 @@ internal partial class Request
         return new(RequestType.XInfoStream, [key.ToGlideString()], false, ConvertStreamInfo);
     }
 
-    public static Cmd<object, Dictionary<string, object>> StreamInfoFullAsync(ValkeyKey key, int? count)
-    {
-        List<GlideString> args = [key.ToGlideString(), "FULL".ToGlideString()];
-        if (count.HasValue)
-        {
-            args.Add("COUNT".ToGlideString());
-            args.Add(count.Value.ToGlideString());
-        }
-        return new(RequestType.XInfoStream, [.. args], false, ConvertStreamInfoFull);
-    }
-
-    private static Dictionary<string, object> ConvertStreamInfoFull(object response)
-    {
-        var result = new Dictionary<string, object>();
-
-        if (response is Dictionary<GlideString, object> dict)
-        {
-            foreach (var kvp in dict)
-            {
-                result[kvp.Key.ToString()] = ConvertNumericValue(kvp.Value);
-            }
-        }
-        else
-        {
-            var infoArray = (object[])response;
-            for (int i = 0; i < infoArray.Length; i += 2)
-            {
-                var key = ((GlideString)infoArray[i]).ToString();
-                result[key] = ConvertNumericValue(infoArray[i + 1]);
-            }
-        }
-
-        return result;
-    }
-
-    private static object ConvertNumericValue(object value)
-    {
-        if (value is GlideString gs && long.TryParse(gs.ToString(), out long numericValue))
-        {
-            return numericValue;
-        }
-        return value;
-    }
-
     private static StreamInfo ConvertStreamInfo(object response)
     {
         var length = 0;

@@ -95,10 +95,6 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamInfoAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch StreamInfo(ValkeyKey key);
 
-    /// <inheritdoc cref="Commands.IStreamCommands.StreamInfoFullAsync(ValkeyKey, int?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamInfoFullAsync(ValkeyKey, int?, CommandFlags)" /></returns>
-    IBatch StreamInfoFull(ValkeyKey key, int? count = null);
-
     /// <inheritdoc cref="Commands.IStreamCommands.StreamGroupInfoAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamCommands.StreamGroupInfoAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch StreamGroupInfo(ValkeyKey key);
