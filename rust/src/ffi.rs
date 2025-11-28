@@ -75,12 +75,16 @@ pub struct ConnectionConfig {
     pub refresh_topology_from_initial_nodes: bool,
     pub has_pubsub_config: bool,
     pub pubsub_config: PubSubConfigInfo,
+
+    // Root certificates for TLS connections
+    pub root_certs_count: usize,
+    pub root_certs: *const *const u8,
+    pub root_certs_len: *const usize,
+
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
-    pub inflight_requests_limit: Option<u32>,
-    pub otel_endpoint: Option<String>,
-    pub otel_flush_interval_ms: Option<u64>,
+    pub inflight_requests_limit: Option<u32>
     */
 }
 
@@ -263,6 +267,20 @@ pub(crate) unsafe fn create_connection_request(
             }
         } else {
             None
+        },
+        root_certs: if config.root_certs_count > 0 {
+            unsafe {
+                convert_string_pointer_array_to_vector(
+                    config.root_certs,
+                    config.root_certs_count,
+                    config.root_certs_len,
+                )
+            }
+            .into_iter()
+            .map(|cert| cert.to_vec())
+            .collect()
+        } else {
+            Vec::new()
         },
         // TODO below
         periodic_checks: None,
