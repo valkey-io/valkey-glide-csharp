@@ -1011,6 +1011,7 @@ internal partial class FFI
     internal enum TlsMode : uint
     {
         NoTls = 0,
+        InsecureTls = 1,
         SecureTls = 2,
     }
 
