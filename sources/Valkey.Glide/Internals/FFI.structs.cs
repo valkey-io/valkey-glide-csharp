@@ -1000,6 +1000,11 @@ internal partial class FFI
         public bool HasPubSubConfig;
         public PubSubConfigInfo PubSubConfig;
 
+        // Root certificates for TLS connections
+        public IntPtr RootCertsPtr;
+        public nuint RootCertsCount;
+        public IntPtr RootCertsLensPtr;
+
         // TODO more config params, see ffi.rs
     }
 
