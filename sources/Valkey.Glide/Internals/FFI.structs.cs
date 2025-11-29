@@ -199,11 +199,6 @@ internal partial class FFI
     internal class ConnectionConfig : Marshallable
     {
         private ConnectionRequest _request;
-        private readonly List<NodeAddress> _addresses;
-        private readonly BasePubSubSubscriptionConfig? _pubSubConfig;
-        private IntPtr _pubSubChannelsPtr = IntPtr.Zero;
-        private IntPtr _pubSubPatternsPtr = IntPtr.Zero;
-        private IntPtr _pubSubShardedChannelsPtr = IntPtr.Zero;
 
         public ConnectionConfig(
             List<NodeAddress> addresses,
@@ -217,15 +212,15 @@ internal partial class FFI
             uint databaseId,
             ConnectionConfiguration.Protocol? protocol,
             string? clientName,
-            bool lazyConnect = false,
-            bool refreshTopologyFromInitialNodes = false,
-            BasePubSubSubscriptionConfig? pubSubSubscriptions = null)
+            bool lazyConnect,
+            bool refreshTopologyFromInitialNodes,
+            BasePubSubSubscriptionConfig? pubSubSubscriptions,
+            List<byte[]> rootCertificates)
         {
-            _addresses = addresses;
-            _pubSubConfig = pubSubSubscriptions;
             _request = new()
             {
                 AddressCount = (nuint)addresses.Count,
+                Addresses = MarshallAddress(addresses),
                 HasTlsMode = tlsMode.HasValue,
                 TlsMode = tlsMode ?? default,
                 ClusterMode = clusterMode,
@@ -245,30 +240,53 @@ internal partial class FFI
                 ClientName = clientName,
                 LazyConnect = lazyConnect,
                 RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
-                HasPubSubConfig = pubSubSubscriptions != null,
-                PubSubConfig = pubSubSubscriptions != null ? MarshalPubSubConfig(pubSubSubscriptions) : new PubSubConfigInfo()
+                HasPubSubConfig = pubSubSubscriptions is not null,
+                PubSubConfig = MarshalPubSubConfig(pubSubSubscriptions),
+                RootCertsCount = (nuint)rootCertificates.Count,
+                RootCertsPtr = MarshallRootCertificates(rootCertificates),
+                RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
             };
         }
 
         protected override void FreeMemory()
         {
-            Marshal.FreeHGlobal(_request.Addresses);
-
-            if (_pubSubConfig != null)
+            // Free addresses.
+            if (_request.AddressCount > 0)
             {
-                int channelCount = _pubSubConfig.Subscriptions.TryGetValue(0, out ISet<string>? channels) ? channels.Count : 0;
-                int patternCount = _pubSubConfig.Subscriptions.TryGetValue(1, out ISet<string>? patterns) ? patterns.Count : 0;
-                int shardedChannelCount = _pubSubConfig.Subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) ? shardedChannels.Count : 0;
+                Marshal.FreeHGlobal(_request.Addresses);
+            }
 
-                FreeStringArray(_pubSubChannelsPtr, channelCount);
-                FreeStringArray(_pubSubPatternsPtr, patternCount);
-                FreeStringArray(_pubSubShardedChannelsPtr, shardedChannelCount);
+            // Free root certificates
+            if (_request.RootCertsCount > 0)
+            {
+                for (int i = 0; i < (int)_request.RootCertsCount; i++)
+                {
+                    IntPtr certPtr = Marshal.ReadIntPtr(_request.RootCertsPtr, i * IntPtr.Size);
+                    Marshal.FreeHGlobal(certPtr);
+                }
+
+                Marshal.FreeHGlobal(_request.RootCertsPtr);
+                Marshal.FreeHGlobal(_request.RootCertsLensPtr);
+            }
+
+            // Free PubSub configuration
+            if (_request.HasPubSubConfig)
+            {
+                var pubSubConfig = _request.PubSubConfig;
+                FreeStringArray(pubSubConfig.ChannelsPtr, pubSubConfig.ChannelCount);
+                FreeStringArray(pubSubConfig.PatternsPtr, pubSubConfig.PatternCount);
+                FreeStringArray(pubSubConfig.ShardedChannelsPtr, pubSubConfig.ShardedChannelCount);
             }
         }
 
-        private static void FreeStringArray(IntPtr arrayPtr, int count)
+        /// <summary>
+        /// Frees an array of strings allocated in unmanaged memory.
+        /// </summary>
+        /// <param name="arrayPtr">Pointer to the array of string pointers.</param>
+        /// <param name="count">Number of strings in the array.</param>
+        private static void FreeStringArray(IntPtr arrayPtr, uint count)
         {
-            if (arrayPtr == IntPtr.Zero || count == 0)
+            if (arrayPtr == IntPtr.Zero)
             {
                 return;
             }
@@ -277,10 +295,7 @@ internal partial class FFI
             for (int i = 0; i < count; i++)
             {
                 IntPtr stringPtr = Marshal.ReadIntPtr(arrayPtr, i * IntPtr.Size);
-                if (stringPtr != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(stringPtr);
-                }
+                Marshal.FreeHGlobal(stringPtr);
             }
 
             // Free the array itself
@@ -289,55 +304,127 @@ internal partial class FFI
 
         protected override IntPtr AllocateAndCopy()
         {
-            int addressSize = Marshal.SizeOf(typeof(NodeAddress));
-            _request.Addresses = Marshal.AllocHGlobal(addressSize * (int)_request.AddressCount);
-            for (int i = 0; i < (int)_request.AddressCount; i++)
-            {
-                Marshal.StructureToPtr(_addresses[i], _request.Addresses + (i * addressSize), false);
-            }
-
-            // Marshal PubSub configuration if present
-            if (_pubSubConfig != null)
-            {
-                _request.PubSubConfig = MarshalPubSubConfig(_pubSubConfig);
-            }
-
             return StructToPtr(_request);
         }
 
-
-
-        private PubSubConfigInfo MarshalPubSubConfig(BasePubSubSubscriptionConfig config)
+        /// <summary>
+        /// Marshals the node addresses.
+        /// </summary>
+        /// <param name="addresses">List of node addresses.</param>
+        /// <returns>Pointer to an array of NodeAddress structs.</returns>
+        private IntPtr MarshallAddress(List<NodeAddress> addresses)
         {
-            var pubSubInfo = new PubSubConfigInfo();
+            if (addresses.Count == 0)
+            {
+                return IntPtr.Zero;
+            }
+
+            // Allocate memory for addresses.
+            int addressSize = Marshal.SizeOf(typeof(NodeAddress));
+            IntPtr addressesPtr = Marshal.AllocHGlobal(addressSize * addresses.Count);
+
+            // Copy addresses to allocated memory.
+            for (int i = 0; i < addresses.Count; i++)
+            {
+                Marshal.StructureToPtr(addresses[i], _request.Addresses + (i * addressSize), false);
+            }
+
+            return addressesPtr;
+        }
+
+        /// <summary>
+        /// Marshals the root certificate.
+        /// </summary>
+        /// <param name="rootCerts">Root certificate byte arrays.</param>
+        /// <returns>Pointer to an array of root certificate pointers.</returns>
+        private IntPtr MarshallRootCertificates(List<byte[]> rootCerts)
+        {
+            if (rootCerts.Count == 0)
+            {
+                return IntPtr.Zero;
+            }
+
+            IntPtr certsPtr = Marshal.AllocHGlobal(IntPtr.Size * rootCerts.Count);
+
+            for (int i = 0; i < rootCerts.Count; i++)
+            {
+                byte[] cert = rootCerts[i];
+                IntPtr certPtr = Marshal.AllocHGlobal(cert.Length);
+                Marshal.Copy(cert, 0, certPtr, cert.Length);
+                Marshal.WriteIntPtr(certsPtr, i * IntPtr.Size, certPtr);
+            }
+
+            return certsPtr;
+        }
+
+        /// <summary>
+        /// Marshals the lengths of root certificates.
+        /// </summary>
+        /// <param name="rootCerts">Root certificate byte arrays.</param>
+        /// <returns>Pointer to an array of root certificate lengths.</returns>
+        private IntPtr MarshallRootCertificatesLengths(List<byte[]> rootCerts)
+        {
+            if (rootCerts.Count == 0)
+            {
+                return IntPtr.Zero;
+            }
+
+            IntPtr certsLengthsPtr = Marshal.AllocHGlobal(IntPtr.Size * rootCerts.Count);
+
+            for (int i = 0; i < rootCerts.Count; i++)
+            {
+                int certLen = rootCerts[i].Length;
+                Marshal.WriteIntPtr(certsLengthsPtr, i * IntPtr.Size, certLen);
+            }
+
+            return certsLengthsPtr;
+        }
+
+        /// <summary>
+        /// Marshals the pub/sub configuration.
+        /// </summary>
+        /// <param name="config">The pub/sub subscription configuration.</param>
+        /// <returns>The marshaled PubSubConfigInfo struct.</returns>
+        private PubSubConfigInfo MarshalPubSubConfig(BasePubSubSubscriptionConfig? config)
+        {
+            PubSubConfigInfo pubSubConfig = new();
+
+            if (config == null)
+            {
+                return pubSubConfig;
+            }
+
+            var subscriptions = config.Subscriptions;
 
             // Marshal exact channels (mode 0)
-            if (config.Subscriptions.TryGetValue(0, out ISet<string>? channels) && channels.Count > 0)
+            if (subscriptions.TryGetValue(0, out ISet<string>? channels) && channels.Count > 0)
             {
-                _pubSubChannelsPtr = MarshalStringArray(channels);
-                pubSubInfo.ChannelsPtr = _pubSubChannelsPtr;
-                pubSubInfo.ChannelCount = (uint)channels.Count;
+                pubSubConfig.ChannelsPtr = MarshalStringArray(channels);
+                pubSubConfig.ChannelCount = (uint)channels.Count;
             }
 
             // Marshal patterns (mode 1)
-            if (config.Subscriptions.TryGetValue(1, out ISet<string>? patterns) && patterns.Count > 0)
+            if (subscriptions.TryGetValue(1, out ISet<string>? patterns) && patterns.Count > 0)
             {
-                _pubSubPatternsPtr = MarshalStringArray(patterns);
-                pubSubInfo.PatternsPtr = _pubSubPatternsPtr;
-                pubSubInfo.PatternCount = (uint)patterns.Count;
+                pubSubConfig.PatternsPtr = MarshalStringArray(patterns);
+                pubSubConfig.PatternCount = (uint)patterns.Count;
             }
 
             // Marshal sharded channels (mode 2) - only for cluster clients
-            if (config.Subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
+            if (subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
             {
-                _pubSubShardedChannelsPtr = MarshalStringArray(shardedChannels);
-                pubSubInfo.ShardedChannelsPtr = _pubSubShardedChannelsPtr;
-                pubSubInfo.ShardedChannelCount = (uint)shardedChannels.Count;
+                _request.PubSubConfig.ShardedChannelsPtr = MarshalStringArray(shardedChannels);
+                _request.PubSubConfig.ShardedChannelCount = (uint)shardedChannels.Count;
             }
 
-            return pubSubInfo;
+            return pubSubConfig;
         }
 
+        /// <summary>
+        /// Marshals a collection of strings into unmanaged memory and returns a pointer to the array.
+        /// </summary>
+        /// <param name="strings">The collection of strings to marshal.</param>
+        /// <returns>Pointer to the array of string pointers in unmanaged memory.</returns>
         private static IntPtr MarshalStringArray(ICollection<string> strings)
         {
             if (strings.Count == 0)
@@ -1001,8 +1088,8 @@ internal partial class FFI
         public PubSubConfigInfo PubSubConfig;
 
         // Root certificates for TLS connections
-        public IntPtr RootCertsPtr;
         public nuint RootCertsCount;
+        public IntPtr RootCertsPtr;
         public IntPtr RootCertsLensPtr;
 
         // TODO more config params, see ffi.rs
