@@ -373,7 +373,7 @@ internal partial class FFI
 
             for (int i = 0; i < rootCerts.Count; i++)
             {
-                int certLen = rootCerts[i].Length;
+                IntPtr certLen = new IntPtr(rootCerts[i].Length);
                 Marshal.WriteIntPtr(certsLengthsPtr, i * IntPtr.Size, certLen);
             }
 
