@@ -326,7 +326,7 @@ internal partial class FFI
             // Copy addresses to allocated memory.
             for (int i = 0; i < addresses.Count; i++)
             {
-                Marshal.StructureToPtr(addresses[i], _request.Addresses + (i * addressSize), false);
+                Marshal.StructureToPtr(addresses[i], addressesPtr + (i * addressSize), false);
             }
 
             return addressesPtr;
