@@ -418,6 +418,38 @@ public abstract class ConnectionConfiguration
         /// instead of the system's default trust store.
         /// </summary>
         internal List<byte[]> RootCertificates => Config.RootCertificates;
+
+        /// <summary>
+        /// Add a trusted CA certificate in PEM format for TLS server validation.
+        /// </summary>
+        /// <param name="certificatePath">Path to the certificate file</param>
+        /// <returns>This builder for method chaining</returns>
+        /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
+        /// <exception cref="ArgumentException">If the certificate file is empty</exception>
+        public T WithTrustedCertificate(string certificatePath)
+        {
+            if (!File.Exists(certificatePath))
+                throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+
+            return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
+        }
+
+        /// <summary>
+        /// Add a trusted CA certificate in PEM format for TLS server validation.
+        /// </summary>
+        /// <param name="certificateData">Certificate data</param>
+        /// <returns>This builder for method chaining</returns>
+        /// <exception cref="ArgumentException">If the certificate data is null or empty</exception>
+        public T WithTrustedCertificate(byte[] certificateData)
+        {
+            if (certificateData == null)
+                throw new ArgumentException("Certificate data cannot be null", nameof(certificateData));
+            else if (certificateData.Length == 0)
+                throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
+
+            RootCertificates.Add(certificateData);
+            return (T)this;
+        }
         #endregion
 
         #region Request Timeout
