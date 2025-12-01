@@ -399,19 +399,27 @@ public abstract class ConnectionConfiguration
             get => Config.TlsMode == TlsMode.SecureTls;
             set => Config.TlsMode = value ? TlsMode.SecureTls : TlsMode.NoTls;
         }
+
         /// <inheritdoc cref="UseTls" />
         public T WithTls(bool useTls)
         {
             UseTls = useTls;
             return (T)this;
         }
+
         /// <inheritdoc cref="UseTls" />
         public T WithTls()
         {
-
             return WithTls(true);
         }
+
+        /// <summary>
+        /// Root certificates for TLS connections. When provided, these certificates will be used
+        /// instead of the system's default trust store.
+        /// </summary>
+        internal List<byte[]> RootCertificates => Config.RootCertificates;
         #endregion
+
         #region Request Timeout
         /// <summary>
         /// The duration that the client should wait for a request to complete. This
