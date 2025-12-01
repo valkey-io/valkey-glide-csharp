@@ -9,6 +9,26 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 public static class ServerManager
 {
+    public static readonly string GlideUtilsDirectory;
+    public static readonly string CaCertificatePath;
+
+    static ServerManager()
+    {
+        string? directory = Directory.GetCurrentDirectory();
+        while (!(directory == null || Directory.EnumerateDirectories(directory).Any(d => Path.GetFileName(d) == "valkey-glide")))
+        {
+            directory = Path.GetDirectoryName(directory);
+        }
+
+        if (directory == null)
+        {
+            throw new FileNotFoundException("Can't detect the project dir");
+        }
+
+        GlideUtilsDirectory = Path.Combine(directory, "valkey-glide", "utils");
+        CaCertificatePath = Path.Combine(GlideUtilsDirectory, "tls_crts", "ca.crt");
+    }
+
     public static List<(string host, ushort port)> StartStandaloneServer(string name, bool useTls = false)
     {
         return StartServer(name, useTls: useTls, useClusterMode: false);
@@ -69,22 +89,9 @@ public static class ServerManager
 
     private static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
-        string? projectDir = Directory.GetCurrentDirectory();
-        while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => Path.GetFileName(d) == "valkey-glide")))
-        {
-            projectDir = Path.GetDirectoryName(projectDir);
-        }
-
-        if (projectDir == null)
-        {
-            throw new FileNotFoundException("Can't detect the project dir");
-        }
-
-        string scriptDir = Path.Combine(projectDir, "valkey-glide", "utils");
-
         ProcessStartInfo info = new()
         {
-            WorkingDirectory = scriptDir,
+            WorkingDirectory = GlideUtilsDirectory,
             FileName = "python3",
             Arguments = "cluster_manager.py " + cmd,
             UseShellExecute = false,
