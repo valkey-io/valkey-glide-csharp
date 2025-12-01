@@ -27,7 +27,23 @@ public static class ServerManager
 
     private static List<(string host, ushort port)> StartServer(string name, bool useTls, bool useClusterMode)
     {
-        string cmd = $"start {(useClusterMode ? "--cluster-mode" : "")} {(useTls ? "--tls" : "")} --prefix {name} -r 3";
+        List<string> args = new();
+
+        if (useTls)
+        {
+            args.Add("--tls");
+        }
+
+        args.Add("start");
+        args.AddRange(["--prefix", name]);
+        args.AddRange(["-r", "3"]);
+
+        if (useClusterMode)
+        {
+            args.Add("--cluster-mode");
+        }
+
+        string cmd = string.Join(" ", args);
         return ParseHostsFromOutput(RunClusterManager(cmd, false));
     }
 
