@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Collections;
+
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;
@@ -12,6 +14,7 @@ public class ConnectionConfigurationTests
     private const string ClusterName = "testClusterName";
     private const string Region = "testRegion";
     private const uint RefreshIntervalSeconds = 600;
+    private static readonly byte[] CertificateData = new byte[] { 0x30, 0x82, 0x01, 0x00 };
 
     [Fact]
     public void WithAuthentication_UsernamePassword()
@@ -195,5 +198,98 @@ public class ConnectionConfigurationTests
         builder.WithRefreshTopologyFromInitialNodes(false);
         var config = builder.Build();
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
+    }
+
+    // ---------
+    // TLS Tests
+    // ---------
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTls_Default(dynamic builder)
+    {
+        var config = builder.Build();
+        Assert.Null(config.Request.TlsMode);
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTls_Enabled(dynamic builder)
+    {
+        builder.WithTls(true);
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTls_Disabled(dynamic builder)
+    {
+        builder.WithTls(false);
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTls_NoParameter_Theory(dynamic builder)
+    {
+        builder.WithTls();
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTrustedCertificate_ByteArray_Theory(dynamic builder)
+    {
+        builder.WithTrustedCertificate(CertificateData);
+        var config = builder.Build();
+        Assert.Equivalent(new List<byte[]> { CertificateData }, config.Request.RootCertificates);
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTrustedCertificate_NullByteArray_Throws_Theory(dynamic builder)
+    {
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTrustedCertificate_EmptyByteArray_Throws_Theory(dynamic builder)
+    {
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(Array.Empty<byte>()));
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTrustedCertificate_FileNotFound_Throws_Theory(dynamic builder)
+    {
+        Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
+    }
+
+    [Theory]
+    [ClassData(typeof(BuildersData))]
+    public void WithTrustedCertificate_MultipleCertificates_Theory(dynamic builder)
+    {
+        builder.WithTrustedCertificate(CertificateData);
+        builder.WithTrustedCertificate(CertificateData);
+        var config = builder.Build();
+        Assert.Equivalent(new List<byte[]> { CertificateData, CertificateData }, config.Request.RootCertificates);
+    }
+
+    /// <summary>
+    /// Data for parameterized tests with both StandaloneClientConfigurationBuilder and ClusterClientConfigurationBuilder.
+    /// </summary>
+    private class BuildersData : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            yield return new object[] { new StandaloneClientConfigurationBuilder() };
+            yield return new object[] { new ClusterClientConfigurationBuilder() };
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
