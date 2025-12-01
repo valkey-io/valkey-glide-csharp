@@ -683,7 +683,9 @@ pub unsafe extern "C" fn free_response(ptr: *mut ResponseValue) {
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn free_string(str_ptr: *mut c_char) {
     if !str_ptr.is_null() {
-        unsafe { let _ = CString::from_raw(str_ptr); };
+        unsafe {
+            let _ = CString::from_raw(str_ptr);
+        };
     }
 }
 
@@ -914,29 +916,13 @@ pub unsafe extern "C-unwind" fn invoke_script(
     };
 
     // Convert keys
-    let keys_vec: Vec<&[u8]> = if !keys.is_null() && !keys_len.is_null() && keys_count > 0 {
-        unsafe {
-            ffi::convert_string_pointer_array_to_vector(
-                keys as *const *const u8,
-                keys_count,
-                keys_len,
-            )
-        }
-    } else {
-        Vec::new()
+    let keys_vec: Vec<&[u8]> = unsafe {
+        ffi::convert_byte_array_to_slices(keys as *const *const u8, keys_count, keys_len)
     };
 
     // Convert args
-    let args_vec: Vec<&[u8]> = if !args.is_null() && !args_len.is_null() && args_count > 0 {
-        unsafe {
-            ffi::convert_string_pointer_array_to_vector(
-                args as *const *const u8,
-                args_count,
-                args_len,
-            )
-        }
-    } else {
-        Vec::new()
+    let args_vec: Vec<&[u8]> = unsafe {
+        ffi::convert_byte_array_to_slices(args as *const *const u8, args_count, args_len)
     };
 
     client.runtime.spawn(async move {
@@ -1409,7 +1395,11 @@ pub unsafe extern "C-unwind" fn update_connection_password(
             callback_index,
         };
 
-        let result = core.client.clone().update_connection_password(password, immediate_auth).await;
+        let result = core
+            .client
+            .clone()
+            .update_connection_password(password, immediate_auth)
+            .await;
         match result {
             Ok(value) => {
                 let response = ResponseValue::from_value(value);
