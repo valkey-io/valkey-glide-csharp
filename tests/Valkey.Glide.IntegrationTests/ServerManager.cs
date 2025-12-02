@@ -107,7 +107,7 @@ public static class ServerManager
         var configBuilder = new ClusterClientConfigurationBuilder();
         configBuilder.WithTls(useTls);
 
-        var addresses = GetServerAddresses(name, useClusterMode: false, useTls: useTls);
+        var addresses = GetServerAddresses(name, useClusterMode: true, useTls: useTls);
         addresses.ForEach(address => configBuilder.WithAddress(address.host, address.port));
 
         return configBuilder;
