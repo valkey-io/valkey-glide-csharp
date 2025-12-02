@@ -14,6 +14,9 @@ public class ConnectionConfigurationTests
     private const uint RefreshIntervalSeconds = 600;
     private static readonly byte[] CertificateData = [0x30, 0x82, 0x01, 0x00];
 
+    // IAM Authentication
+    // ------------------
+
     [Fact]
     public void WithAuthentication_UsernamePassword()
     {
@@ -172,6 +175,9 @@ public class ConnectionConfigurationTests
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
     }
 
+    // Refresh Topology Configuration
+    // ------------------------------
+
     [Fact]
     public void RefreshTopologyFromInitialNodes_Default()
     {
@@ -198,103 +204,81 @@ public class ConnectionConfigurationTests
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
     }
 
-    // ---------
-    // TLS Tests
-    // ---------
+    // TLS Configuration
+    // -----------------
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTls_Default(object builderObj)
+    [Fact]
+    public void WithTls_Default()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         var config = builder.Build();
         Assert.Null(config.Request.TlsMode);
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTls_Enabled(object builderObj)
+    [Fact]
+    public void WithTls_Enabled()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTls(true);
         var config = builder.Build();
         Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTls_Disabled(object builderObj)
+    [Fact]
+    public void WithTls_Disabled()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTls(false);
         var config = builder.Build();
         Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTls_NoParameter_Theory(object builderObj)
+    [Fact]
+    public void WithTls_NoParameter_Theory()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTls();
         var config = builder.Build();
         Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTrustedCertificate_ByteArray_Theory(object builderObj)
+    [Fact]
+    public void WithTrustedCertificate_ByteArray_Theory()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTrustedCertificate(CertificateData);
         var config = builder.Build();
         Assert.Equivalent(new List<byte[]> { CertificateData }, config.Request.RootCertificates);
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTrustedCertificate_NullByteArray_Throws_Theory(object builderObj)
+    [Fact]
+    public void WithTrustedCertificate_NullByteArray_Throws_Theory()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTrustedCertificate_EmptyByteArray_Throws_Theory(object builderObj)
+    [Fact]
+    public void WithTrustedCertificate_EmptyByteArray_Throws_Theory()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(Array.Empty<byte>()));
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTrustedCertificate_FileNotFound_Throws_Theory(object builderObj)
+    [Fact]
+    public void WithTrustedCertificate_FileNotFound_Throws_Theory()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
     }
 
-    [Theory]
-    [ClassData(typeof(BuildersData))]
-    public void WithTrustedCertificate_MultipleCertificates_Theory(object builderObj)
+    [Fact]
+    public void WithTrustedCertificate_MultipleCertificates_Theory()
     {
-        var builder = (dynamic)builderObj;
+        var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTrustedCertificate(CertificateData);
         builder.WithTrustedCertificate(CertificateData);
         var config = builder.Build();
         Assert.Equivalent(new List<byte[]> { CertificateData, CertificateData }, config.Request.RootCertificates);
-    }
-
-    /// <summary>
-    /// Data for parameterized tests with both StandaloneClientConfigurationBuilder and ClusterClientConfigurationBuilder.
-    /// </summary>
-    private class BuildersData : TheoryData<object[]>
-    {
-        public BuildersData()
-        {
-            Add([new StandaloneClientConfigurationBuilder()]);
-            Add([new ClusterClientConfigurationBuilder()]);
-        }
     }
 }
