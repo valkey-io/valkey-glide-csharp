@@ -3,7 +3,6 @@
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
-using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -494,9 +493,7 @@ public class StandaloneClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerManager.StartStandaloneServer(serverName);
-            var configBuilder = new StandaloneClientConfigurationBuilder()
-                .WithAddress(addresses[0].host, addresses[0].port);
+            var configBuilder = ServerManager.GetStandaloneServerConfig(serverName);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
             var lazyConfig = configBuilder.WithLazyConnect(true).Build();
 
@@ -530,11 +527,8 @@ public class StandaloneClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerManager.StartStandaloneServer(serverName);
-            var eagerConfig = new StandaloneClientConfigurationBuilder()
-                .WithAddress(addresses[0].host, addresses[0].port)
-                .WithLazyConnect(false)
-                .Build();
+            var configBuilder = ServerManager.GetStandaloneServerConfig(serverName);
+            var eagerConfig = configBuilder.WithLazyConnect(false).Build();
 
             // Create reference client.
             using var referenceClient = await GlideClient.CreateClient(eagerConfig);
