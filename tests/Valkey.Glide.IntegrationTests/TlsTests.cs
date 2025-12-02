@@ -9,37 +9,78 @@ public class TlsTests : IDisposable
 {
     static readonly string ServerName = "tls-test-server";
 
-    private readonly string _host;
-    private readonly ushort _port;
-    private readonly string _certificatePath;
-
-    public TlsTests()
-    {
-        var addresses = ServerManager.StartStandaloneServer(ServerName, useTls: true);
-        _host = addresses[0].host;
-        _port = addresses[0].port;
-        _certificatePath = ServerManager.CaCertificatePath;
-    }
-
     public void Dispose()
     {
         ServerManager.StopServer(ServerName);
     }
 
     [Fact]
-    public async Task TlsWithCaSignedCertificate_Standalone_Success()
+    public async Task WithTrustedCertificate_FromPath_Standalone_Success()
     {
-        var configBuilder = GetStandaloneConfigBuilder();
-        configBuilder.WithTrustedCertificate(_certificatePath);
+        var configBuilder = StartStandaloneServer();
+        configBuilder.WithTrustedCertificate(ServerManager.CaCertificatePath);
 
         await using var client = await GlideClient.CreateClient(configBuilder.Build());
         await ServerManager.AssertConnected(client);
     }
 
-    private StandaloneClientConfigurationBuilder GetStandaloneConfigBuilder()
+    [Fact]
+    public async Task WithTrustedCertificate_FromPath_Cluster_Success()
     {
-        return new StandaloneClientConfigurationBuilder()
-            .WithAddress(_host, _port)
-            .WithTls(true);
+        var configBuilder = StartClusterServer();
+        configBuilder.WithTrustedCertificate(ServerManager.CaCertificatePath);
+
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await ServerManager.AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task WithTrustedCertificate_FromBytes_Standalone_Success()
+    {
+        var configBuilder = StartStandaloneServer();
+        var certBytes = File.ReadAllBytes(ServerManager.CaCertificatePath);
+        configBuilder.WithTrustedCertificate(certBytes);
+
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await ServerManager.AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task WithTrustedCertificate_FromBytes_Cluster_Success()
+    {
+        var configBuilder = StartClusterServer();
+        var certBytes = File.ReadAllBytes(ServerManager.CaCertificatePath);
+        configBuilder.WithTrustedCertificate(certBytes);
+
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await ServerManager.AssertConnected(client);
+    }
+
+    /// <summary>
+    /// Starts a standalone server with TLS enabled and returns a configuration builder for it.
+    /// </summary>
+    private StandaloneClientConfigurationBuilder StartStandaloneServer()
+    {
+        var addresses = ServerManager.StartStandaloneServer(ServerName, useTls: true);
+
+        var configBuilder = new StandaloneClientConfigurationBuilder();
+        configBuilder.WithAddress(addresses[0].host, addresses[0].port);
+        configBuilder.WithTls(true);
+
+        return configBuilder;
+    }
+
+    /// <summary>
+    /// Starts a cluster server with TLS enabled and returns a configuration builder for it.
+    /// </summary>
+    private ClusterClientConfigurationBuilder StartClusterServer()
+    {
+        var addresses = ServerManager.StartClusterServer(ServerName, useTls: true);
+
+        var configBuilder = new ClusterClientConfigurationBuilder();
+        configBuilder.WithAddress(addresses[0].host, addresses[0].port);
+        configBuilder.WithTls(true);
+
+        return configBuilder;
     }
 }
