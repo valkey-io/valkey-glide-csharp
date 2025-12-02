@@ -12,7 +12,10 @@ public class ConnectionConfigurationTests
     private const string ClusterName = "testClusterName";
     private const string Region = "testRegion";
     private const uint RefreshIntervalSeconds = 600;
-    private static readonly byte[] CertificateData = [0x30, 0x82, 0x01, 0x00];
+
+    private static readonly byte[] CertificateData1 = [0x30, 0x82, 0x01, 0x00];
+    private static readonly byte[] CertificateData2 = [0x30, 0x82, 0x02, 0x00];
+
 
     // IAM Authentication
     // ------------------
@@ -234,7 +237,7 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithTls_NoParameter_Theory()
+    public void WithTls_NoParameter()
     {
         var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTls();
@@ -243,7 +246,7 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray_Theory()
+    public void WithTrustedCertificate_ByteArray()
     {
         var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTrustedCertificate(CertificateData);
@@ -252,33 +255,80 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithTrustedCertificate_NullByteArray_Throws_Theory()
+    public void WithTrustedCertificate_ByteArray_NullThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
         Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
     }
 
     [Fact]
-    public void WithTrustedCertificate_EmptyByteArray_Throws_Theory()
+    public void WithTrustedCertificate_ByteArray_EmptyThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(Array.Empty<byte>()));
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate([]));
     }
 
     [Fact]
-    public void WithTrustedCertificate_FileNotFound_Throws_Theory()
+    public void WithTrustedCertificate_ByteArray_MultipleCertificates()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(CertificateData1);
+        builder.WithTrustedCertificate(CertificateData2);
+        var config = builder.Build();
+        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path()
+    {
+        var tempFilePath = Path.GetTempFileName();
+
+        try
+        {
+            File.WriteAllBytes(tempFilePath, CertificateData1);
+            var builder = new StandaloneClientConfigurationBuilder();
+            builder.WithTrustedCertificate(tempFilePath);
+            var config = builder.Build();
+            Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
+        }
+
+        finally
+        {
+            if (File.Exists(tempFilePath))
+                File.Delete(tempFilePath);
+        }
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_FileNotFoundThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
         Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
     }
 
     [Fact]
-    public void WithTrustedCertificate_MultipleCertificates_Theory()
+    public void WithTrustedCertificate_Path_MultipleCertificates()
     {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(CertificateData);
-        builder.WithTrustedCertificate(CertificateData);
-        var config = builder.Build();
-        Assert.Equivalent(new List<byte[]> { CertificateData, CertificateData }, config.Request.RootCertificates);
+        var tempFilePath1 = Path.GetTempFileName();
+        var tempFilePath2 = Path.GetTempFileName();
+
+        try
+        {
+            File.WriteAllBytes(tempFilePath1, CertificateData1);
+            File.WriteAllBytes(tempFilePath2, CertificateData2);
+
+            var builder = new StandaloneClientConfigurationBuilder();
+            builder.WithTrustedCertificate(tempFilePath1);
+            builder.WithTrustedCertificate(tempFilePath2);
+            var config = builder.Build();
+
+            Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
+        }
+
+        finally
+        {
+            if (File.Exists(tempFilePath1))
+                File.Delete(tempFilePath1);
+        }
     }
 }
