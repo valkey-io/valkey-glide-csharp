@@ -249,9 +249,9 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_ByteArray()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(CertificateData);
+        builder.WithTrustedCertificate(CertificateData1);
         var config = builder.Build();
-        Assert.Equivalent(new List<byte[]> { CertificateData }, config.Request.RootCertificates);
+        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
     }
 
     [Fact]

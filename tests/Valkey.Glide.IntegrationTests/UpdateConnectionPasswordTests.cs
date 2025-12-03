@@ -4,7 +4,7 @@ using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class UpdateConnectionPasswordTests() : IDisposable
+public class UpdateConnectionPasswordTests : IDisposable
 {
     private static readonly string ServerName = $"UpdateConnectionPasswordTests_{Guid.NewGuid():N}";
     private static readonly string Password = "PASSWORD";
