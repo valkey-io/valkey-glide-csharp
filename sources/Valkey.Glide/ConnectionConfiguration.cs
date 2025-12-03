@@ -27,7 +27,7 @@ public abstract class ConnectionConfiguration
         public bool LazyConnect;
         public bool RefreshTopologyFromInitialNodes;
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
-        public List<byte[]> RootCertificates = [];
+        public readonly List<byte[]> RootCertificates = [];
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(

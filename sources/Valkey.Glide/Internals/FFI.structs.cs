@@ -333,7 +333,7 @@ internal partial class FFI
         }
 
         /// <summary>
-        /// Marshals the root certificate.
+        /// Marshals the root certificates.
         /// </summary>
         /// <param name="rootCerts">Root certificate byte arrays.</param>
         /// <returns>Pointer to an array of root certificate pointers.</returns>
