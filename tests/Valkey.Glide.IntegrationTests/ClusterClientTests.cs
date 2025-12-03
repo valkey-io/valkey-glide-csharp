@@ -587,7 +587,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var configBuilder = ServerManager.GetClusterServerConfig(serverName);
+            var configBuilder = ServerManager.StartClusterServer(serverName);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
             var lazyConfig = configBuilder.WithLazyConnect(true).Build();
 
@@ -621,7 +621,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var eagerConfig = ServerManager.GetClusterServerConfig(serverName)
+            var eagerConfig = ServerManager.StartClusterServer(serverName)
                 .WithLazyConnect(false)
                 .Build();
 

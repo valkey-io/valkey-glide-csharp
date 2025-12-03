@@ -11,6 +11,9 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 public static class ServerManager
 {
+    // Utils directory for the cluster manager script and file path
+    // for the CA certificate that it generates when starting TLS servers.
+    // See 'valkey-glide/utils/cluster_manager.py' for more details.
     public static readonly string GlideUtilsDirectory;
     public static readonly string CaCertificatePath;
 
@@ -32,30 +35,76 @@ public static class ServerManager
     }
 
     /// <summary>
-    /// Starts a server and returns the addresses for it.
+    /// Starts a standalone server with the given name and TLS configuration.
+    /// Returns a configuration builder corresponding to that server.
     /// </summary>
-    /// <param name="name">The server name.</param>
-    /// <param name="useClusterMode">Whether to start the server in cluster mode.</param>
-    /// <param name="useTls">Whether to enable TLS on the server.</param>
-    /// <returns>The addresses of the started server.</returns>
-    public static List<(string host, ushort port)> GetServerAddresses(string name, bool useClusterMode = false, bool useTls = false)
+    public static StandaloneClientConfigurationBuilder StartStandaloneServer(string name, bool useTls = false)
+    {
+        var configBuilder = new StandaloneClientConfigurationBuilder();
+        configBuilder.WithTls(useTls);
+
+        var addresses = StartServer(name, useClusterMode: false, useTls: useTls);
+        addresses.ForEach(address => configBuilder.WithAddress(address.host, address.port));
+
+        return configBuilder;
+    }
+
+    /// <summary>
+    /// Starts a cluster server with the given name and TLS configuration.
+    /// Returns a configuration builder corresponding to that server.
+    /// </summary>
+    public static ClusterClientConfigurationBuilder StartClusterServer(string name, bool useTls = false)
+    {
+        var configBuilder = new ClusterClientConfigurationBuilder();
+        configBuilder.WithTls(useTls);
+
+        var addresses = StartServer(name, useClusterMode: true, useTls: useTls);
+        addresses.ForEach(address => configBuilder.WithAddress(address.host, address.port));
+
+        return configBuilder;
+    }
+
+    /// <summary>
+    /// Stops the server with the specified name.
+    /// </summary>
+    public static void StopServer(string name, bool keepLogs = false)
+    {
+        string cmd = $"stop --prefix {name} {(keepLogs ? "--keep-folder" : "")}";
+        RunClusterManager(cmd, true);
+    }
+
+    /// <summary>
+    /// Asserts that a client is connected by sending a PING command.
+    /// </summary>
+    /// <param name="client">The client to test.</param>
+    public static async Task AssertConnected(BaseClient client)
+    {
+        if (client is GlideClient standaloneClient)
+            Assert.True(await standaloneClient.PingAsync() > TimeSpan.Zero);
+
+        else if (client is GlideClusterClient clusterClient)
+            Assert.True(await clusterClient.PingAsync() > TimeSpan.Zero);
+
+    }
+
+    /// <summary>
+    /// Starts a server with the specified name, mode, and TLS configuration.
+    /// Returns the server addresses.
+    /// </summary>
+    internal static List<(string host, ushort port)> StartServer(string name, bool useClusterMode = false, bool useTls = false)
     {
         // Build command arguments.
         List<string> args = [];
 
-        if (useTls)
-        {
-            args.Add("--tls");
-        }
-
         args.Add("start");
-        args.AddRange(["--prefix", name]);
-        args.AddRange(["-r", "3"]);
+        args.Add($"--prefix {name}");
+        args.Add("-r 3");
 
         if (useClusterMode)
-        {
             args.Add("--cluster-mode");
-        }
+
+        if (useTls)
+            args.Add("--tls");
 
         // Run cluster manager script to start server.
         string cmd = string.Join(" ", args);
@@ -80,59 +129,9 @@ public static class ServerManager
     }
 
     /// <summary>
-    /// Starts a standalone server and returns a configuration builder for it.
+    /// Runs the cluster manager script with the specified command.
+    /// Returns the script output.
     /// </summary>
-    /// <param name="name">The server name.</param>
-    /// <param name="useTls">Whether to enable TLS on the server.</param>
-    /// <returns>A configuration builder for the started server.</returns>
-    public static StandaloneClientConfigurationBuilder GetStandaloneServerConfig(string name, bool useTls = false)
-    {
-        var configBuilder = new StandaloneClientConfigurationBuilder();
-        configBuilder.WithTls(useTls);
-
-        var addresses = GetServerAddresses(name, useClusterMode: false, useTls: useTls);
-        addresses.ForEach(address => configBuilder.WithAddress(address.host, address.port));
-
-        return configBuilder;
-    }
-
-    /// <summary>
-    /// Starts a cluster server and returns a configuration builder for it.
-    /// </summary>
-    /// <param name="name">The server name.</param>
-    /// <param name="useTls">Whether to enable TLS on the server.</param>
-    /// <returns>A configuration builder for the started server.</returns>
-    public static ClusterClientConfigurationBuilder GetClusterServerConfig(string name, bool useTls = false)
-    {
-        var configBuilder = new ClusterClientConfigurationBuilder();
-        configBuilder.WithTls(useTls);
-
-        var addresses = GetServerAddresses(name, useClusterMode: true, useTls: useTls);
-        addresses.ForEach(address => configBuilder.WithAddress(address.host, address.port));
-
-        return configBuilder;
-    }
-
-    public static void StopServer(string name, bool keepLogs = false)
-    {
-        string cmd = $"stop --prefix {name} {(keepLogs ? "--keep-folder" : "")}";
-        RunClusterManager(cmd, true);
-    }
-
-    /// <summary>
-    /// Asserts that a client is connected by sending a PING command.
-    /// </summary>
-    /// <param name="client">The client to test.</param>
-    public static async Task AssertConnected(BaseClient client)
-    {
-        if (client is GlideClient standaloneClient)
-            Assert.True(await standaloneClient.PingAsync() > TimeSpan.Zero);
-
-        else if (client is GlideClusterClient clusterClient)
-            Assert.True(await clusterClient.PingAsync() > TimeSpan.Zero);
-
-    }
-
     private static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
         ProcessStartInfo info = new()
@@ -151,8 +150,15 @@ public static class ServerManager
         string? output = script?.StandardOutput.ReadToEnd();
         int? exitCode = script?.ExitCode;
 
-        return !ignoreExitCode && exitCode != 0
-            ? throw new ApplicationException($"cluster_manager.py script failed: exit code {exitCode}.")
-                : output ?? "";
+        if (!ignoreExitCode && exitCode != 0)
+        {
+            throw new ApplicationException(
+                $"cluster_manager.py script failed: exit code {exitCode}.\n" +
+                $"Command: {cmd}\n" +
+                $"Error: {error}\n" +
+                $"Output: {output}");
+        }
+
+        return output ?? "";
     }
 }

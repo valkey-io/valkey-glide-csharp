@@ -493,7 +493,7 @@ public class StandaloneClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var configBuilder = ServerManager.GetStandaloneServerConfig(serverName);
+            var configBuilder = ServerManager.StartStandaloneServer(serverName);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
             var lazyConfig = configBuilder.WithLazyConnect(true).Build();
 
@@ -527,7 +527,7 @@ public class StandaloneClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var configBuilder = ServerManager.GetStandaloneServerConfig(serverName);
+            var configBuilder = ServerManager.StartStandaloneServer(serverName);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
 
             // Create reference client.

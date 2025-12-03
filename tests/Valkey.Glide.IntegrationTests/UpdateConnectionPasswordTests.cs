@@ -21,7 +21,7 @@ public class UpdateConnectionPasswordTests() : IDisposable
     public async Task UpdateConnectionPassword_Standalone_DelayAuth()
     {
         // Start server and build clients.
-        var config = ServerManager.GetStandaloneServerConfig(ServerName).Build();
+        var config = ServerManager.StartStandaloneServer(ServerName).Build();
         using var client = await GlideClient.CreateClient(config);
         using var adminClient = await GlideClient.CreateClient(config);
 
@@ -57,7 +57,7 @@ public class UpdateConnectionPasswordTests() : IDisposable
     public async Task UpdateConnectionPassword_Standalone_ImmediateAuth()
     {
         // Start server and build client.
-        var config = ServerManager.GetStandaloneServerConfig(ServerName).Build();
+        var config = ServerManager.StartStandaloneServer(ServerName).Build();
         using var client = await GlideClient.CreateClient(config);
 
         await ServerManager.AssertConnected(client);
@@ -94,7 +94,7 @@ public class UpdateConnectionPasswordTests() : IDisposable
     public async Task UpdateConnectionPassword_Cluster_DelayAuth()
     {
         // Start cluster and build clients.
-        var config = ServerManager.GetClusterServerConfig(ServerName).Build();
+        var config = ServerManager.StartClusterServer(ServerName).Build();
         using var client = await GlideClusterClient.CreateClient(config);
         using var adminClient = await GlideClusterClient.CreateClient(config);
 
@@ -130,7 +130,7 @@ public class UpdateConnectionPasswordTests() : IDisposable
     public async Task UpdateConnectionPassword_Cluster_ImmediateAuth()
     {
         // Start cluster and build client.
-        var config = ServerManager.GetClusterServerConfig(ServerName).Build();
+        var config = ServerManager.StartClusterServer(ServerName).Build();
         using var client = await GlideClusterClient.CreateClient(config);
 
         await ServerManager.AssertConnected(client);
