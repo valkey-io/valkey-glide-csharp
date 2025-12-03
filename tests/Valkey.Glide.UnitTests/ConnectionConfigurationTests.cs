@@ -294,8 +294,7 @@ public class ConnectionConfigurationTests
 
         finally
         {
-            if (File.Exists(tempFilePath))
-                File.Delete(tempFilePath);
+            File.Delete(tempFilePath);
         }
     }
 
@@ -327,8 +326,8 @@ public class ConnectionConfigurationTests
 
         finally
         {
-            if (File.Exists(tempFilePath1))
-                File.Delete(tempFilePath1);
+            File.Delete(tempFilePath1);
+            File.Delete(tempFilePath2);
         }
     }
 }
