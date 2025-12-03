@@ -96,15 +96,15 @@ public static class ServerManager
         // Build command arguments.
         List<string> args = [];
 
+        if (useTls)
+            args.Add("--tls");
+
         args.Add("start");
         args.Add($"--prefix {name}");
         args.Add("-r 3");
 
         if (useClusterMode)
             args.Add("--cluster-mode");
-
-        if (useTls)
-            args.Add("--tls");
 
         // Run cluster manager script to start server.
         string cmd = string.Join(" ", args);

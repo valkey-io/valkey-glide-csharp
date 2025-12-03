@@ -6,12 +6,11 @@ using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class TlsTests : IDisposable
+public class TlsTests() : IDisposable
 {
-    // Test constants
-    static readonly string ServerName = "TLS_TEST_SERVER";
-    static readonly string InvalidCertificatePath = "/INVALID_PATH/CERTIFICATE.crt";
-    static readonly byte[] InvalidCertificateData = Encoding.UTF8.GetBytes("INVALID_CERTIFICATE");
+    private static readonly string ServerName = $"TlsTests_{Guid.NewGuid():N}";
+    private static readonly string InvalidCertificatePath = "/INVALID_PATH/CERTIFICATE.crt";
+    private static readonly byte[] InvalidCertificateData = Encoding.UTF8.GetBytes("INVALID_CERTIFICATE");
 
     public void Dispose()
     {

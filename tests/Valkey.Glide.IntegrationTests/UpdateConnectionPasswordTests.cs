@@ -6,14 +6,14 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class UpdateConnectionPasswordTests() : IDisposable
 {
-    private static readonly string ServerName = $"test_{Guid.NewGuid():N}";
+    private static readonly string ServerName = $"UpdateConnectionPasswordTests_{Guid.NewGuid():N}";
     private static readonly string Password = "PASSWORD";
     private static readonly string InvalidPassword = "INVALID";
     private static readonly GlideString[] KillClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
 
-    // Stop server after each test.
     public void Dispose()
     {
+        // Stop the server after each test.
         ServerManager.StopServer(ServerName);
     }
 
