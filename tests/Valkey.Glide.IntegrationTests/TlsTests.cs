@@ -2,6 +2,8 @@
 
 using System.Text;
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -14,18 +16,16 @@ public class TlsTests : IDisposable
     private static readonly string ServerName = $"TlsTests_{Guid.NewGuid():N}";
     private static readonly string CertificatePath = ServerManager.CaCertificatePath;
 
-    private static readonly string InvalidCertificatePath = Path.GetTempFileName();
     private static readonly string InvalidCertificateContent = "INVALID_CERTIFICATE";
     private static readonly byte[] InvalidCertificateData = Encoding.UTF8.GetBytes(InvalidCertificateContent);
 
     public void Dispose()
     {
         ServerManager.StopServer(ServerName);
-        File.Delete(InvalidCertificatePath);
     }
 
     [Fact]
-    public async Task Cluster_InvalidCertificateData_Throws()
+    public async Task Cluster_WithCertificateData_InvalidThrows()
     {
         var configBuilder = ServerManager.StartClusterServer(ServerName, useTls: true);
         configBuilder.WithTrustedCertificate(InvalidCertificateData);
@@ -35,12 +35,12 @@ public class TlsTests : IDisposable
     }
 
     [Fact]
-    public async Task Cluster_InvalidCertificatePath_Throws()
+    public async Task Cluster_WithCertificatePath_InvalidThrows()
     {
-        var configBuilder = ServerManager.StartClusterServer(ServerName, useTls: true);
+        using var invalidCertificateFile = new TempFile(InvalidCertificateData);
 
-        File.WriteAllText(InvalidCertificatePath, InvalidCertificateContent);
-        configBuilder.WithTrustedCertificate(InvalidCertificatePath);
+        var configBuilder = ServerManager.StartClusterServer(ServerName, useTls: true);
+        configBuilder.WithTrustedCertificate(invalidCertificateFile.Path);
 
         var ex = await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
         Assert.Contains("invalid peer certificate", ex.Message);
@@ -56,10 +56,22 @@ public class TlsTests : IDisposable
     }
 
     [Fact]
-    public async Task Cluster_NoTls_Throws()
+    public async Task Cluster_WithCertificateData_NoTlsThrows()
     {
         var configBuilder = ServerManager.StartClusterServer(ServerName, useTls: false);
         configBuilder.WithTrustedCertificate(InvalidCertificateData);
+
+        var ex = await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
+        Assert.Contains("TLS is disabled", ex.Message);
+    }
+
+    [Fact]
+    public async Task Cluster_WithCertificatePath_NoTlsThrows()
+    {
+        using var invalidCertificateFile = new TempFile(InvalidCertificateData);
+
+        var configBuilder = ServerManager.StartClusterServer(ServerName, useTls: false);
+        configBuilder.WithTrustedCertificate(invalidCertificateFile.Path);
 
         var ex = await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
         Assert.Contains("TLS is disabled", ex.Message);
@@ -88,7 +100,7 @@ public class TlsTests : IDisposable
     }
 
     [Fact]
-    public async Task Standalone_InvalidCertificateData_Throws()
+    public async Task Standalone_WithCertificateData_InvalidThrows()
     {
         var configBuilder = ServerManager.StartStandaloneServer(ServerName, useTls: true);
         configBuilder.WithTrustedCertificate(InvalidCertificateData);
@@ -98,12 +110,12 @@ public class TlsTests : IDisposable
     }
 
     [Fact]
-    public async Task Standalone_InvalidCertificatePath_Throws()
+    public async Task Standalone_WithCertificatePath_InvalidThrows()
     {
-        var configBuilder = ServerManager.StartStandaloneServer(ServerName, useTls: true);
+        var invalidCertificateFile = new TempFile(InvalidCertificateData);
 
-        File.WriteAllText(InvalidCertificatePath, InvalidCertificateContent);
-        configBuilder.WithTrustedCertificate(InvalidCertificatePath);
+        var configBuilder = ServerManager.StartStandaloneServer(ServerName, useTls: true);
+        configBuilder.WithTrustedCertificate(invalidCertificateFile.Path);
 
         var ex = await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
         Assert.Contains("invalid peer certificate", ex.Message);
@@ -119,10 +131,22 @@ public class TlsTests : IDisposable
     }
 
     [Fact]
-    public async Task Standalone_NoTls_Throws()
+    public async Task Standalone_WithCertificateData_NoTlsThrows()
     {
         var configBuilder = ServerManager.StartStandaloneServer(ServerName, useTls: false);
         configBuilder.WithTrustedCertificate(InvalidCertificateData);
+
+        var ex = await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
+        Assert.Contains("TLS is disabled", ex.Message);
+    }
+
+    [Fact]
+    public async Task Standalone_WithCertificatePath_NoTlsThrows()
+    {
+        var invalidCertificateFile = new TempFile(InvalidCertificateData);
+
+        var configBuilder = ServerManager.StartStandaloneServer(ServerName, useTls: false);
+        configBuilder.WithTrustedCertificate(invalidCertificateFile.Path);
 
         var ex = await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
         Assert.Contains("TLS is disabled", ex.Message);

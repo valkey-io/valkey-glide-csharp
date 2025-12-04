@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;
@@ -275,27 +277,20 @@ public class ConnectionConfigurationTests
         builder.WithTrustedCertificate(CertificateData1);
         builder.WithTrustedCertificate(CertificateData2);
         var config = builder.Build();
+
         Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
     }
 
     [Fact]
     public void WithTrustedCertificate_Path()
     {
-        var tempFilePath = Path.GetTempFileName();
+        using var tempFile = new TempFile(CertificateData1);
 
-        try
-        {
-            File.WriteAllBytes(tempFilePath, CertificateData1);
-            var builder = new StandaloneClientConfigurationBuilder();
-            builder.WithTrustedCertificate(tempFilePath);
-            var config = builder.Build();
-            Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
-        }
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(tempFile.Path);
+        var config = builder.Build();
 
-        finally
-        {
-            File.Delete(tempFilePath);
-        }
+        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
     }
 
     [Fact]
@@ -315,26 +310,14 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithTrustedCertificate_Path_MultipleCertificates()
     {
-        var tempFilePath1 = Path.GetTempFileName();
-        var tempFilePath2 = Path.GetTempFileName();
+        using var tempFile1 = new TempFile(CertificateData1);
+        using var tempFile2 = new TempFile(CertificateData2);
 
-        try
-        {
-            File.WriteAllBytes(tempFilePath1, CertificateData1);
-            File.WriteAllBytes(tempFilePath2, CertificateData2);
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(tempFile1.Path);
+        builder.WithTrustedCertificate(tempFile2.Path);
+        var config = builder.Build();
 
-            var builder = new StandaloneClientConfigurationBuilder();
-            builder.WithTrustedCertificate(tempFilePath1);
-            builder.WithTrustedCertificate(tempFilePath2);
-            var config = builder.Build();
-
-            Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
-        }
-
-        finally
-        {
-            File.Delete(tempFilePath1);
-            File.Delete(tempFilePath2);
-        }
+        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
     }
 }

@@ -21,6 +21,12 @@ public sealed class TempFile : IDisposable
         set => File.WriteAllText(Path, value);
     }
 
+    public string[] Lines
+    {
+        get => File.ReadAllLines(Path);
+        set => File.WriteAllLines(Path, value);
+    }
+
     public TempFile()
     {
         Path = System.IO.Path.GetTempFileName();

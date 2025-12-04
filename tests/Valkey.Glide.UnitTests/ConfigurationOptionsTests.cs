@@ -2,6 +2,8 @@
 
 using System.Security.Cryptography.X509Certificates;
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.UnitTests;
 
 public class ConfigurationOptionsTests
@@ -10,64 +12,48 @@ public class ConfigurationOptionsTests
     static readonly byte[] CertificateData = Certificate.Export(X509ContentType.Cert);
 
     [Fact]
-    public void TrustIssuer_WithNullPath_Throws()
+    public void TrustIssuer_WithPath_NullThrows()
     {
         var options = new ConfigurationOptions();
         var ex = Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((string)null!));
     }
 
     [Fact]
-    public void TrustIssuer_WithInvalidPath_Throws()
+    public void TrustIssuer_WithPath_NonExistentThrows()
     {
         var options = new ConfigurationOptions();
         Assert.Throws<FileNotFoundException>(() => options.TrustIssuer("nonexistent.crt"));
     }
 
     [Fact]
-    public void TrustIssuer_WithEmptyFile_Throws()
+    public void TrustIssuer_WithPath_EmptyThrows()
     {
-        var tempFile = Path.GetTempFileName();
+        using var tempFile = new TempFile();
 
-        try
-        {
-            File.WriteAllBytes(tempFile, Array.Empty<byte>());
-            var options = new ConfigurationOptions();
-            Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile));
-        }
-        finally
-        {
-            File.Delete(tempFile);
-        }
+        var options = new ConfigurationOptions();
+        Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
-    public void TrustIssuer_WithNullCertificate_Throws()
+    public void TrustIssuer_WithCertificate_NullThrows()
     {
         var options = new ConfigurationOptions();
-        Assert.Throws<ArgumentNullException>(() =>options.TrustIssuer((X509Certificate2)null!));
+        Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((X509Certificate2)null!));
     }
 
     [Fact]
-    public void TrustIssuer_WithValidPath_AddsCertificate()
+    public void TrustIssuer_WithPath_Succeeds()
     {
-        var tempFile = Path.GetTempFileName();
+        using var tempFile = new TempFile(CertificateData);
 
-        try
-        {
-            File.WriteAllBytes(tempFile, CertificateData);
-            var options = new ConfigurationOptions();
-            options.TrustIssuer(tempFile);
+        var options = new ConfigurationOptions();
+        options.TrustIssuer(tempFile.Path);
 
-            Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
-        }
-        finally
-        {
-            File.Delete(tempFile);
-        }
+        Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
     }
 
     [Fact]
-    public void TrustIssuer_WithValidCertificate_AddsCertificate()
+    public void TrustIssuer_WithCertificate_Succeeds()
     {
         var options = new ConfigurationOptions();
         options.TrustIssuer(Certificate);
