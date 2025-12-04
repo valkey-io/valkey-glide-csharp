@@ -306,6 +306,13 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
+    public void WithTrustedCertificate_Path_NullThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((string)null!));
+    }
+
+    [Fact]
     public void WithTrustedCertificate_Path_MultipleCertificates()
     {
         var tempFilePath1 = Path.GetTempFileName();
