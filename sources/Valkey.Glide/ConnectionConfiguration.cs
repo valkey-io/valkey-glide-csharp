@@ -420,7 +420,7 @@ public abstract class ConnectionConfiguration
         internal List<byte[]> TrustedCertificates => Config.RootCertificates;
 
         /// <summary>
-        /// Adds a trusted certificate for TLS connections.
+        /// Adds an additional trusted certificate for TLS connections.
         /// </summary>
         /// <param name="certificatePath">Trusted certificate file path</param>
         /// <returns>This builder for method chaining</returns>
@@ -437,7 +437,7 @@ public abstract class ConnectionConfiguration
         }
 
         /// <summary>
-        /// Adds a trusted certificate for TLS connections.
+        /// Adds an additional trusted certificate for TLS connections.
         /// </summary>
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
