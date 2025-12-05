@@ -403,7 +403,6 @@ public sealed class ConfigurationOptions : ICloneable
         Append(sb, OptionKeys.User, User);
         Append(sb, OptionKeys.Password, (includePassword || string.IsNullOrEmpty(Password)) ? Password : "*****");
         Append(sb, OptionKeys.Ssl, _ssl);
-        Append(sb, "trustedIssuers", $"{_trustedIssuers.Count} certificate(s)");
         Append(sb, OptionKeys.Proxy, _proxy);
         Append(sb, OptionKeys.ResponseTimeout, ResponseTimeout);
         Append(sb, OptionKeys.DefaultDatabase, DefaultDatabase);
