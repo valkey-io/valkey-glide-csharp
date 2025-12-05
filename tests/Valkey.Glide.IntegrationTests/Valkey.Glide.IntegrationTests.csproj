@@ -53,6 +53,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\sources\Valkey.Glide\Valkey.Glide.csproj" />
+    <ProjectReference Include="..\Valkey.Glide.TestUtils\Valkey.Glide.TestUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

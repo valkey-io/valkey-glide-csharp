@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;
@@ -12,6 +14,13 @@ public class ConnectionConfigurationTests
     private const string ClusterName = "testClusterName";
     private const string Region = "testRegion";
     private const uint RefreshIntervalSeconds = 600;
+
+    private static readonly byte[] CertificateData1 = [0x30, 0x82, 0x01, 0x00];
+    private static readonly byte[] CertificateData2 = [0x30, 0x82, 0x02, 0x00];
+
+
+    // IAM Authentication
+    // ------------------
 
     [Fact]
     public void WithAuthentication_UsernamePassword()
@@ -171,6 +180,9 @@ public class ConnectionConfigurationTests
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
     }
 
+    // Refresh Topology Configuration
+    // ------------------------------
+
     [Fact]
     public void RefreshTopologyFromInitialNodes_Default()
     {
@@ -195,5 +207,117 @@ public class ConnectionConfigurationTests
         builder.WithRefreshTopologyFromInitialNodes(false);
         var config = builder.Build();
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
+    }
+
+    // TLS Configuration
+    // -----------------
+
+    [Fact]
+    public void WithTls_Default()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        var config = builder.Build();
+        Assert.Null(config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithTls_Enabled()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls(true);
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithTls_Disabled()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls(false);
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithTls_NoParameter()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls();
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_ByteArray()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(CertificateData1);
+        var config = builder.Build();
+        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_ByteArray_NullThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_ByteArray_EmptyThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate([]));
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_ByteArray_MultipleCertificates()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(CertificateData1);
+        builder.WithTrustedCertificate(CertificateData2);
+        var config = builder.Build();
+
+        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path()
+    {
+        using var tempFile = new TempFile(CertificateData1);
+
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(tempFile.Path);
+        var config = builder.Build();
+
+        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_FileNotFoundThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_NullThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((string)null!));
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_MultipleCertificates()
+    {
+        using var tempFile1 = new TempFile(CertificateData1);
+        using var tempFile2 = new TempFile(CertificateData2);
+
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(tempFile1.Path);
+        builder.WithTrustedCertificate(tempFile2.Path);
+        var config = builder.Build();
+
+        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
     }
 }

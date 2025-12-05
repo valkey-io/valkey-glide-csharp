@@ -80,7 +80,6 @@ pub struct ConnectionConfig {
     pub root_certs_count: usize,
     pub root_certs: *const *const u8,
     pub root_certs_len: *const usize,
-
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -268,19 +267,12 @@ pub(crate) unsafe fn create_connection_request(
         } else {
             None
         },
-        root_certs: if config.root_certs_count > 0 {
-            unsafe {
-                convert_string_pointer_array_to_vector(
-                    config.root_certs,
-                    config.root_certs_count,
-                    config.root_certs_len,
-                )
-            }
-            .into_iter()
-            .map(|cert| cert.to_vec())
-            .collect()
-        } else {
-            Vec::new()
+        root_certs: unsafe {
+            convert_byte_array_to_owned(
+                config.root_certs,
+                config.root_certs_count,
+                config.root_certs_len,
+            )
         },
         // TODO below
         periodic_checks: None,
@@ -454,29 +446,49 @@ pub(crate) unsafe fn create_route(
     }
 }
 
-/// Converts a double pointer to a vec.
+/// Converts a double pointer to borrowed byte slices.
 ///
 /// # Safety
 ///
 /// * `data` and `data_len` must not be `null`.
-/// * `data` must point to `len` consecutive string pointers.
-/// * `data_len` must point to `len` consecutive string lengths.
-/// * `data`, `data_len` and also each pointer stored in `data` must be able to be safely casted to a valid to a slice of the corresponding type via [`from_raw_parts`].
+/// * `data` must point to `len` consecutive byte array pointers.
+/// * `data_len` must point to `len` consecutive array lengths.
+/// * `data`, `data_len` and also each pointer stored in `data` must be able to be safely casted to a valid slice via [`from_raw_parts`].
 ///   See the safety documentation of [`from_raw_parts`].
-/// * The caller is responsible of freeing the allocated memory.
-pub(crate) unsafe fn convert_string_pointer_array_to_vector<'a>(
+/// * The returned slices borrow from the caller's memory and must not outlive it.
+pub(crate) unsafe fn convert_byte_array_to_slices<'a>(
     data: *const *const u8,
     len: usize,
     data_len: *const usize,
 ) -> Vec<&'a [u8]> {
-    let string_ptrs = unsafe { from_raw_parts(data, len) };
-    let string_lengths = unsafe { from_raw_parts(data_len, len) };
-    let mut result = Vec::with_capacity(string_ptrs.len());
-    for (i, &str_ptr) in string_ptrs.iter().enumerate() {
-        let slice = unsafe { from_raw_parts(str_ptr, string_lengths[i]) };
+    if len == 0 {
+        return Vec::new();
+    }
+
+    let array_ptrs = unsafe { from_raw_parts(data, len) };
+    let array_lengths = unsafe { from_raw_parts(data_len, len) };
+    let mut result = Vec::with_capacity(array_ptrs.len());
+    for (i, &arr_ptr) in array_ptrs.iter().enumerate() {
+        let slice = unsafe { from_raw_parts(arr_ptr, array_lengths[i]) };
         result.push(slice);
     }
     result
+}
+
+/// Converts a double pointer to owned byte vectors by copying the data.
+///
+/// # Safety
+/// * See the safety documentation of [`convert_byte_array_to_slices`].
+/// * The returned vectors own their data and are safe to use after the caller's memory is freed.
+pub(crate) unsafe fn convert_byte_array_to_owned(
+    data: *const *const u8,
+    len: usize,
+    data_len: *const usize,
+) -> Vec<Vec<u8>> {
+    unsafe { convert_byte_array_to_slices(data, len, data_len) }
+        .into_iter()
+        .map(|slice| slice.to_vec())
+        .collect()
 }
 
 pub(crate) fn convert_vec_to_pointer<T>(mut vec: Vec<T>) -> (*const T, usize) {
@@ -676,12 +688,11 @@ pub struct BatchOptionsInfo {
 /// # Safety
 /// * `cmd_ptr` must be able to be safely casted to a valid [`CmdInfo`]
 /// * `args` and `args_len` in a referred [`CmdInfo`] structure must not be `null`.
-/// * `data` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string pointers.
-/// * `args_len` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive string lengths. See the safety documentation of [`convert_string_pointer_array_to_vector`].
+/// * `args` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive byte array pointers.
+/// * `args_len` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive array lengths. See the safety documentation of [`convert_byte_array_to_slices`].
 pub(crate) unsafe fn create_cmd(ptr: *const CmdInfo) -> Result<Cmd, String> {
     let info = unsafe { *ptr };
-    let arg_vec =
-        unsafe { convert_string_pointer_array_to_vector(info.args, info.arg_count, info.args_len) };
+    let arg_vec = unsafe { convert_byte_array_to_slices(info.args, info.arg_count, info.args_len) };
 
     let Some(mut cmd) = info.request_type.get_command() else {
         return Err("Couldn't fetch command type".into());

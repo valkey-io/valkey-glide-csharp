@@ -292,8 +292,8 @@ public class TestConfiguration : IDisposable
             catch (DirectoryNotFoundException) { }
 
             // Start cluster and standalone servers.
-            CLUSTER_HOSTS = ServerManager.StartClusterServer(DefaultServerGroupName, useTls: TLS);
-            STANDALONE_HOSTS = ServerManager.StartStandaloneServer(DefaultServerGroupName, useTls: TLS);
+            CLUSTER_HOSTS = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
+            STANDALONE_HOSTS = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
         }
         // Get server version
         SERVER_VERSION = GetServerVersion();
