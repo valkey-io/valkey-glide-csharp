@@ -414,13 +414,13 @@ public abstract class ConnectionConfiguration
         }
 
         /// <summary>
-        /// Root certificates for TLS connections. When provided, these certificates will be used
-        /// instead of the system's default trust store.
+        /// Trusted root certificates for TLS connections.
+        /// When provided, these certificates will be used instead of the system's default trust store.
         /// </summary>
-        internal List<byte[]> RootCertificates => Config.RootCertificates;
+        internal List<byte[]> TrustedCertificates => Config.RootCertificates;
 
         /// <summary>
-        /// Add a trusted certificate for TLS connections.
+        /// Adds a trusted certificate for TLS connections.
         /// </summary>
         /// <param name="certificatePath">Trusted certificate file path</param>
         /// <returns>This builder for method chaining</returns>
@@ -437,7 +437,7 @@ public abstract class ConnectionConfiguration
         }
 
         /// <summary>
-        /// Add a trusted certificate for TLS connections.
+        /// Adds a trusted certificate for TLS connections.
         /// </summary>
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
@@ -450,7 +450,7 @@ public abstract class ConnectionConfiguration
             else if (certificateData.Length == 0)
                 throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
 
-            RootCertificates.Add(certificateData);
+            TrustedCertificates.Add(certificateData);
             return (T)this;
         }
         #endregion

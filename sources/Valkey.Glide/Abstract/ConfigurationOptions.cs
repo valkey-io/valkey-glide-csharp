@@ -270,7 +270,7 @@ public sealed class ConfigurationOptions : ICloneable
     }
 
     /// <summary>
-    /// Add a trusted certificate for TLS connections.
+    /// Adds a trusted certificate for TLS connections.
     /// </summary>
     /// <param name="certificatePath">Trusted certificate file path</param>
     /// <exception cref="ArgumentNullException">If the certificate path is null.</exception>
@@ -292,7 +292,7 @@ public sealed class ConfigurationOptions : ICloneable
     }
 
     /// <summary>
-    /// Add a trusted certificate for TLS connections.
+    /// Adds a trusted certificate for TLS connections.
     /// </summary>
     /// <param name="certificate">Trusted certificate</param>
     /// <exception cref="ArgumentNullException">If the certificate is null.</exception>
