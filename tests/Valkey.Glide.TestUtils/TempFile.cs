@@ -7,6 +7,8 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public sealed class TempFile : IDisposable
 {
+    private bool _disposed;
+
     public string Path { get; }
 
     public byte[] Bytes
@@ -42,5 +44,21 @@ public sealed class TempFile : IDisposable
         File.WriteAllText(Path, contents);
     }
 
-    public void Dispose() => File.Delete(Path);
+    ~TempFile()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        File.Delete(Path);
+        GC.SuppressFinalize(this);
+    }
 }
