@@ -7,6 +7,7 @@ using Valkey.Glide.Pipeline;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
+using static Valkey.Glide.TestUtils.Client;
 using static Valkey.Glide.TestUtils.Server;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -594,17 +595,17 @@ public class ClusterClientTests(TestConfiguration config)
 
             // Create reference client.
             using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+            var initialCount = await GetConnectionCount(referenceClient);
 
             // Create lazy client (does not connect immediately).
             using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
-            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+            var connectCount = await GetConnectionCount(referenceClient);
 
             Assert.Equal(initialCount, connectCount);
 
             // First command establishes connection.
             await lazyClient.PingAsync();
-            var commandCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+            var commandCount = await GetConnectionCount(referenceClient);
 
             Assert.True(connectCount < commandCount);
         }
@@ -628,11 +629,11 @@ public class ClusterClientTests(TestConfiguration config)
 
             // Create reference client.
             using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+            var initialCount = await TestUtils.Client.GetConnectionCount(referenceClient);
 
             // Create eager client (connects immediately).
             using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+            var connectCount = await TestUtils.Client.GetConnectionCount(referenceClient);
 
             Assert.True(initialCount < connectCount);
         }
