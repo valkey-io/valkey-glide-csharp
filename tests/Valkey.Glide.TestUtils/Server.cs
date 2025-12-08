@@ -56,20 +56,6 @@ public static class Server
     }
 
     /// <summary>
-    /// Asserts that a client is connected by sending a PING command.
-    /// </summary>
-    /// <param name="client">The client to test.</param>
-    public static async Task AssertConnected(BaseClient client)
-    {
-        if (client is GlideClient standaloneClient)
-            Assert.True(await standaloneClient.PingAsync() > TimeSpan.Zero);
-
-        else if (client is GlideClusterClient clusterClient)
-            Assert.True(await clusterClient.PingAsync() > TimeSpan.Zero);
-
-    }
-
-    /// <summary>
     /// Starts a server with the specified name, mode, and TLS configuration.
     /// </summary>
     /// <returns>A list of server addresses (host, port) started.</returns>
