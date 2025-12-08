@@ -19,8 +19,8 @@ public class ConnectionConfigurationTests
     private static readonly byte[] CertificateData2 = [0x30, 0x82, 0x02, 0x00];
 
 
-    // IAM Authentication
-    // ------------------
+    // Authentication & Credentials
+    // ----------------------------
 
     [Fact]
     public void WithAuthentication_UsernamePassword()
@@ -35,7 +35,6 @@ public class ConnectionConfigurationTests
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
 
-        // Password cannot be null.
         Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null!));
     }
 
@@ -52,7 +51,6 @@ public class ConnectionConfigurationTests
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
 
-        // Password cannot be null.
         Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!));
     }
 
@@ -77,7 +75,6 @@ public class ConnectionConfigurationTests
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
         Assert.Equal(600u, iamCredentials.RefreshIntervalSeconds);
 
-        // Username and IamAuthConfig cannot be null.
         Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
         Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
     }
@@ -138,7 +135,6 @@ public class ConnectionConfigurationTests
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
 
-        // Credentials cannot be null.
         Assert.Throws<ArgumentNullException>(() => builder.WithCredentials(null!));
     }
 

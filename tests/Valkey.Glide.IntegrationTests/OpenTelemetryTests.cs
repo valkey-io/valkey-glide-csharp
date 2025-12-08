@@ -21,7 +21,6 @@ public class OpenTelemetryTests : IDisposable
     static OpenTelemetryTests()
     {
         // Before any tests, initialize OpenTelemetry.
-        // Ensure it's not already initialized from other tests.
         Assert.False(OpenTelemetry.IsInitialized());
 
         var tracesConfig = TracesConfig.CreateBuilder()
