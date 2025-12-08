@@ -1,29 +1,24 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.TestUtils.Client;
-using static Valkey.Glide.TestUtils.Server;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class UpdateConnectionPasswordTests : IDisposable
+public class UpdateConnectionPasswordTests
 {
-    private static readonly string ServerName = $"UpdateConnectionPasswordTests_{Guid.NewGuid():N}";
     private static readonly string Password = "PASSWORD";
     private static readonly string InvalidPassword = "INVALID";
     private static readonly GlideString[] KillClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
-
-    public void Dispose()
-    {
-        // Stop the server after each test.
-        StopServer(ServerName);
-    }
 
     [Fact]
     public async Task UpdateConnectionPassword_Standalone_DelayAuth()
     {
         // Start server and build clients.
-        var config = StartStandaloneServer(ServerName).Build();
+        var server = new StandaloneServer();
+        var config = server.CreateConfigBuilder().Build();
         using var client = await GlideClient.CreateClient(config);
         using var adminClient = await GlideClient.CreateClient(config);
 
@@ -59,7 +54,8 @@ public class UpdateConnectionPasswordTests : IDisposable
     public async Task UpdateConnectionPassword_Standalone_ImmediateAuth()
     {
         // Start server and build client.
-        var config = StartStandaloneServer(ServerName).Build();
+        var server = new StandaloneServer();
+        var config = server.CreateConfigBuilder().Build();
         using var client = await GlideClient.CreateClient(config);
 
         await AssertConnected(client);
@@ -96,7 +92,8 @@ public class UpdateConnectionPasswordTests : IDisposable
     public async Task UpdateConnectionPassword_Cluster_DelayAuth()
     {
         // Start cluster and build clients.
-        var config = StartClusterServer(ServerName).Build();
+        var server = new ClusterServer();
+        var config = server.CreateConfigBuilder().Build();
         using var client = await GlideClusterClient.CreateClient(config);
         using var adminClient = await GlideClusterClient.CreateClient(config);
 
@@ -132,7 +129,8 @@ public class UpdateConnectionPasswordTests : IDisposable
     public async Task UpdateConnectionPassword_Cluster_ImmediateAuth()
     {
         // Start cluster and build client.
-        var config = StartClusterServer(ServerName).Build();
+        var server = new ClusterServer();
+        var config = server.CreateConfigBuilder().Build();
         using var client = await GlideClusterClient.CreateClient(config);
 
         await AssertConnected(client);

@@ -7,56 +7,41 @@ using static Valkey.Glide.ConnectionConfiguration;
 namespace Valkey.Glide.TestUtils;
 
 /// <summary>
-/// Test utilities for Valkey GLIDE servers.
+/// Base class for server that is stopped when disposed.
 /// </summary>
-public static class Server
+public class Server : IDisposable
 {
+    private bool _disposed = false;
+
+    protected bool _useTls = false;
+    protected string _name = $"Server_{Guid.NewGuid():N}";
+    protected List<(string host, ushort port)> _addresses = [];
+
     // Utils directory for the cluster manager script and file path for the server certificate that it generates.
     // See 'valkey-glide/utils/cluster_manager.py' for more details.
     public static readonly string GlideUtilsDirectory = Path.Combine("..", "..", "valkey-glide", "utils");
     public static readonly string ServerCertificatePath = Path.Combine(GlideUtilsDirectory, "tls_crts", "ca.crt");
 
-    /// <summary>
-    /// Starts a standalone server with the given name and TLS configuration.
-    /// </summary>
-    /// <returns>A configuration builder corresponding to that server.</returns>
-    public static StandaloneClientConfigurationBuilder StartStandaloneServer(string name, bool useTls = false)
+    ~Server()
     {
-        var configBuilder = new StandaloneClientConfigurationBuilder();
-        configBuilder.WithTls(useTls);
+        Dispose();
+    }
 
-        var addresses = StartServer(name, useClusterMode: false, useTls: useTls);
-        addresses.ForEach(address => configBuilder.WithAddress(address.host, address.port));
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
 
-        return configBuilder;
+        _disposed = true;
+
+        StopServer(_name);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
-    /// Starts a cluster server with the given name and TLS configuration.
-    /// </summary>
-    /// <returns>A configuration builder corresponding to that cluster.</returns>
-    public static ClusterClientConfigurationBuilder StartClusterServer(string name, bool useTls = false)
-    {
-        var configBuilder = new ClusterClientConfigurationBuilder();
-        configBuilder.WithTls(useTls);
-
-        var addresses = StartServer(name, useClusterMode: true, useTls: useTls);
-        addresses.ForEach(address => configBuilder.WithAddress(address.host, address.port));
-
-        return configBuilder;
-    }
-
-    /// <summary>
-    /// Stops the server with the specified name.
-    /// </summary>
-    public static void StopServer(string name, bool keepLogs = false)
-    {
-        string cmd = $"stop --prefix {name} {(keepLogs ? "--keep-folder" : "")}";
-        RunClusterManager(cmd, true);
-    }
-
-    /// <summary>
-    /// Starts a server with the specified name, mode, and TLS configuration.
+    /// Starts a server with the specified name, mode and TLS configuration.
     /// </summary>
     /// <returns>A list of server addresses (host, port) started.</returns>
     public static List<(string host, ushort port)> StartServer(string name, bool useClusterMode = false, bool useTls = false)
@@ -97,9 +82,19 @@ public static class Server
     }
 
     /// <summary>
-    /// Runs the cluster manager script with the specified command.
-    /// Returns the script output.
+    /// Stops the server with the specified name.
     /// </summary>
+    public static void StopServer(string name, bool keepLogs = false)
+    {
+        string stopCmd = $"stop --prefix {name}";
+        if (keepLogs) stopCmd += " --keep-folder";
+        RunClusterManager(stopCmd, true);
+    }
+
+    /// <summary>
+    /// Runs the cluster manager script with the specified command.
+    /// </summary>
+    /// <returns>The script output.</returns>
     private static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
         ProcessStartInfo info = new()
@@ -128,5 +123,57 @@ public static class Server
         }
 
         return output ?? "";
+    }
+}
+
+/// <summary>
+/// Cluster server that is stopped when disposed.
+/// </summary>
+public sealed class ClusterServer : Server
+{
+    public ClusterServer(bool useTls = false)
+    {
+        _useTls = useTls;
+        _addresses = StartServer(_name, useClusterMode: true, useTls: _useTls);
+    }
+
+    /// <summary>
+    /// Builds and returns a cluster client configuration builder for this server.
+    /// </summary>
+    public ClusterClientConfigurationBuilder CreateConfigBuilder()
+    {
+        var configBuilder = new ClusterClientConfigurationBuilder();
+        configBuilder.WithTls(useTls: _useTls);
+
+        foreach (var (host, port) in _addresses)
+            configBuilder.WithAddress(host, port);
+
+        return configBuilder;
+    }
+}
+
+/// <summary>
+/// Standalone server that is stopped when disposed.
+/// </summary>
+public sealed class StandaloneServer : Server
+{
+    public StandaloneServer(bool useTls = false)
+    {
+        _useTls = useTls;
+        _addresses = StartServer(_name, useClusterMode: false, useTls: _useTls);
+    }
+
+    /// <summary>
+    /// Builds and returns a standalone client configuration builder for this server.
+    /// </summary>
+    public StandaloneClientConfigurationBuilder CreateConfigBuilder()
+    {
+        var configBuilder = new StandaloneClientConfigurationBuilder();
+        configBuilder.WithTls(useTls: _useTls);
+
+        foreach (var (host, port) in _addresses)
+            configBuilder.WithAddress(host, port);
+
+        return configBuilder;
     }
 }

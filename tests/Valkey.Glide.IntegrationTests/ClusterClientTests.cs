@@ -3,12 +3,12 @@
 using System.Text;
 
 using Valkey.Glide.Pipeline;
+using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
 using static Valkey.Glide.TestUtils.Client;
-using static Valkey.Glide.TestUtils.Server;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -584,62 +584,44 @@ public class ClusterClientTests(TestConfiguration config)
     [Fact]
     public async Task LazyConnect()
     {
-        string serverName = $"test_{Guid.NewGuid():N}";
+        // Create dedicated server.
+        using var server = new ClusterServer();
 
-        try
-        {
-            // Create dedicated server.
-            var configBuilder = StartClusterServer(serverName);
-            var eagerConfig = configBuilder.WithLazyConnect(false).Build();
-            var lazyConfig = configBuilder.WithLazyConnect(true).Build();
+        // Create reference client.
+        var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
+        using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
+        var initialCount = await GetConnectionCount(referenceClient);
 
-            // Create reference client.
-            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await GetConnectionCount(referenceClient);
+        // Create lazy client (does not connect immediately).
+        var lazyConfig = server.CreateConfigBuilder().WithLazyConnect(true).Build();
+        using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
 
-            // Create lazy client (does not connect immediately).
-            using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
-            var connectCount = await GetConnectionCount(referenceClient);
+        var connectCount = await GetConnectionCount(referenceClient);
+        Assert.Equal(initialCount, connectCount);
 
-            Assert.Equal(initialCount, connectCount);
+        // First command establishes connection.
+        await lazyClient.PingAsync();
 
-            // First command establishes connection.
-            await lazyClient.PingAsync();
-            var commandCount = await GetConnectionCount(referenceClient);
-
-            Assert.True(connectCount < commandCount);
-        }
-        finally
-        {
-            StopServer(serverName);
-        }
+        var commandCount = await GetConnectionCount(referenceClient);
+        Assert.True(connectCount < commandCount);
     }
 
     [Fact]
     public async Task EagerConnect()
     {
-        string serverName = $"test_{Guid.NewGuid():N}";
+        // Create dedicated server.
+        var server = new ClusterServer();
 
-        try
-        {
-            // Create dedicated server.
-            var eagerConfig = StartClusterServer(serverName)
-                .WithLazyConnect(false)
-                .Build();
+        // Create reference client.
+        var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
+        using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-            // Create reference client.
-            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        var initialCount = await TestUtils.Client.GetConnectionCount(referenceClient);
 
-            // Create eager client (connects immediately).
-            using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var connectCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        // Create eager client (connects immediately).
+        using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-            Assert.True(initialCount < connectCount);
-        }
-        finally
-        {
-            StopServer(serverName);
-        }
+        var connectCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        Assert.True(initialCount < connectCount);
     }
 }
