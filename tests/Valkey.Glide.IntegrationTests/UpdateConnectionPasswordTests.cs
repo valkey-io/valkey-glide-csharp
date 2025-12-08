@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.TestUtils.Server;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -14,53 +15,53 @@ public class UpdateConnectionPasswordTests : IDisposable
     public void Dispose()
     {
         // Stop the server after each test.
-        ServerManager.StopServer(ServerName);
+        StopServer(ServerName);
     }
 
     [Fact]
     public async Task UpdateConnectionPassword_Standalone_DelayAuth()
     {
         // Start server and build clients.
-        var config = ServerManager.StartStandaloneServer(ServerName).Build();
+        var config = StartStandaloneServer(ServerName).Build();
         using var client = await GlideClient.CreateClient(config);
         using var adminClient = await GlideClient.CreateClient(config);
 
-        await ServerManager.AssertConnected(client);
-        await ServerManager.AssertConnected(adminClient);
+        await AssertConnected(client);
+        await AssertConnected(adminClient);
 
         // Update client connection password.
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
 
-        await ServerManager.AssertConnected(client); // No reconnect
+        await AssertConnected(client); // No reconnect
 
         // Update server password and kill all clients.
         await adminClient.ConfigSetAsync("requirepass", Password);
         await adminClient.CustomCommand(KillClientCommandArgs);
         Task.Delay(1000).Wait();
 
-        await ServerManager.AssertConnected(client); // Reconnect
+        await AssertConnected(client); // Reconnect
 
         // Clear client connection password.
         await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-        await ServerManager.AssertConnected(client); // No reconnect
+        await AssertConnected(client); // No reconnect
 
         // Clear server password and kill all clients.
         await adminClient.ConfigSetAsync("requirepass", "");
         await adminClient.CustomCommand(KillClientCommandArgs);
         Task.Delay(1000).Wait();
 
-        await ServerManager.AssertConnected(client); // Reconnect
+        await AssertConnected(client); // Reconnect
     }
 
     [Fact]
     public async Task UpdateConnectionPassword_Standalone_ImmediateAuth()
     {
         // Start server and build client.
-        var config = ServerManager.StartStandaloneServer(ServerName).Build();
+        var config = StartStandaloneServer(ServerName).Build();
         using var client = await GlideClient.CreateClient(config);
 
-        await ServerManager.AssertConnected(client);
+        await AssertConnected(client);
 
         // Update server password.
         await client.ConfigSetAsync("requirepass", Password);
@@ -69,7 +70,7 @@ public class UpdateConnectionPasswordTests : IDisposable
         // Update client connection password.
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
 
-        await ServerManager.AssertConnected(client);
+        await AssertConnected(client);
 
         // Clear server password.
         await client.ConfigSetAsync("requirepass", "");
@@ -78,7 +79,7 @@ public class UpdateConnectionPasswordTests : IDisposable
         // Clear client connection password.
         await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-        await ServerManager.AssertConnected(client);
+        await AssertConnected(client);
     }
 
     [Fact]
@@ -94,46 +95,46 @@ public class UpdateConnectionPasswordTests : IDisposable
     public async Task UpdateConnectionPassword_Cluster_DelayAuth()
     {
         // Start cluster and build clients.
-        var config = ServerManager.StartClusterServer(ServerName).Build();
+        var config = StartClusterServer(ServerName).Build();
         using var client = await GlideClusterClient.CreateClient(config);
         using var adminClient = await GlideClusterClient.CreateClient(config);
 
-        await ServerManager.AssertConnected(client);
-        await ServerManager.AssertConnected(adminClient);
+        await AssertConnected(client);
+        await AssertConnected(adminClient);
 
         // Update client connection password.
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
 
-        await ServerManager.AssertConnected(client); // No reconnect
+        await AssertConnected(client); // No reconnect
 
         // Update server password and kill all clients.
         await adminClient.ConfigSetAsync("requirepass", Password);
         await adminClient.CustomCommand(KillClientCommandArgs);
         Task.Delay(1000).Wait();
 
-        await ServerManager.AssertConnected(client); // Reconnect
+        await AssertConnected(client); // Reconnect
 
         // Clear client connection password.
         await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-        await ServerManager.AssertConnected(client); // No reconnect
+        await AssertConnected(client); // No reconnect
 
         // Clear server password and kill all clients.
         await adminClient.ConfigSetAsync("requirepass", "");
         await adminClient.CustomCommand(KillClientCommandArgs);
         Task.Delay(1000).Wait();
 
-        await ServerManager.AssertConnected(client); // Reconnect
+        await AssertConnected(client); // Reconnect
     }
 
     [Fact]
     public async Task UpdateConnectionPassword_Cluster_ImmediateAuth()
     {
         // Start cluster and build client.
-        var config = ServerManager.StartClusterServer(ServerName).Build();
+        var config = StartClusterServer(ServerName).Build();
         using var client = await GlideClusterClient.CreateClient(config);
 
-        await ServerManager.AssertConnected(client);
+        await AssertConnected(client);
 
         // Update server password.
         await client.ConfigSetAsync("requirepass", Password, Route.AllNodes);
@@ -142,7 +143,7 @@ public class UpdateConnectionPasswordTests : IDisposable
         // Update client connection password.
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
 
-        await ServerManager.AssertConnected(client);
+        await AssertConnected(client);
 
         // Clear server password.
         await client.ConfigSetAsync("requirepass", "", Route.AllNodes);
@@ -151,7 +152,7 @@ public class UpdateConnectionPasswordTests : IDisposable
         // Clear client connection password.
         await client.ClearConnectionPasswordAsync(immediateAuth: false);
 
-        await ServerManager.AssertConnected(client);
+        await AssertConnected(client);
     }
 
     [Fact]

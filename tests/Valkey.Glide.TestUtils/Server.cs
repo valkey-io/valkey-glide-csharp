@@ -4,40 +4,22 @@ using System.Diagnostics;
 
 using static Valkey.Glide.ConnectionConfiguration;
 
-namespace Valkey.Glide.IntegrationTests;
+namespace Valkey.Glide.TestUtils;
 
 /// <summary>
-/// Manages Valkey server instances during testing
+/// Test utilities for Valkey GLIDE servers.
 /// </summary>
-public static class ServerManager
+public static class Server
 {
-    // Utils directory for the cluster manager script and file path
-    // for the CA certificate that it generates when starting TLS servers.
+    // Utils directory for the cluster manager script and file path for the server certificate that it generates.
     // See 'valkey-glide/utils/cluster_manager.py' for more details.
-    public static readonly string GlideUtilsDirectory;
-    public static readonly string CaCertificatePath;
-
-    static ServerManager()
-    {
-        string? directory = Directory.GetCurrentDirectory();
-        while (!(directory == null || Directory.EnumerateDirectories(directory).Any(d => Path.GetFileName(d) == "valkey-glide")))
-        {
-            directory = Path.GetDirectoryName(directory);
-        }
-
-        if (directory == null)
-        {
-            throw new FileNotFoundException("Can't detect the project dir");
-        }
-
-        GlideUtilsDirectory = Path.Combine(directory, "valkey-glide", "utils");
-        CaCertificatePath = Path.Combine(GlideUtilsDirectory, "tls_crts", "ca.crt");
-    }
+    public static readonly string GlideUtilsDirectory = Path.Combine("..", "..", "valkey-glide", "utils");
+    public static readonly string ServerCertificatePath = Path.Combine(GlideUtilsDirectory, "tls_crts", "ca.crt");
 
     /// <summary>
     /// Starts a standalone server with the given name and TLS configuration.
-    /// Returns a configuration builder corresponding to that server.
     /// </summary>
+    /// <returns>A configuration builder corresponding to that server.</returns>
     public static StandaloneClientConfigurationBuilder StartStandaloneServer(string name, bool useTls = false)
     {
         var configBuilder = new StandaloneClientConfigurationBuilder();
@@ -51,8 +33,8 @@ public static class ServerManager
 
     /// <summary>
     /// Starts a cluster server with the given name and TLS configuration.
-    /// Returns a configuration builder corresponding to that server.
     /// </summary>
+    /// <returns>A configuration builder corresponding to that cluster.</returns>
     public static ClusterClientConfigurationBuilder StartClusterServer(string name, bool useTls = false)
     {
         var configBuilder = new ClusterClientConfigurationBuilder();
@@ -89,9 +71,9 @@ public static class ServerManager
 
     /// <summary>
     /// Starts a server with the specified name, mode, and TLS configuration.
-    /// Returns the server addresses.
     /// </summary>
-    internal static List<(string host, ushort port)> StartServer(string name, bool useClusterMode = false, bool useTls = false)
+    /// <returns>A list of server addresses (host, port) started.</returns>
+    public static List<(string host, ushort port)> StartServer(string name, bool useClusterMode = false, bool useTls = false)
     {
         // Build command arguments.
         List<string> args = [];

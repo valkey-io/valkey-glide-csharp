@@ -7,6 +7,7 @@ using Valkey.Glide.Pipeline;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
+using static Valkey.Glide.TestUtils.Server;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -587,7 +588,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var configBuilder = ServerManager.StartClusterServer(serverName);
+            var configBuilder = StartClusterServer(serverName);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
             var lazyConfig = configBuilder.WithLazyConnect(true).Build();
 
@@ -609,7 +610,7 @@ public class ClusterClientTests(TestConfiguration config)
         }
         finally
         {
-            ServerManager.StopServer(serverName);
+            StopServer(serverName);
         }
     }
 
@@ -621,7 +622,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var eagerConfig = ServerManager.StartClusterServer(serverName)
+            var eagerConfig = StartClusterServer(serverName)
                 .WithLazyConnect(false)
                 .Build();
 
@@ -637,7 +638,7 @@ public class ClusterClientTests(TestConfiguration config)
         }
         finally
         {
-            ServerManager.StopServer(serverName);
+            StopServer(serverName);
         }
     }
 }
