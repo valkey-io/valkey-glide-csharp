@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.TestUtils.Client;
 using static Valkey.Glide.TestUtils.Server;
 
 namespace Valkey.Glide.IntegrationTests;

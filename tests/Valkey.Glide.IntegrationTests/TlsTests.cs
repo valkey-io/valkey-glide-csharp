@@ -3,6 +3,7 @@
 using System.Text;
 
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.TestUtils.Client;
 using static Valkey.Glide.TestUtils.Server;
 
 namespace Valkey.Glide.IntegrationTests;
