@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 using static Valkey.Glide.ConnectionConfiguration;
@@ -88,9 +89,13 @@ public sealed class ConfigurationOptions : ICloneable
     }
 
     #region Private fields
-    private bool? ssl;
-    private Proxy? proxy;
-    private RetryStrategy? reconnectRetryPolicy;
+    private bool? _ssl;
+    private Proxy? _proxy;
+    private RetryStrategy? _reconnectRetryPolicy;
+    #endregion
+
+    #region Internal fields
+    internal readonly List<byte[]> _trustedIssuers = [];
     #endregion
 
     /// <summary>
@@ -235,8 +240,8 @@ public sealed class ConfigurationOptions : ICloneable
     /// </summary>
     public RetryStrategy? ReconnectRetryPolicy
     {
-        get => reconnectRetryPolicy;
-        set => reconnectRetryPolicy = value;
+        get => _reconnectRetryPolicy;
+        set => _reconnectRetryPolicy = value;
     }
 
     /// <summary>
@@ -260,8 +265,46 @@ public sealed class ConfigurationOptions : ICloneable
     /// </summary>
     public bool Ssl
     {
-        get => ssl ?? false;
-        set => ssl = value;
+        get => _ssl ?? false;
+        set => _ssl = value;
+    }
+
+    /// <summary>
+    /// Adds an additional trusted certificate for TLS connections.
+    /// </summary>
+    /// <param name="certificatePath">Trusted certificate file path</param>
+    /// <exception cref="ArgumentNullException">If the certificate path is null.</exception>
+    /// <exception cref="FileNotFoundException">If the certificate file does not exist.</exception>
+    /// <exception cref="ArgumentException">If the certificate file is empty.</exception>
+    public void TrustIssuer(string certificatePath)
+    {
+        ArgumentNullException.ThrowIfNull(certificatePath);
+
+        if (!File.Exists(certificatePath))
+            throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+
+        var certificateData = File.ReadAllBytes(certificatePath);
+        if (certificateData.Length == 0)
+            throw new ArgumentException("Certificate file cannot be empty", nameof(certificatePath));
+
+        _trustedIssuers.Add(certificateData);
+        return;
+    }
+
+    /// <summary>
+    /// Adds an additional trusted certificate for TLS connections.
+    /// </summary>
+    /// <param name="certificate">Trusted certificate</param>
+    /// <exception cref="ArgumentNullException">If the certificate is null.</exception>
+    public void TrustIssuer(X509Certificate2 certificate)
+    {
+        if (certificate == null)
+            throw new ArgumentNullException(nameof(certificate));
+
+        var certificateData = certificate.Export(X509ContentType.Cert);
+        _trustedIssuers.Add(certificateData);
+
+        return;
     }
 
     /// <summary>
@@ -293,21 +336,31 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// Create a copy of the configuration.
     /// </summary>
-    public ConfigurationOptions Clone() => new()
+    public ConfigurationOptions Clone()
     {
-        ClientName = ClientName,
-        ConnectTimeout = ConnectTimeout,
-        User = User,
-        Password = Password,
-        ssl = ssl,
-        proxy = proxy,
-        ResponseTimeout = ResponseTimeout,
-        DefaultDatabase = DefaultDatabase,
-        reconnectRetryPolicy = reconnectRetryPolicy,
-        EndPoints = EndPoints.Clone(),
-        Protocol = Protocol,
-        ReadFrom = ReadFrom
-    };
+        var clone = new ConfigurationOptions
+        {
+            ClientName = ClientName,
+            ConnectTimeout = ConnectTimeout,
+            User = User,
+            Password = Password,
+            _ssl = _ssl,
+            _proxy = _proxy,
+            ResponseTimeout = ResponseTimeout,
+            DefaultDatabase = DefaultDatabase,
+            _reconnectRetryPolicy = _reconnectRetryPolicy,
+            EndPoints = EndPoints.Clone(),
+            Protocol = Protocol,
+            ReadFrom = ReadFrom
+        };
+
+        foreach (var cert in _trustedIssuers)
+        {
+            clone._trustedIssuers.Add(cert);
+        }
+
+        return clone;
+    }
 
     /// <summary>
     /// Apply settings to configure this instance of <see cref="ConfigurationOptions"/>, e.g. for a specific scenario.
@@ -349,8 +402,8 @@ public sealed class ConfigurationOptions : ICloneable
         Append(sb, OptionKeys.ConnectTimeout, ConnectTimeout);
         Append(sb, OptionKeys.User, User);
         Append(sb, OptionKeys.Password, (includePassword || string.IsNullOrEmpty(Password)) ? Password : "*****");
-        Append(sb, OptionKeys.Ssl, ssl);
-        Append(sb, OptionKeys.Proxy, proxy);
+        Append(sb, OptionKeys.Ssl, _ssl);
+        Append(sb, OptionKeys.Proxy, _proxy);
         Append(sb, OptionKeys.ResponseTimeout, ResponseTimeout);
         Append(sb, OptionKeys.DefaultDatabase, DefaultDatabase);
         Append(sb, OptionKeys.Protocol, FormatProtocol(Protocol));
@@ -402,9 +455,10 @@ public sealed class ConfigurationOptions : ICloneable
     {
         ClientName = User = Password = null;
         ConnectTimeout = ResponseTimeout = null;
-        ssl = null;
+        _ssl = null;
         ReadFrom = null;
-        reconnectRetryPolicy = null;
+        _reconnectRetryPolicy = null;
+        _trustedIssuers.Clear();
         EndPoints.Clear();
     }
 

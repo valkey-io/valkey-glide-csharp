@@ -27,6 +27,7 @@ public abstract class ConnectionConfiguration
         public bool LazyConnect;
         public bool RefreshTopologyFromInitialNodes;
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
+        public readonly List<byte[]> RootCertificates = [];
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(
@@ -43,7 +44,8 @@ public abstract class ConnectionConfiguration
                 ClientName,
                 LazyConnect,
                 RefreshTopologyFromInitialNodes,
-                PubSubSubscriptions
+                PubSubSubscriptions,
+                RootCertificates
             );
     }
 
@@ -397,19 +399,62 @@ public abstract class ConnectionConfiguration
             get => Config.TlsMode == TlsMode.SecureTls;
             set => Config.TlsMode = value ? TlsMode.SecureTls : TlsMode.NoTls;
         }
+
         /// <inheritdoc cref="UseTls" />
         public T WithTls(bool useTls)
         {
             UseTls = useTls;
             return (T)this;
         }
+
         /// <inheritdoc cref="UseTls" />
         public T WithTls()
         {
-
             return WithTls(true);
         }
+
+        /// <summary>
+        /// Trusted root certificates for TLS connections.
+        /// When provided, these certificates will be used instead of the system's default trust store.
+        /// </summary>
+        internal List<byte[]> TrustedCertificates => Config.RootCertificates;
+
+        /// <summary>
+        /// Adds an additional trusted certificate for TLS connections.
+        /// </summary>
+        /// <param name="certificatePath">Trusted certificate file path</param>
+        /// <returns>This builder for method chaining</returns>
+        /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
+        /// <exception cref="ArgumentException">If the certificate file is empty</exception>
+        public T WithTrustedCertificate(string certificatePath)
+        {
+            ArgumentNullException.ThrowIfNull(certificatePath);
+
+            if (!File.Exists(certificatePath))
+                throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+
+            return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
+        }
+
+        /// <summary>
+        /// Adds an additional trusted certificate for TLS connections.
+        /// </summary>
+        /// <param name="certificateData">Trusted certificate data</param>
+        /// <returns>This builder for method chaining</returns>
+        /// <exception cref="ArgumentException">If the certificate data is null or empty</exception>
+        public T WithTrustedCertificate(byte[] certificateData)
+        {
+            if (certificateData == null)
+                throw new ArgumentException("Certificate data cannot be null", nameof(certificateData));
+
+            else if (certificateData.Length == 0)
+                throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
+
+            TrustedCertificates.Add(certificateData);
+            return (T)this;
+        }
         #endregion
+
         #region Request Timeout
         /// <summary>
         /// The duration that the client should wait for a request to complete. This

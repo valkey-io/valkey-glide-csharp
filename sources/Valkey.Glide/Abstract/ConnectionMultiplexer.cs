@@ -177,7 +177,13 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         {
             config.Addresses += Utils.SplitEndpoint(ep);
         }
+
         config.UseTls = configuration.Ssl;
+        foreach (var cert in configuration._trustedIssuers)
+        {
+            config.WithTrustedCertificate(cert);
+        }
+
         _ = configuration.ConnectTimeout.HasValue ? config.ConnectionTimeout = TimeSpan.FromMilliseconds(configuration.ConnectTimeout.Value) : new();
         _ = configuration.ResponseTimeout.HasValue ? config.RequestTimeout = TimeSpan.FromMilliseconds(configuration.ResponseTimeout.Value) : new();
         _ = (configuration.User ?? configuration.Password) is not null ? config.WithAuthentication(configuration.User, configuration.Password!) : new();

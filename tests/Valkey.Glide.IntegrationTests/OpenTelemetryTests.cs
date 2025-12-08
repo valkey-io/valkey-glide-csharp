@@ -3,6 +3,7 @@
 using System.Text.Json;
 
 using Valkey.Glide.Pipeline;
+using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -15,8 +16,7 @@ public class OpenTelemetryTests : IDisposable
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
-    private TracesFile Traces { get; }
-    private static readonly string TracesFilePath = System.IO.Path.GetTempFileName();
+    private static readonly TempFile TracesFile = new TempFile();
 
     static OpenTelemetryTests()
     {
@@ -24,7 +24,7 @@ public class OpenTelemetryTests : IDisposable
         Assert.False(OpenTelemetry.IsInitialized());
 
         var tracesConfig = TracesConfig.CreateBuilder()
-            .WithEndpoint($"file://{TracesFilePath}")
+            .WithEndpoint($"file://{TracesFile.Path}")
             .Build();
 
         var config = OpenTelemetryConfig.CreateBuilder()
@@ -35,17 +35,11 @@ public class OpenTelemetryTests : IDisposable
         OpenTelemetry.Init(config);
     }
 
-    public OpenTelemetryTests()
-    {
-        // Before each test, initialize traces file.
-        Traces = new TracesFile();
-    }
-
     public void Dispose()
     {
-        // After each test, turn off tracing and dispose of traces file.
+        // After each test, turn off tracing and clear traces file.
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
-        Traces.Dispose();
+        TracesFile.Text = string.Empty;
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -54,7 +48,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteSetGetDelete(client);
-        Traces!.AssertSpanNames([]);
+        AssertSpanNames([]);
     }
 
 
@@ -64,7 +58,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteSetGetDelete(client);
-        Traces!.AssertSpanNames(["SET", "GET", "DEL"]);
+        AssertSpanNames(["SET", "GET", "DEL"]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -73,7 +67,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageNone);
         await ExecuteBatchSetGetDelete(client);
-        Traces!.AssertSpanNames([]);
+        AssertSpanNames([]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -82,7 +76,7 @@ public class OpenTelemetryTests : IDisposable
     {
         OpenTelemetry.SetSamplePercentage(SamplePercentageAll);
         await ExecuteBatchSetGetDelete(client);
-        Traces!.AssertSpanNames(["Batch"]);
+        AssertSpanNames(["Batch"]);
     }
 
     // Executes SET, GET, and DEL commands on the given client.
@@ -123,35 +117,18 @@ public class OpenTelemetryTests : IDisposable
         await Task.Delay(WaitInterval);
     }
 
-    // Temporary file for storing traces.
-    private readonly struct TracesFile : IDisposable
+    private void AssertSpanNames(List<string> expectedSpanNames)
     {
-        public TracesFile()
+        var actualSpanNames = new List<string>();
+        foreach (var line in TracesFile.Lines)
         {
-            // Ensure file exists and is initially empty.
-            File.WriteAllText(TracesFilePath, string.Empty);
-        }
-
-        public readonly void Dispose()
-        {
-            File.Delete(TracesFilePath);
-        }
-
-        public readonly void AssertSpanNames(List<string> expectedSpanNames)
-        {
-            var lines = File.ReadAllLines(TracesFilePath);
-
-            var actualSpanNames = new List<string>();
-            foreach (var line in lines)
+            using var doc = JsonDocument.Parse(line);
+            if (doc.RootElement.TryGetProperty("name", out var nameElement))
             {
-                using var doc = JsonDocument.Parse(line);
-                if (doc.RootElement.TryGetProperty("name", out var nameElement))
-                {
-                    actualSpanNames.Add(nameElement.GetString()!);
-                }
+                actualSpanNames.Add(nameElement.GetString()!);
             }
-
-            Assert.Equal(expectedSpanNames, actualSpanNames);
         }
+
+        Assert.Equal(expectedSpanNames, actualSpanNames);
     }
 }

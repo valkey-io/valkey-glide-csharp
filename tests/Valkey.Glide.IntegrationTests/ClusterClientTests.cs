@@ -5,7 +5,6 @@ using System.Text;
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
-using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
 
@@ -588,9 +587,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerManager.StartClusterServer(serverName);
-            var configBuilder = new ClusterClientConfigurationBuilder()
-                .WithAddress(addresses[0].host, addresses[0].port);
+            var configBuilder = ServerManager.StartClusterServer(serverName);
             var eagerConfig = configBuilder.WithLazyConnect(false).Build();
             var lazyConfig = configBuilder.WithLazyConnect(true).Build();
 
@@ -624,9 +621,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Create dedicated server.
-            var addresses = ServerManager.StartClusterServer(serverName);
-            var eagerConfig = new ClusterClientConfigurationBuilder()
-                .WithAddress(addresses[0].host, addresses[0].port)
+            var eagerConfig = ServerManager.StartClusterServer(serverName)
                 .WithLazyConnect(false)
                 .Build();
 
