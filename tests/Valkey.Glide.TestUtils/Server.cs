@@ -17,10 +17,9 @@ public class Server : IDisposable
     protected string _name = $"Server_{Guid.NewGuid():N}";
     protected IList<Address> _addresses = [];
 
-    // Utils directory for the cluster manager script and file path for the server certificate that it generates.
+    // File path for the server certificate that it generates.
     // See 'valkey-glide/utils/cluster_manager.py' for more details.
-    public static readonly string GlideUtilsDirectory = Path.Combine("..", "..", "valkey-glide", "utils");
-    public static readonly string ServerCertificatePath = Path.Combine(GlideUtilsDirectory, "tls_crts", "ca.crt");
+    public static readonly string ServerCertificatePath = Path.Combine(Scripts.GetScriptsDirectory(), "tls_crts", "ca.crt");
 
     ~Server() => Dispose();
 
@@ -55,7 +54,7 @@ public class Server : IDisposable
 
         // Run cluster manager script to start server.
         string cmd = string.Join(" ", args);
-        string output = RunClusterManager(cmd, false);
+        string output = Scripts.RunClusterManager(cmd, ignoreExitCode: false);
 
         // Parse and return server addresses from output.
         const string hostsPattern = @"^CLUSTER_NODES=(.+)$";
@@ -72,41 +71,7 @@ public class Server : IDisposable
     {
         string stopCmd = $"stop --prefix {name}";
         if (keepLogs) stopCmd += " --keep-folder";
-        RunClusterManager(stopCmd, true);
-    }
-
-    /// <summary>
-    /// Runs the cluster manager script with the specified command.
-    /// </summary>
-    /// <returns>The script output.</returns>
-    private static string RunClusterManager(string cmd, bool ignoreExitCode)
-    {
-        ProcessStartInfo info = new()
-        {
-            WorkingDirectory = GlideUtilsDirectory,
-            FileName = "python3",
-            Arguments = "cluster_manager.py " + cmd,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-
-        using Process? script = Process.Start(info);
-        script?.WaitForExit();
-        string? error = script?.StandardError.ReadToEnd();
-        string? output = script?.StandardOutput.ReadToEnd();
-        int? exitCode = script?.ExitCode;
-
-        if (!ignoreExitCode && exitCode != 0)
-        {
-            throw new ApplicationException(
-                $"cluster_manager.py script failed: exit code {exitCode}.\n" +
-                $"Command: {cmd}\n" +
-                $"Error: {error}\n" +
-                $"Output: {output}");
-        }
-
-        return output ?? "";
+        Scripts.RunClusterManager(stopCmd, ignoreExitCode: true);
     }
 }
 
