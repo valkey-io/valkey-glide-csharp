@@ -15,7 +15,7 @@ public class Server : IDisposable
 
     protected bool _useTls = false;
     protected string _name = $"Server_{Guid.NewGuid():N}";
-    protected List<(string host, ushort port)> _addresses = [];
+    protected IList<Address> _addresses = [];
 
     // Utils directory for the cluster manager script and file path for the server certificate that it generates.
     // See 'valkey-glide/utils/cluster_manager.py' for more details.
@@ -44,7 +44,7 @@ public class Server : IDisposable
     /// Starts a server with the specified name, mode and TLS configuration.
     /// </summary>
     /// <returns>A list of server addresses (host, port) started.</returns>
-    public static List<(string host, ushort port)> StartServer(string name, bool useClusterMode = false, bool useTls = false)
+    public static IList<Address> StartServer(string name, bool useClusterMode = false, bool useTls = false)
     {
         // Build command arguments.
         List<string> args = [];
@@ -63,22 +63,12 @@ public class Server : IDisposable
         string cmd = string.Join(" ", args);
         string output = RunClusterManager(cmd, false);
 
-        // Parse and return server addresses.
-        List<(string host, ushort port)> addresses = [];
+        // Parse and return server addresses from output.
+        const string hostsPattern = @"^CLUSTER_NODES=(.+)$";
+        var match = System.Text.RegularExpressions.Regex.Match(output, hostsPattern, System.Text.RegularExpressions.RegexOptions.Multiline);
+        var hosts = match.Groups[1].Value;
 
-        foreach (string line in output.Split("\n"))
-        {
-            if (!line.StartsWith("CLUSTER_NODES="))
-                continue;
-
-            foreach (string address in line.Split("=")[1].Split(","))
-            {
-                string[] parts = address.Split(":");
-                addresses.Add((parts[0], ushort.Parse(parts[1])));
-            }
-        }
-
-        return addresses;
+        return Address.FromHosts(hosts);
     }
 
     /// <summary>

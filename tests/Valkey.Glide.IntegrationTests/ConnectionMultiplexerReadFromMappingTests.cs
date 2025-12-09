@@ -23,7 +23,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.Primary)
         };
-        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESSES[0].Host, TestConfiguration.STANDALONE_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -46,7 +46,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica)
         };
-        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESSES[0].Host, TestConfiguration.STANDALONE_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -70,7 +70,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, testAz)
         };
-        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESSES[0].Host, TestConfiguration.STANDALONE_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -94,7 +94,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, testAz)
         };
-        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESSES[0].Host, TestConfiguration.STANDALONE_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -117,7 +117,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.Primary)
         };
-        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_ADDRESSES[0].Host, TestConfiguration.CLUSTER_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -140,7 +140,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica)
         };
-        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_ADDRESSES[0].Host, TestConfiguration.CLUSTER_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -164,7 +164,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, testAz)
         };
-        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_ADDRESSES[0].Host, TestConfiguration.CLUSTER_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -188,7 +188,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, testAz)
         };
-        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_ADDRESSES[0].Host, TestConfiguration.CLUSTER_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -211,7 +211,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = null
         };
-        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESSES[0].Host, TestConfiguration.STANDALONE_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -232,7 +232,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         {
             ReadFrom = null
         };
-        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_ADDRESSES[0].Host, TestConfiguration.CLUSTER_ADDRESSES[0].Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -249,7 +249,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConnectionString_ReadFromPrimary_MapsToStandaloneClientConfigurationBuilder()
     {
         // Arrange
-        string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},readFrom=Primary,ssl={TestConfiguration.TLS}";
+        string connectionString = $"{TestConfiguration.STANDALONE_ADDRESSES[0].Host}:{TestConfiguration.STANDALONE_ADDRESSES[0].Port},readFrom=Primary,ssl={TestConfiguration.TLS}";
 
         // Act
         using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
@@ -268,7 +268,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "us-east-1a";
-        string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},readFrom=AzAffinity,az={testAz},ssl={TestConfiguration.TLS}";
+        string connectionString = $"{TestConfiguration.STANDALONE_ADDRESSES[0].Host}:{TestConfiguration.STANDALONE_ADDRESSES[0].Port},readFrom=AzAffinity,az={testAz},ssl={TestConfiguration.TLS}";
 
         // Act
         using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
@@ -287,7 +287,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "eu-west-1b";
-        string connectionString = $"{TestConfiguration.CLUSTER_HOSTS[0].host}:{TestConfiguration.CLUSTER_HOSTS[0].port},readFrom=AzAffinity,az={testAz},ssl={TestConfiguration.TLS}";
+        string connectionString = $"{TestConfiguration.CLUSTER_ADDRESSES[0].Host}:{TestConfiguration.CLUSTER_ADDRESSES[0].Port},readFrom=AzAffinity,az={testAz},ssl={TestConfiguration.TLS}";
 
         // Act
         using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
@@ -309,7 +309,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task EndToEnd_ReadFromConfiguration_FlowsFromConnectionStringToConnectionConfig(ReadFromStrategy strategy, string? az)
     {
         // Arrange
-        string connectionString = TestConfiguration.STANDALONE_HOSTS[0].host + ":" + TestConfiguration.STANDALONE_HOSTS[0].port;
+        string connectionString = TestConfiguration.STANDALONE_ADDRESSES[0].Host + ":" + TestConfiguration.STANDALONE_ADDRESSES[0].Port;
         connectionString += ",ssl=" + TestConfiguration.TLS;
 
         switch (strategy)
@@ -346,7 +346,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task EndToEnd_NoReadFromConfiguration_DefaultsToNull()
     {
         // Arrange
-        string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS}";
+        string connectionString = $"{TestConfiguration.STANDALONE_ADDRESSES[0].Host}:{TestConfiguration.STANDALONE_ADDRESSES[0].Port},ssl={TestConfiguration.TLS}";
 
         // Act
         using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))

@@ -1,6 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.IntegrationTests;
+using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.TestUtils.Server;
@@ -11,10 +12,11 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
+    public static IList<Address> STANDALONE_ADDRESSES { get; internal set; } = [];
+    public static IList<Address> CLUSTER_ADDRESSES { get; internal set; } = [];
+
     private static readonly object LockObject = new object();
     private const string DefaultServerGroupName = "cluster";
-    public static List<(string host, ushort port)> STANDALONE_HOSTS { get; internal set; } = [];
-    public static List<(string host, ushort port)> CLUSTER_HOSTS { get; internal set; } = [];
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
 
@@ -26,21 +28,21 @@ public class TestConfiguration : IDisposable
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
+            .WithAddress(STANDALONE_ADDRESSES[0].Host, STANDALONE_ADDRESSES[0].Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
-            .WithAddress(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port)
+            .WithAddress(CLUSTER_ADDRESSES[0].Host, CLUSTER_ADDRESSES[0].Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
         new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port)
+            .WithAddress(STANDALONE_ADDRESSES[0].Host, STANDALONE_ADDRESSES[0].Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
             .WithTls(TLS);
@@ -148,7 +150,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(STANDALONE_HOSTS[0].host, STANDALONE_HOSTS[0].port);
+        config.EndPoints.Add(STANDALONE_ADDRESSES[0].Host, STANDALONE_ADDRESSES[0].Port);
         config.Ssl = TLS;
         config.ResponseTimeout = 60000; // ms
         return config;
@@ -157,7 +159,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleClusterConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(CLUSTER_HOSTS[0].host, CLUSTER_HOSTS[0].port);
+        config.EndPoints.Add(CLUSTER_ADDRESSES[0].Host, CLUSTER_ADDRESSES[0].Port);
         config.Ssl = TLS;
         config.ResponseTimeout = 60000; // ms
         return config;
@@ -272,9 +274,9 @@ public class TestConfiguration : IDisposable
         if (Environment.GetEnvironmentVariable("cluster-endpoints") is { } || Environment.GetEnvironmentVariable("standalone-endpoints") is { })
         {
             string? clusterEndpoints = Environment.GetEnvironmentVariable("cluster-endpoints");
-            CLUSTER_HOSTS = clusterEndpoints is null ? [] : ParseHostsString(clusterEndpoints);
+            CLUSTER_ADDRESSES = clusterEndpoints is null ? [] : Address.FromHosts(clusterEndpoints);
             string? standaloneEndpoints = Environment.GetEnvironmentVariable("standalone-endpoints");
-            STANDALONE_HOSTS = standaloneEndpoints is null ? [] : ParseHostsString(standaloneEndpoints);
+            STANDALONE_ADDRESSES = standaloneEndpoints is null ? [] : Address.FromHosts(standaloneEndpoints);
             _startedServer = false;
         }
         else
@@ -293,14 +295,14 @@ public class TestConfiguration : IDisposable
             catch (DirectoryNotFoundException) { }
 
             // Start cluster and standalone servers.
-            CLUSTER_HOSTS = StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
-            STANDALONE_HOSTS = StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
+            CLUSTER_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
+            STANDALONE_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
         }
         // Get server version
         SERVER_VERSION = GetServerVersion();
 
-        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_HOSTS)}");
-        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_HOSTS)}");
+        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_ADDRESSES)}");
+        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_ADDRESSES)}");
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
     }
 
@@ -327,7 +329,7 @@ public class TestConfiguration : IDisposable
     private static Version GetServerVersion()
     {
         Exception? err = null;
-        if (STANDALONE_HOSTS.Count > 0)
+        if (STANDALONE_ADDRESSES.Count > 0)
         {
             GlideClient client = DefaultStandaloneClient();
             try
@@ -339,7 +341,7 @@ public class TestConfiguration : IDisposable
                 err = e;
             }
         }
-        if (CLUSTER_HOSTS.Count > 0)
+        if (CLUSTER_ADDRESSES.Count > 0)
         {
             GlideClusterClient client = DefaultClusterClient();
             try
@@ -368,7 +370,4 @@ public class TestConfiguration : IDisposable
         string line = lines.FirstOrDefault(l => l.Contains("valkey_version")) ?? lines.First(l => l.Contains("redis_version"));
         return new(line.Split(':')[1]);
     }
-
-    private static List<(string host, ushort port)> ParseHostsString(string @string)
-        => [.. @string.Split(',').Select(s => s.Split(':')).Select(s => (host: s[0], port: ushort.Parse(s[1])))];
 }
