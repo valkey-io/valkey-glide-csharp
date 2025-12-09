@@ -12,9 +12,15 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
-    public static Address? STANDALONE_ADDRESS { get; internal set; }
-    public static Address? CLUSTER_ADDRESS { get; internal set; }
+    // Addresses for the standalone and cluster servers.
+    public static IList<Address> STANDALONE_ADDRESSES = [];
+    public static IList<Address> CLUSTER_ADDRESSES = [];
 
+    // First address for standalone and cluster servers, for convenience.
+    public static Address STANDALONE_ADDRESS => STANDALONE_ADDRESSES.First();
+    public static Address CLUSTER_ADDRESS => CLUSTER_ADDRESSES.First();
+
+    // Environment variable names for providing server endpoints.
     private static readonly string StandaloneEndpointsEnvVar = "standalone-endpoints";
     private static readonly string ClusterEndpointsEnvVar = "cluster-endpoints";
 
@@ -31,21 +37,21 @@ public class TestConfiguration : IDisposable
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_ADDRESS!.Host, STANDALONE_ADDRESS!.Port)
+            .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
-            .WithAddress(CLUSTER_ADDRESS!.Host, CLUSTER_ADDRESS!.Port)
+            .WithAddress(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
         new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_ADDRESS!.Host, STANDALONE_ADDRESS!.Port)
+            .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
             .WithTls(TLS);
@@ -153,7 +159,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(STANDALONE_ADDRESS!.Host, STANDALONE_ADDRESS!.Port);
+        config.EndPoints.Add(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port);
         config.Ssl = TLS;
         config.ResponseTimeout = 60000; // ms
         return config;
@@ -162,7 +168,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleClusterConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(CLUSTER_ADDRESS!.Host, CLUSTER_ADDRESS!.Port);
+        config.EndPoints.Add(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port);
         config.Ssl = TLS;
         config.ResponseTimeout = 60000; // ms
         return config;
@@ -259,19 +265,6 @@ public class TestConfiguration : IDisposable
 
     public TestConfiguration()
     {
-        string? projectDir = Directory.GetCurrentDirectory();
-        while (!(projectDir == null || Directory.EnumerateDirectories(projectDir).Any(d => Path.GetFileName(d) == "valkey-glide")))
-        {
-            projectDir = Path.GetDirectoryName(projectDir);
-        }
-
-        if (projectDir == null)
-        {
-            throw new FileNotFoundException("Can't detect the project dir. Are you running tests from the repo root?");
-        }
-
-        _scriptDir = Path.Combine(projectDir, "valkey-glide", "utils");
-
         TLS = Environment.GetEnvironmentVariable("tls") == "true";
 
         var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar);
@@ -282,10 +275,10 @@ public class TestConfiguration : IDisposable
             _startedServer = false;
 
             if (standaloneEndpoints is not null)
-                STANDALONE_ADDRESS = Address.FromHosts(standaloneEndpoints!).First();
+                STANDALONE_ADDRESSES = Address.FromHosts(standaloneEndpoints!);
 
             if (clusterEndpoints is not null)
-                CLUSTER_ADDRESS = Address.FromHosts(clusterEndpoints!).First();
+                CLUSTER_ADDRESSES = Address.FromHosts(clusterEndpoints!);
         }
         else
         {
@@ -296,7 +289,8 @@ public class TestConfiguration : IDisposable
 
             // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
             // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
-            string clusterLogsDir = Path.Combine(_scriptDir, "clusters");
+            string scriptsDir = Scripts.GetScriptsDirectory();
+            string clusterLogsDir = Path.Combine(scriptsDir, "clusters");
             try
             {
                 Directory.Delete(clusterLogsDir, true);
@@ -304,15 +298,15 @@ public class TestConfiguration : IDisposable
             catch (DirectoryNotFoundException) { }
 
             // Start standalone and cluster servers.
-            CLUSTER_ADDRESS = StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS).First();
-            STANDALONE_ADDRESS = StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS).First();
+            CLUSTER_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
+            STANDALONE_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
         }
 
         // Get server version
         SERVER_VERSION = GetServerVersion();
 
-        TestConsoleWriteLine($"Cluster host = {CLUSTER_ADDRESS}");
-        TestConsoleWriteLine($"Standalone host = {STANDALONE_ADDRESS}");
+        TestConsoleWriteLine($"Cluster host = {CLUSTER_ADDRESSES}");
+        TestConsoleWriteLine($"Standalone host = {STANDALONE_ADDRESSES}");
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
     }
 
@@ -329,7 +323,6 @@ public class TestConfiguration : IDisposable
         }
     }
 
-    private readonly string _scriptDir;
     private readonly bool _startedServer;
 
     private static void TestConsoleWriteLine(string message) =>
@@ -339,7 +332,7 @@ public class TestConfiguration : IDisposable
     private static Version GetServerVersion()
     {
         Exception? err = null;
-        if (STANDALONE_ADDRESS is not null)
+        if (STANDALONE_ADDRESSES is not null)
         {
             GlideClient client = DefaultStandaloneClient();
             try
@@ -351,7 +344,7 @@ public class TestConfiguration : IDisposable
                 err = e;
             }
         }
-        if (CLUSTER_ADDRESS is not null)
+        if (CLUSTER_ADDRESSES is not null)
         {
             GlideClusterClient client = DefaultClusterClient();
             try

@@ -15,8 +15,7 @@ public class ServerTests(TestConfiguration config)
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
     public void CanGetServers(ConnectionMultiplexer conn, bool isCluster)
     {
-        string host = isCluster ? TestConfiguration.CLUSTER_ADDRESS!.Host : TestConfiguration.STANDALONE_ADDRESS!.Host;
-        ushort port = isCluster ? TestConfiguration.CLUSTER_ADDRESS!.Port : TestConfiguration.STANDALONE_ADDRESS!.Port;
+        (string host, ushort port) = isCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
 
         Assert.Equal($"{host}:{port}", Format.ToString(conn.GetServer(host, port).EndPoint));
         Assert.Equal($"{host}:{port}", Format.ToString(conn.GetServer($"{host}:{port}").EndPoint));
@@ -25,9 +24,8 @@ public class ServerTests(TestConfiguration config)
 
         // TODO currently this returns only primary node on standalone
         // https://github.com/valkey-io/valkey-glide/issues/4293
-        Assert.Equal(isCluster
-            ? TestConfiguration.CLUSTER_ADDRESS is not null ? 1 : 0
-            : 1, conn.GetServers().Length);
+        var expectedServerCount = isCluster ? TestConfiguration.CLUSTER_ADDRESSES.Count : 1;
+        Assert.Equal(expectedServerCount, conn.GetServers().Length);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
