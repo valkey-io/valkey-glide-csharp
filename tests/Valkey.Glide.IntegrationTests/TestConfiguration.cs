@@ -267,17 +267,17 @@ public class TestConfiguration : IDisposable
         TLS = Environment.GetEnvironmentVariable("tls") == "true";
 
         var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar);
-        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar); ;
+        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar);
 
         if (standaloneEndpoints is not null || clusterEndpoints is not null)
         {
             _startedServer = false;
 
             if (standaloneEndpoints is not null)
-                STANDALONE_ADDRESSES = Address.FromHosts(standaloneEndpoints!);
+                STANDALONE_ADDRESSES = Address.FromHosts(standaloneEndpoints);
 
             if (clusterEndpoints is not null)
-                CLUSTER_ADDRESSES = Address.FromHosts(clusterEndpoints!);
+                CLUSTER_ADDRESSES = Address.FromHosts(clusterEndpoints);
         }
         else
         {

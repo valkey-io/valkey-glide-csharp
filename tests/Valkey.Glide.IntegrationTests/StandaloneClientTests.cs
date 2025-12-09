@@ -491,7 +491,7 @@ public class StandaloneClientTests(TestConfiguration config)
     public async Task LazyConnect()
     {
         // Create dedicated server.
-        var server = new StandaloneServer();
+        using var server = new StandaloneServer();
 
         // Create reference client.
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
@@ -517,7 +517,7 @@ public class StandaloneClientTests(TestConfiguration config)
     public async Task EagerConnect()
     {
         // Create dedicated server.
-        var server = new StandaloneServer();
+        using var server = new StandaloneServer();
 
         // Create reference client.
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();

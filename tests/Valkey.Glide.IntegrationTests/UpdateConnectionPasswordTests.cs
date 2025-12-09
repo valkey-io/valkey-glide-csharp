@@ -17,12 +17,13 @@ public class UpdateConnectionPasswordTests
     public async Task UpdateConnectionPassword_Standalone_DelayAuth()
     {
         // Start server and build clients.
-        var server = new StandaloneServer();
+        using var server = new StandaloneServer();
         var config = server.CreateConfigBuilder().Build();
-        using var client = await GlideClient.CreateClient(config);
-        using var adminClient = await GlideClient.CreateClient(config);
 
+        using var client = await GlideClient.CreateClient(config);
         await AssertConnected(client);
+
+        using var adminClient = await GlideClient.CreateClient(config);
         await AssertConnected(adminClient);
 
         // Update client connection password.
@@ -54,10 +55,10 @@ public class UpdateConnectionPasswordTests
     public async Task UpdateConnectionPassword_Standalone_ImmediateAuth()
     {
         // Start server and build client.
-        var server = new StandaloneServer();
+        using var server = new StandaloneServer();
         var config = server.CreateConfigBuilder().Build();
-        using var client = await GlideClient.CreateClient(config);
 
+        using var client = await GlideClient.CreateClient(config);
         await AssertConnected(client);
 
         // Update server password.
@@ -92,12 +93,13 @@ public class UpdateConnectionPasswordTests
     public async Task UpdateConnectionPassword_Cluster_DelayAuth()
     {
         // Start cluster and build clients.
-        var server = new ClusterServer();
+        using var server = new ClusterServer();
         var config = server.CreateConfigBuilder().Build();
-        using var client = await GlideClusterClient.CreateClient(config);
-        using var adminClient = await GlideClusterClient.CreateClient(config);
 
+        using var client = await GlideClusterClient.CreateClient(config);
         await AssertConnected(client);
+
+        using var adminClient = await GlideClusterClient.CreateClient(config);
         await AssertConnected(adminClient);
 
         // Update client connection password.
@@ -129,10 +131,10 @@ public class UpdateConnectionPasswordTests
     public async Task UpdateConnectionPassword_Cluster_ImmediateAuth()
     {
         // Start cluster and build client.
-        var server = new ClusterServer();
+        using var server = new ClusterServer();
         var config = server.CreateConfigBuilder().Build();
-        using var client = await GlideClusterClient.CreateClient(config);
 
+        using var client = await GlideClusterClient.CreateClient(config);
         await AssertConnected(client);
 
         // Update server password.

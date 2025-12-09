@@ -50,7 +50,7 @@ public class TlsTests
     [Fact]
     public async Task Cluster_WithCertificate_NoTlsThrows()
     {
-        using var server = new ClusterServer(useTls: true);
+        using var server = new ClusterServer(useTls: false);
         var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
@@ -113,7 +113,7 @@ public class TlsTests
     [Fact]
     public async Task Standalone_WithCertificate_NoTlsThrows()
     {
-        using var server = new StandaloneServer(useTls: true);
+        using var server = new StandaloneServer(useTls: false);
         var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }

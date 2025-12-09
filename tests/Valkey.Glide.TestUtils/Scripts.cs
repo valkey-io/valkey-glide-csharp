@@ -9,6 +9,8 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class Scripts
 {
+    private static readonly string ValkeyGlideDirectoryName = "valkey-glide";
+
     /// <summary>
     /// Runs the cluster manager script with the specified command.
     /// See 'valkey-glide/utils/cluster_manager.py' for more details.
@@ -49,17 +51,18 @@ public static class Scripts
     /// </summary>
     public static string GetScriptsDirectory()
     {
+        // Returns true if the directory is the project root directory.
+        Func<string, bool> IsProjectRoot = (directory) =>
+            Directory.EnumerateDirectories(directory).Any(d => Path.GetFileName(d) == ValkeyGlideDirectoryName);
+
         string directory = Directory.GetCurrentDirectory();
-        while (directory != null && !Directory.EnumerateDirectories(directory).Any(d => Path.GetFileName(d) == "valkey-glide"))
+        while (!IsProjectRoot(directory))
         {
             directory = Path.GetDirectoryName(directory);
+            if (directory == null)
+                throw new FileNotFoundException("Can't detect the project directory");
         }
 
-        if (directory == null)
-        {
-            throw new FileNotFoundException("Can't detect the project directory");
-        }
-
-        return Path.Combine(directory, "valkey-glide", "utils");
+        return Path.Combine(directory, ValkeyGlideDirectoryName, "utils");
     }
 }

@@ -609,7 +609,7 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task EagerConnect()
     {
         // Create dedicated server.
-        var server = new ClusterServer();
+        using var server = new ClusterServer();
 
         // Create reference client.
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();

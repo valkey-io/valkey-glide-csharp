@@ -14,7 +14,7 @@
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <NuGetAudit>false</NuGetAudit>
     <WarningLevel>0</WarningLevel>
-    <OutputType>exe</OutputType>
+    <OutputType>Exe</OutputType>
     <Configurations>Debug;Release;Lint</Configurations>
   </PropertyGroup>
 
