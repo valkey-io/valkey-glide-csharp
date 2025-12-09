@@ -7,6 +7,8 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public record class Address(string Host, ushort Port)
 {
+    public override string ToString() => $"{Host}:{Port}";
+
     /// <summary>
     /// Parses a comma-separated list of hosts (e.g. "localhost:6379,localhost:6380") to addresses.
     /// </summary>
