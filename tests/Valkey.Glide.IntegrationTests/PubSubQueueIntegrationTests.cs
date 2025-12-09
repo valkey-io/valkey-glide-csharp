@@ -82,7 +82,7 @@ public class PubSubQueueIntegrationTests : IDisposable
     public async Task QueueBasedRetrieval_WithClusterClient_ReceivesMessages()
     {
         // Skip if no cluster hosts available
-        if (TestConfiguration.CLUSTER_ADDRESSES.Count == 0)
+        if (TestConfiguration.CLUSTER_ADDRESS is null)
         {
             return;
         }

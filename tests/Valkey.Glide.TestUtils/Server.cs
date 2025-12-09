@@ -22,20 +22,14 @@ public class Server : IDisposable
     public static readonly string GlideUtilsDirectory = Path.Combine("..", "..", "valkey-glide", "utils");
     public static readonly string ServerCertificatePath = Path.Combine(GlideUtilsDirectory, "tls_crts", "ca.crt");
 
-    ~Server()
-    {
-        Dispose();
-    }
+    ~Server() => Dispose();
 
     public void Dispose()
     {
         if (_disposed)
-        {
             return;
-        }
 
         _disposed = true;
-
         StopServer(_name);
         GC.SuppressFinalize(this);
     }

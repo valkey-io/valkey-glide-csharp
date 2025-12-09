@@ -12,8 +12,11 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
-    public static IList<Address> STANDALONE_ADDRESSES { get; internal set; } = [];
-    public static IList<Address> CLUSTER_ADDRESSES { get; internal set; } = [];
+    public static Address? STANDALONE_ADDRESS { get; internal set; }
+    public static Address? CLUSTER_ADDRESS { get; internal set; }
+
+    private static readonly string StandaloneEndpointsEnvVar = "standalone-endpoints";
+    private static readonly string ClusterEndpointsEnvVar = "cluster-endpoints";
 
     private static readonly object LockObject = new object();
     private const string DefaultServerGroupName = "cluster";
@@ -28,21 +31,21 @@ public class TestConfiguration : IDisposable
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_ADDRESSES[0].Host, STANDALONE_ADDRESSES[0].Port)
+            .WithAddress(STANDALONE_ADDRESS!.Host, STANDALONE_ADDRESS!.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
-            .WithAddress(CLUSTER_ADDRESSES[0].Host, CLUSTER_ADDRESSES[0].Port)
+            .WithAddress(CLUSTER_ADDRESS!.Host, CLUSTER_ADDRESS!.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromSeconds(60))
             .WithTls(TLS);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
         new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_ADDRESSES[0].Host, STANDALONE_ADDRESSES[0].Port)
+            .WithAddress(STANDALONE_ADDRESS!.Host, STANDALONE_ADDRESS!.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
             .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
             .WithTls(TLS);
@@ -150,7 +153,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(STANDALONE_ADDRESSES[0].Host, STANDALONE_ADDRESSES[0].Port);
+        config.EndPoints.Add(STANDALONE_ADDRESS!.Host, STANDALONE_ADDRESS!.Port);
         config.Ssl = TLS;
         config.ResponseTimeout = 60000; // ms
         return config;
@@ -159,7 +162,7 @@ public class TestConfiguration : IDisposable
     public static ConfigurationOptions DefaultCompatibleClusterConfig()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(CLUSTER_ADDRESSES[0].Host, CLUSTER_ADDRESSES[0].Port);
+        config.EndPoints.Add(CLUSTER_ADDRESS!.Host, CLUSTER_ADDRESS!.Port);
         config.Ssl = TLS;
         config.ResponseTimeout = 60000; // ms
         return config;
@@ -271,17 +274,23 @@ public class TestConfiguration : IDisposable
 
         TLS = Environment.GetEnvironmentVariable("tls") == "true";
 
-        if (Environment.GetEnvironmentVariable("cluster-endpoints") is { } || Environment.GetEnvironmentVariable("standalone-endpoints") is { })
+        var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar);
+        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar); ;
+
+        if (standaloneEndpoints is not null || clusterEndpoints is not null)
         {
-            string? clusterEndpoints = Environment.GetEnvironmentVariable("cluster-endpoints");
-            CLUSTER_ADDRESSES = clusterEndpoints is null ? [] : Address.FromHosts(clusterEndpoints);
-            string? standaloneEndpoints = Environment.GetEnvironmentVariable("standalone-endpoints");
-            STANDALONE_ADDRESSES = standaloneEndpoints is null ? [] : Address.FromHosts(standaloneEndpoints);
             _startedServer = false;
+
+            if (standaloneEndpoints is not null)
+                STANDALONE_ADDRESS = Address.FromHosts(standaloneEndpoints!).First();
+
+            if (clusterEndpoints is not null)
+                CLUSTER_ADDRESS = Address.FromHosts(clusterEndpoints!).First();
         }
         else
         {
             _startedServer = true;
+
             // Stop all if weren't stopped on previous test run
             StopServer(DefaultServerGroupName, keepLogs: false);
 
@@ -294,15 +303,16 @@ public class TestConfiguration : IDisposable
             }
             catch (DirectoryNotFoundException) { }
 
-            // Start cluster and standalone servers.
-            CLUSTER_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
-            STANDALONE_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
+            // Start standalone and cluster servers.
+            CLUSTER_ADDRESS = StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS).First();
+            STANDALONE_ADDRESS = StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS).First();
         }
+
         // Get server version
         SERVER_VERSION = GetServerVersion();
 
-        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_ADDRESSES)}");
-        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_ADDRESSES)}");
+        TestConsoleWriteLine($"Cluster host = {CLUSTER_ADDRESS}");
+        TestConsoleWriteLine($"Standalone host = {STANDALONE_ADDRESS}");
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
     }
 
@@ -329,7 +339,7 @@ public class TestConfiguration : IDisposable
     private static Version GetServerVersion()
     {
         Exception? err = null;
-        if (STANDALONE_ADDRESSES.Count > 0)
+        if (STANDALONE_ADDRESS is not null)
         {
             GlideClient client = DefaultStandaloneClient();
             try
@@ -341,7 +351,7 @@ public class TestConfiguration : IDisposable
                 err = e;
             }
         }
-        if (CLUSTER_ADDRESSES.Count > 0)
+        if (CLUSTER_ADDRESS is not null)
         {
             GlideClusterClient client = DefaultClusterClient();
             try
