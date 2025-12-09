@@ -4,7 +4,6 @@ using Valkey.Glide.IntegrationTests;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.ConnectionConfiguration;
-using static Valkey.Glide.TestUtils.Server;
 
 [assembly: AssemblyFixture(typeof(TestConfiguration))]
 
@@ -285,7 +284,7 @@ public class TestConfiguration : IDisposable
             _startedServer = true;
 
             // Stop all if weren't stopped on previous test run
-            StopServer(DefaultServerGroupName, keepLogs: false);
+            Server.StopServer(DefaultServerGroupName, keepLogs: false);
 
             // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
             // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
@@ -298,15 +297,15 @@ public class TestConfiguration : IDisposable
             catch (DirectoryNotFoundException) { }
 
             // Start standalone and cluster servers.
-            CLUSTER_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
-            STANDALONE_ADDRESSES = StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
+            CLUSTER_ADDRESSES = Server.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
+            STANDALONE_ADDRESSES = Server.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
         }
 
         // Get server version
         SERVER_VERSION = GetServerVersion();
 
-        TestConsoleWriteLine($"Cluster host = {CLUSTER_ADDRESSES}");
-        TestConsoleWriteLine($"Standalone host = {STANDALONE_ADDRESSES}");
+        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_ADDRESSES)}");
+        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_ADDRESSES)}");
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
     }
 
@@ -319,7 +318,7 @@ public class TestConfiguration : IDisposable
         if (_startedServer)
         {
             // Stop all
-            StopServer(DefaultServerGroupName, keepLogs: true);
+            Server.StopServer(DefaultServerGroupName, keepLogs: true);
         }
     }
 
@@ -332,7 +331,7 @@ public class TestConfiguration : IDisposable
     private static Version GetServerVersion()
     {
         Exception? err = null;
-        if (STANDALONE_ADDRESSES is not null)
+        if (STANDALONE_ADDRESSES.Count > 0)
         {
             GlideClient client = DefaultStandaloneClient();
             try
@@ -344,7 +343,7 @@ public class TestConfiguration : IDisposable
                 err = e;
             }
         }
-        if (CLUSTER_ADDRESSES is not null)
+        if (CLUSTER_ADDRESSES.Count > 0)
         {
             GlideClusterClient client = DefaultClusterClient();
             try

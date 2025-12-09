@@ -8,7 +8,6 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
-using static Valkey.Glide.TestUtils.Client;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -590,19 +589,19 @@ public class ClusterClientTests(TestConfiguration config)
         // Create reference client.
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
         using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-        var initialCount = await GetConnectionCount(referenceClient);
+        var initialCount = await Client.GetConnectionCount(referenceClient);
 
         // Create lazy client (does not connect immediately).
         var lazyConfig = server.CreateConfigBuilder().WithLazyConnect(true).Build();
         using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
 
-        var connectCount = await GetConnectionCount(referenceClient);
+        var connectCount = await Client.GetConnectionCount(referenceClient);
         Assert.Equal(initialCount, connectCount);
 
         // First command establishes connection.
         await lazyClient.PingAsync();
 
-        var commandCount = await GetConnectionCount(referenceClient);
+        var commandCount = await Client.GetConnectionCount(referenceClient);
         Assert.True(connectCount < commandCount);
     }
 
