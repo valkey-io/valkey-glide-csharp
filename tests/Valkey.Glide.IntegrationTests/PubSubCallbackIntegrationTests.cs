@@ -591,7 +591,7 @@ public class PubSubCallbackIntegrationTests : IDisposable
     public async Task ClusterPatternSubscription_WithServerPublish_ReceivesMatchingMessages()
     {
         // Skip if no cluster hosts available
-        if (TestConfiguration.CLUSTER_HOSTS.Count == 0)
+        if (TestConfiguration.CLUSTER_ADDRESSES.Count == 0)
         {
             return;
         }
