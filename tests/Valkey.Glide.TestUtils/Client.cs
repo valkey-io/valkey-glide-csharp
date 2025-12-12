@@ -52,4 +52,21 @@ public static class Client
             throw new ArgumentException("Unknown client type.");
         }
     }
+
+    /// <summary>
+    /// Returns the Valkey server version.
+    /// </summary>
+    /// <param name="client">A client that is connected to the server.</param>
+    /// <returns>The server version.</returns>
+    public static Version GetVersion(BaseClient client)
+    {
+        string info =
+            client is GlideClient
+            ? ((GlideClient)client).InfoAsync().GetAwaiter().GetResult()
+            : ((GlideClusterClient)client).InfoAsync(Route.Random).GetAwaiter().GetResult().SingleValue;
+
+        string[] lines = info.Split();
+        string versionLine = lines.FirstOrDefault(l => l.Contains("valkey_version")) ?? lines.First(l => l.Contains("redis_version"));
+        return new(versionLine.Split(':')[1]);
+    }
 }

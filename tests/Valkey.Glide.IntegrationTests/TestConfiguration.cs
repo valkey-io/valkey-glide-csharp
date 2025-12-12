@@ -336,7 +336,7 @@ public class TestConfiguration : IDisposable
             GlideClient client = DefaultStandaloneClient();
             try
             {
-                return TryGetVersion(client);
+                return Client.GetVersion(client);
             }
             catch (Exception e)
             {
@@ -348,7 +348,7 @@ public class TestConfiguration : IDisposable
             GlideClusterClient client = DefaultClusterClient();
             try
             {
-                return TryGetVersion(client);
+                return Client.GetVersion(client);
             }
             catch (Exception e)
             {
@@ -361,15 +361,5 @@ public class TestConfiguration : IDisposable
             }
         }
         throw new Exception("No servers are given");
-    }
-
-    private static Version TryGetVersion(BaseClient client)
-    {
-        string info = client.GetType() == typeof(GlideClient)
-            ? ((GlideClient)client).InfoAsync().GetAwaiter().GetResult()
-            : ((GlideClusterClient)client).InfoAsync(Route.Random).GetAwaiter().GetResult().SingleValue;
-        string[] lines = info.Split();
-        string line = lines.FirstOrDefault(l => l.Contains("valkey_version")) ?? lines.First(l => l.Contains("redis_version"));
-        return new(line.Split(':')[1]);
     }
 }
