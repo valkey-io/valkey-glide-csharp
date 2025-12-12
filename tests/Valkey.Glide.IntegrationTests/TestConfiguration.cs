@@ -284,7 +284,7 @@ public class TestConfiguration : IDisposable
             _startedServer = true;
 
             // Stop all if weren't stopped on previous test run
-            Server.StopServer(DefaultServerGroupName, keepLogs: false);
+            ServerManager.StopServer(DefaultServerGroupName, keepLogs: false);
 
             // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
             // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
@@ -297,8 +297,8 @@ public class TestConfiguration : IDisposable
             catch (DirectoryNotFoundException) { }
 
             // Start standalone and cluster servers.
-            CLUSTER_ADDRESSES = Server.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
-            STANDALONE_ADDRESSES = Server.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
+            CLUSTER_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
+            STANDALONE_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
         }
 
         // Get server version
@@ -318,7 +318,7 @@ public class TestConfiguration : IDisposable
         if (_startedServer)
         {
             // Stop all
-            Server.StopServer(DefaultServerGroupName, keepLogs: true);
+            ServerManager.StopServer(DefaultServerGroupName, keepLogs: true);
         }
     }
 
