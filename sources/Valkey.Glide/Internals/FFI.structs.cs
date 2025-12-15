@@ -1119,7 +1119,8 @@ internal partial class FFI
     internal enum TlsMode : uint
     {
         NoTls = 0,
-        SecureTls = 2,
+        SecureTls = 1,
+        InsecureTls = 2,
     }
 
     [StructLayout(LayoutKind.Sequential)]
