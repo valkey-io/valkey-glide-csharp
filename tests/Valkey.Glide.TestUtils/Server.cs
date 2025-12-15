@@ -1,0 +1,99 @@
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using System.Diagnostics;
+
+using static Valkey.Glide.ConnectionConfiguration;
+
+namespace Valkey.Glide.TestUtils;
+
+/// <summary>
+/// Base class for a Valkey server.
+/// </summary>
+public class Server : IDisposable
+{
+    // File path for the server certificate that it generates.
+    // See 'valkey-glide/utils/cluster_manager.py' for more details.
+    public static readonly string ServerCertificatePath = Path.Combine(Scripts.GetScriptsDirectory(), "tls_crts", "ca.crt");
+
+    /// <summary>
+    /// Name of the server.
+    /// </summary>
+    private string _name = $"Server_{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// Indicates whether the server has been stopped.
+    /// </summary>
+    private bool _disposed = false;
+
+    /// <summary>
+    /// Indicates whether the server uses TLS.
+    /// </summary>
+    protected bool _useTls;
+
+    /// <summary>
+    /// Addresses of the server instances.
+    /// </summary>
+    protected IList<Address> _addresses;
+
+    protected Server(bool useClusterMode, bool useTls)
+    {
+        _useTls = useTls;
+        _addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: _useTls);
+    }
+
+    ~Server() => Dispose();
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        ServerManager.StopServer(_name);
+        GC.SuppressFinalize(this);
+    }
+}
+
+/// <summary>
+/// Valkey cluster server.
+/// </summary>
+public sealed class ClusterServer : Server
+{
+    public ClusterServer(bool useTls = false) : base(useClusterMode: true, useTls: useTls) { }
+
+    /// <summary>
+    /// Builds and returns a cluster client configuration builder for this Valkey server.
+    /// </summary>
+    public ClusterClientConfigurationBuilder CreateConfigBuilder()
+    {
+        var configBuilder = new ClusterClientConfigurationBuilder();
+        configBuilder.WithTls(useTls: _useTls);
+
+        foreach (var (host, port) in _addresses)
+            configBuilder.WithAddress(host, port);
+
+        return configBuilder;
+    }
+}
+
+/// <summary>
+/// Valkey standalone server.
+/// </summary>
+public sealed class StandaloneServer : Server
+{
+    public StandaloneServer(bool useTls = false) : base(useClusterMode: false, useTls: useTls) { }
+
+    /// <summary>
+    /// Builds and returns a standalone client configuration builder for this Valkey server.
+    /// </summary>
+    public StandaloneClientConfigurationBuilder CreateConfigBuilder()
+    {
+        var configBuilder = new StandaloneClientConfigurationBuilder();
+        configBuilder.WithTls(useTls: _useTls);
+
+        foreach (var (host, port) in _addresses)
+            configBuilder.WithAddress(host, port);
+
+        return configBuilder;
+    }
+}

@@ -3,6 +3,7 @@
 using System.Text;
 
 using Valkey.Glide.Pipeline;
+using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
@@ -78,7 +79,7 @@ public class ClusterClientTests(TestConfiguration config)
         res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Replica))).SingleValue! as gs)!;
         Assert.Contains("role:slave", res);
 
-        res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port))).SingleValue! as gs)!;
+        res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port))).SingleValue! as gs)!;
         Assert.Contains("# Replication", res);
     }
 
@@ -117,7 +118,7 @@ public class ClusterClientTests(TestConfiguration config)
         res = await client.Exec(batch, true, new(route: new SlotIdRoute(42, SlotType.Replica)));
         Assert.Contains("role:slave", res![0] as string);
 
-        res = await client.Exec(batch, true, new(route: new ByAddressRoute(TestConfiguration.CLUSTER_HOSTS[0].host, TestConfiguration.CLUSTER_HOSTS[0].port)));
+        res = await client.Exec(batch, true, new(route: new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port)));
         Assert.Contains("# Replication", res![0] as string);
     }
 
@@ -582,62 +583,44 @@ public class ClusterClientTests(TestConfiguration config)
     [Fact]
     public async Task LazyConnect()
     {
-        string serverName = $"test_{Guid.NewGuid():N}";
+        // Create dedicated server.
+        using var server = new ClusterServer();
 
-        try
-        {
-            // Create dedicated server.
-            var configBuilder = ServerManager.StartClusterServer(serverName);
-            var eagerConfig = configBuilder.WithLazyConnect(false).Build();
-            var lazyConfig = configBuilder.WithLazyConnect(true).Build();
+        // Create reference client.
+        var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
+        using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
+        var initialCount = await Client.GetConnectionCount(referenceClient);
 
-            // Create reference client.
-            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+        // Create lazy client (does not connect immediately).
+        var lazyConfig = server.CreateConfigBuilder().WithLazyConnect(true).Build();
+        using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
 
-            // Create lazy client (does not connect immediately).
-            using var lazyClient = await GlideClusterClient.CreateClient(lazyConfig);
-            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+        var connectCount = await Client.GetConnectionCount(referenceClient);
+        Assert.Equal(initialCount, connectCount);
 
-            Assert.Equal(initialCount, connectCount);
+        // First command establishes connection.
+        await lazyClient.PingAsync();
 
-            // First command establishes connection.
-            await lazyClient.PingAsync();
-            var commandCount = await ConnectionInfo.GetConnectionCount(referenceClient);
-
-            Assert.True(connectCount < commandCount);
-        }
-        finally
-        {
-            ServerManager.StopServer(serverName);
-        }
+        var commandCount = await Client.GetConnectionCount(referenceClient);
+        Assert.True(connectCount < commandCount);
     }
 
     [Fact]
     public async Task EagerConnect()
     {
-        string serverName = $"test_{Guid.NewGuid():N}";
+        // Create dedicated server.
+        using var server = new ClusterServer();
 
-        try
-        {
-            // Create dedicated server.
-            var eagerConfig = ServerManager.StartClusterServer(serverName)
-                .WithLazyConnect(false)
-                .Build();
+        // Create reference client.
+        var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
+        using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-            // Create reference client.
-            using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var initialCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+        var initialCount = await TestUtils.Client.GetConnectionCount(referenceClient);
 
-            // Create eager client (connects immediately).
-            using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
-            var connectCount = await ConnectionInfo.GetConnectionCount(referenceClient);
+        // Create eager client (connects immediately).
+        using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-            Assert.True(initialCount < connectCount);
-        }
-        finally
-        {
-            ServerManager.StopServer(serverName);
-        }
+        var connectCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        Assert.True(initialCount < connectCount);
     }
 }
