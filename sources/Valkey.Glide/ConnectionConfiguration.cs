@@ -389,28 +389,57 @@ public abstract class ConnectionConfiguration
             set { } // needed for +=
         }
         #endregion
+
         #region TLS
         /// <summary>
-        /// Configure whether communication with the server should use Transport Level Security.<br />
-        /// Should match the TLS configuration of the server/cluster, otherwise the connection attempt will fail.
+        /// Configure whether to use Transport Layer Security (TLS) when connecting to the server.<br />
+        /// Must match the TLS connection of the server or cluster.
         /// </summary>
         public bool UseTls
         {
-            get => Config.TlsMode == TlsMode.SecureTls;
+            get => Config.TlsMode == TlsMode.SecureTls || Config.TlsMode == TlsMode.InsecureTls;
             set => Config.TlsMode = value ? TlsMode.SecureTls : TlsMode.NoTls;
         }
 
         /// <inheritdoc cref="UseTls" />
-        public T WithTls(bool useTls)
+        public T WithTls(bool useTls = true)
         {
             UseTls = useTls;
             return (T)this;
         }
 
-        /// <inheritdoc cref="UseTls" />
-        public T WithTls()
+        /// <summary>
+        /// Configure whether to bypass certificate verification when using
+        /// Transport Layer Security (TLS) to connect to the server.
+        /// <br />
+        /// Typically only used in development or testing environments. <b>It is strongly
+        /// discouraged in production</b>, as it introduces security risks.
+        /// </summary>
+        /// <exception cref="ArgumentException">If attempting to enable insecure TLS while TLS is disabled.</exception>
+        public bool UseInsecureTls
         {
-            return WithTls(true);
+            get => Config.TlsMode == TlsMode.InsecureTls;
+            set
+            {
+                if (value)
+                {
+                    if (Config.TlsMode == TlsMode.NoTls)
+                        throw new ArgumentException("Cannot enable insecure TLS when TLS is disabled.");
+                    else
+                        Config.TlsMode = TlsMode.InsecureTls;
+                }
+                else if (Config.TlsMode == TlsMode.InsecureTls)
+                {
+                    Config.TlsMode = TlsMode.SecureTls;
+                }
+            }
+        }
+
+        /// <inheritdoc cref="UseInsecureTls" />
+        public T WithInsecureTls(bool useInsecure = true)
+        {
+            UseInsecureTls = useInsecure;
+            return (T)this;
         }
 
         /// <summary>
