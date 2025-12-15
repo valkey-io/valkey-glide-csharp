@@ -213,14 +213,14 @@ public class ConnectionConfigurationTests
     {
         var builder = new StandaloneClientConfigurationBuilder();
         var config = builder.Build();
-        Assert.Null(config.Request.TlsMode);
+        Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
     }
 
     [Fact]
     public void WithTls_Enabled()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls(true);
+        builder.WithTls(false).WithTls(true);   // Enable after disabling to test state change and remove dependence on default.
         var config = builder.Build();
         Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
     }
@@ -229,7 +229,7 @@ public class ConnectionConfigurationTests
     public void WithTls_Disabled()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls(false);
+        builder.WithTls(true).WithTls(false);  // Disable after enabling to test state change and remove dependence on default.
         var config = builder.Build();
         Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
     }
@@ -241,6 +241,51 @@ public class ConnectionConfigurationTests
         builder.WithTls();
         var config = builder.Build();
         Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithInsecureTls_Default()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls();
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithInsecureTls_Enabled()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls().WithInsecureTls(false).WithInsecureTls(true);  // Enable after disabling to test state change and remove dependence on default.
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.InsecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithInsecureTls_Disabled()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls().WithInsecureTls(true).WithInsecureTls(false);  // Disable after enabling to test state change and remove dependence on default.
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithInsecureTls_NoParameter()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls().WithInsecureTls();
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.InsecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithInsecureTls_NoTlsThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls());
+        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(true));
+        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(false));
     }
 
     [Fact]

@@ -14,7 +14,7 @@ public abstract class ConnectionConfiguration
     internal record ConnectionConfig
     {
         public List<NodeAddress> Addresses = [];
-        public TlsMode? TlsMode;
+        public TlsMode TlsMode = TlsMode.NoTls;
         public bool ClusterMode;
         public TimeSpan? RequestTimeout;
         public TimeSpan? ConnectionTimeout;
@@ -397,16 +397,17 @@ public abstract class ConnectionConfiguration
         /// </summary>
         public bool UseTls
         {
-            get => Config.TlsMode == TlsMode.SecureTls || Config.TlsMode == TlsMode.InsecureTls;
+            get => Config.TlsMode is TlsMode.SecureTls or TlsMode.InsecureTls;
             set
             {
-                if (!value)
+                if (value)
+                {
+                    if (Config.TlsMode == TlsMode.NoTls)
+                        Config.TlsMode = TlsMode.SecureTls;
+                }
+                else
                 {
                     Config.TlsMode = TlsMode.NoTls;
-                }
-                else if (Config.TlsMode != TlsMode.NoTls)
-                {
-                    Config.TlsMode = TlsMode.SecureTls;
                 }
             }
         }
@@ -425,23 +426,19 @@ public abstract class ConnectionConfiguration
         /// Typically only used in development or testing environments. <b>It is strongly
         /// discouraged in production</b>, as it introduces security risks.
         /// </summary>
-        /// <exception cref="ArgumentException">If attempting to enable insecure TLS while TLS is disabled.</exception>
+        /// <exception cref="ArgumentException">If attempting to configure insecure TLS while TLS is disabled.</exception>
         public bool UseInsecureTls
         {
             get => Config.TlsMode == TlsMode.InsecureTls;
             set
             {
-                if (value)
-                {
-                    if (Config.TlsMode == TlsMode.NoTls)
-                        throw new ArgumentException("Cannot enable insecure TLS when TLS is disabled.");
-                    else
-                        Config.TlsMode = TlsMode.InsecureTls;
-                }
-                else if (Config.TlsMode == TlsMode.InsecureTls)
-                {
-                    Config.TlsMode = TlsMode.SecureTls;
-                }
+                if (Config.TlsMode == TlsMode.NoTls)
+                    throw new ArgumentException("Cannot configure insecure TLS when TLS is disabled.");
+
+                Config.TlsMode =
+                    value
+                    ? TlsMode.InsecureTls
+                    : TlsMode.SecureTls;
             }
         }
 
