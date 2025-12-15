@@ -398,7 +398,17 @@ public abstract class ConnectionConfiguration
         public bool UseTls
         {
             get => Config.TlsMode == TlsMode.SecureTls || Config.TlsMode == TlsMode.InsecureTls;
-            set => Config.TlsMode = value ? TlsMode.SecureTls : TlsMode.NoTls;
+            set
+            {
+                if (!value)
+                {
+                    Config.TlsMode = TlsMode.NoTls;
+                }
+                else if (Config.TlsMode != TlsMode.NoTls)
+                {
+                    Config.TlsMode = TlsMode.SecureTls;
+                }
+            }
         }
 
         /// <inheritdoc cref="UseTls" />
