@@ -75,6 +75,16 @@ public class TlsTests
         await AssertConnected(client);
     }
 
+    [Fact]
+    public async Task Cluster_WithInsecureTls_Success()
+    {
+        using var server = new ClusterServer(useTls: true);
+        var configBuilder = server.CreateConfigBuilder().WithInsecureTls(true);
+
+        using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
     // Standalone TLS Tests
     // ====================
 
@@ -133,6 +143,16 @@ public class TlsTests
     {
         using var server = new StandaloneServer(useTls: true);
         var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
+
+        using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task Standalone_WithInsecureTls_Success()
+    {
+        using var server = new StandaloneServer(useTls: true);
+        var configBuilder = server.CreateConfigBuilder().WithInsecureTls(true);
 
         using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);

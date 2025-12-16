@@ -202,7 +202,7 @@ internal partial class FFI
 
         public ConnectionConfig(
             List<NodeAddress> addresses,
-            TlsMode? tlsMode,
+            TlsMode tlsMode,
             bool clusterMode,
             uint? requestTimeout,
             uint? connectionTimeout,
@@ -221,8 +221,8 @@ internal partial class FFI
             {
                 AddressCount = (nuint)addresses.Count,
                 Addresses = MarshallAddress(addresses),
-                HasTlsMode = tlsMode.HasValue,
-                TlsMode = tlsMode ?? default,
+                HasTlsMode = tlsMode != TlsMode.NoTls,
+                TlsMode = tlsMode,
                 ClusterMode = clusterMode,
                 HasRequestTimeout = requestTimeout.HasValue,
                 RequestTimeout = requestTimeout ?? default,
@@ -1119,8 +1119,8 @@ internal partial class FFI
     internal enum TlsMode : uint
     {
         NoTls = 0,
-        SecureTls = 1,
-        InsecureTls = 2,
+        InsecureTls = 1,
+        SecureTls = 2,
     }
 
     [StructLayout(LayoutKind.Sequential)]
