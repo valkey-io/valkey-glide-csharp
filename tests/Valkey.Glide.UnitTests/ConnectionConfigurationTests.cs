@@ -209,103 +209,118 @@ public class ConnectionConfigurationTests
     // -----------------
 
     [Fact]
-    public void WithTls_Default()
+    public void UseTls()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
+
+        // Default configuration.
+        Assert.False(builder.UseTls);
+
+        // Enable TLS.
+        builder.UseTls = true;
+        Assert.True(builder.UseTls);
+
+        // Disable TLS.
+        builder.UseTls = false;
+        Assert.False(builder.UseTls);
+
+        // Enable TLS (no parameter).
+        builder.UseTls = true;
+        Assert.True(builder.UseTls);
+
+        // Disable insecure TLS.
+        builder.UseInsecureTls = true;
+        builder.UseTls = false;
+        Assert.False(builder.UseTls);
     }
 
     [Fact]
-    public void WithTls_Enabled()
+    public void WithTls()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls(false).WithTls(true);   // Enable after disabling to test state change and remove dependence on default.
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
-    }
 
+        // Default configuration.
+        Assert.False(builder.UseTls);
 
+        // Enable TLS.
+        builder.WithTls(true);
+        Assert.True(builder.UseTls);
 
-    [Fact]
-    public void WithTls_Disabled()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls(true).WithTls(false);  // Disable after enabling to test state change and remove dependence on default.
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
-    }
+        // Disable TLS.
+        builder.WithTls(false);
+        Assert.False(builder.UseTls);
 
-    [Fact]
-    public void WithTls_NoParameter()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
+        // Enable TLS (no parameter).
         builder.WithTls();
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+        Assert.True(builder.UseTls);
+
+        // Disable TLS when insecure TLS enabled.
+        builder.WithInsecureTls();
+        builder.WithTls(false);
+        Assert.False(builder.UseTls);
     }
 
     [Fact]
-    public void WithTls_WithInsecureTls_Enabled()
+    public void UseInsecureTls()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls(true).WithInsecureTls().WithTls(true);
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.InsecureTls, config.Request.TlsMode);
+
+        // Default configuration.
+        Assert.False(builder.UseInsecureTls);
+
+        // Configure insecure TLS without TLS enabled.
+        Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = true);
+        Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = false);
+
+        builder.UseTls = true;
+
+        // Enable insecure TLS.
+        builder.UseInsecureTls = true;
+        Assert.True(builder.UseInsecureTls);
+
+        // Disable insecure TLS.
+        builder.UseInsecureTls = false;
+        Assert.False(builder.UseInsecureTls);
+
+        // Enable insecure TLS (no parameter).
+        builder.UseInsecureTls = true;
+        Assert.True(builder.UseInsecureTls);
+
+        // Disable TLS when insecure TLS enabled.
+        builder.UseTls = false;
+        Assert.False(builder.UseInsecureTls);
     }
 
     [Fact]
-    public void WithTls_WithInsecureTls_Disabled()
+    public void WithInsecureTls()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls(true).WithInsecureTls().WithTls(false);
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
-    }
 
-    [Fact]
-    public void WithInsecureTls_Default()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls();
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
-    }
+        // Default configuration.
+        Assert.False(builder.UseInsecureTls);
 
-    [Fact]
-    public void WithInsecureTls_Enabled()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls().WithInsecureTls(false).WithInsecureTls(true);  // Enable after disabling to test state change and remove dependence on default.
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.InsecureTls, config.Request.TlsMode);
-    }
-
-    [Fact]
-    public void WithInsecureTls_Disabled()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls().WithInsecureTls(true).WithInsecureTls(false);  // Disable after enabling to test state change and remove dependence on default.
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
-    }
-
-    [Fact]
-    public void WithInsecureTls_NoParameter()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTls().WithInsecureTls();
-        var config = builder.Build();
-        Assert.Equal(FFI.TlsMode.InsecureTls, config.Request.TlsMode);
-    }
-
-    [Fact]
-    public void WithInsecureTls_NoTlsThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
+        // Configure insecure TLS without TLS enabled.
         Assert.Throws<ArgumentException>(() => builder.WithInsecureTls());
         Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(true));
         Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(false));
+
+        builder.WithTls();
+
+        // Enable insecure TLS.
+        builder.WithInsecureTls(true);
+        Assert.True(builder.UseInsecureTls);
+
+        // Disable insecure TLS.
+        builder.WithInsecureTls(false);
+        Assert.False(builder.UseInsecureTls);
+
+        // Enable insecure TLS (no parameter).
+        builder.WithInsecureTls(true);
+        Assert.True(builder.UseInsecureTls);
+
+        // Disable TLS when insecure TLS enabled.
+        builder.WithTls(false);
+        Assert.False(builder.UseInsecureTls);
     }
 
     [Fact]
