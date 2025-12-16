@@ -423,10 +423,12 @@ public abstract class ConnectionConfiguration
         /// Configure whether to bypass certificate verification when using
         /// Transport Layer Security (TLS) to connect to the server.
         /// <br />
-        /// Typically only used in development or testing environments. <b>It is strongly
-        /// discouraged in production</b>, as it introduces security risks.
+        /// Typically used in development or testing environments. <b>Strongly discouraged in production</b>,
+        /// as it introduces security risks such as man-in-the-middle attacks.
+        /// <br />
+        /// Requires <see cref="UseTls"/> to be enabled, otherwise throws <see cref="ArgumentException"/>.
         /// </summary>
-        /// <exception cref="ArgumentException">If attempting to configure insecure TLS while TLS is disabled.</exception>
+        /// <exception cref="ArgumentException">If <see cref="UseTls"/> is not enabled.</exception>
         public bool UseInsecureTls
         {
             get => Config.TlsMode == TlsMode.InsecureTls;
