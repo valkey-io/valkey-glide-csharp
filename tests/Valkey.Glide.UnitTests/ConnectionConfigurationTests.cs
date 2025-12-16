@@ -225,6 +225,8 @@ public class ConnectionConfigurationTests
         Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
     }
 
+
+
     [Fact]
     public void WithTls_Disabled()
     {
@@ -241,6 +243,24 @@ public class ConnectionConfigurationTests
         builder.WithTls();
         var config = builder.Build();
         Assert.Equal(FFI.TlsMode.SecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithTls_WithInsecureTls_Enabled()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls(true).WithInsecureTls().WithTls(true);
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.InsecureTls, config.Request.TlsMode);
+    }
+
+    [Fact]
+    public void WithTls_WithInsecureTls_Disabled()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTls(true).WithInsecureTls().WithTls(false);
+        var config = builder.Build();
+        Assert.Equal(FFI.TlsMode.NoTls, config.Request.TlsMode);
     }
 
     [Fact]
