@@ -221,7 +221,6 @@ internal partial class FFI
             {
                 AddressCount = (nuint)addresses.Count,
                 Addresses = MarshallAddress(addresses),
-                HasTlsMode = tlsMode != TlsMode.NoTls,
                 TlsMode = tlsMode,
                 ClusterMode = clusterMode,
                 HasRequestTimeout = requestTimeout.HasValue,
@@ -1044,7 +1043,6 @@ internal partial class FFI
         public IntPtr Addresses; // ** NodeAddress - array pointer
 
         [MarshalAs(UnmanagedType.U1)]
-        public bool HasTlsMode;
         public TlsMode TlsMode;
 
         [MarshalAs(UnmanagedType.U1)]
