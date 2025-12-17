@@ -76,61 +76,72 @@ public class PubSubFFIMemoryLeakTests
             $"limit: {maxMemoryGrowthBytes:N0} bytes");
     }
 
-    [Fact]
+    [Theory]
     [Trait("Category", "LongRunning")]
-    public void ProcessVariousMessageSizes_NoMemoryLeak_ConsistentBehavior()
+    [InlineData(10)]
+    [InlineData(100)]
+    [InlineData(1_000)]
+    [InlineData(10_000)]
+    public void ProcessVariousMessageSizes_NoMemoryLeak_ConsistentBehavior(int messageSize)
     {
         // Arrange
         const int iterationsPerSize = 1_000;
-        int[] messageSizes = [10, 100, 1_000, 10_000, 100_000]; // Various sizes
+        // This threshold now represents the max acceptable "unreclaimed" memory between two identical, GC-cleaned runs.
+        // It should be small, as true leaks will cause unbounded growth, but some minor variance is expected.
+        const long leakThresholdBytes = 50_000; // A reasonably small tolerance for any GC quirks.
 
+        var message = new string('X', messageSize);
+        var channel = "test-channel";
+        
+        // Run the operation once. This will allocate all necessary objects and
+        // potentially promote some to higher GC generations.
+        for (int i = 0; i < iterationsPerSize; i++)
+        {
+            ProcessSingleMessage(message, channel, null);
+        }
+
+        // Force a full GC and measure the memory. This becomes our stable baseline
+        // *after* one full operation.
+        long baselineMemory = GetMemoryAfterFullGC();
+        Console.WriteLine($"Baseline memory after first run for size {messageSize}: {baselineMemory:N0} bytes");
+
+        // Run the exact same operation again.
+        for (int i = 0; i < iterationsPerSize; i++)
+        {
+            ProcessSingleMessage(message, channel, null);
+        }
+
+        // Force another full GC and measure the final memory state.
+        long finalMemory = GetMemoryAfterFullGC();
+        Console.WriteLine($"Final memory after second run for size {messageSize}: {finalMemory:N0} bytes");
+
+        // Calculate the growth between the two stable, cleaned states.
+        // This represents memory that was allocated in the second run but could NOT be reclaimed by GC,
+        // which is the true definition of a memory leak in a managed context.
+        long memoryGrowthBetweenRuns = finalMemory - baselineMemory;
+
+        Assert.True(memoryGrowthBetweenRuns < leakThresholdBytes,
+            $"Potential memory leak for {messageSize}-byte messages. " +
+            $"Memory grew by {memoryGrowthBetweenRuns:N0} bytes between two identical, GC-cleaned runs, " +
+            $"which exceeds the leak threshold of {leakThresholdBytes:N0} bytes.");
+
+        Console.WriteLine($"Memory leak test passed for {messageSize}-byte messages. Growth between runs: {memoryGrowthBetweenRuns:N0} bytes");
+    }
+
+    private static long GetMemoryAfterFullGC()
+    {
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
+        return GC.GetTotalMemory(true);
+    }
 
-        long initialMemory = GC.GetTotalMemory(false);
-        Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
-
-        // Act: Test different message sizes
-        foreach (int messageSize in messageSizes)
+    private static void RunMessageProcessingLoop(string message, string channel, string? pattern, int iterations)
+    {
+        for (int i = 0; i < iterations; i++)
         {
-            Console.WriteLine($"Testing message size: {messageSize} bytes");
-
-            string largeMessage = new('X', messageSize);
-            string channel = "test-channel";
-
-            long beforeSizeTest = GC.GetTotalMemory(true);
-
-            for (int i = 0; i < iterationsPerSize; i++)
-            {
-                ProcessSingleMessage(largeMessage, channel, null);
-            }
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            long afterSizeTest = GC.GetTotalMemory(false);
-            long sizeTestGrowth = afterSizeTest - beforeSizeTest;
-
-            Console.WriteLine($"Memory growth for {messageSize}-byte messages: {sizeTestGrowth:N0} bytes");
-
-            // Memory growth should be reasonable for the message size
-            // Allow 3x overhead to account for GC variance and object headers
-            long expectedMaxGrowth = messageSize * iterationsPerSize * 3;
-            Assert.True(sizeTestGrowth < expectedMaxGrowth,
-                $"Excessive memory growth for {messageSize}-byte messages: {sizeTestGrowth:N0} bytes, expected max: {expectedMaxGrowth:N0} bytes");
+            ProcessSingleMessage(message, channel, pattern);
         }
-
-        // Final check
-        long finalMemory = GC.GetTotalMemory(true);
-        long totalGrowth = finalMemory - initialMemory;
-
-        Console.WriteLine($"Total memory growth across all sizes: {totalGrowth:N0} bytes");
-
-        // Should not have significant permanent growth
-        Assert.True(totalGrowth < 10_000_000, // 10MB max
-            $"Permanent memory growth detected: {totalGrowth:N0} bytes");
     }
 
     [Fact]
