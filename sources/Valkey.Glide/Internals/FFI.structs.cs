@@ -377,7 +377,7 @@ internal partial class FFI
                 // We use IntPtr here to represent the numeric length value that Rust expects as usize.
                 IntPtr certLen = new IntPtr(rootCerts[i].Length);
                 Marshal.WriteIntPtr(certsLengthsPtr, i * IntPtr.Size, certLen);
-        }
+            }
 
             return certsLengthsPtr;
         }
