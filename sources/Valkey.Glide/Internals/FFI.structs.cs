@@ -221,6 +221,7 @@ internal partial class FFI
             {
                 AddressCount = (nuint)addresses.Count,
                 Addresses = MarshallAddress(addresses),
+                HasTlsMode = true,
                 TlsMode = tlsMode,
                 ClusterMode = clusterMode,
                 HasRequestTimeout = requestTimeout.HasValue,
@@ -376,7 +377,7 @@ internal partial class FFI
                 // We use IntPtr here to represent the numeric length value that Rust expects as usize.
                 IntPtr certLen = new IntPtr(rootCerts[i].Length);
                 Marshal.WriteIntPtr(certsLengthsPtr, i * IntPtr.Size, certLen);
-            }
+        }
 
             return certsLengthsPtr;
         }
@@ -1043,6 +1044,7 @@ internal partial class FFI
         public IntPtr Addresses; // ** NodeAddress - array pointer
 
         [MarshalAs(UnmanagedType.U1)]
+        public bool HasTlsMode;
         public TlsMode TlsMode;
 
         [MarshalAs(UnmanagedType.U1)]
