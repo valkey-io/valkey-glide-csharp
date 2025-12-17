@@ -75,6 +75,24 @@ public class TlsTests
         await AssertConnected(client);
     }
 
+    [Fact]
+    public async Task Cluster_WithInsecureTls_Success()
+    {
+        using var server = new ClusterServer(useTls: true);
+        var configBuilder = server.CreateConfigBuilder().WithInsecureTls();
+
+        using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task Cluster_WithInsecureTls_NoTlsServerThrows()
+    {
+        using var server = new ClusterServer(useTls: false);
+        var configBuilder = server.CreateConfigBuilder().WithTls().WithInsecureTls();
+        await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
+    }
+
     // Standalone TLS Tests
     // ====================
 
@@ -136,6 +154,24 @@ public class TlsTests
 
         using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task Standalone_WithInsecureTls_Success()
+    {
+        using var server = new StandaloneServer(useTls: true);
+        var configBuilder = server.CreateConfigBuilder().WithInsecureTls();
+
+        using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task Standalone_WithInsecureTls_NoTlsServerThrows()
+    {
+        using var server = new StandaloneServer(useTls: false);
+        var configBuilder = server.CreateConfigBuilder().WithTls().WithInsecureTls();
+        await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }
 
     // Helper Methods

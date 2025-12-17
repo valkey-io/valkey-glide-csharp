@@ -14,7 +14,7 @@ public abstract class ConnectionConfiguration
     internal record ConnectionConfig
     {
         public List<NodeAddress> Addresses = [];
-        public TlsMode? TlsMode;
+        public TlsMode TlsMode = TlsMode.NoTls;
         public bool ClusterMode;
         public TimeSpan? RequestTimeout;
         public TimeSpan? ConnectionTimeout;
@@ -389,28 +389,66 @@ public abstract class ConnectionConfiguration
             set { } // needed for +=
         }
         #endregion
+
         #region TLS
         /// <summary>
-        /// Configure whether communication with the server should use Transport Level Security.<br />
-        /// Should match the TLS configuration of the server/cluster, otherwise the connection attempt will fail.
+        /// Configure whether to use Transport Layer Security (TLS) when connecting to the server.<br />
+        /// Must match the TLS connection of the server or cluster.
         /// </summary>
         public bool UseTls
         {
-            get => Config.TlsMode == TlsMode.SecureTls;
-            set => Config.TlsMode = value ? TlsMode.SecureTls : TlsMode.NoTls;
+            get => Config.TlsMode is TlsMode.SecureTls or TlsMode.InsecureTls;
+            set
+            {
+                if (value)
+                {
+                    if (Config.TlsMode == TlsMode.NoTls)
+                        Config.TlsMode = TlsMode.SecureTls;
+                }
+                else
+                {
+                    Config.TlsMode = TlsMode.NoTls;
+                }
+            }
         }
 
         /// <inheritdoc cref="UseTls" />
-        public T WithTls(bool useTls)
+        public T WithTls(bool useTls = true)
         {
             UseTls = useTls;
             return (T)this;
         }
 
-        /// <inheritdoc cref="UseTls" />
-        public T WithTls()
+        /// <summary>
+        /// Configure whether to bypass certificate verification when using
+        /// Transport Layer Security (TLS) to connect to the server.
+        /// <br />
+        /// Typically used in development or testing environments. <b>Strongly discouraged in production</b>,
+        /// as it introduces security risks such as man-in-the-middle attacks.
+        /// <br />
+        /// Requires <see cref="UseTls"/> to be enabled, otherwise throws <see cref="ArgumentException"/>.
+        /// </summary>
+        /// <exception cref="ArgumentException">If <see cref="UseTls"/> is not enabled.</exception>
+        public bool UseInsecureTls
         {
-            return WithTls(true);
+            get => Config.TlsMode == TlsMode.InsecureTls;
+            set
+            {
+                if (Config.TlsMode == TlsMode.NoTls)
+                    throw new ArgumentException("Cannot configure insecure TLS when TLS is disabled.");
+
+                Config.TlsMode =
+                    value
+                    ? TlsMode.InsecureTls
+                    : TlsMode.SecureTls;
+            }
+        }
+
+        /// <inheritdoc cref="UseInsecureTls" />
+        public T WithInsecureTls(bool useInsecure = true)
+        {
+            UseInsecureTls = useInsecure;
+            return (T)this;
         }
 
         /// <summary>
