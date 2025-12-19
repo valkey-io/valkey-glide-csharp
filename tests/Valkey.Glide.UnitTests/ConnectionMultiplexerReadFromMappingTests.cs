@@ -209,7 +209,7 @@ public class ConnectionMultiplexerReadFromMappingTests
         Assert.Equal("us-east-1a", standaloneConfig.Request.ReadFrom!.Value.Az);
 
         // Verify other configuration is also correctly mapped (basic checks)
-        Assert.NotNull(standaloneConfig.Request.TlsMode);
+        Assert.Equal(FFI.TlsMode.SecureTls, standaloneConfig.Request.TlsMode);
         Assert.NotNull(standaloneConfig.Request.AuthenticationInfo);
         Assert.Equal("TestClient", standaloneConfig.Request.ClientName);
     }

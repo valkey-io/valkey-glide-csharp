@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -30,8 +32,8 @@ public class ReadFromTests(TestConfiguration config)
         string strategyString, ReadFromStrategy expectedStrategy, string? expectedAz, bool useStandalone)
     {
         // Arrange
-        (string host, int port) hostConfig = useStandalone ? TestConfiguration.STANDALONE_HOSTS[0] : TestConfiguration.CLUSTER_HOSTS[0];
-        string connectionString = $"{hostConfig.host}:{hostConfig.port},ssl={TestConfiguration.TLS}";
+        Address address = useStandalone ? TestConfiguration.STANDALONE_ADDRESS : TestConfiguration.CLUSTER_ADDRESS;
+        string connectionString = $"{address},ssl={TestConfiguration.TLS}";
         connectionString += $",readFrom={strategyString}";
         if (expectedAz != null)
         {
@@ -74,7 +76,7 @@ public class ReadFromTests(TestConfiguration config)
         // Arrange & Act
         if (useConnectionString)
         {
-            string connectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS}";
+            string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS}";
 
             using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
             {
@@ -106,7 +108,7 @@ public class ReadFromTests(TestConfiguration config)
             {
                 ReadFrom = null
             };
-            configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+            configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
             configOptions.Ssl = TestConfiguration.TLS;
 
             using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
@@ -145,7 +147,7 @@ public class ReadFromTests(TestConfiguration config)
 
         // Arrange: Create configuration with invalid ReadFrom combination
         ConfigurationOptions configOptions = new ConfigurationOptions();
-        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act & Assert: Test invalid assignment through property setter
@@ -172,7 +174,7 @@ public class ReadFromTests(TestConfiguration config)
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a")
         };
-        originalConfig.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+        originalConfig.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
         originalConfig.Ssl = TestConfiguration.TLS;
 
         // Act
@@ -217,7 +219,7 @@ public class ReadFromTests(TestConfiguration config)
         {
             // Arrange: Create a legacy-style configuration without ReadFrom
             ConfigurationOptions legacyConfig = new ConfigurationOptions();
-            legacyConfig.EndPoints.Add(TestConfiguration.STANDALONE_HOSTS[0].host, TestConfiguration.STANDALONE_HOSTS[0].port);
+            legacyConfig.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
             legacyConfig.Ssl = TestConfiguration.TLS;
             legacyConfig.ResponseTimeout = 5000;
             legacyConfig.ConnectTimeout = 5000;
@@ -250,7 +252,7 @@ public class ReadFromTests(TestConfiguration config)
         else
         {
             // Arrange: Create a legacy-style connection string without ReadFrom
-            string legacyConnectionString = $"{TestConfiguration.STANDALONE_HOSTS[0].host}:{TestConfiguration.STANDALONE_HOSTS[0].port},ssl={TestConfiguration.TLS},connectTimeout=5000,responseTimeout=5000";
+            string legacyConnectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS},connectTimeout=5000,responseTimeout=5000";
 
             // Act
             using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConnectionString))

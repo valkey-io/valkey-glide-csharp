@@ -2,10 +2,48 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <RootNamespace>Valkey.Glide.TestUtils</RootNamespace>
+    <AssemblyName>Valkey.Glide.TestUtils</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
     <IsPackable>false</IsPackable>
     <IsTestProject>false</IsTestProject>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <NuGetAudit>false</NuGetAudit>
+    <WarningLevel>0</WarningLevel>
+    <OutputType>Exe</OutputType>
+    <Configurations>Debug;Release;Lint</Configurations>
   </PropertyGroup>
+
+  <!-- Enable analysis and un-suppress warnings only in `Lint` configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Lint'">
+    <LangVersion>preview</LangVersion>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <NuGetAudit>true</NuGetAudit>
+    <WarningLevel>4</WarningLevel>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Workaround for https://github.com/dotnet/roslyn/issues/41640 -->
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573;CS1587</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="1.1.0" />
+    <ProjectReference Include="..\..\sources\Valkey.Glide\Valkey.Glide.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Valkey.Glide" />
+  </ItemGroup>
 
 </Project>
