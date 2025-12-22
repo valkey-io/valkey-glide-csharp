@@ -203,8 +203,6 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # Don't use generated matrix for dotnet until net6.0 compatibility issues resolved on amazon linux
-                # dotnet: ${{ fromJson(needs.get-containers.outputs.version-matrix-output) }}
                 dotnet: ["8.0"]
                 server: ${{ fromJson(needs.get-containers.outputs.server-matrix-output) }}
                 host: ${{ fromJson(needs.get-containers.outputs.host-matrix-output) }}
