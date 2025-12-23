@@ -327,4 +327,5 @@ jobs:
             - name: Format
               run: |
                   dotnet format --verify-no-changes --verbosity diagnostic
-                  dotnet build --configuration Lint --framework net8.0
+                  dotnet build-server shutdown
+                  dotnet build --configuration Lint --framework net8.0 -m:1
