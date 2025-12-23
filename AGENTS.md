@@ -9,14 +9,14 @@ This document gives AI agents the minimum, accurate context needed to work produ
 
 ## Architecture Quick Facts
 
-- Multi-target library (net6.0, net8.0), but operational tooling MUST target `.NET 8.0` for now.
+- Single-target library (net8.0).
 - Public APIs are async; cancellation is supported.
 - Rust core (glide-core) accessed via P/Invoke; be careful with marshaling.
 - Commands organized via partials in `BaseClient.*.cs`; cluster features use routing (`Route`, `ClusterValue<T>`).
 
 ## Build and Test Rules (Agents)
 
-- Always target `net8.0` when building or testing due to known .NET 6 issues.
+- Always target `net8.0` when building or testing.
 - Prefer `Task` runner commands when available; otherwise use `dotnet` directly with `--framework net8.0`.
 - Never pass individual `.cs` files to `dotnet test`; use project folders and filters.
 

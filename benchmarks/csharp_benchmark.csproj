@@ -2,16 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Configurations>Debug;Release;Lint</Configurations>
     <RootNamespace>Valkey.Glide.CustomBenchmark</RootNamespace>
-    <!-- Allow building against net6.0 without failing the SDK's EOL check -->
-    <CheckEolTargetFrameworks>false</CheckEolTargetFrameworks>
-    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

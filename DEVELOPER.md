@@ -153,7 +153,6 @@ task coverage:integration   # Integration tests with coverage
 
 # Run tests for specific framework
 task test FRAMEWORK=net8.0
-task test FRAMEWORK=net6.0
 
 # Clean test results and reports
 task clean
@@ -170,7 +169,6 @@ dotnet test
 
 # Run tests with a specific dotnet version
 dotnet test --framework net8.0
-dotnet test --framework net6.0
 ```
 
 ### Task Commands Overview

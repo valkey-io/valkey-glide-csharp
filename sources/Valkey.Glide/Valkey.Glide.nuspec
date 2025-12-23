@@ -18,7 +18,6 @@
     <!-- TODO include changelog (as a file or as GH release link) starting from the second release -->
     <!-- TODO do we need empty dependency blocks? -->
     <dependencies>
-      <group targetFramework="net6.0" />
       <group targetFramework="net8.0" />
     </dependencies>
   </metadata>

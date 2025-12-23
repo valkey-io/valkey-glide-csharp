@@ -6,7 +6,7 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 
 - **High Performance**: Built with a Rust core for optimal performance and low latency
 - **Async/Await Support**: Full support for modern C# asynchronous programming patterns
-- **Cross-Platform**: Supports .NET 6.0+ on Windows, Linux, and macOS
+- **Cross-Platform**: Supports .NET 8.0+ on Windows, Linux, and macOS
 - **Type Safety**: Strongly-typed API with comprehensive IntelliSense support
 - **Enterprise Ready**: Designed for production workloads with robust error handling
 - **Community Driven**: Open source with active community support
@@ -52,7 +52,7 @@ Install-Package Valkey.Glide
 
 ### Requirements
 
-- **.NET 6.0** or higher
+- **.NET 8.0** or higher
 - **Supported Platforms**: Windows, Linux, macOS
 - **Valkey/Redis Server**: Version 6.2+ (see compatibility table above)
 
