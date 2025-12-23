@@ -18,6 +18,7 @@
     <Version>255.255.255</Version>
     <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
     <Deterministic>true</Deterministic>
+   <BuildInParallel>false</BuildInParallel>
 
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
