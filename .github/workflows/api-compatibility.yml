@@ -46,6 +46,11 @@ jobs:
               run: |
                   nuget install StackExchange.Redis -Version "$env:SER_VERSION" -OutputDirectory ./packages
 
+            - name: Kill VBCSCompiler to avoid file locks
+              shell: pwsh
+              run: |
+                  Get-Process VBCSCompiler -ErrorAction SilentlyContinue | Stop-Process -Force
+
             - name: Build Valkey.Glide (net8.0)
               shell: pwsh
               run: |
