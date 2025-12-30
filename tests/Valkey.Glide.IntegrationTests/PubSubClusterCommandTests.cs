@@ -63,16 +63,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         // The count might be 0 or more depending on cluster topology and subscription propagation
         Assert.True(subscriberCount >= 0L);
 
-        // Verify message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-        await Task.Delay(500);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.True(hasMessage);
-        Assert.NotNull(receivedMessage);
-        Assert.Equal(testMessage, receivedMessage.Message);
-        Assert.Equal(testChannel, receivedMessage.Channel);
+        await AssertMessageReceived(subscriberClient, testChannel, testMessage);
     }
 
     [Fact]
@@ -129,16 +120,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         // Assert
         Assert.Equal(1L, subscriberCount);
 
-        // Verify message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-        await Task.Delay(500);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.True(hasMessage);
-        Assert.NotNull(receivedMessage);
-        Assert.Equal(testMessage, receivedMessage.Message);
-        Assert.Equal(testChannel, receivedMessage.Channel);
+        await AssertMessageReceived(subscriberClient, testChannel, testMessage);
     }
 
     [Fact]
@@ -541,5 +523,18 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             client?.Dispose();
         }
         _testClients.Clear();
+    }
+
+    private async Task AssertMessageReceived(GlideClusterClient client, string expectedChannel, string expectedMessage)
+    {
+        PubSubMessageQueue? queue = client.PubSubQueue;
+        Assert.NotNull(queue);
+
+        // Wait up to 5 seconds for the message.
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var receivedMessage = await queue.GetMessageAsync(cts.Token);
+
+        Assert.Equal(expectedMessage, receivedMessage.Message);
+        Assert.Equal(expectedChannel, receivedMessage.Channel);
     }
 }
