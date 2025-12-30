@@ -53,16 +53,20 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
         _testClients.Add(publisherClient);
 
-        // Wait for subscription to be established - cluster mode may need more time
-        await Task.Delay(2000);
+        // Act - retry publishing until subscriber is registered or timeout.
+        long subscriberCount = 0L;
 
-        // Act
-        long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        while (!cts.Token.IsCancellationRequested)
+        {
+            subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
+            if (subscriberCount > 0L) break;
+            await Task.Delay(500);
+        }
 
         // Assert - In cluster mode, PUBLISH returns the number of subscribers across all nodes
         // The count might be 0 or more depending on cluster topology and subscription propagation
         Assert.True(subscriberCount >= 0L);
-
         await AssertMessageReceived(subscriberClient, testChannel, testMessage);
     }
 
@@ -111,15 +115,19 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
         _testClients.Add(publisherClient);
 
-        // Wait for subscription to be established - sharded subscriptions in cluster mode may need more time
-        await Task.Delay(2000);
+        // Act - retry publishing until subscriber is registered or timeout.
+        long subscriberCount = 0L;
 
-        // Act
-        long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage, sharded: true);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        while (!cts.Token.IsCancellationRequested)
+        {
+            subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage, sharded: true);
+            if (subscriberCount > 0L) break;
+            await Task.Delay(500);
+        }
 
         // Assert
         Assert.Equal(1L, subscriberCount);
-
         await AssertMessageReceived(subscriberClient, testChannel, testMessage);
     }
 
@@ -525,6 +533,12 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         _testClients.Clear();
     }
 
+    /// <summary>
+    /// Asserts that the client receives a message on the expected channel with the expected content.
+    /// </summary>
+    /// <param name="client">The client expected to receive the message.</param>
+    /// <param name="expectedChannel">The channel on which the message is expected.</param>
+    /// <param name="expectedMessage">The expected message content.</param>
     private async Task AssertMessageReceived(GlideClusterClient client, string expectedChannel, string expectedMessage)
     {
         PubSubMessageQueue? queue = client.PubSubQueue;
