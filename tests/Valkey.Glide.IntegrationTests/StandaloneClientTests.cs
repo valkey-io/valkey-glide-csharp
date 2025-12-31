@@ -122,16 +122,16 @@ public class StandaloneClientTests(TestConfiguration config)
         Assert.Equal([true, true, false], db.Execute("smismember", [key2, "a", "b", "d"]).AsBooleanArray()!);
 
         string key3 = Guid.NewGuid().ToString();
-        _ = await db.ExecuteAsync("xadd", [key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
-        _ = await db.ExecuteAsync("xadd", [key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
-        _ = await db.ExecuteAsync("xread", ["streams", key3, "stream", "0-1", "0-2"]);
-        _ = await db.ExecuteAsync("xinfo", ["stream", key3, "full"]);
+        await db.ExecuteAsync("xadd", [key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
+        await db.ExecuteAsync("xadd", [key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
+        await db.ExecuteAsync("xread", ["streams", key3, "stream", "0-1", "0-2"]);
+        await db.ExecuteAsync("xinfo", ["stream", key3, "full"]);
     }
 
     [Fact]
     public async Task Info()
     {
-        GlideClient client = TestConfiguration.DefaultStandaloneClient();
+        await using var client = TestConfiguration.DefaultStandaloneClient();
 
         string info = await client.InfoAsync();
         Assert.Multiple([
@@ -245,7 +245,8 @@ public class StandaloneClientTests(TestConfiguration config)
     [InlineData(false)]
     public async Task BatchKeyCopyAndKeyMove(bool isAtomic)
     {
-        GlideClient client = TestConfiguration.DefaultStandaloneClient();
+        await using var client = TestConfiguration.DefaultStandaloneClient();
+
         string sourceKey = Guid.NewGuid().ToString();
         string destKey = Guid.NewGuid().ToString();
         string moveKey = Guid.NewGuid().ToString();
@@ -478,13 +479,13 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Create reference client.
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
-        using var referenceClient = await GlideClient.CreateClient(eagerConfig);
+        await using var referenceClient = await GlideClient.CreateClient(eagerConfig);
 
         var initialCount = await GetConnectionCount(referenceClient);
 
         // Create lazy client (does not connect immediately).
         var lazyConfig = server.CreateConfigBuilder().WithLazyConnect(true).Build();
-        using var lazyClient = await GlideClient.CreateClient(lazyConfig);
+        await using var lazyClient = await GlideClient.CreateClient(lazyConfig);
 
         var connectCount = await GetConnectionCount(referenceClient);
         Assert.Equal(initialCount, connectCount);
@@ -504,12 +505,12 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Create reference client.
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
-        using var referenceClient = await GlideClient.CreateClient(eagerConfig);
+        await using var referenceClient = await GlideClient.CreateClient(eagerConfig);
 
         var initialCount = await GetConnectionCount(referenceClient);
 
         // Create eager client (connects immediately).
-        using var eagerClient = await GlideClient.CreateClient(eagerConfig);
+        await using var eagerClient = await GlideClient.CreateClient(eagerConfig);
 
         var connectCount = await GetConnectionCount(referenceClient);
         Assert.True(initialCount < connectCount);
