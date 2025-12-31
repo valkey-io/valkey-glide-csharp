@@ -53,7 +53,7 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     ///     .WithAuthentication("user1", "passwordA")
     ///     .WithTls()
     ///     .Build();
-    /// using GlideClusterClient client = await GlideClusterClient.CreateClient(config);
+    /// await using GlideClusterClient client = await GlideClusterClient.CreateClient(config);
     /// </code>
     /// </example>
     /// </remarks>

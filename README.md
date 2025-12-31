@@ -86,7 +86,7 @@ var config = new ClusterClientConfigurationBuilder()
     .WithAddress("cluster-node3.example.com", 6379)
     .Build();
 
-using var client = await GlideClusterClient.CreateClient(config);
+await using var client = await GlideClusterClient.CreateClient(config);
 
 // Cluster operations work seamlessly
 await client.StringSetAsync("user:1000", "John Doe");
@@ -106,7 +106,7 @@ var passwordConfig = new StandaloneClientConfigurationBuilder()
     .WithTls()
     .Build();
 
-using var passwordClient = await GlideClient.CreateClient(passwordConfig);
+await using var passwordClient = await GlideClient.CreateClient(passwordConfig);
 
 // IAM authentication with TLS.
 var iamAuthConfig = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
@@ -116,7 +116,7 @@ var iamConfig = new ClusterClientConfigurationBuilder()
     .WithTls(true)
     .Build();
 
-using var iamClient = await GlideClient.CreateClient(iamConfig);
+await using var iamClient = await GlideClient.CreateClient(iamConfig);
 ```
 
 ### With OpenTelemetry
