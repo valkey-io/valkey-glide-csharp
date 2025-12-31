@@ -88,4 +88,12 @@ public interface IConnectionMultiplexer : IDisposable, IAsyncDisposable
     /// <returns>A task that represents the asynchronous operation. The task result contains the connection ID, or null if not available.</returns>
     /// <inheritdoc cref="GetConnectionId(EndPoint, ConnectionType)" path="/remarks"/>
     Task<long?> GetConnectionIdAsync(EndPoint endpoint, ConnectionType connectionType);
+
+    /// <summary>
+    /// Close all connections and release all resources.
+    /// </summary>
+    void Close();
+
+    /// <inheritdoc cref="Close"/>
+    Task CloseAsync();
 }
