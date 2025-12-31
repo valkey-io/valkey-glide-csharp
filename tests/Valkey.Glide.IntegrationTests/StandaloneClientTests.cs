@@ -49,37 +49,20 @@ public class StandaloneClientTests(TestConfiguration config)
     }
 
     [Fact]
-    public void CanConnectWithDifferentParameters()
+    public async Task CanConnectWithDifferentParameters()
     {
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithClientName("GLIDE").Build());
+        var config = TestConfiguration.DefaultClientConfig();
 
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithTls(false).Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithConnectionTimeout(TimeSpan.FromSeconds(2)).Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithRequestTimeout(TimeSpan.FromSeconds(2)).Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithDataBaseId(4).Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithConnectionRetryStrategy(1, 2, 3).Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithAuthentication("default", "").Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2).Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithReadFrom(new ConnectionConfiguration.ReadFrom(ConnectionConfiguration.ReadFromStrategy.Primary)).Build());
-
-        _ = GlideClient.CreateClient(TestConfiguration.DefaultClientConfig()
-            .WithLazyConnect(true).Build());
+        await using var client1 = await GlideClient.CreateClient(config.WithClientName("GLIDE").Build());
+        await using var client2 = await GlideClient.CreateClient(config.WithTls(false).Build());
+        await using var client3 = await GlideClient.CreateClient(config.WithConnectionTimeout(TimeSpan.FromSeconds(2)).Build());
+        await using var client4 = await GlideClient.CreateClient(config.WithRequestTimeout(TimeSpan.FromSeconds(2)).Build());
+        await using var client5 = await GlideClient.CreateClient(config.WithDataBaseId(4).Build());
+        await using var client6 = await GlideClient.CreateClient(config.WithConnectionRetryStrategy(1, 2, 3).Build());
+        await using var client7 = await GlideClient.CreateClient(config.WithAuthentication("default", "").Build());
+        await using var client8 = await GlideClient.CreateClient(config.WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2).Build());
+        await using var client9 = await GlideClient.CreateClient(config.WithReadFrom(new ConnectionConfiguration.ReadFrom(ConnectionConfiguration.ReadFromStrategy.Primary)).Build());
+        await using var client10 = await GlideClient.CreateClient(config.WithLazyConnect(true).Build());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

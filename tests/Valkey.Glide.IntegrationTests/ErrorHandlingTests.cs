@@ -18,8 +18,8 @@ public class ErrorHandlingTests
     [Fact]
     public async Task ErrorIfIncorrectArgs()
     {
-        using GlideClient client = TestConfiguration.DefaultStandaloneClient();
-        _ = await Assert.ThrowsAsync<RequestException>(()
+        await using GlideClient client = TestConfiguration.DefaultStandaloneClient();
+        await Assert.ThrowsAsync<RequestException>(()
             => client.CustomCommand(["ping", "pong", "pang"])
         );
     }

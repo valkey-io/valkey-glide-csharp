@@ -61,7 +61,7 @@ public class TlsTests
         using var server = new ClusterServer(useTls: true);
         var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
 
-        using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
 
@@ -71,7 +71,7 @@ public class TlsTests
         using var server = new ClusterServer(useTls: true);
         var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
 
-        using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
 
@@ -81,7 +81,7 @@ public class TlsTests
         using var server = new ClusterServer(useTls: true);
         var configBuilder = server.CreateConfigBuilder().WithInsecureTls();
 
-        using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
 
@@ -142,7 +142,7 @@ public class TlsTests
         using var server = new StandaloneServer(useTls: true);
         var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
 
-        using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
 
@@ -152,7 +152,7 @@ public class TlsTests
         using var server = new StandaloneServer(useTls: true);
         var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
 
-        using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
 
@@ -162,7 +162,7 @@ public class TlsTests
         using var server = new StandaloneServer(useTls: true);
         var configBuilder = server.CreateConfigBuilder().WithInsecureTls();
 
-        using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
 

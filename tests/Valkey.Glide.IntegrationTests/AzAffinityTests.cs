@@ -45,7 +45,7 @@ public class AzAffinityTests(TestConfiguration config)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
-        using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
+        await using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
             TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
         const string az = "us-east-1a";
         const int nGetCalls = 3;
@@ -56,7 +56,7 @@ public class AzAffinityTests(TestConfiguration config)
         await configClient.CustomCommand(["config", "resetstat"], AllNodes);
         await configClient.CustomCommand(["config", "set", "availability-zone", az], new SlotKeyRoute(key, SlotType.Replica));
 
-        using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, az, protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, az, protocol);
 
         for (int i = 0; i < nGetCalls; i++)
         {
@@ -64,7 +64,6 @@ public class AzAffinityTests(TestConfiguration config)
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.SERVER, Section.COMMANDSTATS], AllNodes);
-        azTestClient.Dispose();
 
         int changedAzCount = 0;
         foreach (string value in infoResult.MultiValue.Values)
@@ -98,7 +97,7 @@ public class AzAffinityTests(TestConfiguration config)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
-        using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
+        await using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
             TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
         const string az = "us-east-1a";
         string key = Guid.NewGuid().ToString();
@@ -116,7 +115,7 @@ public class AzAffinityTests(TestConfiguration config)
         // Setting AZ for all Nodes
         await configClient.CustomCommand(["config", "set", "availability-zone", az], AllNodes);
 
-        using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, az, protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, az, protocol);
 
         ClusterValue<object?> azGetResult = await azTestClient.CustomCommand(["config", "get", "availability-zone"], AllNodes);
         foreach (object? value in azGetResult.MultiValue.Values)
@@ -157,7 +156,7 @@ public class AzAffinityTests(TestConfiguration config)
 
         const int nGetCalls = 3;
 
-        using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, "non-existing-az", protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, "non-existing-az", protocol);
 
         // Reset stats
         await azTestClient.CustomCommand(["config", "resetstat"], AllNodes);
@@ -169,7 +168,6 @@ public class AzAffinityTests(TestConfiguration config)
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.COMMANDSTATS], AllNodes);
-        azTestClient.Dispose();
 
         // We expect the calls to be distributed evenly among the replicas
         foreach (string value in infoResult.MultiValue.Values)
@@ -189,7 +187,7 @@ public class AzAffinityTests(TestConfiguration config)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
 
-        using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
+        await using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
             TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
         const string az = "us-east-1a";
         const string otherAz = "us-east-1b";
