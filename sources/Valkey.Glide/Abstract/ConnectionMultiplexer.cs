@@ -206,4 +206,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
         return config;
     }
+
+    void IConnectionMultiplexer.Close() => Dispose();
+    Task IConnectionMultiplexer.CloseAsync() => DisposeAsync().AsTask();
 }
