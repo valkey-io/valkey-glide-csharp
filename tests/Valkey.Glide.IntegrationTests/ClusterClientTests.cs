@@ -520,7 +520,7 @@ public class ClusterClientTests(TestConfiguration config)
             .WithDataBaseId(1)
             .Build();
 
-        using var client = await GlideClusterClient.CreateClient(config);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         // Verify we can connect with database ID 1
         TimeSpan result = await client.PingAsync();
