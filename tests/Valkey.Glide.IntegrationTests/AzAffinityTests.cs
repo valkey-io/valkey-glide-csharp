@@ -134,7 +134,6 @@ public class AzAffinityTests(TestConfiguration config)
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);
-        azTestClient.Dispose();
 
         // Check that all replicas have the same number of GET calls
         foreach (string value in infoResult.MultiValue.Values)
@@ -209,7 +208,7 @@ public class AzAffinityTests(TestConfiguration config)
             Assert.Equal(az, primaryConfigArray[1]?.ToString());
         }
 
-        using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinityReplicasAndPrimary, az, protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinityReplicasAndPrimary, az, protocol);
 
         // Execute GET commands
         for (int i = 0; i < nReplicas; i++)
@@ -218,7 +217,6 @@ public class AzAffinityTests(TestConfiguration config)
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);
-        azTestClient.Dispose();
 
         // Check that only the primary in the specified AZ handled all GET calls
         foreach (string value in infoResult.MultiValue.Values)
