@@ -140,6 +140,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return connectionId;
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         GC.SuppressFinalize(this);
@@ -154,8 +155,10 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         }
     }
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync() => await Task.Run(Dispose);
 
+    /// <inheritdoc/>
     public override string ToString() => _db!.ToString();
 
     internal ConfigurationOptions RawConfig { private set; get; }
@@ -207,6 +210,9 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return config;
     }
 
+    /// <inheritdoc/>
     void IConnectionMultiplexer.Close() => Dispose();
+
+    /// <inheritdoc/>
     Task IConnectionMultiplexer.CloseAsync() => DisposeAsync().AsTask();
 }
