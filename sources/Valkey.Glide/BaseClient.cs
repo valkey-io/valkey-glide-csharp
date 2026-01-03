@@ -18,6 +18,8 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 {
     #region public methods
+
+    /// <inheritdoc/>
     public void Dispose()
     {
         GC.SuppressFinalize(this);
@@ -37,10 +39,13 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync() => await Task.Run(Dispose);
 
+    /// <inheritdoc/>
     public override string ToString() => $"{GetType().Name} {{ 0x{ClientPointer:X} {_clientInfo} }}";
 
+    /// <inheritdoc/>
     public override int GetHashCode() => (int)ClientPointer;
 
     /// <summary>

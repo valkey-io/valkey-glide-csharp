@@ -41,31 +41,30 @@ public class ReadFromTests(TestConfiguration config)
         }
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
-        {
-            // Assert - Verify connection was created successfully
-            Assert.NotNull(connectionMultiplexer);
+        await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
 
-            // Parse the original configuration to verify ReadFrom was set correctly
-            ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
-            Assert.NotNull(parsedConfig.ReadFrom);
-            Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(expectedAz, parsedConfig.ReadFrom.Value.Az);
+        // Assert - Verify connection was created successfully
+        Assert.NotNull(connectionMultiplexer);
 
-            // Verify the configuration reaches the underlying client by testing functionality
-            IDatabase database = connectionMultiplexer.GetDatabase();
-            Assert.NotNull(database);
+        // Parse the original configuration to verify ReadFrom was set correctly
+        ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
+        Assert.NotNull(parsedConfig.ReadFrom);
+        Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(expectedAz, parsedConfig.ReadFrom.Value.Az);
 
-            // Test a basic operation to ensure the connection works with ReadFrom configuration
-            await database.PingAsync();
+        // Verify the configuration reaches the underlying client by testing functionality
+        IDatabase database = connectionMultiplexer.GetDatabase();
+        Assert.NotNull(database);
 
-            // Test data operations to verify the ReadFrom configuration is active
-            string testKey = Guid.NewGuid().ToString();
-            string testValue = useStandalone ? "standalone-end-to-end-test" : "cluster-end-to-end-test";
-            await database.StringSetAsync(testKey, testValue);
-            string? retrievedValue = await database.StringGetAsync(testKey);
-            Assert.Equal(testValue, retrievedValue);
-        }
+        // Test a basic operation to ensure the connection works with ReadFrom configuration
+        await database.PingAsync();
+
+        // Test data operations to verify the ReadFrom configuration is active
+        string testKey = Guid.NewGuid().ToString();
+        string testValue = useStandalone ? "standalone-end-to-end-test" : "cluster-end-to-end-test";
+        await database.StringSetAsync(testKey, testValue);
+        string? retrievedValue = await database.StringGetAsync(testKey);
+        Assert.Equal(testValue, retrievedValue);
     }
 
     [Theory]
@@ -78,30 +77,30 @@ public class ReadFromTests(TestConfiguration config)
         {
             string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS}";
 
-            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
-            {
-                // Assert - Verify connection was created successfully
-                Assert.NotNull(connectionMultiplexer);
+            await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
 
-                // Parse the original configuration to verify ReadFrom is null (default behavior)
-                ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
-                Assert.Null(parsedConfig.ReadFrom);
+            // Assert - Verify connection was created successfully
+            Assert.NotNull(connectionMultiplexer);
 
-                // Test a basic operation to ensure the connection works without ReadFrom configuration
-                IDatabase database = connectionMultiplexer.GetDatabase();
-                await database.PingAsync();
+            // Parse the original configuration to verify ReadFrom is null (default behavior)
+            ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
+            Assert.Null(parsedConfig.ReadFrom);
 
-                // Test data operations to verify default behavior works
-                string testKey = Guid.NewGuid().ToString();
-                string testValue = "connection-string-default-behavior-test";
-                await database.StringSetAsync(testKey, testValue);
-                string? retrievedValue = await database.StringGetAsync(testKey);
-                Assert.Equal(testValue, retrievedValue);
+            // Test a basic operation to ensure the connection works without ReadFrom configuration
+            IDatabase database = connectionMultiplexer.GetDatabase();
+            await database.PingAsync();
 
-                // Cleanup
-                await database.KeyDeleteAsync(testKey);
-            }
+            // Test data operations to verify default behavior works
+            string testKey = Guid.NewGuid().ToString();
+            string testValue = "connection-string-default-behavior-test";
+            await database.StringSetAsync(testKey, testValue);
+            string? retrievedValue = await database.StringGetAsync(testKey);
+            Assert.Equal(testValue, retrievedValue);
+
+            // Cleanup
+            await database.KeyDeleteAsync(testKey);
         }
+
         else
         {
             ConfigurationOptions configOptions = new ConfigurationOptions
@@ -111,28 +110,27 @@ public class ReadFromTests(TestConfiguration config)
             configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
             configOptions.Ssl = TestConfiguration.TLS;
 
-            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-            {
-                // Assert - Verify connection was created successfully
-                Assert.NotNull(connectionMultiplexer);
+            await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
 
-                // Verify ReadFrom is null (default behavior)
-                Assert.Null(configOptions.ReadFrom);
+            // Assert - Verify connection was created successfully
+            Assert.NotNull(connectionMultiplexer);
 
-                // Test a basic operation to ensure the connection works without ReadFrom configuration
-                IDatabase database = connectionMultiplexer.GetDatabase();
-                await database.PingAsync();
+            // Verify ReadFrom is null (default behavior)
+            Assert.Null(configOptions.ReadFrom);
 
-                // Test data operations to verify default behavior works
-                string testKey = Guid.NewGuid().ToString();
-                string testValue = "config-options-null-readfrom-test";
-                await database.StringSetAsync(testKey, testValue);
-                string? retrievedValue = await database.StringGetAsync(testKey);
-                Assert.Equal(testValue, retrievedValue);
+            // Test a basic operation to ensure the connection works without ReadFrom configuration
+            IDatabase database = connectionMultiplexer.GetDatabase();
+            await database.PingAsync();
 
-                // Cleanup
-                await database.KeyDeleteAsync(testKey);
-            }
+            // Test data operations to verify default behavior works
+            string testKey = Guid.NewGuid().ToString();
+            string testValue = "config-options-null-readfrom-test";
+            await database.StringSetAsync(testKey, testValue);
+            string? retrievedValue = await database.StringGetAsync(testKey);
+            Assert.Equal(testValue, retrievedValue);
+
+            // Cleanup
+            await database.KeyDeleteAsync(testKey);
         }
     }
 
@@ -151,14 +149,11 @@ public class ReadFromTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act & Assert: Test invalid assignment through property setter
-        Assert.Throws<ArgumentException>(() =>
-        {
-            configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary, "invalid-az-for-primary");
-        });
+        Assert.Throws<ArgumentException>(() => configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary, "invalid-az-for-primary"));
 
         // Test that the configuration remains in a valid state after failed assignment
         configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
-        using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
         Assert.NotNull(connectionMultiplexer);
 
         // Test basic functionality
@@ -184,24 +179,23 @@ public class ReadFromTests(TestConfiguration config)
         originalConfig.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
 
         // Connect using cloned configuration
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(clonedConfig))
-        {
-            // Assert - Verify connection was created successfully
-            Assert.NotNull(connectionMultiplexer);
+        await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(clonedConfig);
 
-            // Verify cloned configuration preserved the original ReadFrom settings
-            Assert.NotNull(clonedConfig.ReadFrom);
-            Assert.Equal(ReadFromStrategy.AzAffinity, clonedConfig.ReadFrom.Value.Strategy);
-            Assert.Equal("us-east-1a", clonedConfig.ReadFrom.Value.Az);
+        // Assert - Verify connection was created successfully
+        Assert.NotNull(connectionMultiplexer);
 
-            // Verify original configuration was modified independently
-            Assert.NotNull(originalConfig.ReadFrom);
-            Assert.Equal(ReadFromStrategy.Primary, originalConfig.ReadFrom.Value.Strategy);
+        // Verify cloned configuration preserved the original ReadFrom settings
+        Assert.NotNull(clonedConfig.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinity, clonedConfig.ReadFrom.Value.Strategy);
+        Assert.Equal("us-east-1a", clonedConfig.ReadFrom.Value.Az);
 
-            // Test basic functionality
-            IDatabase database = connectionMultiplexer.GetDatabase();
-            await database.PingAsync();
-        }
+        // Verify original configuration was modified independently
+        Assert.NotNull(originalConfig.ReadFrom);
+        Assert.Equal(ReadFromStrategy.Primary, originalConfig.ReadFrom.Value.Strategy);
+
+        // Test basic functionality
+        IDatabase database = connectionMultiplexer.GetDatabase();
+        await database.PingAsync();
     }
 
     #endregion
@@ -226,58 +220,57 @@ public class ReadFromTests(TestConfiguration config)
             // Explicitly not setting ReadFrom to simulate legacy behavior
 
             // Act
-            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConfig))
-            {
-                // Assert - Verify connection was created successfully
-                Assert.NotNull(connectionMultiplexer);
+            await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConfig);
 
-                // Verify ReadFrom is null (legacy behavior)
-                Assert.Null(legacyConfig.ReadFrom);
+            // Assert - Verify connection was created successfully
+            Assert.NotNull(connectionMultiplexer);
 
-                // Verify full functionality
-                IDatabase database = connectionMultiplexer.GetDatabase();
-                await database.PingAsync();
+            // Verify ReadFrom is null (legacy behavior)
+            Assert.Null(legacyConfig.ReadFrom);
 
-                // Test basic operations to ensure legacy behavior works
-                string testKey = "legacy-config-test-key";
-                string testValue = "legacy-config-test-value";
-                await database.StringSetAsync(testKey, testValue);
-                string? retrievedValue = await database.StringGetAsync(testKey);
-                Assert.Equal(testValue, retrievedValue);
+            // Verify full functionality
+            IDatabase database = connectionMultiplexer.GetDatabase();
+            await database.PingAsync();
 
-                // Cleanup
-                await database.KeyDeleteAsync(testKey);
-            }
+            // Test basic operations to ensure legacy behavior works
+            string testKey = "legacy-config-test-key";
+            string testValue = "legacy-config-test-value";
+            await database.StringSetAsync(testKey, testValue);
+            string? retrievedValue = await database.StringGetAsync(testKey);
+            Assert.Equal(testValue, retrievedValue);
+
+            // Cleanup
+            await database.KeyDeleteAsync(testKey);
         }
+
         else
         {
             // Arrange: Create a legacy-style connection string without ReadFrom
             string legacyConnectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS},connectTimeout=5000,responseTimeout=5000";
 
             // Act
-            using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConnectionString))
-            {
-                // Assert - Verify connection was created successfully
-                Assert.NotNull(connectionMultiplexer);
+            await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(legacyConnectionString);
 
-                // Parse the connection string to verify ReadFrom is null (legacy behavior)
-                ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(legacyConnectionString);
-                Assert.Null(parsedConfig.ReadFrom);
+            // Assert - Verify connection was created successfully
+            Assert.NotNull(connectionMultiplexer);
 
-                // Verify full functionality
-                IDatabase database = connectionMultiplexer.GetDatabase();
-                await database.PingAsync();
+            // Parse the connection string to verify ReadFrom is null (legacy behavior)
+            ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(legacyConnectionString);
+            Assert.Null(parsedConfig.ReadFrom);
 
-                // Test basic operations to ensure legacy behavior works
-                string testKey = "legacy-connection-string-test-key";
-                string testValue = "legacy-connection-string-test-value";
-                await database.StringSetAsync(testKey, testValue);
-                string? retrievedValue = await database.StringGetAsync(testKey);
-                Assert.Equal(testValue, retrievedValue);
+            // Verify full functionality
+            IDatabase database = connectionMultiplexer.GetDatabase();
+            await database.PingAsync();
 
-                // Cleanup
-                await database.KeyDeleteAsync(testKey);
-            }
+            // Test basic operations to ensure legacy behavior works
+            string testKey = "legacy-connection-string-test-key";
+            string testValue = "legacy-connection-string-test-value";
+            await database.StringSetAsync(testKey, testValue);
+            string? retrievedValue = await database.StringGetAsync(testKey);
+            Assert.Equal(testValue, retrievedValue);
+
+            // Cleanup
+            await database.KeyDeleteAsync(testKey);
         }
     }
 

@@ -50,7 +50,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     ///     .WithTls()
     ///     .WithConnectionRetryStrategy(5, 100, 2)
     ///     .Build();
-    /// using GlideClient client = await GlideClient.CreateClient(config);
+    /// await using GlideClient client = await GlideClient.CreateClient(config);
     /// </code>
     /// </example>
     /// </remarks>

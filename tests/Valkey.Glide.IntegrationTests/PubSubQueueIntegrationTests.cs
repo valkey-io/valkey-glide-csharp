@@ -8,27 +8,8 @@ namespace Valkey.Glide.IntegrationTests;
 /// Rust core, FFI boundary, and into C# message queues (without callbacks).
 /// Tests the alternative PubSub usage pattern where users manually poll for messages.
 /// </summary>
-public class PubSubQueueIntegrationTests : IDisposable
+public class PubSubQueueIntegrationTests
 {
-    private readonly List<BaseClient> _testClients = [];
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        foreach (BaseClient client in _testClients)
-        {
-            try
-            {
-                client.Dispose();
-            }
-            catch
-            {
-                // Ignore disposal errors in tests
-            }
-        }
-        _testClients.Clear();
-    }
-
     [Fact]
     public async Task QueueBasedRetrieval_WithStandaloneClient_ReceivesMessages()
     {
@@ -48,11 +29,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -102,11 +80,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClusterClientConfig().Build();
 
         // Act
-        GlideClusterClient subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
 
         await Task.Delay(1000);
 
@@ -144,11 +119,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         await Task.Delay(1000);
 
@@ -185,11 +157,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         await Task.Delay(1000);
 
@@ -241,11 +210,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         await Task.Delay(1000);
 
@@ -291,8 +257,7 @@ public class PubSubQueueIntegrationTests : IDisposable
             .Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
 
         await Task.Delay(1000);
 
@@ -326,11 +291,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         await Task.Delay(1000);
 
@@ -381,11 +343,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         await Task.Delay(1000);
 
@@ -435,8 +394,7 @@ public class PubSubQueueIntegrationTests : IDisposable
             .Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
 
         await Task.Delay(1000);
 
@@ -470,11 +428,8 @@ public class PubSubQueueIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         await Task.Delay(1000);
 

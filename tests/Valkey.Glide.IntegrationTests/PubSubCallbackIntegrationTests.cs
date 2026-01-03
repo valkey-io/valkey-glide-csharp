@@ -9,29 +9,10 @@ namespace Valkey.Glide.IntegrationTests;
 /// These tests verify the complete message flow from PUBLISH commands through the server,
 /// Rust core, FFI boundary, and into C# callbacks.
 /// </summary>
-public class PubSubCallbackIntegrationTests : IDisposable
+public class PubSubCallbackIntegrationTests
 {
-    private readonly List<BaseClient> _testClients = [];
     private readonly ManualResetEventSlim _messageReceivedEvent = new(false);
     private readonly object _lockObject = new();
-
-    public void Dispose()
-    {
-        // Clean up all test clients
-        foreach (BaseClient client in _testClients)
-        {
-            try
-            {
-                client.Dispose();
-            }
-            catch
-            {
-                // Ignore disposal errors in tests
-            }
-        }
-        _testClients.Clear();
-        _messageReceivedEvent.Dispose();
-    }
 
     [Fact]
     public async Task EndToEndMessageFlow_WithStandaloneClient_ProcessesMessagesCorrectly()
@@ -56,11 +37,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -103,11 +81,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClusterClientConfig().Build();
 
         // Act
-        GlideClusterClient subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -151,11 +126,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -209,11 +181,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -271,11 +240,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -339,11 +305,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -426,11 +389,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
-
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -499,14 +459,9 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriber1 = await GlideClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriber1);
-
-        GlideClient subscriber2 = await GlideClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriber2);
-
-        GlideClient publisher = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisher);
+        await using var subscriber1 = await GlideClient.CreateClient(subscriberConfig1);
+        await using var subscriber2 = await GlideClient.CreateClient(subscriberConfig2);
+        await using var publisher = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscriptions to be established
         await Task.Delay(1000);
@@ -556,11 +511,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
 
         // Act
-        GlideClient subscriber = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriber);
-
-        GlideClient publisher = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisher);
+        await using var subscriber = await GlideClient.CreateClient(subscriberConfig);
+        await using var publisher = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -617,11 +569,8 @@ public class PubSubCallbackIntegrationTests : IDisposable
         var publisherConfig = TestConfiguration.DefaultClusterClientConfig().Build();
 
         // Act
-        GlideClusterClient subscriber = await GlideClusterClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriber);
-
-        GlideClusterClient publisher = await GlideClusterClient.CreateClient(publisherConfig);
-        _testClients.Add(publisher);
+        await using var subscriber = await GlideClusterClient.CreateClient(subscriberConfig);
+        await using var publisher = await GlideClusterClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established - pattern subscriptions in cluster mode may need more time
         await Task.Delay(5000);
