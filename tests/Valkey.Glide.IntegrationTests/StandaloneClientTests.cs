@@ -507,7 +507,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         var initialCount = await GetConnectionCount(referenceClient);
 
-        `// Create eager client (connects immediately).
+        // Create eager client (connects immediately).
         await using var eagerClient = await GlideClient.CreateClient(eagerConfig);
 
         var connectCount = await GetConnectionCount(referenceClient);
