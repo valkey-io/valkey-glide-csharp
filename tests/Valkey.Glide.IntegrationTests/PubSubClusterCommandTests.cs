@@ -53,26 +53,21 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
         _testClients.Add(publisherClient);
 
-        // Wait for subscription to be established - cluster mode may need more time
-        await Task.Delay(2000);
+        // Act - retry publishing until subscriber is registered or timeout.
+        long subscriberCount = 0L;
 
-        // Act
-        long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        while (!cts.Token.IsCancellationRequested)
+        {
+            subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
+            if (subscriberCount > 0L) break;
+            await Task.Delay(500);
+        }
 
         // Assert - In cluster mode, PUBLISH returns the number of subscribers across all nodes
         // The count might be 0 or more depending on cluster topology and subscription propagation
         Assert.True(subscriberCount >= 0L);
-
-        // Verify message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-        await Task.Delay(500);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.True(hasMessage);
-        Assert.NotNull(receivedMessage);
-        Assert.Equal(testMessage, receivedMessage.Message);
-        Assert.Equal(testChannel, receivedMessage.Channel);
+        await AssertMessageReceived(subscriberClient, testChannel, testMessage);
     }
 
     [Fact]
@@ -120,25 +115,20 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
         _testClients.Add(publisherClient);
 
-        // Wait for subscription to be established - sharded subscriptions in cluster mode may need more time
-        await Task.Delay(2000);
+        // Act - retry publishing until subscriber is registered or timeout.
+        long subscriberCount = 0L;
 
-        // Act
-        long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage, sharded: true);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        while (!cts.Token.IsCancellationRequested)
+        {
+            subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage, sharded: true);
+            if (subscriberCount > 0L) break;
+            await Task.Delay(500);
+        }
 
         // Assert
         Assert.Equal(1L, subscriberCount);
-
-        // Verify message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-        await Task.Delay(500);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.True(hasMessage);
-        Assert.NotNull(receivedMessage);
-        Assert.Equal(testMessage, receivedMessage.Message);
-        Assert.Equal(testChannel, receivedMessage.Channel);
+        await AssertMessageReceived(subscriberClient, testChannel, testMessage);
     }
 
     [Fact]
@@ -541,5 +531,24 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             client?.Dispose();
         }
         _testClients.Clear();
+    }
+
+    /// <summary>
+    /// Asserts that the client receives a message on the expected channel with the expected content.
+    /// </summary>
+    /// <param name="client">The client expected to receive the message.</param>
+    /// <param name="expectedChannel">The channel on which the message is expected.</param>
+    /// <param name="expectedMessage">The expected message content.</param>
+    private async Task AssertMessageReceived(GlideClusterClient client, string expectedChannel, string expectedMessage)
+    {
+        PubSubMessageQueue? queue = client.PubSubQueue;
+        Assert.NotNull(queue);
+
+        // Wait up to 5 seconds for the message.
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var receivedMessage = await queue.GetMessageAsync(cts.Token);
+
+        Assert.Equal(expectedMessage, receivedMessage.Message);
+        Assert.Equal(expectedChannel, receivedMessage.Channel);
     }
 }
