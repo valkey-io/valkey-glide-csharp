@@ -103,7 +103,7 @@ jobs:
                   cat ~/.ort/config/config.yml
 
             - name: Set up dotnet
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   dotnet-version: |
                       6
@@ -212,7 +212,7 @@ jobs:
             - name: Create or update pull request
               if: ${{ env.FOUND_DIFF  == 'true' }}
               run: |
-                  TARGET_BRANCH=`git branch --show-current`
+                  TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
                   ORT_DIFF_BRANCH_NAME="ort-diff-for-$TARGET_BRANCH"
                   echo "Creating pull request from branch $ORT_DIFF_BRANCH_NAME to branch $TARGET_BRANCH"
                   git config --global user.email "valkey-glide@lists.valkey.io"
@@ -223,7 +223,7 @@ jobs:
                   git push --set-upstream origin ${ORT_DIFF_BRANCH_NAME} -f
 
                   # Check if PR already exists
-                  existing_pr=$(gh pr list --base ${TARGET_BRANCH} --head ${ORT_DIFF_BRANCH_NAME} --json number --jq '.[0].number')
+                  existing_pr=$(gh pr list --base "${TARGET_BRANCH}" --head "${ORT_DIFF_BRANCH_NAME}" --json number --jq '.[0].number')
 
                   if [ -z "$existing_pr" ]; then
                     # Create a new PR if none exists

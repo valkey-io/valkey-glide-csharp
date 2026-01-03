@@ -142,11 +142,10 @@ jobs:
                   tree -h
 
             - name: Set up dotnet
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install all supported versions + latest dotnet too to use language features
                   dotnet-version: |
-                      6
                       8
                       9
               env:
@@ -233,7 +232,7 @@ jobs:
                   path: nuget.local
 
             - name: Set up dotnet
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |

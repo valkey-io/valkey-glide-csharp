@@ -102,7 +102,7 @@ jobs:
                   echo "${{ toJson(matrix) }}"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -203,8 +203,6 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # Don't use generated matrix for dotnet until net6.0 compatibility issues resolved on amazon linux
-                # dotnet: ${{ fromJson(needs.get-containers.outputs.version-matrix-output) }}
                 dotnet: ["8.0"]
                 server: ${{ fromJson(needs.get-containers.outputs.server-matrix-output) }}
                 host: ${{ fromJson(needs.get-containers.outputs.host-matrix-output) }}
@@ -223,7 +221,7 @@ jobs:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -319,7 +317,7 @@ jobs:
                   RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
 
             - name: Set up dotnet
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -329,4 +327,5 @@ jobs:
             - name: Format
               run: |
                   dotnet format --verify-no-changes --verbosity diagnostic
-                  dotnet build --configuration Lint --framework net8.0
+                  dotnet build-server shutdown
+                  dotnet build --configuration Lint --framework net8.0 -m:1
