@@ -72,7 +72,7 @@ jobs:
                   path: .run-meta/inputs.json
                   if-no-files-found: error
 
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
             - id: get-matrices
               uses: ./.github/workflows/create-test-matrices
               with:
@@ -92,7 +92,7 @@ jobs:
         runs-on: ${{ matrix.host.RUNNER }}
 
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   submodules: true
 
@@ -189,7 +189,7 @@ jobs:
             version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
 
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
             - id: get-matrices
               uses: ./.github/workflows/create-test-matrices
               with:
@@ -216,7 +216,7 @@ jobs:
                   yum install -y git tar findutils libicu
                   echo IMAGE=amazonlinux:latest | sed -r 's/:/-/g' >> $GITHUB_ENV
             # Replace `:` in the variable otherwise it can't be used in `upload-artifact`
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   submodules: true
 
@@ -288,7 +288,7 @@ jobs:
         timeout-minutes: 20
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   submodules: true
 
