@@ -128,14 +128,6 @@ public class PubSubFFIMemoryLeakTests
         Console.WriteLine($"Memory leak test passed for {messageSize}-byte messages. Growth between runs: {memoryGrowthBetweenRuns:N0} bytes");
     }
 
-    private static long GetMemoryAfterFullGC()
-    {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        return GC.GetTotalMemory(true);
-    }
-
     [Fact]
     [Trait("Category", "LongRunning")]
     public void ProcessMessagesUnderGCPressure_NoMemoryLeak_StableUnderPressure()
@@ -396,5 +388,17 @@ public class PubSubFFIMemoryLeakTests
                 Marshal.FreeHGlobal(patternPtr);
             }
         }
+    }
+
+    /// <summary>
+    /// Performs garbage collection and returns the total memory usage after cleanup.
+    /// </summary>
+    /// <returns>Total memory usage in bytes after garbage collection.</returns>
+    private static long GetMemoryAfterFullGC()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        return GC.GetTotalMemory(true);
     }
 }
