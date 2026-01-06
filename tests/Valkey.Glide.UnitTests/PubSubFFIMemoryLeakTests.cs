@@ -92,7 +92,7 @@ public class PubSubFFIMemoryLeakTests
 
         var message = new string('X', messageSize);
         var channel = "test-channel";
-        
+
         // Run the operation once. This will allocate all necessary objects and
         // potentially promote some to higher GC generations.
         for (int i = 0; i < iterationsPerSize; i++)
