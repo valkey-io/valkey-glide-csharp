@@ -19,7 +19,7 @@ jobs:
         steps:
             - name: Download inputs.json artifact (if present)
               id: inputs
-              uses: dawidd6/action-download-artifact@v6
+              uses: dawidd6/action-download-artifact@v12
               continue-on-error: true
               with:
                   run_id: ${{ github.event.workflow_run.id }}
@@ -63,7 +63,7 @@ jobs:
                       return should;
 
             - name: Download artifacts from triggering run
-              uses: dawidd6/action-download-artifact@v6
+              uses: dawidd6/action-download-artifact@v12
               if: ${{ steps.gate.outputs.result == 'true' }}
               with:
                   run_id: ${{ github.event.workflow_run.id }}
