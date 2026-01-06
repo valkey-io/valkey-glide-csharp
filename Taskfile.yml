@@ -146,13 +146,13 @@ tasks:
             - task: coverage:summary
 
     benchmark:
-        desc: Run benchmarks with Redis server (FRAMEWORK must be net8.0 or net6.0)
+        desc: Run benchmarks with Redis server (FRAMEWORK must be net8.0)
         dir: valkey-glide/benchmarks
         cmds:
             - redis-server --save "" --daemonize "yes"
             - |
                 case "{{.FRAMEWORK}}" in
-                    "net8.0"|"net6.0")
+                    "net8.0")
                         echo "Running benchmarks for {{.FRAMEWORK}}..."
                         ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework {{.FRAMEWORK}}
 
@@ -215,7 +215,7 @@ tasks:
                         fi
                         ;;
                     *)
-                        echo "Error: FRAMEWORK must be either 'net8.0' or 'net6.0', got '{{.FRAMEWORK}}'"
+                        echo "Error: FRAMEWORK must be 'net8.0', got '{{.FRAMEWORK}}'"
                         exit 1
                         ;;
                 esac

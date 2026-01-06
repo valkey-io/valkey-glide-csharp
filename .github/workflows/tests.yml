@@ -66,7 +66,7 @@ jobs:
                       core.info(`inputs.json => ${JSON.stringify(out)}`);
 
             - name: Upload inputs.json
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: inputs.json
                   path: .run-meta/inputs.json
@@ -102,7 +102,7 @@ jobs:
                   echo "${{ toJson(matrix) }}"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -170,7 +170,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
                   path: |
@@ -203,8 +203,6 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # Don't use generated matrix for dotnet until net6.0 compatibility issues resolved on amazon linux
-                # dotnet: ${{ fromJson(needs.get-containers.outputs.version-matrix-output) }}
                 dotnet: ["8.0"]
                 server: ${{ fromJson(needs.get-containers.outputs.server-matrix-output) }}
                 host: ${{ fromJson(needs.get-containers.outputs.host-matrix-output) }}
@@ -223,7 +221,7 @@ jobs:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -277,7 +275,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.IMAGE }}-${{ matrix.host.ARCH }}
                   path: |
@@ -319,7 +317,7 @@ jobs:
                   RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
 
             - name: Set up dotnet
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -329,4 +327,5 @@ jobs:
             - name: Format
               run: |
                   dotnet format --verify-no-changes --verbosity diagnostic
-                  dotnet build --configuration Lint --framework net8.0
+                  dotnet build-server shutdown
+                  dotnet build --configuration Lint --framework net8.0 -m:1

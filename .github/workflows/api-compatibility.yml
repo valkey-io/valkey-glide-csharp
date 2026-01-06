@@ -30,7 +30,7 @@ jobs:
                   submodules: true
 
             - name: Setup .NET
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v5
               with:
                   dotnet-version: |
                       8.x
@@ -46,10 +46,16 @@ jobs:
               run: |
                   nuget install StackExchange.Redis -Version "$env:SER_VERSION" -OutputDirectory ./packages
 
+            - name: Kill VBCSCompiler to avoid file locks
+              shell: pwsh
+              run: |
+                  dotnet build-server shutdown
+                  Get-Process VBCSCompiler -ErrorAction SilentlyContinue | Stop-Process -Force
+
             - name: Build Valkey.Glide (net8.0)
               shell: pwsh
               run: |
-                  dotnet build --configuration Release --framework net8.0 --nologo
+                  dotnet build --configuration Release --framework net8.0 --nologo -m:1
 
             - name: Run API Diff (net8.0)
               id: run-diff
@@ -85,7 +91,7 @@ jobs:
 
             - name: Upload API Diff Report (net8.0)
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: api-diff-net8.0
                   path: api-diff/api-changes-net8.0.html

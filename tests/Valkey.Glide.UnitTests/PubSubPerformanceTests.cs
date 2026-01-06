@@ -223,22 +223,36 @@ public class PubSubPerformanceTests
                 Interlocked.Increment(ref messagesReceived);
             }, null);
 
+        // Warm-up phase (1 second)
+        var warmUpStopwatch = Stopwatch.StartNew();
+        while (warmUpStopwatch.Elapsed < TimeSpan.FromSeconds(1))
+        {
+            var message = new PubSubMessage($"warmup-{messagesReceived}", "long-running-test");
+            config.Callback!(message, null);
+        }
+        // Reset counters after warm-up
+        messagesReceived = 0;
+
         // Act - Sustained message processing
         var stopwatch = Stopwatch.StartNew();
         var sampleInterval = TimeSpan.FromSeconds(1);
         var nextSampleTime = sampleInterval;
         var lastSampleCount = 0;
+        long sentMessageCount = 0;
 
         while (stopwatch.Elapsed < TimeSpan.FromSeconds(duration))
         {
-            // Send messages at target rate
-            for (int i = 0; i < targetRate / 10; i++)
-            {
-                var message = new PubSubMessage($"msg-{messagesReceived}", "long-running-test");
-                config.Callback!(message, null);
-            }
+            // More robust rate-limiter logic
+            var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+            var expectedMessagesSent = (long)(elapsedSeconds * targetRate);
 
-            Thread.Sleep(100); // 100ms intervals
+            // Send a batch of messages to catch up to the target rate
+            while (sentMessageCount < expectedMessagesSent)
+            {
+                var message = new PubSubMessage($"msg-{sentMessageCount}", "long-running-test");
+                config.Callback!(message, null);
+                sentMessageCount++;
+            }
 
             // Sample throughput every second
             if (stopwatch.Elapsed >= nextSampleTime)
@@ -249,6 +263,9 @@ public class PubSubPerformanceTests
                 lastSampleCount = currentCount;
                 nextSampleTime += sampleInterval;
             }
+
+            // Sleep for a very short duration to prevent a tight loop from hogging 100% CPU
+            Thread.Sleep(1);
         }
 
         stopwatch.Stop();
