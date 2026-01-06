@@ -136,14 +136,6 @@ public class PubSubFFIMemoryLeakTests
         return GC.GetTotalMemory(true);
     }
 
-    private static void RunMessageProcessingLoop(string message, string channel, string? pattern, int iterations)
-    {
-        for (int i = 0; i < iterations; i++)
-        {
-            ProcessSingleMessage(message, channel, pattern);
-        }
-    }
-
     [Fact]
     [Trait("Category", "LongRunning")]
     public void ProcessMessagesUnderGCPressure_NoMemoryLeak_StableUnderPressure()
