@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Valkey.Glide.TestUtils;
 
@@ -11,6 +12,8 @@ public static class Scripts
 {
     private static readonly string ValkeyGlideDirectoryName = "valkey-glide";
 
+    private static bool IsWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
     /// <summary>
     /// Runs the cluster manager script with the specified command.
     /// See 'valkey-glide/utils/cluster_manager.py' for more details.
@@ -20,12 +23,21 @@ public static class Scripts
         ProcessStartInfo info = new()
         {
             WorkingDirectory = GetScriptsDirectory(),
-            FileName = "python3",
-            Arguments = "cluster_manager.py " + cmd,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+
+        if (IsWindows())
+        {
+            info.FileName = "wsl";
+            info.Arguments = "python3 cluster_manager.py " + cmd;
+        }
+        else
+        {
+            info.FileName = "python3";
+            info.Arguments = "cluster_manager.py " + cmd;
+        }
 
         using Process? script = Process.Start(info);
         script?.WaitForExit();

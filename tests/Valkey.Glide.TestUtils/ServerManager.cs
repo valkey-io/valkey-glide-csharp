@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 using static Valkey.Glide.ConnectionConfiguration;
 
@@ -11,6 +12,8 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
+    private static bool IsWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
     /// </summary>
@@ -25,7 +28,12 @@ public static class ServerManager
 
         args.Add("start");
         args.Add($"--prefix {name}");
-        args.Add("-r 3");
+        
+        // Use 0 replicas on Windows to avoid sync issues
+        if (IsWindows())
+            args.Add("-r 0");
+        else
+            args.Add("-r 3");
 
         if (useClusterMode)
             args.Add("--cluster-mode");
