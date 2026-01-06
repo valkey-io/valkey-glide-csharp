@@ -7,18 +7,14 @@ namespace Valkey.Glide.IntegrationTests;
 /// Tests the PubSub command API implementations in GlideClusterClient.
 /// </summary>
 [Collection("GlideTests")]
-public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
+public class PubSubClusterCommandTests()
 {
-    private readonly List<BaseClient> _testClients = [];
-    public TestConfiguration Config { get; } = config;
-
     [Fact]
     public async Task PublishAsync_WithNoSubscribers_ReturnsZero()
     {
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient client = await GlideClusterClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         string channel = $"test-channel-{Guid.NewGuid()}";
         string message = "test message";
@@ -45,13 +41,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
-        GlideClusterClient subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
 
         // Create publisher
         var publisherConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
 
         // Act - retry publishing until subscriber is registered or timeout.
         long subscriberCount = 0L;
@@ -77,8 +71,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
 
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient client = await GlideClusterClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         string channel = $"test-shard-{Guid.NewGuid()}";
         string message = "test sharded message";
@@ -107,13 +100,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
-        GlideClusterClient subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
 
         // Create publisher
         var publisherConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
 
         // Act - retry publishing until subscriber is registered or timeout.
         long subscriberCount = 0L;
@@ -136,8 +127,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     {
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient client = await GlideClusterClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         // Act
         string[] channels = await client.PubSubChannelsAsync();
@@ -161,13 +151,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
-        GlideClusterClient subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
 
         // Wait for subscription to be established - cluster mode may need more time
         await Task.Delay(2000);
@@ -201,16 +189,12 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClusterClient subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
-
-        GlideClusterClient subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2);
+        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
+        await using var subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established - cluster mode may need more time
         await Task.Delay(2000);
@@ -228,8 +212,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     {
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient client = await GlideClusterClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         string channel1 = $"test-channel-{Guid.NewGuid()}";
         string channel2 = $"test-channel-{Guid.NewGuid()}";
@@ -259,8 +242,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig1)
             .Build();
 
-        GlideClusterClient subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
+        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
 
         // Create two subscribers for channel2
         ClusterPubSubSubscriptionConfig pubsubConfig2 = new ClusterPubSubSubscriptionConfig()
@@ -270,16 +252,12 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClusterClient subscriberClient2a = await GlideClusterClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2a);
-
-        GlideClusterClient subscriberClient2b = await GlideClusterClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2b);
+        await using var subscriberClient2a = await GlideClusterClient.CreateClient(subscriberConfig2);
+        await using var subscriberClient2b = await GlideClusterClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established - cluster mode may need more time
         await Task.Delay(2000);
@@ -299,8 +277,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
     {
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient client = await GlideClusterClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         // Act
         long patternCount = await client.PubSubNumPatAsync();
@@ -329,16 +306,12 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClusterClient subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
-
-        GlideClusterClient subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2);
+        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
+        await using var subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established - cluster mode may need more time
         await Task.Delay(2000);
@@ -358,8 +331,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
 
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient client = await GlideClusterClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         // Act
         string[] channels = await client.PubSubShardChannelsAsync();
@@ -385,13 +357,11 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
-        GlideClusterClient subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
 
         // Wait for subscription to be established - cluster mode may need more time
         await Task.Delay(2000);
@@ -427,16 +397,12 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClusterClient subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
-
-        GlideClusterClient subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2);
+        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
+        await using var subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established - cluster mode may need more time
         await Task.Delay(2000);
@@ -456,8 +422,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
 
         // Arrange
         var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient client = await GlideClusterClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClusterClient.CreateClient(config);
 
         string channel1 = $"test-shard-{Guid.NewGuid()}";
         string channel2 = $"test-shard-{Guid.NewGuid()}";
@@ -489,8 +454,7 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig1)
             .Build();
 
-        GlideClusterClient subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
+        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
 
         // Create two subscribers for channel2
         ClusterPubSubSubscriptionConfig pubsubConfig2 = new ClusterPubSubSubscriptionConfig()
@@ -500,16 +464,12 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClusterClient subscriberClient2a = await GlideClusterClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2a);
-
-        GlideClusterClient subscriberClient2b = await GlideClusterClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2b);
+        await using var subscriberClient2a = await GlideClusterClient.CreateClient(subscriberConfig2);
+        await using var subscriberClient2b = await GlideClusterClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        GlideClusterClient queryClient = await GlideClusterClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established - cluster mode may need more time
         await Task.Delay(2000);
@@ -522,15 +482,6 @@ public class PubSubClusterCommandTests(TestConfiguration config) : IDisposable
         Assert.Equal(2, counts.Count);
         Assert.Equal(1L, counts[testChannel1]);
         Assert.Equal(2L, counts[testChannel2]);
-    }
-
-    public void Dispose()
-    {
-        foreach (BaseClient client in _testClients)
-        {
-            client?.Dispose();
-        }
-        _testClients.Clear();
     }
 
     /// <summary>

@@ -213,8 +213,10 @@ public class PubSubPerformanceTests
         // Arrange
         const int duration = 5; // seconds
         const int targetRate = 1_000; // messages per second
-        var messagesReceived = 0;
         var throughputSamples = new ConcurrentBag<double>();
+
+        var messagesSent = 0;
+        var messagesReceived = 0;
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("long-running-test")
@@ -227,10 +229,13 @@ public class PubSubPerformanceTests
         var warmUpStopwatch = Stopwatch.StartNew();
         while (warmUpStopwatch.Elapsed < TimeSpan.FromSeconds(1))
         {
-            var message = new PubSubMessage($"warmup-{messagesReceived}", "long-running-test");
+            var message = new PubSubMessage($"warmup-{messagesSent}", "long-running-test");
             config.Callback!(message, null);
+            messagesSent++;
         }
+
         // Reset counters after warm-up
+        messagesSent = 0;
         messagesReceived = 0;
 
         // Act - Sustained message processing
@@ -238,7 +243,6 @@ public class PubSubPerformanceTests
         var sampleInterval = TimeSpan.FromSeconds(1);
         var nextSampleTime = sampleInterval;
         var lastSampleCount = 0;
-        long sentMessageCount = 0;
 
         while (stopwatch.Elapsed < TimeSpan.FromSeconds(duration))
         {
@@ -247,11 +251,11 @@ public class PubSubPerformanceTests
             var expectedMessagesSent = (long)(elapsedSeconds * targetRate);
 
             // Send a batch of messages to catch up to the target rate
-            while (sentMessageCount < expectedMessagesSent)
+            while (messagesSent < expectedMessagesSent)
             {
-                var message = new PubSubMessage($"msg-{sentMessageCount}", "long-running-test");
+                var message = new PubSubMessage($"msg-{messagesSent}", "long-running-test");
                 config.Callback!(message, null);
-                sentMessageCount++;
+                messagesSent++;
             }
 
             // Sample throughput every second

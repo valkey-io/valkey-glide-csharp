@@ -7,18 +7,14 @@ namespace Valkey.Glide.IntegrationTests;
 /// Tests the PubSub command API implementations in GlideClient.
 /// </summary>
 [Collection("GlideTests")]
-public class PubSubCommandTests(TestConfiguration config) : IDisposable
+public class PubSubCommandTests()
 {
-    private readonly List<BaseClient> _testClients = [];
-    public TestConfiguration Config { get; } = config;
-
     [Fact]
     public async Task PublishAsync_WithNoSubscribers_ReturnsZero()
     {
         // Arrange
         var config = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient client = await GlideClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClient.CreateClient(config);
 
         string channel = $"test-channel-{Guid.NewGuid()}";
         string message = "test message";
@@ -45,13 +41,11 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
 
         // Create publisher
         var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient publisherClient = await GlideClient.CreateClient(publisherConfig);
-        _testClients.Add(publisherClient);
+        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -79,8 +73,7 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
     {
         // Arrange
         var config = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient client = await GlideClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClient.CreateClient(config);
 
         // Act
         string[] channels = await client.PubSubChannelsAsync();
@@ -104,13 +97,11 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig)
             .Build();
 
-        GlideClient subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        _testClients.Add(subscriberClient);
+        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient queryClient = await GlideClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClient.CreateClient(queryConfig);
 
         // Wait for subscription to be established
         await Task.Delay(1000);
@@ -144,16 +135,12 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClient subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
-
-        GlideClient subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2);
+        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
+        await using var subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient queryClient = await GlideClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established
         await Task.Delay(1000);
@@ -171,8 +158,7 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
     {
         // Arrange
         var config = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient client = await GlideClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClient.CreateClient(config);
 
         string channel1 = $"test-channel-{Guid.NewGuid()}";
         string channel2 = $"test-channel-{Guid.NewGuid()}";
@@ -202,8 +188,7 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig1)
             .Build();
 
-        GlideClient subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
+        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
 
         // Create two subscribers for channel2
         StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
@@ -213,16 +198,12 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClient subscriberClient2a = await GlideClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2a);
-
-        GlideClient subscriberClient2b = await GlideClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2b);
+        await using var subscriberClient2a = await GlideClient.CreateClient(subscriberConfig2);
+        await using var subscriberClient2b = await GlideClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient queryClient = await GlideClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established
         await Task.Delay(1000);
@@ -242,8 +223,7 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
     {
         // Arrange
         var config = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient client = await GlideClient.CreateClient(config);
-        _testClients.Add(client);
+        await using var client = await GlideClient.CreateClient(config);
 
         // Act
         long patternCount = await client.PubSubNumPatAsync();
@@ -272,16 +252,12 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
             .WithPubSubSubscriptions(pubsubConfig2)
             .Build();
 
-        GlideClient subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
-        _testClients.Add(subscriberClient1);
-
-        GlideClient subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
-        _testClients.Add(subscriberClient2);
+        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
+        await using var subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
 
         // Create query client
         var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        GlideClient queryClient = await GlideClient.CreateClient(queryConfig);
-        _testClients.Add(queryClient);
+        await using var queryClient = await GlideClient.CreateClient(queryConfig);
 
         // Wait for subscriptions to be established
         await Task.Delay(1000);
@@ -292,14 +268,5 @@ public class PubSubCommandTests(TestConfiguration config) : IDisposable
         // Act - The pattern count should be at least 2 (our two patterns)
         // Note: There might be other pattern subscriptions from other tests
         Assert.True(patternCount >= 2L, $"Expected at least 2 pattern subscriptions, got {patternCount}");
-    }
-
-    public void Dispose()
-    {
-        foreach (var client in _testClients)
-        {
-            client?.Dispose();
-        }
-        _testClients.Clear();
     }
 }
