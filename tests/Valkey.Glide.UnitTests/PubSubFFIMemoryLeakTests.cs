@@ -82,6 +82,7 @@ public class PubSubFFIMemoryLeakTests
     [InlineData(100)]
     [InlineData(1_000)]
     [InlineData(10_000)]
+    [InlineData(100_000)]
     public void ProcessVariousMessageSizes_NoMemoryLeak_ConsistentBehavior(int messageSize)
     {
         // Arrange
