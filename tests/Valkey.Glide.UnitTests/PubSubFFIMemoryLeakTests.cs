@@ -98,7 +98,7 @@ public class PubSubFFIMemoryLeakTests
         // potentially promote some to higher GC generations.
         for (int i = 0; i < iterationsPerSize; i++)
         {
-            ProcessSingleMessage(message, channel, null);
+            ProcessSingleMessage(message, channel);
         }
 
         // Force a full GC and measure the memory. This becomes our stable baseline
@@ -109,7 +109,7 @@ public class PubSubFFIMemoryLeakTests
         // Run the exact same operation again.
         for (int i = 0; i < iterationsPerSize; i++)
         {
-            ProcessSingleMessage(message, channel, null);
+            ProcessSingleMessage(message, channel);
         }
 
         // Force another full GC and measure the final memory state.
@@ -345,7 +345,7 @@ public class PubSubFFIMemoryLeakTests
     /// Helper method to simulate processing a single PubSub message through the FFI marshaling layer.
     /// This simulates the memory allocation and marshaling that occurs in the real FFI callback.
     /// </summary>
-    private static void ProcessSingleMessage(string message, string channel, string? pattern)
+    private static void ProcessSingleMessage(string message, string channel, string? pattern = null)
     {
         // Simulate the FFI marshaling process that occurs in the real callback
         IntPtr messagePtr = Marshal.StringToHGlobalAnsi(message);
