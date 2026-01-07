@@ -76,13 +76,14 @@ public class PubSubFFIMemoryLeakTests
             $"limit: {maxMemoryGrowthBytes:N0} bytes");
     }
 
+    // Message sizes to test (in bytes)
+    // Objects larger than 85 KB are allocated on the Large Object Heap (LOH). The LOH may retain
+    // some reserved space even after GC, so we only test sizes below that threshold here.
+    public static IEnumerable<object[]> MessageSizes() => new[] { 10, 100, 1_000, 10_000, 50_000 }.Select(size => new object[] { size });
+
     [Theory]
     [Trait("Category", "LongRunning")]
-    [InlineData(10)]
-    [InlineData(100)]
-    [InlineData(1_000)]
-    [InlineData(10_000)]
-    [InlineData(100_000)]
+    [MemberData(nameof(MessageSizes))]
     public void ProcessVariousMessageSizes_NoMemoryLeak_ConsistentBehavior(int messageSize)
     {
         // Arrange
@@ -397,9 +398,15 @@ public class PubSubFFIMemoryLeakTests
     /// <returns>Total memory usage in bytes after garbage collection.</returns>
     private static long GetMemoryAfterFullGC()
     {
-        GC.Collect();
+        // Collect all generations and marks objects for finalization.
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+
+        // Wait for finalizers to complete.
         GC.WaitForPendingFinalizers();
-        GC.Collect();
+
+        // Collect again to clean up any objects that were just finalized.
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+
         return GC.GetTotalMemory(true);
     }
 }
