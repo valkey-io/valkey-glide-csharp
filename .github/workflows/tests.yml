@@ -82,17 +82,13 @@ jobs:
     tests:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: get-matrices
-        timeout-minutes: ${{ matrix.host.OS == 'windows' && 60 || 100 }}
+        timeout-minutes: 100
         strategy:
             fail-fast: false
             matrix:
                 dotnet: ${{ fromJson(needs.get-matrices.outputs.version-matrix-output) }}
                 server: ${{ fromJson(needs.get-matrices.outputs.server-matrix-output) }}
                 host: ${{ fromJson(needs.get-matrices.outputs.host-matrix-output) }}
-                exclude:
-                    # Exclude Redis 6.2 on Windows
-                    - server: { type: "redis", version: "6.2" }
-                      host: { OS: "windows" }
         runs-on: ${{ matrix.host.RUNNER }}
 
         steps:
