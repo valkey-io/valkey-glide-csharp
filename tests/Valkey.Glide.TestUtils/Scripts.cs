@@ -10,9 +10,10 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class Scripts
 {
-    private static readonly string ValkeyGlideDirectoryName = "valkey-glide";
+    private readonly static string ValkeyGlideDirectoryName = "valkey-glide";
+    private readonly static string ClusterManagerScriptName = "cluster_manager.py";
 
-    private static bool IsWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    private readonly static bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     /// <summary>
     /// Runs the cluster manager script with the specified command.
@@ -20,24 +21,19 @@ public static class Scripts
     /// </summary>
     public static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
+        // If on Windows, run the script through WSL.
+        String fileName = IsWindows ? "wsl" : "python3";
+        String arguments = (IsWindows ? $"python3 " : "") + $"{ClusterManagerScriptName} {cmd}";
+
         ProcessStartInfo info = new()
         {
             WorkingDirectory = GetScriptsDirectory(),
+            FileName = fileName,
+            Arguments = arguments,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
-
-        if (IsWindows())
-        {
-            info.FileName = "wsl";
-            info.Arguments = "python3 cluster_manager.py " + cmd;
-        }
-        else
-        {
-            info.FileName = "python3";
-            info.Arguments = "cluster_manager.py " + cmd;
-        }
 
         using Process? script = Process.Start(info);
         script?.WaitForExit();
