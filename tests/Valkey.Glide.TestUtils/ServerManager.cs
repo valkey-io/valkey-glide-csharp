@@ -12,7 +12,8 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
-    private static bool IsWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    // Number of replicas to use. Don't use replicas on Windows to avoid synchronization issues.
+    private static readonly int NUM_REPLICAS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 0 : 3;
 
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
@@ -28,12 +29,7 @@ public static class ServerManager
 
         args.Add("start");
         args.Add($"--prefix {name}");
-        
-        // Use 0 replicas on Windows to avoid sync issues
-        if (IsWindows())
-            args.Add("-r 0");
-        else
-            args.Add("-r 3");
+        args.Add($"--replicas {NUM_REPLICAS}");
 
         if (useClusterMode)
             args.Add("--cluster-mode");

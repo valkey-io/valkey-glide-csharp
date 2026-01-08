@@ -16,13 +16,17 @@
         "TARGET": "aarch64-unknown-linux-gnu",
         "tags": ["cd"]
     },
+
     {
-        "OS": "macos",
-        "NAMED_OS": "darwin",
-        "RUNNER": "macos-15",
-        "ARCH": "arm64",
-        "TARGET": "aarch64-apple-darwin",
-        "tags": ["cd"]
+        "OS": "amazon-linux",
+        "NAMED_OS": "linux",
+        "RUNNER": "ubuntu-latest",
+        "ARCH": "x64",
+        "TARGET": "x86_64-unknown-linux-gnu",
+        "tags": [
+            "cd"
+        ],
+        "IMAGE": "amazonlinux:latest"
     },
     {
         "OS": "macos",
@@ -33,13 +37,14 @@
         "tags": ["cd"]
     },
     {
-        "OS": "amazon-linux",
-        "NAMED_OS": "linux",
-        "RUNNER": "ubuntu-latest",
-        "ARCH": "x64",
-        "TARGET": "x86_64-unknown-linux-gnu",
-        "tags": ["cd"],
-        "IMAGE": "amazonlinux:latest"
+        "OS": "macos",
+        "NAMED_OS": "darwin",
+        "RUNNER": "macos-15",
+        "ARCH": "arm64",
+        "TARGET": "aarch64-apple-darwin",
+        "tags": [
+            "cd"
+        ]
     },
     {
         "OS": "windows",
