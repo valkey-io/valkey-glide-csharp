@@ -1,6 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Runtime.InteropServices;
+
 using Valkey.Glide.IntegrationTests;
 using Valkey.Glide.TestUtils;
 
@@ -12,8 +13,9 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
-    // Default test timeout in milliseconds - higher on Windows due to WSL overhead
-    public static readonly int DEFAULT_TIMEOUT_MS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 120000 : 60000;
+    // Default test timeout - higher on Windows due to WSL overhead
+    public readonly static int DEFAULT_TIMEOUT_MS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 120_000 : 60_000;
+    public readonly static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
 
     // Addresses for the standalone and cluster servers.
     public static IList<Address> STANDALONE_ADDRESSES = [];
@@ -42,14 +44,14 @@ public class TestConfiguration : IDisposable
         new StandaloneClientConfigurationBuilder()
             .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-            .WithRequestTimeout(TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS))
+            .WithRequestTimeout(DEFAULT_TIMEOUT)
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
             .WithAddress(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-            .WithRequestTimeout(TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS))
+            .WithRequestTimeout(DEFAULT_TIMEOUT)
             .WithTls(TLS);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
@@ -96,14 +98,14 @@ public class TestConfiguration : IDisposable
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClient resp3client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
@@ -127,14 +129,14 @@ public class TestConfiguration : IDisposable
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
