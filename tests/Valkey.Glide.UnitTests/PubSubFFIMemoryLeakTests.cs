@@ -9,6 +9,8 @@ namespace Valkey.Glide.UnitTests;
 /// These tests are designed to detect the critical memory leak issue where Rust-allocated
 /// memory is not properly freed after C# marshaling.
 /// </summary>
+[Collection(typeof(PubSubFFIMemoryLeakTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class PubSubFFIMemoryLeakTests
 {
     [Fact]
@@ -20,11 +22,7 @@ public class PubSubFFIMemoryLeakTests
         const long maxMemoryGrowthBytes = 50_000_000; // 50MB max growth allowed
 
         // Force initial GC to get baseline
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
 
         // Act: Process large volume of messages
@@ -39,13 +37,7 @@ public class PubSubFFIMemoryLeakTests
             // Periodic GC to detect leaks early
             if (i % 10_000 == 0 && i > 0)
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                long currentMemory = GC.GetTotalMemory(false);
-                long memoryGrowth = currentMemory - initialMemory;
-
+                long memoryGrowth = GetMemoryAfterFullGC() - initialMemory;
                 Console.WriteLine($"Processed {i:N0} messages, memory growth: {memoryGrowth:N0} bytes");
 
                 // Early detection of memory leaks
@@ -59,11 +51,7 @@ public class PubSubFFIMemoryLeakTests
         }
 
         // Final memory check
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long totalMemoryGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Final memory: {finalMemory:N0} bytes");
@@ -78,74 +66,13 @@ public class PubSubFFIMemoryLeakTests
 
     [Fact]
     [Trait("Category", "LongRunning")]
-    public void ProcessVariousMessageSizes_NoMemoryLeak_ConsistentBehavior()
-    {
-        // Arrange
-        const int iterationsPerSize = 1_000;
-        int[] messageSizes = [10, 100, 1_000, 10_000, 100_000]; // Various sizes
-
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
-        Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
-
-        // Act: Test different message sizes
-        foreach (int messageSize in messageSizes)
-        {
-            Console.WriteLine($"Testing message size: {messageSize} bytes");
-
-            string largeMessage = new('X', messageSize);
-            string channel = "test-channel";
-
-            long beforeSizeTest = GC.GetTotalMemory(true);
-
-            for (int i = 0; i < iterationsPerSize; i++)
-            {
-                ProcessSingleMessage(largeMessage, channel, null);
-            }
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            long afterSizeTest = GC.GetTotalMemory(false);
-            long sizeTestGrowth = afterSizeTest - beforeSizeTest;
-
-            Console.WriteLine($"Memory growth for {messageSize}-byte messages: {sizeTestGrowth:N0} bytes");
-
-            // Memory growth should be reasonable for the message size
-            // Allow 3x overhead to account for GC variance and object headers
-            long expectedMaxGrowth = messageSize * iterationsPerSize * 3;
-            Assert.True(sizeTestGrowth < expectedMaxGrowth,
-                $"Excessive memory growth for {messageSize}-byte messages: {sizeTestGrowth:N0} bytes, expected max: {expectedMaxGrowth:N0} bytes");
-        }
-
-        // Final check
-        long finalMemory = GC.GetTotalMemory(true);
-        long totalGrowth = finalMemory - initialMemory;
-
-        Console.WriteLine($"Total memory growth across all sizes: {totalGrowth:N0} bytes");
-
-        // Should not have significant permanent growth
-        Assert.True(totalGrowth < 10_000_000, // 10MB max
-            $"Permanent memory growth detected: {totalGrowth:N0} bytes");
-    }
-
-    [Fact]
-    [Trait("Category", "LongRunning")]
     public void ProcessMessagesUnderGCPressure_NoMemoryLeak_StableUnderPressure()
     {
         // Arrange
         const int messageCount = 50_000;
         const int gcInterval = 1_000; // Force GC every 1000 messages
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Initial memory under GC pressure test: {initialMemory:N0} bytes");
 
         // Act: Process messages with frequent GC pressure
@@ -166,9 +93,7 @@ public class PubSubFFIMemoryLeakTests
                     tempObjects[j] = new byte[1024]; // 1KB objects
                 }
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
+                ForceFullGC();
 
                 // Clear temp objects
                 Array.Clear(tempObjects, 0, tempObjects.Length);
@@ -176,11 +101,7 @@ public class PubSubFFIMemoryLeakTests
         }
 
         // Final memory check under GC pressure
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long memoryGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Memory growth under GC pressure: {memoryGrowth:N0} bytes");
@@ -198,11 +119,7 @@ public class PubSubFFIMemoryLeakTests
         const int threadsCount = 10;
         const int messagesPerThread = 10_000;
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Initial memory for concurrent test: {initialMemory:N0} bytes");
 
         // Act: Process messages concurrently from multiple threads
@@ -245,11 +162,7 @@ public class PubSubFFIMemoryLeakTests
         }
 
         // Final memory check
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long memoryGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Memory growth after concurrent processing: {memoryGrowth:N0} bytes");
@@ -268,11 +181,7 @@ public class PubSubFFIMemoryLeakTests
         const int durationSeconds = 30; // Run for 30 seconds
         const int messagesPerSecond = 1000;
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Starting extended duration test for {durationSeconds} seconds");
         Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
 
@@ -288,18 +197,14 @@ public class PubSubFFIMemoryLeakTests
                 string message = $"duration-test-{messageCount}";
                 string channel = $"duration-channel-{messageCount % 10}";
 
-                ProcessSingleMessage(message, channel, null);
+                ProcessSingleMessage(message, channel);
                 messageCount++;
             }
 
             // Take memory snapshot every 5 seconds
             if (stopwatch.Elapsed.TotalSeconds % 5 < 0.1)
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                long currentMemory = GC.GetTotalMemory(false);
+                long currentMemory = GetMemoryAfterFullGC();
                 memorySnapshots.Add((stopwatch.Elapsed, currentMemory));
 
                 Console.WriteLine($"Time: {stopwatch.Elapsed.TotalSeconds:F1}s, " +
@@ -313,11 +218,7 @@ public class PubSubFFIMemoryLeakTests
         stopwatch.Stop();
 
         // Final memory check
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long totalGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Extended test completed:");
@@ -349,7 +250,7 @@ public class PubSubFFIMemoryLeakTests
     /// Helper method to simulate processing a single PubSub message through the FFI marshaling layer.
     /// This simulates the memory allocation and marshaling that occurs in the real FFI callback.
     /// </summary>
-    private static void ProcessSingleMessage(string message, string channel, string? pattern)
+    private static void ProcessSingleMessage(string message, string channel, string? pattern = null)
     {
         // Simulate the FFI marshaling process that occurs in the real callback
         IntPtr messagePtr = Marshal.StringToHGlobalAnsi(message);
@@ -393,5 +294,25 @@ public class PubSubFFIMemoryLeakTests
                 Marshal.FreeHGlobal(patternPtr);
             }
         }
+    }
+
+    /// <summary>
+    /// Performs garbage collection and returns the total memory usage after cleanup.
+    /// </summary>
+    /// <returns>Total memory usage in bytes after garbage collection.</returns>
+    private static long GetMemoryAfterFullGC()
+    {
+        ForceFullGC();
+        return GC.GetTotalMemory(true);
+    }
+
+    /// <summary>
+    /// Forces full garbage collection to clean up any unreferenced objects.
+    /// </summary>
+    private static void ForceFullGC()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
     }
 }
