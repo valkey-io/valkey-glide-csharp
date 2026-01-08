@@ -4,11 +4,16 @@ using System.Diagnostics;
 
 namespace Valkey.Glide.UnitTests;
 
+// Collection definition to disable parallelization for PubSub FFI memory leak tests.
+[CollectionDefinition(nameof(PubSubFFIMemoryLeakTests), DisableParallelization = true)]
+public class PubSubFFIMemoryLeakTestsCollection { }
+
 /// <summary>
 /// Tests for detecting memory leaks in the FFI layer during PubSub message processing.
 /// These tests are designed to detect the critical memory leak issue where Rust-allocated
 /// memory is not properly freed after C# marshaling.
 /// </summary>
+[Collection(nameof(PubSubFFIMemoryLeakTests))]
 public class PubSubFFIMemoryLeakTests
 {
     [Fact]
