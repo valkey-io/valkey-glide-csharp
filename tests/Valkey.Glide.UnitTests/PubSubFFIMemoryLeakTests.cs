@@ -20,11 +20,7 @@ public class PubSubFFIMemoryLeakTests
         const long maxMemoryGrowthBytes = 50_000_000; // 50MB max growth allowed
 
         // Force initial GC to get baseline
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
 
         // Act: Process large volume of messages
@@ -39,13 +35,7 @@ public class PubSubFFIMemoryLeakTests
             // Periodic GC to detect leaks early
             if (i % 10_000 == 0 && i > 0)
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                long currentMemory = GC.GetTotalMemory(false);
-                long memoryGrowth = currentMemory - initialMemory;
-
+                long memoryGrowth = GetMemoryAfterFullGC() - initialMemory;
                 Console.WriteLine($"Processed {i:N0} messages, memory growth: {memoryGrowth:N0} bytes");
 
                 // Early detection of memory leaks
@@ -59,11 +49,7 @@ public class PubSubFFIMemoryLeakTests
         }
 
         // Final memory check
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long totalMemoryGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Final memory: {finalMemory:N0} bytes");
@@ -138,11 +124,7 @@ public class PubSubFFIMemoryLeakTests
         const int messageCount = 50_000;
         const int gcInterval = 1_000; // Force GC every 1000 messages
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Initial memory under GC pressure test: {initialMemory:N0} bytes");
 
         // Act: Process messages with frequent GC pressure
@@ -163,9 +145,7 @@ public class PubSubFFIMemoryLeakTests
                     tempObjects[j] = new byte[1024]; // 1KB objects
                 }
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
+                ForceFullGC();
 
                 // Clear temp objects
                 Array.Clear(tempObjects, 0, tempObjects.Length);
@@ -173,11 +153,7 @@ public class PubSubFFIMemoryLeakTests
         }
 
         // Final memory check under GC pressure
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long memoryGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Memory growth under GC pressure: {memoryGrowth:N0} bytes");
@@ -195,11 +171,7 @@ public class PubSubFFIMemoryLeakTests
         const int threadsCount = 10;
         const int messagesPerThread = 10_000;
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Initial memory for concurrent test: {initialMemory:N0} bytes");
 
         // Act: Process messages concurrently from multiple threads
@@ -242,11 +214,7 @@ public class PubSubFFIMemoryLeakTests
         }
 
         // Final memory check
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long memoryGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Memory growth after concurrent processing: {memoryGrowth:N0} bytes");
@@ -265,11 +233,7 @@ public class PubSubFFIMemoryLeakTests
         const int durationSeconds = 30; // Run for 30 seconds
         const int messagesPerSecond = 1000;
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        long initialMemory = GetMemoryAfterFullGC();
         Console.WriteLine($"Starting extended duration test for {durationSeconds} seconds");
         Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
 
@@ -285,18 +249,14 @@ public class PubSubFFIMemoryLeakTests
                 string message = $"duration-test-{messageCount}";
                 string channel = $"duration-channel-{messageCount % 10}";
 
-                ProcessSingleMessage(message, channel, null);
+                ProcessSingleMessage(message, channel);
                 messageCount++;
             }
 
             // Take memory snapshot every 5 seconds
             if (stopwatch.Elapsed.TotalSeconds % 5 < 0.1)
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                long currentMemory = GC.GetTotalMemory(false);
+                long currentMemory = GetMemoryAfterFullGC();
                 memorySnapshots.Add((stopwatch.Elapsed, currentMemory));
 
                 Console.WriteLine($"Time: {stopwatch.Elapsed.TotalSeconds:F1}s, " +
@@ -310,11 +270,7 @@ public class PubSubFFIMemoryLeakTests
         stopwatch.Stop();
 
         // Final memory check
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        long finalMemory = GetMemoryAfterFullGC();
         long totalGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Extended test completed:");
@@ -398,15 +354,17 @@ public class PubSubFFIMemoryLeakTests
     /// <returns>Total memory usage in bytes after garbage collection.</returns>
     private static long GetMemoryAfterFullGC()
     {
-        // Collect all generations and marks objects for finalization.
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
-
-        // Wait for finalizers to complete.
-        GC.WaitForPendingFinalizers();
-
-        // Collect again to clean up any objects that were just finalized.
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
-
+        ForceFullGC();
         return GC.GetTotalMemory(true);
+    }
+
+    /// <summary>
+    /// Forces full garbage collection to clean up any unreferenced objects.
+    /// </summary>
+    private static void ForceFullGC()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
     }
 }
