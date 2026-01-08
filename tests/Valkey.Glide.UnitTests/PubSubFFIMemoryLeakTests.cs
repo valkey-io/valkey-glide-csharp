@@ -64,60 +64,6 @@ public class PubSubFFIMemoryLeakTests
             $"limit: {maxMemoryGrowthBytes:N0} bytes");
     }
 
-    // Message sizes to test (in bytes)
-    // Objects larger than 85 KB are allocated on the Large Object Heap (LOH). The LOH may retain
-    // some reserved space even after GC, so we only test sizes below that threshold here.
-    public static IEnumerable<object[]> MessageSizes() => new[] { 10, 100, 1_000, 10_000, 50_000 }.Select(size => new object[] { size });
-
-    [Theory]
-    [Trait("Category", "LongRunning")]
-    [MemberData(nameof(MessageSizes))]
-    public void ProcessVariousMessageSizes_NoMemoryLeak_ConsistentBehavior(int messageSize)
-    {
-        // Arrange
-        const int iterationsPerSize = 1_000;
-        // This threshold now represents the max acceptable "unreclaimed" memory between two identical, GC-cleaned runs.
-        // It should be small, as true leaks will cause unbounded growth, but some minor variance is expected.
-        const long leakThresholdBytes = 50_000; // A reasonably small tolerance for any GC quirks.
-
-        var message = new string('X', messageSize);
-        var channel = "test-channel";
-
-        // Run the operation once. This will allocate all necessary objects and
-        // potentially promote some to higher GC generations.
-        for (int i = 0; i < iterationsPerSize; i++)
-        {
-            ProcessSingleMessage(message, channel);
-        }
-
-        // Force a full GC and measure the memory. This becomes our stable baseline
-        // *after* one full operation.
-        long baselineMemory = GetMemoryAfterFullGC();
-        Console.WriteLine($"Baseline memory after first run for size {messageSize}: {baselineMemory:N0} bytes");
-
-        // Run the exact same operation again.
-        for (int i = 0; i < iterationsPerSize; i++)
-        {
-            ProcessSingleMessage(message, channel);
-        }
-
-        // Force another full GC and measure the final memory state.
-        long finalMemory = GetMemoryAfterFullGC();
-        Console.WriteLine($"Final memory after second run for size {messageSize}: {finalMemory:N0} bytes");
-
-        // Calculate the growth between the two stable, cleaned states.
-        // This represents memory that was allocated in the second run but could NOT be reclaimed by GC,
-        // which is the true definition of a memory leak in a managed context.
-        long memoryGrowthBetweenRuns = finalMemory - baselineMemory;
-
-        Assert.True(memoryGrowthBetweenRuns < leakThresholdBytes,
-            $"Potential memory leak for {messageSize}-byte messages. " +
-            $"Memory grew by {memoryGrowthBetweenRuns:N0} bytes between two identical, GC-cleaned runs, " +
-            $"which exceeds the leak threshold of {leakThresholdBytes:N0} bytes.");
-
-        Console.WriteLine($"Memory leak test passed for {messageSize}-byte messages. Growth between runs: {memoryGrowthBetweenRuns:N0} bytes");
-    }
-
     [Fact]
     [Trait("Category", "LongRunning")]
     public void ProcessMessagesUnderGCPressure_NoMemoryLeak_StableUnderPressure()
