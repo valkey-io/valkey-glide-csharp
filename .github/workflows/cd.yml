@@ -234,7 +234,7 @@ jobs:
             - name: Set up dotnet
               uses: actions/setup-dotnet@v5
               with:
-                  # install latest dotnet too to use language features
+                  # install latest dotnet to use language features
                   dotnet-version: |
                       8
                       9
@@ -246,7 +246,7 @@ jobs:
                   ls -l $GITHUB_WORKSPACE/nuget.local
                   dotnet nuget add source $GITHUB_WORKSPACE/nuget.local
                   dotnet nuget config paths
-                  if [[ "$OS" != "Windows_NT" ]]; then
+                  if [[ "${{ matrix.host.OS }}" != "windows" ]]; then
                     dotnet nuget config paths | xargs cat
                   else
                     cat "C:\\Users\\runneradmin\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -261,19 +261,15 @@ jobs:
                   git diff
 
             - name: Install server
-              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide-csharp/issues/6
-              if: ${{ matrix.host.OS != 'windows' }}
               uses: ./.github/workflows/install-server
               with:
                   server-version: 8.1
                   target: ${{ matrix.host.TARGET }}
+                  os: ${{ matrix.host.OS }}
 
-            - name: Run tests
-              # TODO activate this on windows once fixed, see https://github.com/valkey-io/valkey-glide-csharp/issues/6
-              if: ${{ matrix.host.OS != 'windows' }}
+            - name: Run command tests
               working-directory: tests/Valkey.Glide.IntegrationTests
-              run: |
-                  dotnet test --framework net8.0 --logger "console;verbosity=detailed" --logger "html;LogFileName=TestReport.html" --results-directory . --filter "FullyQualifiedName~CommandTests"
+              run: dotnet test --framework net8.0 --logger "console;verbosity=detailed" --logger "html;LogFileName=TestReport.html" --results-directory . --filter "FullyQualifiedName~CommandTests"
 
             - name: Upload test reports
               if: always()
