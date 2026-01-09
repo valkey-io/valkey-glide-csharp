@@ -6,34 +6,25 @@ inputs:
         required: true
         type: string
         options:
+            - ubuntu
             - amazon-linux
             - macos
-            - ubuntu
             - windows
     target:
-        description: "Specified target for rust toolchain, ex. x86_64-apple-darwin"
+        description: "Specified target for rust toolchain"
         type: string
-        required: false
         options:
             - x86_64-unknown-linux-gnu
             - aarch64-unknown-linux-gnu
             - x86_64-apple-darwin
             - aarch64-apple-darwin
-            - aarch64-unknown-linux-musl
-            - x86_64-unknown-linux-musl
             - x86_64-pc-windows-msvc
             - aarch64-pc-windows-msvc
     server-version:
         description: "Server version to install"
-        required: false
-        type: string
-    language:
-        description: "The language being built (optional, for language-specific setup)"
-        required: false
         type: string
     github-token:
         description: "GITHUB_TOKEN, GitHub App installation access token"
-        required: true
         type: string
 
 runs:
@@ -48,19 +39,10 @@ runs:
 
         - name: Install software dependencies for Ubuntu GNU
           shell: bash
-          if: "${{ inputs.os == 'ubuntu' && !contains(inputs.target, 'musl')}}"
+          if: "${{ inputs.os == 'ubuntu' }}"
           run: |
               sudo apt update -y
               sudo apt install -y git gcc pkg-config openssl libssl-dev
-
-        - name: Install software dependencies for MUSL
-          shell: bash
-          if: "${{ contains(inputs.target, 'musl') }}"
-          run: |
-              apk update
-              wget -O - https://sh.rustup.rs | sh -s -- -y
-              source "$HOME/.cargo/env"
-              apk add protobuf-dev musl-dev make gcc envsubst openssl libressl-dev
 
         - name: Install software dependencies for Amazon-Linux
           shell: bash
@@ -68,68 +50,26 @@ runs:
           run: |
               yum install -y gcc pkgconfig openssl openssl-devel which curl gettext libasan tar --allowerasing
 
-        - name: Setup WSL with Valkey (Windows only)
-          if: "${{ inputs.os == 'windows' && inputs.server-version }}"
+        - name: Install software dependencies for Windows
+          if: "${{ inputs.os == 'windows' }}"
           uses: Vampire/setup-wsl@v6
           with:
               distribution: Ubuntu-22.04
-              use-cache: true
-              update: true
               additional-packages: python3 python3-pip build-essential git pkg-config libssl-dev
 
-        - name: Install Valkey directly in WSL (Windows)
-          if: "${{ inputs.os == 'windows' && inputs.server-version }}"
-          shell: bash
-          env:
-              SERVER_VERSION: ${{ inputs.server-version }}
-          run: |
-              echo "=== Installing Valkey directly in WSL ==="
-
-              wsl -- bash -c "
-                cd /tmp
-                git clone https://github.com/valkey-io/valkey.git
-                cd valkey
-                git checkout \"$SERVER_VERSION\"
-                make BUILD_TLS=yes -j4
-                sudo make install
-                
-                valkey-server --version
-                valkey-cli --version
-                
-                echo 'Testing Valkey server startup...'
-                valkey-server --port 6379 --daemonize yes
-                sleep 2
-                valkey-cli ping || echo 'Valkey server not responding'
-                pkill valkey-server || true
-                
-                echo 'Configuring system for cluster mode...'
-                sudo sysctl vm.overcommit_memory=1 || echo 'Cannot set overcommit'
-                sudo bash -c 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' || echo 'Cannot disable hugepage'
-                
-                ulimit -n 65536 || echo 'Cannot set file descriptor limit'
-                
-                echo 'Valkey installation complete in WSL'
-              "
-
-        - name: Setup Python for Windows
-          if: "${{ inputs.os == 'windows' }}"
-          uses: actions/setup-python@v5
-          with:
-              python-version: "3.x"
-
         - name: Install Rust toolchain
-          if: "${{ !contains(inputs.target, 'musl') }}"
           uses: ./.github/workflows/install-rust
           with:
               target: ${{ inputs.target }}
               github-token: ${{ inputs.github-token }}
 
         - name: Install server
-          if: "${{ inputs.server-version && inputs.os != 'windows' }}"
+          if: "${{ inputs.server-version }}"
           uses: ./.github/workflows/install-server
           with:
               server-version: ${{ inputs.server-version }}
               target: ${{ inputs.target }}
+              os: ${{ inputs.os }}
 
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
