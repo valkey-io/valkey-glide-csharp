@@ -28,8 +28,10 @@ inputs:
 
 env:
     CARGO_TERM_COLOR: always
-    # Use the WSL bash shell on Windows.
-    # See <https://github.com/Vampire/setup-wsl>
+
+    # In Windows runners, install the server within WSL.
+    # WSL is installed by the 'install-shared-dependencies' action and provides
+    # the WSL bash shell. See <https://github.com/Vampire/setup-wsl>
     SHELL: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
 
 runs:
