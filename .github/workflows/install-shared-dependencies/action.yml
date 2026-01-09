@@ -55,7 +55,7 @@ runs:
           uses: Vampire/setup-wsl@v6
           with:
               distribution: Ubuntu-22.04
-              additional-packages: python3 python3-pip build-essential git pkg-config libssl-dev
+              additional-packages: python3 build-essential git pkg-config libssl-dev
 
         - name: Install Rust toolchain
           uses: ./.github/workflows/install-rust
