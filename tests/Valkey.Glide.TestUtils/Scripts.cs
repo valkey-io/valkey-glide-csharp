@@ -22,6 +22,7 @@ public static class Scripts
     public static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
         // If on Windows, run the script through WSL.
+        // TODO #184: Is it necessary to run through WSL on Windows?
         String fileName = IsWindows ? "wsl" : "python3";
         String arguments = (IsWindows ? $"python3 " : "") + $"{ClusterManagerScriptName} {cmd}";
 

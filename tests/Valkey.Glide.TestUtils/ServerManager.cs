@@ -12,6 +12,7 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
+    // TODO #184: Verify whether this is necessary on Windows.
     // Number of replicas to use. Don't use replicas on Windows to avoid synchronization issues.
     private static readonly int NUM_REPLICAS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 0 : 3;
 
