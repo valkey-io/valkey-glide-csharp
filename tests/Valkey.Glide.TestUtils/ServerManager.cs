@@ -14,7 +14,7 @@ public static class ServerManager
 {
     // TODO #184: Verify whether this is necessary on Windows.
     // Number of replicas to use. Don't use replicas on Windows to avoid synchronization issues.
-    private static readonly int NUM_REPLICAS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 0 : 3;
+    private static readonly int REPLICA_COUNT = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 0 : 3;
 
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
@@ -30,7 +30,7 @@ public static class ServerManager
 
         args.Add("start");
         args.Add($"--prefix {name}");
-        args.Add($"--replicas {NUM_REPLICAS}");
+        args.Add($"--replica-count {REPLICA_COUNT}");
 
         if (useClusterMode)
             args.Add("--cluster-mode");
