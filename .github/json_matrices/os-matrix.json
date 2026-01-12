@@ -20,9 +20,7 @@
         "RUNNER": "ubuntu-latest",
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
-        "tags": [
-            "cd"
-        ],
+        "tags": ["cd"],
         "IMAGE": "amazonlinux:latest"
     },
     {
@@ -37,9 +35,7 @@
         "RUNNER": "macos-15",
         "ARCH": "arm64",
         "TARGET": "aarch64-apple-darwin",
-        "tags": [
-            "cd"
-        ]
+        "tags": ["cd"]
     },
     {
         "OS": "windows",
