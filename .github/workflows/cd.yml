@@ -263,9 +263,9 @@ jobs:
             - name: Install server
               uses: ./.github/workflows/install-server
               with:
-                  server-version: 8.1
-                  target: ${{ matrix.host.TARGET }}
                   os: ${{ matrix.host.OS }}
+                  target: ${{ matrix.host.TARGET }}
+                  server-version: 8.1
 
             - name: Run command tests
               working-directory: tests/Valkey.Glide.IntegrationTests

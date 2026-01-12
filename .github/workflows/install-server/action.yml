@@ -45,9 +45,9 @@ runs:
               git clone https://github.com/valkey-io/valkey.git
               cd valkey/src
               git checkout $SERVER_VERSION
-              SOURCES_VERSION=`grep ' VALKEY_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]'` || :
-              if [[ -z $SOURCES_VERSION ]]; then
-                  SOURCES_VERSION=`grep ' REDIS_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]'`
+              SOURCES_VERSION=$(grep ' VALKEY_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]' || true)
+              if [[ -z "$SOURCES_VERSION" ]]; then
+                  SOURCES_VERSION=$(grep ' REDIS_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]')
               fi
               echo "SOURCES_VERSION=$SOURCES_VERSION" >> $GITHUB_ENV
 

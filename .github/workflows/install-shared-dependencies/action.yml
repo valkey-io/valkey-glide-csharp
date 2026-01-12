@@ -70,9 +70,9 @@ runs:
           if: "${{ inputs.server-version }}"
           uses: ./.github/workflows/install-server
           with:
-              server-version: ${{ inputs.server-version }}
-              target: ${{ inputs.target }}
               os: ${{ inputs.os }}
+              target: ${{ inputs.target }}
+              server-version: ${{ inputs.server-version }}
 
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
