@@ -1,6 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Runtime.InteropServices;
+// TODO #184: Re-enable Windows-specific timeout if needed.
+// using System.Runtime.InteropServices;
 
 using Valkey.Glide.IntegrationTests;
 using Valkey.Glide.TestUtils;

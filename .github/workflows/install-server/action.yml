@@ -34,7 +34,9 @@ runs:
     steps:
         - name: Set environment variables
           shell: bash
-          run: echo "SERVER_VERSION=${{ inputs.server-version }}" >> $GITHUB_ENV
+          env:
+              SERVER_VERSION: ${{ inputs.server-version }}
+          run: echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
 
         # Environment variables must be passed into WSL
         # explicitly using the WSLENV environment variable.
