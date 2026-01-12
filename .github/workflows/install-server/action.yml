@@ -34,12 +34,12 @@ runs:
     steps:
         - name: Set environment variables
           shell: bash
-          env:
-              SERVER_VERSION: ${{ inputs.server-version }}
-          run: echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
+          run: echo "SERVER_VERSION=${{ inputs.server-version }}" >> $GITHUB_ENV
 
+        # Environment variables must be passed into WSL
+        # explicitly using the WSLENV environment variable.
         - name: Set WSL environment (Windows only)
-          if: "${{ inputs.os == 'windows' }}"
+          if: ${{ inputs.os == 'windows' }}
           shell: bash
           run: echo "WSLENV=SERVER_VERSION" >> $GITHUB_ENV
 
@@ -54,6 +54,13 @@ runs:
               git clone https://github.com/valkey-io/valkey.git
               cd valkey/src
               git checkout $SERVER_VERSION
+
+        # TODO #184: Support caching for Windows.
+        - name: Determine Valkey source version
+          if: ${{ inputs.os != 'windows' }}
+          shell: bash
+          run: |
+              cd valkey/src
               SOURCES_VERSION=$(grep ' VALKEY_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]' || true)
               if [[ -z "$SOURCES_VERSION" ]]; then
                   SOURCES_VERSION=$(grep ' REDIS_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]')
