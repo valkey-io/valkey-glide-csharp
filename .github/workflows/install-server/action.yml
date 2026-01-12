@@ -32,10 +32,14 @@ env:
 runs:
     using: "composite"
     steps:
-        - name: Prepare Valkey sources
-          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
+        - name: Set environment variables
+          shell: bash
           env:
               SERVER_VERSION: ${{ inputs.server-version }}
+          run: echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
+
+        - name: Prepare Valkey sources
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
               echo "Cloning and checking out Valkey $SERVER_VERSION"
               if [[ -d valkey ]]; then
