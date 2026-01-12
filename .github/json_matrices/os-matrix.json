@@ -4,8 +4,7 @@
         "RUNNER": "ubuntu-24.04",
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
-        "tags": ["cd"],
-        "run": "always"
+        "tags": ["cd"]
     },
     {
         "OS": "ubuntu",
@@ -42,7 +41,7 @@
         "RUNNER": "windows-2025",
         "ARCH": "x64",
         "TARGET": "x86_64-pc-windows-msvc",
-        "tags": ["ci", "cd"],
+        "tags": ["cd"],
         "run": "always"
     },
     {
