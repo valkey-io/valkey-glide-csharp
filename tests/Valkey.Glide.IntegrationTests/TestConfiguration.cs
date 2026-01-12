@@ -1,7 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-// TODO #184: Re-enable Windows-specific timeout if needed.
-// using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 using Valkey.Glide.IntegrationTests;
 using Valkey.Glide.TestUtils;
@@ -14,10 +13,8 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
-    // Default test timeout - higher on Windows due to WSL overhead
-    // TODO #184: Verify whether larger timeouts are needed for Windows.
-    // public readonly static int DEFAULT_TIMEOUT_MS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 120_000 : 60_000;
-    public readonly static int DEFAULT_TIMEOUT_MS = 60_000;
+    // Default test timeout - higher on Windows due to WSL overhead.
+    public readonly static int DEFAULT_TIMEOUT_MS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 120_000 : 60_000;
     public readonly static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
 
     // Addresses for the standalone and cluster servers.
