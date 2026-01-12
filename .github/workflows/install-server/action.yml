@@ -35,17 +35,19 @@ runs:
         - name: Set environment variables
           shell: bash
           env:
+              OS: ${{ inputs.os }}
               SERVER_VERSION: ${{ inputs.server-version }}
-          run: echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
+          run: |
+              echo "OS=$OS" >> $GITHUB_ENV
+              echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
 
-        # Environment variables must be passed into WSL
-        # explicitly using the WSLENV environment variable.
-        - name: Set WSL environment (Windows only)
-          if: ${{ inputs.os == 'windows' }}
-          shell: bash
-          run: echo "WSLENV=SERVER_VERSION" >> $GITHUB_ENV
+              # Environment variables must be passed into WSL
+              # explicitly using the WSLENV environment variable.
+              if [[ "$OS" == "windows" ]]; then
+                  echo "WSLENV=SERVER_VERSION" >> $GITHUB_ENV
+              fi
 
-        - name: Prepare Valkey sources
+        - name: Checkout Valkey source code
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
               if [[ -d valkey ]]; then
@@ -55,45 +57,58 @@ runs:
               echo "Cloning and checking out Valkey $SERVER_VERSION"
               git clone --depth 1 --branch $SERVER_VERSION --single-branch https://github.com/valkey-io/valkey.git
 
-        # TODO #184: Support caching for Windows.
         - name: Determine Valkey source version
-          if: ${{ inputs.os != 'windows' }}
           shell: bash
           run: |
-              cd valkey/src
-              SOURCES_VERSION=$(grep ' VALKEY_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]' || true)
-              if [[ -z "$SOURCES_VERSION" ]]; then
-                  SOURCES_VERSION=$(grep ' REDIS_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]')
-              fi
-              echo "SOURCES_VERSION=$SOURCES_VERSION" >> $GITHUB_ENV
+              cmd="cd valkey/src && grep -E 'VALKEY_VERSION|REDIS_VERSION' version.h | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1"
+              source_version=$([ "$OS" = "windows" ] && wsl bash -c "$cmd" || bash -c "$cmd")
+              echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
 
-        # TODO #184: Support caching for Windows.
+        - name: Determine Valkey source paths.
+          shell: bash
+          run: |
+              # Define paths.
+              valkey="valkey/src"
+              valkey_server="$valkey/valkey-server"
+              valkey_cli="$valkey/valkey-cli"
+
+              # Get absolute paths for Windows.
+              if [ "$OS" = "windows" ]; then
+                  # Get absolute paths.
+                  valkey_server=$(wsl wslpath -a $valkey_server)
+                  valkey_cli=$(wsl wslpath -a $valkey_cli)
+
+                  # Convert to Windows paths.
+                  valkey_server=$(wsl wslpath -w $valkey_server)
+                  valkey_cli=$(wsl wslpath -w $valkey_cli)
+              fi
+
+              # Add paths to environment variables.
+              echo "VALKEY_SERVER=$valkey_server" >> $GITHUB_ENV
+              echo "VALKEY_CLI=$valkey_cli" >> $GITHUB_ENV
+
         - name: Cache compiled Valkey binaries
           id: cache-valkey
-          if: ${{ inputs.os != 'windows' }}
           uses: actions/cache@v4
           with:
               path: |
-                  valkey/src/valkey-server
-                  valkey/src/valkey-cli
-              key: valkey-${{ env.SOURCES_VERSION }}-${{ inputs.target }}
+                  ${{ env.VALKEY_SERVER }}
+                  ${{ env.VALKEY_CLI }}
+              key: valkey-${{ env.SOURCE_VERSION }}-${{ inputs.target }}
 
-        # Manual install, because makefile target rebuilds everything, we want to avoid that
         - name: Install cached Valkey binaries
           if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
-              cd valkey/src
-              if command -v sudo &> /dev/null
-              then
-                  echo "sudo command exists"
-                  SUDO=sudo
-              fi
-              $SUDO cp valkey-server valkey-cli redis-server redis-cli /usr/local/bin/ 2>/dev/null || :
-              if [[ ! -e /usr/local/bin/redis-server ]]; then
-                  $SUDO cp valkey-server /usr/local/bin/redis-server
-              fi
-              echo 'export PATH=/usr/local/bin:$PATH' >>~/.bash_profile
+              # Copy the cached binaries local bin.
+              sudo cp valkey/src/valkey-server valkey/src/valkey-cli /usr/local/bin
+
+              # Create symbolic links for redis-server and redis-cli for backward compatibility.
+              sudo ln -sf /usr/local/bin/valkey-server /usr/local/bin/redis-server
+              sudo ln -sf /usr/local/bin/valkey-cli /usr/local/bin/redis-cli
+
+              # Add local bin to PATH.
+              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
 
         - name: Build and install Valkey binaries
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' }}
@@ -101,12 +116,5 @@ runs:
           run: |
               cd valkey
               make BUILD_TLS=yes
-              if command -v sudo &> /dev/null
-              then
-                  echo "sudo command exists"
-                  sudo make install
-              else
-                  echo "sudo command does not exist"
-                  make install
-              fi
-              echo 'export PATH=/usr/local/bin:$PATH' >>~/.bash_profile
+              sudo make install
+              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
