@@ -50,6 +50,9 @@ runs:
           run: |
               yum install -y gcc pkgconfig openssl openssl-devel which curl gettext libasan tar --allowerasing
 
+        # In Windows runners, the Valkey servers run within WSL.
+        # These can be accessed via the WSL bash shell.
+        # See <https://github.com/Vampire/setup-wsl> for more details.
         - name: Install software dependencies for Windows
           if: "${{ inputs.os == 'windows' }}"
           uses: Vampire/setup-wsl@v6

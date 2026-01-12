@@ -29,22 +29,13 @@ inputs:
 env:
     CARGO_TERM_COLOR: always
 
-    # In Windows runners, install the server within WSL.
-    # WSL is installed by the 'install-shared-dependencies' action and provides
-    # the WSL bash shell. See <https://github.com/Vampire/setup-wsl>
-    SHELL: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
-
 runs:
     using: "composite"
     steps:
-        - name: Setup Environment Variables
-          shell: ${{ env.SHELL }}
+        - name: Prepare Valkey sources
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           env:
               SERVER_VERSION: ${{ inputs.server-version }}
-          run: echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
-
-        - name: Prepare Valkey sources
-          shell: ${{ env.SHELL }}
           run: |
               echo "Cloning and checking out Valkey $SERVER_VERSION"
               if [[ -d valkey ]]; then
@@ -74,7 +65,7 @@ runs:
         # Manual install, because makefile target rebuilds everything, we want to avoid that
         - name: Install cached Valkey binaries
           if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
-          shell: ${{ env.SHELL }}
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
               cd valkey/src
               if command -v sudo &> /dev/null
@@ -90,7 +81,7 @@ runs:
 
         - name: Build and install Valkey binaries
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' }}
-          shell: ${{ env.SHELL }}
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
               cd valkey
               make BUILD_TLS=yes
