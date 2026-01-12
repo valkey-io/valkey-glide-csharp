@@ -48,14 +48,12 @@ runs:
         - name: Prepare Valkey sources
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
-              echo "Cloning and checking out Valkey $SERVER_VERSION"
               if [[ -d valkey ]]; then
                   echo "Removing existing valkey directory..."
                   rm -fR valkey
               fi
-              git clone https://github.com/valkey-io/valkey.git
-              cd valkey/src
-              git checkout $SERVER_VERSION
+              echo "Cloning and checking out Valkey $SERVER_VERSION"
+              git clone --depth 1 --branch $SERVER_VERSION --single-branch https://github.com/valkey-io/valkey.git
 
         # TODO #184: Support caching for Windows.
         - name: Determine Valkey source version
