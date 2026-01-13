@@ -84,8 +84,9 @@ runs:
               fi
 
               # Add paths to environment variables.
-              echo "VALKEY_SERVER=$valkey_server" >> $GITHUB_ENV
-              echo "VALKEY_CLI=$valkey_cli" >> $GITHUB_ENV
+              # Use printf to avoid treating backslashes as escape characters.
+              printf 'VALKEY_SERVER=%s\n' "$valkey_server" >> $GITHUB_ENV
+              printf 'VALKEY_CLI=%s\n' "$valkey_cli" >> $GITHUB_ENV
 
         - name: Cache compiled Valkey binaries
           id: cache-valkey
