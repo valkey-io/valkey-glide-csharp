@@ -14,7 +14,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     // ===== Script Execution =====
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> InvokeScriptAsync(
+    public async Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
@@ -25,11 +25,11 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         }
 
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await InvokeScriptInternalAsync(script.Hash, null, null, null);
+        return await ScriptInvokeInternalAsync(script.Hash, null, null, null);
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> InvokeScriptAsync(
+    public async Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
         ScriptOptions options,
         CommandFlags flags = CommandFlags.None,
@@ -46,10 +46,10 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         }
 
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await InvokeScriptInternalAsync(script.Hash, options.Keys, options.Args, null);
+        return await ScriptInvokeInternalAsync(script.Hash, options.Keys, options.Args, null);
     }
 
-    private async Task<ValkeyResult> InvokeScriptInternalAsync(
+    private async Task<ValkeyResult> ScriptInvokeInternalAsync(
         string hash,
         string[]? keys,
         string[]? args,
@@ -80,7 +80,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
 
             // Call FFI
             Message message = MessageContainer.GetMessageForCall();
-            FFI.InvokeScriptFfi(
+            FFI.ScriptInvokeFfi(
                 ClientPointer,
                 (ulong)message.Index,
                 hashPtr,
@@ -361,7 +361,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // Use the optimized InvokeScript path via Script object
+        // Use the optimized ScriptInvoke path via Script object
         // Script constructor will validate the script parameter
         using Script scriptObj = new(script);
 
@@ -369,8 +369,8 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
         string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
 
-        // Use InvokeScriptInternalAsync for automatic EVALSHA→EVAL optimization
-        return await InvokeScriptInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+        // Use ScriptInvokeInternalAsync for automatic EVALSHA→EVAL optimization
+        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
     }
 
     /// <inheritdoc/>
@@ -386,8 +386,8 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
         string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
 
-        // Use InvokeScriptInternalAsync (will use EVALSHA directly, no fallback since we don't have source)
-        return await InvokeScriptInternalAsync(hashString, keyStrings, valueStrings, null);
+        // Use ScriptInvokeInternalAsync (will use EVALSHA directly, no fallback since we don't have source)
+        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings, null);
     }
 
     /// <inheritdoc/>
@@ -413,10 +413,10 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         string[]? keyStrings = keys.Length > 0 ? [.. keys.Select(k => k.ToString())] : null;
         string[]? valueStrings = args.Length > 0 ? [.. args.Select(v => v.ToString())] : null;
 
-        // Create a Script object from the executable script and use InvokeScript
+        // Create a Script object from the executable script and use ScriptInvoke
         // This will automatically load the script if needed (EVALSHA with fallback to EVAL)
         using Script scriptObj = new(executableScript);
-        return await InvokeScriptInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
     }
 
     /// <inheritdoc/>
@@ -441,9 +441,9 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         // The hash in LoadedLuaScript is the hash of the script that was actually loaded on the server
         string hashString = BitConverter.ToString(script.Hash).Replace("-", "").ToLowerInvariant();
 
-        // Use InvokeScriptInternalAsync with the hash from LoadedLuaScript
+        // Use ScriptInvokeInternalAsync with the hash from LoadedLuaScript
         // The script was already loaded on the server, so EVALSHA will work
-        return await InvokeScriptInternalAsync(hashString, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings, null);
     }
 
     // ===== Synchronous Wrappers =====

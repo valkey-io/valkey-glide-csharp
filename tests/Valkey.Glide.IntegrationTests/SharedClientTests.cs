@@ -40,7 +40,7 @@ public class SharedClientTests(TestConfiguration config)
         using var script = new Script("return KEYS[1]");
         var options = new ScriptOptions().WithKeys(LargeString);
 
-        var result = await client.InvokeScriptAsync(script, options);
+        var result = await client.ScriptInvokeAsync(script, options);
 
         Assert.Equal(LargeString, result.ToString());
     }
@@ -52,7 +52,7 @@ public class SharedClientTests(TestConfiguration config)
         using var script = new Script("return ARGV[1]");
         var options = new ScriptOptions().WithArgs(LargeString);
 
-        ValkeyResult result = await client.InvokeScriptAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
 
         Assert.Equal(LargeString, result.ToString());
     }
@@ -66,7 +66,7 @@ public class SharedClientTests(TestConfiguration config)
             .WithKeys(LargeString)
             .WithArgs(LargeString);
 
-        var result = await client.InvokeScriptAsync(script, options);
+        var result = await client.ScriptInvokeAsync(script, options);
 
         Assert.Equal((string[])[LargeString, LargeString], result.AsStringArray());
     }
