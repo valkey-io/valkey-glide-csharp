@@ -43,7 +43,7 @@ runs:
 
               # Environment variables must be passed into WSL
               # explicitly using the WSLENV environment variable.
-              if [[ "$OS" == "windows" ]]; then
+              if [[ "$OS" == 'windows' ]]; then
                   echo "WSLENV=SERVER_VERSION" >> $GITHUB_ENV
               fi
 
@@ -51,49 +51,45 @@ runs:
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
               if [[ -d valkey ]]; then
-                  echo "Removing existing valkey directory..."
+                  echo 'Removing existing valkey directory...'
                   rm -fR valkey
               fi
               echo "Cloning and checking out Valkey $SERVER_VERSION"
-              git clone --depth 1 --branch $SERVER_VERSION --single-branch https://github.com/valkey-io/valkey.git
+              git clone --depth 1 --branch "$SERVER_VERSION" --single-branch 'https://github.com/valkey-io/valkey.git'
 
-        - name: Determine Valkey source version
+        - name: Determine Valkey source version and paths (Non-Windows)
+          if: ${{ inputs.os != 'windows' }}
           shell: bash
           run: |
-              cmd="cd valkey/src && grep -E 'VALKEY_VERSION|REDIS_VERSION' version.h | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1"
-              source_version=$([ "$OS" = "windows" ] && wsl bash -c "$cmd" || bash -c "$cmd")
+              source_version=$(cd 'valkey/src' && grep -E 'VALKEY_VERSION|REDIS_VERSION' 'version.h' | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1)
+              source_cli='valkey/src/valkey-cli'
+              source_server='valkey/src/valkey-server'
+
               echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
+              echo "SOURCE_CLI=$source_cli"         >> $GITHUB_ENV
+              echo "SOURCE_SERVER=$source_server"   >> $GITHUB_ENV
 
-        - name: Determine Valkey source paths.
-          shell: bash
+        - name: Determine Valkey source version and paths (Windows)
+          if: ${{ inputs.os == 'windows' }}
+          shell: pwsh
           run: |
-              # Define paths.
-              valkey="valkey/src"
-              valkey_server="$valkey/valkey-server"
-              valkey_cli="$valkey/valkey-cli"
+              $source_version = wsl bash -c "cd valkey/src && grep -E 'VALKEY_VERSION|REDIS_VERSION' version.h | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1"
 
-              # Get absolute paths for Windows.
-              if [ "$OS" = "windows" ]; then
-                  # Get absolute paths.
-                  valkey_server=$(wsl wslpath -a $valkey_server)
-                  valkey_cli=$(wsl wslpath -a $valkey_cli)
+              # Use wslpath -w to convert Linux paths within WSL to Windows paths.
+              $source_cli = wsl wslpath -w 'valkey/src/valkey-cli'
+              $source_server = wsl wslpath -w 'valkey/src/valkey-server'
 
-                  # Convert to Windows paths and escape backslashes.
-                  valkey_server=$(wsl wslpath -w $valkey_server | sed 's/\\/\\\\/g')
-                  valkey_cli=$(wsl wslpath -w $valkey_cli | sed 's/\\/\\\\/g')
-              fi
-
-              # Add paths to environment variables.
-              echo "VALKEY_SERVER=$valkey_server" >> $GITHUB_ENV
-              echo "VALKEY_CLI=$valkey_cli" >> $GITHUB_ENV
+              "SOURCE_VERSION=$source_version" | Out-File -FilePath $env:GITHUB_ENV -Append
+              "SOURCE_CLI=$source_cli"         | Out-File -FilePath $env:GITHUB_ENV -Append
+              "SOURCE_SERVER=$source_server"   | Out-File -FilePath $env:GITHUB_ENV -Append
 
         - name: Cache compiled Valkey binaries
           id: cache-valkey
           uses: actions/cache@v4
           with:
               path: |
-                  ${{ env.VALKEY_SERVER }}
-                  ${{ env.VALKEY_CLI }}
+                  ${{ env.SOURCE_SERVER }}
+                  ${{ env.SOURCE_CLI }}
               key: valkey-${{ env.SOURCE_VERSION }}-${{ inputs.target }}
 
         - name: Install cached Valkey binaries
@@ -101,11 +97,11 @@ runs:
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
               # Copy the cached binaries local bin.
-              sudo cp valkey/src/valkey-server valkey/src/valkey-cli /usr/local/bin
+              sudo cp 'valkey/src/valkey-server' 'valkey/src/valkey-cli' '/usr/local/bin'
 
               # Create symbolic links for redis-server and redis-cli for backward compatibility.
-              sudo ln -sf /usr/local/bin/valkey-server /usr/local/bin/redis-server
-              sudo ln -sf /usr/local/bin/valkey-cli /usr/local/bin/redis-cli
+              sudo ln -sf '/usr/local/bin/valkey-server' '/usr/local/bin/redis-server'
+              sudo ln -sf '/usr/local/bin/valkey-cli' '/usr/local/bin/redis-cli'
 
               # Add local bin to PATH.
               echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
