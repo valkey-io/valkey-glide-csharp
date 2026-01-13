@@ -78,15 +78,14 @@ runs:
                   valkey_server=$(wsl wslpath -a $valkey_server)
                   valkey_cli=$(wsl wslpath -a $valkey_cli)
 
-                  # Convert to Windows paths.
-                  valkey_server=$(wsl wslpath -w $valkey_server)
-                  valkey_cli=$(wsl wslpath -w $valkey_cli)
+                  # Convert to Windows paths and escape backslashes.
+                  valkey_server=$(wsl wslpath -w $valkey_server | sed 's/\\/\\\\/g')
+                  valkey_cli=$(wsl wslpath -w $valkey_cli | sed 's/\\/\\\\/g')
               fi
 
               # Add paths to environment variables.
-              # Use printf to avoid treating backslashes as escape characters.
-              printf 'VALKEY_SERVER=%s\n' "$valkey_server" >> $GITHUB_ENV
-              printf 'VALKEY_CLI=%s\n' "$valkey_cli" >> $GITHUB_ENV
+              echo "VALKEY_SERVER=$valkey_server" >> $GITHUB_ENV
+              echo "VALKEY_CLI=$valkey_cli" >> $GITHUB_ENV
 
         - name: Cache compiled Valkey binaries
           id: cache-valkey
