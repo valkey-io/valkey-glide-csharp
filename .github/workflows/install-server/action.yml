@@ -105,3 +105,14 @@ runs:
               make BUILD_TLS=yes
               sudo make install
               echo "export PATH=/usr/local/bin:$PATH" >> ~/.bash_profile
+
+              echo "Valkey installed:"
+              valkey-server --version
+              valkey-cli --version
+
+              # TODO #184: Remove debug
+              if [[ !-e 'valkey/src/valkey-server' || ! -e 'valkey/src/valkey-cli' ]]; then
+                  echo "Valkey binaries not found after build!"
+                  ls -la valkey/src/
+                  exit 1
+              fi
