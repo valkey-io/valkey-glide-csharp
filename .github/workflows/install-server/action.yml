@@ -82,6 +82,11 @@ runs:
               echo "SOURCE_CLI=$source_cli"         >> $GITHUB_ENV
               echo "SOURCE_SERVER=$source_server"   >> $GITHUB_ENV
 
+              # TODO #184: Remove debugging
+              echo "SOURCE_VERSION: $source_version"
+              echo "SOURCE_CLI: $source_cli"
+              echo "SOURCE_SERVER: $source_server"
+
         - name: Cache compiled Valkey binaries
           id: cache-valkey
           uses: actions/cache@v4
