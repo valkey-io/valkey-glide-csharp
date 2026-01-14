@@ -35,8 +35,11 @@ runs:
         - name: Set environment variables
           shell: bash
           env:
+              OS: ${{ inputs.os }}
               SERVER_VERSION: ${{ inputs.server-version }}
-          run: echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
+          run: |
+              echo "OS=$OS"                         >> $GITHUB_ENV
+              echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
 
         # Environment variables must be passed into WSL explicitly using the WSLENV environment variable.
         # The '/p' flag translates the $GITHUB_ENV path from Windows to WSL format.
@@ -61,7 +64,7 @@ runs:
               cmd="cd valkey/src && grep -E 'VALKEY_VERSION|REDIS_VERSION' 'version.h' | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1"
 
               # When running on Windows, we need to execute the commands inside WSL.
-              if [[ "${{ inputs.os }}" == "windows" ]]; then
+              if [[ "$OS" == "windows" ]]; then
                 source_version=$(wsl bash -c "$cmd")
               else
                 source_version=$(bash -c "$cmd")
