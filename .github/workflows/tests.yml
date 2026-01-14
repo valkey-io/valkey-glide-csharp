@@ -82,7 +82,7 @@ jobs:
     tests:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: get-matrices
-        timeout-minutes: 100
+        timeout-minutes: ${{ matrix.host.OS == 'windows' && 200 || 100 }}
         strategy:
             fail-fast: false
             matrix:
