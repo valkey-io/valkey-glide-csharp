@@ -55,55 +55,44 @@ runs:
               echo "Cloning and checking out Valkey $SERVER_VERSION"
               git clone --depth 1 --branch "$SERVER_VERSION" --single-branch 'https://github.com/valkey-io/valkey.git'
 
-        - name: Determine Valkey source version and paths (Non-Windows)
-          if: ${{ inputs.os != 'windows' }}
+        - name: Determine Valkey source version
           shell: bash
           run: |
-              source_version=$(cd 'valkey/src' && grep -E 'VALKEY_VERSION|REDIS_VERSION' 'version.h' | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1)
-              source_cli='valkey/src/valkey-cli'
-              source_server='valkey/src/valkey-server'
+              cmd="cd valkey/src && grep -E 'VALKEY_VERSION|REDIS_VERSION' 'version.h' | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1"
+
+              # When running on Windows, we need to execute the commands inside WSL.
+              if [[ "${{ inputs.os }}" == "windows" ]]; then
+                source_version=$(wsl bash -c "$cmd")
+              else
+                source_version=$(bash -c "$cmd")
+              fi
 
               echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
-              echo "SOURCE_CLI=$source_cli"         >> $GITHUB_ENV
-              echo "SOURCE_SERVER=$source_server"   >> $GITHUB_ENV
-
-        # When running on Windows, caching expects Windows path relative to the current
-        # workspace. Use 'wsl wslpath -w' to get the absolute Windows paths for the
-        # source files, then convert them to relative paths within the GitHub workspace.
-        - name: Determine Valkey source version and paths (Windows)
-          if: ${{ inputs.os == 'windows' }}
-          shell: bash
-          run: |
-              source_version=$(wsl bash -c "cd valkey/src && grep -E 'VALKEY_VERSION|REDIS_VERSION' version.h | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1")
-              source_cli=$(wsl wslpath -w 'valkey/src/valkey-cli' | sed "s|$GITHUB_WORKSPACE\\\\||")
-              source_server=$(wsl wslpath -w 'valkey/src/valkey-server' | sed "s|$GITHUB_WORKSPACE\\\\||")
-
-              echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
-              echo "SOURCE_CLI=$source_cli"         >> $GITHUB_ENV
-              echo "SOURCE_SERVER=$source_server"   >> $GITHUB_ENV
 
         - name: Cache compiled Valkey binaries
           id: cache-valkey
           uses: actions/cache@v4
           with:
               path: |
-                  ${{ env.SOURCE_CLI }}
-                  ${{ env.SOURCE_SERVER }}
+                  valkey/src/valkey-cli
+                  valkey/src/valkey-server
               key: valkey-${{ env.SOURCE_VERSION }}-${{ inputs.target }}
 
         - name: Install cached Valkey binaries
           if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
+              local_bin='/usr/local/bin'
+
               # Copy the cached binaries local bin.
-              sudo cp 'valkey/src/valkey-cli' 'valkey/src/valkey-server' '/usr/local/bin'
+              sudo cp 'valkey/src/valkey-cli' 'valkey/src/valkey-server' "$local_bin"
 
               # Create symbolic links for redis-cli and redis-server for backward compatibility.
-              sudo ln -sf '/usr/local/bin/valkey-cli' '/usr/local/bin/redis-cli'
-              sudo ln -sf '/usr/local/bin/valkey-server' '/usr/local/bin/redis-server'
+              sudo ln -sf "$local_bin/valkey-cli"    "$local_bin/redis-cli"
+              sudo ln -sf "$local_bin/valkey-server" "$local_bin/redis-server"
 
               # Add local bin to PATH.
-              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              echo "export PATH=$local_bin:\$PATH" >> ~/.bash_profile
 
         - name: Build and install Valkey binaries
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' }}
@@ -112,4 +101,4 @@ runs:
               cd valkey
               make BUILD_TLS=yes
               sudo make install
-              echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+              echo "export PATH=/usr/local/bin:$PATH" >> ~/.bash_profile
