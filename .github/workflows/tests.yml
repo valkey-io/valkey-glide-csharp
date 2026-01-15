@@ -128,9 +128,9 @@ jobs:
             - name: Test dotnet ${{ matrix.dotnet }}
               run: |
                   # Build to populate Rust cache
-                  dotnet build --configuration Debug --framework net${{ matrix.dotnet }}
+                  dotnet build --configuration Debug --framework net${{ matrix.dotnet }} /nodeReuse:false /maxcpucount:1
                   # Temporarily disabled to populate cache
-                  # dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
+                  # dotnet test --configuration Debug --framework net${{ matrix.dotnet }} /nodeReuse:false /maxcpucount:1 --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
                   echo "Tests skipped to populate cache"
 
             - name: Derive failures.json (from TRX)
@@ -248,7 +248,7 @@ jobs:
                   key: rust-${{ matrix.host.IMAGE }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
-              run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
+              run: dotnet test --framework net${{ matrix.dotnet }} /nodeReuse:false /maxcpucount:1 --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
 
             - name: Derive failures.json (from TRX)
               if: always()
