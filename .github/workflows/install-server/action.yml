@@ -73,39 +73,32 @@ runs:
               echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
 
         - name: Cache compiled Valkey binaries
+          if: ${{ inputs.server-version >= '7.2' }}
           id: cache-valkey
           uses: actions/cache@v4
           with:
               path: |
-                  valkey/src/redis-cli
-                  valkey/src/redis-server
+                  valkey/src/valkey-cli
+                  valkey/src/valkey-server
               key: valkey-${{ env.SOURCE_VERSION }}-${{ inputs.target }}
 
-        - name: Install cached Valkey binaries
-          if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
-          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
-          run: |
-              local_bin='/usr/local/bin'
-
-              # Copy the cached binaries local bin.
-              sudo cp 'valkey/src/redis-cli' 'valkey/src/redis-server' "$local_bin"
-
-              # Create symbolic links for valkey-cli and valkey-server.
-              sudo ln -sf "$local_bin/redis-cli"    "$local_bin/valkey-cli"
-              sudo ln -sf "$local_bin/redis-server" "$local_bin/valkey-server"
-
-              echo "Installed Valkey from cache:"
-              valkey-cli --version
-              valkey-server --version
-
-        - name: Build and install Valkey binaries
+        - name: Build and install Valkey binaries from source
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' }}
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
               cd valkey
-              make BUILD_TLS=yes
-              sudo make install
 
-              echo "Installed Valkey from source:"
+              # Prior to Valkey 7.2, the binaries were named redis-cli and redis-server.
+              make BUILD_TLS=yes REDIS_CLI_NAME=valkey-cli REDIS_SERVER_NAME=valkey-server install
+
+        - name: Install Valkey binaries from cache
+          if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
+          run: sudo cp valkey/src/valkey-cli valkey/src/valkey-server /usr/local/bin
+
+        - name: Verify Valkey installation
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
+          run: |
+              echo "Installed Valkey from cache:"
               valkey-cli --version
               valkey-server --version
