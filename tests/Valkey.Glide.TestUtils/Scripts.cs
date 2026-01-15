@@ -21,16 +21,23 @@ public static class Scripts
     /// </summary>
     public static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
-        // If on Windows, run the script through WSL.
-        // TODO #184: Is it necessary to run through WSL on Windows?
-        String fileName = IsWindows ? "wsl" : "python3";
-        String arguments = (IsWindows ? $"python3 " : "") + $"{ClusterManagerScriptName} {cmd}";
+        string fileName = "python3";
+        List<string> args = new List<string> { ClusterManagerScriptName, cmd };
+        string workingDirectory = GetScriptsDirectory();
+
+        // If on Windows, run the script through WSL and pass a Unix path to the script.
+        if (IsWindows)
+        {
+            args.Prepend(fileName);
+            fileName = "wsl";
+            workingDirectory = ToUnixPath(workingDirectory);
+        }
 
         ProcessStartInfo info = new()
         {
-            WorkingDirectory = GetScriptsDirectory(),
+            WorkingDirectory = workingDirectory,
             FileName = fileName,
-            Arguments = arguments,
+            Arguments = string.Join(" ", args),
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -73,5 +80,28 @@ public static class Scripts
         }
 
         return Path.Combine(directory, ValkeyGlideDirectoryName, "utils");
+    }
+
+    /// <summary>
+    /// Converts a Windows path to a WSL path.
+    /// </summary>
+    /// <param name="path">The Windows path to convert.</param>
+    /// <returns>The corresponding WSL path.</returns>
+    private static string ToUnixPath(string windowsPath)
+    {
+        ProcessStartInfo info = new()
+        {
+            FileName = "wsl",
+            Arguments = $"wslpath -x '{windowsPath}'",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        using Process? script = Process.Start(info);
+        script?.WaitForExit();
+        string? output = script?.StandardOutput.ReadToEnd();
+
+        return output;
     }
 }
