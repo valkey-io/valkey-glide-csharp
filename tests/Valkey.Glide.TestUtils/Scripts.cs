@@ -28,7 +28,7 @@ public static class Scripts
         // If on Windows, run the script through WSL and pass a Unix path to the script.
         if (IsWindows)
         {
-            args.Prepend(fileName);
+            args.Insert(0, fileName);
             fileName = "wsl";
             workingDirectory = ToUnixPath(workingDirectory);
         }
@@ -92,7 +92,7 @@ public static class Scripts
         ProcessStartInfo info = new()
         {
             FileName = "wsl",
-            Arguments = $"wslpath -x '{windowsPath}'",
+            Arguments = $"wslpath -a '{windowsPath}'",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -102,6 +102,6 @@ public static class Scripts
         script?.WaitForExit();
         string? output = script?.StandardOutput.ReadToEnd();
 
-        return output;
+        return output.Trim();
     }
 }
