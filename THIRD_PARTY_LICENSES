@@ -11656,7 +11656,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: flate2:1.1.5
+Package: flate2:1.1.8
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -14658,7 +14658,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: getrandom:0.2.16
+Package: getrandom:0.2.17
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -15345,7 +15345,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: h2:0.4.12
+Package: h2:0.4.13
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -19668,7 +19668,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: indexmap:2.12.1
+Package: indexmap:2.13.0
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -21729,7 +21729,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: libc:0.2.178
+Package: libc:0.2.180
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -27674,7 +27674,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: proc-macro2:1.0.104
+Package: proc-macro2:1.0.105
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -28319,7 +28319,7 @@ The following copyrights and licenses were found in the source code of this pack
 
 ----
 
-Package: quote:1.0.42
+Package: quote:1.0.43
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -30450,7 +30450,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: rand_core:0.9.3
+Package: rand_core:0.9.5
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -31384,7 +31384,7 @@ THIS SOFTWARE.
 
 ----
 
-Package: rustls:0.23.35
+Package: rustls:0.23.36
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -34680,7 +34680,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: serde_json:1.0.148
+Package: serde_json:1.0.149
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -36749,7 +36749,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----
 
-Package: syn:2.0.112
+Package: syn:2.0.114
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -38356,7 +38356,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: time:0.3.44
+Package: time:0.3.45
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -38585,7 +38585,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: time-core:0.1.6
+Package: time-core:0.1.7
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -38814,7 +38814,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: time-macros:0.2.24
+Package: time-macros:0.2.25
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -39081,7 +39081,7 @@ authorization of the copyright holder.
 
 ----
 
-Package: tokio:1.48.0
+Package: tokio:1.49.0
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -39410,7 +39410,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: tokio-stream:0.1.17
+Package: tokio-stream:0.1.18
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -39435,7 +39435,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: tokio-util:0.7.17
+Package: tokio-util:0.7.18
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -39510,7 +39510,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: tower:0.5.2
+Package: tower:0.5.3
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -40295,7 +40295,7 @@ THIS SOFTWARE.
 
 ----
 
-Package: url:2.5.7
+Package: url:2.5.8
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -43379,7 +43379,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: webpki-root-certs:1.0.4
+Package: webpki-root-certs:1.0.5
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -52457,7 +52457,7 @@ authorization of the copyright holder.
 
 ----
 
-Package: zerocopy:0.8.31
+Package: zerocopy:0.8.33
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -52709,7 +52709,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ----
 
-Package: zerocopy-derive:0.8.31
+Package: zerocopy-derive:0.8.33
 
 The following copyrights and licenses were found in the source code of this package:
 
@@ -53380,7 +53380,7 @@ authorization of the copyright holder.
 
 ----
 
-Package: zmij:1.0.7
+Package: zmij:1.0.14
 
 The following copyrights and licenses were found in the source code of this package:
 
