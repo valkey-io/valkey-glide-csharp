@@ -46,28 +46,19 @@ runs:
         - name: Pass environment variables to WSL
           if: ${{ inputs.os == 'windows' }}
           shell: bash
-          run: echo "WSLENV=SERVER_VERSION:GITHUB_ENV/p" >> $GITHUB_ENV
-
-        - name: Checkout Valkey source code
-          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
-              if [[ -d valkey ]]; then
-                  echo 'Removing existing valkey directory...'
-                  rm -fR valkey
-              fi
-              echo "Cloning and checking out Valkey $SERVER_VERSION"
-              git clone --depth 1 --branch "$SERVER_VERSION" --single-branch 'https://github.com/valkey-io/valkey.git'
+              echo "WSLENV=SERVER_VERSION:GITHUB_ENV/p" >> $GITHUB_ENV
 
         - name: Determine Valkey source version
           shell: bash
           run: |
-              cmd="cd valkey/src && grep -E 'VALKEY_VERSION|REDIS_VERSION' 'version.h' | grep -oE '[0-9]+\.[0-9]\.[0-9]' | head -1"
+              # Fetch version.h directly from GitHub, then extract the version number from it.
+              version_h=$(curl -fsSL "https://raw.githubusercontent.com/valkey-io/valkey/$SERVER_VERSION/src/version.h")
+              source_version=$(echo "$version_h" | grep -E 'VALKEY_VERSION|REDIS_VERSION' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 
-              # When running on Windows, we need to execute the commands inside WSL.
-              if [[ "$OS" == "windows" ]]; then
-                source_version=$(wsl bash -c "$cmd")
-              else
-                source_version=$(bash -c "$cmd")
+              if [[ -z "$source_version" ]]; then
+                  echo "Error: Could not determine source version for Valkey $SERVER_VERSION"
+                  exit 1
               fi
 
               echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
@@ -86,19 +77,25 @@ runs:
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' }}
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
-              cd valkey
+              git clone --depth 1 --branch "$SERVER_VERSION" --single-branch 'https://github.com/valkey-io/valkey.git'
 
-              # Prior to Valkey 7.2, the binaries were named redis-cli and redis-server.
-              make BUILD_TLS=yes REDIS_CLI_NAME=valkey-cli REDIS_SERVER_NAME=valkey-server install
+              # Prior to Valkey 7.2, the binaries were named redis-cli and redis-server by default.
+              cd valkey && make BUILD_TLS=yes REDIS_CLI_NAME=valkey-cli REDIS_SERVER_NAME=valkey-server install
 
         - name: Install Valkey binaries from cache
           if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
-          run: sudo cp valkey/src/valkey-cli valkey/src/valkey-server /usr/local/bin
+          run: |
+              sudo cp valkey/src/valkey-cli valkey/src/valkey-server /usr/local/bin
 
         - name: Verify Valkey installation
           shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
-              echo "Installed Valkey from cache:"
-              valkey-cli --version
-              valkey-server --version
+              if [ ! -f /usr/local/bin/valkey-cli ] || [ ! -f /usr/local/bin/valkey-server ]; then
+                  echo "Error: Valkey installation failed."
+                  exit 1
+              else
+                  echo "Installed Valkey:"
+                  valkey-cli --version
+                  valkey-server --version
+              fi
