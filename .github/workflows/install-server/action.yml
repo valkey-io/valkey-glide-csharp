@@ -64,7 +64,6 @@ runs:
               echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
 
         - name: Cache compiled Valkey binaries
-          if: ${{ inputs.server-version >= '7.2' }}
           id: cache-valkey
           uses: actions/cache@v4
           with:
