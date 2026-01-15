@@ -21,16 +21,21 @@ public static class Scripts
     /// </summary>
     public static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
-        // If on Windows, run the script through WSL.
-        // TODO #184: Is it necessary to run through WSL on Windows?
-        String fileName = IsWindows ? "wsl" : "python3";
-        String arguments = (IsWindows ? $"python3 " : "") + $"{ClusterManagerScriptName} {cmd}";
+        string fileName = "python3";
+        List<string> arguments = new List<string> { ClusterManagerScriptName, cmd };
+
+        // If on Windows, run the script through WSL and pass a Unix path to the script.
+        if (IsWindows)
+        {
+            arguments.Insert(0, fileName);
+            fileName = "wsl";
+        }
 
         ProcessStartInfo info = new()
         {
-            WorkingDirectory = GetScriptsDirectory(),
             FileName = fileName,
-            Arguments = arguments,
+            Arguments = string.Join(" ", arguments),
+            WorkingDirectory = GetScriptsDirectory(),
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
