@@ -30,10 +30,7 @@ public static class ServerManager
 
         args.Add("start");
         args.Add($"--prefix {name}");
-
-        // TODO #184: Configure replica count for Windows.
-        // args.Add($"--replica-count {REPLICA_COUNT}");
-        args.Add($"--replica-count 3");
+        args.Add($"--replica-count {REPLICA_COUNT}");
 
         if (useClusterMode)
             args.Add("--cluster-mode");
