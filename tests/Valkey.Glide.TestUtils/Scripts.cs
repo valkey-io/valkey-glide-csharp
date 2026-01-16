@@ -13,8 +13,6 @@ public static class Scripts
     private readonly static string ValkeyGlideDirectoryName = "valkey-glide";
     private readonly static string ClusterManagerScriptName = "cluster_manager.py";
 
-    private readonly static bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
     /// <summary>
     /// Runs the cluster manager script with the specified command.
     /// See 'valkey-glide/utils/cluster_manager.py' for more details.
@@ -32,7 +30,7 @@ public static class Scripts
         // Example commands:
         //   - MacOs/Linx: 'python3 /unix/path/to/cluster_manager.py start --replica-count 3'
         //   - Windows:    'wsl python3 /unix/path/to/cluster_manager.py start --replica-count 3'
-        if (IsWindows)
+        if (OperatingSystem.IsWindows())
         {
             string clusterManagerScriptPath = ToUnixPath(Path.Combine(scriptsDirectory, ClusterManagerScriptName));
 
