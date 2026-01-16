@@ -21,25 +21,29 @@ public static class Scripts
     /// </summary>
     public static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
-        string fileName = "python3";
-        List<string> arguments = new List<string> { ClusterManagerScriptName, cmd };
-
-        // If on Windows, run the script through WSL and pass a Unix path to the script.
-        if (IsWindows)
-        {
-            arguments.Insert(0, fileName);
-            fileName = "wsl";
-        }
-
         ProcessStartInfo info = new()
         {
-            FileName = fileName,
-            Arguments = string.Join(" ", arguments),
-            WorkingDirectory = GetScriptsDirectory(),
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+
+        string workingDirectory = GetScriptsDirectory();
+        string clusterManagerCmd = $"{ClusterManagerScriptName} {cmd}";
+
+        // If on Windows, run the script through WSL and pass a Unix path to the script.
+        if (IsWindows)
+        {
+            info.FileName = "wsl";
+            info.Arguments = $"python3 {clusterManagerCmd}";
+            info.WorkingDirectory = ToUnixPath(workingDirectory);
+        }
+        else
+        {
+            info.FileName = "python3";
+            info.Arguments = clusterManagerCmd;
+            info.WorkingDirectory = workingDirectory;
+        }
 
         using Process? script = Process.Start(info);
         script?.WaitForExit();
@@ -78,5 +82,28 @@ public static class Scripts
         }
 
         return Path.Combine(directory, ValkeyGlideDirectoryName, "utils");
+    }
+
+    /// <summary>
+    /// Converts a Windows path to a WSL path.
+    /// </summary>
+    /// <param name="path">The Windows path to convert.</param>
+    /// <returns>The corresponding WSL path.</returns>
+    private static string ToUnixPath(string windowsPath)
+    {
+        ProcessStartInfo info = new()
+        {
+            FileName = "wsl",
+            Arguments = $"wslpath -x '{windowsPath}'",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        using Process? script = Process.Start(info);
+        script?.WaitForExit();
+        string? output = script?.StandardOutput.ReadToEnd();
+
+        return output;
     }
 }
