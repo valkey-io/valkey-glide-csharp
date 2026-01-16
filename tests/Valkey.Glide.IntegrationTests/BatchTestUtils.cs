@@ -6,7 +6,7 @@ namespace Valkey.Glide.IntegrationTests;
 
 internal partial class BatchTestUtils
 {
-    private static readonly TimeSpan BlockingTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan BlockingTimeout = TimeSpan.FromSeconds(60);
 
     public static List<TestInfo> CreateStringTest(Pipeline.IBatch batch, bool isAtomic)
     {
