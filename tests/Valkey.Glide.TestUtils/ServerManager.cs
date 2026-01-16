@@ -30,7 +30,8 @@ public static class ServerManager
 
         args.Add("start");
         args.Add($"--prefix {name}");
-        args.Add($"--replica-count {REPLICA_COUNT}");
+        // TODO #184: Is this needed?
+        args.Add($"--replica-count 3");
 
         if (useClusterMode)
             args.Add("--cluster-mode");
