@@ -25,7 +25,7 @@ public static class Scripts
         string clusterManagerPath = Path.Combine(scriptsDirectory, ClusterManagerScriptName);
 
         string fileName;
-        List<string> arguments = [];
+        string arguments;
 
         // When running on Windows, use WSL to run the script. We also need to convert the script
         // path to a Unix path (e.g. from 'C:\path\to\script.py' to '/mnt/c/path/to/script.py').
@@ -36,21 +36,18 @@ public static class Scripts
         if (IsWindows)
         {
             fileName = "wsl";
-            arguments.Add("python3");
-            arguments.Add(ToUnixPath(clusterManagerPath));
-            arguments.Add(cmd);
+            arguments = $"python3 '{ToUnixPath(clusterManagerPath)}' {cmd}";
         }
         else
         {
             fileName = "python3";
-            arguments.Add(clusterManagerPath);
-            arguments.Add(cmd);
+            arguments = $"'{clusterManagerPath}' {cmd}";
         }
 
         ProcessStartInfo info = new()
         {
             FileName = fileName,
-            Arguments = string.Join(" ", arguments),
+            Arguments = arguments,
             WorkingDirectory = scriptsDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -106,7 +103,7 @@ public static class Scripts
         ProcessStartInfo info = new()
         {
             FileName = "wsl",
-            Arguments = $"wslpath -x '{windowsPath}'",
+            Arguments = $"wslpath -a '{windowsPath}'",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -114,8 +111,19 @@ public static class Scripts
 
         using Process? script = Process.Start(info);
         script?.WaitForExit();
+        string? error = script?.StandardError.ReadToEnd();
         string? output = script?.StandardOutput.ReadToEnd();
+        int? exitCode = script?.ExitCode;
 
-        return output;
+        if (exitCode != 0)
+        {
+            throw new ApplicationException(
+                $"wslpath failed to convert Windows path to Unix path: exit code {exitCode}.\n" +
+                $"Path: {windowsPath}\n" +
+                $"Error: {error}\n" +
+                $"Output: {output}");
+        }
+
+        return output.Trim();
     }
 }
