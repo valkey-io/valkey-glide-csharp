@@ -21,29 +21,41 @@ public static class Scripts
     /// </summary>
     public static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
+        string scriptsDirectory = GetScriptsDirectory();
+        string clusterManagerPath = Path.Combine(scriptsDirectory, ClusterManagerScriptName);
+
+        string fileName;
+        List<string> arguments = [];
+
+        // When running on Windows, use WSL to run the script. We also need to convert the script
+        // path to a Unix path (e.g. from 'C:\path\to\script.py' to '/mnt/c/path/to/script.py').
+        //
+        // Example commands:
+        //   - MacOs/Linx: 'python3 /unix/path/to/cluster_manager.py start --replica-count 3'
+        //   - Windows:    'wsl python3 /unix/path/to/cluster_manager.py start --replica-count 3'
+        if (IsWindows)
+        {
+            fileName = "wsl";
+            arguments.Add("python3");
+            arguments.Add(ToUnixPath(clusterManagerPath));
+            arguments.Add(cmd);
+        }
+        else
+        {
+            fileName = "python3";
+            arguments.Add(clusterManagerPath);
+            arguments.Add(cmd);
+        }
+
         ProcessStartInfo info = new()
         {
+            FileName = fileName,
+            Arguments = string.Join(" ", arguments),
+            WorkingDirectory = scriptsDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
-
-        string workingDirectory = GetScriptsDirectory();
-        string clusterManagerCmd = $"{ClusterManagerScriptName} {cmd}";
-
-        // If on Windows, run the script through WSL and pass a Unix path to the script.
-        if (IsWindows)
-        {
-            info.FileName = "wsl";
-            info.Arguments = $"python3 {clusterManagerCmd}";
-            info.WorkingDirectory = ToUnixPath(workingDirectory);
-        }
-        else
-        {
-            info.FileName = "python3";
-            info.Arguments = clusterManagerCmd;
-            info.WorkingDirectory = workingDirectory;
-        }
 
         using Process? script = Process.Start(info);
         script?.WaitForExit();
