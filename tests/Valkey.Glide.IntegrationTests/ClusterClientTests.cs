@@ -14,8 +14,6 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class ClusterClientTests()
 {
-    private readonly static bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
 #pragma warning disable xUnit1046 // Avoid using TheoryDataRow arguments that are not serializable
     public static IEnumerable<TheoryDataRow<GlideClusterClient, bool>> ClusterClientWithAtomic =>
         TestConfiguration.TestClusterClients.SelectMany(r => new TheoryDataRow<GlideClusterClient, bool>[] { new(r.Data, true), new(r.Data, false) });
@@ -79,7 +77,7 @@ public class ClusterClientTests()
 
         // Skip replica tests on Windows because it run without replica nodes due
         // to synchronization issues. See ServerManager.REPLICA_COUNT for more details.
-        if (!IsWindows)
+        if (!OperatingSystem.IsWindows())
         {
             res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Replica))).SingleValue! as gs)!;
             Assert.Contains("role:slave", res);
@@ -123,7 +121,7 @@ public class ClusterClientTests()
 
         // Skip replica tests on Windows because it run without replica nodes due
         // to synchronization issues. See ServerManager.REPLICA_COUNT for more details.
-        if (!IsWindows)
+        if (!OperatingSystem.IsWindows())
         {
             res = await client.Exec(batch, true, new(route: new SlotKeyRoute("abc", SlotType.Replica)));
             Assert.Contains("role:slave", res![0] as string);
