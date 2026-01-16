@@ -7,6 +7,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class ListCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
+    private static readonly TimeSpan BlockingTimeout = TimeSpan.FromSeconds(1);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -650,21 +651,21 @@ public class ListCommandTests(TestConfiguration config)
         // Test with populated list
         await client.ListLeftPushAsync(key1, ["value1", "value2"]);
 
-        ValkeyValue[]? result = await client.ListBlockingLeftPopAsync([key1, key2], TimeSpan.FromSeconds(1));
+        ValkeyValue[]? result = await client.ListBlockingLeftPopAsync([key1, key2], BlockingTimeout);
         Assert.NotNull(result);
         Assert.Equal(2, result.Length);
         Assert.Equal(key1, result[0].ToGlideString());
         Assert.Equal("value2", result[1].ToGlideString());
 
         // Test timeout with empty lists first
-        ValkeyValue[]? timeoutResult = await client.ListBlockingLeftPopAsync([key2], TimeSpan.FromMilliseconds(100));
+        ValkeyValue[]? timeoutResult = await client.ListBlockingLeftPopAsync([key2], BlockingTimeout);
         Assert.Null(timeoutResult);
 
         // Test with data available - push first, then pop
         string testKey = $"{{testkey}}-test-{Guid.NewGuid()}";
         await client.ListRightPushAsync(testKey, ["test1", "test2"]);
 
-        ValkeyValue[]? result2 = await client.ListBlockingLeftPopAsync([testKey], TimeSpan.FromMilliseconds(100));
+        ValkeyValue[]? result2 = await client.ListBlockingLeftPopAsync([testKey], BlockingTimeout);
         Assert.NotNull(result2);
         Assert.Equal(testKey, result2[0].ToGlideString());
         Assert.Equal("test1", result2[1].ToGlideString());
@@ -681,21 +682,21 @@ public class ListCommandTests(TestConfiguration config)
         // Test with populated list
         await client.ListRightPushAsync(key1, ["value1", "value2"]);
 
-        ValkeyValue[]? result = await client.ListBlockingRightPopAsync([key1, key2], TimeSpan.FromSeconds(1));
+        ValkeyValue[]? result = await client.ListBlockingRightPopAsync([key1, key2], BlockingTimeout);
         Assert.NotNull(result);
         Assert.Equal(2, result.Length);
         Assert.Equal(key1, result[0].ToGlideString());
         Assert.Equal("value2", result[1].ToGlideString());
 
         // Test timeout with empty lists first
-        ValkeyValue[]? timeoutResult = await client.ListBlockingRightPopAsync([key2], TimeSpan.FromMilliseconds(100));
+        ValkeyValue[]? timeoutResult = await client.ListBlockingRightPopAsync([key2], BlockingTimeout);
         Assert.Null(timeoutResult);
 
         // Test with data available - push first, then pop
         string testKey = $"{{testkey}}-test-{Guid.NewGuid()}";
         await client.ListLeftPushAsync(testKey, ["test1", "test2"]);
 
-        ValkeyValue[]? result2 = await client.ListBlockingRightPopAsync([testKey], TimeSpan.FromMilliseconds(100));
+        ValkeyValue[]? result2 = await client.ListBlockingRightPopAsync([testKey], BlockingTimeout);
         Assert.NotNull(result2);
         Assert.Equal(testKey, result2[0].ToGlideString());
         Assert.Equal("test1", result2[1].ToGlideString());
@@ -713,7 +714,7 @@ public class ListCommandTests(TestConfiguration config)
         // Test with populated source list
         await client.ListLeftPushAsync(source, ["value1", "value2"]);
 
-        ValkeyValue result = await client.ListBlockingMoveAsync(source, destination, ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(1));
+        ValkeyValue result = await client.ListBlockingMoveAsync(source, destination, ListSide.Left, ListSide.Right, BlockingTimeout);
         Assert.Equal("value2", result.ToGlideString());
 
         // Verify the move
@@ -724,7 +725,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(["value2"], destList.ToGlideStrings());
 
         // Test timeout with empty source first
-        ValkeyValue timeoutResult = await client.ListBlockingMoveAsync(emptyKey, destination, ListSide.Left, ListSide.Right, TimeSpan.FromMilliseconds(100));
+        ValkeyValue timeoutResult = await client.ListBlockingMoveAsync(emptyKey, destination, ListSide.Left, ListSide.Right, BlockingTimeout);
         Assert.Equal(ValkeyValue.Null, timeoutResult);
 
         // Test with data available - push first, then move
@@ -732,7 +733,7 @@ public class ListCommandTests(TestConfiguration config)
         string testDest = $"{{testkey}}-test-dst-{Guid.NewGuid()}";
         await client.ListLeftPushAsync(testSource, "move_value");
 
-        ValkeyValue result2 = await client.ListBlockingMoveAsync(testSource, testDest, ListSide.Left, ListSide.Right, TimeSpan.FromMilliseconds(100));
+        ValkeyValue result2 = await client.ListBlockingMoveAsync(testSource, testDest, ListSide.Left, ListSide.Right, BlockingTimeout);
         Assert.Equal("move_value", result2.ToGlideString());
 
         // Verify the move happened
@@ -754,26 +755,26 @@ public class ListCommandTests(TestConfiguration config)
         // Test with populated list - single element
         await client.ListLeftPushAsync(key1, ["value1", "value2", "value3"]);
 
-        ListPopResult result = await client.ListBlockingPopAsync([key1, key2], ListSide.Left, TimeSpan.FromSeconds(1));
+        ListPopResult result = await client.ListBlockingPopAsync([key1, key2], ListSide.Left, BlockingTimeout);
         Assert.NotEqual(ListPopResult.Null, result);
         Assert.Equal(key1, result.Key.ToGlideString());
         Assert.Equal(["value3"], result.Values.ToGlideStrings());
 
         // Test with count
-        ListPopResult resultWithCount = await client.ListBlockingPopAsync([key1], ListSide.Left, 2, TimeSpan.FromSeconds(1));
+        ListPopResult resultWithCount = await client.ListBlockingPopAsync([key1], ListSide.Left, 2, BlockingTimeout);
         Assert.NotEqual(ListPopResult.Null, resultWithCount);
         Assert.Equal(key1, resultWithCount.Key.ToGlideString());
         Assert.Equal(["value2", "value1"], resultWithCount.Values.ToGlideStrings());
 
         // Test timeout with empty lists first
-        ListPopResult timeoutResult = await client.ListBlockingPopAsync([key2], ListSide.Left, TimeSpan.FromMilliseconds(100));
+        ListPopResult timeoutResult = await client.ListBlockingPopAsync([key2], ListSide.Left, BlockingTimeout);
         Assert.True(timeoutResult.IsNull);
 
         // Test with data available - push first, then pop
         string testKey = $"{{testkey}}-test-{Guid.NewGuid()}";
         await client.ListRightPushAsync(testKey, ["test1", "test2"]);
 
-        ListPopResult result2 = await client.ListBlockingPopAsync([testKey], ListSide.Left, TimeSpan.FromMilliseconds(100));
+        ListPopResult result2 = await client.ListBlockingPopAsync([testKey], ListSide.Left, BlockingTimeout);
         Assert.NotEqual(ListPopResult.Null, result2);
         Assert.Equal(testKey, result2.Key.ToGlideString());
         Assert.Equal(["test1"], result2.Values.ToGlideStrings());
