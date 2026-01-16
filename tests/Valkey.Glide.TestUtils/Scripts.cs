@@ -22,26 +22,27 @@ public static class Scripts
     public static string RunClusterManager(string cmd, bool ignoreExitCode)
     {
         string scriptsDirectory = GetScriptsDirectory();
-        string clusterManagerPath = Path.Combine(scriptsDirectory, ClusterManagerScriptName);
 
         string fileName;
         string arguments;
 
         // When running on Windows, use WSL to run the script. We also need to convert the script
-        // path to a Unix path (e.g. from 'C:\path\to\script.py' to '/mnt/c/path/to/script.py').
+        // path to an absolute Unix path (e.g. from 'C:\path\to\script.py' to '/mnt/c/path/to/script.py').
         //
         // Example commands:
         //   - MacOs/Linx: 'python3 /unix/path/to/cluster_manager.py start --replica-count 3'
         //   - Windows:    'wsl python3 /unix/path/to/cluster_manager.py start --replica-count 3'
         if (IsWindows)
         {
+            string clusterManagerScriptPath = ToUnixPath(Path.Combine(scriptsDirectory, ClusterManagerScriptName));
+
             fileName = "wsl";
-            arguments = $"python3 '{ToUnixPath(clusterManagerPath)}' {cmd}";
+            arguments = $"python3 '{clusterManagerScriptPath}' {cmd}";
         }
         else
         {
             fileName = "python3";
-            arguments = $"'{clusterManagerPath}' {cmd}";
+            arguments = $"'{ClusterManagerScriptName}' {cmd}";
         }
 
         ProcessStartInfo info = new()
