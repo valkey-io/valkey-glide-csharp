@@ -513,7 +513,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeysAsync_Scan(GlideClient client)
     {
         string prefix = Guid.NewGuid().ToString();
