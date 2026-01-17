@@ -1,7 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Runtime.InteropServices;
-
 using Valkey.Glide.IntegrationTests;
 using Valkey.Glide.TestUtils;
 
@@ -294,13 +292,12 @@ public class TestConfiguration : IDisposable
             // Stop all if weren't stopped on previous test run
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: false);
 
+            // TODO #184
             // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
             // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
-            string scriptsDir = Scripts.GetScriptsDirectory();
-            string clusterLogsDir = Path.Combine(scriptsDir, "clusters");
             try
             {
-                Directory.Delete(clusterLogsDir, true);
+                Directory.Delete(ServerManager.GetServerDirectory(), true);
             }
             catch (DirectoryNotFoundException) { }
 
@@ -325,7 +322,6 @@ public class TestConfiguration : IDisposable
         ResetTestConnections();
         if (_startedServer)
         {
-            // Stop all
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: true);
         }
     }
