@@ -48,7 +48,7 @@ public static class ServerManager
         args.AddRange(["--prefix", name]);
 
         // TODO #184: Use 3 replicas by default.
-        args.AddRange(["--replica-count", replicaCount.ToString()]);
+        args.Add("-r 3");
 
         if (useClusterMode)
             args.Add("--cluster-mode");
@@ -185,18 +185,12 @@ public static class ServerManager
         info.RedirectStandardOutput = true;
         info.RedirectStandardError = true;
 
-        using Process process = Process.Start(info);
-        if (process == null)
-        {
-            throw new InvalidOperationException($"{info.FileName} is not installed or not accessible.");
-        }
+        using Process? script = Process.Start(info);
+        script?.WaitForExit();
+        string? error = script?.StandardError.ReadToEnd();
+        string? output = script?.StandardOutput.ReadToEnd();
+        int? exitCode = script?.ExitCode;
 
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-
-        process.WaitForExit();
-
-        int exitCode = process.ExitCode;
         if (exitCode != 0)
         {
             throw new ApplicationException(
