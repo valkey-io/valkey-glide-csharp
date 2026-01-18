@@ -36,9 +36,7 @@ public static class ServerManager
     /// <returns>A list of server addresses started.</returns>
     public static IList<Address> StartServer(string name, bool useClusterMode = false, bool useTls = false)
     {
-        // Build command arguments
-        // -----------------------
-
+        // Build command arguments.
         List<string> args = new();
 
         if (useTls)
@@ -47,20 +45,16 @@ public static class ServerManager
         args.Add("start");
         args.AddRange(["--prefix", name]);
         args.AddRange(["-r", replicaCount.ToString()]);
+        args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (useClusterMode)
             args.Add("--cluster-mode");
 
-        // TODO #184: Specify the clusters directory to prevent path-related
-        // issues when running on Windows with WSL.
-        // args.AddRange(["--folder-path", GetServerDirectory()]);
-
-        // Run cluster manager script
-        // --------------------------
-
+        // Run cluster manager script.
         string startCommand = string.Join(" ", args);
         string output = RunClusterManager(startCommand);
 
+        // Parse output to get node addresses.
         const string hostsPattern = @"^CLUSTER_NODES=(.+)$";
         var match = System.Text.RegularExpressions.Regex.Match(output, hostsPattern, System.Text.RegularExpressions.RegexOptions.Multiline);
         var hosts = match.Groups[1].Value;
@@ -77,13 +71,10 @@ public static class ServerManager
 
         args.Add("stop");
         args.AddRange(["--prefix", name]);
+        args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (keepLogs)
             args.Add("--keep-folder");
-
-        // TODO #184: Specify the clusters directory to prevent path-related
-        // issues when running on Windows with WSL.
-        // args.AddRange(["--folder-path", GetServerDirectory()]);
 
         string stopCommand = string.Join(" ", args);
         RunClusterManager(stopCommand);
@@ -126,7 +117,6 @@ public static class ServerManager
     /// </summary>
     private static string RunWslPath(string scriptCmd)
     {
-
         ProcessStartInfo info = new()
         {
             FileName = wslFileName,
