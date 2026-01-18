@@ -292,15 +292,6 @@ public class TestConfiguration : IDisposable
             // Stop all if weren't stopped on previous test run
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: false);
 
-            // TODO #184
-            // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
-            // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
-            try
-            {
-                Directory.Delete(ServerManager.GetServerDirectory(), true);
-            }
-            catch (DirectoryNotFoundException) { }
-
             // Start standalone and cluster servers.
             CLUSTER_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
             STANDALONE_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);

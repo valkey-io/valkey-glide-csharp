@@ -12,8 +12,7 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
-    private static readonly bool IsWindows = OperatingSystem.IsWindows();
-    private static readonly int replicaCount = 3; // TODO #184: Verify usage
+    private static readonly int replicaCount = 3;
 
     private static readonly string wslFileName = "wsl";
     private static readonly string pythonFileName = "python3";
@@ -25,9 +24,7 @@ public static class ServerManager
     /// </summary>
     public static string GetServerCertificatePath()
     {
-        // On Windows, convert to WSL path.
-        string path = Path.Combine(GetScriptsDirectory(), "tls_crts", "ca.crt");
-        return IsWindows ? RunWslPath(path) : path;
+        return Path.Combine(GetScriptsDirectory(), "tls_crts", "ca.crt");
     }
 
     /// <summary>
@@ -89,12 +86,19 @@ public static class ServerManager
         string fileName;
         string arguments;
 
-        // On Windows, run the script via WSL.
+        // On Windows, run the script via WSL with full WSL paths.
+        // > wsl python3 "/mnt/c/.../valkey-glide/utils/cluster_manager.py" <scriptCmd>
         if (OperatingSystem.IsWindows())
         {
+            // #184: Must use full WSL paths for script.
+            string scriptPath = ToWslPath(Path.Combine(GetScriptsDirectory(), scriptName));
+
             fileName = wslFileName;
-            arguments = $"{pythonFileName} {scriptName} {scriptCmd}";
+            arguments = $"{pythonFileName} {scriptPath} {scriptCmd}";
         }
+
+        // Non-Windows systems can run the script directly.
+        // > python3 "cluster_manager.py" <scriptCmd>
         else
         {
             fileName = pythonFileName;
@@ -105,23 +109,21 @@ public static class ServerManager
         {
             FileName = fileName,
             Arguments = arguments,
-            WorkingDirectory = GetScriptsDirectory(),
         };
 
         return RunProcess(info);
     }
 
     /// <summary>
-    /// Runs wslpath with the specified command.
+    /// Converts a Windows path to a WSL path and returns the result.
     /// See <https://github.com/laurent22/wslpath> for more details.
     /// </summary>
-    private static string RunWslPath(string scriptCmd)
+    private static string ToWslPath(string scriptCmd)
     {
         ProcessStartInfo info = new()
         {
             FileName = wslFileName,
             Arguments = $"wslpath '{scriptCmd}'",
-            WorkingDirectory = GetScriptsDirectory(),
         };
 
         // Trim output to remove trailing newline.
@@ -132,11 +134,16 @@ public static class ServerManager
     /// Returns the path for the server working directory.
     /// See <valkey-glide/utils/cluster_manager.py> for details.
     /// </summary>
-    public static string GetServerDirectory()
+    private static string GetServerDirectory()
     {
-        // On Windows, convert to WSL path.
-        string path = Path.Combine(GetScriptsDirectory(), "clusters");
-        return IsWindows ? RunWslPath(path) : path;
+        const string directoryName = "clusters";
+
+        // #184: On Windows, servers cannot syncronize when created on a Windows filesystem
+        // mounted in WSL (e.g. /mnt/c/). Use a directory inside WSL filesystem instead.
+        if (OperatingSystem.IsWindows()) return $"~/{directoryName}";
+
+        // For non-Windows, use a directory inside the scripts directory.
+        return Path.Combine(GetScriptsDirectory(), "clusters");
     }
 
     /// <summary>
