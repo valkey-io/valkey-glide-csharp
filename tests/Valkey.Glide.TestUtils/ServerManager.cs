@@ -12,7 +12,8 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
-    private static readonly int replicaCount = 3;
+    // TODO #184
+    private static readonly int replicaCount = OperatingSystem.IsWindows() ? 0 : 3;
 
     private static readonly string wslFileName = "wsl";
     private static readonly string pythonFileName = "python3";
@@ -42,7 +43,9 @@ public static class ServerManager
         args.Add("start");
         args.AddRange(["--prefix", name]);
         args.AddRange(["-r", replicaCount.ToString()]);
-        args.AddRange(["--folder-path", GetServerDirectory()]);
+
+        // TODO #184
+        // args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (useClusterMode)
             args.Add("--cluster-mode");
@@ -68,7 +71,9 @@ public static class ServerManager
 
         args.Add("stop");
         args.AddRange(["--prefix", name]);
-        args.AddRange(["--folder-path", GetServerDirectory()]);
+
+        // TODO #184
+        // args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (keepLogs)
             args.Add("--keep-folder");
@@ -138,7 +143,7 @@ public static class ServerManager
     {
         const string directoryName = "clusters";
 
-        // #184: On Windows, servers cannot syncronize when created on a Windows filesystem
+        // TODO #184: On Windows, servers cannot syncronize when created on a Windows filesystem
         // mounted in WSL (e.g. /mnt/c/). Use a directory inside WSL filesystem instead.
         if (OperatingSystem.IsWindows()) return $"~/{directoryName}";
 
