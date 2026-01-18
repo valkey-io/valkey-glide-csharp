@@ -46,9 +46,7 @@ public static class ServerManager
 
         args.Add("start");
         args.AddRange(["--prefix", name]);
-
-        // TODO #184: Use 3 replicas by default.
-        args.Add("-r 3");
+        args.AddRange(["-r", replicaCount.ToString()]);
 
         if (useClusterMode)
             args.Add("--cluster-mode");
@@ -140,7 +138,6 @@ public static class ServerManager
         return RunProcess(info).Trim();
     }
 
-    // TODO #184
     /// <summary>
     /// Returns the path for the server working directory.
     /// See <valkey-glide/utils/cluster_manager.py> for details.

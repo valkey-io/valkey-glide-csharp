@@ -11,15 +11,17 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class ClusterClientTests()
+public class ClusterClientTests(TestConfiguration config)
 {
+    public TestConfiguration Config { get; } = config;
+
 #pragma warning disable xUnit1046 // Avoid using TheoryDataRow arguments that are not serializable
     public static IEnumerable<TheoryDataRow<GlideClusterClient, bool>> ClusterClientWithAtomic =>
         TestConfiguration.TestClusterClients.SelectMany(r => new TheoryDataRow<GlideClusterClient, bool>[] { new(r.Data, true), new(r.Data, false) });
 #pragma warning restore xUnit1046 // Avoid using TheoryDataRow arguments that are not serializable
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommand(GlideClusterClient client)
     {
         // command which returns always a single value
@@ -37,7 +39,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithRandomRoute(GlideClusterClient client)
     {
         // if a command isn't routed in 100 tries to different nodes, you are a lucker or have a bug
@@ -62,7 +64,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithSingleNodeRoute(GlideClusterClient client)
     {
         string res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Primary))).SingleValue! as gs)!;
@@ -74,6 +76,7 @@ public class ClusterClientTests()
         res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port))).SingleValue! as gs)!;
         Assert.Contains("# Replication", res);
 
+        // TODO #184
         // Skip replica tests on Windows because it run without replica nodes due
         // to synchronization issues. See ServerManager.REPLICA_COUNT for more details.
         if (!OperatingSystem.IsWindows())
@@ -87,7 +90,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithMultiNodeRoute(GlideClusterClient client)
     {
         _ = await client.StringSetAsync("abc", "abc");
@@ -99,7 +102,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task RetryStrategyIsNotSupportedForTransactions(GlideClusterClient client)
         => _ = await Assert.ThrowsAsync<RequestException>(async () => _ = await client.Exec(new(true), true, new(retryStrategy: new())));
 
@@ -118,6 +121,7 @@ public class ClusterClientTests()
         res = await client.Exec(batch, true, new(route: new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port)));
         Assert.Contains("# Replication", res![0] as string);
 
+        // TODO #184
         // Skip replica tests on Windows because it run without replica nodes due
         // to synchronization issues. See ServerManager.REPLICA_COUNT for more details.
         if (!OperatingSystem.IsWindows())
@@ -131,7 +135,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task Info(GlideClusterClient client)
     {
         Dictionary<string, string> info = await client.InfoAsync();
@@ -156,7 +160,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoWithRoute(GlideClusterClient client)
     {
         ClusterValue<string> info = await client.InfoAsync(Route.Random);
@@ -188,7 +192,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_NoMessage(GlideClusterClient client)
     {
         TimeSpan result = await client.PingAsync();
@@ -196,7 +200,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_NoMessage_WithRoute(GlideClusterClient client)
     {
         TimeSpan result = await client.PingAsync(AllNodes);
@@ -204,7 +208,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_WithMessage(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
@@ -213,7 +217,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_WithMessage_WithRoute(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
@@ -222,7 +226,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestEcho_SimpleMessage(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
@@ -231,7 +235,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestEcho_SimpleMessage_WithRoute(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
@@ -245,7 +249,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestEcho_BinaryData(GlideClusterClient client)
     {
         byte[] binaryData = [0x00, 0x01, 0x02, 0xFF, 0xFE];
@@ -254,7 +258,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestEcho_BinaryData_WithRoute(GlideClusterClient client)
     {
         byte[] binaryData = [0x00, 0x01, 0x02, 0x03, 0x04];
@@ -270,7 +274,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task ConfigGetAsync_ReturnsConfigurationPerNode(GlideClusterClient client)
     {
         // Test getting all configuration from all nodes
@@ -350,7 +354,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientId(GlideClusterClient client)
     {
         long clientId = await client.ClientIdAsync();
@@ -358,7 +362,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientId_WithRoute(GlideClusterClient client)
     {
         // Test CLIENT ID with single node routing
@@ -378,7 +382,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task DatabaseSizeAsync_ReturnsSizePerNode(GlideClusterClient client)
     {
         string key = $"cluster-dbsize-test-{Guid.NewGuid()}";
@@ -409,7 +413,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientGetName(GlideClusterClient client)
     {
         // CLIENT GETNAME should return ValkeyValue null initially (no name set)
@@ -418,7 +422,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientGetName_WithRoute(GlideClusterClient client)
     {
         // Test CLIENT GETNAME with single node routing
@@ -438,7 +442,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TimeAsync_ReturnsTimePerNode(GlideClusterClient client)
     {
         // Get time from all nodes
@@ -462,7 +466,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task LastSaveAsync_ReturnsLastSavePerNode(GlideClusterClient client)
     {
         // Get last save time from all nodes
@@ -484,7 +488,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task LolwutAsync_ReturnsArtPerNode(GlideClusterClient client)
     {
         // Get lolwut from all nodes
@@ -509,7 +513,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSelect(GlideClusterClient client)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "SELECT for Cluster Client is supported since 9.0.0"
@@ -545,7 +549,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true, Skip = "DB index is out of range in cluster mode - requires multi-database cluster configuration")]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyMoveAsync(GlideClusterClient client)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "MOVE command for Cluster Client requires Valkey 9.0+ with multi-database support"
@@ -566,7 +570,7 @@ public class ClusterClientTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true, Skip = "CrossSlot error - keys don't hash to same slot in cluster mode")]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyCopyAsync(GlideClusterClient client)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"

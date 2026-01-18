@@ -4,10 +4,12 @@ namespace Valkey.Glide.IntegrationTests;
 
 using Valkey.Glide.Commands.Options;
 
-public class GenericCommandTests()
+public class GenericCommandTests(TestConfiguration config)
 {
+    public TestConfiguration Config { get; } = config;
+
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyDelete_KeyExists(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -26,7 +28,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyDelete_MultipleKeys(BaseClient client)
     {
         string key1 = Guid.NewGuid().ToString();
@@ -46,7 +48,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyUnlink(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -65,7 +67,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyExists_MultipleKeys(BaseClient client)
     {
         string key1 = Guid.NewGuid().ToString();
@@ -82,7 +84,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyExpire_KeyTimeToLive(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -117,7 +119,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyExpireTime(BaseClient client)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "SetIntersectionLength is supported since 7.0.0"
@@ -148,7 +150,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyEncoding(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -181,7 +183,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyFrequency(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -210,7 +212,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyIdleTime(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -243,7 +245,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyRefCount(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -264,7 +266,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyType(BaseClient client)
     {
         string stringKey = Guid.NewGuid().ToString();
@@ -287,7 +289,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyRename(BaseClient client)
     {
         string oldKey = "{prefix}-" + Guid.NewGuid().ToString();
@@ -307,7 +309,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyRenameNX(BaseClient client)
     {
         string oldKey = "{prefix}-" + Guid.NewGuid().ToString();
@@ -339,7 +341,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyPersist(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -362,7 +364,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyDump_KeyRestore(BaseClient client)
     {
         string sourceKey = Guid.NewGuid().ToString();
@@ -432,7 +434,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyTouch(BaseClient client)
     {
         string key1 = Guid.NewGuid().ToString();
@@ -452,7 +454,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyCopy(BaseClient client)
     {
         string sourceKey = "{prefix}-" + Guid.NewGuid().ToString();
@@ -476,7 +478,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyRandom(BaseClient client)
     {
         // Test with empty database
@@ -513,7 +515,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeysAsync_Scan(GlideClient client)
     {
         string prefix = Guid.NewGuid().ToString();
@@ -570,7 +572,7 @@ public class GenericCommandTests()
 
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSort(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -615,7 +617,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortAndStore(BaseClient client)
     {
         string sourceKey = "{prefix}-" + Guid.NewGuid().ToString();
@@ -663,7 +665,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestWait(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -693,7 +695,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestWait_NegativeTimeout(BaseClient client)
     {
         // Test negative timeout should throw exception
@@ -703,7 +705,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortAndStore_WithPatterns(GlideClient client)
     {
         // Test with BY and GET patterns (only for standalone clients)
@@ -730,7 +732,7 @@ public class GenericCommandTests()
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeysAsync_LargeDataset(GlideClient client)
     {
         // TODO #184: Skip on Windows
