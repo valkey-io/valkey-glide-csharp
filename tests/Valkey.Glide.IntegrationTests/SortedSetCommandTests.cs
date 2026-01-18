@@ -7,6 +7,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class SortedSetCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
+    private static readonly double BlockingTimeoutSecs = 1.0;
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -976,19 +977,19 @@ public class SortedSetCommandTests(TestConfiguration config)
         ]);
 
         // Test single-key blocking pop with MIN order (single element)
-        SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, 1.0);
+        SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeoutSecs);
         Assert.NotNull(result);
         Assert.Equal("member1", result.Value.Element);
         Assert.Equal(10.0, result.Value.Score);
 
         // Test single-key blocking pop with MAX order (single element)
-        result = await client.SortedSetBlockingPopAsync(key1, Order.Descending, 1.0);
+        result = await client.SortedSetBlockingPopAsync(key1, Order.Descending, BlockingTimeoutSecs);
         Assert.NotNull(result);
         Assert.Equal("member3", result.Value.Element);
         Assert.Equal(30.0, result.Value.Score);
 
         // Test single-key blocking pop with multiple elements
-        SortedSetEntry[] multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, 1.0);
+        SortedSetEntry[] multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, BlockingTimeoutSecs);
         Assert.Single(multiResult);
         Assert.Equal("member2", multiResult[0].Element);
         Assert.Equal(20.0, multiResult[0].Score);
@@ -1000,7 +1001,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         ]);
 
         // Test multi-key blocking pop with multiple elements
-        SortedSetPopResult popResult = await client.SortedSetBlockingPopAsync([key1, key2], 2, Order.Ascending, 1.0);
+        SortedSetPopResult popResult = await client.SortedSetBlockingPopAsync([key1, key2], 2, Order.Ascending, BlockingTimeoutSecs);
         Assert.False(popResult.IsNull);
         Assert.Equal(key2, popResult.Key);
         Assert.Equal(2, popResult.Entries.Length);
