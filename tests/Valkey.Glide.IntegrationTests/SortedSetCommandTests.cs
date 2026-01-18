@@ -7,6 +7,8 @@ namespace Valkey.Glide.IntegrationTests;
 public class SortedSetCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
+
+    // TODO #184: Is this necessary?
     private static readonly double BlockingTimeoutSecs = 1.0;
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1011,10 +1013,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(50.0, popResult.Entries[1].Score);
 
         // Test timeout with empty keys
-        result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, 0.1);
+        result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeoutSecs);
         Assert.Null(result);
 
-        multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, 0.1);
+        multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, BlockingTimeoutSecs);
         Assert.Empty(multiResult);
     }
 
@@ -1028,14 +1030,14 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
 
         // Test single-key blocking pop with non-existent key (should timeout)
-        SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, 0.1);
+        SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeoutSecs);
         Assert.Null(result);
 
-        SortedSetEntry[] multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, 0.1);
+        SortedSetEntry[] multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, BlockingTimeoutSecs);
         Assert.Empty(multiResult);
 
         // Test multi-key blocking pop with non-existent keys (should timeout)
-        SortedSetPopResult popResult = await client.SortedSetBlockingPopAsync([key1, key2], 1, Order.Ascending, 0.1);
+        SortedSetPopResult popResult = await client.SortedSetBlockingPopAsync([key1, key2], 1, Order.Ascending, BlockingTimeoutSecs);
         Assert.True(popResult.IsNull);
     }
 
