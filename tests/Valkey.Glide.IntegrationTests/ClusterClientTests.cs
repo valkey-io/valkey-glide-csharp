@@ -63,7 +63,6 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.Fail($"All 100 commands were sent to: {ports.First()}");
     }
 
-    // TODO #184
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithSingleNodeRoute(GlideClusterClient client)
@@ -101,7 +100,6 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task RetryStrategyIsNotSupportedForTransactions(GlideClusterClient client)
         => _ = await Assert.ThrowsAsync<RequestException>(async () => _ = await client.Exec(new(true), true, new(retryStrategy: new())));
 
-    // TODO #184
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(ClusterClientWithAtomic))]
     public async Task BatchWithSingleNodeRoute(GlideClusterClient client, bool isAtomic)

@@ -13,8 +13,8 @@ public class TestConfiguration : IDisposable
 {
     // TODO #184: Verify whether this is necessary on Windows.
     // Default test timeout - higher on Windows due to WSL overhead.
-    public readonly static int DEFAULT_TIMEOUT_MS = OperatingSystem.IsWindows() ? 120_000 : 60_000;
-    public readonly static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
+    private readonly static int DEFAULT_TIMEOUT_MS = 60_000;
+    private readonly static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
 
     // Addresses for the standalone and cluster servers.
     public static IList<Address> STANDALONE_ADDRESSES = [];

@@ -68,8 +68,6 @@ public static class ServerManager
 
         args.Add("stop");
         args.AddRange(["--prefix", name]);
-
-        // TODO #184
         args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (keepLogs)
@@ -93,6 +91,7 @@ public static class ServerManager
         if (OperatingSystem.IsWindows())
         {
             // #184: Must use full WSL paths for script.
+            // Otherwise, paths created by the script will not resolve correctly.
             string scriptPath = ToWslPath(Path.Combine(GetScriptsDirectory(), scriptName));
 
             fileName = wslFileName;
