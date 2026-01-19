@@ -149,7 +149,7 @@ tasks:
         desc: Run benchmarks with Redis server (FRAMEWORK must be net8.0)
         dir: valkey-glide/benchmarks
         cmds:
-            - redis-server --save "" --daemonize "yes"
+            - valkey-server --save "" --daemonize "yes"
             - |
                 case "{{.FRAMEWORK}}" in
                     "net8.0")

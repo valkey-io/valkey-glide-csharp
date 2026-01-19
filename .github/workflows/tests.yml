@@ -82,7 +82,7 @@ jobs:
     tests:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: get-matrices
-        timeout-minutes: ${{ matrix.host.OS == 'windows' && 200 || 100 }}
+        timeout-minutes: 100
         strategy:
             fail-fast: false
             matrix:
@@ -160,7 +160,7 @@ jobs:
               shell: bash
               working-directory: valkey-glide/benchmarks
               run: |
-                  redis-server --save "" --daemonize "yes"
+                  valkey-server --save "" --daemonize "yes"
                   ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net${{ matrix.dotnet }}
 
             - name: Run coverage
@@ -242,7 +242,7 @@ jobs:
                   key: rust-${{ matrix.host.IMAGE }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
-              run: dotnet test --framework net${{ matrix.dotnet }} /nodeReuse:false /maxcpucount:1 --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
+              run: dotnet test --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
 
             - name: Derive failures.json (from TRX)
               if: always()
