@@ -16,8 +16,8 @@ public class TlsTests
     // Cluster TLS Tests
     // =================
 
-    private static ClusterServer TlsClusterServer = new(useTls: true);
-    private static ClusterServer NonTlsClusterServer = new(useTls: false);
+    private static readonly ClusterServer TlsClusterServer = new(useTls: true);
+    private static readonly ClusterServer NonTlsClusterServer = new(useTls: false);
 
     [Fact]
     public async Task Cluster_WithCertificateData_InvalidThrows()
@@ -88,8 +88,8 @@ public class TlsTests
     // Standalone TLS Tests
     // ====================
 
-    private static StandaloneServer TlsStandaloneServer = new(useTls: true);
-    private static StandaloneServer NonTlsStandaloneServer = new(useTls: false);
+    private static readonly StandaloneServer TlsStandaloneServer = new(useTls: true);
+    private static readonly StandaloneServer NonTlsStandaloneServer = new(useTls: false);
 
     [Fact]
     public async Task Standalone_WithCertificateData_InvalidThrows()
