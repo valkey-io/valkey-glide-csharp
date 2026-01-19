@@ -63,6 +63,7 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.Fail($"All 100 commands were sent to: {ports.First()}");
     }
 
+    // TODO #184
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithSingleNodeRoute(GlideClusterClient client)
@@ -70,23 +71,17 @@ public class ClusterClientTests(TestConfiguration config)
         string res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Primary))).SingleValue! as gs)!;
         Assert.Contains("role:master", res);
 
+        res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Replica))).SingleValue! as gs)!;
+        Assert.Contains("role:slave", res);
+
         res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Primary))).SingleValue! as gs)!;
         Assert.Contains("role:master", res);
 
+        res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Replica))).SingleValue! as gs)!;
+        Assert.Contains("role:slave", res);
+
         res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port))).SingleValue! as gs)!;
         Assert.Contains("# Replication", res);
-
-        // TODO #184
-        // Skip replica tests on Windows because it run without replica nodes due
-        // to synchronization issues. See ServerManager.REPLICA_COUNT for more details.
-        if (!OperatingSystem.IsWindows())
-        {
-            res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Replica))).SingleValue! as gs)!;
-            Assert.Contains("role:slave", res);
-
-            res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Replica))).SingleValue! as gs)!;
-            Assert.Contains("role:slave", res);
-        }
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -106,6 +101,7 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task RetryStrategyIsNotSupportedForTransactions(GlideClusterClient client)
         => _ = await Assert.ThrowsAsync<RequestException>(async () => _ = await client.Exec(new(true), true, new(retryStrategy: new())));
 
+    // TODO #184
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(ClusterClientWithAtomic))]
     public async Task BatchWithSingleNodeRoute(GlideClusterClient client, bool isAtomic)
@@ -115,23 +111,17 @@ public class ClusterClientTests(TestConfiguration config)
         object?[]? res = await client.Exec(batch, true, new(route: new SlotKeyRoute("abc", SlotType.Primary)));
         Assert.Contains("role:master", res![0] as string);
 
+        res = await client.Exec(batch, true, new(route: new SlotKeyRoute("abc", SlotType.Replica)));
+        Assert.Contains("role:slave", res![0] as string);
+
         res = await client.Exec(batch, true, new(route: new SlotIdRoute(42, SlotType.Primary)));
         Assert.Contains("role:master", res![0] as string);
 
+        res = await client.Exec(batch, true, new(route: new SlotIdRoute(42, SlotType.Replica)));
+        Assert.Contains("role:slave", res![0] as string);
+
         res = await client.Exec(batch, true, new(route: new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port)));
         Assert.Contains("# Replication", res![0] as string);
-
-        // TODO #184
-        // Skip replica tests on Windows because it run without replica nodes due
-        // to synchronization issues. See ServerManager.REPLICA_COUNT for more details.
-        if (!OperatingSystem.IsWindows())
-        {
-            res = await client.Exec(batch, true, new(route: new SlotKeyRoute("abc", SlotType.Replica)));
-            Assert.Contains("role:slave", res![0] as string);
-
-            res = await client.Exec(batch, true, new(route: new SlotIdRoute(42, SlotType.Replica)));
-            Assert.Contains("role:slave", res![0] as string);
-        }
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

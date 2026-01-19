@@ -12,7 +12,6 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
-    // TODO #184
     private static readonly int replicaCount = 3;
 
     private static readonly string wslFileName = "wsl";
@@ -143,7 +142,7 @@ public static class ServerManager
     {
         const string directoryName = "clusters";
 
-        // TODO #184: On Windows, servers cannot syncronize when created on a Windows filesystem
+        // #184: On Windows, servers cannot syncronize when created on a Windows filesystem
         // mounted in WSL (e.g. /mnt/c/). Use a directory inside WSL filesystem instead.
         if (OperatingSystem.IsWindows()) return $"~/{directoryName}";
 

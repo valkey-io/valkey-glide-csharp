@@ -7,8 +7,6 @@ namespace Valkey.Glide.IntegrationTests;
 public class SortedSetCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
-
-    // TODO #184: Is this necessary?
     private static readonly double BlockingTimeoutSecs = 1.0;
 
     [Theory(DisableDiscoveryEnumeration = true)]
