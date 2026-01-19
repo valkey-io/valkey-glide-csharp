@@ -13,7 +13,7 @@ namespace Valkey.Glide.TestUtils;
 public static class ServerManager
 {
     // TODO #184
-    private static readonly int replicaCount = OperatingSystem.IsWindows() ? 0 : 3;
+    private static readonly int replicaCount = 3;
 
     private static readonly string wslFileName = "wsl";
     private static readonly string pythonFileName = "python3";
@@ -45,7 +45,7 @@ public static class ServerManager
         args.AddRange(["-r", replicaCount.ToString()]);
 
         // TODO #184
-        // args.AddRange(["--folder-path", GetServerDirectory()]);
+        args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (useClusterMode)
             args.Add("--cluster-mode");
@@ -73,7 +73,7 @@ public static class ServerManager
         args.AddRange(["--prefix", name]);
 
         // TODO #184
-        // args.AddRange(["--folder-path", GetServerDirectory()]);
+        args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (keepLogs)
             args.Add("--keep-folder");
