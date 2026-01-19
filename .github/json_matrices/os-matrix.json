@@ -46,7 +46,8 @@
         "RUNNER": "windows-2025",
         "ARCH": "x64",
         "TARGET": "x86_64-pc-windows-msvc",
-        "tags": ["ci", "cd"]
+        "tags": ["ci", "cd"],
+        "run": "always"
     },
     {
         "OS": "windows",
