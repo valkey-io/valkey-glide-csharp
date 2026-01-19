@@ -42,8 +42,6 @@ public static class ServerManager
         args.Add("start");
         args.AddRange(["--prefix", name]);
         args.AddRange(["-r", replicaCount.ToString()]);
-
-        // TODO #184
         args.AddRange(["--folder-path", GetServerDirectory()]);
 
         if (useClusterMode)
