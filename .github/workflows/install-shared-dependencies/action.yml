@@ -1,20 +1,40 @@
 name: Install shared software dependencies
 
 inputs:
-    # See 'os-matrix.json' for supported 'os' and 'target' options.
     os:
         description: "The current operating system"
         required: true
-        type: string
+        # See 'os-matrix.json'
+        type: choice
+        options:
+            - ubuntu
+            - amazon-linux
+            - macos
+            - windows
     target:
         description: "Specified target for rust toolchain"
-        type: string
-
-    # See 'server-versions.json' for supported 'server-version' options.
+        required: true
+        # See 'os-matrix.json'
+        type: choice
+        options:
+            - x86_64-unknown-linux-gnu
+            - aarch64-unknown-linux-gnu
+            - x86_64-apple-darwin
+            - aarch64-apple-darwin
+            - x86_64-pc-windows-msvc
+            - aarch64-pc-windows-msvc
     server-version:
         description: "Server version to install"
-        type: string
-
+        required: true
+        # See 'server-matrix.json'
+        type: choice
+        options:
+            - 9.0
+            - 8.1
+            - 8.0
+            - 7.2
+            - 7.0
+            - 6.2
     github-token:
         description: "GITHUB_TOKEN, GitHub App installation access token"
         type: string
