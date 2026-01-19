@@ -115,7 +115,7 @@ public class TlsTests
     [Fact]
     public async Task Standalone_NoCertificate_Throws()
     {
-        var configBuilder = NonTlsStandaloneServer.CreateConfigBuilder();
+        var configBuilder = TlsStandaloneServer.CreateConfigBuilder();
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }
 
