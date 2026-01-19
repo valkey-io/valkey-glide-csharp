@@ -89,8 +89,7 @@ public static class ServerManager
         // > wsl python3 "/mnt/c/.../valkey-glide/utils/cluster_manager.py" <scriptCmd>
         if (OperatingSystem.IsWindows())
         {
-            // #184: Must use full WSL paths for script.
-            // Otherwise, paths created by the script will not resolve correctly.
+            // #184: Must use full WSL paths - relative paths will not resolve correctly on WSL.
             string scriptPath = ToWslPath(Path.Combine(GetScriptsDirectory(), scriptName));
 
             info.FileName = wslFileName;
@@ -132,13 +131,10 @@ public static class ServerManager
     private static string GetServerDirectory()
     {
         const string directoryName = "clusters";
+        string path = Path.Combine(GetScriptsDirectory(), "clusters");
 
-        // #184: On Windows, servers cannot synchronize when created on a Windows filesystem
-        // mounted in WSL (e.g. /mnt/c/). Use a directory inside WSL filesystem instead.
-        if (OperatingSystem.IsWindows()) return $"~/{directoryName}";
-
-        // For non-Windows, use a directory inside the scripts directory.
-        return Path.Combine(GetScriptsDirectory(), "clusters");
+        // #184: Must use full WSL paths - relative paths will not resolve correctly on WSL.
+        return OperatingSystem.IsWindows() ? ToWslPath(path) : path;
     }
 
     /// <summary>
