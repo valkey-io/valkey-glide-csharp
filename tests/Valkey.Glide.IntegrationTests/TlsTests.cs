@@ -16,52 +16,48 @@ public class TlsTests
     // Cluster TLS Tests
     // =================
 
+    private static ClusterServer TlsClusterServer = new(useTls: true);
+    private static ClusterServer NonTlsClusterServer = new(useTls: false);
+
     [Fact]
     public async Task Cluster_WithCertificateData_InvalidThrows()
     {
-        using var server = new ClusterServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
+        var configBuilder = TlsClusterServer.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public async Task Cluster_WithCertificateData_MalformedThrows()
     {
-        using var server = new ClusterServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetMalformedCertificateData());
+        var configBuilder = TlsClusterServer.CreateConfigBuilder().WithTrustedCertificate(GetMalformedCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public void Cluster_WithCertificatePath_InvalidThrows()
     {
-        using var server = new ClusterServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder();
+        var configBuilder = TlsClusterServer.CreateConfigBuilder();
         Assert.Throws<FileNotFoundException>(() => configBuilder.WithTrustedCertificate("invalid/path/to/ca.crt"));
     }
 
     [Fact]
     public async Task Cluster_NoCertificate_Throws()
     {
-        using var server = new ClusterServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder();
+        var configBuilder = TlsClusterServer.CreateConfigBuilder();
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public async Task Cluster_WithCertificate_NoTlsThrows()
     {
-        using var server = new ClusterServer(useTls: false);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
+        var configBuilder = NonTlsClusterServer.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public async Task Cluster_WithCertificateData_Success()
     {
-        using var server = new ClusterServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
-
+        var configBuilder = TlsClusterServer.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
         await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
@@ -69,9 +65,7 @@ public class TlsTests
     [Fact]
     public async Task Cluster_WithCertificatePath_Success()
     {
-        using var server = new ClusterServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
-
+        var configBuilder = TlsClusterServer.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
         await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
@@ -79,9 +73,7 @@ public class TlsTests
     [Fact]
     public async Task Cluster_WithInsecureTls_Success()
     {
-        using var server = new ClusterServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithInsecureTls();
-
+        var configBuilder = TlsClusterServer.CreateConfigBuilder().WithInsecureTls();
         await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
@@ -89,60 +81,55 @@ public class TlsTests
     [Fact]
     public async Task Cluster_WithInsecureTls_NoTlsServerThrows()
     {
-        using var server = new ClusterServer(useTls: false);
-        var configBuilder = server.CreateConfigBuilder().WithTls().WithInsecureTls();
+        var configBuilder = NonTlsClusterServer.CreateConfigBuilder().WithTls().WithInsecureTls();
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
 
     // Standalone TLS Tests
     // ====================
 
+    private static StandaloneServer TlsStandaloneServer = new(useTls: true);
+    private static StandaloneServer NonTlsStandaloneServer = new(useTls: false);
+
     [Fact]
     public async Task Standalone_WithCertificateData_InvalidThrows()
     {
-        using var server = new StandaloneServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
+        var configBuilder = TlsStandaloneServer.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public async Task Standalone_WithCertificateData_MalformedThrows()
     {
-        using var server = new StandaloneServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetMalformedCertificateData());
+        var configBuilder = TlsStandaloneServer.CreateConfigBuilder().WithTrustedCertificate(GetMalformedCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public void Standalone_WithCertificatePath_InvalidThrows()
     {
-        using var server = new StandaloneServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder();
+        var configBuilder = TlsStandaloneServer.CreateConfigBuilder();
         Assert.Throws<FileNotFoundException>(() => configBuilder.WithTrustedCertificate("invalid/path/to/ca.crt"));
     }
 
     [Fact]
     public async Task Standalone_NoCertificate_Throws()
     {
-        using var server = new StandaloneServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder();
+        var configBuilder = NonTlsStandaloneServer.CreateConfigBuilder();
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public async Task Standalone_WithCertificate_NoTlsThrows()
     {
-        using var server = new StandaloneServer(useTls: false);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
+        var configBuilder = NonTlsStandaloneServer.CreateConfigBuilder().WithTrustedCertificate(GetInvalidCertificateData());
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }
 
     [Fact]
     public async Task Standalone_WithCertificateData_Success()
     {
-        using var server = new StandaloneServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
-
+        var configBuilder = TlsStandaloneServer.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
         await using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
@@ -150,9 +137,7 @@ public class TlsTests
     [Fact]
     public async Task Standalone_WithCertificatePath_Success()
     {
-        using var server = new StandaloneServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
-
+        var configBuilder = TlsStandaloneServer.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
         await using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
@@ -160,9 +145,7 @@ public class TlsTests
     [Fact]
     public async Task Standalone_WithInsecureTls_Success()
     {
-        using var server = new StandaloneServer(useTls: true);
-        var configBuilder = server.CreateConfigBuilder().WithInsecureTls();
-
+        var configBuilder = TlsStandaloneServer.CreateConfigBuilder().WithInsecureTls();
         await using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
     }
@@ -170,8 +153,7 @@ public class TlsTests
     [Fact]
     public async Task Standalone_WithInsecureTls_NoTlsServerThrows()
     {
-        using var server = new StandaloneServer(useTls: false);
-        var configBuilder = server.CreateConfigBuilder().WithTls().WithInsecureTls();
+        var configBuilder = NonTlsStandaloneServer.CreateConfigBuilder().WithTls().WithInsecureTls();
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
     }
 
