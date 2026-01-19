@@ -113,12 +113,12 @@ public static class ServerManager
     /// Converts a Windows path to a WSL path and returns the result.
     /// See <https://github.com/laurent22/wslpath> for more details.
     /// </summary>
-    private static string ToWslPath(string scriptCmd)
+    private static string ToWslPath(string windowsPath)
     {
         ProcessStartInfo info = new()
         {
             FileName = wslFileName,
-            Arguments = $"wslpath '{scriptCmd}'",
+            Arguments = $"wslpath '{windowsPath}'",
         };
 
         // Trim output to remove trailing newline.
@@ -133,7 +133,7 @@ public static class ServerManager
     {
         const string directoryName = "clusters";
 
-        // #184: On Windows, servers cannot syncronize when created on a Windows filesystem
+        // #184: On Windows, servers cannot synchronize when created on a Windows filesystem
         // mounted in WSL (e.g. /mnt/c/). Use a directory inside WSL filesystem instead.
         if (OperatingSystem.IsWindows()) return $"~/{directoryName}";
 
@@ -174,12 +174,17 @@ public static class ServerManager
         info.RedirectStandardOutput = true;
         info.RedirectStandardError = true;
 
-        using Process? script = Process.Start(info);
-        script?.WaitForExit();
-        string? error = script?.StandardError.ReadToEnd();
-        string? output = script?.StandardOutput.ReadToEnd();
-        int? exitCode = script?.ExitCode;
+        using Process script = Process.Start(info);
+        if (script == null)
+        {
+            throw new ApplicationException($"Failed to start process: {info.FileName} {info.Arguments}");
+        }
 
+        script.WaitForExit();
+        string error = script.StandardError.ReadToEnd();
+        string output = script.StandardOutput.ReadToEnd();
+
+        int exitCode = script.ExitCode;
         if (exitCode != 0)
         {
             throw new ApplicationException(

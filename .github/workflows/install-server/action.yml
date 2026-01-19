@@ -1,26 +1,17 @@
 name: Install Server
 
 inputs:
+    # See 'os-matrix.json' for supported 'os' and 'target' options.
     os:
         description: "The current operating system"
         required: true
         type: string
-        options:
-            - ubuntu
-            - amazon-linux
-            - macos
-            - windows
     target:
         description: "Specified target for rust toolchain"
         required: true
         type: string
-        options:
-            - x86_64-unknown-linux-gnu
-            - aarch64-unknown-linux-gnu
-            - x86_64-apple-darwin
-            - aarch64-apple-darwin
-            - x86_64-pc-windows-msvc
-            - aarch64-pc-windows-msvc
+
+    # See 'server-versions.json' for supported 'server-version' options.
     server-version:
         description: "Server version to install"
         required: true
@@ -78,7 +69,7 @@ runs:
           run: |
               git clone --depth 1 --branch "$SERVER_VERSION" --single-branch 'https://github.com/valkey-io/valkey.git'
 
-              # Prior to Valkey 7.2, the binaries were named redis-cli and redis-server by default.
+              # Prior to Valkey 7.2, the binaries were named redis-cli and      by default.
               cd valkey && make BUILD_TLS=yes REDIS_CLI_NAME=valkey-cli REDIS_SERVER_NAME=valkey-server install
 
         - name: Install Valkey binaries from cache
