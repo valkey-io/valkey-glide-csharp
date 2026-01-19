@@ -83,8 +83,7 @@ public static class ServerManager
     /// </summary>
     private static string RunClusterManager(string scriptCmd)
     {
-        string fileName;
-        string arguments;
+        ProcessStartInfo info = new();
 
         // On Windows, run the script via WSL with full WSL paths.
         // > wsl python3 "/mnt/c/.../valkey-glide/utils/cluster_manager.py" <scriptCmd>
@@ -94,23 +93,18 @@ public static class ServerManager
             // Otherwise, paths created by the script will not resolve correctly.
             string scriptPath = ToWslPath(Path.Combine(GetScriptsDirectory(), scriptName));
 
-            fileName = wslFileName;
-            arguments = $"{pythonFileName} {scriptPath} {scriptCmd}";
+            info.FileName = wslFileName;
+            info.Arguments = $"{pythonFileName} {scriptPath} {scriptCmd}";
         }
 
-        // Non-Windows systems can run the script directly.
+        // Non-Windows systems can run the script directly from the scripts directory.
         // > python3 "cluster_manager.py" <scriptCmd>
         else
         {
-            fileName = pythonFileName;
-            arguments = $"{scriptName} {scriptCmd}";
+            info.FileName = pythonFileName;
+            info.Arguments = $"{scriptName} {scriptCmd}";
+            info.WorkingDirectory = GetScriptsDirectory();
         }
-
-        ProcessStartInfo info = new()
-        {
-            FileName = fileName,
-            Arguments = arguments,
-        };
 
         return RunProcess(info);
     }
