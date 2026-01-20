@@ -18,6 +18,9 @@ public static class ServerManager
     private static readonly string pythonFileName = "python3";
     private static readonly string scriptName = "cluster_manager.py";
 
+    // #184: Use a unique server directory to avoid conflicts.
+    private static readonly string serverDirectoryName = $"valkey_glide_test_{Guid.NewGuid():N}";
+
     /// <summary>
     /// Returns the path for the server certificate file.
     /// See <valkey-glide/utils/cluster_manager.py> for details.
@@ -131,14 +134,13 @@ public static class ServerManager
     /// </summary>
     private static string GetServerDirectory()
     {
-        const string directoryName = "clusters";
-
         // #184: On Windows, servers cannot synchronize when created on a Windows filesystem
         // mounted in WSL (e.g. /mnt/c/). Use a directory inside WSL filesystem instead.
-        if (OperatingSystem.IsWindows()) return $"~/{directoryName}";
+        // Use a unique temp directory to avoid conflicts.
+        if (OperatingSystem.IsWindows()) return $"~/{serverDirectoryName}";
 
         // For non-Windows, use a directory inside the scripts directory.
-        return Path.Combine(GetScriptsDirectory(), "clusters");
+        return Path.Combine(GetScriptsDirectory(), serverDirectoryName);
     }
 
     /// <summary>

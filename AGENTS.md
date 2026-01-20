@@ -54,7 +54,7 @@ All commits to this repository MUST include a DCO signoff to certify authorship 
 
 - Required signoff line (must appear at the end of every commit message):
 
-  ```
+  ```text
   Signed-off-by: Your Name <your.email@example.com>
   ```
 
@@ -81,7 +81,7 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 
 - Message format:
 
-  ```
+  ```text
   <type>(<scope>): <description>
 
   [optional body]
@@ -108,7 +108,7 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 
 - Example full commit message:
 
-  ```
+  ```text
   feat: Add ReadFrom parsing support to ConfigurationOptions
 
   - Implement ParseReadFromStrategy method
