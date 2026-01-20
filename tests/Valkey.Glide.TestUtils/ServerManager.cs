@@ -49,19 +49,16 @@ public static class ServerManager
         // [C] Determine server directory path
         // -----------------------------------
 
-        // Use a unique directory to avoid conflicts with other test runs.
-        string serverDirectoryName = $"test_{Guid.NewGuid():N}";
-
         // #184: On Windows, servers cannot synchronize when the server directory exists on a Windows
         // filesystem mounted in WSL (e.g. /mnt/c/), so use a directory inside WSL filesystem instead.
-        // For non-Windows, store server directory in 'clusters' folder inside scripts directory instead.
+        // Use a unique directory to avoid conflicts with other test runs.
         if (OperatingSystem.IsWindows())
         {
-            serverDirectoryPath = $"~/valkey_glide/{serverDirectoryName}";
+            serverDirectoryPath = $"~/valkey_glide_test_{Guid.NewGuid():N}";
         }
         else
         {
-            serverDirectoryPath = Path.Combine(scriptsDirectoryPath, "clusters", serverDirectoryName);
+            serverDirectoryPath = Path.Combine(scriptsDirectoryPath, "clusters");
         }
     }
 
@@ -145,7 +142,7 @@ public static class ServerManager
         {
             info.FileName = pythonFileName;
             info.Arguments = $"{scriptFilePath} {scriptCmd}";
-            //info.WorkingDirectory = GetScriptsDirectory();
+            info.WorkingDirectory = scriptsDirectoryPath;
         }
 
         return RunProcess(info);
