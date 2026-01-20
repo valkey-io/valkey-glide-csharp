@@ -12,23 +12,64 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
-    private static readonly int replicaCount = 3;
+    // File and directory paths.
+    private static readonly string scriptsDirectoryPath;
+    private static readonly string scriptFilePath;
+    private static readonly string certificateFilePath;
+    private static readonly string serverDirectoryPath;
 
     private static readonly string wslFileName = "wsl";
     private static readonly string pythonFileName = "python3";
-    private static readonly string scriptName = "cluster_manager.py";
 
-    // #184: Use a unique server directory to avoid conflicts.
-    private static readonly string serverDirectoryName = $"valkey_glide_test_{Guid.NewGuid():N}";
+    private static readonly int replicaCount = 3;
+
+    static ServerManager()
+    {
+        // [A] Find project root
+        // ---------------------
+
+        // Work up from the current directory until we find the solution file.
+        string directory = Directory.GetCurrentDirectory();
+        while (!Directory.EnumerateFiles(directory, "Valkey.Glide.sln").Any())
+        {
+            directory = Path.GetDirectoryName(directory);
+            if (directory == null)
+            {
+                throw new FileNotFoundException("Can't detect the project directory");
+            }
+        }
+
+        // [B] Determine script and certificates paths
+        // -------------------------------------------
+
+        scriptsDirectoryPath = Path.Combine(directory, "valkey-glide", "utils");
+        scriptFilePath = Path.Combine(scriptsDirectoryPath, "cluster_manager.py");
+        certificateFilePath = Path.Combine(scriptsDirectoryPath, "tls_crts", "ca.crt");
+
+        // [C] Determine server directory path
+        // -----------------------------------
+
+        // Use a unique directory to avoid conflicts with other test runs.
+        string serverDirectoryName = $"test_{Guid.NewGuid():N}";
+
+        // #184: On Windows, servers cannot synchronize when the server directory exists on a Windows
+        // filesystem mounted in WSL (e.g. /mnt/c/), so use a directory inside WSL filesystem instead.
+        // For non-Windows, store server directory in 'clusters' folder inside scripts directory instead.
+        if (OperatingSystem.IsWindows())
+        {
+            serverDirectoryPath = $"~/valkey_glide/{serverDirectoryName}";
+        }
+        else
+        {
+            serverDirectoryPath = Path.Combine(scriptsDirectoryPath, "clusters", serverDirectoryName);
+        }
+    }
 
     /// <summary>
-    /// Returns the path for the server certificate file.
+    /// Gets the path for the server certificate file.
     /// See <valkey-glide/utils/cluster_manager.py> for details.
     /// </summary>
-    public static string GetServerCertificatePath()
-    {
-        return Path.Combine(GetScriptsDirectory(), "tls_crts", "ca.crt");
-    }
+    public static string ServerCertificatePath => certificateFilePath;
 
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
@@ -45,7 +86,7 @@ public static class ServerManager
         args.Add("start");
         args.AddRange(["--prefix", name]);
         args.AddRange(["-r", replicaCount.ToString()]);
-        args.AddRange(["--folder-path", GetServerDirectory()]);
+        args.AddRange(["--folder-path", serverDirectoryPath]);
 
         if (useClusterMode)
             args.Add("--cluster-mode");
@@ -71,7 +112,7 @@ public static class ServerManager
 
         args.Add("stop");
         args.AddRange(["--prefix", name]);
-        args.AddRange(["--folder-path", GetServerDirectory()]);
+        args.AddRange(["--folder-path", serverDirectoryPath]);
 
         if (keepLogs)
             args.Add("--keep-folder");
@@ -94,10 +135,8 @@ public static class ServerManager
         {
             // #184: Must use full WSL paths for script.
             // Otherwise, paths created by the script will not resolve correctly.
-            string scriptPath = ToWslPath(Path.Combine(GetScriptsDirectory(), scriptName));
-
             info.FileName = wslFileName;
-            info.Arguments = $"{pythonFileName} {scriptPath} {scriptCmd}";
+            info.Arguments = $"{pythonFileName} {ToWslPath(scriptFilePath)} {scriptCmd}";
         }
 
         // Non-Windows systems can run the script directly from the scripts directory.
@@ -105,8 +144,8 @@ public static class ServerManager
         else
         {
             info.FileName = pythonFileName;
-            info.Arguments = $"{scriptName} {scriptCmd}";
-            info.WorkingDirectory = GetScriptsDirectory();
+            info.Arguments = $"{scriptFilePath} {scriptCmd}";
+            //info.WorkingDirectory = GetScriptsDirectory();
         }
 
         return RunProcess(info);
@@ -126,44 +165,6 @@ public static class ServerManager
 
         // Trim output to remove trailing newline.
         return RunProcess(info).Trim();
-    }
-
-    /// <summary>
-    /// Returns the path for the server working directory.
-    /// See <valkey-glide/utils/cluster_manager.py> for details.
-    /// </summary>
-    private static string GetServerDirectory()
-    {
-        // #184: On Windows, servers cannot synchronize when created on a Windows filesystem
-        // mounted in WSL (e.g. /mnt/c/). Use a directory inside WSL filesystem instead.
-        // Use a unique temp directory to avoid conflicts.
-        if (OperatingSystem.IsWindows()) return $"~/{serverDirectoryName}";
-
-        // For non-Windows, use a directory inside the scripts directory.
-        return Path.Combine(GetScriptsDirectory(), serverDirectoryName);
-    }
-
-    /// <summary>
-    /// Returns the path to the 'valkey-glide/utils' directory.
-    /// </summary>
-    /// <returns>The absolute path to the scripts directory.</returns>
-    /// <exception cref="FileNotFoundException">Thrown if the project directory cannot be detected.</exception>
-    private static string GetScriptsDirectory()
-    {
-        // Returns true if the directory is the project root directory.
-        const string ValkeyGlideDirectory = "valkey-glide";
-        Func<string, bool> IsProjectRoot = (directory) =>
-                Directory.EnumerateDirectories(directory).Any(d => Path.GetFileName(d) == ValkeyGlideDirectory);
-
-        string directory = Directory.GetCurrentDirectory();
-        while (!IsProjectRoot(directory))
-        {
-            directory = Path.GetDirectoryName(directory);
-            if (directory == null)
-                throw new FileNotFoundException("Can't detect the project directory");
-        }
-
-        return Path.Combine(directory, ValkeyGlideDirectory, "utils");
     }
 
     /// <summary>

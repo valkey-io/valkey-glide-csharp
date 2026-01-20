@@ -31,7 +31,7 @@ public class TlsServersFixture : IDisposable
 public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixture>
 {
     private readonly TlsServersFixture _fixture = fixture;
-    private static readonly string ServerCertificatePath = ServerManager.GetServerCertificatePath();
+    private static readonly string ServerCertificatePath = ServerManager.ServerCertificatePath;
 
     // Cluster TLS Tests
     // -----------------
