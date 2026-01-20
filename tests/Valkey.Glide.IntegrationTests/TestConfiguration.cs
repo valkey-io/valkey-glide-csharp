@@ -12,7 +12,8 @@ namespace Valkey.Glide.IntegrationTests;
 public class TestConfiguration : IDisposable
 {
     // Default test timeout
-    public readonly static int DEFAULT_TIMEOUT_MS = 60_000; // 1 minute
+    // #184: Increase timeout on Windows to accound for WSL overhead.
+    public readonly static int DEFAULT_TIMEOUT_MS = OperatingSystem.IsWindows() ? 120_000 : 60_000;
     public readonly static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
 
     // Addresses for the standalone and cluster servers.
