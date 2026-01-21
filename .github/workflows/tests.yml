@@ -160,7 +160,7 @@ jobs:
               shell: bash
               working-directory: valkey-glide/benchmarks
               run: |
-                  redis-server --save "" --daemonize "yes"
+                  valkey-server --save "" --daemonize "yes"
                   ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net${{ matrix.dotnet }}
 
             - name: Run coverage

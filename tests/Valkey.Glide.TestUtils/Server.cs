@@ -11,10 +11,6 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public class Server : IDisposable
 {
-    // File path for the server certificate that it generates.
-    // See 'valkey-glide/utils/cluster_manager.py' for more details.
-    public static readonly string ServerCertificatePath = Path.Combine(Scripts.GetScriptsDirectory(), "tls_crts", "ca.crt");
-
     /// <summary>
     /// Name of the server.
     /// </summary>

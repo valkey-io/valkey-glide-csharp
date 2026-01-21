@@ -6,6 +6,8 @@ namespace Valkey.Glide.IntegrationTests;
 
 internal partial class BatchTestUtils
 {
+    private static readonly TimeSpan BlockingTimeout = TimeSpan.FromSeconds(2);
+
     public static List<TestInfo> CreateStringTest(Pipeline.IBatch batch, bool isAtomic)
     {
         List<TestInfo> testData = [];
@@ -1198,18 +1200,18 @@ internal partial class BatchTestUtils
         _ = batch.ListRightPush(blockingKey1, "block1");
         testData.Add(new(1L, "ListRightPush(blockingKey1, block1)"));
 
-        _ = batch.ListBlockingLeftPop([blockingKey1], TimeSpan.FromMilliseconds(100));
+        _ = batch.ListBlockingLeftPop([blockingKey1], BlockingTimeout);
         testData.Add(new(new ValkeyValue[] { blockingKey1, "block1" }, "ListBlockingLeftPop([blockingKey1], 100ms)"));
 
         // Push data right before BRPOP so it has something to pop
         _ = batch.ListRightPush(blockingKey1, "block2");
         testData.Add(new(1L, "ListRightPush(blockingKey1, block2)"));
 
-        _ = batch.ListBlockingRightPop([blockingKey1], TimeSpan.FromMilliseconds(100));
+        _ = batch.ListBlockingRightPop([blockingKey1], BlockingTimeout);
         testData.Add(new(new ValkeyValue[] { blockingKey1, "block2" }, "ListBlockingRightPop([blockingKey1], 100ms)"));
 
         // Reuse moveSource which already has data from the previous ListMove test
-        _ = batch.ListBlockingMove(moveSource, moveDest, ListSide.Left, ListSide.Right, TimeSpan.FromMilliseconds(100));
+        _ = batch.ListBlockingMove(moveSource, moveDest, ListSide.Left, ListSide.Right, BlockingTimeout);
         testData.Add(new(new ValkeyValue("move2"), "ListBlockingMove(moveSource, moveDest, Left, Right, 100ms)"));
 
         if (TestConfiguration.IsVersionAtLeast("7.0.0"))
@@ -1218,7 +1220,7 @@ internal partial class BatchTestUtils
             _ = batch.ListRightPush(moveSource, "move3");
             testData.Add(new(2L, "ListRightPush(moveSource, move3)"));
 
-            _ = batch.ListBlockingPop([moveSource], ListSide.Right, TimeSpan.FromMilliseconds(100));
+            _ = batch.ListBlockingPop([moveSource], ListSide.Right, BlockingTimeout);
             testData.Add(new(new ListPopResult(moveSource, ["move3"]), "ListBlockingPop([moveSource], Right, 100ms)"));
         }
 

@@ -11,6 +11,11 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
+    // Default test timeout
+    // #184: Increase timeout on Windows to accound for WSL overhead.
+    public readonly static int DEFAULT_TIMEOUT_MS = OperatingSystem.IsWindows() ? 120_000 : 60_000;
+    public readonly static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
+
     // Addresses for the standalone and cluster servers.
     public static IList<Address> STANDALONE_ADDRESSES = [];
     public static IList<Address> CLUSTER_ADDRESSES = [];
@@ -38,14 +43,14 @@ public class TestConfiguration : IDisposable
         new StandaloneClientConfigurationBuilder()
             .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-            .WithRequestTimeout(TimeSpan.FromSeconds(60))
+            .WithRequestTimeout(DEFAULT_TIMEOUT)
             .WithTls(TLS);
 
     public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
         new ClusterClientConfigurationBuilder()
             .WithAddress(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port)
             .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-            .WithRequestTimeout(TimeSpan.FromSeconds(60))
+            .WithRequestTimeout(DEFAULT_TIMEOUT)
             .WithTls(TLS);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
@@ -92,14 +97,14 @@ public class TestConfiguration : IDisposable
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClient resp3client = GlideClient.CreateClient(
                         DefaultClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
@@ -123,14 +128,14 @@ public class TestConfiguration : IDisposable
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
                         .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(TimeSpan.FromSeconds(60))
+                        .WithRequestTimeout(DEFAULT_TIMEOUT)
                         .Build()
                     ).GetAwaiter().GetResult();
                     resp3client.SetInfo("RESP3");
@@ -160,7 +165,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port);
         config.Ssl = TLS;
-        config.ResponseTimeout = 60000; // ms
+        config.ResponseTimeout = DEFAULT_TIMEOUT_MS;
         return config;
     }
 
@@ -169,7 +174,7 @@ public class TestConfiguration : IDisposable
         ConfigurationOptions config = new();
         config.EndPoints.Add(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port);
         config.Ssl = TLS;
-        config.ResponseTimeout = 60000; // ms
+        config.ResponseTimeout = DEFAULT_TIMEOUT_MS;
         return config;
     }
 
@@ -286,16 +291,6 @@ public class TestConfiguration : IDisposable
             // Stop all if weren't stopped on previous test run
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: false);
 
-            // Delete dirs if stop failed due to https://github.com/valkey-io/valkey-glide/issues/849
-            // Not using `Directory.Exists` before deleting, because another process may delete the dir while IT is running.
-            string scriptsDir = Scripts.GetScriptsDirectory();
-            string clusterLogsDir = Path.Combine(scriptsDir, "clusters");
-            try
-            {
-                Directory.Delete(clusterLogsDir, true);
-            }
-            catch (DirectoryNotFoundException) { }
-
             // Start standalone and cluster servers.
             CLUSTER_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
             STANDALONE_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
@@ -317,7 +312,6 @@ public class TestConfiguration : IDisposable
         ResetTestConnections();
         if (_startedServer)
         {
-            // Stop all
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: true);
         }
     }

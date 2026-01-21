@@ -4,18 +4,39 @@ inputs:
     os:
         description: "The current operating system"
         required: true
-        type: string
+        # See 'os-matrix.json'
+        type: choice
+        options:
+            - ubuntu
+            - amazon-linux
+            - macos
+            - windows
     target:
-        description: "Specified target for rust toolchain, ex. x86_64-apple-darwin"
-        type: string
-        required: false
+        description: "Specified target for rust toolchain"
+        required: true
+        # See 'os-matrix.json'
+        type: choice
+        options:
+            - x86_64-unknown-linux-gnu
+            - aarch64-unknown-linux-gnu
+            - x86_64-apple-darwin
+            - aarch64-apple-darwin
+            - x86_64-pc-windows-msvc
+            - aarch64-pc-windows-msvc
     server-version:
         description: "Server version to install"
-        required: false
-        type: string
+        required: true
+        # See 'server-matrix.json'
+        type: choice
+        options:
+            - 9.0
+            - 8.1
+            - 8.0
+            - 7.2
+            - 7.0
+            - 6.2
     github-token:
         description: "GITHUB_TOKEN, GitHub App installation access token"
-        required: true
         type: string
 
 runs:
@@ -30,19 +51,10 @@ runs:
 
         - name: Install software dependencies for Ubuntu GNU
           shell: bash
-          if: "${{ inputs.os == 'ubuntu' && !contains(inputs.target, 'musl')}}"
+          if: "${{ inputs.os == 'ubuntu' }}"
           run: |
               sudo apt update -y
               sudo apt install -y git gcc pkg-config openssl libssl-dev
-
-        - name: Install software dependencies for MUSL
-          shell: bash
-          if: "${{ contains(inputs.target, 'musl') }}"
-          run: |
-              apk update
-              wget -O - https://sh.rustup.rs | sh -s -- -y
-              source "$HOME/.cargo/env"
-              apk add protobuf-dev musl-dev make gcc envsubst openssl libressl-dev
 
         - name: Install software dependencies for Amazon-Linux
           shell: bash
@@ -50,8 +62,17 @@ runs:
           run: |
               yum install -y gcc pkgconfig openssl openssl-devel which curl gettext libasan tar --allowerasing
 
+        # In Windows runners, the Valkey servers run within WSL.
+        # These can be accessed via the WSL bash shell.
+        # See <https://github.com/Vampire/setup-wsl> for more details.
+        - name: Install software dependencies for Windows
+          if: "${{ inputs.os == 'windows' }}"
+          uses: Vampire/setup-wsl@v6
+          with:
+              distribution: Ubuntu-22.04
+              additional-packages: python3 build-essential git pkg-config libssl-dev
+
         - name: Install Rust toolchain
-          if: "${{ !contains(inputs.target, 'musl') }}"
           uses: ./.github/workflows/install-rust
           with:
               target: ${{ inputs.target }}
@@ -61,8 +82,9 @@ runs:
           if: "${{ inputs.server-version }}"
           uses: ./.github/workflows/install-server
           with:
-              server-version: ${{ inputs.server-version }}
+              os: ${{ inputs.os }}
               target: ${{ inputs.target }}
+              server-version: ${{ inputs.server-version }}
 
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}

@@ -1,100 +1,110 @@
 name: Install Server
 
 inputs:
+    os:
+        description: "The current operating system"
+        required: true
+        # See 'os-matrix.json'
+        type: choice
+        options:
+            - ubuntu
+            - amazon-linux
+            - macos
+            - windows
+    target:
+        description: "Specified target for rust toolchain"
+        required: true
+        # See 'os-matrix.json'
+        type: choice
+        options:
+            - x86_64-unknown-linux-gnu
+            - aarch64-unknown-linux-gnu
+            - x86_64-apple-darwin
+            - aarch64-apple-darwin
+            - x86_64-pc-windows-msvc
+            - aarch64-pc-windows-msvc
     server-version:
         description: "Server version to install"
         required: true
-        type: string
-    target:
-        description: "Specified target toolchain, ex. x86_64-unknown-linux-gnu"
-        type: string
-        required: true
+        # See 'server-matrix.json'
+        type: choice
+        options:
+            - 9.0
+            - 8.1
+            - 8.0
+            - 7.2
+            - 7.0
+            - 6.2
 
 env:
     CARGO_TERM_COLOR: always
 
 runs:
     using: "composite"
-
     steps:
-        - name: "Setup Environment Variables"
+        - name: Set environment variables
           shell: bash
           env:
+              OS: ${{ inputs.os }}
               SERVER_VERSION: ${{ inputs.server-version }}
           run: |
+              echo "OS=$OS"                         >> $GITHUB_ENV
               echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
 
-        - name: Prepare Valkey sources
+        # Environment variables must be passed into WSL explicitly using the WSLENV environment variable.
+        # The '/p' flag translates the $GITHUB_ENV path from Windows to WSL format.
+        - name: Pass environment variables to WSL
+          if: ${{ inputs.os == 'windows' }}
           shell: bash
           run: |
-              echo "Cloning and checking out Valkey $SERVER_VERSION"
-              if [[ -d valkey ]]; then
-                  echo "Removing existing valkey directory..."
-                  rm -fR valkey
-              fi
-              git clone https://github.com/valkey-io/valkey.git
-              cd valkey/src
-              git checkout $SERVER_VERSION
-              SOURCES_VERSION=`grep ' VALKEY_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]'` || :
-              if [[ -z $SOURCES_VERSION ]]; then
-                  SOURCES_VERSION=`grep ' REDIS_VERSION ' version.h | grep -o -E '[0-9]+\.[0-9]\.[0-9]'`
-              fi
-              echo "SOURCES_VERSION=$SOURCES_VERSION" >> $GITHUB_ENV
+              echo "WSLENV=SERVER_VERSION:GITHUB_ENV/p" >> $GITHUB_ENV
 
-        - uses: actions/cache@v4
+        - name: Determine Valkey source version
+          shell: bash
+          run: |
+              # Fetch version.h directly from GitHub, then extract the version number from it.
+              version_h=$(curl -fsSL "https://raw.githubusercontent.com/valkey-io/valkey/$SERVER_VERSION/src/version.h")
+              source_version=$(echo "$version_h" | grep -E 'VALKEY_VERSION|REDIS_VERSION' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+
+              if [[ -z "$source_version" ]]; then
+                  echo "Error: Could not determine source version for Valkey $SERVER_VERSION"
+                  exit 1
+              fi
+
+              echo "SOURCE_VERSION=$source_version" >> $GITHUB_ENV
+
+        - name: Cache compiled Valkey binaries
           id: cache-valkey
+          uses: actions/cache@v4
           with:
               path: |
-                  valkey/src/valkey-server
                   valkey/src/valkey-cli
-              key: valkey-${{ env.SOURCES_VERSION }}-${{ inputs.target }}
+                  valkey/src/valkey-server
+              key: valkey-${{ env.SOURCE_VERSION }}-${{ inputs.target }}
 
-        # Manual install, because makefile target rebuilds everything, we want to avoid that
-        - name: Install cached engine
-          if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
-          shell: bash
-          run: |
-              cd valkey/src
-              if command -v sudo &> /dev/null
-              then
-                  echo "sudo command exists"
-                  SUDO=sudo
-              fi
-              $SUDO cp valkey-server valkey-cli redis-server redis-cli /usr/local/bin/ 2>/dev/null || :
-              if [[ ! -e /usr/local/bin/redis-server ]]; then
-                  $SUDO cp valkey-server /usr/local/bin/redis-server
-              fi
-              echo 'export PATH=/usr/local/bin:$PATH' >>~/.bash_profile
-
-        - name: Build and install engine
+        - name: Build and install Valkey binaries from source
           if: ${{ steps.cache-valkey.outputs.cache-hit != 'true' }}
-          shell: bash
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
-              cd valkey
-              make BUILD_TLS=yes
-              if command -v sudo &> /dev/null
-              then
-                  echo "sudo command exists"
-                  sudo make install
-              else
-                  echo "sudo command does not exist"
-                  make install
-              fi
-              echo 'export PATH=/usr/local/bin:$PATH' >>~/.bash_profile
+              git clone --depth 1 --branch "$SERVER_VERSION" --single-branch 'https://github.com/valkey-io/valkey.git'
 
-        # TODO: This seems redundant to me. Is it necessary? Do we check that the Python we install is the correct version?
-        # Why here and not elsewhere? All Git git repos were created equal
-        - name: Verify Valkey installation and symlinks
-          if: ${{ !contains(inputs.engine-version, '-rc') }}
-          shell: bash
+              # Prior to Valkey 7.2, the binaries were named redis-cli and      by default.
+              cd valkey && make BUILD_TLS=yes REDIS_CLI_NAME=valkey-cli REDIS_SERVER_NAME=valkey-server install
+
+        - name: Install Valkey binaries from cache
+          if: ${{ steps.cache-valkey.outputs.cache-hit == 'true' }}
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
           run: |
-              # In Valkey releases, the engine is built with symlinks from valkey-server and valkey-cli
-              # to redis-server and redis-cli. This step ensures that the engine is properly installed
-              # with the expected version and that Valkey symlinks are correctly created.
-              INSTALLED_VER=$(redis-server -v) || INSTALLED_VER=$(valkey-server -v)
-              if [[ $INSTALLED_VER != *"${SERVER_VERSION}"* ]]; then
-                  echo "Wrong version has been installed. Expected: $SERVER_VERSION, Installed: $INSTALLED_VER"
+              sudo cp valkey/src/valkey-cli valkey/src/valkey-server /usr/local/bin
+
+        - name: Verify Valkey installation
+          shell: ${{ inputs.os == 'windows' && 'wsl-bash {0}' || 'bash' }}
+          run: |
+              if [ ! -f /usr/local/bin/valkey-cli ] || [ ! -f /usr/local/bin/valkey-server ]; then
+                  echo "Error: Valkey installation failed."
                   exit 1
               else
-                  echo "Successfully installed the server: $INSTALLED_VER"
+                  echo "Installed Valkey:"
+                  valkey-cli --version
+                  valkey-server --version
               fi
