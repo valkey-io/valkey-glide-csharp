@@ -15,13 +15,10 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     }
 
     /// <inheritdoc/>
-    public async Task<long> PublishAsync(string channel, string message, bool sharded, CommandFlags flags = CommandFlags.None)
+    public async Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-
-        return sharded
-            ? await Command(Request.SPublish(channel, message), Route.Random)
-            : await Command(Request.Publish(channel, message), Route.Random);
+        return await Command(Request.SPublish(channel, message), Route.Random);
     }
 
     /// <inheritdoc/>

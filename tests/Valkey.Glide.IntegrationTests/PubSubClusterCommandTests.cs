@@ -65,7 +65,7 @@ public class PubSubClusterCommandTests()
     }
 
     [Fact]
-    public async Task PublishAsync_ShardedChannel_WithNoSubscribers_ReturnsZero()
+    public async Task SPublishAsync_WithNoSubscribers_ReturnsZero()
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
@@ -77,14 +77,14 @@ public class PubSubClusterCommandTests()
         string message = "test sharded message";
 
         // Act
-        long subscriberCount = await client.PublishAsync(channel, message, sharded: true);
+        long subscriberCount = await client.SPublishAsync(channel, message);
 
         // Assert
         Assert.Equal(0L, subscriberCount);
     }
 
     [Fact]
-    public async Task PublishAsync_ShardedChannel_WithSubscriber_ReturnsSubscriberCount()
+    public async Task SPublishAsync_WithSubscriber_ReturnsSubscriberCount()
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
 
@@ -112,7 +112,7 @@ public class PubSubClusterCommandTests()
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         while (!cts.Token.IsCancellationRequested)
         {
-            subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage, sharded: true);
+            subscriberCount = await publisherClient.SPublishAsync(testChannel, testMessage);
             if (subscriberCount > 0L) break;
             await Task.Delay(500);
         }
