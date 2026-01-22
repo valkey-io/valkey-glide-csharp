@@ -9,5 +9,5 @@ namespace Valkey.Glide.Commands;
 /// </summary>
 public interface IPubSubStandaloneCommands : IPubSubCommands
 {
-    // TODO #183: Add support for dynamic PubSub.
+    // TODO #193: Add support for dynamic PubSub.
 }
