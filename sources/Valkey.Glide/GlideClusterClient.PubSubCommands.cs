@@ -10,14 +10,14 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Publish(channel, message), Route.Random);
     }
 
     /// <inheritdoc/>
     public async Task<long> PublishAsync(string channel, string message, bool sharded, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         return sharded
             ? await Command(Request.SPublish(channel, message), Route.Random)
@@ -27,7 +27,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete channel list
         return await Command(Request.PubSubChannels(), Route.AllPrimaries);
     }
@@ -35,7 +35,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<string[]> PubSubChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete channel list
         return await Command(Request.PubSubChannels(pattern), Route.AllPrimaries);
     }
@@ -43,7 +43,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         // In cluster mode, route to all primaries to aggregate subscriber counts
         return await Command(Request.PubSubNumSub(channelArgs), Route.AllPrimaries);
@@ -52,7 +52,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to aggregate pattern counts
         return await Command(Request.PubSubNumPat(), Route.AllPrimaries);
     }
@@ -60,7 +60,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete shard channel list
         return await Command(Request.PubSubShardChannels(), Route.AllPrimaries);
     }
@@ -68,7 +68,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete shard channel list
         return await Command(Request.PubSubShardChannels(pattern), Route.AllPrimaries);
     }
@@ -76,7 +76,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         // In cluster mode, route to all primaries to aggregate shard subscriber counts
         return await Command(Request.PubSubShardNumSub(channelArgs), Route.AllPrimaries);
