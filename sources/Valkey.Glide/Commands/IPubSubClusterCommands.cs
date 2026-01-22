@@ -10,46 +10,23 @@ namespace Valkey.Glide.Commands;
 public interface IPubSubClusterCommands : IPubSubCommands
 {
     /// <summary>
-    /// Publishes a message to the specified channel.
+    /// Publishes a message to the specified shard channel.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/publish/">valkey.io</seealso>
-    /// <param name="channel">The channel to publish the message to.</param>
-    /// <param name="message">The message to publish.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>The number of clients that received the message.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// long subscriberCount = await clusterClient.PublishAsync("news", "Breaking news!");
-    /// Console.WriteLine($"Message delivered to {subscriberCount} subscribers");
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// Publishes a message to the specified channel, with optional sharded mode.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/publish/">valkey.io</seealso>
     /// <seealso href="https://valkey.io/commands/spublish/">valkey.io</seealso>
-    /// <param name="channel">The channel to publish the message to.</param>
+    /// <param name="channel">The shard channel to publish the message to.</param>
     /// <param name="message">The message to publish.</param>
-    /// <param name="sharded">If true, uses sharded channel publishing (SPUBLISH). If false, uses regular publishing (PUBLISH).</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of clients that received the message.</returns>
     /// <remarks>
     /// Sharded channels are specific to cluster mode and route messages to specific shards based on the channel name.
     /// <example>
     /// <code>
-    /// // Regular publish
-    /// long count1 = await clusterClient.PublishAsync("news", "Breaking news!", false);
-    ///
-    /// // Sharded publish
-    /// long count2 = await clusterClient.PublishAsync("shard-news", "Shard-specific news!", true);
+    /// long count = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
+    /// Console.WriteLine($"Message delivered to {subscriberCount} subscribers");
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> PublishAsync(string channel, string message, bool sharded, CommandFlags flags = CommandFlags.None);
+    Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Lists the currently active sharded channels.
