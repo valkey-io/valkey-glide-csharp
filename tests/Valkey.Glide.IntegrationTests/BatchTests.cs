@@ -95,7 +95,7 @@ public class BatchTests(TestConfiguration config)
 
         Assert.True(transaction.Execute());
         Assert.True((await t1).IsNull);
-        _ = await Assert.ThrowsAsync<RequestException>(async () => await t3);
+        await Assert.ThrowsAsync<RequestException>(async () => await t3);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -145,7 +145,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t1);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t1);
         }
 
         Assert.True(c1.WasSatisfied);
@@ -223,7 +223,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -257,7 +257,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -291,7 +291,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -313,7 +313,7 @@ public class BatchTests(TestConfiguration config)
 
         Assert.False(transaction.Execute());
         Assert.False(c.WasSatisfied);
-        _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+        await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -342,7 +342,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -376,7 +376,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -410,7 +410,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -444,7 +444,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -474,7 +474,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -504,7 +504,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -541,7 +541,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -578,7 +578,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -615,7 +615,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -652,7 +652,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -689,7 +689,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -726,7 +726,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -763,7 +763,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -800,7 +800,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -837,7 +837,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -875,7 +875,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -909,7 +909,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -944,7 +944,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -978,7 +978,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -1012,7 +1012,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 #pragma warning restore xUnit1042 // https://xunit.net/xunit.analyzers/rules/xUnit1042

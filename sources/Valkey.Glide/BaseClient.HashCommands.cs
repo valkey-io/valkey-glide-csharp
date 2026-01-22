@@ -29,7 +29,7 @@ public abstract partial class BaseClient : IHashCommands
     public async Task HashSetAsync(ValkeyKey key, HashEntry[] hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.HashSetAsync(key, hashFields));
+        await Command(Request.HashSetAsync(key, hashFields));
     }
 
     public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None)

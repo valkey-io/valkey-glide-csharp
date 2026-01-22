@@ -38,7 +38,7 @@ public class DebugSleepTests
         BaseBatchOptions options = isCluster ? new ClusterBatchOptions(timeout: 100) : new BatchOptions(timeout: 100);
 
         // Expect a timeout exception on short timeout
-        _ = await Assert.ThrowsAsync<TimeoutException>(() => isCluster
+        await Assert.ThrowsAsync<TimeoutException>(() => isCluster
                 ? ((GlideClusterClient)client).Exec((ClusterBatch)batch, true, (ClusterBatchOptions)options)
                 : ((GlideClient)client).Exec((Batch)batch, true, (BatchOptions)options));
 

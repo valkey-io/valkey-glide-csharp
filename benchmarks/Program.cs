@@ -127,10 +127,10 @@ public static class MainClass
             switch (action)
             {
                 case ChosenAction.GET_EXISTING:
-                    _ = await client.Get(GenerateKeySet());
+                    await client.Get(GenerateKeySet());
                     break;
                 case ChosenAction.GET_NON_EXISTING:
-                    _ = await client.Get(GenerateKeyGet());
+                    await client.Get(GenerateKeyGet());
                     break;
                 case ChosenAction.SET:
                     await client.Set(GenerateKeySet(), data);

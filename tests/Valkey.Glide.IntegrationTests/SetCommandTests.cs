@@ -74,8 +74,8 @@ public class SetCommandTests(TestConfiguration config)
         Assert.Equal(0, await client.SetIntersectionLengthAsync([key1, key2]));
 
         // Set up test data
-        _ = await client.SetAddAsync(key1, ["a", "b", "c", "d"]);
-        _ = await client.SetAddAsync(key2, ["b", "c", "e", "f"]);
+        await client.SetAddAsync(key1, ["a", "b", "c", "d"]);
+        await client.SetAddAsync(key2, ["b", "c", "e", "f"]);
 
         // Test intersection of two sets
         Assert.Equal(2, await client.SetIntersectionLengthAsync([key1, key2])); // "b", "c"
@@ -119,8 +119,8 @@ public class SetCommandTests(TestConfiguration config)
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
 
-        _ = await client.SetAddAsync(key1, ["a", "b"]);
-        _ = await client.SetAddAsync(key2, ["b", "c"]);
+        await client.SetAddAsync(key1, ["a", "b"]);
+        await client.SetAddAsync(key2, ["b", "c"]);
 
         ValkeyValue[] result = await client.SetUnionAsync(key1, key2);
         Assert.Equal(3, result.Length); // a, b, c
@@ -133,8 +133,8 @@ public class SetCommandTests(TestConfiguration config)
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
 
-        _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
-        _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
+        await client.SetAddAsync(key1, ["a", "b", "c"]);
+        await client.SetAddAsync(key2, ["b", "c", "d"]);
 
         ValkeyValue[] result = await client.SetIntersectAsync(key1, key2);
         Assert.Equal(2, result.Length); // b, c
@@ -147,8 +147,8 @@ public class SetCommandTests(TestConfiguration config)
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
 
-        _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
-        _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
+        await client.SetAddAsync(key1, ["a", "b", "c"]);
+        await client.SetAddAsync(key2, ["b", "c", "d"]);
 
         ValkeyValue[] result = await client.SetDifferenceAsync(key1, key2);
         ValkeyValue singleResult = Assert.Single(result); // a
@@ -163,8 +163,8 @@ public class SetCommandTests(TestConfiguration config)
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
         string destKey = "{prefix}-" + Guid.NewGuid().ToString();
 
-        _ = await client.SetAddAsync(key1, ["a", "b"]);
-        _ = await client.SetAddAsync(key2, ["b", "c"]);
+        await client.SetAddAsync(key1, ["a", "b"]);
+        await client.SetAddAsync(key2, ["b", "c"]);
 
         long count = await client.SetUnionStoreAsync(destKey, key1, key2);
         Assert.Equal(3, count); // a, b, c
@@ -179,8 +179,8 @@ public class SetCommandTests(TestConfiguration config)
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
         string destKey = "{prefix}-" + Guid.NewGuid().ToString();
 
-        _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
-        _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
+        await client.SetAddAsync(key1, ["a", "b", "c"]);
+        await client.SetAddAsync(key2, ["b", "c", "d"]);
 
         long count = await client.SetIntersectStoreAsync(destKey, key1, key2);
         Assert.Equal(2, count); // b, c
@@ -195,8 +195,8 @@ public class SetCommandTests(TestConfiguration config)
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
         string destKey = "{prefix}-" + Guid.NewGuid().ToString();
 
-        _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
-        _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
+        await client.SetAddAsync(key1, ["a", "b", "c"]);
+        await client.SetAddAsync(key2, ["b", "c", "d"]);
 
         long count = await client.SetDifferenceStoreAsync(destKey, key1, key2);
         Assert.Equal(1, count); // a
@@ -268,8 +268,8 @@ public class SetCommandTests(TestConfiguration config)
         Assert.False(await client.SetMoveAsync(sourceKey, destKey, "member1"));
 
         // Set up test data
-        _ = await client.SetAddAsync(sourceKey, ["member1", "member2", "member3"]);
-        _ = await client.SetAddAsync(destKey, ["member4", "member5"]);
+        await client.SetAddAsync(sourceKey, ["member1", "member2", "member3"]);
+        await client.SetAddAsync(destKey, ["member4", "member5"]);
 
         // Test successful move
         Assert.True(await client.SetMoveAsync(sourceKey, destKey, "member1"));
@@ -284,7 +284,7 @@ public class SetCommandTests(TestConfiguration config)
         Assert.False(await client.SetMoveAsync(sourceKey, destKey, "nonexistent"));
 
         // Test move when member already exists in destination
-        _ = await client.SetAddAsync(sourceKey, "member4"); // Add member4 to source
+        await client.SetAddAsync(sourceKey, "member4"); // Add member4 to source
         Assert.True(await client.SetMoveAsync(sourceKey, destKey, "member4")); // Should still return true
         Assert.Equal(2, await client.SetLengthAsync(sourceKey)); // member4 removed from source
         Assert.Equal(3, await client.SetLengthAsync(destKey)); // destination size unchanged (member4 already existed)

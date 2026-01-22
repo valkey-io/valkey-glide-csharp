@@ -82,7 +82,7 @@ public abstract partial class BaseClient : IListCommands
     public async Task ListTrimAsync(ValkeyKey key, long start, long stop, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ListTrimAsync(key, start, stop));
+        await Command(Request.ListTrimAsync(key, start, stop));
     }
 
     public async Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None)
@@ -142,7 +142,7 @@ public abstract partial class BaseClient : IListCommands
     public async Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ListSetByIndexAsync(key, index, value));
+        await Command(Request.ListSetByIndexAsync(key, index, value));
     }
 
     // Blocking list operations (Blocking Commands aren't supported in SER so this is according to our own implementation)

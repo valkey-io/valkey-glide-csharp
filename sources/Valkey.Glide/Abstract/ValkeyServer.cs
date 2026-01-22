@@ -108,19 +108,19 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
+        await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
+        await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
+        await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
     }
 
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -132,13 +132,13 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
+        await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
+        await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
@@ -233,8 +233,6 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None)
     {
         Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
-
-        // Call SCRIPT FLUSH (default is SYNC mode)
-        _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
+        await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
     }
 }
