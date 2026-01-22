@@ -16,7 +16,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Determine the route - use provided route or default to AllPrimaries
         Route route = options.Route ?? Route.AllPrimaries;
@@ -39,7 +39,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptExistsAsync(sha1Hashes).ToClusterValue(route), route);
     }
 
@@ -49,7 +49,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptFlushAsync().ToClusterValue(route), route);
     }
 
@@ -60,7 +60,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptFlushAsync(mode).ToClusterValue(route), route);
     }
 
@@ -70,7 +70,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptKillAsync().ToClusterValue(route), route);
     }
 
@@ -83,7 +83,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallAsync(function, null, null).ToClusterValue(route), route);
     }
 
@@ -95,7 +95,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallAsync(function, null, args).ToClusterValue(route), route);
     }
 
@@ -106,7 +106,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallReadOnlyAsync(function, null, null).ToClusterValue(route), route);
     }
 
@@ -118,7 +118,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallReadOnlyAsync(function, null, args).ToClusterValue(route), route);
     }
 
@@ -132,7 +132,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionLoadAsync(libraryCode, replace).ToClusterValue(route), route);
     }
 
@@ -143,7 +143,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionDeleteAsync(libraryName).ToClusterValue(route), route);
     }
 
@@ -153,7 +153,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionFlushAsync().ToClusterValue(route), route);
     }
 
@@ -164,7 +164,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionFlushAsync(mode).ToClusterValue(route), route);
     }
 
@@ -174,7 +174,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionKillAsync().ToClusterValue(route), route);
     }
 
@@ -187,7 +187,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionListAsync(query).ToClusterValue(route), route);
     }
 
@@ -197,7 +197,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionStatsAsync().ToClusterValue(route), route);
     }
 
@@ -209,7 +209,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionDumpAsync().ToClusterValue(route), route);
     }
 
@@ -220,7 +220,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionRestoreAsync(payload, null).ToClusterValue(route), route);
     }
 
@@ -232,7 +232,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionRestoreAsync(payload, policy).ToClusterValue(route), route);
     }
 }

@@ -15,7 +15,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionListAsync(query));
     }
 
@@ -24,7 +24,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionStatsAsync());
     }
 
@@ -36,7 +36,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionDeleteAsync(libraryName));
     }
 
@@ -45,7 +45,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionKillAsync());
     }
 
@@ -56,7 +56,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionDumpAsync());
     }
 
@@ -66,7 +66,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionRestoreAsync(payload, null));
     }
 
@@ -77,7 +77,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionRestoreAsync(payload, policy));
     }
 }

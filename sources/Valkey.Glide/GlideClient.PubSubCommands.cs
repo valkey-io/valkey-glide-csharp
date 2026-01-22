@@ -10,28 +10,28 @@ public partial class GlideClient : IPubSubStandaloneCommands
     /// <inheritdoc/>
     public async Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Publish(channel, message));
     }
 
     /// <inheritdoc/>
     public async Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.PubSubChannels());
     }
 
     /// <inheritdoc/>
     public async Task<string[]> PubSubChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.PubSubChannels(pattern));
     }
 
     /// <inheritdoc/>
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         return await Command(Request.PubSubNumSub(channelArgs));
     }
@@ -39,7 +39,7 @@ public partial class GlideClient : IPubSubStandaloneCommands
     /// <inheritdoc/>
     public async Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.PubSubNumPat());
     }
 }

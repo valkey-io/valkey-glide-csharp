@@ -24,7 +24,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             throw new ArgumentNullException(nameof(script));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await InvokeScriptInternalAsync(script.Hash, null, null, null);
     }
 
@@ -45,7 +45,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             throw new ArgumentNullException(nameof(options));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await InvokeScriptInternalAsync(script.Hash, options.Keys, options.Args, null);
     }
 
@@ -225,7 +225,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptExistsAsync(sha1Hashes));
     }
 
@@ -234,7 +234,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptFlushAsync());
     }
 
@@ -244,7 +244,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptFlushAsync(mode));
     }
 
@@ -254,7 +254,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         try
         {
             return await Command(Request.ScriptShowAsync(sha1Hash));
@@ -271,7 +271,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ScriptKillAsync());
     }
 
@@ -283,7 +283,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallAsync(function, null, null));
     }
 
@@ -295,7 +295,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallAsync(function, keys, args));
     }
 
@@ -305,7 +305,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallReadOnlyAsync(function, null, null));
     }
 
@@ -317,7 +317,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallReadOnlyAsync(function, keys, args));
     }
 
@@ -330,7 +330,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionLoadAsync(libraryCode, replace));
     }
 
@@ -339,7 +339,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionFlushAsync());
     }
 
@@ -349,7 +349,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionFlushAsync(mode));
     }
 
@@ -359,7 +359,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     public async Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
         CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Use the optimized InvokeScript path via Script object
         // Script constructor will validate the script parameter
@@ -377,7 +377,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     public async Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
         CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Convert hash to hex string (lowercase)
         string hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
@@ -399,7 +399,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             throw new ArgumentNullException(nameof(script));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Replace placeholders in the executable script with KEYS/ARGV references
         string executableScript = parameters != null
@@ -428,7 +428,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             throw new ArgumentNullException(nameof(script));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Extract parameters from the object using the internal LuaScript
         (ValkeyKey[] keys, ValkeyValue[] args) = script.Script.ExtractParametersInternal(parameters, null);
