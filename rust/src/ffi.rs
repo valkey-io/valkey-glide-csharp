@@ -274,7 +274,13 @@ pub(crate) unsafe fn create_connection_request(
                 config.root_certs_len,
             )
         },
-        // TODO below
+
+        // Unimplemented configuration options.
+        client_cert: Vec::new(),
+        client_key: Vec::new(),
+        compression_config: None,
+        tcp_nodelay: false,
+        pubsub_reconciliation_interval_ms: None,
         periodic_checks: None,
         inflight_requests_limit: None,
     }

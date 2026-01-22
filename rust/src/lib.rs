@@ -522,7 +522,7 @@ pub unsafe extern "C-unwind" fn command(
         callback_index,
     };
 
-    let cmd = match unsafe { create_cmd(cmd_ptr) } {
+    let mut cmd = match unsafe { create_cmd(cmd_ptr) } {
         Ok(cmd) => cmd,
         Err(err) => {
             unsafe {
@@ -546,7 +546,7 @@ pub unsafe extern "C-unwind" fn command(
             callback_index,
         };
 
-        let result = core.client.clone().send_command(&cmd, route).await;
+        let result = core.client.clone().send_command(&mut cmd, route).await;
         match result {
             Ok(value) => {
                 let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
