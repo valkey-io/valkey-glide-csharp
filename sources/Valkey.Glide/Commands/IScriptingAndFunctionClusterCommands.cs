@@ -22,7 +22,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <code>
     /// using var script = new Script("return 'Hello'");
     /// var options = new ClusterScriptOptions().WithRoute(Route.AllPrimaries);
-    /// ClusterValue&lt;ValkeyResult&gt; result = await client.InvokeScriptAsync(script, options);
+    /// ClusterValue&lt;ValkeyResult&gt; result = await client.ScriptInvokeAsync(script, options);
     /// if (result.HasMultiData)
     /// {
     ///     foreach (var (node, value) in result.MultiValue)
@@ -32,7 +32,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<ValkeyResult>> InvokeScriptAsync(
+    Task<ClusterValue<ValkeyResult>> ScriptInvokeAsync(
         Script script,
         ClusterScriptOptions options,
         CommandFlags flags = CommandFlags.None,
