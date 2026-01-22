@@ -166,7 +166,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             throw new ArgumentException("Script cannot be null or empty", nameof(script));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Calculate SHA1 hash of the script
         using Script scriptObj = new(script);
@@ -184,7 +184,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             throw new ArgumentException("SHA1 hash cannot be null or empty", nameof(sha1));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Convert byte array to hex string
         string hash = BitConverter.ToString(sha1).Replace("-", "").ToLowerInvariant();
@@ -201,7 +201,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             throw new ArgumentException("Script cannot be null or empty", nameof(script));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Use custom command to call SCRIPT LOAD
         ValkeyResult result = await ExecuteAsync("SCRIPT", ["LOAD", script], flags);
@@ -223,7 +223,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             throw new ArgumentNullException(nameof(script));
         }
 
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Load the executable script
         byte[] hash = await ScriptLoadAsync(script.ExecutableScript, flags);
@@ -232,7 +232,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public async Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None)
     {
-        Utils.Requires<NotImplementedException>(flags == CommandFlags.None, "Command flags are not supported by GLIDE");
+        GuardClauses.ThrowIfCommandFlags(flags);
         await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
     }
 }
