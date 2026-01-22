@@ -326,7 +326,7 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// _ = await client.ListTrimAsync(key, start, stop);
+    /// await client.ListTrimAsync(key, start, stop);
     /// </code>
     /// </example>
     /// </remarks>
@@ -519,7 +519,7 @@ public interface IListCommands
     // block the entire multiplexer, preventing other operations from executing.
     // These are GLIDE-only features:
     // - BLMOVE (blocking list move)
-    // - BLMPOP (blocking list multi-pop)  
+    // - BLMPOP (blocking list multi-pop)
     // - BLPOP (blocking left pop)
     // - BRPOP (blocking right pop)
 

@@ -92,8 +92,8 @@ public class StandaloneClientTests(TestConfiguration config)
         );
 
         string key3 = Guid.NewGuid().ToString();
-        _ = await client.CustomCommand(["xadd", key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
-        _ = await client.CustomCommand(["xadd", key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
+        await client.CustomCommand(["xadd", key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
+        await client.CustomCommand(["xadd", key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
         _ = Assert.IsType<Dictionary<gs, object?>>((await client.CustomCommand(["xread", "streams", key3, "stream", "0-1", "0-2"]))!);
         _ = Assert.IsType<Dictionary<gs, object?>>((await client.CustomCommand(["xinfo", "stream", key3, "full"]))!);
     }
@@ -208,7 +208,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Switching to a valid database causes issue to tests running in parallel. So instead, we test
         // that using an invalid value to ensure different values can still be sent through.
-        await Assert.ThrowsAsync<RequestException>(async () => _ = await client.SelectAsync(-1));
+        await Assert.ThrowsAsync<RequestException>(async () => await client.SelectAsync(-1));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -233,7 +233,7 @@ public class StandaloneClientTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
 
-        _ = await client.StringSetAsync(key, "val");
+        await client.StringSetAsync(key, "val");
         Assert.True(await client.KeyCopyAsync(key, key2, 1));
         Assert.True(await client.KeyMoveAsync(key, 2));
     }

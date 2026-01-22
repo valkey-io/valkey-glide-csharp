@@ -96,7 +96,7 @@ public class HashCommandTests(TestConfiguration config)
     {
         string key = Guid.NewGuid().ToString();
 
-        _ = await client.HashSetAsync(key, "field1", "value1");
+        await client.HashSetAsync(key, "field1", "value1");
 
         Assert.True(await client.HashExistsAsync(key, "field1"));
         Assert.False(await client.HashExistsAsync(key, "nonexistent"));
@@ -127,8 +127,8 @@ public class HashCommandTests(TestConfiguration config)
     {
         string key = Guid.NewGuid().ToString();
 
-        _ = await client.HashSetAsync(key, "field1", "value1");
-        _ = await client.HashSetAsync(key, "field2", "value-with-longer-content");
+        await client.HashSetAsync(key, "field1", "value1");
+        await client.HashSetAsync(key, "field2", "value-with-longer-content");
 
         Assert.Equal(6, await client.HashStringLengthAsync(key, "field1"));
         Assert.Equal(25, await client.HashStringLengthAsync(key, "field2"));

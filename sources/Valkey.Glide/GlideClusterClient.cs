@@ -137,37 +137,37 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
+        await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
     }
 
     public async Task ConfigResetStatisticsAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ConfigResetStatisticsAsync(), route);
+        await Command(Request.ConfigResetStatisticsAsync(), route);
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ConfigRewriteAsync(), Route.Random);
+        await Command(Request.ConfigRewriteAsync(), Route.Random);
     }
 
     public async Task ConfigRewriteAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ConfigRewriteAsync(), route);
+        await Command(Request.ConfigRewriteAsync(), route);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
+        await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.ConfigSetAsync(setting, value), route);
+        await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
     public async Task<Dictionary<string, long>> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -195,27 +195,27 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
+        await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
     }
 
     public async Task FlushAllDatabasesAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.FlushAllDatabasesAsync(), route);
+        await Command(Request.FlushAllDatabasesAsync(), route);
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        _ = await Command(Request.FlushDatabaseAsync(database), AllPrimaries);
+        await Command(Request.FlushDatabaseAsync(database), AllPrimaries);
     }
 
     public async Task FlushDatabaseAsync(Route route, int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        _ = await Command(Request.FlushDatabaseAsync(database), route);
+        await Command(Request.FlushDatabaseAsync(database), route);
     }
 
     public async Task<Dictionary<string, DateTime>> LastSaveAsync(CommandFlags flags = CommandFlags.None)
@@ -308,19 +308,19 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.Watch(keys));
+        await Command(Request.Watch(keys));
     }
 
     public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.Unwatch(), AllPrimaries);
+        await Command(Request.Unwatch(), AllPrimaries);
     }
 
     public async Task UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.Unwatch(), route);
+        await Command(Request.Unwatch(), route);
     }
 
     protected override async Task<Version> GetServerVersionAsync()

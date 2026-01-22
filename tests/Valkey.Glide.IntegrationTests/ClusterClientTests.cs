@@ -87,9 +87,9 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithMultiNodeRoute(GlideClusterClient client)
     {
-        _ = await client.StringSetAsync("abc", "abc");
-        _ = await client.StringSetAsync("klm", "klm");
-        _ = await client.StringSetAsync("xyz", "xyz");
+        await client.StringSetAsync("abc", "abc");
+        await client.StringSetAsync("klm", "klm");
+        await client.StringSetAsync("xyz", "xyz");
 
         long res = (long)(await client.CustomCommand(["dbsize"], AllPrimaries)).SingleValue!;
         Assert.True(res >= 3);
@@ -98,7 +98,7 @@ public class ClusterClientTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task RetryStrategyIsNotSupportedForTransactions(GlideClusterClient client)
-        => _ = await Assert.ThrowsAsync<RequestException>(async () => _ = await client.Exec(new(true), true, new(retryStrategy: new())));
+        => await Assert.ThrowsAsync<RequestException>(async () => await client.Exec(new(true), true, new(retryStrategy: new())));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(ClusterClientWithAtomic))]
