@@ -6,6 +6,8 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    #region PublishCommands
+
     /// <summary>
     /// Publishes a message to the specified channel.
     /// </summary>
@@ -23,6 +25,66 @@ internal partial class Request
     /// <returns>Command that returns the number of clients that received the message.</returns>
     public static Cmd<long, long> SPublish(GlideString channel, GlideString message)
         => Simple<long>(RequestType.SPublish, [channel, message]);
+
+    #endregion
+    #region SubscribeCommands
+
+    /// <summary>
+    /// Subscribes to the specified channels.
+    /// </summary>
+    /// <param name="channels">The channels to subscribe to.</param>
+    /// <returns>Command for subscribing to channels.</returns>
+    public static Cmd Subscribe(GlideString[] channels)
+        => new(RequestType.Subscribe, channels);
+
+    /// <summary>
+    /// Subscribes to the specified patterns.
+    /// </summary>
+    /// <param name="patterns">The patterns to subscribe to.</param>
+    /// <returns>Command for subscribing to patterns.</returns>
+    public static Cmd PSubscribe(GlideString[] patterns)
+        => new(RequestType.PSubscribe, patterns);
+
+    /// <summary>
+    /// Subscribes to the specified sharded channels.
+    /// </summary>
+    /// <param name="channels">The sharded channels to subscribe to.</param>
+    /// <returns>Command for subscribing to sharded channels.</returns>
+    public static Cmd SSubscribe(GlideString[] channels)
+        => new(RequestType.SSubscribe, channels);
+
+    #endregion
+    #region UnsubscribeCommands
+
+    /// <summary>
+    /// Unsubscribes from the specified channels.
+    /// If no channels are specified, unsubscribes from all channels.
+    /// </summary>
+    /// <param name="channels">The channels to unsubscribe from.</param>
+    /// <returns>Command for unsubscribing from channels.</returns>
+    public static Cmd Unsubscribe(GlideString[] channels)
+        => new(RequestType.Unsubscribe, channels);
+
+    /// <summary>
+    /// Unsubscribes from the specified patterns.
+    /// If no patterns are specified, unsubscribes from all patterns.
+    /// </summary>
+    /// <param name="patterns">The patterns to unsubscribe from.</param>
+    /// <returns>Command for unsubscribing from patterns.</returns>
+    public static Cmd PUnsubscribe(GlideString[] patterns)
+        => new(RequestType.PUnsubscribe, patterns);
+
+    /// <summary>
+    /// Unsubscribes from the specified sharded channels.
+    /// If no sharded channels are specified, unsubscribes from all sharded channels.
+    /// </summary>
+    /// <param name="channels">The sharded channels to unsubscribe from.</param>
+    /// <returns>Command for unsubscribing from sharded channels.</returns>
+    public static Cmd SUnsubscribe(GlideString[] channels)
+        => new(RequestType.SUnsubscribe, channels);
+
+    #endregion
+    #region PubSubInfoCommands
 
     /// <summary>
     /// Lists all active channels.
@@ -100,4 +162,6 @@ internal partial class Request
             return result;
         });
     }
+
+    #endregion
 }
