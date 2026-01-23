@@ -29,15 +29,37 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #193: Implement SubscribeAsync
+        await SubscribeAsync([channel], flags);
+    }
+
+    // TODO #193: Implement SubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
         GuardClauses.ThrowIfCommandFlags(flags);
         throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
-    public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
+    public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
-        // TODO #193: Implement SubscribeAsync
+        await UnsubscribeAsync([], flags);
+    }
+
+    /// <inheritdoc/>
+    public async Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
+    {
+        await UnsubscribeAsync([channel], flags);
+    }
+
+    // TODO #193: Implement UnsubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
         GuardClauses.ThrowIfCommandFlags(flags);
         throw new NotImplementedException();
     }

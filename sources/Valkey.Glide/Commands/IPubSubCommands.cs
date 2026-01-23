@@ -38,7 +38,7 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to subscribe to.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the subscription is processed.</returns>
+    /// <returns>A task that completes when the client has been subscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -55,7 +55,7 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channels">An array of channels to subscribe to.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the subscriptions are processed.</returns>
+    /// <returns>A task that completes when the client has been subscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -65,6 +65,56 @@ public interface IPubSubCommands
     /// </example>
     /// </remarks>
     Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Unsubscribes the client from all channels.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.UnsubscribeAsync();
+    /// Console.WriteLine("Unsubscribed from all channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified channel.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
+    /// <param name="channel">The channel to unsubscribe from.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.UnsubscribeAsync("news");
+    /// Console.WriteLine("Unsubscribed from news channel");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified channels.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
+    /// <param name="channels">An array of channels to unsubscribe from.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.UnsubscribeAsync(new[] { "news", "updates" });
+    /// Console.WriteLine("Unsubscribed from news and updates channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region PubSubInfoCommands
