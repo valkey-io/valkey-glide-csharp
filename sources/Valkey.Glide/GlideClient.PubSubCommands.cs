@@ -57,6 +57,22 @@ public partial class GlideClient : IPubSubStandaloneCommands
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
+    public async Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
+    {
+        await PSubscribeAsync([pattern], flags);
+    }
+
+    // TODO #193: Implement PSubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
     #endregion
     #region PubSubInfoCommands
 

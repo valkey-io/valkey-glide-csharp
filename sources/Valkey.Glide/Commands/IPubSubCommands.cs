@@ -116,6 +116,40 @@ public interface IPubSubCommands
     /// </remarks>
     Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
+    /// <summary>
+    /// Subscribes the client to the specified pattern.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
+    /// <param name="pattern">The pattern to subscribe to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been subscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PSubscribeAsync("news.*");
+    /// Console.WriteLine("Subscribed to news.* pattern");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Subscribes the client to the specified patterns.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
+    /// <param name="patterns">An array of patterns to subscribe to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been subscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PSubscribeAsync(new[] { "news.*", "updates.*" });
+    /// Console.WriteLine("Subscribed to news.* and updates.* patterns");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
+
     #endregion
     #region PubSubInfoCommands
 
