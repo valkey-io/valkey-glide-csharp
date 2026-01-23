@@ -7,12 +7,36 @@ namespace Valkey.Glide;
 
 public partial class GlideClient : IPubSubStandaloneCommands
 {
+    #region PublishCommands
+
     /// <inheritdoc/>
     public async Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Publish(channel, message));
     }
+
+    #endregion
+    #region SubscribeCommands
+
+    /// <inheritdoc/>
+    public async Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
+    {
+        // TODO #193: Implement SubscribeAsync
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
+    {
+        // TODO #193: Implement SubscribeAsync
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    #endregion
+    #region PubSubInfoCommands
 
     /// <inheritdoc/>
     public async Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None)
@@ -42,4 +66,6 @@ public partial class GlideClient : IPubSubStandaloneCommands
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.PubSubNumPat());
     }
+
+    #endregion
 }

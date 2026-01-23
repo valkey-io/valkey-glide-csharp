@@ -9,6 +9,8 @@ namespace Valkey.Glide.Commands;
 /// </summary>
 public interface IPubSubCommands
 {
+    #region PublishCommands
+
     /// <summary>
     /// Publishes a message to the specified channel.
     /// </summary>
@@ -26,6 +28,46 @@ public interface IPubSubCommands
     /// </example>
     /// </remarks>
     Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
+
+    #endregion
+    #region SubscribeCommands
+
+    /// <summary>
+    /// Subscribes the client to the specified channel.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
+    /// <param name="channel">The channel to subscribe to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the subscription is processed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SubscribeAsync("news");
+    /// Console.WriteLine("Subscribed to news channel");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Subscribes the client to the specified channels.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
+    /// <param name="channels">An array of channels to subscribe to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the subscriptions are processed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SubscribeAsync(new[] { "news", "updates" });
+    /// Console.WriteLine("Subscribed to news and updates channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+
+    #endregion
+    #region PubSubInfoCommands
 
     /// <summary>
     /// Lists the currently active channels.
@@ -95,4 +137,6 @@ public interface IPubSubCommands
     /// </example>
     /// </remarks>
     Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None);
+
+    #endregion
 }

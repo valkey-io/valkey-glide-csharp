@@ -7,6 +7,8 @@ namespace Valkey.Glide;
 
 public partial class GlideClusterClient : IPubSubClusterCommands
 {
+    #region PublishCommands
+
     /// <inheritdoc/>
     public async Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
     {
@@ -20,6 +22,28 @@ public partial class GlideClusterClient : IPubSubClusterCommands
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SPublish(channel, message), Route.Random);
     }
+
+    #endregion
+    #region SubscribeCommands
+
+    /// <inheritdoc/>
+    public async Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
+    {
+        // TODO #193: Implement SubscribeAsync
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
+    {
+        // TODO #193: Implement SubscribeAsync
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    #endregion
+    #region PubSubInfoCommands
 
     /// <inheritdoc/>
     public async Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None)
@@ -78,4 +102,6 @@ public partial class GlideClusterClient : IPubSubClusterCommands
         // In cluster mode, route to all primaries to aggregate shard subscriber counts
         return await Command(Request.PubSubShardNumSub(channelArgs), Route.AllPrimaries);
     }
+
+    #endregion
 }

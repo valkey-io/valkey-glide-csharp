@@ -9,6 +9,8 @@ namespace Valkey.Glide.Commands;
 /// </summary>
 public interface IPubSubClusterCommands : IPubSubCommands
 {
+    #region PublishCommands
+
     /// <summary>
     /// Publishes a message to the specified shard channel.
     /// </summary>
@@ -27,6 +29,9 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </example>
     /// </remarks>
     Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
+
+    #endregion
+    #region PubSubInfoCommands
 
     /// <summary>
     /// Lists the currently active sharded channels.
@@ -80,4 +85,6 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </example>
     /// </remarks>
     Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+
+    #endregion
 }
