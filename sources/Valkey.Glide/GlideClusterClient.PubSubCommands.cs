@@ -42,10 +42,14 @@ public partial class GlideClusterClient : IPubSubClusterCommands
         throw new NotImplementedException();
     }
 
+    // TODO #193: Implement UnsubscribeAsync
     /// <inheritdoc/>
+#pragma warning disable CS1998
     public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
     {
-        await UnsubscribeAsync([], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
@@ -74,6 +78,74 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
 #pragma warning disable CS1998
     public async Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    // TODO #193: Implement PUnsubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
+    {
+        await PUnsubscribeAsync([pattern], flags);
+    }
+
+    // TODO #193: Implement PUnsubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
+    {
+        await SSubscribeAsync([channel], flags);
+    }
+
+    // TODO #193: Implement SSubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    // TODO #193: Implement SUnsubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
+#pragma warning restore CS1998
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
+    {
+        await SUnsubscribeAsync([channel], flags);
+    }
+
+    // TODO #193: Implement SUnsubscribeAsync
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
 #pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);

@@ -150,6 +150,56 @@ public interface IPubSubCommands
     /// </remarks>
     Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
 
+    /// <summary>
+    /// Unsubscribes the client from all patterns.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PUnsubscribeAsync();
+    /// Console.WriteLine("Unsubscribed from all patterns");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified pattern.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
+    /// <param name="pattern">The pattern to unsubscribe from.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PUnsubscribeAsync("news.*");
+    /// Console.WriteLine("Unsubscribed from news.* pattern");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified patterns.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
+    /// <param name="patterns">An array of patterns to unsubscribe from.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PUnsubscribeAsync(new[] { "news.*", "updates.*" });
+    /// Console.WriteLine("Unsubscribed from news.* and updates.* patterns");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
+
     #endregion
     #region PubSubInfoCommands
 
