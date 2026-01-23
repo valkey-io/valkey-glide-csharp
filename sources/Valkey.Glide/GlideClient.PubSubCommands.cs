@@ -35,14 +35,29 @@ public partial class GlideClient : IPubSubStandaloneCommands
         throw new NotImplementedException();
     }
 
-    // TODO #193: Implement UnsubscribeAsync
+    /// <inheritdoc/>
+    public async Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
+    {
+        await PSubscribeAsync([pattern], flags);
+    }
+
+    // TODO #193: Implement PSubscribeAsync
     /// <inheritdoc/>
 #pragma warning disable CS1998
-    public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
+    public async Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
 #pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         throw new NotImplementedException();
+    }
+
+    #endregion
+    #region UnsubscribeCommands
+
+    /// <inheritdoc/>
+    public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
+    {
+        await UnsubscribeAsync([], flags);
     }
 
     /// <inheritdoc/>
@@ -62,29 +77,9 @@ public partial class GlideClient : IPubSubStandaloneCommands
     }
 
     /// <inheritdoc/>
-    public async Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
-    {
-        await PSubscribeAsync([pattern], flags);
-    }
-
-    // TODO #193: Implement PSubscribeAsync
-    /// <inheritdoc/>
-#pragma warning disable CS1998
-    public async Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
-    }
-
-    // TODO #193: Implement PUnsubscribeAsync
-    /// <inheritdoc/>
-#pragma warning disable CS1998
     public async Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        await PUnsubscribeAsync([], flags);
     }
 
     /// <inheritdoc/>
