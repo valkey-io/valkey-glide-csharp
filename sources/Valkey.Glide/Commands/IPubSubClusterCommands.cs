@@ -60,7 +60,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await clusterClient.SSubscribeAsync(new[] { "shard-news", "shard-updates" });
+    /// await clusterClient.SSubscribeAsync(["shard-news", "shard-updates"]);
     /// Console.WriteLine("Subscribed to shard-news and shard-updates channels");
     /// </code>
     /// </example>
@@ -114,8 +114,14 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await clusterClient.SUnsubscribeAsync(new[] { "shard-news", "shard-updates" });
+    /// await clusterClient.SUnsubscribeAsync(["shard-news", "shard-updates"]);
     /// Console.WriteLine("Unsubscribed from shard-news and shard-updates channels");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SUnsubscribeAsync([]);
+    /// Console.WriteLine("Unsubscribed from all shard channels");
     /// </code>
     /// </example>
     /// </remarks>

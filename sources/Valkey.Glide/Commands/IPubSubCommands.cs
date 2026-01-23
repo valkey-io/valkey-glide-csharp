@@ -59,7 +59,7 @@ public interface IPubSubCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.SubscribeAsync(new[] { "news", "updates" });
+    /// await client.SubscribeAsync(["news", "updates"]);
     /// Console.WriteLine("Subscribed to news and updates channels");
     /// </code>
     /// </example>
@@ -93,7 +93,7 @@ public interface IPubSubCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.PSubscribeAsync(new[] { "news.*", "updates.*" });
+    /// await client.PSubscribeAsync(["news.*", "updates.*"]);
     /// Console.WriteLine("Subscribed to news.* and updates.* patterns");
     /// </code>
     /// </example>
@@ -147,8 +147,14 @@ public interface IPubSubCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.UnsubscribeAsync(new[] { "news", "updates" });
+    /// await client.UnsubscribeAsync(["news", "updates"]);
     /// Console.WriteLine("Unsubscribed from news and updates channels");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// await client.UnsubscribeAsync([]);
+    /// Console.WriteLine("Unsubscribed from all channels");
     /// </code>
     /// </example>
     /// </remarks>
@@ -198,8 +204,14 @@ public interface IPubSubCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.PUnsubscribeAsync(new[] { "news.*", "updates.*" });
+    /// await client.PUnsubscribeAsync(["news.*", "updates.*"]);
     /// Console.WriteLine("Unsubscribed from news.* and updates.* patterns");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// await client.PUnsubscribeAsync([]);
+    /// Console.WriteLine("Unsubscribed from all patterns");
     /// </code>
     /// </example>
     /// </remarks>
