@@ -29,49 +29,43 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
-        await SubscribeAsync([channel], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.Subscribe([channel]));
     }
 
-    // TODO #193: Implement SubscribeAsync
     /// <inheritdoc/>
-#pragma warning disable CS1998
     public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        await Command(Request.Subscribe(ToGlideStrings(channels)));
     }
 
     /// <inheritdoc/>
     public async Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
-        await PSubscribeAsync([pattern], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.PSubscribe([pattern]));
     }
 
-    // TODO #193: Implement PSubscribeAsync
     /// <inheritdoc/>
-#pragma warning disable CS1998
     public async Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        await Command(Request.PSubscribe(ToGlideStrings(patterns)));
     }
 
     /// <inheritdoc/>
     public async Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
-        await SSubscribeAsync([channel], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.SSubscribe([channel]), Route.Random);
     }
 
-    // TODO #193: Implement SSubscribeAsync
     /// <inheritdoc/>
-#pragma warning disable CS1998
     public async Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        await Command(Request.SSubscribe(ToGlideStrings(channels)), Route.Random);
     }
 
     #endregion
@@ -80,67 +74,64 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     /// <inheritdoc/>
     public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
-        await UnsubscribeAsync([], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.Unsubscribe());
     }
 
     /// <inheritdoc/>
     public async Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
-        await UnsubscribeAsync([channel], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.Unsubscribe([channel]));
     }
 
-    // TODO #193: Implement UnsubscribeAsync
     /// <inheritdoc/>
-#pragma warning disable CS1998
     public async Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        await Command(Request.Unsubscribe(ToGlideStrings(channels)));
     }
 
     /// <inheritdoc/>
     public async Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
-        await PUnsubscribeAsync([], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.PUnsubscribe());
     }
 
     /// <inheritdoc/>
     public async Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
-        await PUnsubscribeAsync([pattern], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.PUnsubscribe([(GlideString)pattern]));
     }
 
-    // TODO #193: Implement PUnsubscribeAsync
     /// <inheritdoc/>
-#pragma warning disable CS1998
     public async Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        await Command(Request.PUnsubscribe(ToGlideStrings(patterns)));
     }
 
     /// <inheritdoc/>
     public async Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
-        await SUnsubscribeAsync([], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.SUnsubscribe(), Route.Random);
     }
 
     /// <inheritdoc/>
     public async Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
-        await SUnsubscribeAsync([channel], flags);
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await Command(Request.SUnsubscribe([(GlideString)channel]), Route.Random);
     }
 
-    // TODO #193: Implement SUnsubscribeAsync
     /// <inheritdoc/>
-#pragma warning disable CS1998
     public async Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-#pragma warning restore CS1998
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        await Command(Request.SUnsubscribe(ToGlideStrings(channels)), Route.Random);
     }
 
     #endregion
@@ -166,9 +157,8 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         // In cluster mode, route to all primaries to aggregate subscriber counts
-        return await Command(Request.PubSubNumSub(channelArgs), Route.AllPrimaries);
+        return await Command(Request.PubSubNumSub(ToGlideStrings(channels)), Route.AllPrimaries);
     }
 
     /// <inheritdoc/>
@@ -199,10 +189,19 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
         // In cluster mode, route to all primaries to aggregate shard subscriber counts
-        return await Command(Request.PubSubShardNumSub(channelArgs), Route.AllPrimaries);
+        return await Command(Request.PubSubShardNumSub(ToGlideStrings(channels)), Route.AllPrimaries);
     }
 
     #endregion
+
+    /// <summary>
+    /// Converts the given <c>string[]</c> to a <c>GlideString[]</c>.
+    /// </summary>
+    /// <param name="values">The <c>string[]</c> to convert.</param>
+    /// <returns>A <c>GlideString[]</c> containing the converted values.</returns>
+    private static GlideString[] ToGlideStrings(string[] values)
+    {
+        return [.. values.Select(v => (GlideString)v)];
+    }
 }

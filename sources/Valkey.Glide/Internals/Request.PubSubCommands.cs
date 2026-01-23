@@ -34,24 +34,24 @@ internal partial class Request
     /// </summary>
     /// <param name="channels">The channels to subscribe to.</param>
     /// <returns>Command for subscribing to channels.</returns>
-    public static Cmd Subscribe(GlideString[] channels)
-        => new(RequestType.Subscribe, channels);
+    public static Cmd<object, object> Subscribe(GlideString[] channels)
+        => Simple<object>(RequestType.Subscribe, channels);
 
     /// <summary>
     /// Subscribes to the specified patterns.
     /// </summary>
     /// <param name="patterns">The patterns to subscribe to.</param>
     /// <returns>Command for subscribing to patterns.</returns>
-    public static Cmd PSubscribe(GlideString[] patterns)
-        => new(RequestType.PSubscribe, patterns);
+    public static Cmd<object, object> PSubscribe(GlideString[] patterns)
+        => Simple<object>(RequestType.PSubscribe, patterns);
 
     /// <summary>
     /// Subscribes to the specified sharded channels.
     /// </summary>
     /// <param name="channels">The sharded channels to subscribe to.</param>
     /// <returns>Command for subscribing to sharded channels.</returns>
-    public static Cmd SSubscribe(GlideString[] channels)
-        => new(RequestType.SSubscribe, channels);
+    public static Cmd<object, object> SSubscribe(GlideString[] channels)
+        => Simple<object>(RequestType.SSubscribe, channels);
 
     #endregion
     #region UnsubscribeCommands
@@ -62,8 +62,8 @@ internal partial class Request
     /// </summary>
     /// <param name="channels">The channels to unsubscribe from.</param>
     /// <returns>Command for unsubscribing from channels.</returns>
-    public static Cmd Unsubscribe(GlideString[] channels)
-        => new(RequestType.Unsubscribe, channels);
+    public static Cmd<object, object> Unsubscribe(GlideString[] channels = null)
+        => Simple<object>(RequestType.Unsubscribe, channels ?? []);
 
     /// <summary>
     /// Unsubscribes from the specified patterns.
@@ -71,8 +71,8 @@ internal partial class Request
     /// </summary>
     /// <param name="patterns">The patterns to unsubscribe from.</param>
     /// <returns>Command for unsubscribing from patterns.</returns>
-    public static Cmd PUnsubscribe(GlideString[] patterns)
-        => new(RequestType.PUnsubscribe, patterns);
+    public static Cmd<object, object> PUnsubscribe(GlideString[] patterns = null)
+        => Simple<object>(RequestType.PUnsubscribe, patterns ?? []);
 
     /// <summary>
     /// Unsubscribes from the specified sharded channels.
@@ -80,9 +80,8 @@ internal partial class Request
     /// </summary>
     /// <param name="channels">The sharded channels to unsubscribe from.</param>
     /// <returns>Command for unsubscribing from sharded channels.</returns>
-    public static Cmd SUnsubscribe(GlideString[] channels)
-        => new(RequestType.SUnsubscribe, channels);
-
+    public static Cmd<object, object> SUnsubscribe(GlideString[] channels = null)
+        => Simple<object>(RequestType.SUnsubscribe, channels ?? []);
     #endregion
     #region PubSubInfoCommands
 
