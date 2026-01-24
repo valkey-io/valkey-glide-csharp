@@ -36,12 +36,53 @@ public class PubSubCommandTests
     #endregion
     #region SubscribeCommands
 
-    // TODO #193: Add Subscribe, PSubscribe, SSubscribe tests
+    [Fact]
+    public void Subscribe_BuildsCorrectCommand()
+    {
+        Assert.Equal(["SUBSCRIBE", ChannelNews], Request.Subscribe([ChannelNews]).GetArgs());
+        Assert.Equal(["SUBSCRIBE", ChannelNews, ChannelWeather], Request.Subscribe([ChannelNews, ChannelWeather]).GetArgs());
+    }
+
+    [Fact]
+    public void PSubscribe_BuildsCorrectCommand()
+    {
+        Assert.Equal(["PSUBSCRIBE", PatternNews], Request.PSubscribe([PatternNews]).GetArgs());
+        Assert.Equal(["PSUBSCRIBE", PatternNews, PatternWeather], Request.PSubscribe([PatternNews, PatternWeather]).GetArgs());
+    }
+
+    [Fact]
+    public void SSubscribe_BuildsCorrectCommand()
+    {
+        Assert.Equal(["SSUBSCRIBE", ChannelNews], Request.SSubscribe([ChannelNews]).GetArgs());
+        Assert.Equal(["SSUBSCRIBE", ChannelNews, ChannelWeather], Request.SSubscribe([ChannelNews, ChannelWeather]).GetArgs());
+    }
 
     #endregion
     #region UnsubscribeCommands
 
-    // TODO #193: Add Unsubscribe, PUnsubscribe, SUnsubscribe tests
+    [Fact]
+    public void Unsubscribe_BuildsCorrectCommand()
+    {
+        Assert.Equal(["UNSUBSCRIBE"], Request.Unsubscribe([]).GetArgs());
+        Assert.Equal(["UNSUBSCRIBE", ChannelNews], Request.Unsubscribe([ChannelNews]).GetArgs());
+        Assert.Equal(["UNSUBSCRIBE", ChannelNews, ChannelWeather], Request.Unsubscribe([ChannelNews, ChannelWeather]).GetArgs());
+    }
+
+    [Fact]
+    public void PUnsubscribe_BuildsCorrectCommand()
+    {
+        Assert.Equal(["PUNSUBSCRIBE"], Request.PUnsubscribe([]).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBE", PatternNews], Request.PUnsubscribe([PatternNews]).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBE", PatternNews, PatternWeather], Request.PUnsubscribe([PatternNews, PatternWeather]).GetArgs());
+    }
+
+    [Fact]
+    public void SUnsubscribe_BuildsCorrectCommand()
+    {
+        Assert.Equal(["SUNSUBSCRIBE"], Request.SUnsubscribe([]).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBE", ChannelNews], Request.SUnsubscribe([ChannelNews]).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBE", ChannelNews, ChannelWeather], Request.SUnsubscribe([ChannelNews, ChannelWeather]).GetArgs());
+    }
 
     #endregion
     #region PubSubInfoCommands
@@ -80,9 +121,11 @@ public class PubSubCommandTests
         var cmd = Request.PubSubNumSub([ChannelNews, ChannelWeather]);
 
         // Simulated response from server
-        Dictionary<GlideString, object> response = new() {
-             { (GlideString)ChannelNews, 5L },
-              { (GlideString)ChannelWeather, 10L } };
+        Dictionary<GlideString, object> response = new()
+        {
+            { (GlideString)ChannelNews, 5L },
+            { (GlideString)ChannelWeather, 10L }
+        };
 
         var expected = new Dictionary<string, long>
         {
