@@ -75,7 +75,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unsubscribe());
+        await Command(Request.Unsubscribe([]));
     }
 
     /// <inheritdoc/>
@@ -96,7 +96,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PUnsubscribe());
+        await Command(Request.PUnsubscribe([]));
     }
 
     /// <inheritdoc/>
@@ -117,7 +117,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe(), Route.Random);
+        await Command(Request.SUnsubscribe([]), Route.Random);
     }
 
     /// <inheritdoc/>
