@@ -9,6 +9,8 @@ namespace Valkey.Glide.Commands;
 /// </summary>
 public interface IPubSubClusterCommands : IPubSubCommands
 {
+    #region PublishCommands
+
     /// <summary>
     /// Publishes a message to the specified shard channel.
     /// </summary>
@@ -27,6 +29,106 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </example>
     /// </remarks>
     Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
+
+    #endregion
+    #region SubscribeCommands
+
+    /// <summary>
+    /// Subscribes the client to the specified shard channel.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <param name="channel">The shard channel to subscribe to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been subscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SSubscribeAsync("shard-news");
+    /// Console.WriteLine("Subscribed to shard-news channel");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Subscribes the client to the specified shard channels.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <param name="channels">An array of shard channels to subscribe to.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been subscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SSubscribeAsync(["shard-news", "shard-updates"]);
+    /// Console.WriteLine("Subscribed to shard-news and shard-updates channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+
+    #endregion
+    #region UnsubscribeCommands
+
+    /// <summary>
+    /// Unsubscribes the client from all shard channels.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SUnsubscribeAsync();
+    /// Console.WriteLine("Unsubscribed from all shard channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified shard channel.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <param name="channel">The shard channel to unsubscribe from.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SUnsubscribeAsync("shard-news");
+    /// Console.WriteLine("Unsubscribed from shard-news channel");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified shard channels.
+    /// If no channels are specified, unsubscribes the client from all channels.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <param name="channels">An array of shard channels to unsubscribe from.</param>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the client has been unsubscribed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SUnsubscribeAsync(["shard-news", "shard-updates"]);
+    /// Console.WriteLine("Unsubscribed from shard-news and shard-updates channels");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SUnsubscribeAsync([]);
+    /// Console.WriteLine("Unsubscribed from all shard channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+
+    #endregion
+    #region PubSubInfoCommands
 
     /// <summary>
     /// Lists the currently active sharded channels.
@@ -80,4 +182,6 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </example>
     /// </remarks>
     Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+
+    #endregion
 }
