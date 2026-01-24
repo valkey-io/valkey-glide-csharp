@@ -23,14 +23,14 @@ public partial class GlideClient : IPubSubStandaloneCommands
     public async Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command<object, object>(Request.Subscribe([(GlideString)channel]));
+        await Command(Request.Subscribe([(GlideString)channel]));
     }
 
     /// <inheritdoc/>
     public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command<object, object>(Request.Subscribe([.. channels.Select(c => (GlideString)c)]));
+        await Command(Request.Subscribe([.. channels.Select(c => (GlideString)c)]));
     }
 
     /// <inheritdoc/>
