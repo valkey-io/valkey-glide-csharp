@@ -56,11 +56,6 @@ public abstract class BasePubSubSubscriptionConfig
     /// <exception cref="ArgumentException">Thrown when configuration is invalid.</exception>
     internal virtual void Validate()
     {
-        if (Subscriptions.Count == 0)
-        {
-            throw new ArgumentException("At least one subscription must be configured");
-        }
-
         foreach (KeyValuePair<uint, ISet<string>> kvp in Subscriptions)
         {
             if (kvp.Value == null || kvp.Value.Count == 0)

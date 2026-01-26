@@ -240,7 +240,6 @@ internal partial class FFI
                 ClientName = clientName,
                 LazyConnect = lazyConnect,
                 RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
-                HasPubSubConfig = pubSubSubscriptions is not null,
                 PubSubConfig = MarshalPubSubConfig(pubSubSubscriptions),
                 RootCertsCount = (nuint)rootCertificates.Count,
                 RootCertsPtr = MarshallRootCertificates(rootCertificates),
@@ -256,6 +255,12 @@ internal partial class FFI
                 Marshal.FreeHGlobal(_request.Addresses);
             }
 
+            // Free PubSub configuration
+            var pubSubConfig = _request.PubSubConfig;
+            FreeStringArray(pubSubConfig.ChannelsPtr, pubSubConfig.ChannelCount);
+            FreeStringArray(pubSubConfig.PatternsPtr, pubSubConfig.PatternCount);
+            FreeStringArray(pubSubConfig.ShardedChannelsPtr, pubSubConfig.ShardedChannelCount);
+
             // Free root certificates
             if (_request.RootCertsCount > 0)
             {
@@ -267,15 +272,6 @@ internal partial class FFI
 
                 Marshal.FreeHGlobal(_request.RootCertsPtr);
                 Marshal.FreeHGlobal(_request.RootCertsLensPtr);
-            }
-
-            // Free PubSub configuration
-            if (_request.HasPubSubConfig)
-            {
-                var pubSubConfig = _request.PubSubConfig;
-                FreeStringArray(pubSubConfig.ChannelsPtr, pubSubConfig.ChannelCount);
-                FreeStringArray(pubSubConfig.PatternsPtr, pubSubConfig.PatternCount);
-                FreeStringArray(pubSubConfig.ShardedChannelsPtr, pubSubConfig.ShardedChannelCount);
             }
         }
 
@@ -1085,8 +1081,6 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool RefreshTopologyFromInitialNodes;
 
-        [MarshalAs(UnmanagedType.U1)]
-        public bool HasPubSubConfig;
         public PubSubConfigInfo PubSubConfig;
 
         // Root certificates for TLS connections

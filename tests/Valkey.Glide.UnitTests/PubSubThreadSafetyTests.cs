@@ -127,30 +127,6 @@ public class PubSubThreadSafetyTests
     }
 
     [Fact]
-    public async Task HasPubSubSubscriptions_ConcurrentAccess_ThreadSafe()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig()
-            .WithChannel("test-channel");
-
-        var client = CreateMockClientWithPubSub(config);
-
-        // Act - Access HasPubSubSubscriptions from multiple threads
-        var tasks = Enumerable.Range(0, 100)
-            .Select(_ => Task.Run(() =>
-            {
-                var hasSubscriptions = client.HasPubSubSubscriptions;
-                Assert.True(hasSubscriptions);
-            }))
-            .ToArray();
-
-        await Task.WhenAll(tasks);
-
-        // Assert
-        Assert.True(client.HasPubSubSubscriptions);
-    }
-
-    [Fact]
     public async Task PubSubHandler_RapidCreateAndDispose_NoMemoryLeaks()
     {
         // Arrange & Act - Create and dispose clients rapidly

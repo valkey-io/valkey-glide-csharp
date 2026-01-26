@@ -73,7 +73,6 @@ pub struct ConnectionConfig {
     pub client_name: *const c_char,
     pub lazy_connect: bool,
     pub refresh_topology_from_initial_nodes: bool,
-    pub has_pubsub_config: bool,
     pub pubsub_config: PubSubConfigInfo,
 
     // Root certificates for TLS connections
@@ -257,16 +256,7 @@ pub(crate) unsafe fn create_connection_request(
         },
         lazy_connect: config.lazy_connect,
         refresh_topology_from_initial_nodes: config.refresh_topology_from_initial_nodes,
-        pubsub_subscriptions: if config.has_pubsub_config {
-            let subscriptions = unsafe { convert_pubsub_config(&config.pubsub_config) };
-            if subscriptions.is_empty() {
-                None
-            } else {
-                Some(subscriptions)
-            }
-        } else {
-            None
-        },
+        pubsub_subscriptions: Some(unsafe {convert_pubsub_config(&config.pubsub_config)}),
         root_certs: unsafe {
             convert_byte_array_to_owned(
                 config.root_certs,
