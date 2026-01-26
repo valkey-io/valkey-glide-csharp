@@ -5,7 +5,7 @@ using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public partial class GlideClient : IPubSubStandaloneCommands
+public partial class GlideClient
 {
     #region PublishCommands
 
