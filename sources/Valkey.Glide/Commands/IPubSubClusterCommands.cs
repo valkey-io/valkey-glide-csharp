@@ -28,7 +28,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
+    abstract Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region SubscribeCommands
@@ -48,7 +48,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Subscribes the client to the specified shard channels.
@@ -65,7 +65,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region UnsubscribeCommands
@@ -84,7 +84,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified shard channel.
@@ -101,7 +101,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified shard channels.
@@ -125,7 +125,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region PubSubInfoCommands
@@ -144,7 +144,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Lists the currently active sharded channels matching the specified pattern.
@@ -161,7 +161,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the number of subscribers for the specified sharded channels.
@@ -181,7 +181,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     #endregion
 }
