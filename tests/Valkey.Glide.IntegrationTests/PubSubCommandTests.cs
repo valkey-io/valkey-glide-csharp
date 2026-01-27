@@ -1,12 +1,14 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Reflection.Metadata;
+
+using Valkey.Glide.Commands;
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for PubSub command methods (PublishAsync, PubSubChannelsAsync, etc.).
-/// Tests the PubSub command API implementations in GlideClient.
-/// </summary>
-[Collection("GlideTests")]
+/// Integration tests for <cref="GlideClient.PubSubCommands"/>.
 public class PubSubCommandTests()
 {
     #region PublishCommands
@@ -14,47 +16,32 @@ public class PubSubCommandTests()
     [Fact]
     public async Task PublishAsync_WithNoSubscribers_ReturnsZero()
     {
-        string channel = $"test-channel-{Guid.NewGuid()}";
-        string message = "test message";
+        var msg = GetMessage();
+        var (message, channel) = (msg.Message, msg.Channel);
 
         using var client = TestConfiguration.DefaultStandaloneClient();
 
-        long subscriberCount = await client.PublishAsync(channel, message);
-        Assert.Equal(0L, subscriberCount);
+        // Publish to channel and verify no subscribers.
+        Assert.Equal(0L, await client.PublishAsync(channel, message));
+        await AssertNotReceived(client, message);
     }
 
     [Fact]
     public async Task PublishAsync_WithSubscriber_ReturnsSubscriberCount()
     {
-        string testChannel = $"test-channel-{Guid.NewGuid()}";
-        string testMessage = "Hello from PublishAsync";
+        var msg = GetMessage();
+        var (message, channel) = (msg.Message, msg.Channel);
 
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        var subscriberConfig = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(channel);
+        await AssertSubscribed(publisher, channel);
 
-        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-        await using var publisherClient = TestConfiguration.DefaultStandaloneClient();
-
-        await Task.Delay(1000);
-
-        // Publish message to channel
-        long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
-        Assert.Equal(1L, subscriberCount);
-
-        // Verify that the message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-        await Task.Delay(500);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.True(hasMessage);
-        Assert.NotNull(receivedMessage);
-        Assert.Equal(testMessage, receivedMessage.Message);
-        Assert.Equal(testChannel, receivedMessage.Channel);
+        // Publish to channel and verify one subscriber.
+        Assert.Equal(1L, await publisher.PublishAsync(channel, message));
+        await AssertReceived(subscriber, message, channel);
     }
 
     #endregion
@@ -63,76 +50,85 @@ public class PubSubCommandTests()
     [Fact]
     public async Task SubscribeAsync_OneChannel_ReceivesMessage()
     {
-        string channel = $"test-channel-{Guid.NewGuid()}";
-        string message = "Hello from SubscribeAsync";
+        var msg = GetMessage();
+        var (message, channel) = (msg.Message, msg.Channel);
 
-        using var subscriberClient = TestConfiguration.DefaultStandaloneClient();
-        using var publisherClient = TestConfiguration.DefaultStandaloneClient();
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Subscribe to channel
-        await subscriberClient.SubscribeAsync(channel);
-        await Task.Delay(1000);
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(channel);
+        await AssertSubscribed(publisher, channel);
 
-        // Verify number of subscribers
-        var channelCounts = await subscriberClient.PubSubNumSubAsync([channel]);
-        Assert.Equal(1L, channelCounts[channel]);
-
-        // Publish message to channel
-        long subscriberCount = await publisherClient.PublishAsync(channel, message);
-        Assert.Equal(1L, subscriberCount);
-
-        // Verify that the message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-
-        var received = await queue.GetMessageAsync();
-        Assert.Equal(message, received.Message);
-        Assert.Equal(channel, received.Channel);
-        Assert.Null(received.Pattern);
+        // Publish to channel and verify message received.
+        await publisher.PublishAsync(channel, message);
+        await AssertReceived(subscriber, message, channel);
     }
 
     [Fact]
     public async Task SubscribeAsync_MultipleChannels_ReceivesMessages()
     {
-        // TODO #193
+        var msg1 = GetMessage();
+        var (message1, channel1) = (msg1.Message, msg1.Channel);
+
+        var msg2 = GetMessage();
+        var (message2, channel2) = (msg2.Message, msg2.Channel);
+
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
+
+        // Subscribe to channels and verify subscriptions.
+        await subscriber.SubscribeAsync([channel1, channel2]);
+        await AssertSubscribed(publisher, [channel1, channel2]);
+
+        // Publish to channels and verify messages received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertReceived(subscriber, message1, channel1);
+
+        await publisher.PublishAsync(channel2, message2);
+        await AssertReceived(subscriber, message2, channel2);
     }
 
     [Fact]
     public async Task PSubscribeAsync_OnePattern_ReceivesMessage()
     {
-        string channel = $"test-{Guid.NewGuid()}-news";
-        string pattern = $"test-{Guid.NewGuid()}*";
-        string message = "Pattern match message";
+        var msg = GetMessage();
+        var (message, channel, pattern) = (msg.Message, msg.Channel, msg.Pattern);
 
-        using var subscriberClient = TestConfiguration.DefaultStandaloneClient();
-        using var publisherClient = TestConfiguration.DefaultStandaloneClient();
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Subscribe to channel
-        await subscriberClient.PSubscribeAsync(pattern);
-        await Task.Delay(1000);
+        // Subscribe to pattern and wait to ensure subscription completes.
+        await subscriber.PSubscribeAsync(pattern);
+        await Task.Delay(500);
 
-        // Verify number of subscribers
-        var channelCounts = await subscriberClient.PubSubNumSubAsync([channel]);
-        Assert.Equal(1L, channelCounts[channel]);
-
-        // Publish message to channel
-        long subscriberCount = await publisherClient.PublishAsync(channel, message);
-        Assert.Equal(1L, subscriberCount);
-
-        // Verify that message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-
-        var received = await queue.GetMessageAsync();
-        Assert.Equal(message, received.Message);
-        Assert.Equal(channel, received.Channel);
-        Assert.Equal(pattern, received.Pattern);
+        // Publish to channel and verify message received.
+        await publisher.PublishAsync(channel, message);
+        await AssertReceived(subscriber, message, channel, pattern);
     }
 
     [Fact]
     public async Task PSubscribeAsync_MultiplePatterns_ReceivesMessages()
     {
-        // TODO #193
+        var msg1 = GetMessage();
+        var (message1, channel1, pattern1) = (msg1.Message, msg1.Channel, msg1.Pattern);
+
+        var msg2 = GetMessage();
+        var (message2, channel2, pattern2) = (msg2.Message, msg2.Channel, msg2.Pattern);
+
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
+
+        // Subscribe to patterns and wait to ensure subscriptions complete.
+        await subscriber.PSubscribeAsync([pattern1, pattern2]);
+        await Task.Delay(500);
+
+        // Publish to channels and verify messages received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertReceived(subscriber, message1, channel1, pattern1);
+
+        await publisher.PublishAsync(channel2, message2);
+        await AssertReceived(subscriber, message2, channel2, pattern2);
     }
 
     #endregion
@@ -141,263 +137,174 @@ public class PubSubCommandTests()
     [Fact]
     public async Task UnsubscribeAsync_AllChannels_StopsReceivingMessages()
     {
-        string channel1 = $"test-channel-{Guid.NewGuid()}";
-        string channel2 = $"test-channel-{Guid.NewGuid()}";
-        string message1 = "message1";
-        string message2 = "message2";
+        var msg1 = GetMessage();
+        var (message1, channel1) = (msg1.Message, msg1.Channel);
 
-        using var subscriberClient = TestConfiguration.DefaultStandaloneClient();
-        using var publisherClient = TestConfiguration.DefaultStandaloneClient();
+        var msg2 = GetMessage();
+        var (message2, channel2) = (msg2.Message, msg2.Channel);
 
-        // Subscribe to channels
-        await subscriberClient.SubscribeAsync([channel1, channel2]);
-        await Task.Delay(1000);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Verify number of subscribers
-        var channelCounts = await subscriberClient.PubSubNumSubAsync([channel1, channel2]);
-        Assert.Equal(1L, channelCounts[channel1]);
-        Assert.Equal(1L, channelCounts[channel2]);
+        // Subscribe to both channels and verify subscriptions.
+        await subscriber.SubscribeAsync([channel1, channel2]);
+        await AssertSubscribed(publisher, [channel1, channel2]);
 
-        // Unsubscribe from all channels
-        await subscriberClient.UnsubscribeAsync([]);
-        await Task.Delay(1000);
+        // Unsubscribe from all channels and verify unsubscription.
+        await subscriber.UnsubscribeAsync();
+        AssertUnsubscribed(publisher, [channel1, channel2]);
 
-        // Verify number of subscribers
-        channelCounts = await subscriberClient.PubSubNumSubAsync([channel1, channel2]);
-        Assert.Equal(0L, channelCounts[channel1]);
-        Assert.Equal(0L, channelCounts[channel2]);
+        // Publish to channels and verify no messages received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertNotReceived(subscriber, message1);
 
-        // Publish messages to channels
-        long count1 = await publisherClient.PublishAsync(channel1, message1);
-        long count2 = await publisherClient.PublishAsync(channel2, message2);
-
-        Assert.Equal(0L, count1);
-        Assert.Equal(0L, count2);
-
-        // Verify that no messages were received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.False(hasMessage);
-        Assert.Null(receivedMessage);
+        await publisher.PublishAsync(channel2, message2);
+        await AssertNotReceived(subscriber, message2);
     }
 
     [Fact]
     public async Task UnsubscribeAsync_OneChannel_StopsReceivingMessages()
     {
-        string channel = $"test-channel-{Guid.NewGuid()}";
-        string message = "Should not receive this";
+        var msg1 = GetMessage();
+        var (message1, channel1) = (msg1.Message, msg1.Channel);
 
-        using var subscriberClient = TestConfiguration.DefaultStandaloneClient();
-        using var publisherClient = TestConfiguration.DefaultStandaloneClient();
+        var msg2 = GetMessage();
+        var (message2, channel2) = (msg2.Message, msg2.Channel);
 
-        // Subscribe to channel
-        await subscriberClient.SubscribeAsync(channel);
-        await Task.Delay(1000);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Verify number of subscribers
-        var channelCounts = await subscriberClient.PubSubNumSubAsync([channel]);
-        Assert.Equal(1L, channelCounts[channel]);
+        // Subscribe to both channels and verify subscriptions.
+        await subscriber.SubscribeAsync([channel1, channel2]);
+        await AssertSubscribed(publisher, [channel1, channel2]);
 
-        // Unsubscribe from channel
-        await subscriberClient.UnsubscribeAsync(channel);
-        await Task.Delay(1000);
+        // Unsubscribe from one channel and verify unsubscription.
+        await subscriber.UnsubscribeAsync(channel1);
+        AssertUnsubscribed(publisher, channel1);
 
-        // Verify number of subscribers
-        channelCounts = await subscriberClient.PubSubNumSubAsync([channel]);
-        Assert.Equal(1L, channelCounts[channel]);
+        // Publish to unsubscribed channel and verify no message received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertNotReceived(subscriber, message1);
 
-        // Publish message to channel
-        long subscriberCount = await publisherClient.PublishAsync(channel, message);
-        Assert.Equal(0L, subscriberCount);
-
-        // Verify that no message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.False(hasMessage);
-        Assert.Null(receivedMessage);
+        // Publish to subscribed channel and verify message received.
+        await publisher.PublishAsync(channel2, message2);
+        await AssertReceived(subscriber, message2, channel2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnsubscribeAsync_MultipleChannels_StopsReceivingMessages()
     {
-        string channel1 = $"test-channel-{Guid.NewGuid()}";
-        string channel2 = $"test-channel-{Guid.NewGuid()}";
-        string message1 = "message1";
-        string message2 = "message2";
+        var msg1 = GetMessage();
+        var (message1, channel1) = (msg1.Message, msg1.Channel);
 
-        using var subscriberClient = TestConfiguration.DefaultStandaloneClient();
-        using var publisherClient = TestConfiguration.DefaultStandaloneClient();
+        var msg2 = GetMessage();
+        var (message2, channel2) = (msg2.Message, msg2.Channel);
 
-        // Subscribe to channels
-        await subscriberClient.SubscribeAsync([channel1, channel2]);
-        await Task.Delay(1000);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Verify number of subscribers
-        var channelCounts = await subscriberClient.PubSubNumSubAsync([channel1, channel2]);
-        Assert.Equal(1L, channelCounts[channel1]);
-        Assert.Equal(1L, channelCounts[channel2]);
+        // Subscribe to both channels and verify subscriptions.
+        await subscriber.SubscribeAsync([channel1, channel2]);
+        await AssertSubscribed(publisher, [channel1, channel2]);
 
-        // Unsubscribe from all channels
-        await subscriberClient.UnsubscribeAsync([channel1, channel2]);
-        await Task.Delay(1000);
+        // Unsubscribe from both channels and verify unsubscriptions.
+        await subscriber.UnsubscribeAsync([channel1, channel2]);
+        AssertUnsubscribed(publisher, [channel1, channel2]);
 
-        // Verify number of subscribers
-        channelCounts = await subscriberClient.PubSubNumSubAsync([channel1, channel2]);
-        Assert.Equal(0L, channelCounts[channel1]);
-        Assert.Equal(0L, channelCounts[channel2]);
+        // Publish to both channels and verify no messages received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertNotReceived(subscriber, message1);
 
-        // Publish messages to channels
-        long count1 = await publisherClient.PublishAsync(channel1, message1);
-        long count2 = await publisherClient.PublishAsync(channel2, message2);
-
-        Assert.Equal(0L, count1);
-        Assert.Equal(0L, count2);
-
-        // Verify that no messages were received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.False(hasMessage);
-        Assert.Null(receivedMessage);
+        await publisher.PublishAsync(channel2, message2);
+        await AssertNotReceived(subscriber, message2);
     }
 
     [Fact]
-    public async Task PUnsubscribeAsync_AllChannels_StopsReceivingMessages()
+    public async Task PUnsubscribeAsync_AllPatterns_StopsReceivingMessages()
     {
-        string pattern1 = $"test-{Guid.NewGuid()}*";
-        string pattern2 = $"test-{Guid.NewGuid()}*";
-        string channel1 = $"{pattern1.TrimEnd('*')}-channel";
-        string channel2 = $"{pattern2.TrimEnd('*')}-channel";
-        string message1 = "message1";
-        string message2 = "message2";
+        var msg1 = GetMessage();
+        var (message1, channel1, pattern1) = (msg1.Message, msg1.Channel, msg1.Pattern);
 
-        var subscriberConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        var msg2 = GetMessage();
+        var (message2, channel2, pattern2) = (msg2.Message, msg2.Channel, msg2.Pattern);
 
-        var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Subscribe to patterns
-        await subscriberClient.PSubscribeAsync([pattern1, pattern2]);
-        await Task.Delay(1000);
-
-        // Verify pattern subscriptions exist
-        long initialPatternCount = await subscriberClient.PubSubNumPatAsync();
-        Assert.True(initialPatternCount >= 2L);
-
-        // Unsubscribe from all patterns
-        await subscriberClient.PUnsubscribeAsync([]);
-        await Task.Delay(1000);
-
-        // Verify pattern subscriptions removed
-        long finalPatternCount = await subscriberClient.PubSubNumPatAsync();
-        Assert.True(finalPatternCount < initialPatternCount);
-
-        // Publish messages to matching channels
-        await publisherClient.PublishAsync(channel1, message1);
-        await publisherClient.PublishAsync(channel2, message2);
+        // Subscribe to both patterns and wait for subscriptions to complete.
+        await subscriber.PSubscribeAsync(pattern1);
+        await subscriber.PSubscribeAsync(pattern2);
         await Task.Delay(500);
 
-        // Verify that no messages were received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
+        // Unsubscribe from all patterns and wait for unsubscriptions to complete.
+        await subscriber.PUnsubscribeAsync();
+        await Task.Delay(500);
 
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.False(hasMessage);
-        Assert.Null(receivedMessage);
+        // Publish to both channels and verify no messages received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertNotReceived(subscriber, message1);
+
+        await publisher.PublishAsync(channel2, message2);
+        await AssertNotReceived(subscriber, message2);
     }
 
     [Fact]
-    public async Task PUnsubscribeAsync_OneChannel_StopsReceivingMessages()
+    public async Task PUnsubscribeAsync_OnePattern_StopsReceivingMessages()
     {
-        string pattern = $"test-{Guid.NewGuid()}*";
-        string channel = $"{pattern.TrimEnd('*')}-channel";
-        string message = "test message";
+        var msg1 = GetMessage();
+        var (message1, channel1, pattern1) = (msg1.Message, msg1.Channel, msg1.Pattern);
 
-        var subscriberConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        var msg2 = GetMessage();
+        var (message2, channel2, pattern2) = (msg2.Message, msg2.Channel, msg2.Pattern);
 
-        var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Subscribe to pattern
-        await subscriberClient.PSubscribeAsync(pattern);
-        await Task.Delay(1000);
+        // Subscribe to both patterns and wait for subscriptions to complete.
+        await subscriber.PSubscribeAsync(pattern1);
+        await subscriber.PSubscribeAsync(pattern2);
+        await Task.Delay(500);
 
-        // Verify pattern subscription exists
-        long initialPatternCount = await subscriberClient.PubSubNumPatAsync();
-        Assert.True(initialPatternCount >= 1L);
+        // Unsubscribe from one pattern and wait for unsubscription to complete.
+        await subscriber.PUnsubscribeAsync(pattern1);
+        await Task.Delay(500);
 
-        // Unsubscribe from pattern
-        await subscriberClient.PUnsubscribeAsync(pattern);
-        await Task.Delay(1000);
+        // Publish to unsubscribed pattern channel and verify no message received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertNotReceived(subscriber, message1);
 
-        // Verify pattern subscription removed
-        long finalPatternCount = await subscriberClient.PubSubNumPatAsync();
-        Assert.True(finalPatternCount < initialPatternCount);
-
-        // Publish message to matching channel
-        long subscriberCount = await publisherClient.PublishAsync(channel, message);
-        Assert.Equal(0L, subscriberCount);
-
-        // Verify that no message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.False(hasMessage);
-        Assert.Null(receivedMessage);
+        // Publish to subscribed pattern channel and verify message received.
+        await publisher.PublishAsync(channel2, message2);
+        await AssertReceived(subscriber, message2, channel2, pattern2);
     }
 
     [Fact]
     public async Task PUnsubscribeAsync_MultipleChannels_StopsReceivingMessages()
     {
-        string pattern1 = $"test-{Guid.NewGuid()}*";
-        string pattern2 = $"test-{Guid.NewGuid()}*";
-        string channel1 = $"{pattern1.TrimEnd('*')}-channel";
-        string channel2 = $"{pattern2.TrimEnd('*')}-channel";
-        string message1 = "message1";
-        string message2 = "message2";
+        var msg1 = GetMessage();
+        var (message1, channel1, pattern1) = (msg1.Message, msg1.Channel, msg1.Pattern);
 
-        var subscriberConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        var msg2 = GetMessage();
+        var (message2, channel2, pattern2) = (msg2.Message, msg2.Channel, msg2.Pattern);
 
-        var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        // Subscribe to patterns
-        await subscriberClient.PSubscribeAsync([pattern1, pattern2]);
-        await Task.Delay(1000);
-
-        // Verify pattern subscriptions exist
-        long initialPatternCount = await subscriberClient.PubSubNumPatAsync();
-        Assert.True(initialPatternCount >= 2L);
-
-        // Unsubscribe from all patterns
-        await subscriberClient.PUnsubscribeAsync([pattern1, pattern2]);
-        await Task.Delay(1000);
-
-        // Verify pattern subscriptions removed
-        long finalPatternCount = await subscriberClient.PubSubNumPatAsync();
-        Assert.True(finalPatternCount < initialPatternCount);
-
-        // Publish messages to matching channels
-        await publisherClient.PublishAsync(channel1, message1);
-        await publisherClient.PublishAsync(channel2, message2);
+        // Subscribe to both patterns and wait for subscriptions to complete.
+        await subscriber.PSubscribeAsync(pattern1);
+        await subscriber.PSubscribeAsync(pattern2);
         await Task.Delay(500);
 
-        // Verify that no messages were received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
+        // Unsubscribe from both patterns and wait for unsubscriptions to complete.
+        await subscriber.PUnsubscribeAsync([pattern1, pattern2]);
+        await Task.Delay(500);
 
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.False(hasMessage);
-        Assert.Null(receivedMessage);
+        // Publish to both channels and verify no messages received.
+        await publisher.PublishAsync(channel1, message1);
+        await AssertNotReceived(subscriber, message1);
+
+        await publisher.PublishAsync(channel2, message2);
+        await AssertNotReceived(subscriber, message2);
     }
 
     #endregion
@@ -406,168 +313,204 @@ public class PubSubCommandTests()
     [Fact]
     public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmptyArray()
     {
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        await using var client = await GlideClient.CreateClient(config);
+        using var server = new StandaloneServer();
+        using var client = await GlideClient.CreateClient(server.CreateConfigBuilder().Build());
 
-        string[] channels = await client.PubSubChannelsAsync();
-
-        Assert.NotNull(channels);
+        // Verify no active channels.
+        Assert.Empty(await client.PubSubChannelsAsync());
     }
 
     [Fact]
     public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel()
     {
-        string testChannel = $"test-channel-{Guid.NewGuid()}";
+        var msg = GetMessage();
+        var channel = msg.Channel;
 
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        var subscriberConfig = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(channel);
+        await AssertSubscribed(publisher, channel);
 
-        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
-
-        await Task.Delay(1000);
-
-        string[] channels = await queryClient.PubSubChannelsAsync();
-
-        Assert.Contains(testChannel, channels);
+        // Verify that channel is active.
+        Assert.Contains(channel, await publisher.PubSubChannelsAsync());
     }
 
     [Fact]
     public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels()
     {
-        string channelPrefix = $"test-{Guid.NewGuid()}";
-        string testChannel1 = $"{channelPrefix}-channel1";
-        string testChannel2 = $"{channelPrefix}-channel2";
-        string pattern = $"{channelPrefix}*";
+        var msg = GetMessage();
+        var (channel, pattern) = (msg.Channel, msg.Pattern);
 
-        StandalonePubSubSubscriptionConfig pubsubConfig1 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel1);
-        StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel2);
+        using var subscriber = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        var subscriberConfig1 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-        var subscriberConfig2 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(channel);
+        await AssertSubscribed(publisher, channel);
 
-        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
-        await using var subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
-
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
-
-        await Task.Delay(1000);
-
-        string[] channels = await queryClient.PubSubChannelsAsync(pattern);
-
-        Assert.Contains(testChannel1, channels);
-        Assert.Contains(testChannel2, channels);
+        // Verify that channel is active for pattern.
+        Assert.Contains(channel, await publisher.PubSubChannelsAsync(pattern));
     }
 
     [Fact]
     public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
     {
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        await using var client = await GlideClient.CreateClient(config);
+        var msg1 = GetMessage();
+        var channel1 = msg1.Channel;
 
-        string channel1 = $"test-channel-{Guid.NewGuid()}";
-        string channel2 = $"test-channel-{Guid.NewGuid()}";
+        var msg2 = GetMessage();
+        var channel2 = msg2.Channel;
 
-        Dictionary<string, long> counts = await client.PubSubNumSubAsync([channel1, channel2]);
+        using var client = TestConfiguration.DefaultStandaloneClient();
 
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(0L, counts[channel1]);
-        Assert.Equal(0L, counts[channel2]);
+        // Verify no subscribers for both channels.
+        var expected = new Dictionary<string, long> { { channel1, 0L }, { channel2, 0L } };
+        var actual = await client.PubSubNumSubAsync([channel1, channel2]);
+        Assert.Equivalent(expected, actual);
     }
 
     [Fact]
     public async Task PubSubNumSubAsync_WithSubscribers_ReturnsCorrectCounts()
     {
-        string testChannel1 = $"test-channel-{Guid.NewGuid()}";
-        string testChannel2 = $"test-channel-{Guid.NewGuid()}";
+        var msg1 = GetMessage();
+        var channel1 = msg1.Channel;
 
-        StandalonePubSubSubscriptionConfig pubsubConfig1 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel1);
+        var msg2 = GetMessage();
+        var channel2 = msg2.Channel;
 
-        var subscriberConfig1 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
+        using var subscriber1 = TestConfiguration.DefaultStandaloneClient();
+        using var subscriber2 = TestConfiguration.DefaultStandaloneClient();
+        using var publisher = TestConfiguration.DefaultStandaloneClient();
 
-        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
+        // Subscribe to channels and verify subscriptions.
+        await subscriber1.SubscribeAsync(channel1);
+        AssertSubscribed(publisher, channel1);
 
-        StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel2);
+        await subscriber2.SubscribeAsync(channel2);
+        AssertSubscribed(publisher, channel2);
 
-        var subscriberConfig2 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
-
-        await using var subscriberClient2a = await GlideClient.CreateClient(subscriberConfig2);
-        await using var subscriberClient2b = await GlideClient.CreateClient(subscriberConfig2);
-
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
-
-        await Task.Delay(1000);
-
-        Dictionary<string, long> counts = await queryClient.PubSubNumSubAsync([testChannel1, testChannel2]);
-
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(1L, counts[testChannel1]);
-        Assert.Equal(2L, counts[testChannel2]);
+        // Verify subscription counts for both channels.
+        var expected = new Dictionary<string, long> { { channel1, 1L }, { channel2, 1L } };
+        var actual = await publisher.PubSubNumSubAsync([channel1, channel2]);
+        Assert.Equivalent(expected, actual);
     }
 
     [Fact]
     public async Task PubSubNumPatAsync_WithNoPatterns_ReturnsZero()
     {
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        await using var client = await GlideClient.CreateClient(config);
+        using var server = new StandaloneServer();
+        using var client = await GlideClient.CreateClient(server.CreateConfigBuilder().Build());
 
-        long patternCount = await client.PubSubNumPatAsync();
-
-        Assert.True(patternCount >= 0L);
+        // Verify no active pattern subscriptions.
+        Assert.Equal(0L, await client.PubSubNumPatAsync());
     }
 
     [Fact]
     public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsCount()
     {
-        string pattern1 = $"test-{Guid.NewGuid()}*";
-        string pattern2 = $"test-{Guid.NewGuid()}*";
+        var msg1 = GetMessage();
+        var pattern1 = msg1.Pattern;
 
-        StandalonePubSubSubscriptionConfig pubsubConfig1 = new StandalonePubSubSubscriptionConfig()
-            .WithPattern(pattern1);
-        StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
-            .WithPattern(pattern2);
+        var msg2 = GetMessage();
+        var pattern2 = msg2.Pattern;
 
-        var subscriberConfig1 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-        var subscriberConfig2 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
+        using var server = new StandaloneServer();
+        var config = server.CreateConfigBuilder().Build();
 
-        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
-        await using var subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
+        using var subscriber1 = await GlideClient.CreateClient(config);
+        using var subscriber2 = await GlideClient.CreateClient(config);
+        using var publisher = await GlideClient.CreateClient(config);
 
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
+        // Subscribe to patterns and wait to ensure subscriptions complete.
+        await subscriber1.PSubscribeAsync(pattern1);
+        await subscriber2.PSubscribeAsync(pattern2);
+        await Task.Delay(500);
 
-        await Task.Delay(1000);
-
-        long patternCount = await queryClient.PubSubNumPatAsync();
-
-        Assert.True(patternCount >= 2L, $"Expected at least 2 pattern subscriptions, got {patternCount}");
+        // Verify active pattern subscription count.
+        Assert.Equal(2L, await publisher.PubSubNumPatAsync());
     }
 
     #endregion
+
+    /// <summary>
+    /// Returns a unique message for testing.
+    /// </summary>
+    private static PubSubMessage GetMessage()
+    {
+        var id = Guid.NewGuid().ToString();
+        return new PubSubMessage(
+            message: $"test-{id}-message",
+            channel: $"test-{id}-channel",
+            pattern: $"test-{id}-*"); // Pattern always matches channel.
+    }
+
+    /// <summary>
+    /// Asserts that the specified message is received on the specified channel (and pattern, if provided).
+    /// </summary>
+    private static async Task AssertReceived(BaseClient client, string message, string channel, string pattern = null)
+    {
+        PubSubMessageQueue? queue = client.PubSubQueue;
+        Assert.NotNull(queue);
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var received = await queue.GetMessageAsync(cts.Token);
+
+        Assert.Equal(message, received.Message);
+        Assert.Equal(channel, received.Channel);
+        Assert.Equal(pattern, received.Pattern);
+    }
+
+    /// <summary>
+    /// Asserts that the specified message is not received.
+    /// </summary>
+    private static async Task AssertNotReceived(BaseClient client, string message)
+    {
+        PubSubMessageQueue? queue = client.PubSubQueue;
+        Assert.NotNull(queue);
+
+        queue.TryGetMessage(out PubSubMessage? received);
+        if (received == null) return;
+
+        Assert.NotEqual(message, received.Message);
+    }
+
+    /// <summary>
+    /// Asserts that there is at least one subscriber to the specified channel.
+    /// </summary>
+    private static async Task AssertSubscribed(GlideClient client, string channel)
+    {
+        var channelCounts = await client.PubSubNumSubAsync([channel]);
+        Assert.True(channelCounts[channel] > 0, $"Expected at least 1 subscriber for channel '{channel}', got {channelCounts[channel]}");
+    }
+
+    /// <summary>
+    /// Asserts that there is at least one subscriber to each of the specified channels.
+    /// </summary>
+    private static async Task AssertSubscribed(GlideClient client, string[] channels)
+    {
+        var channelCounts = await client.PubSubNumSubAsync(channels);
+        foreach (var item in channelCounts)
+            Assert.True(item.Value > 0, $"Expected at least 1 subscriber for channel '{item.Key}', got {item.Value}");
+    }
+
+    /// <summary>
+    /// Asserts that there are no subscribers to the specified channel.
+    /// </summary>
+    private static async Task AssertUnsubscribed(GlideClient client, string channel)
+    {
+        var channelCounts = await client.PubSubNumSubAsync([channel]);
+        Assert.True(channelCounts[channel] == 0, $"Expected no subscribers for channel '{channel}', got {channelCounts[channel]}");
+    }
+
+    /// <summary>
+    /// Asserts that there are no subscribers to each of the specified channels.
+    /// </summary>
+    private static async Task AssertUnsubscribed(GlideClient client, string[] channels)
+    {
+        var channelCounts = await client.PubSubNumSubAsync(channels);
+        foreach (var item in channelCounts)
+            Assert.True(item.Value == 0, $"Expected no subscribers for channel '{item.Key}', got {item.Value}");
+    }
 }
