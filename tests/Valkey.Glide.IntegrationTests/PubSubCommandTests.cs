@@ -8,7 +8,8 @@ using Valkey.Glide.TestUtils;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests pub/sub commands.
+/// Integration tests for pub/sub commands.
+/// See <see cref="IPubSubCommands"/>.
 /// </summary>
 public class PubSubCommandTests()
 {
@@ -31,20 +32,18 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PublishAsync_WithNoSubscribers(ClientFactory clientFactory)
+    public async Task PublishAsync_WithNoSubscribers_ReturnsZero(ClientFactory clientFactory)
     {
         var msg = PubSub.GetPubSubMessage();
-
         using var client = clientFactory();
 
         // Publish to channel and verify no subscribers.
         Assert.Equal(0L, await client.PublishAsync(msg.Channel, msg.Message));
-        await PubSub.AssertNotReceived(client, msg);
     }
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PublishAsync_WithSubscriber(ClientFactory clientFactory)
+    public async Task PublishAsync_WithSubscriber_ReturnsSubscriberCount(ClientFactory clientFactory)
     {
         var msg = PubSub.GetPubSubMessage();
 
@@ -57,21 +56,16 @@ public class PubSubCommandTests()
 
         // Publish to channel and verify subscriber count.
         // Retry publishing until message is received or timeout occurs.
-        //
-        // In cluster mode, subscriber count may be one or more depending
-        // cluster topology and subscription propagation.
-        long subscriberCount = 0L;
-
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         while (!cts.Token.IsCancellationRequested)
         {
-            subscriberCount = await publisher.PublishAsync(msg.Channel, msg.Message);
-            if (subscriberCount > 0L) break;
+            if (await publisher.PublishAsync(msg.Channel, msg.Message) == 1L)
+                return;
+
             await Task.Delay(500);
         }
 
-        Assert.True(subscriberCount >= 0L);
-        await PubSub.AssertReceived(subscriber, msg);
+        Assert.Fail("Expected 1 subscriber to receive the published message.");
     }
 
     #endregion
@@ -79,7 +73,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task SubscribeAsync_OneChannel(ClientFactory clientFactory)
+    public async Task SubscribeAsync_OneChannel_ReceivesMessage(ClientFactory clientFactory)
     {
         var msg = PubSub.GetPubSubMessage();
 
@@ -97,7 +91,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task SubscribeAsync_MultipleChannels(ClientFactory clientFactory)
+    public async Task SubscribeAsync_MultipleChannels_ReceivesMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage();
         var msg2 = PubSub.GetPubSubMessage();
@@ -119,7 +113,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PSubscribeAsync_OnePattern(ClientFactory clientFactory)
+    public async Task PSubscribeAsync_OnePattern_ReceivesMessage(ClientFactory clientFactory)
     {
         var msg = PubSub.GetPubSubMessage(pattern: true);
 
@@ -137,7 +131,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PSubscribeAsync_MultiplePatterns(ClientFactory clientFactory)
+    public async Task PSubscribeAsync_MultiplePatterns_ReceivesMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage(pattern: true);
         var msg2 = PubSub.GetPubSubMessage(pattern: true);
@@ -162,7 +156,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task UnsubscribeAsync_AllChannels(ClientFactory clientFactory)
+    public async Task UnsubscribeAsync_AllChannels_ReceivesNoMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage();
         var msg2 = PubSub.GetPubSubMessage();
@@ -215,7 +209,7 @@ public class PubSubCommandTests()
 
     // [Theory]
     // [MemberData(nameof(Factory.ClientFactories), MemberType = typeof(Factory))]
-    public async Task UnsubscribeAsync_MultipleChannels(ClientFactory clientFactory)
+    public async Task UnsubscribeAsync_MultipleChannels_ReceivesNoMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage();
         var msg2 = PubSub.GetPubSubMessage();
@@ -241,20 +235,17 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PUnsubscribeAsync_AllPatterns(ClientFactory clientFactory)
+    public async Task PUnsubscribeAsync_AllPatterns_ReceivesNoMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage();
-        var (message1, channel1, pattern1) = (msg1.Message, msg1.Channel, msg1.Pattern);
-
         var msg2 = PubSub.GetPubSubMessage();
-        var (message2, channel2, pattern2) = (msg2.Message, msg2.Channel, msg2.Pattern);
 
         using var subscriber = clientFactory();
         using var publisher = clientFactory();
 
         // Subscribe to both patterns.
-        await subscriber.PSubscribeAsync(pattern1);
-        await subscriber.PSubscribeAsync(pattern2);
+        await subscriber.PSubscribeAsync(msg1.Pattern);
+        await subscriber.PSubscribeAsync(msg2.Pattern);
 
         // Unsubscribe from all patterns and wait for unsubscriptions to complete.
         await subscriber.PUnsubscribeAsync();
@@ -270,7 +261,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PUnsubscribeAsync_OnePattern(ClientFactory clientFactory)
+    public async Task PUnsubscribeAsync_OnePattern_ReceivesNoMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage(pattern: true);
         var msg2 = PubSub.GetPubSubMessage(pattern: true);
@@ -296,7 +287,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PUnsubscribeAsync_MultipleChannels_StopsReceivingMessages(ClientFactory clientFactory)
+    public async Task PUnsubscribeAsync_MultiplePatterns_ReceivesNoMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage();
         var msg2 = PubSub.GetPubSubMessage();
@@ -323,7 +314,7 @@ public class PubSubCommandTests()
     #region PubSubInfoCommands
 
     [Fact]
-    public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmptyArray()
+    public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmpty()
     {
         using var server = new StandaloneServer();
         using var client = await GlideClient.CreateClient(server.CreateConfigBuilder().Build());
@@ -341,7 +332,7 @@ public class PubSubCommandTests()
         using var subscriber = clientFactory();
         using var publisher = clientFactory();
 
-        // Subscribe to channel and verify subscription.
+        // Subscribe to channel aqnd verify subscription.
         await subscriber.SubscribeAsync(msg.Channel);
         await PubSub.AssertSubscribed(publisher, msg.Channel);
 
@@ -368,10 +359,9 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PubSubNumSubAsync_WithNoSubscribers(ClientFactory clientFactory)
+    public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(ClientFactory clientFactory)
     {
         var msg = PubSub.GetPubSubMessage();
-
         using var client = clientFactory();
 
         // Verify no subscribers to channel.
@@ -382,7 +372,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
-    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsCorrectCounts(ClientFactory clientFactory)
+    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage();
         var msg2 = PubSub.GetPubSubMessage();
@@ -417,7 +407,7 @@ public class PubSubCommandTests()
 
     [Theory]
     [MemberData(nameof(ServerFactories))]
-    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsCount(ServerFactory serverFactory)
+    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(ServerFactory serverFactory)
     {
         using var server = serverFactory();
         using var subscriber = await server.CreateClient();

@@ -67,42 +67,9 @@ public partial class GlideClusterClient
     #region PubSubInfoCommands
 
     /// <inheritdoc/>
-    public async Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        // In cluster mode, route to all primaries to get complete channel list
-        return await Command(Request.PubSubChannels(), PubSubInfoRoute);
-    }
-
-    /// <inheritdoc/>
-    public async Task<string[]> PubSubChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        // In cluster mode, route to all primaries to get complete channel list
-        return await Command(Request.PubSubChannels(pattern), PubSubInfoRoute);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        // In cluster mode, route to all primaries to aggregate subscriber counts
-        return await Command(Request.PubSubNumSub(ToGlideStrings(channels)), PubSubInfoRoute);
-    }
-
-    /// <inheritdoc/>
-    public async Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        // In cluster mode, route to all primaries to aggregate pattern counts
-        return await Command(Request.PubSubNumPat(), PubSubInfoRoute);
-    }
-
-    /// <inheritdoc/>
     public async Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        // In cluster mode, route to all primaries to get complete shard channel list
         return await Command(Request.PubSubShardChannels(), PubSubInfoRoute);
     }
 
@@ -110,7 +77,6 @@ public partial class GlideClusterClient
     public async Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        // In cluster mode, route to all primaries to get complete shard channel list
         return await Command(Request.PubSubShardChannels(pattern), PubSubInfoRoute);
     }
 
@@ -118,7 +84,6 @@ public partial class GlideClusterClient
     public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        // In cluster mode, route to all primaries to aggregate shard subscriber counts
         return await Command(Request.PubSubShardNumSub(ToGlideStrings(channels)), PubSubInfoRoute);
     }
 
