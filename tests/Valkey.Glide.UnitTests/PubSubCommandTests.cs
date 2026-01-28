@@ -9,10 +9,10 @@ namespace Valkey.Glide.UnitTests;
 public class PubSubCommandTests
 {
     // Test constants
-    private static readonly string ChannelNews = "news";
-    private static readonly string ChannelWeather = "weather";
-    private static readonly string PatternNews = "news.*";
-    private static readonly string PatternWeather = "weather.*";
+    private static readonly string Channel1 = "news";
+    private static readonly string Channel2 = "weather";
+    private static readonly string Pattern1 = "news.*";
+    private static readonly string Pattern2 = "weather.*";
     private static readonly string Message = "message";
 
     #region PublishCommands
@@ -20,16 +20,16 @@ public class PubSubCommandTests
     [Fact]
     public void Publish_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUBLISH", ChannelWeather, Message], Request.Publish(ChannelWeather, Message).GetArgs());
-        Assert.Equal(["PUBLISH", ChannelWeather, ""], Request.Publish(ChannelWeather, "").GetArgs());
+        Assert.Equal(["PUBLISH", Channel2, Message], Request.Publish(Channel2, Message).GetArgs());
+        Assert.Equal(["PUBLISH", Channel2, ""], Request.Publish(Channel2, "").GetArgs());
         Assert.Equal(["PUBLISH", "", Message], Request.Publish("", Message).GetArgs());
     }
 
     [Fact]
     public void SPublish_BuildsCorrectCommand()
     {
-        Assert.Equal(["SPUBLISH", ChannelNews, Message], Request.SPublish(ChannelNews, Message).GetArgs());
-        Assert.Equal(["SPUBLISH", ChannelNews, ""], Request.SPublish(ChannelNews, "").GetArgs());
+        Assert.Equal(["SPUBLISH", Channel1, Message], Request.SPublish(Channel1, Message).GetArgs());
+        Assert.Equal(["SPUBLISH", Channel1, ""], Request.SPublish(Channel1, "").GetArgs());
         Assert.Equal(["SPUBLISH", "", Message], Request.SPublish("", Message).GetArgs());
     }
 
@@ -39,22 +39,22 @@ public class PubSubCommandTests
     [Fact]
     public void Subscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUBSCRIBE", ChannelNews], Request.Subscribe([ChannelNews]).GetArgs());
-        Assert.Equal(["SUBSCRIBE", ChannelNews, ChannelWeather], Request.Subscribe([ChannelNews, ChannelWeather]).GetArgs());
+        Assert.Equal(["SUBSCRIBE", Channel1], Request.Subscribe([Channel1]).GetArgs());
+        Assert.Equal(["SUBSCRIBE", Channel1, Channel2], Request.Subscribe([Channel1, Channel2]).GetArgs());
     }
 
     [Fact]
     public void PSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["PSUBSCRIBE", PatternNews], Request.PSubscribe([PatternNews]).GetArgs());
-        Assert.Equal(["PSUBSCRIBE", PatternNews, PatternWeather], Request.PSubscribe([PatternNews, PatternWeather]).GetArgs());
+        Assert.Equal(["PSUBSCRIBE", Pattern1], Request.PSubscribe([Pattern1]).GetArgs());
+        Assert.Equal(["PSUBSCRIBE", Pattern1, Pattern2], Request.PSubscribe([Pattern1, Pattern2]).GetArgs());
     }
 
     [Fact]
     public void SSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SSUBSCRIBE", ChannelNews], Request.SSubscribe([ChannelNews]).GetArgs());
-        Assert.Equal(["SSUBSCRIBE", ChannelNews, ChannelWeather], Request.SSubscribe([ChannelNews, ChannelWeather]).GetArgs());
+        Assert.Equal(["SSUBSCRIBE", Channel1], Request.SSubscribe([Channel1]).GetArgs());
+        Assert.Equal(["SSUBSCRIBE", Channel1, Channel2], Request.SSubscribe([Channel1, Channel2]).GetArgs());
     }
 
     #endregion
@@ -64,24 +64,24 @@ public class PubSubCommandTests
     public void Unsubscribe_BuildsCorrectCommand()
     {
         Assert.Equal(["UNSUBSCRIBE"], Request.Unsubscribe([]).GetArgs());
-        Assert.Equal(["UNSUBSCRIBE", ChannelNews], Request.Unsubscribe([ChannelNews]).GetArgs());
-        Assert.Equal(["UNSUBSCRIBE", ChannelNews, ChannelWeather], Request.Unsubscribe([ChannelNews, ChannelWeather]).GetArgs());
+        Assert.Equal(["UNSUBSCRIBE", Channel1], Request.Unsubscribe([Channel1]).GetArgs());
+        Assert.Equal(["UNSUBSCRIBE", Channel1, Channel2], Request.Unsubscribe([Channel1, Channel2]).GetArgs());
     }
 
     [Fact]
     public void PUnsubscribe_BuildsCorrectCommand()
     {
         Assert.Equal(["PUNSUBSCRIBE"], Request.PUnsubscribe([]).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBE", PatternNews], Request.PUnsubscribe([PatternNews]).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBE", PatternNews, PatternWeather], Request.PUnsubscribe([PatternNews, PatternWeather]).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBE", Pattern1], Request.PUnsubscribe([Pattern1]).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBE", Pattern1, Pattern2], Request.PUnsubscribe([Pattern1, Pattern2]).GetArgs());
     }
 
     [Fact]
     public void SUnsubscribe_BuildsCorrectCommand()
     {
         Assert.Equal(["SUNSUBSCRIBE"], Request.SUnsubscribe([]).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBE", ChannelNews], Request.SUnsubscribe([ChannelNews]).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBE", ChannelNews, ChannelWeather], Request.SUnsubscribe([ChannelNews, ChannelWeather]).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBE", Channel1], Request.SUnsubscribe([Channel1]).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBE", Channel1, Channel2], Request.SUnsubscribe([Channel1, Channel2]).GetArgs());
     }
 
     #endregion
@@ -91,7 +91,7 @@ public class PubSubCommandTests
     public void PubSubChannels_BuildsCorrectCommand()
     {
         Assert.Equal(["PUBSUB", "CHANNELS"], Request.PubSubChannels().GetArgs());
-        Assert.Equal(["PUBSUB", "CHANNELS", PatternNews], Request.PubSubChannels(PatternNews).GetArgs());
+        Assert.Equal(["PUBSUB", "CHANNELS", Pattern1], Request.PubSubChannels(Pattern1).GetArgs());
         Assert.Equal(["PUBSUB", "CHANNELS", "*"], Request.PubSubChannels("*").GetArgs());
     }
 
@@ -101,9 +101,9 @@ public class PubSubCommandTests
         var cmd = Request.PubSubChannels();
 
         // Simulated response from server
-        object[] response = [(GlideString)ChannelNews, (GlideString)ChannelWeather];
+        object[] response = [(GlideString)Channel1, (GlideString)Channel2];
 
-        var expected = new[] { ChannelNews, ChannelWeather };
+        var expected = new[] { Channel1, Channel2 };
         Assert.Equivalent(expected, cmd.Converter(response));
     }
 
@@ -111,26 +111,26 @@ public class PubSubCommandTests
     public void PubSubNumSub_BuildsCorrectCommand()
     {
         Assert.Equal(["PUBSUB", "NUMSUB"], Request.PubSubNumSub([]).GetArgs());
-        Assert.Equal(["PUBSUB", "NUMSUB", ChannelNews], Request.PubSubNumSub([ChannelNews]).GetArgs());
-        Assert.Equal(["PUBSUB", "NUMSUB", ChannelNews, ChannelWeather], Request.PubSubNumSub([ChannelNews, ChannelWeather]).GetArgs());
+        Assert.Equal(["PUBSUB", "NUMSUB", Channel1], Request.PubSubNumSub([Channel1]).GetArgs());
+        Assert.Equal(["PUBSUB", "NUMSUB", Channel1, Channel2], Request.PubSubNumSub([Channel1, Channel2]).GetArgs());
     }
 
     [Fact]
     public void PubSubNumSub_ConvertsResponseCorrectly()
     {
-        var cmd = Request.PubSubNumSub([ChannelNews, ChannelWeather]);
+        var cmd = Request.PubSubNumSub([Channel1, Channel2]);
 
         // Simulated response from server
         Dictionary<GlideString, object> response = new()
         {
-            { (GlideString)ChannelNews, 5L },
-            { (GlideString)ChannelWeather, 10L }
+            { (GlideString)Channel1, 5L },
+            { (GlideString)Channel2, 10L }
         };
 
         var expected = new Dictionary<string, long>
         {
-            { ChannelNews, 5L },
-            { ChannelWeather, 10L }
+            { Channel1, 5L },
+            { Channel2, 10L }
         };
 
         Assert.Equivalent(expected, cmd.Converter(response));
@@ -146,33 +146,33 @@ public class PubSubCommandTests
     public void PubSubShardChannels_BuildsCorrectCommand()
     {
         Assert.Equal(["PUBSUB", "SHARDCHANNELS"], Request.PubSubShardChannels().GetArgs());
-        Assert.Equal(["PUBSUB", "SHARDCHANNELS", PatternNews], Request.PubSubShardChannels(PatternNews).GetArgs());
+        Assert.Equal(["PUBSUB", "SHARDCHANNELS", Pattern1], Request.PubSubShardChannels(Pattern1).GetArgs());
     }
 
     [Fact]
     public void PubSubShardNumSub_BuildsCorrectCommand()
     {
         Assert.Equal(["PUBSUB", "SHARDNUMSUB"], Request.PubSubShardNumSub([]).GetArgs());
-        Assert.Equal(["PUBSUB", "SHARDNUMSUB", ChannelNews], Request.PubSubShardNumSub([ChannelNews]).GetArgs());
-        Assert.Equal(["PUBSUB", "SHARDNUMSUB", ChannelNews, ChannelWeather], Request.PubSubShardNumSub([ChannelNews, ChannelWeather]).GetArgs());
+        Assert.Equal(["PUBSUB", "SHARDNUMSUB", Channel1], Request.PubSubShardNumSub([Channel1]).GetArgs());
+        Assert.Equal(["PUBSUB", "SHARDNUMSUB", Channel1, Channel2], Request.PubSubShardNumSub([Channel1, Channel2]).GetArgs());
     }
 
     [Fact]
     public void PubSubShardNumSub_ConvertsResponseCorrectly()
     {
-        var cmd = Request.PubSubShardNumSub([ChannelNews, ChannelWeather]);
+        var cmd = Request.PubSubShardNumSub([Channel1, Channel2]);
 
         // Simulated response from server
         Dictionary<GlideString, object> response = new()
         {
-            { (GlideString)ChannelNews, 3L },
-            { (GlideString)ChannelWeather, 7L }
+            { (GlideString)Channel1, 3L },
+            { (GlideString)Channel2, 7L }
         };
 
         var expected = new Dictionary<string, long>
         {
-            { ChannelNews, 3L },
-            { ChannelWeather, 7L }
+            { Channel1, 3L },
+            { Channel2, 7L }
         };
 
         Assert.Equivalent(expected, cmd.Converter(response));
@@ -184,9 +184,9 @@ public class PubSubCommandTests
         var cmd = Request.PubSubShardChannels();
 
         // Simulated response from server
-        object[] response = [(GlideString)ChannelNews, (GlideString)ChannelWeather];
+        object[] response = [(GlideString)Channel1, (GlideString)Channel2];
 
-        var expected = new[] { ChannelNews, ChannelWeather };
+        var expected = new[] { Channel1, Channel2 };
         Assert.Equivalent(expected, cmd.Converter(response));
     }
 
@@ -209,7 +209,7 @@ public class PubSubCommandTests
         Assert.Equal(["PUBLISH", "channel-with-dashes", Message], Request.Publish("channel-with-dashes", Message).GetArgs());
         Assert.Equal(["PUBLISH", "channel_with_underscores", Message], Request.Publish("channel_with_underscores", Message).GetArgs());
         Assert.Equal(["PUBLISH", "channel.with.dots", Message], Request.Publish("channel.with.dots", Message).GetArgs());
-        Assert.Equal(["PUBLISH", ChannelNews, "message:with:special:chars"], Request.Publish(ChannelNews, "message:with:special:chars").GetArgs());
+        Assert.Equal(["PUBLISH", Channel1, "message:with:special:chars"], Request.Publish(Channel1, "message:with:special:chars").GetArgs());
     }
 
     [Fact]
