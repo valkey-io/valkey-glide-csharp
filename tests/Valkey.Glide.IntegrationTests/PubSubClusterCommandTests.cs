@@ -3,6 +3,8 @@
 using Valkey.Glide.Commands;
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.PubSub;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -24,7 +26,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = PubSub.GetPubSubMessage();
+        var msg = BuildMessage();
         var client = TestConfiguration.DefaultClusterClient();
 
         // Publish to shard channel and verify no subscribers.
@@ -36,27 +38,17 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = PubSub.GetPubSubMessage();
+        var msg = BuildMessage();
 
         var subscriber = TestConfiguration.DefaultClusterClient();
         var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
         // Publish to shard channel and verify subscriber count.
-        // Retry publishing until message is received or timeout occurs.
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        while (!cts.Token.IsCancellationRequested)
-        {
-            if (await publisher.SPublishAsync(msg.Channel, msg.Message) == 1L)
-                return;
-
-            await Task.Delay(500);
-        }
-
-        Assert.Fail("Expected 1 subscriber to receive the published message.");
+        await AssertSPublishAsync(publisher, msg);
     }
 
     #endregion
@@ -67,18 +59,18 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = PubSub.GetPubSubMessage();
+        var msg = BuildMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
         // Publish to shard channel and verify message received.
         await publisher.SPublishAsync(msg.Channel, msg.Message);
-        await PubSub.AssertReceived(subscriber, msg);
+        await AssertReceivedAsync(subscriber, msg);
     }
 
     [Fact]
@@ -86,22 +78,22 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = PubSub.GetPubSubMessage();
-        var msg2 = PubSub.GetPubSubMessage();
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
         // Publish to shard channels and verify messages received.
         await publisher.SPublishAsync(msg1.Channel, msg1.Message);
-        await PubSub.AssertReceived(subscriber, msg1);
+        await AssertReceivedAsync(subscriber, msg1);
 
         await publisher.SPublishAsync(msg2.Channel, msg2.Message);
-        await PubSub.AssertReceived(subscriber, msg2);
+        await AssertReceivedAsync(subscriber, msg2);
     }
 
     #endregion
@@ -112,26 +104,26 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = PubSub.GetPubSubMessage();
-        var msg2 = PubSub.GetPubSubMessage();
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to both shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
         // Unsubscribe from all shard channels and verify unsubscription.
         await subscriber.SUnsubscribeAsync();
-        await PubSub.AssertUnsubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await AssertSUnsubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
         // Publish to shard channels and verify no messages received.
         await publisher.SPublishAsync(msg1.Channel, msg1.Message);
-        await PubSub.AssertNotReceived(subscriber, msg1);
+        await AssertNotReceivedAsync(subscriber, msg1);
 
         await publisher.SPublishAsync(msg2.Channel, msg2.Message);
-        await PubSub.AssertNotReceived(subscriber, msg2);
+        await AssertNotReceivedAsync(subscriber, msg2);
     }
 
     [Fact]
@@ -139,27 +131,27 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = PubSub.GetPubSubMessage();
-        var msg2 = PubSub.GetPubSubMessage();
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to both shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
         // Unsubscribe from one shard channel and verify unsubscription.
         await subscriber.SUnsubscribeAsync(msg1.Channel);
-        await PubSub.AssertSUnsubscribed(publisher, [msg1.Channel]);
+        await AssertSUnsubscribedAsync(publisher, [msg1.Channel]);
 
         // Publish to unsubscribed shard channel and verify no message received.
         await publisher.SPublishAsync(msg1.Channel, msg1.Message);
-        await PubSub.AssertNotReceived(subscriber, msg1);
+        await AssertNotReceivedAsync(subscriber, msg1);
 
         // Publish to subscribed shard channel and verify message received.
         await publisher.SPublishAsync(msg2.Channel, msg2.Message);
-        await PubSub.AssertReceived(subscriber, msg2);
+        await AssertReceivedAsync(subscriber, msg2);
     }
 
     [Fact]
@@ -167,26 +159,26 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = PubSub.GetPubSubMessage();
-        var msg2 = PubSub.GetPubSubMessage();
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to both shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
         // Unsubscribe from both shard channels and verify unsubscriptions.
         await subscriber.SUnsubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSUnsubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await AssertSUnsubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
         // Publish to both shard channels and verify no messages received.
         await publisher.SPublishAsync(msg1.Channel, msg1.Message);
-        await PubSub.AssertNotReceived(subscriber, msg1);
+        await AssertNotReceivedAsync(subscriber, msg1);
 
         await publisher.SPublishAsync(msg2.Channel, msg2.Message);
-        await PubSub.AssertNotReceived(subscriber, msg2);
+        await AssertNotReceivedAsync(subscriber, msg2);
     }
 
     #endregion
@@ -209,14 +201,14 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = PubSub.GetPubSubMessage();
+        var msg = BuildMessage();
 
         var publisher = TestConfiguration.DefaultClusterClient();
         var subscriber = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
         // Verify that shard channel is active.
         Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync());
@@ -227,14 +219,14 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = PubSub.GetPubSubMessage(pattern: true);
+        var msg = BuildMessage(withPattern: true);
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
         // Verify that shard channel matching pattern is active.
         Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync(msg.Pattern!));
@@ -245,7 +237,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = PubSub.GetPubSubMessage();
+        var msg = BuildMessage();
         using var client = TestConfiguration.DefaultClusterClient();
 
         // Verify no subscribers to shard channel.
@@ -259,8 +251,8 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = PubSub.GetPubSubMessage();
-        var msg2 = PubSub.GetPubSubMessage();
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
         using var subscriber1 = TestConfiguration.DefaultClusterClient();
         using var subscriber2 = TestConfiguration.DefaultClusterClient();
@@ -268,15 +260,78 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to shard channels and verify subscriptions.
         await subscriber1.SSubscribeAsync(msg1.Channel);
-        await PubSub.AssertSSubscribed(publisher, [msg1.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel]);
 
         await subscriber2.SSubscribeAsync(msg2.Channel);
-        await PubSub.AssertSSubscribed(publisher, [msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg2.Channel]);
 
         // Verify subscription counts for both shard channels.
         var expected = new Dictionary<string, long> { { msg1.Channel, 1L }, { msg2.Channel, 1L } };
         var actual = await publisher.PubSubShardNumSubAsync([msg1.Channel, msg2.Channel]);
         Assert.Equivalent(expected, actual);
+    }
+
+    #endregion
+    #region HelperMethods
+
+    /// <summary>
+    /// Asserts that publishing the specified message results in at least one subscriber receiving it.
+    /// </summary>
+    /// <returns></returns>
+    private static async Task AssertSPublishAsync(GlideClusterClient client, PubSubMessage message)
+    {
+        // Retry until published or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            if (await client.SPublishAsync(message.Channel, message.Message) > 0L)
+                return;
+
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected at least 1 subscriber for shard channel '{message.Channel}'");
+    }
+
+    /// <summary>
+    /// Asserts that there is at least one subscriber to each of the specified shard channels.
+    /// </summary>
+    private static async Task AssertSSubscribedAsync(GlideClusterClient client, string[] shardChannels)
+    {
+        // Retry until subscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubShardNumSubAsync(shardChannels);
+            if (channelCounts.All(kvp => kvp.Value > 0))
+                return;
+
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected at least 1 subscriber for shard channels '{string.Join(", ", shardChannels)}'");
+    }
+
+    /// <summary>
+    /// Asserts that there are no subscribers to each of the specified shard channels.
+    /// </summary>
+    private static async Task AssertSUnsubscribedAsync(GlideClusterClient client, string[] shardChannels)
+    {
+        // Retry until unsubscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubShardNumSubAsync(shardChannels);
+            if (channelCounts.All(kvp => kvp.Value == 0))
+                return;
+
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected 0 subscribers for shard channels '{string.Join(", ", shardChannels)}'");
     }
 
     #endregion

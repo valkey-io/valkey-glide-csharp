@@ -80,8 +80,14 @@ public sealed class ClusterServer : Server
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient() => await CreateClusterClient();
-    public async Task<GlideClusterClient> CreateClusterClient() => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
+    public override async Task<BaseClient> CreateClient()
+        => await CreateClusterClient();
+
+    /// <summary>
+    /// Builds and returns a cluster client for this Valkey server.
+    /// </summary>
+    public async Task<GlideClusterClient> CreateClusterClient()
+        => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
 }
 
 /// <summary>
@@ -104,6 +110,12 @@ public sealed class StandaloneServer : Server
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient() => await CreateStandaloneClient();
-    public async Task<GlideClient> CreateStandaloneClient() => await GlideClient.CreateClient(CreateConfigBuilder().Build());
+    public override async Task<BaseClient> CreateClient()
+        => await CreateStandaloneClient();
+
+    /// <summary>
+    /// Builds and returns a standalone client for this Valkey server.
+    /// </summary>
+    public async Task<GlideClient> CreateStandaloneClient()
+        => await GlideClient.CreateClient(CreateConfigBuilder().Build());
 }
