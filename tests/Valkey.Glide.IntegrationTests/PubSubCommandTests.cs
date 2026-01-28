@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+#pragma warning disable xUnit1044 // Delegate types used in TheoryData are not serializable but work correctly at runtime
+
 using Valkey.Glide.Commands;
 using Valkey.Glide.TestUtils;
 
@@ -20,14 +22,14 @@ public class PubSubCommandTests()
     // Factory data for parameterized tests.
     public static TheoryData<ServerFactory> ServerFactories { get; } = new()
     {
-        new ServerFactory(() => new TestUtils.StandaloneServer()),
-        new ServerFactory(() => new TestUtils.ClusterServer())
+        () => new TestUtils.StandaloneServer(),
+        () => new TestUtils.ClusterServer()
     };
 
     public static TheoryData<ClientFactory> ClientFactories { get; } = new()
     {
-        new ClientFactory(() => TestConfiguration.DefaultStandaloneClient()),
-        new ClientFactory(() => TestConfiguration.DefaultClusterClient())
+        () => TestConfiguration.DefaultStandaloneClient(),
+        () => TestConfiguration.DefaultClusterClient()
     };
 
     // Delay to allow for pub/sub subscriptions to synchronize.
