@@ -206,9 +206,10 @@ public class PubSubFFIIntegrationTests
             return Task.FromResult(new Version(7, 2, 0));
         }
 
-        internal override void HandlePubSubMessage(PubSubMessage message)
-        {
-            // Mock implementation
-        }
+        // Mock implementations
+        internal override void HandlePubSubMessage(PubSubMessage message) { }
+
+        protected override Route? PubSubRoute => throw new NotImplementedException();
+        protected override Route? PubSubInfoRoute => throw new NotImplementedException();
     }
 }

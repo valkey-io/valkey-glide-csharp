@@ -9,7 +9,7 @@ namespace Valkey.Glide.TestUtils;
 /// <summary>
 /// Base class for a Valkey server.
 /// </summary>
-public class Server : IDisposable
+public abstract class Server : IDisposable
 {
     /// <summary>
     /// Name of the server.
@@ -48,6 +48,16 @@ public class Server : IDisposable
         ServerManager.StopServer(_name);
         GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// Builds and returns a client configuration builder for this Valkey server.
+    /// </summary>
+    public abstract object CreateConfigBuilder();
+
+    /// <summary>
+    /// Builds and returns a client for this Valkey server.
+    /// </summary>
+    public abstract Task<BaseClient> CreateClient();
 }
 
 /// <summary>
@@ -57,10 +67,8 @@ public sealed class ClusterServer : Server
 {
     public ClusterServer(bool useTls = false) : base(useClusterMode: true, useTls: useTls) { }
 
-    /// <summary>
-    /// Builds and returns a cluster client configuration builder for this Valkey server.
-    /// </summary>
-    public ClusterClientConfigurationBuilder CreateConfigBuilder()
+    /// <inheritdoc/>
+    public override ClusterClientConfigurationBuilder CreateConfigBuilder()
     {
         var configBuilder = new ClusterClientConfigurationBuilder();
         configBuilder.WithTls(useTls: _useTls);
@@ -69,6 +77,12 @@ public sealed class ClusterServer : Server
             configBuilder.WithAddress(host, port);
 
         return configBuilder;
+    }
+
+    /// <inheritdoc/>
+    public override async Task<BaseClient> CreateClient()
+    {
+        return await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
     }
 }
 
@@ -79,10 +93,8 @@ public sealed class StandaloneServer : Server
 {
     public StandaloneServer(bool useTls = false) : base(useClusterMode: false, useTls: useTls) { }
 
-    /// <summary>
-    /// Builds and returns a standalone client configuration builder for this Valkey server.
-    /// </summary>
-    public StandaloneClientConfigurationBuilder CreateConfigBuilder()
+    /// <inheritdoc/>
+    public override StandaloneClientConfigurationBuilder CreateConfigBuilder()
     {
         var configBuilder = new StandaloneClientConfigurationBuilder();
         configBuilder.WithTls(useTls: _useTls);
@@ -91,5 +103,11 @@ public sealed class StandaloneServer : Server
             configBuilder.WithAddress(host, port);
 
         return configBuilder;
+    }
+
+    /// <inheritdoc/>
+    public override async Task<BaseClient> CreateClient()
+    {
+        return await GlideClient.CreateClient(CreateConfigBuilder().Build());
     }
 }

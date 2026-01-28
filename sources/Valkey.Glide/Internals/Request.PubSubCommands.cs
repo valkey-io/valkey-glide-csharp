@@ -82,6 +82,7 @@ internal partial class Request
     /// <returns>Command for unsubscribing from sharded channels.</returns>
     public static Cmd<object, object> SUnsubscribe(GlideString[] channels)
         => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
+
     #endregion
     #region PubSubInfoCommands
 

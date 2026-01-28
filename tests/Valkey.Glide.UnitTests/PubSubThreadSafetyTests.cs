@@ -225,5 +225,9 @@ public class PubSubThreadSafetyTests
             _serverVersion = new Version(7, 2, 0);
             return Task.FromResult(_serverVersion);
         }
+
+        // Mock implementations
+        protected override Route? PubSubRoute => throw new NotImplementedException();
+        protected override Route? PubSubInfoRoute => throw new NotImplementedException();
     }
 }

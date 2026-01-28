@@ -5,133 +5,62 @@ using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public partial class GlideClusterClient : IPubSubClusterCommands
+public partial class GlideClusterClient
 {
-    #region PublishCommands
+    /// <inheritdoc/>
+    protected sealed override Route? PubSubRoute => Route.Random;
 
     /// <inheritdoc/>
-    public async Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Publish(channel, message), Route.Random);
-    }
+    protected sealed override Route? PubSubInfoRoute => Route.AllPrimaries;
+
+    #region PublishCommands
 
     /// <inheritdoc/>
     public async Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SPublish(channel, message), Route.Random);
+        return await Command(Request.SPublish(channel, message), PubSubRoute);
     }
 
     #endregion
     #region SubscribeCommands
 
     /// <inheritdoc/>
-    public async Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Subscribe([channel]));
-    }
-
-    /// <inheritdoc/>
-    public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Subscribe(ToGlideStrings(channels)));
-    }
-
-    /// <inheritdoc/>
-    public async Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PSubscribe([pattern]));
-    }
-
-    /// <inheritdoc/>
-    public async Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PSubscribe(ToGlideStrings(patterns)));
-    }
-
-    /// <inheritdoc/>
     public async Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SSubscribe([channel]), Route.Random);
+        await Command(Request.SSubscribe([channel]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SSubscribe(ToGlideStrings(channels)), Route.Random);
+        await Command(Request.SSubscribe(ToGlideStrings(channels)), PubSubRoute);
     }
 
     #endregion
     #region UnsubscribeCommands
 
     /// <inheritdoc/>
-    public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unsubscribe([]));
-    }
-
-    /// <inheritdoc/>
-    public async Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unsubscribe([channel]));
-    }
-
-    /// <inheritdoc/>
-    public async Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unsubscribe(ToGlideStrings(channels)));
-    }
-
-    /// <inheritdoc/>
-    public async Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PUnsubscribe([]));
-    }
-
-    /// <inheritdoc/>
-    public async Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PUnsubscribe([(GlideString)pattern]));
-    }
-
-    /// <inheritdoc/>
-    public async Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PUnsubscribe(ToGlideStrings(patterns)));
-    }
-
-    /// <inheritdoc/>
     public async Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe([]), Route.Random);
+        await Command(Request.SUnsubscribe([]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe([(GlideString)channel]), Route.Random);
+        await Command(Request.SUnsubscribe([(GlideString)channel]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe(ToGlideStrings(channels)), Route.Random);
+        await Command(Request.SUnsubscribe(ToGlideStrings(channels)), PubSubRoute);
     }
 
     #endregion
@@ -142,7 +71,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete channel list
-        return await Command(Request.PubSubChannels(), Route.AllPrimaries);
+        return await Command(Request.PubSubChannels(), PubSubInfoRoute);
     }
 
     /// <inheritdoc/>
@@ -150,7 +79,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete channel list
-        return await Command(Request.PubSubChannels(pattern), Route.AllPrimaries);
+        return await Command(Request.PubSubChannels(pattern), PubSubInfoRoute);
     }
 
     /// <inheritdoc/>
@@ -158,7 +87,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to aggregate subscriber counts
-        return await Command(Request.PubSubNumSub(ToGlideStrings(channels)), Route.AllPrimaries);
+        return await Command(Request.PubSubNumSub(ToGlideStrings(channels)), PubSubInfoRoute);
     }
 
     /// <inheritdoc/>
@@ -166,7 +95,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to aggregate pattern counts
-        return await Command(Request.PubSubNumPat(), Route.AllPrimaries);
+        return await Command(Request.PubSubNumPat(), PubSubInfoRoute);
     }
 
     /// <inheritdoc/>
@@ -174,7 +103,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete shard channel list
-        return await Command(Request.PubSubShardChannels(), Route.AllPrimaries);
+        return await Command(Request.PubSubShardChannels(), PubSubInfoRoute);
     }
 
     /// <inheritdoc/>
@@ -182,7 +111,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to get complete shard channel list
-        return await Command(Request.PubSubShardChannels(pattern), Route.AllPrimaries);
+        return await Command(Request.PubSubShardChannels(pattern), PubSubInfoRoute);
     }
 
     /// <inheritdoc/>
@@ -190,7 +119,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         // In cluster mode, route to all primaries to aggregate shard subscriber counts
-        return await Command(Request.PubSubShardNumSub(ToGlideStrings(channels)), Route.AllPrimaries);
+        return await Command(Request.PubSubShardNumSub(ToGlideStrings(channels)), PubSubInfoRoute);
     }
 
     #endregion

@@ -7,7 +7,7 @@ namespace Valkey.Glide.Commands;
 /// <br />
 /// See more on <see href="https://valkey.io/commands/#pubsub">valkey.io</see>.
 /// </summary>
-public interface IPubSubClusterCommands : IPubSubCommands
+public interface IPubSubClusterCommands
 {
     #region PublishCommands
 
@@ -23,7 +23,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// Sharded channels are specific to cluster mode and route messages to specific shards based on the channel name.
     /// <example>
     /// <code>
-    /// long count = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
+    /// long subscriberCount = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
     /// Console.WriteLine($"Message delivered to {subscriberCount} subscribers");
     /// </code>
     /// </example>

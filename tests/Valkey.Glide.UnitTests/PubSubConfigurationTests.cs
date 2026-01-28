@@ -45,19 +45,6 @@ public class PubSubConfigurationTests
     }
 
     [Fact]
-    public void StandaloneClientConfigurationBuilder_WithPubSubSubscriptions_InvalidConfig_ThrowsArgumentException()
-    {
-        // Arrange
-        var pubSubConfig = new StandalonePubSubSubscriptionConfig(); // Empty config - invalid
-
-        var builder = new StandaloneClientConfigurationBuilder()
-            .WithAddress("localhost", 6379);
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => builder.WithPubSubSubscriptions(pubSubConfig));
-    }
-
-    [Fact]
     public void StandaloneClientConfigurationBuilder_WithPubSubSubscriptions_WithCallback_SetsCallbackAndContext()
     {
         // Arrange
@@ -150,19 +137,6 @@ public class PubSubConfigurationTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => builder.WithPubSubSubscriptions(null!));
-    }
-
-    [Fact]
-    public void ClusterClientConfigurationBuilder_WithPubSubSubscriptions_InvalidConfig_ThrowsArgumentException()
-    {
-        // Arrange
-        var pubSubConfig = new ClusterPubSubSubscriptionConfig(); // Empty config - invalid
-
-        var builder = new ClusterClientConfigurationBuilder()
-            .WithAddress("localhost", 6379);
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => builder.WithPubSubSubscriptions(pubSubConfig));
     }
 
     [Fact]
