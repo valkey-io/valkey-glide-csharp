@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -8,9 +7,11 @@ namespace Valkey.Glide;
 public partial class GlideClusterClient
 {
     /// <inheritdoc/>
+    /// Route cluster pub/sub commands to a random shard.
     protected sealed override Route? PubSubRoute => Route.Random;
 
     /// <inheritdoc/>
+    /// Route cluster pub/sub info commands to all primaries to produce aggregated results.
     protected sealed override Route? PubSubInfoRoute => Route.AllPrimaries;
 
     #region PublishCommands

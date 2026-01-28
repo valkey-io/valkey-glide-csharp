@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Reflection.Metadata;
-
 using Valkey.Glide.Commands;
 using Valkey.Glide.TestUtils;
 
@@ -121,7 +119,7 @@ public class PubSubCommandTests()
         using var publisher = clientFactory();
 
         // Subscribe to pattern and wait to ensure subscription completes.
-        await subscriber.PSubscribeAsync(msg.Pattern);
+        await subscriber.PSubscribeAsync(msg.Pattern!);
         await Task.Delay(500);
 
         // Publish to channel and verify message received.
@@ -140,7 +138,7 @@ public class PubSubCommandTests()
         using var publisher = clientFactory();
 
         // Subscribe to patterns and wait to ensure subscriptions complete.
-        await subscriber.PSubscribeAsync([msg1.Pattern, msg2.Pattern]);
+        await subscriber.PSubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
         await Task.Delay(500);
 
         // Publish to channels and verify messages received.
@@ -207,8 +205,8 @@ public class PubSubCommandTests()
         await PubSub.AssertReceived(subscriber, msg2);
     }
 
-    // [Theory]
-    // [MemberData(nameof(Factory.ClientFactories), MemberType = typeof(Factory))]
+    [Theory]
+    [MemberData(nameof(ClientFactories))]
     public async Task UnsubscribeAsync_MultipleChannels_ReceivesNoMessages(ClientFactory clientFactory)
     {
         var msg1 = PubSub.GetPubSubMessage();
@@ -270,10 +268,10 @@ public class PubSubCommandTests()
         using var publisher = clientFactory();
 
         // Subscribe to both patterns.
-        await subscriber.PSubscribeAsync([msg1.Pattern, msg2.Pattern]);
+        await subscriber.PSubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
 
         // Unsubscribe from one pattern and wait for unsubscription to complete.
-        await subscriber.PUnsubscribeAsync(msg1.Pattern);
+        await subscriber.PUnsubscribeAsync(msg1.Pattern!);
         await Task.Delay(500);
 
         // Publish to unsubscribed pattern channel and verify no message received.
@@ -296,10 +294,10 @@ public class PubSubCommandTests()
         using var publisher = clientFactory();
 
         // Subscribe to both patterns.
-        await subscriber.PSubscribeAsync([msg1.Pattern, msg2.Pattern]);
+        await subscriber.PSubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
 
         // Unsubscribe from both patterns and wait for unsubscriptions to complete.
-        await subscriber.PUnsubscribeAsync([msg1.Pattern, msg2.Pattern]);
+        await subscriber.PUnsubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
         await Task.Delay(500);
 
         // Publish to both channels and verify no messages received.
@@ -354,7 +352,7 @@ public class PubSubCommandTests()
         await PubSub.AssertSubscribed(publisher, msg.Channel);
 
         // Verify that channel matching pattern is active.
-        Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync(msg.Pattern));
+        Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync(msg.Pattern!));
     }
 
     [Theory]

@@ -235,7 +235,7 @@ public class PubSubClusterCommandTests()
         await PubSub.AssertSubscribed(publisher, msg.Channel);
 
         // Verify that shard channel matching pattern is active.
-        Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync(msg.Pattern));
+        Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync(msg.Pattern!));
     }
 
     [Fact]
