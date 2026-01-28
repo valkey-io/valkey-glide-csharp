@@ -8,14 +8,14 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient : IPubSubCommands
 {
     /// <summary>
-    /// Route to use for pub/sub publish, subscribe, and unsubscribe commands.
+    /// Route to use for pub/sub commands (e.g. subscribe, publish).
     /// </summary>
-    abstract protected Route? PubSubRoute { get; }
+    protected virtual Route? PubSubRoute { get; } = null;
 
     /// <summary>
-    /// Route to use for pub/sub message introspection commands.
+    /// Route to use for pub/sub info commands (e.g. pubsub channels, numsub).
     /// </summary>
-    abstract protected Route? PubSubInfoRoute { get; }
+    protected virtual Route? PubSubInfoRoute { get; } = null;
 
     #region PublishCommands
 

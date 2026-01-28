@@ -54,14 +54,6 @@ public static class PubSub
     }
 
     /// <summary>
-    /// Asserts that there is at least one subscriber to the specified channel.
-    /// </summary>
-    public static async Task AssertSubscribed(BaseClient client, string channel)
-    {
-        await AssertSubscribed(client, [channel]);
-    }
-
-    /// <summary>
     /// Asserts that there is at least one subscriber to each of the specified channels.
     /// </summary>
     public static async Task AssertSubscribed(BaseClient client, string[] channels)
@@ -82,11 +74,23 @@ public static class PubSub
     }
 
     /// <summary>
-    /// Asserts that there are no subscribers to the specified channel.
+    /// Asserts that there is at least one subscriber to each of the specified shard channels.
     /// </summary>
-    public static async Task AssertUnsubscribed(BaseClient client, string channel)
+    public static async Task AssertSSubscribed(GlideClusterClient client, string[] shardChannels)
     {
-        await AssertUnsubscribed(client, [channel]);
+        // Retry until subscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxRetryDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubShardNumSubAsync(shardChannels);
+            if (channelCounts.All(kvp => kvp.Value > 0))
+                return;
+
+            await Task.Delay(RetryInterval, cts.Token);
+        }
+
+        Assert.Fail($"Expected at least 1 subscriber for shard channels '{string.Join(", ", shardChannels)}'");
     }
 
     /// <summary>
@@ -109,18 +113,23 @@ public static class PubSub
         Assert.Fail($"Expected 0 subscribers for channels '{string.Join(", ", channels)}'");
     }
 
-    public static async Task AssertActive(BaseClient client, string channel)
+    /// <summary>
+    /// Asserts that there are no subscribers to each of the specified shard channels.
+    /// </summary>
+    public static async Task AssertSUnsubscribed(GlideClusterClient client, string[] shardChannels)
     {
-        await AssertActive(client, [channel]);
-    }
+        // Retry until subscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxRetryDuration);
 
-    public static async Task AssertActive(BaseClient client, string[] channel)
-    {
-        // Retry until active or timeout occurs.
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubShardNumSubAsync(shardChannels);
+            if (channelCounts.All(kvp => kvp.Value == 0))
+                return;
 
-        var activeChannels = await client.PubSubChannelsAsync();
-        foreach (var ch in channel)
-            Assert.Contains(ch, activeChannels);
+            await Task.Delay(500, cts.Token);
+        }
+
+        Assert.Fail($"Expected 0 subscribers for shard channels '{string.Join(", ", shardChannels)}'");
     }
 }

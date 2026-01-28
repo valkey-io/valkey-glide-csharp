@@ -80,10 +80,8 @@ public sealed class ClusterServer : Server
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient()
-    {
-        return await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
-    }
+    public override async Task<BaseClient> CreateClient() => await CreateClusterClient();
+    public async Task<GlideClusterClient> CreateClusterClient() => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
 }
 
 /// <summary>
@@ -106,8 +104,6 @@ public sealed class StandaloneServer : Server
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient()
-    {
-        return await GlideClient.CreateClient(CreateConfigBuilder().Build());
-    }
+    public override async Task<BaseClient> CreateClient() => await CreateStandaloneClient();
+    public async Task<GlideClient> CreateStandaloneClient() => await GlideClient.CreateClient(CreateConfigBuilder().Build());
 }

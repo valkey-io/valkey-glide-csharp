@@ -1,13 +1,16 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
 /// Integration tests for pub/sub cluster commands.
-/// See <see cref="IPubSubClusterCommands"/>.
+/// See <see cref="IPubSubClusterCommands"/> and <see cref="GlideClusterClient"/>.
 /// </summary>
+[Collection(typeof(PubSubClusterCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class PubSubClusterCommandTests()
 {
     // Skip tests if Valkey GLIDE version is less than 7.0.0
@@ -40,9 +43,9 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
 
-        // Publish to channel and verify subscriber count.
+        // Publish to shard channel and verify subscriber count.
         // Retry publishing until message is received or timeout occurs.
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         while (!cts.Token.IsCancellationRequested)
@@ -71,7 +74,7 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
 
         // Publish to shard channel and verify message received.
         await publisher.SPublishAsync(msg.Channel, msg.Message);
@@ -91,7 +94,7 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
 
         // Publish to shard channels and verify messages received.
         await publisher.SPublishAsync(msg1.Channel, msg1.Message);
@@ -117,7 +120,7 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to both shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
 
         // Unsubscribe from all shard channels and verify unsubscription.
         await subscriber.SUnsubscribeAsync();
@@ -144,11 +147,11 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to both shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
 
         // Unsubscribe from one shard channel and verify unsubscription.
         await subscriber.SUnsubscribeAsync(msg1.Channel);
-        await PubSub.AssertUnsubscribed(publisher, msg1.Channel);
+        await PubSub.AssertSUnsubscribed(publisher, [msg1.Channel]);
 
         // Publish to unsubscribed shard channel and verify no message received.
         await publisher.SPublishAsync(msg1.Channel, msg1.Message);
@@ -172,11 +175,11 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to both shard channels and verify subscriptions.
         await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertSubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await PubSub.AssertSSubscribed(publisher, [msg1.Channel, msg2.Channel]);
 
         // Unsubscribe from both shard channels and verify unsubscriptions.
         await subscriber.SUnsubscribeAsync([msg1.Channel, msg2.Channel]);
-        await PubSub.AssertUnsubscribed(publisher, [msg1.Channel, msg2.Channel]);
+        await PubSub.AssertSUnsubscribed(publisher, [msg1.Channel, msg2.Channel]);
 
         // Publish to both shard channels and verify no messages received.
         await publisher.SPublishAsync(msg1.Channel, msg1.Message);
@@ -194,12 +197,11 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = PubSub.GetPubSubMessage();
-        var client = TestConfiguration.DefaultClusterClient();
+        using var server = new ClusterServer();
+        using var client = await server.CreateClusterClient();
 
-        // TODO #193
-        // Note: There might be channels from other tests, so we just verify it returns an array
-        Assert.NotNull(await client.PubSubShardChannelsAsync());
+        // Verify no active channels.
+        Assert.Empty(await client.PubSubShardChannelsAsync());
     }
 
     [Fact]
@@ -214,10 +216,10 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
 
-        // Verify that channel is active.
-        Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync());
+        // Verify that shard channel is active.
+        Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync());
     }
 
     [Fact]
@@ -232,7 +234,7 @@ public class PubSubClusterCommandTests()
 
         // Subscribe to shard channel and verify subscription.
         await subscriber.SSubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSSubscribed(publisher, [msg.Channel]);
 
         // Verify that shard channel matching pattern is active.
         Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync(msg.Pattern!));
@@ -265,13 +267,13 @@ public class PubSubClusterCommandTests()
         using var publisher = TestConfiguration.DefaultClusterClient();
 
         // Subscribe to shard channels and verify subscriptions.
-        await subscriber1.SubscribeAsync(msg1.Channel);
-        await PubSub.AssertSubscribed(publisher, msg1.Channel);
+        await subscriber1.SSubscribeAsync(msg1.Channel);
+        await PubSub.AssertSSubscribed(publisher, [msg1.Channel]);
 
-        await subscriber2.SubscribeAsync(msg2.Channel);
-        await PubSub.AssertSubscribed(publisher, msg2.Channel);
+        await subscriber2.SSubscribeAsync(msg2.Channel);
+        await PubSub.AssertSSubscribed(publisher, [msg2.Channel]);
 
-        // Verify subscription counts for both channels.
+        // Verify subscription counts for both shard channels.
         var expected = new Dictionary<string, long> { { msg1.Channel, 1L }, { msg2.Channel, 1L } };
         var actual = await publisher.PubSubShardNumSubAsync([msg1.Channel, msg2.Channel]);
         Assert.Equivalent(expected, actual);

@@ -7,24 +7,37 @@ namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
 /// Integration tests for pub/sub commands.
-/// See <see cref="IPubSubCommands"/>.
+/// See <see cref="IPubSubCommands"/> and <see cref="GlideClient"/>.
 /// </summary>
+[Collection(typeof(PubSubCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class PubSubCommandTests()
 {
+    // Delegates for creating servers and clients.
     public delegate Server ServerFactory();
     public delegate BaseClient ClientFactory();
 
-    public static IEnumerable<object[]> ServerFactories()
+    // Factory data for parameterized tests.
+    public static TheoryData<ServerFactory> ServerFactories()
     {
-        yield return new object[] { new ServerFactory(() => new TestUtils.StandaloneServer()) };
-        yield return new object[] { new ServerFactory(() => new TestUtils.ClusterServer()) };
+        return new TheoryData<ServerFactory>
+        {
+            new ServerFactory(() => new TestUtils.StandaloneServer()),
+            new ServerFactory(() => new TestUtils.ClusterServer())
+        };
     }
 
-    public static IEnumerable<object[]> ClientFactories()
+    public static TheoryData<ClientFactory> ClientFactories()
     {
-        yield return new object[] { new ClientFactory(() => TestConfiguration.DefaultStandaloneClient()) };
-        yield return new object[] { new ClientFactory(() => TestConfiguration.DefaultClusterClient()) };
+        return new TheoryData<ClientFactory>
+        {
+            new ClientFactory(() => TestConfiguration.DefaultStandaloneClient()),
+            new ClientFactory(() => TestConfiguration.DefaultClusterClient())
+        };
     }
+
+    // Delay to allow for pub/sub subscriptions to synchronize.
+    private static readonly TimeSpan SyncDelay = TimeSpan.FromMilliseconds(500);
 
     #region PublishCommands
 
@@ -50,7 +63,7 @@ public class PubSubCommandTests()
 
         // Subscribe to channel and verify subscription.
         await subscriber.SubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSubscribed(publisher, [msg.Channel]);
 
         // Publish to channel and verify subscriber count.
         // Retry publishing until message is received or timeout occurs.
@@ -60,7 +73,7 @@ public class PubSubCommandTests()
             if (await publisher.PublishAsync(msg.Channel, msg.Message) == 1L)
                 return;
 
-            await Task.Delay(500);
+            await Task.Delay(SyncDelay);
         }
 
         Assert.Fail("Expected 1 subscriber to receive the published message.");
@@ -80,7 +93,7 @@ public class PubSubCommandTests()
 
         // Subscribe to channel and verify subscription.
         await subscriber.SubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSubscribed(publisher, [msg.Channel]);
 
         // Publish to channel and verify message received.
         await publisher.PublishAsync(msg.Channel, msg.Message);
@@ -120,7 +133,7 @@ public class PubSubCommandTests()
 
         // Subscribe to pattern and wait to ensure subscription completes.
         await subscriber.PSubscribeAsync(msg.Pattern!);
-        await Task.Delay(500);
+        await Task.Delay(SyncDelay);
 
         // Publish to channel and verify message received.
         await publisher.PublishAsync(msg.Channel, msg.Message);
@@ -139,7 +152,7 @@ public class PubSubCommandTests()
 
         // Subscribe to patterns and wait to ensure subscriptions complete.
         await subscriber.PSubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
-        await Task.Delay(500);
+        await Task.Delay(SyncDelay);
 
         // Publish to channels and verify messages received.
         await publisher.PublishAsync(msg1.Channel, msg1.Message);
@@ -194,7 +207,7 @@ public class PubSubCommandTests()
 
         // Unsubscribe from one channel and verify unsubscription.
         await subscriber.UnsubscribeAsync(msg1.Channel);
-        await PubSub.AssertUnsubscribed(publisher, msg1.Channel);
+        await PubSub.AssertUnsubscribed(publisher, [msg1.Channel]);
 
         // Publish to unsubscribed channel and verify no message received.
         await publisher.PublishAsync(msg1.Channel, msg1.Message);
@@ -235,19 +248,19 @@ public class PubSubCommandTests()
     [MemberData(nameof(ClientFactories))]
     public async Task PUnsubscribeAsync_AllPatterns_ReceivesNoMessages(ClientFactory clientFactory)
     {
-        var msg1 = PubSub.GetPubSubMessage();
-        var msg2 = PubSub.GetPubSubMessage();
+        var msg1 = PubSub.GetPubSubMessage(pattern: true);
+        var msg2 = PubSub.GetPubSubMessage(pattern: true);
 
         using var subscriber = clientFactory();
         using var publisher = clientFactory();
 
         // Subscribe to both patterns.
-        await subscriber.PSubscribeAsync(msg1.Pattern);
-        await subscriber.PSubscribeAsync(msg2.Pattern);
+        await subscriber.PSubscribeAsync(msg1.Pattern!);
+        await subscriber.PSubscribeAsync(msg2.Pattern!);
 
         // Unsubscribe from all patterns and wait for unsubscriptions to complete.
         await subscriber.PUnsubscribeAsync();
-        await Task.Delay(500);
+        await Task.Delay(SyncDelay);
 
         // Publish to both channels and verify no messages received.
         await publisher.PublishAsync(msg1.Channel, msg1.Message);
@@ -272,7 +285,7 @@ public class PubSubCommandTests()
 
         // Unsubscribe from one pattern and wait for unsubscription to complete.
         await subscriber.PUnsubscribeAsync(msg1.Pattern!);
-        await Task.Delay(500);
+        await Task.Delay(SyncDelay);
 
         // Publish to unsubscribed pattern channel and verify no message received.
         await publisher.PublishAsync(msg1.Channel, msg1.Message);
@@ -298,7 +311,7 @@ public class PubSubCommandTests()
 
         // Unsubscribe from both patterns and wait for unsubscriptions to complete.
         await subscriber.PUnsubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
-        await Task.Delay(500);
+        await Task.Delay(SyncDelay);
 
         // Publish to both channels and verify no messages received.
         await publisher.PublishAsync(msg1.Channel, msg1.Message);
@@ -311,11 +324,12 @@ public class PubSubCommandTests()
     #endregion
     #region PubSubInfoCommands
 
-    [Fact]
-    public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmpty()
+    [Theory]
+    [MemberData(nameof(ServerFactories))]
+    public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmpty(ServerFactory serverFactory)
     {
-        using var server = new StandaloneServer();
-        using var client = await GlideClient.CreateClient(server.CreateConfigBuilder().Build());
+        using var server = serverFactory();
+        using var client = await server.CreateClient();
 
         // Verify no active channels.
         Assert.Empty(await client.PubSubChannelsAsync());
@@ -332,7 +346,7 @@ public class PubSubCommandTests()
 
         // Subscribe to channel aqnd verify subscription.
         await subscriber.SubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSubscribed(publisher, [msg.Channel]);
 
         // Verify that channel is active.
         Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync());
@@ -349,7 +363,7 @@ public class PubSubCommandTests()
 
         // Subscribe to channel and verify subscription.
         await subscriber.SubscribeAsync(msg.Channel);
-        await PubSub.AssertSubscribed(publisher, msg.Channel);
+        await PubSub.AssertSubscribed(publisher, [msg.Channel]);
 
         // Verify that channel matching pattern is active.
         Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync(msg.Pattern!));
@@ -381,10 +395,10 @@ public class PubSubCommandTests()
 
         // Subscribe to channels and verify subscriptions.
         await subscriber1.SubscribeAsync(msg1.Channel);
-        await PubSub.AssertSubscribed(publisher, msg1.Channel);
+        await PubSub.AssertSubscribed(publisher, [msg1.Channel]);
 
         await subscriber2.SubscribeAsync(msg2.Channel);
-        await PubSub.AssertSubscribed(publisher, msg2.Channel);
+        await PubSub.AssertSubscribed(publisher, [msg2.Channel]);
 
         // Verify subscription counts for both channels.
         var expected = new Dictionary<string, long> { { msg1.Channel, 1L }, { msg2.Channel, 1L } };
@@ -413,7 +427,7 @@ public class PubSubCommandTests()
 
         // Subscribe to patterns and wait to ensure subscriptions complete.
         await subscriber.PSubscribeAsync(["pattern1*", "pattern2*"]);
-        await Task.Delay(1000);
+        await Task.Delay(SyncDelay);
 
         // Verify active pattern subscriptions.
         Assert.Equal(2L, await publisher.PubSubNumPatAsync());
