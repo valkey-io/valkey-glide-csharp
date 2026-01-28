@@ -408,7 +408,7 @@ internal partial class FFI
                 pubSubConfig.PatternCount = (uint)patterns.Count;
             }
 
-            // Marshal sharded channels (mode 2) - only for cluster clients
+            // Marshal shard channels (mode 2) - only for cluster clients
             if (subscriptions.TryGetValue(2, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
             {
                 pubSubConfig.ShardedChannelsPtr = MarshalStringArray(shardedChannels);

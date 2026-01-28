@@ -199,7 +199,7 @@ public class PubSubConfigurationTests
         Assert.Contains("pattern1*", storedConfig.Subscriptions[1]);
         Assert.Contains("pattern2*", storedConfig.Subscriptions[1]);
 
-        // Check sharded channels (mode 2)
+        // Check shard channels (mode 2)
         Assert.True(storedConfig.Subscriptions.ContainsKey(2));
         Assert.Contains("shard1", storedConfig.Subscriptions[2]);
         Assert.Contains("shard2", storedConfig.Subscriptions[2]);
@@ -268,7 +268,7 @@ public class PubSubConfigurationTests
         Assert.Throws<ArgumentException>(() =>
         {
             var pubSubConfig = new ClusterPubSubSubscriptionConfig()
-                .WithShardedChannel(""); // Empty sharded channel name should be invalid
+                .WithShardedChannel(""); // Empty shard channel name should be invalid
             builder.WithPubSubSubscriptions(pubSubConfig);
         });
     }

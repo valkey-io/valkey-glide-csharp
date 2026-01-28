@@ -131,11 +131,11 @@ public interface IPubSubClusterCommands
     #region PubSubInfoCommands
 
     /// <summary>
-    /// Lists the currently active sharded channels.
+    /// Lists the currently active shard channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of active sharded channel names.</returns>
+    /// <returns>An array of active shard channel names.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -147,12 +147,12 @@ public interface IPubSubClusterCommands
     abstract Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Lists the currently active sharded channels matching the specified pattern.
+    /// Lists the currently active shard channels matching the specified pattern.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
-    /// <param name="pattern">A glob-style pattern to filter sharded channel names.</param>
+    /// <param name="pattern">A glob-style pattern to filter shard channel names.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of active sharded channel names matching the pattern.</returns>
+    /// <returns>An array of active shard channel names matching the pattern.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -164,12 +164,12 @@ public interface IPubSubClusterCommands
     abstract Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified sharded channels.
+    /// Returns the number of subscribers for the specified shard channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardnumsub/">valkey.io</seealso>
-    /// <param name="channels">An array of sharded channel names to query.</param>
+    /// <param name="channels">An array of shard channel names to query.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A dictionary mapping sharded channel names to their subscriber counts.</returns>
+    /// <returns>A dictionary mapping shard channel names to their subscriber counts.</returns>
     /// <remarks>
     /// <example>
     /// <code>
