@@ -56,11 +56,6 @@ public abstract class BasePubSubSubscriptionConfig
     /// <exception cref="ArgumentException">Thrown when configuration is invalid.</exception>
     internal virtual void Validate()
     {
-        if (Subscriptions.Count == 0)
-        {
-            throw new ArgumentException("At least one subscription must be configured");
-        }
-
         foreach (KeyValuePair<uint, ISet<string>> kvp in Subscriptions)
         {
             if (kvp.Value == null || kvp.Value.Count == 0)
@@ -221,9 +216,9 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
     public ClusterPubSubSubscriptionConfig WithPattern(string pattern) => WithSubscription(PubSubClusterChannelMode.Pattern, pattern);
 
     /// <summary>
-    /// Add a sharded channel subscription.
+    /// Add a shard channel subscription.
     /// </summary>
-    /// <param name="channel">The sharded channel name to subscribe to.</param>
+    /// <param name="channel">The shard channel name to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
     /// <exception cref="ArgumentException">Thrown when channel is null, empty, or whitespace.</exception>
     public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel) => WithSubscription(PubSubClusterChannelMode.Sharded, channel);

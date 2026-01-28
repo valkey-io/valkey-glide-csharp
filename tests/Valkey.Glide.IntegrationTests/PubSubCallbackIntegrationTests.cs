@@ -9,6 +9,8 @@ namespace Valkey.Glide.IntegrationTests;
 /// These tests verify the complete message flow from PUBLISH commands through the server,
 /// Rust core, FFI boundary, and into C# callbacks.
 /// </summary>
+[Collection(typeof(PubSubClusterCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class PubSubCallbackIntegrationTests
 {
     private readonly ManualResetEventSlim _messageReceivedEvent = new(false);

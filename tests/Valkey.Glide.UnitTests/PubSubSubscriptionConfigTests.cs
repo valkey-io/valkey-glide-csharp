@@ -116,17 +116,6 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void StandaloneConfig_Validate_NoSubscriptions_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => config.Validate());
-        Assert.Contains("At least one subscription must be configured", exception.Message);
-    }
-
-    [Fact]
     public void StandaloneConfig_Validate_ValidConfiguration_DoesNotThrow()
     {
         // Arrange
@@ -279,17 +268,6 @@ public class PubSubSubscriptionConfigTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => config.WithCallback<ClusterPubSubSubscriptionConfig>(null!));
-    }
-
-    [Fact]
-    public void ClusterConfig_Validate_NoSubscriptions_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => config.Validate());
-        Assert.Contains("At least one subscription must be configured", exception.Message);
     }
 
     [Fact]

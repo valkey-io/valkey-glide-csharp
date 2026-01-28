@@ -1,505 +1,338 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
+using Valkey.Glide.TestUtils;
+
+using static Valkey.Glide.TestUtils.PubSub;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for cluster-specific PubSub command methods.
-/// Tests the PubSub command API implementations in GlideClusterClient.
+/// Integration tests for pub/sub cluster commands.
+/// See <see cref="IPubSubClusterCommands"/> and <see cref="GlideClusterClient"/>.
 /// </summary>
-[Collection("GlideTests")]
+[Collection(typeof(PubSubClusterCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class PubSubClusterCommandTests()
 {
-    [Fact]
-    public async Task PublishAsync_WithNoSubscribers_ReturnsZero()
-    {
-        // Arrange
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var client = await GlideClusterClient.CreateClient(config);
+    // Skip tests if Valkey GLIDE version is less than 7.0.0
+    private static readonly bool IsSharedPubSubSupported = TestConfiguration.IsVersionAtLeast("7.0.0");
+    private static readonly string SkipMessage = "Sharded PubSub is supported since 7.0.0";
 
-        string channel = $"test-channel-{Guid.NewGuid()}";
-        string message = "test message";
-
-        // Act
-        long subscriberCount = await client.PublishAsync(channel, message);
-
-        // Assert
-        Assert.Equal(0L, subscriberCount);
-    }
-
-    [Fact]
-    public async Task PublishAsync_WithSubscriber_ReturnsSubscriberCount()
-    {
-        // Arrange
-        string testChannel = $"test-channel-{Guid.NewGuid()}";
-        string testMessage = "Hello from PublishAsync";
-
-        // Create subscriber with PubSub config
-        ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
-            .WithChannel(testChannel);
-
-        var subscriberConfig = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
-
-        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-
-        // Create publisher
-        var publisherConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
-
-        // Act - retry publishing until subscriber is registered or timeout.
-        long subscriberCount = 0L;
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        while (!cts.Token.IsCancellationRequested)
-        {
-            subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
-            if (subscriberCount > 0L) break;
-            await Task.Delay(500);
-        }
-
-        // Assert - In cluster mode, PUBLISH returns the number of subscribers across all nodes
-        // The count might be 0 or more depending on cluster topology and subscription propagation
-        Assert.True(subscriberCount >= 0L);
-        await AssertMessageReceived(subscriberClient, testChannel, testMessage);
-    }
+    #region PublishCommands
 
     [Fact]
     public async Task SPublishAsync_WithNoSubscribers_ReturnsZero()
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Arrange
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var client = await GlideClusterClient.CreateClient(config);
+        var msg = BuildMessage();
+        var client = TestConfiguration.DefaultClusterClient();
 
-        string channel = $"test-shard-{Guid.NewGuid()}";
-        string message = "test sharded message";
-
-        // Act
-        long subscriberCount = await client.SPublishAsync(channel, message);
-
-        // Assert
-        Assert.Equal(0L, subscriberCount);
+        // Publish to shard channel and verify no subscribers.
+        Assert.Equal(0L, await client.SPublishAsync(msg.Channel, msg.Message));
     }
 
     [Fact]
     public async Task SPublishAsync_WithSubscriber_ReturnsSubscriberCount()
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Arrange
-        string testChannel = $"test-shard-{Guid.NewGuid()}";
-        string testMessage = "Hello from sharded PublishAsync";
+        var msg = BuildMessage();
 
-        // Create subscriber with sharded PubSub config
-        ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
-            .WithShardedChannel(testChannel);
+        var subscriber = TestConfiguration.DefaultClusterClient();
+        var publisher = TestConfiguration.DefaultClusterClient();
 
-        var subscriberConfig = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
+        // Subscribe to shard channel and verify subscription.
+        await subscriber.SSubscribeAsync(msg.Channel);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
-        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
+        // Publish to shard channel and verify subscriber count.
+        await AssertSPublishAsync(publisher, msg);
+    }
 
-        // Create publisher
-        var publisherConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var publisherClient = await GlideClusterClient.CreateClient(publisherConfig);
+    #endregion
+    #region SubscribeCommands
 
-        // Act - retry publishing until subscriber is registered or timeout.
-        long subscriberCount = 0L;
+    [Fact]
+    public async Task SSubscribeAsync_OneChannel_ReceivesMessage()
+    {
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        while (!cts.Token.IsCancellationRequested)
-        {
-            subscriberCount = await publisherClient.SPublishAsync(testChannel, testMessage);
-            if (subscriberCount > 0L) break;
-            await Task.Delay(500);
-        }
+        var msg = BuildMessage();
 
-        // Assert
-        Assert.Equal(1L, subscriberCount);
-        await AssertMessageReceived(subscriberClient, testChannel, testMessage);
+        using var subscriber = TestConfiguration.DefaultClusterClient();
+        using var publisher = TestConfiguration.DefaultClusterClient();
+
+        // Subscribe to shard channel and verify subscription.
+        await subscriber.SSubscribeAsync(msg.Channel);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
+
+        // Publish to shard channel and verify message received.
+        await publisher.SPublishAsync(msg.Channel, msg.Message);
+        await AssertReceivedAsync(subscriber, msg);
     }
 
     [Fact]
-    public async Task PubSubChannelsAsync_WithNoChannels_ReturnsArray()
+    public async Task SSubscribeAsync_MultipleChannels_ReceivesMessages()
     {
-        // Arrange
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var client = await GlideClusterClient.CreateClient(config);
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Act
-        string[] channels = await client.PubSubChannelsAsync();
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        // Assert
-        Assert.NotNull(channels);
-        // Note: There might be channels from other tests, so we just verify it returns an array
+        using var subscriber = TestConfiguration.DefaultClusterClient();
+        using var publisher = TestConfiguration.DefaultClusterClient();
+
+        // Subscribe to shard channels and verify subscriptions.
+        await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
+
+        // Publish to shard channels and verify messages received.
+        await publisher.SPublishAsync(msg1.Channel, msg1.Message);
+        await AssertReceivedAsync(subscriber, msg1);
+
+        await publisher.SPublishAsync(msg2.Channel, msg2.Message);
+        await AssertReceivedAsync(subscriber, msg2);
+    }
+
+    #endregion
+    #region UnsubscribeCommands
+
+    [Fact]
+    public async Task SUnsubscribeAsync_AllChannels_ReceivesNoMessages()
+    {
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
+
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
+
+        using var subscriber = TestConfiguration.DefaultClusterClient();
+        using var publisher = TestConfiguration.DefaultClusterClient();
+
+        // Subscribe to both shard channels and verify subscriptions.
+        await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
+
+        // Unsubscribe from all shard channels and verify unsubscription.
+        await subscriber.SUnsubscribeAsync();
+        await AssertSUnsubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
+
+        // Publish to shard channels and verify no messages received.
+        await publisher.SPublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
+
+        await publisher.SPublishAsync(msg2.Channel, msg2.Message);
+        await AssertNotReceivedAsync(subscriber, msg2);
     }
 
     [Fact]
-    public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel()
+    public async Task SUnsubscribeAsync_OneChannel_ReceivesNoMessages()
     {
-        // Arrange
-        string testChannel = $"test-channel-{Guid.NewGuid()}";
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Create subscriber
-        ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
-            .WithChannel(testChannel);
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        var subscriberConfig = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
+        using var subscriber = TestConfiguration.DefaultClusterClient();
+        using var publisher = TestConfiguration.DefaultClusterClient();
 
-        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
+        // Subscribe to both shard channels and verify subscriptions.
+        await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
+        // Unsubscribe from one shard channel and verify unsubscription.
+        await subscriber.SUnsubscribeAsync(msg1.Channel);
+        await AssertSUnsubscribedAsync(publisher, [msg1.Channel]);
 
-        // Wait for subscription to be established - cluster mode may need more time
-        await Task.Delay(2000);
+        // Publish to unsubscribed shard channel and verify no message received.
+        await publisher.SPublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
 
-        // Act
-        string[] channels = await queryClient.PubSubChannelsAsync();
-
-        // Assert
-        Assert.Contains(testChannel, channels);
+        // Publish to subscribed shard channel and verify message received.
+        await publisher.SPublishAsync(msg2.Channel, msg2.Message);
+        await AssertReceivedAsync(subscriber, msg2);
     }
 
     [Fact]
-    public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels()
+    public async Task SUnsubscribeAsync_MultipleChannels_ReceivesNoMessages()
     {
-        // Arrange
-        string channelPrefix = $"test-{Guid.NewGuid()}";
-        string testChannel1 = $"{channelPrefix}-channel1";
-        string testChannel2 = $"{channelPrefix}-channel2";
-        string pattern = $"{channelPrefix}*";
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Create subscribers for both channels
-        ClusterPubSubSubscriptionConfig pubsubConfig1 = new ClusterPubSubSubscriptionConfig()
-            .WithChannel(testChannel1);
-        ClusterPubSubSubscriptionConfig pubsubConfig2 = new ClusterPubSubSubscriptionConfig()
-            .WithChannel(testChannel2);
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        var subscriberConfig1 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-        var subscriberConfig2 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
+        using var subscriber = TestConfiguration.DefaultClusterClient();
+        using var publisher = TestConfiguration.DefaultClusterClient();
 
-        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        await using var subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
+        // Subscribe to both shard channels and verify subscriptions.
+        await subscriber.SSubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
+        // Unsubscribe from both shard channels and verify unsubscriptions.
+        await subscriber.SUnsubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSUnsubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        // Wait for subscriptions to be established - cluster mode may need more time
-        await Task.Delay(2000);
+        // Publish to both shard channels and verify no messages received.
+        await publisher.SPublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
 
-        // Act
-        string[] channels = await queryClient.PubSubChannelsAsync(pattern);
-
-        // Assert
-        Assert.Contains(testChannel1, channels);
-        Assert.Contains(testChannel2, channels);
+        await publisher.SPublishAsync(msg2.Channel, msg2.Message);
+        await AssertNotReceivedAsync(subscriber, msg2);
     }
 
-    [Fact]
-    public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
-    {
-        // Arrange
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var client = await GlideClusterClient.CreateClient(config);
-
-        string channel1 = $"test-channel-{Guid.NewGuid()}";
-        string channel2 = $"test-channel-{Guid.NewGuid()}";
-
-        // Act
-        Dictionary<string, long> counts = await client.PubSubNumSubAsync([channel1, channel2]);
-
-        // Assert
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(0L, counts[channel1]);
-        Assert.Equal(0L, counts[channel2]);
-    }
+    #endregion
+    #region PubSubInfoCommands
 
     [Fact]
-    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsCorrectCounts()
+    public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsEmpty()
     {
-        // Arrange
-        string testChannel1 = $"test-channel-{Guid.NewGuid()}";
-        string testChannel2 = $"test-channel-{Guid.NewGuid()}";
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Create subscriber for channel1
-        ClusterPubSubSubscriptionConfig pubsubConfig1 = new ClusterPubSubSubscriptionConfig()
-            .WithChannel(testChannel1);
+        using var server = new ClusterServer();
+        using var client = await server.CreateClusterClient();
 
-        var subscriberConfig1 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-
-        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-
-        // Create two subscribers for channel2
-        ClusterPubSubSubscriptionConfig pubsubConfig2 = new ClusterPubSubSubscriptionConfig()
-            .WithChannel(testChannel2);
-
-        var subscriberConfig2 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
-
-        await using var subscriberClient2a = await GlideClusterClient.CreateClient(subscriberConfig2);
-        await using var subscriberClient2b = await GlideClusterClient.CreateClient(subscriberConfig2);
-
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
-
-        // Wait for subscriptions to be established - cluster mode may need more time
-        await Task.Delay(2000);
-
-        // Act
-        Dictionary<string, long> counts = await queryClient.PubSubNumSubAsync([testChannel1, testChannel2]);
-
-        // Assert
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(1L, counts[testChannel1]);
-        Assert.Equal(2L, counts[testChannel2]);
-    }
-
-    [Fact]
-    public async Task PubSubNumPatAsync_WithNoPatterns_ReturnsNonNegative()
-    {
-        // Arrange
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var client = await GlideClusterClient.CreateClient(config);
-
-        // Act
-        long patternCount = await client.PubSubNumPatAsync();
-
-        // Assert
-        Assert.True(patternCount >= 0L);
-    }
-
-    [Fact]
-    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsCount()
-    {
-        // Arrange
-        string pattern1 = $"test-{Guid.NewGuid()}*";
-        string pattern2 = $"test-{Guid.NewGuid()}*";
-
-        // Create subscribers with pattern subscriptions
-        ClusterPubSubSubscriptionConfig pubsubConfig1 = new ClusterPubSubSubscriptionConfig()
-            .WithPattern(pattern1);
-        ClusterPubSubSubscriptionConfig pubsubConfig2 = new ClusterPubSubSubscriptionConfig()
-            .WithPattern(pattern2);
-
-        var subscriberConfig1 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-        var subscriberConfig2 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
-
-        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        await using var subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
-
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
-
-        // Wait for subscriptions to be established - cluster mode may need more time
-        await Task.Delay(2000);
-
-        // Get pattern count
-        long patternCount = await queryClient.PubSubNumPatAsync();
-
-        // Assert - The pattern count should be at least 2 (our two patterns)
-        // Note: There might be other pattern subscriptions from other tests
-        Assert.True(patternCount >= 2L, $"Expected at least 2 pattern subscriptions, got {patternCount}");
-    }
-
-    [Fact]
-    public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsArray()
-    {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
-
-        // Arrange
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var client = await GlideClusterClient.CreateClient(config);
-
-        // Act
-        string[] channels = await client.PubSubShardChannelsAsync();
-
-        // Assert
-        Assert.NotNull(channels);
-        // Note: There might be channels from other tests, so we just verify it returns an array
+        // Verify no active channels.
+        Assert.Empty(await client.PubSubShardChannelsAsync());
     }
 
     [Fact]
     public async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Arrange
-        string testChannel = $"test-shard-{Guid.NewGuid()}";
+        var msg = BuildMessage();
 
-        // Create subscriber with sharded channel
-        ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
-            .WithShardedChannel(testChannel);
+        var publisher = TestConfiguration.DefaultClusterClient();
+        var subscriber = TestConfiguration.DefaultClusterClient();
 
-        var subscriberConfig = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
+        // Subscribe to shard channel and verify subscription.
+        await subscriber.SSubscribeAsync(msg.Channel);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
-        await using var subscriberClient = await GlideClusterClient.CreateClient(subscriberConfig);
-
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
-
-        // Wait for subscription to be established - cluster mode may need more time
-        await Task.Delay(2000);
-
-        // Act
-        string[] channels = await queryClient.PubSubShardChannelsAsync();
-
-        // Assert
-        Assert.Contains(testChannel, channels);
+        // Verify that shard channel is active.
+        Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync());
     }
 
     [Fact]
     public async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Arrange
-        string channelPrefix = $"test-shard-{Guid.NewGuid()}";
-        string testChannel1 = $"{channelPrefix}-channel1";
-        string testChannel2 = $"{channelPrefix}-channel2";
-        string pattern = $"{channelPrefix}*";
+        var msg = BuildMessage(withPattern: true);
 
-        // Create subscribers for both sharded channels
-        ClusterPubSubSubscriptionConfig pubsubConfig1 = new ClusterPubSubSubscriptionConfig()
-            .WithShardedChannel(testChannel1);
-        ClusterPubSubSubscriptionConfig pubsubConfig2 = new ClusterPubSubSubscriptionConfig()
-            .WithShardedChannel(testChannel2);
+        using var subscriber = TestConfiguration.DefaultClusterClient();
+        using var publisher = TestConfiguration.DefaultClusterClient();
 
-        var subscriberConfig1 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-        var subscriberConfig2 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
+        // Subscribe to shard channel and verify subscription.
+        await subscriber.SSubscribeAsync(msg.Channel);
+        await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
-        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
-        await using var subscriberClient2 = await GlideClusterClient.CreateClient(subscriberConfig2);
-
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
-
-        // Wait for subscriptions to be established - cluster mode may need more time
-        await Task.Delay(2000);
-
-        // Act
-        string[] channels = await queryClient.PubSubShardChannelsAsync(pattern);
-
-        // Assert
-        Assert.Contains(testChannel1, channels);
-        Assert.Contains(testChannel2, channels);
+        // Verify that shard channel matching pattern is active.
+        Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync(msg.Pattern!));
     }
 
     [Fact]
     public async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Arrange
-        var config = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var client = await GlideClusterClient.CreateClient(config);
+        var msg = BuildMessage();
+        using var client = TestConfiguration.DefaultClusterClient();
 
-        string channel1 = $"test-shard-{Guid.NewGuid()}";
-        string channel2 = $"test-shard-{Guid.NewGuid()}";
-
-        // Act
-        Dictionary<string, long> counts = await client.PubSubShardNumSubAsync([channel1, channel2]);
-
-        // Assert
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(0L, counts[channel1]);
-        Assert.Equal(0L, counts[channel2]);
+        // Verify no subscribers to shard channel.
+        var expected = new Dictionary<string, long> { { msg.Channel, 0L } };
+        var actual = await client.PubSubShardNumSubAsync([msg.Channel]);
+        Assert.Equivalent(expected, actual);
     }
 
     [Fact]
-    public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsCorrectCounts()
+    public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardChannelCounts()
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "Sharded PubSub is supported since 7.0.0");
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        // Arrange
-        string testChannel1 = $"test-shard-{Guid.NewGuid()}";
-        string testChannel2 = $"test-shard-{Guid.NewGuid()}";
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        // Create subscriber for channel1
-        ClusterPubSubSubscriptionConfig pubsubConfig1 = new ClusterPubSubSubscriptionConfig()
-            .WithShardedChannel(testChannel1);
+        using var subscriber1 = TestConfiguration.DefaultClusterClient();
+        using var subscriber2 = TestConfiguration.DefaultClusterClient();
+        using var publisher = TestConfiguration.DefaultClusterClient();
 
-        var subscriberConfig1 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
+        // Subscribe to shard channels and verify subscriptions.
+        await subscriber1.SSubscribeAsync(msg1.Channel);
+        await AssertSSubscribedAsync(publisher, [msg1.Channel]);
 
-        await using var subscriberClient1 = await GlideClusterClient.CreateClient(subscriberConfig1);
+        await subscriber2.SSubscribeAsync(msg2.Channel);
+        await AssertSSubscribedAsync(publisher, [msg2.Channel]);
 
-        // Create two subscribers for channel2
-        ClusterPubSubSubscriptionConfig pubsubConfig2 = new ClusterPubSubSubscriptionConfig()
-            .WithShardedChannel(testChannel2);
+        // Verify subscription counts for both shard channels.
+        var expected = new Dictionary<string, long> { { msg1.Channel, 1L }, { msg2.Channel, 1L } };
+        var actual = await publisher.PubSubShardNumSubAsync([msg1.Channel, msg2.Channel]);
+        Assert.Equivalent(expected, actual);
+    }
 
-        var subscriberConfig2 = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
+    #endregion
+    #region HelperMethods
 
-        await using var subscriberClient2a = await GlideClusterClient.CreateClient(subscriberConfig2);
-        await using var subscriberClient2b = await GlideClusterClient.CreateClient(subscriberConfig2);
+    /// <summary>
+    /// Asserts that publishing the specified message results in at least one subscriber receiving it.
+    /// </summary>
+    /// <returns></returns>
+    private static async Task AssertSPublishAsync(GlideClusterClient client, PubSubMessage message)
+    {
+        // Retry until published or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
 
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClusterClientConfig().Build();
-        await using var queryClient = await GlideClusterClient.CreateClient(queryConfig);
+        while (!cts.Token.IsCancellationRequested)
+        {
+            if (await client.SPublishAsync(message.Channel, message.Message) > 0L)
+                return;
 
-        // Wait for subscriptions to be established - cluster mode may need more time
-        await Task.Delay(2000);
+            await Task.Delay(RetryInterval);
+        }
 
-        // Act
-        Dictionary<string, long> counts = await queryClient.PubSubShardNumSubAsync([testChannel1, testChannel2]);
-
-        // Assert
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(1L, counts[testChannel1]);
-        Assert.Equal(2L, counts[testChannel2]);
+        Assert.Fail($"Expected at least 1 subscriber for shard channel '{message.Channel}'");
     }
 
     /// <summary>
-    /// Asserts that the client receives a message on the expected channel with the expected content.
+    /// Asserts that there is at least one subscriber to each of the specified shard channels.
     /// </summary>
-    /// <param name="client">The client expected to receive the message.</param>
-    /// <param name="expectedChannel">The channel on which the message is expected.</param>
-    /// <param name="expectedMessage">The expected message content.</param>
-    private async Task AssertMessageReceived(GlideClusterClient client, string expectedChannel, string expectedMessage)
+    private static async Task AssertSSubscribedAsync(GlideClusterClient client, string[] shardChannels)
     {
-        PubSubMessageQueue? queue = client.PubSubQueue;
-        Assert.NotNull(queue);
+        // Retry until subscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
 
-        // Wait up to 5 seconds for the message.
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var receivedMessage = await queue.GetMessageAsync(cts.Token);
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubShardNumSubAsync(shardChannels);
+            if (channelCounts.All(kvp => kvp.Value > 0))
+                return;
 
-        Assert.Equal(expectedMessage, receivedMessage.Message);
-        Assert.Equal(expectedChannel, receivedMessage.Channel);
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected at least 1 subscriber for shard channels '{string.Join(", ", shardChannels)}'");
     }
+
+    /// <summary>
+    /// Asserts that there are no subscribers to each of the specified shard channels.
+    /// </summary>
+    private static async Task AssertSUnsubscribedAsync(GlideClusterClient client, string[] shardChannels)
+    {
+        // Retry until unsubscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubShardNumSubAsync(shardChannels);
+            if (channelCounts.All(kvp => kvp.Value == 0))
+                return;
+
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected 0 subscribers for shard channels '{string.Join(", ", shardChannels)}'");
+    }
+
+    #endregion
 }

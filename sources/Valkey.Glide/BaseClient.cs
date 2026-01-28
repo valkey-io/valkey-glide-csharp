@@ -145,12 +145,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Indicates whether this client has PubSub subscriptions configured.
-    /// Uses volatile read for thread-safe access without locking.
-    /// </summary>
-    public bool HasPubSubSubscriptions => _pubSubHandler != null;
-
     #endregion public methods
 
     #region protected methods
@@ -160,13 +154,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         nint successCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._successCallbackDelegate);
         nint failureCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._failureCallbackDelegate);
-
-        // Get PubSub callback pointer if PubSub subscriptions are configured
-        nint pubsubCallbackPointer = IntPtr.Zero;
-        if (config.Request.PubSubSubscriptions != null)
-        {
-            pubsubCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._pubsubCallbackDelegate);
-        }
+        nint pubsubCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._pubsubCallbackDelegate);
 
         using FFI.ConnectionConfig request = config.Request.ToFfi();
         Message message = client.MessageContainer.GetMessageForCall();
@@ -177,7 +165,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         {
             throw new ConnectionException("Failed creating a client");
         }
-        // Initialize PubSub handler if subscriptions are configured
+
         client.InitializePubSubHandler(config.Request.PubSubSubscriptions);
 
         return client;
@@ -417,21 +405,17 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     protected abstract Task<Version> GetServerVersionAsync();
 
     /// <summary>
-    /// Initializes PubSub message handling if PubSub subscriptions are configured.
+    /// Initializes PubSub message handling.
     /// Uses thread-safe initialization to ensure proper visibility across threads.
     /// </summary>
     /// <param name="config">The PubSub subscription configuration.</param>
     private void InitializePubSubHandler(BasePubSubSubscriptionConfig? config)
     {
-        if (config == null)
-        {
-            return;
-        }
 
         lock (_pubSubLock)
         {
             // Get performance configuration or use defaults
-            PubSubPerformanceConfig perfConfig = config.PerformanceConfig ?? new();
+            PubSubPerformanceConfig perfConfig = config?.PerformanceConfig ?? new();
 
             // Store shutdown timeout for use during disposal
             _shutdownTimeout = perfConfig.ShutdownTimeout;
@@ -448,7 +432,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             _processingCancellation = new CancellationTokenSource();
 
             // Create message handler
-            _pubSubHandler = new PubSubMessageHandler(config.Callback, config.Context);
+            _pubSubHandler = new PubSubMessageHandler(config?.Callback, config?.Context);
 
             // Start dedicated processing task with graceful shutdown support
             _messageProcessingTask = Task.Run(async () =>
