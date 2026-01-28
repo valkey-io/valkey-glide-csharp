@@ -3,6 +3,8 @@
 using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
+using static Valkey.Glide.GlideStringExtensions;
+
 namespace Valkey.Glide;
 
 public partial class GlideClusterClient : IPubSubClusterCommands
@@ -36,7 +38,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SSubscribe(ToGlideStrings(channels)), PubSubRoute);
+        await Command(Request.SSubscribe(channels.ToGlideStrings()), PubSubRoute);
     }
 
     #endregion
@@ -53,14 +55,14 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe([(GlideString)channel]), PubSubRoute);
+        await Command(Request.SUnsubscribe([channel]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe(ToGlideStrings(channels)), PubSubRoute);
+        await Command(Request.SUnsubscribe(channels.ToGlideStrings()), PubSubRoute);
     }
 
     #endregion
@@ -84,18 +86,8 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.PubSubShardNumSub(ToGlideStrings(channels)), PubSubInfoRoute);
+        return await Command(Request.PubSubShardNumSub(channels.ToGlideStrings()), PubSubInfoRoute);
     }
 
     #endregion
-
-    /// <summary>
-    /// Converts the given <c>string[]</c> to a <c>GlideString[]</c>.
-    /// </summary>
-    /// <param name="values">The <c>string[]</c> to convert.</param>
-    /// <returns>A <c>GlideString[]</c> containing the converted values.</returns>
-    private static GlideString[] ToGlideStrings(string[] values)
-    {
-        return [.. values.Select(v => (GlideString)v)];
-    }
 }

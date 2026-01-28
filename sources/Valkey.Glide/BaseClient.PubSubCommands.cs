@@ -33,28 +33,28 @@ public abstract partial class BaseClient : IPubSubCommands
     public async Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Subscribe([(GlideString)channel]), PubSubRoute);
+        await Command(Request.Subscribe([channel]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Subscribe([.. channels.Select(c => (GlideString)c)]), PubSubRoute);
+        await Command(Request.Subscribe(channels.ToGlideStrings()), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PSubscribe([(GlideString)pattern]), PubSubRoute);
+        await Command(Request.PSubscribe([pattern]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PSubscribe([.. patterns.Select(p => (GlideString)p)]), PubSubRoute);
+        await Command(Request.PSubscribe(patterns.ToGlideStrings()), PubSubRoute);
     }
 
     #endregion
@@ -71,14 +71,14 @@ public abstract partial class BaseClient : IPubSubCommands
     public async Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unsubscribe([(GlideString)channel]), PubSubRoute);
+        await Command(Request.Unsubscribe([channel]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unsubscribe([.. channels.Select(c => (GlideString)c)]), PubSubRoute);
+        await Command(Request.Unsubscribe(channels.ToGlideStrings()), PubSubRoute);
     }
 
     /// <inheritdoc/>
@@ -92,14 +92,14 @@ public abstract partial class BaseClient : IPubSubCommands
     public async Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PUnsubscribe([(GlideString)pattern]), PubSubRoute);
+        await Command(Request.PUnsubscribe([pattern]), PubSubRoute);
     }
 
     /// <inheritdoc/>
     public async Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.PUnsubscribe([.. patterns.Select(p => (GlideString)p)]), PubSubRoute);
+        await Command(Request.PUnsubscribe(patterns.ToGlideStrings()), PubSubRoute);
     }
 
     #endregion
@@ -123,8 +123,7 @@ public abstract partial class BaseClient : IPubSubCommands
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GlideString[] channelArgs = [.. channels.Select(c => (GlideString)c)];
-        return await Command(Request.PubSubNumSub(channelArgs), PubSubInfoRoute);
+        return await Command(Request.PubSubNumSub(channels.ToGlideStrings()), PubSubInfoRoute);
     }
 
     /// <inheritdoc/>
