@@ -18,23 +18,17 @@ public class PubSubCommandTests()
     public delegate BaseClient ClientFactory();
 
     // Factory data for parameterized tests.
-    public static TheoryData<ServerFactory> ServerFactories()
+    public static TheoryData<ServerFactory> ServerFactories { get; } = new()
     {
-        return new TheoryData<ServerFactory>
-        {
-            new ServerFactory(() => new TestUtils.StandaloneServer()),
-            new ServerFactory(() => new TestUtils.ClusterServer())
-        };
-    }
+        new ServerFactory(() => new TestUtils.StandaloneServer()),
+        new ServerFactory(() => new TestUtils.ClusterServer())
+    };
 
-    public static TheoryData<ClientFactory> ClientFactories()
+    public static TheoryData<ClientFactory> ClientFactories { get; } = new()
     {
-        return new TheoryData<ClientFactory>
-        {
-            new ClientFactory(() => TestConfiguration.DefaultStandaloneClient()),
-            new ClientFactory(() => TestConfiguration.DefaultClusterClient())
-        };
-    }
+        new ClientFactory(() => TestConfiguration.DefaultStandaloneClient()),
+        new ClientFactory(() => TestConfiguration.DefaultClusterClient())
+    };
 
     // Delay to allow for pub/sub subscriptions to synchronize.
     private static readonly TimeSpan SyncDelay = TimeSpan.FromMilliseconds(500);
