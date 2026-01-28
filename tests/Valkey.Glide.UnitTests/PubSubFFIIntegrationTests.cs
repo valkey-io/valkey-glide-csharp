@@ -208,8 +208,5 @@ public class PubSubFFIIntegrationTests
 
         // Mock implementations
         internal override void HandlePubSubMessage(PubSubMessage message) { }
-
-        protected override Route? PubSubRoute => throw new NotImplementedException();
-        protected override Route? PubSubInfoRoute => throw new NotImplementedException();
     }
 }

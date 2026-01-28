@@ -3,8 +3,6 @@
 using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
-using static Valkey.Glide.GlideStringExtensions;
-
 namespace Valkey.Glide;
 
 public partial class GlideClusterClient : IPubSubClusterCommands

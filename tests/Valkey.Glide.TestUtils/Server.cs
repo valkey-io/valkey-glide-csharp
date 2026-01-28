@@ -50,11 +50,6 @@ public abstract class Server : IDisposable
     }
 
     /// <summary>
-    /// Builds and returns a client configuration builder for this Valkey server.
-    /// </summary>
-    public abstract object CreateConfigBuilder();
-
-    /// <summary>
     /// Builds and returns a client for this Valkey server.
     /// </summary>
     public abstract Task<BaseClient> CreateClient();
@@ -67,8 +62,10 @@ public sealed class ClusterServer : Server
 {
     public ClusterServer(bool useTls = false) : base(useClusterMode: true, useTls: useTls) { }
 
-    /// <inheritdoc/>
-    public override ClusterClientConfigurationBuilder CreateConfigBuilder()
+    /// <summary>
+    /// Builds and returns a cluster client configuration builder for this Valkey server.
+    /// </summary>
+    public ClusterClientConfigurationBuilder CreateConfigBuilder()
     {
         var configBuilder = new ClusterClientConfigurationBuilder();
         configBuilder.WithTls(useTls: _useTls);
@@ -97,8 +94,10 @@ public sealed class StandaloneServer : Server
 {
     public StandaloneServer(bool useTls = false) : base(useClusterMode: false, useTls: useTls) { }
 
-    /// <inheritdoc/>
-    public override StandaloneClientConfigurationBuilder CreateConfigBuilder()
+    /// <summary>
+    /// Builds and returns a standalone client configuration builder for this Valkey server.
+    /// </summary>
+    public StandaloneClientConfigurationBuilder CreateConfigBuilder()
     {
         var configBuilder = new StandaloneClientConfigurationBuilder();
         configBuilder.WithTls(useTls: _useTls);

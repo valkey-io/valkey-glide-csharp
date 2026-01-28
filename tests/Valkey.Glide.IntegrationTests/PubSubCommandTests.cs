@@ -1,9 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-#pragma warning disable xUnit1045 // Type argument might not be serializable
-#pragma warning disable xUnit1046 // Argument is not serializable
-#pragma warning disable IDE0028 // Collection initialization can be simplified (not compatible with TheoryData)
-
 using Valkey.Glide.Commands;
 using Valkey.Glide.TestUtils;
 
@@ -20,7 +16,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCommandTests()
 {
     // Parametrized data to test both <see cref="GlideClusterClient"/> and <see cref="GlideStandaloneClient"/>.
-    public static TheoryData<bool> IsCluster = new() { true, false };
+    public static TheoryData<bool> IsCluster => [true, false];
 
     #region PublishCommands
 
