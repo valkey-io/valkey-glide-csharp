@@ -349,23 +349,22 @@ public class PubSubCommandTests()
         Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync());
     }
 
-    // TODO #193: Fix test failure.
-    // [Theory]
-    // [MemberData(nameof(ClientFactories))]
-    // public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(ClientFactory clientFactory)
-    // {
-    //     var msg = PubSub.GetPubSubMessage();
+    [Theory]
+    [MemberData(nameof(ClientFactories))]
+    public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(ClientFactory clientFactory)
+    {
+        var msg = PubSub.GetPubSubMessage(pattern: true);
 
-    //     using var subscriber = clientFactory();
-    //     using var publisher = clientFactory();
+        using var subscriber = clientFactory();
+        using var publisher = clientFactory();
 
-    //     // Subscribe to channel and verify subscription.
-    //     await subscriber.SubscribeAsync(msg.Channel);
-    //     await PubSub.AssertSubscribed(publisher, msg.Channel);
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(msg.Channel);
+        await PubSub.AssertSubscribed(publisher, msg.Channel);
 
-    //     // Verify that channel matching pattern is active.
-    //     Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync(msg.Pattern));
-    // }
+        // Verify that channel matching pattern is active.
+        Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync(msg.Pattern));
+    }
 
     [Theory]
     [MemberData(nameof(ClientFactories))]
