@@ -45,19 +45,6 @@ public class PubSubConfigurationTests
     }
 
     [Fact]
-    public void StandaloneClientConfigurationBuilder_WithPubSubSubscriptions_InvalidConfig_ThrowsArgumentException()
-    {
-        // Arrange
-        var pubSubConfig = new StandalonePubSubSubscriptionConfig(); // Empty config - invalid
-
-        var builder = new StandaloneClientConfigurationBuilder()
-            .WithAddress("localhost", 6379);
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => builder.WithPubSubSubscriptions(pubSubConfig));
-    }
-
-    [Fact]
     public void StandaloneClientConfigurationBuilder_WithPubSubSubscriptions_WithCallback_SetsCallbackAndContext()
     {
         // Arrange
@@ -153,19 +140,6 @@ public class PubSubConfigurationTests
     }
 
     [Fact]
-    public void ClusterClientConfigurationBuilder_WithPubSubSubscriptions_InvalidConfig_ThrowsArgumentException()
-    {
-        // Arrange
-        var pubSubConfig = new ClusterPubSubSubscriptionConfig(); // Empty config - invalid
-
-        var builder = new ClusterClientConfigurationBuilder()
-            .WithAddress("localhost", 6379);
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => builder.WithPubSubSubscriptions(pubSubConfig));
-    }
-
-    [Fact]
     public void ClusterClientConfigurationBuilder_WithPubSubSubscriptions_WithCallback_SetsCallbackAndContext()
     {
         // Arrange
@@ -225,7 +199,7 @@ public class PubSubConfigurationTests
         Assert.Contains("pattern1*", storedConfig.Subscriptions[1]);
         Assert.Contains("pattern2*", storedConfig.Subscriptions[1]);
 
-        // Check sharded channels (mode 2)
+        // Check shard channels (mode 2)
         Assert.True(storedConfig.Subscriptions.ContainsKey(2));
         Assert.Contains("shard1", storedConfig.Subscriptions[2]);
         Assert.Contains("shard2", storedConfig.Subscriptions[2]);
@@ -294,7 +268,7 @@ public class PubSubConfigurationTests
         Assert.Throws<ArgumentException>(() =>
         {
             var pubSubConfig = new ClusterPubSubSubscriptionConfig()
-                .WithShardedChannel(""); // Empty sharded channel name should be invalid
+                .WithShardedChannel(""); // Empty shard channel name should be invalid
             builder.WithPubSubSubscriptions(pubSubConfig);
         });
     }

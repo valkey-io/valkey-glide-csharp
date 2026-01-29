@@ -27,7 +27,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
+    abstract Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region SubscribeCommands
@@ -47,7 +47,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Subscribes the client to the specified channels.
@@ -64,7 +64,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Subscribes the client to the specified pattern.
@@ -81,7 +81,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Subscribes the client to the specified patterns.
@@ -98,7 +98,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
+    abstract Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region UnsubscribeCommands
@@ -117,7 +117,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified channel.
@@ -134,7 +134,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified channels.
@@ -158,7 +158,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from all patterns.
@@ -174,7 +174,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified pattern.
@@ -191,7 +191,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified patterns.
@@ -215,7 +215,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
+    abstract Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region PubSubInfoCommands
@@ -234,7 +234,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Lists the currently active channels matching the specified pattern.
@@ -251,7 +251,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string[]> PubSubChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task<string[]> PubSubChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the number of subscribers for the specified channels.
@@ -271,7 +271,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the number of active pattern subscriptions.
@@ -287,7 +287,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None);
 
     #endregion
 }

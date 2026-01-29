@@ -9,7 +9,7 @@ namespace Valkey.Glide.TestUtils;
 /// <summary>
 /// Base class for a Valkey server.
 /// </summary>
-public class Server : IDisposable
+public abstract class Server : IDisposable
 {
     /// <summary>
     /// Name of the server.
@@ -48,6 +48,11 @@ public class Server : IDisposable
         ServerManager.StopServer(_name);
         GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// Builds and returns a client for this Valkey server.
+    /// </summary>
+    public abstract Task<BaseClient> CreateClient();
 }
 
 /// <summary>
@@ -70,6 +75,16 @@ public sealed class ClusterServer : Server
 
         return configBuilder;
     }
+
+    /// <inheritdoc/>
+    public override async Task<BaseClient> CreateClient()
+        => await CreateClusterClient();
+
+    /// <summary>
+    /// Builds and returns a cluster client for this Valkey server.
+    /// </summary>
+    public async Task<GlideClusterClient> CreateClusterClient()
+        => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
 }
 
 /// <summary>
@@ -92,4 +107,14 @@ public sealed class StandaloneServer : Server
 
         return configBuilder;
     }
+
+    /// <inheritdoc/>
+    public override async Task<BaseClient> CreateClient()
+        => await CreateStandaloneClient();
+
+    /// <summary>
+    /// Builds and returns a standalone client for this Valkey server.
+    /// </summary>
+    public async Task<GlideClient> CreateStandaloneClient()
+        => await GlideClient.CreateClient(CreateConfigBuilder().Build());
 }

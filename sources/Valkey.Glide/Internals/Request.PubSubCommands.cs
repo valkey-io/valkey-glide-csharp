@@ -6,6 +6,8 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    #region PublishCommands
+
     /// <summary>
     /// Publishes a message to the specified channel.
     /// </summary>
@@ -16,13 +18,73 @@ internal partial class Request
         => Simple<long>(RequestType.Publish, [channel, message]);
 
     /// <summary>
-    /// Publishes a message to the specified sharded channel (cluster mode).
+    /// Publishes a message to the specified shard channel (cluster mode).
     /// </summary>
-    /// <param name="channel">The sharded channel to publish to.</param>
+    /// <param name="channel">The shard channel to publish to.</param>
     /// <param name="message">The message to publish.</param>
     /// <returns>Command that returns the number of clients that received the message.</returns>
     public static Cmd<long, long> SPublish(GlideString channel, GlideString message)
         => Simple<long>(RequestType.SPublish, [channel, message]);
+
+    #endregion
+    #region SubscribeCommands
+
+    /// <summary>
+    /// Subscribes to the specified channels.
+    /// </summary>
+    /// <param name="channels">The channels to subscribe to.</param>
+    /// <returns>Command for subscribing to channels.</returns>
+    public static Cmd<object, object> Subscribe(GlideString[] channels)
+        => Simple<object>(RequestType.Subscribe, channels, isNullable: true);
+
+    /// <summary>
+    /// Subscribes to the specified patterns.
+    /// </summary>
+    /// <param name="patterns">The patterns to subscribe to.</param>
+    /// <returns>Command for subscribing to patterns.</returns>
+    public static Cmd<object, object> PSubscribe(GlideString[] patterns)
+        => Simple<object>(RequestType.PSubscribe, patterns, isNullable: true);
+
+    /// <summary>
+    /// Subscribes to the specified shard channels.
+    /// </summary>
+    /// <param name="channels">The shard channels to subscribe to.</param>
+    /// <returns>Command for subscribing to shard channels.</returns>
+    public static Cmd<object, object> SSubscribe(GlideString[] channels)
+        => Simple<object>(RequestType.SSubscribe, channels, isNullable: true);
+
+    #endregion
+    #region UnsubscribeCommands
+
+    /// <summary>
+    /// Unsubscribes from the specified channels.
+    /// If no channels are specified, unsubscribes from all channels.
+    /// </summary>
+    /// <param name="channels">The channels to unsubscribe from.</param>
+    /// <returns>Command for unsubscribing from channels.</returns>
+    public static Cmd<object, object> Unsubscribe(GlideString[] channels)
+        => Simple<object>(RequestType.Unsubscribe, channels, isNullable: true);
+
+    /// <summary>
+    /// Unsubscribes from the specified patterns.
+    /// If no patterns are specified, unsubscribes from all patterns.
+    /// </summary>
+    /// <param name="patterns">The patterns to unsubscribe from.</param>
+    /// <returns>Command for unsubscribing from patterns.</returns>
+    public static Cmd<object, object> PUnsubscribe(GlideString[] patterns)
+        => Simple<object>(RequestType.PUnsubscribe, patterns, isNullable: true);
+
+    /// <summary>
+    /// Unsubscribes from the specified shard channels.
+    /// If no shard channels are specified, unsubscribes from all shard channels.
+    /// </summary>
+    /// <param name="channels">The shard channels to unsubscribe from.</param>
+    /// <returns>Command for unsubscribing from shard channels.</returns>
+    public static Cmd<object, object> SUnsubscribe(GlideString[] channels)
+        => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
+
+    #endregion
+    #region PubSubInfoCommands
 
     /// <summary>
     /// Lists all active channels.
@@ -67,25 +129,25 @@ internal partial class Request
         => Simple<long>(RequestType.PubSubNumPat, []);
 
     /// <summary>
-    /// Lists all active sharded channels (cluster mode).
+    /// Lists all active shard channels (cluster mode).
     /// </summary>
-    /// <returns>Command that returns an array of active sharded channel names.</returns>
+    /// <returns>Command that returns an array of active shard channel names.</returns>
     public static Cmd<object[], string[]> PubSubShardChannels()
         => new(RequestType.PubSubShardChannels, [], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Lists active sharded channels matching the specified pattern (cluster mode).
+    /// Lists active shard channels matching the specified pattern (cluster mode).
     /// </summary>
     /// <param name="pattern">The pattern to match channel names against.</param>
-    /// <returns>Command that returns an array of matching sharded channel names.</returns>
+    /// <returns>Command that returns an array of matching shard channel names.</returns>
     public static Cmd<object[], string[]> PubSubShardChannels(GlideString pattern)
         => new(RequestType.PubSubShardChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified sharded channels (cluster mode).
+    /// Returns the number of subscribers for the specified shard channels (cluster mode).
     /// </summary>
-    /// <param name="channels">The sharded channels to query.</param>
-    /// <returns>Command that returns a dictionary mapping sharded channel names to subscriber counts.</returns>
+    /// <param name="channels">The shard channels to query.</param>
+    /// <returns>Command that returns a dictionary mapping shard channel names to subscriber counts.</returns>
     public static Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> PubSubShardNumSub(GlideString[] channels)
     {
         return new(RequestType.PubSubShardNumSub, channels, false, dict =>
@@ -100,4 +162,6 @@ internal partial class Request
             return result;
         });
     }
+
+    #endregion
 }

@@ -1,272 +1,489 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
+using Valkey.Glide.TestUtils;
+
+using static Valkey.Glide.TestUtils.PubSub;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for PubSub command methods (PublishAsync, PubSubChannelsAsync, etc.).
-/// Tests the PubSub command API implementations in GlideClient.
+/// Integration tests for pub/sub commands.
+/// See <see cref="IPubSubCommands"/> and <see cref="GlideClient"/>.
 /// </summary>
-[Collection("GlideTests")]
+[Collection(typeof(PubSubCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class PubSubCommandTests()
 {
-    [Fact]
-    public async Task PublishAsync_WithNoSubscribers_ReturnsZero()
+    // Parametrized data to test both <see cref="GlideClusterClient"/> and <see cref="GlideStandaloneClient"/>.
+    public static TheoryData<bool> IsCluster => [true, false];
+
+    #region PublishCommands
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PublishAsync_WithNoSubscribers_ReturnsZero(bool isCluster)
     {
-        // Arrange
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        await using var client = await GlideClient.CreateClient(config);
+        var msg = BuildMessage();
+        using var client = BuildClient(isCluster);
 
-        string channel = $"test-channel-{Guid.NewGuid()}";
-        string message = "test message";
-
-        // Act
-        long subscriberCount = await client.PublishAsync(channel, message);
-
-        // Assert
-        Assert.Equal(0L, subscriberCount);
+        // Publish to channel and verify no subscribers.
+        Assert.Equal(0L, await client.PublishAsync(msg.Channel, msg.Message));
     }
 
-    [Fact]
-    public async Task PublishAsync_WithSubscriber_ReturnsSubscriberCount()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PublishAsync_WithSubscriber_ReturnsSubscriberCount(bool isCluster)
     {
-        // Arrange
-        string testChannel = $"test-channel-{Guid.NewGuid()}";
-        string testMessage = "Hello from PublishAsync";
+        var msg = BuildMessage();
 
-        // Create subscriber with PubSub config
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel);
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        var subscriberConfig = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(msg.Channel);
+        await AssertSubscribedAsync(publisher, [msg.Channel]);
 
-        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
-
-        // Create publisher
-        var publisherConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var publisherClient = await GlideClient.CreateClient(publisherConfig);
-
-        // Wait for subscription to be established
-        await Task.Delay(1000);
-
-        // Act
-        long subscriberCount = await publisherClient.PublishAsync(testChannel, testMessage);
-
-        // Assert
-        Assert.Equal(1L, subscriberCount);
-
-        // Verify message was received
-        PubSubMessageQueue? queue = subscriberClient.PubSubQueue;
-        Assert.NotNull(queue);
-        await Task.Delay(500);
-
-        bool hasMessage = queue.TryGetMessage(out PubSubMessage? receivedMessage);
-        Assert.True(hasMessage);
-        Assert.NotNull(receivedMessage);
-        Assert.Equal(testMessage, receivedMessage.Message);
-        Assert.Equal(testChannel, receivedMessage.Channel);
+        // Publish to channel and verify subscriber count.
+        await AssertPublishAsync(publisher, msg);
     }
 
-    [Fact]
-    public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmptyArray()
+    #endregion
+    #region SubscribeCommands
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task SubscribeAsync_OneChannel_ReceivesMessage(bool isCluster)
     {
-        // Arrange
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        await using var client = await GlideClient.CreateClient(config);
+        var msg = BuildMessage();
 
-        // Act
-        string[] channels = await client.PubSubChannelsAsync();
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        // Assert
-        Assert.NotNull(channels);
-        // Note: There might be channels from other tests, so we just verify it returns an array
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(msg.Channel);
+        await AssertSubscribedAsync(publisher, [msg.Channel]);
+
+        // Publish to channel and verify message received.
+        await publisher.PublishAsync(msg.Channel, msg.Message);
+        await AssertReceivedAsync(subscriber, msg);
     }
 
-    [Fact]
-    public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task SubscribeAsync_MultipleChannels_ReceivesMessages(bool isCluster)
     {
-        // Arrange
-        string testChannel = $"test-channel-{Guid.NewGuid()}";
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        // Create subscriber
-        StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel);
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        var subscriberConfig = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig)
-            .Build();
+        // Subscribe to channels and verify subscriptions.
+        await subscriber.SubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        await using var subscriberClient = await GlideClient.CreateClient(subscriberConfig);
+        // Publish to channels and verify messages received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertReceivedAsync(subscriber, msg1);
 
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
-
-        // Wait for subscription to be established
-        await Task.Delay(1000);
-
-        // Act
-        string[] channels = await queryClient.PubSubChannelsAsync();
-
-        // Assert
-        Assert.Contains(testChannel, channels);
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertReceivedAsync(subscriber, msg2);
     }
 
-    [Fact]
-    public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PSubscribeAsync_OnePattern_ReceivesMessage(bool isCluster)
     {
-        // Arrange
-        string channelPrefix = $"test-{Guid.NewGuid()}";
-        string testChannel1 = $"{channelPrefix}-channel1";
-        string testChannel2 = $"{channelPrefix}-channel2";
-        string pattern = $"{channelPrefix}*";
+        var msg = BuildMessage(withPattern: true);
 
-        // Create subscribers for both channels
-        StandalonePubSubSubscriptionConfig pubsubConfig1 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel1);
-        StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel2);
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        var subscriberConfig1 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-        var subscriberConfig2 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
+        // Subscribe to pattern and wait to ensure subscription completes.
+        await subscriber.PSubscribeAsync(msg.Pattern!);
+        await Task.Delay(RetryInterval);
 
-        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
-        await using var subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
-
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
-
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
-
-        // Act
-        string[] channels = await queryClient.PubSubChannelsAsync(pattern);
-
-        // Assert
-        Assert.Contains(testChannel1, channels);
-        Assert.Contains(testChannel2, channels);
+        // Publish to channel and verify message received.
+        await publisher.PublishAsync(msg.Channel, msg.Message);
+        await AssertReceivedAsync(subscriber, msg);
     }
 
-    [Fact]
-    public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PSubscribeAsync_MultiplePatterns_ReceivesMessages(bool isCluster)
     {
-        // Arrange
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        await using var client = await GlideClient.CreateClient(config);
+        var msg1 = BuildMessage(withPattern: true);
+        var msg2 = BuildMessage(withPattern: true);
 
-        string channel1 = $"test-channel-{Guid.NewGuid()}";
-        string channel2 = $"test-channel-{Guid.NewGuid()}";
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        // Act
-        Dictionary<string, long> counts = await client.PubSubNumSubAsync([channel1, channel2]);
+        // Subscribe to patterns and wait to ensure subscriptions complete.
+        await subscriber.PSubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
+        await Task.Delay(RetryInterval);
 
-        // Assert
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(0L, counts[channel1]);
-        Assert.Equal(0L, counts[channel2]);
+        // Publish to channels and verify messages received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertReceivedAsync(subscriber, msg1);
+
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertReceivedAsync(subscriber, msg2);
     }
 
-    [Fact]
-    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsCorrectCounts()
+    #endregion
+    #region UnsubscribeCommands
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task UnsubscribeAsync_AllChannels_ReceivesNoMessages(bool isCluster)
     {
-        // Arrange
-        string testChannel1 = $"test-channel-{Guid.NewGuid()}";
-        string testChannel2 = $"test-channel-{Guid.NewGuid()}";
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        // Create subscriber for channel1
-        StandalonePubSubSubscriptionConfig pubsubConfig1 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel1);
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        var subscriberConfig1 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
+        // Subscribe to both channels and verify subscriptions.
+        await subscriber.SubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
+        // Unsubscribe from all channels and verify unsubscription.
+        await subscriber.UnsubscribeAsync();
+        await AssertUnsubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        // Create two subscribers for channel2
-        StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
-            .WithChannel(testChannel2);
+        // Publish to channels and verify no messages received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
 
-        var subscriberConfig2 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
-
-        await using var subscriberClient2a = await GlideClient.CreateClient(subscriberConfig2);
-        await using var subscriberClient2b = await GlideClient.CreateClient(subscriberConfig2);
-
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
-
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
-
-        // Act
-        Dictionary<string, long> counts = await queryClient.PubSubNumSubAsync([testChannel1, testChannel2]);
-
-        // Assert
-        Assert.NotNull(counts);
-        Assert.Equal(2, counts.Count);
-        Assert.Equal(1L, counts[testChannel1]);
-        Assert.Equal(2L, counts[testChannel2]);
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertNotReceivedAsync(subscriber, msg2);
     }
 
-    [Fact]
-    public async Task PubSubNumPatAsync_WithNoPatterns_ReturnsZero()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task UnsubscribeAsync_OneChannel(bool isCluster)
     {
-        // Arrange
-        var config = TestConfiguration.DefaultClientConfig().Build();
-        await using var client = await GlideClient.CreateClient(config);
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        // Act
-        long patternCount = await client.PubSubNumPatAsync();
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        // Assert
-        Assert.True(patternCount >= 0L);
+        // Subscribe to both channels and verify subscriptions.
+        await subscriber.SubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
+
+        // Unsubscribe from one channel and verify unsubscription.
+        await subscriber.UnsubscribeAsync(msg1.Channel);
+        await AssertUnsubscribedAsync(publisher, [msg1.Channel]);
+
+        // Publish to unsubscribed channel and verify no message received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
+
+        // Publish to subscribed channel and verify message received.
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertReceivedAsync(subscriber, msg2);
     }
 
-    [Fact]
-    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsCount()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task UnsubscribeAsync_MultipleChannels_ReceivesNoMessages(bool isCluster)
     {
-        // Arrange
-        string pattern1 = $"test-{Guid.NewGuid()}*";
-        string pattern2 = $"test-{Guid.NewGuid()}*";
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
 
-        // Create subscribers with pattern subscriptions
-        StandalonePubSubSubscriptionConfig pubsubConfig1 = new StandalonePubSubSubscriptionConfig()
-            .WithPattern(pattern1);
-        StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
-            .WithPattern(pattern2);
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
 
-        var subscriberConfig1 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig1)
-            .Build();
-        var subscriberConfig2 = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(pubsubConfig2)
-            .Build();
+        // Subscribe to both channels and verify subscriptions.
+        await subscriber.SubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertSubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        await using var subscriberClient1 = await GlideClient.CreateClient(subscriberConfig1);
-        await using var subscriberClient2 = await GlideClient.CreateClient(subscriberConfig2);
+        // Unsubscribe from both channels and verify unsubscriptions.
+        await subscriber.UnsubscribeAsync([msg1.Channel, msg2.Channel]);
+        await AssertUnsubscribedAsync(publisher, [msg1.Channel, msg2.Channel]);
 
-        // Create query client
-        var queryConfig = TestConfiguration.DefaultClientConfig().Build();
-        await using var queryClient = await GlideClient.CreateClient(queryConfig);
+        // Publish to both channels and verify no messages received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
 
-        // Wait for subscriptions to be established
-        await Task.Delay(1000);
-
-        // Get initial pattern count
-        long patternCount = await queryClient.PubSubNumPatAsync();
-
-        // Act - The pattern count should be at least 2 (our two patterns)
-        // Note: There might be other pattern subscriptions from other tests
-        Assert.True(patternCount >= 2L, $"Expected at least 2 pattern subscriptions, got {patternCount}");
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertNotReceivedAsync(subscriber, msg2);
     }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PUnsubscribeAsync_AllPatterns_ReceivesNoMessages(bool isCluster)
+    {
+        var msg1 = BuildMessage(withPattern: true);
+        var msg2 = BuildMessage(withPattern: true);
+
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
+
+        // Subscribe to both patterns.
+        await subscriber.PSubscribeAsync(msg1.Pattern!);
+        await subscriber.PSubscribeAsync(msg2.Pattern!);
+
+        // Unsubscribe from all patterns and wait for unsubscriptions to complete.
+        await subscriber.PUnsubscribeAsync();
+        await Task.Delay(RetryInterval);
+
+        // Publish to both channels and verify no messages received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
+
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertNotReceivedAsync(subscriber, msg2);
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PUnsubscribeAsync_OnePattern_ReceivesNoMessages(bool isCluster)
+    {
+        var msg1 = BuildMessage(withPattern: true);
+        var msg2 = BuildMessage(withPattern: true);
+
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
+
+        // Subscribe to both patterns.
+        await subscriber.PSubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
+
+        // Unsubscribe from one pattern and wait for unsubscription to complete.
+        await subscriber.PUnsubscribeAsync(msg1.Pattern!);
+        await Task.Delay(RetryInterval);
+
+        // Publish to unsubscribed pattern channel and verify no message received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
+
+        // Publish to subscribed pattern channel and verify message received.
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertReceivedAsync(subscriber, msg2);
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PUnsubscribeAsync_MultiplePatterns_ReceivesNoMessages(bool isCluster)
+    {
+        var msg1 = BuildMessage(withPattern: true);
+        var msg2 = BuildMessage(withPattern: true);
+
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
+
+        // Subscribe to both patterns.
+        await subscriber.PSubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
+
+        // Unsubscribe from both patterns and wait for unsubscriptions to complete.
+        await subscriber.PUnsubscribeAsync([msg1.Pattern!, msg2.Pattern!]);
+        await Task.Delay(RetryInterval);
+
+        // Publish to both channels and verify no messages received.
+        await publisher.PublishAsync(msg1.Channel, msg1.Message);
+        await AssertNotReceivedAsync(subscriber, msg1);
+
+        await publisher.PublishAsync(msg2.Channel, msg2.Message);
+        await AssertNotReceivedAsync(subscriber, msg2);
+    }
+
+    #endregion
+    #region PubSubInfoCommands
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmpty(bool isCluster)
+    {
+        using var server = BuildServer(isCluster);
+        using var client = await server.CreateClient();
+
+        // Verify no active channels.
+        Assert.Empty(await client.PubSubChannelsAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
+    {
+        var msg = BuildMessage();
+
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
+
+        // Subscribe to channel aqnd verify subscription.
+        await subscriber.SubscribeAsync(msg.Channel);
+        await AssertSubscribedAsync(publisher, [msg.Channel]);
+
+        // Verify that channel is active.
+        Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
+    {
+        var msg = BuildMessage(withPattern: true);
+
+        using var subscriber = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
+
+        // Subscribe to channel and verify subscription.
+        await subscriber.SubscribeAsync(msg.Channel);
+        await AssertSubscribedAsync(publisher, [msg.Channel]);
+
+        // Verify that channel matching pattern is active.
+        Assert.Contains(msg.Channel, await publisher.PubSubChannelsAsync(msg.Pattern!));
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
+    {
+        var msg = BuildMessage();
+        using var client = BuildClient(isCluster);
+
+        // Verify no subscribers to channel.
+        var expected = new Dictionary<string, long> { { msg.Channel, 0L } };
+        var actual = await client.PubSubNumSubAsync([msg.Channel]);
+        Assert.Equivalent(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
+    {
+        var msg1 = BuildMessage();
+        var msg2 = BuildMessage();
+
+        using var subscriber1 = BuildClient(isCluster);
+        using var subscriber2 = BuildClient(isCluster);
+        using var publisher = BuildClient(isCluster);
+
+        // Subscribe to channels and verify subscriptions.
+        await subscriber1.SubscribeAsync(msg1.Channel);
+        await AssertSubscribedAsync(publisher, [msg1.Channel]);
+
+        await subscriber2.SubscribeAsync(msg2.Channel);
+        await AssertSubscribedAsync(publisher, [msg2.Channel]);
+
+        // Verify subscription counts for both channels.
+        var expected = new Dictionary<string, long> { { msg1.Channel, 1L }, { msg2.Channel, 1L } };
+        var actual = await publisher.PubSubNumSubAsync([msg1.Channel, msg2.Channel]);
+        Assert.Equivalent(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
+    {
+        using var server = BuildServer(isCluster);
+        using var client = await server.CreateClient();
+
+        // Verify no active pattern subscriptions.
+        Assert.Equal(0L, await client.PubSubNumPatAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
+    {
+        using var server = BuildServer(isCluster);
+        using var subscriber = await server.CreateClient();
+        using var publisher = await server.CreateClient();
+
+        // Subscribe to patterns and wait to ensure subscriptions complete.
+        await subscriber.PSubscribeAsync(["pattern1*", "pattern2*"]);
+        await Task.Delay(RetryInterval);
+
+        // Verify active pattern subscriptions.
+        Assert.Equal(2L, await publisher.PubSubNumPatAsync());
+    }
+
+    #endregion
+    #region HelperMethods
+
+    /// <summary>
+    /// Builds and returns a Valkey server.
+    /// </summary>
+    private static Server BuildServer(bool isCluster)
+    {
+        return isCluster
+        ? new ClusterServer()
+        : new StandaloneServer();
+    }
+
+    /// <summary>
+    /// Builds and returns a Valkey client.
+    /// </summary>
+    private static BaseClient BuildClient(bool isCluster)
+    {
+        return isCluster
+        ? TestConfiguration.DefaultStandaloneClient()
+        : TestConfiguration.DefaultClusterClient();
+    }
+
+    /// <summary>
+    /// Asserts that publishing the specified message results in at least one subscriber receiving it.
+    /// </summary>
+    /// <returns></returns>
+    private static async Task AssertPublishAsync(BaseClient client, PubSubMessage message)
+    {
+        // Retry until published or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            if (await client.PublishAsync(message.Channel, message.Message) > 0L)
+                return;
+
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected at least one subscriber for channel '{message.Channel}'.");
+    }
+
+    /// <summary>
+    /// Asserts that there is at least one subscriber to each of the specified channels.
+    /// </summary>
+    private static async Task AssertSubscribedAsync(BaseClient client, string[] channels)
+    {
+        // Retry until subscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubNumSubAsync(channels);
+            if (channelCounts.All(kvp => kvp.Value > 0))
+                return;
+
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected at least 1 subscriber for channels '{string.Join(", ", channels)}'");
+    }
+
+    /// <summary>
+    /// Asserts that there are no subscribers to each of the specified channels.
+    /// </summary>
+    private static async Task AssertUnsubscribedAsync(BaseClient client, string[] channels)
+    {
+        // Retry until unsubscribed or timeout occurs.
+        using var cts = new CancellationTokenSource(MaxDuration);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var channelCounts = await client.PubSubNumSubAsync(channels);
+            if (channelCounts.All(kvp => kvp.Value == 0))
+                return;
+
+            await Task.Delay(RetryInterval);
+        }
+
+        Assert.Fail($"Expected 0 subscribers for channels '{string.Join(", ", channels)}'");
+    }
+
+    #endregion
 }

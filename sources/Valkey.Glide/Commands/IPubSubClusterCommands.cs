@@ -7,7 +7,7 @@ namespace Valkey.Glide.Commands;
 /// <br />
 /// See more on <see href="https://valkey.io/commands/#pubsub">valkey.io</see>.
 /// </summary>
-public interface IPubSubClusterCommands : IPubSubCommands
+public interface IPubSubClusterCommands
 {
     #region PublishCommands
 
@@ -23,12 +23,12 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// Sharded channels are specific to cluster mode and route messages to specific shards based on the channel name.
     /// <example>
     /// <code>
-    /// long count = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
+    /// long subscriberCount = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
     /// Console.WriteLine($"Message delivered to {subscriberCount} subscribers");
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
+    abstract Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region SubscribeCommands
@@ -48,7 +48,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Subscribes the client to the specified shard channels.
@@ -65,7 +65,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region UnsubscribeCommands
@@ -84,7 +84,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified shard channel.
@@ -101,7 +101,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribes the client from the specified shard channels.
@@ -125,17 +125,17 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region PubSubInfoCommands
 
     /// <summary>
-    /// Lists the currently active sharded channels.
+    /// Lists the currently active shard channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of active sharded channel names.</returns>
+    /// <returns>An array of active shard channel names.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -144,15 +144,15 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Lists the currently active sharded channels matching the specified pattern.
+    /// Lists the currently active shard channels matching the specified pattern.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
-    /// <param name="pattern">A glob-style pattern to filter sharded channel names.</param>
+    /// <param name="pattern">A glob-style pattern to filter shard channel names.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of active sharded channel names matching the pattern.</returns>
+    /// <returns>An array of active shard channel names matching the pattern.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -161,15 +161,15 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified sharded channels.
+    /// Returns the number of subscribers for the specified shard channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardnumsub/">valkey.io</seealso>
-    /// <param name="channels">An array of sharded channel names to query.</param>
+    /// <param name="channels">An array of shard channel names to query.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A dictionary mapping sharded channel names to their subscriber counts.</returns>
+    /// <returns>A dictionary mapping shard channel names to their subscriber counts.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -181,7 +181,7 @@ public interface IPubSubClusterCommands : IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
 
     #endregion
 }
