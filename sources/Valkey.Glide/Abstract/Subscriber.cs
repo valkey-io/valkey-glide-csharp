@@ -1,8 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
 using System.Net;
-using System.Threading.Tasks;
 
 using Valkey.Glide.Internals;
 
@@ -10,6 +8,7 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// Subscriber implementation for pub/sub operations.
+/// Comp
 /// </summary>
 internal sealed class Subscriber : ISubscriber
 {
@@ -48,9 +47,18 @@ internal sealed class Subscriber : ISubscriber
     /// <inheritdoc/>
     public Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #193: Implement PublishAsync
-        GuardClauses.ThrowIfCommandFlags(flags);
-        throw new NotImplementedException();
+        string channelStr = channel.ToString();
+        string messageStr = message.ToString();
+
+        if (channel.IsSharded)
+        {
+            if (_client is GlideClusterClient clusterClient)
+                return clusterClient.SPublishAsync(channelStr, messageStr, flags);
+
+            throw new ArgumentException("Can only publish to sharded channels in cluster mode.");
+        }
+
+        return _client.PublishAsync(channelStr, messageStr, flags);
     }
 
     /// <inheritdoc/>
@@ -103,6 +111,11 @@ internal sealed class Subscriber : ISubscriber
     /// <inheritdoc/>
     public EndPoint? SubscribedEndpoint(ValkeyChannel channel)
         => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
+
+    #endregion
+    #region HelperMethods
+
+    // TODO #193
 
     #endregion
 }
