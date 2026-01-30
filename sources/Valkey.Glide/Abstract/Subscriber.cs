@@ -8,6 +8,7 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// Subscriber implementation for pub/sub operations.
+/// Comp
 /// </summary>
 internal sealed class Subscriber : ISubscriber
 {
