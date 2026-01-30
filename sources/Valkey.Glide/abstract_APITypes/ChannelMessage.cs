@@ -142,7 +142,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     public void OnMessage(Action<ChannelMessage> handler)
     {
         AssertOnMessage(handler);
-        ThreadPool.QueueUserWorkItem(state => ((ChannelMessageQueue)state!).OnMessageSyncImpl(), this);
+        ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageSyncImpl(), this);
     }
 
     private async Task OnMessageSyncImpl()
@@ -184,7 +184,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     public void OnMessage(Func<ChannelMessage, Task> handler)
     {
         AssertOnMessage(handler);
-        ThreadPool.QueueUserWorkItem(state => ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
+        ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
     }
 
     internal static void Remove(ref ChannelMessageQueue? head, ChannelMessageQueue queue)
