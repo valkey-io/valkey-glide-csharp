@@ -20,11 +20,11 @@ public interface IScriptingAndFunctionBaseCommands
     /// <example>
     /// <code>
     /// using var script = new Script("return 'Hello, World!'");
-    /// ValkeyResult result = await client.InvokeScriptAsync(script);
+    /// ValkeyResult result = await client.ScriptInvokeAsync(script);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyResult> InvokeScriptAsync(
+    Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
@@ -42,11 +42,11 @@ public interface IScriptingAndFunctionBaseCommands
     /// <code>
     /// using var script = new Script("return KEYS[1] .. ARGV[1]");
     /// var options = new ScriptOptions().WithKeys("mykey").WithArgs("myvalue");
-    /// ValkeyResult result = await client.InvokeScriptAsync(script, options);
+    /// ValkeyResult result = await client.ScriptInvokeAsync(script, options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyResult> InvokeScriptAsync(
+    Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
         ScriptOptions options,
         CommandFlags flags = CommandFlags.None,
