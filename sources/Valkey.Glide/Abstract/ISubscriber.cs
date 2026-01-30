@@ -11,11 +11,6 @@ namespace Valkey.Glide;
 public interface ISubscriber
 {
     /// <summary>
-    /// Indicates whether the instance can communicate with the server.
-    /// </summary>
-    bool IsConnected(ValkeyChannel channel = default);
-
-    /// <summary>
     /// Posts a message to the given channel.
     /// </summary>
     /// <returns>
@@ -60,6 +55,9 @@ public interface ISubscriber
 
     // Not supported by Valkey GLIDE
     // -----------------------------
+
+    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
+    bool IsConnected(ValkeyChannel channel = default);
 
     [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
     EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
