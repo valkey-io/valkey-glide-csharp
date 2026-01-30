@@ -251,4 +251,19 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
             return BitConverter.ToString(arr);
         }
     }
+
+    // Not supported by Valkey GLIDE
+    // -----------------------------
+
+    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
+    public ValkeyChannel WithKeyRouting()
+        => throw new NotSupportedException("This method is not supported by Valkey GLIDE.");
+
+    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
+    public static implicit operator ValkeyChannel(string key)
+        => throw new NotSupportedException("This method is not supported by Valkey GLIDE.");
+
+    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
+    public static implicit operator ValkeyChannel(byte[]? key)
+        => key is null ? default : new ValkeyChannel(key, s_DefaultPatternMode);
 }
