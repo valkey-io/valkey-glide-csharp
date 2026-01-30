@@ -153,15 +153,19 @@ internal sealed class Subscriber : ISubscriber
     #endregion
     #region NotSupportedMethods
 
+    /// <inheritdoc/>
     public bool IsConnected(ValkeyChannel channel = default)
     => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
+    /// <inheritdoc/>
     public EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
         => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
+    /// <inheritdoc/>
     public Task<EndPoint?> IdentifyEndpointAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
         => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
+    /// <inheritdoc/>
     public EndPoint? SubscribedEndpoint(ValkeyChannel channel)
         => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
