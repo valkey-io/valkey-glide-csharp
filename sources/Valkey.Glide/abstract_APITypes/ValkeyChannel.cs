@@ -7,6 +7,7 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// Represents a pub/sub channel name.
+/// Compatible with StackExchange.Redis <c>RedisChannel</c>.
 /// </summary>
 public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
 {

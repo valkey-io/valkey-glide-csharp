@@ -10,6 +10,7 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// Represents a message that is broadcast via publish/subscribe.
+/// Compatible with StackExchange.Redis <c>ChannelMessage</c>.
 /// </summary>
 public readonly struct ChannelMessage
 {
@@ -60,6 +61,7 @@ public readonly struct ChannelMessage
 
 /// <summary>
 /// Represents a message queue of ordered pub/sub notifications.
+/// Compatible with StackExchange.Redis <c>ChannelMessageQueue</c>.
 /// </summary>
 public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
 {
