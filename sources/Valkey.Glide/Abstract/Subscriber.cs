@@ -152,6 +152,29 @@ internal sealed class Subscriber : ISubscriber
     }
 
     #endregion
+    #region SyncMethods
+
+    /// <inheritdoc/>
+    public long Publish(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
+        => PublishAsync(channel, message, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public void Subscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None)
+        => SubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public ChannelMessageQueue Subscribe(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
+        => SubscribeAsync(channel, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public void Unsubscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None)
+        => UnsubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public void UnsubscribeAll(CommandFlags flags = CommandFlags.None)
+        => UnsubscribeAllAsync(flags).GetAwaiter().GetResult();
+
+    #endregion
     #region NotSupportedMethods
 
     /// <inheritdoc/>
