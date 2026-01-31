@@ -25,13 +25,19 @@ public sealed class PubSubMessage
     public string? Pattern { get; }
 
     /// <summary>
+    /// Indicates whether this is a shard channel message.
+    /// </summary>
+    public bool IsSharded { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="PubSubMessage"/> class for exact channel subscriptions.
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
+    /// <param name="isSharded">Whether this is a shard channel message.</param>
     /// <exception cref="ArgumentNullException">Thrown when message or channel is null.</exception>
     /// <exception cref="ArgumentException">Thrown when message or channel is empty.</exception>
-    public PubSubMessage(string message, string channel)
+    internal PubSubMessage(string message, string channel, bool isSharded = false)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
         ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
@@ -39,6 +45,7 @@ public sealed class PubSubMessage
         Message = message;
         Channel = channel;
         Pattern = null;
+        IsSharded = isSharded;
     }
 
     /// <summary>
@@ -47,9 +54,10 @@ public sealed class PubSubMessage
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <param name="pattern">The pattern that matched the channel.</param>
+    /// <param name="isSharded">Whether this is a shard channel message.</param>
     /// <exception cref="ArgumentNullException">Thrown when message, channel, or pattern is null.</exception>
     /// <exception cref="ArgumentException">Thrown when message, channel, or pattern is empty.</exception>
-    public PubSubMessage(string message, string channel, string pattern)
+    internal PubSubMessage(string message, string channel, string pattern, bool isSharded = false)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
         ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
@@ -58,6 +66,7 @@ public sealed class PubSubMessage
         Message = message;
         Channel = channel;
         Pattern = pattern;
+        IsSharded = isSharded;
     }
 
     /// <summary>
@@ -88,11 +97,12 @@ public sealed class PubSubMessage
         obj is PubSubMessage other &&
         Message == other.Message &&
         Channel == other.Channel &&
-        Pattern == other.Pattern;
+        Pattern == other.Pattern &&
+        IsSharded == other.IsSharded;
 
     /// <summary>
     /// Returns the hash code for this PubSubMessage.
     /// </summary>
     /// <returns>A hash code for the current PubSubMessage.</returns>
-    public override int GetHashCode() => HashCode.Combine(Message, Channel, Pattern);
+    public override int GetHashCode() => HashCode.Combine(Message, Channel, Pattern, IsSharded);
 }
