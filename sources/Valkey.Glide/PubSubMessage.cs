@@ -33,18 +33,8 @@ public sealed class PubSubMessage
     /// <exception cref="ArgumentException">Thrown when message or channel is empty.</exception>
     public PubSubMessage(string message, string channel)
     {
-        ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(channel);
-
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            throw new ArgumentException("Message is required and cannot be empty", nameof(message));
-        }
-
-        if (string.IsNullOrWhiteSpace(channel))
-        {
-            throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
-        }
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
 
         Message = message;
         Channel = channel;
@@ -61,24 +51,9 @@ public sealed class PubSubMessage
     /// <exception cref="ArgumentException">Thrown when message, channel, or pattern is empty.</exception>
     public PubSubMessage(string message, string channel, string pattern)
     {
-        ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(channel);
-        ArgumentNullException.ThrowIfNull(pattern);
-
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            throw new ArgumentException("Message is required and cannot be empty", nameof(message));
-        }
-
-        if (string.IsNullOrWhiteSpace(channel))
-        {
-            throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
-        }
-
-        if (string.IsNullOrWhiteSpace(pattern))
-        {
-            throw new ArgumentException("Pattern is required and cannot be empty", nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(pattern, nameof(pattern));
 
         Message = message;
         Channel = channel;

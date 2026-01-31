@@ -108,7 +108,7 @@ internal sealed class Subscription
     }
 
     /// <summary>
-    /// Marks this subscription as completed, clearing all handlers and completing all queues.
+    /// Marks this subscription as completed.
     /// </summary>
     public void MarkCompleted()
     {
