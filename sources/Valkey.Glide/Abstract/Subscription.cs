@@ -38,35 +38,6 @@ internal sealed class Subscription
     }
 
     /// <summary>
-    /// Invokes all registered handlers for this subscription asynchronously on the thread pool.
-    /// </summary>
-    /// <param name="channel">The channel the message was received on.</param>
-    /// <param name="message">The message value.</param>
-    public void InvokeHandlers(ValkeyChannel channel, ValkeyValue message)
-    {
-        var handlers = _handlers;
-        if (handlers == null)
-        {
-            return;
-        }
-
-        // Queue handler invocation to thread pool to avoid blocking message processing
-        System.Threading.ThreadPool.QueueUserWorkItem(_ =>
-        {
-            foreach (Action<ValkeyChannel, ValkeyValue> handler in handlers.GetInvocationList())
-            {
-                try
-                {
-                    handler(channel, message);
-                }
-
-                // Swallow handler exceptions to prevent breaking message processing
-                catch { }
-            }
-        });
-    }
-
-    /// <summary>
     /// Adds a new message queue to this subscription.
     /// </summary>
     /// <param name="queue">The queue to add.</param>
@@ -85,13 +56,34 @@ internal sealed class Subscription
     }
 
     /// <summary>
-    /// Writes a message to all registered queues for this subscription.
+    /// Invokes all handlers and writes to all queues for a received message.
     /// </summary>
-    /// <param name="channel">The channel the message was received on.</param>
-    /// <param name="message">The message value.</param>
-    public void WriteToQueues(ValkeyChannel channel, ValkeyValue message)
+    /// <param name="channel">The channel on which the message was received.</param>
+    /// <param name="message">The received message.</param>
+    public void OnMessage(ValkeyChannel channel, ValkeyValue message)
     {
-        var queues = System.Threading.Volatile.Read(ref _queues);
+        // Invoke all registered handlers.
+        var handlers = _handlers;
+        if (handlers != null)
+        {
+            // Queue handler invocation to thread pool to avoid blocking message processing
+            System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+            {
+                foreach (Action<ValkeyChannel, ValkeyValue> handler in handlers.GetInvocationList())
+                {
+                    try
+                    {
+                        handler(channel, message);
+                    }
+
+                    // Swallow handler exceptions to prevent breaking message processing
+                    catch { }
+                }
+            });
+        }
+
+        // Write to all registered queues.
+        var queues = Volatile.Read(ref _queues);
         if (queues != null)
         {
             ChannelMessageQueue.WriteAll(ref queues, channel, message);
