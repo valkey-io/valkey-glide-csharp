@@ -123,6 +123,13 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     public bool IsConnecting => false;
 
+    /// <inheritdoc/>
+    public ISubscriber GetSubscriber(object? asyncState = null)
+    {
+        Utils.Requires<NotImplementedException>(asyncState is null, "Async state is not supported by GLIDE");
+        return new Subscriber(_db!);
+    }
+
     public IDatabase GetDatabase(int db = -1, object? asyncState = null)
     {
         Utils.Requires<NotImplementedException>(db == -1, "To switch the database, please use `SELECT` command.");

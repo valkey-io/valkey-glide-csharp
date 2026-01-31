@@ -19,34 +19,13 @@ internal sealed class Subscriber : ISubscriber
         _client = client;
     }
 
-    #region SyncMethods
-
-    /// <inheritdoc/>
-    public long Publish(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
-        => PublishAsync(channel, message, flags).GetAwaiter().GetResult();
-
-    /// <inheritdoc/>
-    public void Subscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None)
-        => SubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
-
-    /// <inheritdoc/>
-    public ChannelMessageQueue Subscribe(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
-        => SubscribeAsync(channel, flags).GetAwaiter().GetResult();
-
-    /// <inheritdoc/>
-    public void Unsubscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None)
-        => UnsubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
-
-    /// <inheritdoc/>
-    public void UnsubscribeAll(CommandFlags flags = CommandFlags.None)
-        => UnsubscribeAllAsync(flags).GetAwaiter().GetResult();
-
-    #endregion
     #region AsyncMethods
 
     /// <inheritdoc/>
     public Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
+        ThrowIfNull(channel);
+
         string channelStr = channel.ToString();
         string messageStr = message.ToString();
 
@@ -94,6 +73,29 @@ internal sealed class Subscriber : ISubscriber
     }
 
     #endregion
+    #region SyncMethods
+
+    /// <inheritdoc/>
+    public long Publish(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
+        => PublishAsync(channel, message, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public void Subscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None)
+        => SubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public ChannelMessageQueue Subscribe(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
+        => SubscribeAsync(channel, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public void Unsubscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None)
+        => UnsubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
+
+    /// <inheritdoc/>
+    public void UnsubscribeAll(CommandFlags flags = CommandFlags.None)
+        => UnsubscribeAllAsync(flags).GetAwaiter().GetResult();
+
+    #endregion
     #region NotSupportedMethods
 
     /// <inheritdoc/>
@@ -115,7 +117,14 @@ internal sealed class Subscriber : ISubscriber
     #endregion
     #region HelperMethods
 
-    // TODO #193
+    /// <summary>
+    /// Throws an <see cref="ArgumentNullException"/> if the provided channel is null or empty.
+    /// </summary>
+    private static void ThrowIfNull(in ValkeyChannel channel)
+    {
+        if (channel.IsNullOrEmpty)
+            throw new ArgumentNullException(nameof(channel), "Channel cannot be null or empty.");
+    }
 
     #endregion
 }
