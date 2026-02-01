@@ -5,10 +5,35 @@ using System.Text.Json;
 namespace Valkey.Glide;
 
 /// <summary>
+/// Pub/sub channel subscription mode.
+/// </summary>
+public enum PubSubChannelMode
+{
+    /// <summary>
+    /// Exact channel name subscription (SUBSCRIBE).
+    /// </summary>
+    Exact = 0,
+    /// <summary>
+    /// Pattern-based subscription (PSUBSCRIBE).
+    /// </summary>
+    Pattern = 1,
+    /// <summary>
+    /// Sharded channel subscription (SSUBSCRIBE).
+    /// Available only in cluster mode with Valkey 7.0 or higher.
+    /// </summary>
+    Sharded = 2
+}
+
+/// <summary>
 /// Represents a message received through PubSub subscription.
 /// </summary>
 public sealed class PubSubMessage
 {
+    /// <summary>
+    /// The channel subscription mode for this message.
+    /// </summary>
+    public PubSubChannelMode ChannelMode { get; }
+
     /// <summary>
     /// The message content.
     /// </summary>
@@ -20,53 +45,43 @@ public sealed class PubSubMessage
     public string Channel { get; }
 
     /// <summary>
-    /// The pattern that matched the channel (null for exact channel subscriptions).
+    /// The pattern that matched the channel (null for exact and sharded channel subscriptions).
     /// </summary>
     public string? Pattern { get; }
 
     /// <summary>
-    /// Indicates whether this is a shard channel message.
-    /// </summary>
-    public bool IsSharded { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PubSubMessage"/> class for exact channel subscriptions.
+    /// Creates a new <see cref="PubSubMessage"/> for an exact channel subscription (SUBSCRIBE).
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
-    /// <param name="isSharded">Whether this is a shard channel message.</param>
-    /// <exception cref="ArgumentNullException">Thrown when message or channel is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when message or channel is empty.</exception>
-    internal PubSubMessage(string message, string channel, bool isSharded = false)
+    /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
+    public static PubSubMessage ExactMessage(string message, string channel)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
-
-        Message = message;
-        Channel = channel;
-        Pattern = null;
-        IsSharded = isSharded;
+        return new(message, channel, null, PubSubChannelMode.Exact);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PubSubMessage"/> class for pattern-based subscriptions.
+    /// Creates a new <see cref="PubSubMessage"/> for a pattern-based subscription (PSUBSCRIBE).
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <param name="pattern">The pattern that matched the channel.</param>
-    /// <param name="isSharded">Whether this is a shard channel message.</param>
-    /// <exception cref="ArgumentNullException">Thrown when message, channel, or pattern is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when message, channel, or pattern is empty.</exception>
-    internal PubSubMessage(string message, string channel, string pattern, bool isSharded = false)
+    /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
+    public static PubSubMessage PatternMessage(string message, string channel, string pattern)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
         ArgumentNullException.ThrowIfNullOrWhiteSpace(pattern, nameof(pattern));
+        return new(message, channel, pattern, PubSubChannelMode.Pattern);
+    }
 
-        Message = message;
-        Channel = channel;
-        Pattern = pattern;
-        IsSharded = isSharded;
+    /// <summary>
+    /// Creates a new <see cref="PubSubMessage"/> for a sharded channel subscription (SSUBSCRIBE).
+    /// </summary>
+    /// <param name="message">The message content.</param>
+    /// <param name="channel">The channel on which the message was received.</param>
+    /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
+    public static PubSubMessage ShardedMessage(string message, string channel)
+    {
+        return new(message, channel, null, PubSubChannelMode.Sharded);
     }
 
     /// <summary>
@@ -77,6 +92,7 @@ public sealed class PubSubMessage
     {
         var messageObject = new
         {
+            ChannelMode,
             Message,
             Channel,
             Pattern
@@ -95,14 +111,25 @@ public sealed class PubSubMessage
     /// <returns>true if the specified object is equal to the current PubSubMessage; otherwise, false.</returns>
     public override bool Equals(object? obj) =>
         obj is PubSubMessage other &&
+        ChannelMode == other.ChannelMode &&
         Message == other.Message &&
         Channel == other.Channel &&
-        Pattern == other.Pattern &&
-        IsSharded == other.IsSharded;
+        Pattern == other.Pattern;
 
     /// <summary>
     /// Returns the hash code for this PubSubMessage.
     /// </summary>
     /// <returns>A hash code for the current PubSubMessage.</returns>
-    public override int GetHashCode() => HashCode.Combine(Message, Channel, Pattern, IsSharded);
+    public override int GetHashCode() => HashCode.Combine(ChannelMode, Message, Channel, Pattern);
+
+    private PubSubMessage(string message, string channel, string? pattern, PubSubChannelMode channelMode)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
+
+        ChannelMode = channelMode;
+        Message = message;
+        Channel = channel;
+        Pattern = pattern;
+    }
 }
