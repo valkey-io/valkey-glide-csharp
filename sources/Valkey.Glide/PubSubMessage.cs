@@ -107,8 +107,7 @@ public sealed class PubSubMessage
         ChannelMode == other.ChannelMode &&
         Message == other.Message &&
         Channel == other.Channel &&
-        Pattern == other.Pattern &&
-        IsSharded == other.IsSharded;
+        Pattern == other.Pattern;
 
     /// <summary>
     /// Returns the hash code for this PubSubMessage.
