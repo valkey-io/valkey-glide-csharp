@@ -9,11 +9,11 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_SimpleScript_ReturnsExpectedResult(BaseClient client)
+    public async Task ScriptInvokeAsync_SimpleScript_ReturnsExpectedResult(BaseClient client)
     {
         // Test simple script execution
         using var script = new Script("return 'Hello, World!'");
-        ValkeyResult result = await client.InvokeScriptAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script);
 
         Assert.NotNull(result);
         Assert.Equal("Hello, World!", result.ToString());
@@ -21,7 +21,7 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_WithKeysAndArgs_ReturnsExpectedResult(BaseClient client)
+    public async Task ScriptInvokeAsync_WithKeysAndArgs_ReturnsExpectedResult(BaseClient client)
     {
         // Test script with keys and arguments
         using var script = new Script("return KEYS[1] .. ':' .. ARGV[1]");
@@ -29,7 +29,7 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys("mykey")
             .WithArgs("myvalue");
 
-        ValkeyResult result = await client.InvokeScriptAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
 
         Assert.NotNull(result);
         Assert.Equal("mykey:myvalue", result.ToString());
@@ -37,14 +37,14 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_NOSCRIPTFallback_AutomaticallyUsesEVAL(BaseClient client)
+    public async Task ScriptInvokeAsync_NOSCRIPTFallback_AutomaticallyUsesEVAL(BaseClient client)
     {
         // Flush scripts to ensure NOSCRIPT error
         await client.ScriptFlushAsync();
 
         // This should trigger NOSCRIPT and automatically fallback to EVAL
         using var script = new Script("return 'fallback test'");
-        ValkeyResult result = await client.InvokeScriptAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script);
 
         Assert.NotNull(result);
         Assert.Equal("fallback test", result.ToString());
@@ -52,13 +52,13 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_ScriptError_ThrowsException(BaseClient client)
+    public async Task ScriptInvokeAsync_ScriptError_ThrowsException(BaseClient client)
     {
         // Test script execution error
         using var script = new Script("return redis.call('INVALID_COMMAND')");
 
         await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.InvokeScriptAsync(script));
+            await client.ScriptInvokeAsync(script));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -67,7 +67,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script and verify it exists
         using var script = new Script("return 'exists test'");
-        await client.InvokeScriptAsync(script);
+        await client.ScriptInvokeAsync(script);
 
         bool[] exists = await client.ScriptExistsAsync([script.Hash]);
 
@@ -102,7 +102,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         using var script2 = new Script("return 'script2'");
 
         // Execute only script1
-        await client.InvokeScriptAsync(script1);
+        await client.ScriptInvokeAsync(script1);
 
         bool[] exists = await client.ScriptExistsAsync([script1.Hash, script2.Hash]);
 
@@ -117,7 +117,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script
         using var script = new Script("return 'flush test'");
-        await client.InvokeScriptAsync(script);
+        await client.ScriptInvokeAsync(script);
 
         // Verify it exists
         bool[] existsBefore = await client.ScriptExistsAsync([script.Hash]);
@@ -138,7 +138,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script
         using var script = new Script("return 'async flush test'");
-        await client.InvokeScriptAsync(script);
+        await client.ScriptInvokeAsync(script);
 
         // Flush with ASYNC mode
         string result = await client.ScriptFlushAsync(FlushMode.Async);
@@ -158,7 +158,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script
         using var script = new Script("return 'default flush test'");
-        await client.InvokeScriptAsync(script);
+        await client.ScriptInvokeAsync(script);
 
         // Flush with default mode (SYNC)
         string result = await client.ScriptFlushAsync();
@@ -178,7 +178,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         // Load a script
         string scriptCode = "return 'show test'";
         using var script = new Script(scriptCode);
-        await client.InvokeScriptAsync(script);
+        await client.ScriptInvokeAsync(script);
 
         // Get the source code
         string? source = await client.ScriptShowAsync(script.Hash);
@@ -216,7 +216,7 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_MultipleKeys_WorksCorrectly(BaseClient client)
+    public async Task ScriptInvokeAsync_MultipleKeys_WorksCorrectly(BaseClient client)
     {
         // Test script with multiple keys
         // Use hash tags to ensure keys hash to same slot in cluster mode
@@ -224,7 +224,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         var options = new ScriptOptions()
             .WithKeys("{key}1", "{key}2", "{key}3");
 
-        ValkeyResult result = await client.InvokeScriptAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
 
         Assert.NotNull(result);
         Assert.Equal(3, (long)result);
@@ -232,14 +232,14 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_MultipleArgs_WorksCorrectly(BaseClient client)
+    public async Task ScriptInvokeAsync_MultipleArgs_WorksCorrectly(BaseClient client)
     {
         // Test script with multiple arguments
         using var script = new Script("return #ARGV");
         var options = new ScriptOptions()
             .WithArgs("arg1", "arg2", "arg3", "arg4");
 
-        ValkeyResult result = await client.InvokeScriptAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
 
         Assert.NotNull(result);
         Assert.Equal(4, (long)result);
@@ -247,11 +247,11 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_ReturnsInteger_ConvertsCorrectly(BaseClient client)
+    public async Task ScriptInvokeAsync_ReturnsInteger_ConvertsCorrectly(BaseClient client)
     {
         // Test script returning integer
         using var script = new Script("return 42");
-        ValkeyResult result = await client.InvokeScriptAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script);
 
         Assert.NotNull(result);
         Assert.Equal(42, (long)result);
@@ -259,11 +259,11 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_ReturnsArray_ConvertsCorrectly(BaseClient client)
+    public async Task ScriptInvokeAsync_ReturnsArray_ConvertsCorrectly(BaseClient client)
     {
         // Test script returning array
         using var script = new Script("return {'a', 'b', 'c'}");
-        ValkeyResult result = await client.InvokeScriptAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script);
 
         Assert.NotNull(result);
         string?[]? arr = (string?[]?)result;
@@ -276,11 +276,11 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_ReturnsNil_HandlesCorrectly(BaseClient client)
+    public async Task ScriptInvokeAsync_ReturnsNil_HandlesCorrectly(BaseClient client)
     {
         // Test script returning nil
         using var script = new Script("return nil");
-        ValkeyResult result = await client.InvokeScriptAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script);
 
         Assert.NotNull(result);
         Assert.True(result.IsNull);
@@ -288,7 +288,7 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_AccessesRedisData_WorksCorrectly(BaseClient client)
+    public async Task ScriptInvokeAsync_AccessesRedisData_WorksCorrectly(BaseClient client)
     {
         // Set up test data
         string key = Guid.NewGuid().ToString();
@@ -299,7 +299,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         using var script = new Script("return redis.call('GET', KEYS[1])");
         var options = new ScriptOptions().WithKeys(key);
 
-        ValkeyResult result = await client.InvokeScriptAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
 
         Assert.NotNull(result);
         Assert.Equal(value, result.ToString());
@@ -307,7 +307,7 @@ public class ScriptingCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task InvokeScriptAsync_ModifiesRedisData_WorksCorrectly(BaseClient client)
+    public async Task ScriptInvokeAsync_ModifiesRedisData_WorksCorrectly(BaseClient client)
     {
         // Script that sets a value
         string key = Guid.NewGuid().ToString();
@@ -318,7 +318,7 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys(key)
             .WithArgs(value);
 
-        ValkeyResult result = await client.InvokeScriptAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
 
         Assert.NotNull(result);
         Assert.Equal("OK", result.ToString());
@@ -1709,7 +1709,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         using var scriptObj = new Script(script);
 
         // Execute once to cache it
-        await client.InvokeScriptAsync(scriptObj);
+        await client.ScriptInvokeAsync(scriptObj);
 
         // Convert hash string to byte array
         byte[] hash = Convert.FromHexString(scriptObj.Hash);
@@ -1821,7 +1821,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             Assert.False(existsBefore);
 
             // Load the script
-            await client.InvokeScriptAsync(scriptObj);
+            await client.ScriptInvokeAsync(scriptObj);
 
             // Script should exist now
             bool existsAfter = await server.ScriptExistsAsync(hash);
@@ -1901,7 +1901,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             // Load a script
             string script = "return 'flush test'";
             using var scriptObj = new Script(script);
-            await client.InvokeScriptAsync(scriptObj);
+            await client.ScriptInvokeAsync(scriptObj);
 
             // Verify it exists
             bool existsBefore = await server.ScriptExistsAsync(script);

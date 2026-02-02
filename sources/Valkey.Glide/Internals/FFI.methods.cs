@@ -69,7 +69,7 @@ internal partial class FFI
 
     [LibraryImport("libglide_rs", EntryPoint = "invoke_script")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void InvokeScriptFfi(
+    public static partial void ScriptInvokeFfi(
         IntPtr client,
         ulong index,
         IntPtr hash,
@@ -144,8 +144,8 @@ internal partial class FFI
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_drop_script_error")]
     public static extern void FreeDropScriptError(IntPtr errorBuffer);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "invoke_script")]
-    public static extern void InvokeScriptFfi(
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "script_invoke")]
+    public static extern void ScriptInvokeFfi(
         IntPtr client,
         ulong index,
         IntPtr hash,

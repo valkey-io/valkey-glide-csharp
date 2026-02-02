@@ -10,7 +10,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
     // ===== Script Execution with Routing =====
 
     /// <inheritdoc/>
-    public async Task<ClusterValue<ValkeyResult>> InvokeScriptAsync(
+    public async Task<ClusterValue<ValkeyResult>> ScriptInvokeAsync(
         Script script,
         ClusterScriptOptions options,
         CommandFlags flags = CommandFlags.None,
