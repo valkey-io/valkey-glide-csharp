@@ -275,8 +275,8 @@ public class PubSubFFIMemoryLeakTests
 
             // Create PubSubMessage (simulating what the real callback does)
             PubSubMessage result = pattern != null
-                ? new PubSubMessage(message, channel, pattern)
-                : new PubSubMessage(message, channel);
+                ? PubSubMessage.FromPattern(message, channel, pattern)
+                : PubSubMessage.FromChannel(message, channel);
 
             // Verify the message was created correctly
             if (result.Message != message || result.Channel != channel || result.Pattern != pattern)

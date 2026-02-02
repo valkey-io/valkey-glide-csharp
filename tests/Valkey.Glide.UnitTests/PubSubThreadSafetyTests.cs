@@ -29,7 +29,7 @@ public class PubSubThreadSafetyTests
         var tasks = Enumerable.Range(0, 100)
             .Select(i => Task.Run(() =>
             {
-                var message = new PubSubMessage($"message-{i}", "test-channel");
+                var message = PubSubMessage.FromChannel($"message-{i}", "test-channel");
                 client.HandlePubSubMessage(message);
             }))
             .ToArray();
@@ -68,7 +68,7 @@ public class PubSubThreadSafetyTests
         {
             try
             {
-                var message = new PubSubMessage("test-message", "test-channel");
+                var message = PubSubMessage.FromChannel("test-message", "test-channel");
                 client.HandlePubSubMessage(message);
             }
             catch (Exception ex)
@@ -141,7 +141,7 @@ public class PubSubThreadSafetyTests
             // Send a few messages
             for (int j = 0; j < 5; j++)
             {
-                var message = new PubSubMessage($"message-{j}", "test-channel");
+                var message = PubSubMessage.FromChannel($"message-{j}", "test-channel");
                 client.HandlePubSubMessage(message);
             }
 
@@ -177,7 +177,7 @@ public class PubSubThreadSafetyTests
         // Start a long-running message processing
         var messageTask = Task.Run(() =>
         {
-            var message = new PubSubMessage("test-message", "test-channel");
+            var message = PubSubMessage.FromChannel("test-message", "test-channel");
             client.HandlePubSubMessage(message);
         });
 

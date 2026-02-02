@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
-
 namespace Valkey.Glide;
 
 /// <summary>
@@ -16,7 +14,7 @@ internal sealed class Subscription
     /// <summary>
     /// Initializes a new instance of the <see cref="Subscription"/> class.
     /// </summary>
-    public Subscription(){}
+    public Subscription() { }
 
     /// <summary>
     /// Adds a new message handler to this subscription.
@@ -74,7 +72,7 @@ internal sealed class Subscription
             // Queue handler invocation to thread pool to avoid blocking message processing
             System.Threading.ThreadPool.QueueUserWorkItem(_ =>
             {
-                foreach (Action<ValkeyChannel, ValkeyValue> handler in handlers.GetInvocationList())
+                foreach (var handler in handlers.GetInvocationList().Cast<Action<ValkeyChannel, ValkeyValue>>())
                 {
                     try
                     {

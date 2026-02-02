@@ -33,7 +33,7 @@ public class PubSubPerformanceTests
         // Simulate messages being processed through the channel
         for (int i = 0; i < messageCount; i++)
         {
-            var message = new PubSubMessage($"message-{i}", "perf-test");
+            var message = PubSubMessage.FromChannel($"message-{i}", "perf-test");
             config.Callback!(message, null);
         }
 
@@ -76,7 +76,7 @@ public class PubSubPerformanceTests
         // Act - Process many messages
         for (int i = 0; i < messageCount; i++)
         {
-            var message = new PubSubMessage($"message-{i}", "gc-test");
+            var message = PubSubMessage.FromChannel($"message-{i}", "gc-test");
             config.Callback!(message, null);
         }
 
@@ -138,7 +138,7 @@ public class PubSubPerformanceTests
             {
                 for (int i = 0; i < messagesPerThread; i++)
                 {
-                    var message = new PubSubMessage($"thread-{threadId}-msg-{i}", "concurrent-test");
+                    var message = PubSubMessage.FromChannel($"thread-{threadId}-msg-{i}", "concurrent-test");
                     config.Callback!(message, null);
                 }
             });
@@ -183,7 +183,7 @@ public class PubSubPerformanceTests
             // Send burst of messages
             for (int i = 0; i < burstSize; i++)
             {
-                var message = new PubSubMessage($"burst-{burst}-msg-{i}", "burst-test");
+                var message = PubSubMessage.FromChannel($"burst-{burst}-msg-{i}", "burst-test");
                 config.Callback!(message, null);
             }
 
@@ -229,7 +229,7 @@ public class PubSubPerformanceTests
         var warmUpStopwatch = Stopwatch.StartNew();
         while (warmUpStopwatch.Elapsed < TimeSpan.FromSeconds(1))
         {
-            var message = new PubSubMessage($"warmup-{messagesSent}", "long-running-test");
+            var message = PubSubMessage.FromChannel($"warmup-{messagesSent}", "long-running-test");
             config.Callback!(message, null);
             messagesSent++;
         }
@@ -253,7 +253,7 @@ public class PubSubPerformanceTests
             // Send a batch of messages to catch up to the target rate
             while (messagesSent < expectedMessagesSent)
             {
-                var message = new PubSubMessage($"msg-{messagesSent}", "long-running-test");
+                var message = PubSubMessage.FromChannel($"msg-{messagesSent}", "long-running-test");
                 config.Callback!(message, null);
                 messagesSent++;
             }

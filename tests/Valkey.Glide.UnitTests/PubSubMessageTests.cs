@@ -6,20 +6,20 @@ namespace Valkey.Glide.UnitTests;
 
 public class PubSubMessageTests
 {
-    private static readonly string message = "test message";
-    private static readonly string channel = "test-channel";
-    private static readonly string pattern = "test-*";
+    private static readonly string Message = "test message";
+    private static readonly string Channel = "test-channel";
+    private static readonly string Pattern = "test-*";
 
     [Fact]
     public void PubSubMessage_Exact_SetsPropertiesCorrectly()
     {
         // Act
-        var pubSubMessage = PubSubMessage.ExactMessage(message, channel);
+        var pubSubMessage = PubSubMessage.FromChannel(Message, Channel);
 
         // Assert
         Assert.Equal(PubSubChannelMode.Exact, pubSubMessage.ChannelMode);
-        Assert.Equal(message, pubSubMessage.Message);
-        Assert.Equal(channel, pubSubMessage.Channel);
+        Assert.Equal(Message, pubSubMessage.Message);
+        Assert.Equal(Channel, pubSubMessage.Channel);
         Assert.Null(pubSubMessage.Pattern);
     }
 
@@ -27,25 +27,25 @@ public class PubSubMessageTests
     public void PubSubMessage_Pattern_SetsPropertiesCorrectly()
     {
         // Act
-        var pubSubMessage = PubSubMessage.PatternMessage(message, channel, pattern);
+        var pubSubMessage = PubSubMessage.FromPattern(Message, Channel, Pattern);
 
         // Assert
         Assert.Equal(PubSubChannelMode.Pattern, pubSubMessage.ChannelMode);
-        Assert.Equal(message, pubSubMessage.Message);
-        Assert.Equal(channel, pubSubMessage.Channel);
-        Assert.Equal(pattern, pubSubMessage.Pattern);
+        Assert.Equal(Message, pubSubMessage.Message);
+        Assert.Equal(Channel, pubSubMessage.Channel);
+        Assert.Equal(Pattern, pubSubMessage.Pattern);
     }
 
     [Fact]
     public void PubSubMessage_Sharded_SetsPropertiesCorrectly()
     {
         // Act
-        var pubSubMessage = PubSubMessage.ShardedMessage(message, channel);
+        var pubSubMessage = PubSubMessage.FromShardChannel(Message, Channel);
 
         // Assert
         Assert.Equal(PubSubChannelMode.Sharded, pubSubMessage.ChannelMode);
-        Assert.Equal(message, pubSubMessage.Message);
-        Assert.Equal(channel, pubSubMessage.Channel);
+        Assert.Equal(Message, pubSubMessage.Message);
+        Assert.Equal(Channel, pubSubMessage.Channel);
         Assert.Null(pubSubMessage.Pattern);
     }
 
@@ -53,7 +53,7 @@ public class PubSubMessageTests
     public void PubSubMessage_ToString_Exact_ReturnsValidJsonWithNullPattern()
     {
         // Arrange
-        var pubSubMessage = PubSubMessage.ExactMessage(message, channel);
+        var pubSubMessage = PubSubMessage.FromChannel(Message, Channel);
 
         // Act
         var jsonString = pubSubMessage.ToString();
@@ -65,8 +65,8 @@ public class PubSubMessageTests
         // Verify it's valid JSON by deserializing
         JsonElement deserializedObject = JsonSerializer.Deserialize<JsonElement>(jsonString);
         Assert.Equal(PubSubChannelMode.Exact.ToString(), deserializedObject.GetProperty("ChannelMode").ToString());
-        Assert.Equal(message, deserializedObject.GetProperty("Message").GetString());
-        Assert.Equal(channel, deserializedObject.GetProperty("Channel").GetString());
+        Assert.Equal(Message, deserializedObject.GetProperty("Message").GetString());
+        Assert.Equal(Channel, deserializedObject.GetProperty("Channel").GetString());
         Assert.Equal(JsonValueKind.Null, deserializedObject.GetProperty("Pattern").ValueKind);
     }
 
@@ -74,7 +74,7 @@ public class PubSubMessageTests
     public void PubSubMessage_ToString_Pattern_ReturnsValidJson()
     {
         // Arrange
-        var pubSubMessage = PubSubMessage.PatternMessage(message, channel, pattern);
+        var pubSubMessage = PubSubMessage.FromPattern(Message, Channel, Pattern);
 
         // Act
         var jsonString = pubSubMessage.ToString();
@@ -86,16 +86,16 @@ public class PubSubMessageTests
         // Verify it's valid JSON by deserializing
         JsonElement deserializedObject = JsonSerializer.Deserialize<JsonElement>(jsonString);
         Assert.Equal(PubSubChannelMode.Pattern.ToString(), deserializedObject.GetProperty("ChannelMode").ToString());
-        Assert.Equal(message, deserializedObject.GetProperty("Message").GetString());
-        Assert.Equal(channel, deserializedObject.GetProperty("Channel").GetString());
-        Assert.Equal(pattern, deserializedObject.GetProperty("Pattern").GetString());
+        Assert.Equal(Message, deserializedObject.GetProperty("Message").GetString());
+        Assert.Equal(Channel, deserializedObject.GetProperty("Channel").GetString());
+        Assert.Equal(Pattern, deserializedObject.GetProperty("Pattern").GetString());
     }
 
     [Fact]
     public void PubSubMessage_ToString_Sharded_ReturnsValidJsonWithNullPattern()
     {
         // Arrange
-        var pubSubMessage = PubSubMessage.ShardedMessage(message, channel);
+        var pubSubMessage = PubSubMessage.FromShardChannel(Message, Channel);
 
         // Act
         var jsonString = pubSubMessage.ToString();
@@ -107,8 +107,8 @@ public class PubSubMessageTests
         // Verify it's valid JSON by deserializing
         JsonElement deserializedObject = JsonSerializer.Deserialize<JsonElement>(jsonString);
         Assert.Equal(PubSubChannelMode.Sharded.ToString(), deserializedObject.GetProperty("ChannelMode").ToString());
-        Assert.Equal(message, deserializedObject.GetProperty("Message").GetString());
-        Assert.Equal(channel, deserializedObject.GetProperty("Channel").GetString());
+        Assert.Equal(Message, deserializedObject.GetProperty("Message").GetString());
+        Assert.Equal(Channel, deserializedObject.GetProperty("Channel").GetString());
         Assert.Equal(JsonValueKind.Null, deserializedObject.GetProperty("Pattern").ValueKind);
     }
 
@@ -116,8 +116,8 @@ public class PubSubMessageTests
     public void PubSubMessage_Equals_ReturnsTrueForEqualMessages()
     {
         // Arrange
-        var pubSubMessage1 = PubSubMessage.PatternMessage(message, channel, pattern);
-        var pubSubMessage2 = PubSubMessage.PatternMessage(message, channel, pattern);
+        var pubSubMessage1 = PubSubMessage.FromPattern(Message, Channel, Pattern);
+        var pubSubMessage2 = PubSubMessage.FromPattern(Message, Channel, Pattern);
 
         // Act & Assert
         Assert.Equal(pubSubMessage1, pubSubMessage2);
@@ -129,8 +129,8 @@ public class PubSubMessageTests
     public void PubSubMessage_Equals_ReturnsFalseForDifferentMessages()
     {
         // Arrange
-        var pubSubMessage1 = PubSubMessage.PatternMessage("message1", channel, pattern);
-        var pubSubMessage2 = PubSubMessage.PatternMessage("message2", channel, pattern);
+        var pubSubMessage1 = PubSubMessage.FromPattern("message1", Channel, Pattern);
+        var pubSubMessage2 = PubSubMessage.FromPattern("message2", Channel, Pattern);
 
         // Act & Assert
         Assert.NotEqual(pubSubMessage1, pubSubMessage2);
@@ -142,7 +142,7 @@ public class PubSubMessageTests
     public void PubSubMessage_Equals_ReturnsFalseForNull()
     {
         // Arrange
-        var pubSubMessage = PubSubMessage.ExactMessage(message, channel);
+        var pubSubMessage = PubSubMessage.FromChannel(Message, Channel);
 
         // Act & Assert
         Assert.False(pubSubMessage.Equals(null));
@@ -152,8 +152,8 @@ public class PubSubMessageTests
     public void PubSubMessage_GetHashCode_SameForEqualMessages()
     {
         // Arrange
-        var pubSubMessage1 = PubSubMessage.PatternMessage(message, channel, pattern);
-        var pubSubMessage2 = PubSubMessage.PatternMessage(message, channel, pattern);
+        var pubSubMessage1 = PubSubMessage.FromPattern(Message, Channel, Pattern);
+        var pubSubMessage2 = PubSubMessage.FromPattern(Message, Channel, Pattern);
 
         // Act & Assert
         Assert.Equal(pubSubMessage1.GetHashCode(), pubSubMessage2.GetHashCode());
@@ -163,8 +163,8 @@ public class PubSubMessageTests
     public void PubSubMessage_GetHashCode_DifferentForDifferentMessages()
     {
         // Arrange
-        var pubSubMessage1 = PubSubMessage.PatternMessage("message1", channel, pattern);
-        var pubSubMessage2 = PubSubMessage.PatternMessage("message2", channel, pattern);
+        var pubSubMessage1 = PubSubMessage.FromPattern("message1", Channel, Pattern);
+        var pubSubMessage2 = PubSubMessage.FromPattern("message2", Channel, Pattern);
 
         // Act & Assert
         Assert.NotEqual(pubSubMessage1.GetHashCode(), pubSubMessage2.GetHashCode());

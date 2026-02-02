@@ -35,7 +35,7 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var testMessage = new PubSubMessage("test-message", "test-channel");
+        var testMessage = PubSubMessage.FromChannel("test-message", "test-channel");
         queue.EnqueueMessage(testMessage);
 
         // Act
@@ -64,7 +64,7 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var testMessage = new PubSubMessage("test-message", "test-channel");
+        var testMessage = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
         queue.EnqueueMessage(testMessage);
@@ -78,9 +78,9 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var message1 = new PubSubMessage("message1", "channel1");
-        var message2 = new PubSubMessage("message2", "channel2");
-        var message3 = new PubSubMessage("message3", "channel3");
+        var message1 = PubSubMessage.FromChannel("message1", "channel1");
+        var message2 = PubSubMessage.FromChannel("message2", "channel2");
+        var message3 = PubSubMessage.FromChannel("message3", "channel3");
 
         // Act
         queue.EnqueueMessage(message1);
@@ -107,7 +107,7 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var testMessage = new PubSubMessage("test-message", "test-channel");
+        var testMessage = PubSubMessage.FromChannel("test-message", "test-channel");
         queue.EnqueueMessage(testMessage);
 
         // Act
@@ -124,7 +124,7 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var testMessage = new PubSubMessage("test-message", "test-channel");
+        var testMessage = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
         Task<PubSubMessage> getMessageTask = queue.GetMessageAsync();
@@ -166,9 +166,9 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var message1 = new PubSubMessage("message1", "channel1");
-        var message2 = new PubSubMessage("message2", "channel2");
-        var message3 = new PubSubMessage("message3", "channel3");
+        var message1 = PubSubMessage.FromChannel("message1", "channel1");
+        var message2 = PubSubMessage.FromChannel("message2", "channel2");
+        var message3 = PubSubMessage.FromChannel("message3", "channel3");
 
         queue.EnqueueMessage(message1);
         queue.EnqueueMessage(message2);
@@ -199,7 +199,7 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var message1 = new PubSubMessage("message1", "channel1");
+        var message1 = PubSubMessage.FromChannel("message1", "channel1");
         queue.EnqueueMessage(message1);
 
         using CancellationTokenSource cts = new();
@@ -245,7 +245,7 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         var queue = new PubSubMessageQueue();
-        var testMessage = new PubSubMessage("test-message", "test-channel");
+        var testMessage = PubSubMessage.FromChannel("test-message", "test-channel");
         queue.Dispose();
 
         // Act & Assert
@@ -257,7 +257,7 @@ public class PubSubMessageQueueTests
     {
         // Arrange
         using var queue = new PubSubMessageQueue();
-        var message1 = new PubSubMessage("message1", "channel1");
+        var message1 = PubSubMessage.FromChannel("message1", "channel1");
         queue.EnqueueMessage(message1);
 
         // Act
@@ -295,7 +295,7 @@ public class PubSubMessageQueueTests
                 for (int j = 0; j < messageCount / producerThreads; j++)
                 {
                     string messageContent = $"thread-{threadId}-message-{j}";
-                    var message = new PubSubMessage(messageContent, $"channel-{threadId}");
+                    var message = PubSubMessage.FromChannel(messageContent, $"channel-{threadId}");
                     queue.EnqueueMessage(message);
                     producedMessages.Add(messageContent);
                 }
@@ -350,7 +350,7 @@ public class PubSubMessageQueueTests
         // Enqueue messages
         for (int i = 0; i < messageCount; i++)
         {
-            var message = new PubSubMessage($"message-{i}", $"channel-{i}");
+            var message = PubSubMessage.FromChannel($"message-{i}", $"channel-{i}");
             queue.EnqueueMessage(message);
         }
 

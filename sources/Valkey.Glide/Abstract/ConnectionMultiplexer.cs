@@ -228,8 +228,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
 
-    private Subscriber? _subscriber;
-
     internal Subscription GetOrAddSubscription(ValkeyChannel channel)
     {
         lock (_subscriptions)
@@ -268,7 +266,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     }
 
     /// <summary>
-    /// Converts a <cref="PubSubMessage"/> to a <cref="ValkeyChannel"/>.
+    /// Converts a <see cref="PubSubMessage"/> to a <see cref="ValkeyChannel"/>.
     /// </summary>
     /// <param name="message">The PubSubMessage to convert.</param>
     /// <returns>A ValkeyChannel representing the message's channel.</returns>
