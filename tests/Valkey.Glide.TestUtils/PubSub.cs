@@ -12,35 +12,38 @@ public static class PubSub
     /// <summary>
     /// Returns a unique exact channel message for testing.
     /// </summary>
-    public static PubSubMessage BuildExactMessage()
+    public static PubSubMessage FromChannel()
     {
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";
         var channel = $"test-{id}-channel";
-        return PubSubMessage.ExactMessage(message, channel);
+
+        return PubSubMessage.FromChannel(message, channel);
     }
 
     /// <summary>
     /// Returns a unique pattern channel message for testing.
     /// </summary>
-    public static PubSubMessage BuildPatternMessage()
+    public static PubSubMessage FromPattern()
     {
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";
         var channel = $"test-{id}-channel";
         var pattern = $"test-{id}-*";
-        return PubSubMessage.PatternMessage(message, channel, pattern);
+
+        return PubSubMessage.FromPattern(message, channel, pattern);
     }
 
     /// <summary>
-    /// Returns a unique sharded channel message for testing.
+    /// Returns a unique shard channel message for testing.
     /// </summary>
-    public static PubSubMessage BuildShardedMessage()
+    public static PubSubMessage FromShardChannel()
     {
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";
         var channel = $"test-{id}-channel";
-        return PubSubMessage.ShardedMessage(message, channel);
+
+        return PubSubMessage.FromShardChannel(message, channel);
     }
 
     /// <summary>

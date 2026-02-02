@@ -33,7 +33,7 @@ internal sealed class Subscriber : ISubscriber
             if (_client is GlideClusterClient clusterClient)
                 return clusterClient.SPublishAsync(channelStr, messageStr, flags);
 
-            throw new ArgumentException("Can only publish to sharded channels in cluster mode.");
+            throw new ArgumentException("Can only publish to shard channels in cluster mode.");
         }
 
         return _client.PublishAsync(channelStr, messageStr, flags);

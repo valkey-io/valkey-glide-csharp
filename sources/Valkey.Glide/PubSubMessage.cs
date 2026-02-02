@@ -13,7 +13,7 @@ public enum PubSubChannelMode
     Exact = 0,
     /// <summary>Pattern-based subscription (PSUBSCRIBE).</summary>
     Pattern = 1,
-    /// <summary>Sharded channel subscription (SSUBSCRIBE).</summary>
+    /// <summary>shard channel subscription (SSUBSCRIBE).</summary>
     Sharded = 2
 }
 
@@ -38,7 +38,7 @@ public sealed class PubSubMessage
     public string Channel { get; }
 
     /// <summary>
-    /// The pattern that matched the channel (null for exact and sharded channel subscriptions).
+    /// The pattern that matched the channel (null for exact and shard channel subscriptions).
     /// </summary>
     public string? Pattern { get; }
 
@@ -48,7 +48,7 @@ public sealed class PubSubMessage
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
-    internal static PubSubMessage ExactMessage(string message, string channel)
+    public static PubSubMessage FromChannel(string message, string channel)
     {
         return new(PubSubChannelMode.Exact, message, channel, null);
     }
@@ -60,19 +60,19 @@ public sealed class PubSubMessage
     /// <param name="channel">The channel on which the message was received.</param>
     /// <param name="pattern">The pattern that matched the channel.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
-    internal static PubSubMessage PatternMessage(string message, string channel, string pattern)
+    public static PubSubMessage FromPattern(string message, string channel, string pattern)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(pattern, nameof(pattern));
         return new(PubSubChannelMode.Pattern, message, channel, pattern);
     }
 
     /// <summary>
-    /// Creates a new <see cref="PubSubMessage"/> for a sharded channel subscription (SSUBSCRIBE).
+    /// Creates a new <see cref="PubSubMessage"/> for a shard channel subscription (SSUBSCRIBE).
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
-    internal static PubSubMessage ShardedMessage(string message, string channel)
+    public static PubSubMessage FromShardChannel(string message, string channel)
     {
         return new(PubSubChannelMode.Sharded, message, channel, null);
     }

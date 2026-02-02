@@ -525,12 +525,12 @@ internal partial class FFI
             // Create message based on push kind
             if (pushKind == PushKind.PushMessage)
             {
-                return PubSubMessage.ExactMessage(message, channel);
+                return PubSubMessage.FromChannel(message, channel);
             }
 
             else if (pushKind == PushKind.PushSMessage)
             {
-                return PubSubMessage.ShardedMessage(message, channel);
+                return PubSubMessage.FromShardChannel(message, channel);
             }
 
             else if (pushKind == PushKind.PushPMessage)
@@ -554,7 +554,7 @@ internal partial class FFI
                     throw new ArgumentException("PubSub pattern cannot be empty when pattern pointer is provided");
                 }
 
-                return PubSubMessage.PatternMessage(message, channel, pattern);
+                return PubSubMessage.FromPattern(message, channel, pattern);
             }
 
             else

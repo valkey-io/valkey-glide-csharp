@@ -85,12 +85,12 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     }
 
     /// <summary>
-    /// Create a new channel from a buffer, representing a sharded channel.
+    /// Create a new channel from a buffer, representing a shard channel.
     /// </summary>
     public static ValkeyChannel Sharded(byte[]? value) => new(value, ValkeyChannelOptions.Sharded);
 
     /// <summary>
-    /// Create a new channel from a string, representing a sharded channel.
+    /// Create a new channel from a string, representing a shard channel.
     /// </summary>
     public static ValkeyChannel Sharded(string value) => new(value, ValkeyChannelOptions.Sharded);
 

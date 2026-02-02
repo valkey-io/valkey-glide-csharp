@@ -1,5 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Collections.Concurrent;
 using System.Net;
 
 using Valkey.Glide.Internals;
@@ -222,4 +223,70 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     /// <inheritdoc/>
     Task IConnectionMultiplexer.CloseAsync() => DisposeAsync().AsTask();
+
+    #region Subscriptions
+
+    private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
+
+    private Subscriber? _subscriber;
+
+    internal Subscription GetOrAddSubscription(ValkeyChannel channel)
+    {
+        lock (_subscriptions)
+        {
+            if (!_subscriptions.TryGetValue(channel, out var sub))
+            {
+                sub = new Subscription();
+                _subscriptions.TryAdd(channel, sub);
+            }
+            return sub;
+        }
+    }
+
+    internal bool TryGetSubscription(ValkeyChannel channel, out Subscription? sub)
+        => _subscriptions.TryGetValue(channel, out sub);
+
+    internal bool TryRemoveSubscription(ValkeyChannel channel, out Subscription? sub)
+    {
+        lock (_subscriptions)
+        {
+            return _subscriptions.TryRemove(channel, out sub);
+        }
+    }
+
+    /// <summary>
+    /// Handles incoming Pub/Sub messages and routes them to the appropriate subscription handlers.
+    /// </summary>
+    /// <param name="message">The incoming PubSubMessage.</param>
+    internal void OnMessage(PubSubMessage message)
+    {
+        var channel = ToValkeyChannel(message);
+        if (_subscriptions.TryGetValue(channel, out var sub))
+        {
+            sub.OnMessage(channel, message.Message);
+        }
+    }
+
+    /// <summary>
+    /// Converts a <cref="PubSubMessage"/> to a <cref="ValkeyChannel"/>.
+    /// </summary>
+    /// <param name="message">The PubSubMessage to convert.</param>
+    /// <returns>A ValkeyChannel representing the message's channel.</returns>
+    private ValkeyChannel ToValkeyChannel(PubSubMessage message)
+    {
+        var channelMode = message.ChannelMode;
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                return ValkeyChannel.Literal(message.Channel);
+            case PubSubChannelMode.Pattern:
+                return ValkeyChannel.Pattern(message.Pattern!);
+            case PubSubChannelMode.Sharded:
+                return ValkeyChannel.Sharded(message.Channel);
+            default:
+                throw new InvalidOperationException($"Unknown channel mode: {channelMode}");
+        }
+    }
+
+    #endregion
 }
