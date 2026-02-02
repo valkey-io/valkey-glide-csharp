@@ -482,7 +482,7 @@ internal partial class FFI
     {
         try
         {
-            // Validate input parameters
+            // Marshal message bytes to string.
             if (messagePtr == IntPtr.Zero)
             {
                 throw new ArgumentException("Invalid message data: pointer is null");
@@ -493,6 +493,16 @@ internal partial class FFI
                 throw new ArgumentException("Invalid message data: length is zero");
             }
 
+            byte[] messageBytes = new byte[messageLen];
+            Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
+            string message = System.Text.Encoding.UTF8.GetString(messageBytes);
+
+            if (string.IsNullOrEmpty(message))
+            {
+                throw new ArgumentException("PubSub message content cannot be null or empty after marshaling");
+            }
+
+            // Marshal channel bytes to string.
             if (channelPtr == IntPtr.Zero)
             {
                 throw new ArgumentException("Invalid channel data: pointer is null");
@@ -503,17 +513,6 @@ internal partial class FFI
                 throw new ArgumentException("Invalid channel data: length is zero");
             }
 
-            // Marshal message bytes to string
-            byte[] messageBytes = new byte[messageLen];
-            Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
-            string message = System.Text.Encoding.UTF8.GetString(messageBytes);
-
-            if (string.IsNullOrEmpty(message))
-            {
-                throw new ArgumentException("PubSub message content cannot be null or empty after marshaling");
-            }
-
-            // Marshal channel bytes to string
             byte[] channelBytes = new byte[channelLen];
             Marshal.Copy(channelPtr, channelBytes, 0, (int)channelLen);
             string channel = System.Text.Encoding.UTF8.GetString(channelBytes);
@@ -523,24 +522,45 @@ internal partial class FFI
                 throw new ArgumentException("PubSub channel name cannot be null or empty after marshaling");
             }
 
-            // Marshal pattern bytes to string if present
-            string? pattern = null;
-            if (patternPtr != IntPtr.Zero && patternLen > 0)
+            // Create message based on push kind
+            if (pushKind == PushKind.PushMessage)
             {
+                return PubSubMessage.ExactMessage(message, channel);
+            }
+
+            else if (pushKind == PushKind.PushSMessage)
+            {
+                return PubSubMessage.ShardedMessage(message, channel);
+            }
+
+            else if (pushKind == PushKind.PushPMessage)
+            {
+                if (patternPtr == IntPtr.Zero)
+                {
+                    throw new ArgumentException("Invalid pattern data: pointer is null for pattern message");
+                }
+
+                if (patternLen == 0)
+                {
+                    throw new ArgumentException("Invalid pattern data: length is zero for pattern message");
+                }
+
                 byte[] patternBytes = new byte[patternLen];
                 Marshal.Copy(patternPtr, patternBytes, 0, (int)patternLen);
-                pattern = System.Text.Encoding.UTF8.GetString(patternBytes);
+                string pattern = System.Text.Encoding.UTF8.GetString(patternBytes);
 
                 if (string.IsNullOrEmpty(pattern))
                 {
                     throw new ArgumentException("PubSub pattern cannot be empty when pattern pointer is provided");
                 }
+
+                return PubSubMessage.PatternMessage(message, channel, pattern);
             }
 
-            // Create PubSubMessage based on whether pattern is present
-            return pattern == null
-                ? new PubSubMessage(message, channel)
-                : new PubSubMessage(message, channel, pattern);
+            else
+            {
+                throw new InvalidOperationException($"Unexpected PushKind for message: {pushKind}");
+            }
         }
         catch (Exception ex) when (ex is not ArgumentException)
         {

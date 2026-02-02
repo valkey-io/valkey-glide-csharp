@@ -26,7 +26,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = BuildMessage();
+        var msg = BuildShardedMessage();
         var client = TestConfiguration.DefaultClusterClient();
 
         // Publish to shard channel and verify no subscribers.
@@ -38,7 +38,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = BuildMessage();
+        var msg = BuildShardedMessage();
 
         var subscriber = TestConfiguration.DefaultClusterClient();
         var publisher = TestConfiguration.DefaultClusterClient();
@@ -59,7 +59,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = BuildMessage();
+        var msg = BuildShardedMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
@@ -78,8 +78,8 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = BuildMessage();
-        var msg2 = BuildMessage();
+        var msg1 = BuildShardedMessage();
+        var msg2 = BuildShardedMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
@@ -104,8 +104,8 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = BuildMessage();
-        var msg2 = BuildMessage();
+        var msg1 = BuildShardedMessage();
+        var msg2 = BuildShardedMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
@@ -131,8 +131,8 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = BuildMessage();
-        var msg2 = BuildMessage();
+        var msg1 = BuildShardedMessage();
+        var msg2 = BuildShardedMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
@@ -159,8 +159,8 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = BuildMessage();
-        var msg2 = BuildMessage();
+        var msg1 = BuildShardedMessage();
+        var msg2 = BuildShardedMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
@@ -201,7 +201,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = BuildMessage();
+        var msg = BuildShardedMessage();
 
         var publisher = TestConfiguration.DefaultClusterClient();
         var subscriber = TestConfiguration.DefaultClusterClient();
@@ -219,7 +219,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = BuildMessage(withPattern: true);
+        var msg = BuildShardedMessage();
 
         using var subscriber = TestConfiguration.DefaultClusterClient();
         using var publisher = TestConfiguration.DefaultClusterClient();
@@ -228,8 +228,8 @@ public class PubSubClusterCommandTests()
         await subscriber.SSubscribeAsync(msg.Channel);
         await AssertSSubscribedAsync(publisher, [msg.Channel]);
 
-        // Verify that shard channel matching pattern is active.
-        Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync(msg.Pattern!));
+        // Verify that shard channel is active.
+        Assert.Contains(msg.Channel, await publisher.PubSubShardChannelsAsync(msg.Channel));
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg = BuildMessage();
+        var msg = BuildShardedMessage();
         using var client = TestConfiguration.DefaultClusterClient();
 
         // Verify no subscribers to shard channel.
@@ -251,8 +251,8 @@ public class PubSubClusterCommandTests()
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipMessage);
 
-        var msg1 = BuildMessage();
-        var msg2 = BuildMessage();
+        var msg1 = BuildShardedMessage();
+        var msg2 = BuildShardedMessage();
 
         using var subscriber1 = TestConfiguration.DefaultClusterClient();
         using var subscriber2 = TestConfiguration.DefaultClusterClient();

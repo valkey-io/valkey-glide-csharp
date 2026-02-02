@@ -37,55 +37,27 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void StandaloneConfig_WithSubscription_AddsCorrectSubscription()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-
-        // Act
-        var result = config.WithSubscription(PubSubChannelMode.Exact, "exact-channel");
-
-        // Assert
-        Assert.Same(config, result);
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Exact));
-        Assert.Contains("exact-channel", config.Subscriptions[(uint)PubSubChannelMode.Exact]);
-    }
-
-    [Fact]
-    public void StandaloneConfig_WithSubscription_NullOrEmptyChannel_ThrowsArgumentException()
+    public void StandaloneConfig_WithChannel_NullOrEmptyChannel_ThrowsArgumentException()
     {
         // Arrange
         var config = new StandalonePubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithSubscription(PubSubChannelMode.Exact, null!));
-        Assert.Throws<ArgumentException>(() => config.WithSubscription(PubSubChannelMode.Exact, ""));
-        Assert.Throws<ArgumentException>(() => config.WithSubscription(PubSubChannelMode.Exact, "   "));
+        Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
+        Assert.Throws<ArgumentException>(() => config.WithChannel(""));
+        Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
     }
 
     [Fact]
-    public void StandaloneConfig_WithSubscription_InvalidMode_ThrowsArgumentOutOfRangeException()
+    public void StandaloneConfig_WithPattern_NullOrEmptyPattern_ThrowsArgumentException()
     {
         // Arrange
         var config = new StandalonePubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => config.WithSubscription((PubSubChannelMode)999, "test"));
-    }
-
-    [Fact]
-    public void StandaloneConfig_WithSubscription_DuplicateChannel_DoesNotAddDuplicate()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-
-        // Act
-        config.WithChannel("test-channel");
-        config.WithChannel("test-channel"); // Add same channel again
-
-        // Assert
-        Assert.Single(config.Subscriptions[(uint)PubSubChannelMode.Exact]);
-        Assert.Contains("test-channel", config.Subscriptions[(uint)PubSubChannelMode.Exact]);
+        Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
+        Assert.Throws<ArgumentException>(() => config.WithPattern(""));
+        Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
     }
 
     [Fact]
@@ -113,17 +85,6 @@ public class PubSubSubscriptionConfigTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => config.WithCallback<StandalonePubSubSubscriptionConfig>(null!));
-    }
-
-    [Fact]
-    public void StandaloneConfig_Validate_ValidConfiguration_DoesNotThrow()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig()
-            .WithChannel("test-channel");
-
-        // Act & Assert
-        config.Validate(); // Should not throw
     }
 
     [Fact]
@@ -157,8 +118,8 @@ public class PubSubSubscriptionConfigTests
 
         // Assert
         Assert.Same(config, result);
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubClusterChannelMode.Exact));
-        Assert.Contains("test-channel", config.Subscriptions[(uint)PubSubClusterChannelMode.Exact]);
+        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Exact));
+        Assert.Contains("test-channel", config.Subscriptions[(uint)PubSubChannelMode.Exact]);
     }
 
     [Fact]
@@ -172,8 +133,8 @@ public class PubSubSubscriptionConfigTests
 
         // Assert
         Assert.Same(config, result);
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubClusterChannelMode.Pattern));
-        Assert.Contains("test-*", config.Subscriptions[(uint)PubSubClusterChannelMode.Pattern]);
+        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Pattern));
+        Assert.Contains("test-*", config.Subscriptions[(uint)PubSubChannelMode.Pattern]);
     }
 
     [Fact]
@@ -187,49 +148,48 @@ public class PubSubSubscriptionConfigTests
 
         // Assert
         Assert.Same(config, result);
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubClusterChannelMode.Sharded));
-        Assert.Contains("sharded-channel", config.Subscriptions[(uint)PubSubClusterChannelMode.Sharded]);
+        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Sharded));
+        Assert.Contains("sharded-channel", config.Subscriptions[(uint)PubSubChannelMode.Sharded]);
     }
 
     [Fact]
-    public void ClusterConfig_WithSubscription_AddsCorrectSubscription()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act
-        var result = config.WithSubscription(PubSubClusterChannelMode.Sharded, "sharded-channel");
-
-        // Assert
-        Assert.Same(config, result);
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubClusterChannelMode.Sharded));
-        Assert.Contains("sharded-channel", config.Subscriptions[(uint)PubSubClusterChannelMode.Sharded]);
-    }
-
-    [Fact]
-    public void ClusterConfig_WithSubscription_NullOrEmptyChannel_ThrowsArgumentException()
+    public void ClusterConfig_WithChannel_NullOrEmptyChannel_ThrowsArgumentException()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithSubscription(PubSubClusterChannelMode.Exact, null!));
-        Assert.Throws<ArgumentException>(() => config.WithSubscription(PubSubClusterChannelMode.Exact, ""));
-        Assert.Throws<ArgumentException>(() => config.WithSubscription(PubSubClusterChannelMode.Exact, "   "));
+        Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
+        Assert.Throws<ArgumentException>(() => config.WithChannel(""));
+        Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
     }
 
     [Fact]
-    public void ClusterConfig_WithSubscription_InvalidMode_ThrowsArgumentOutOfRangeException()
+    public void ClusterConfig_WithPattern_NullOrEmptyPattern_ThrowsArgumentException()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => config.WithSubscription((PubSubClusterChannelMode)999, "test"));
+        Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
+        Assert.Throws<ArgumentException>(() => config.WithPattern(""));
+        Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
     }
 
     [Fact]
-    public void ClusterConfig_WithSubscription_DuplicateChannel_DoesNotAddDuplicate()
+    public void ClusterConfig_WithShardedChannel_NullOrEmptyChannel_ThrowsArgumentException()
+    {
+        // Arrange
+        var config = new ClusterPubSubSubscriptionConfig();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => config.WithShardedChannel(null!));
+        Assert.Throws<ArgumentException>(() => config.WithShardedChannel(""));
+        Assert.Throws<ArgumentException>(() => config.WithShardedChannel("   "));
+    }
+
+    [Fact]
+    public void ClusterConfig_DuplicateChannel_DoesNotAddDuplicate()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
@@ -239,8 +199,8 @@ public class PubSubSubscriptionConfigTests
         config.WithShardedChannel("sharded-channel"); // Add same channel again
 
         // Assert
-        Assert.Single(config.Subscriptions[(uint)PubSubClusterChannelMode.Sharded]);
-        Assert.Contains("sharded-channel", config.Subscriptions[(uint)PubSubClusterChannelMode.Sharded]);
+        Assert.Single(config.Subscriptions[(uint)PubSubChannelMode.Sharded]);
+        Assert.Contains("sharded-channel", config.Subscriptions[(uint)PubSubChannelMode.Sharded]);
     }
 
     [Fact]
@@ -271,17 +231,6 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void ClusterConfig_Validate_ValidConfiguration_DoesNotThrow()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig()
-            .WithShardedChannel("test-channel");
-
-        // Act & Assert
-        config.Validate(); // Should not throw
-    }
-
-    [Fact]
     public void ClusterConfig_BuilderPattern_SupportsMethodChaining()
     {
         // Arrange & Act
@@ -292,86 +241,13 @@ public class PubSubSubscriptionConfigTests
             .WithCallback<ClusterPubSubSubscriptionConfig>((msg, ctx) => { }, "context");
 
         // Assert
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubClusterChannelMode.Exact));
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubClusterChannelMode.Pattern));
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubClusterChannelMode.Sharded));
+        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Exact));
+        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Pattern));
+        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Sharded));
         Assert.NotNull(config.Callback);
         Assert.Equal("context", config.Context);
     }
 
     #endregion
 
-
-    #region Validation Tests
-
-    [Fact]
-    public void BasePubSubSubscriptionConfig_Validate_EmptyChannelList_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string>();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => config.Validate());
-        Assert.Contains("has no channels or patterns configured", exception.Message);
-    }
-
-    [Fact]
-    public void BasePubSubSubscriptionConfig_Validate_NullChannelInList_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string> { null! };
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => config.Validate());
-        Assert.Contains("Channel name or pattern cannot be null, empty, or whitespace", exception.Message);
-    }
-
-    [Fact]
-    public void BasePubSubSubscriptionConfig_Validate_EmptyChannelInList_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string> { "" };
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => config.Validate());
-        Assert.Contains("Channel name or pattern cannot be null, empty, or whitespace", exception.Message);
-    }
-
-    [Fact]
-    public void BasePubSubSubscriptionConfig_Validate_WhitespaceChannelInList_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-        config.Subscriptions[(uint)PubSubChannelMode.Exact] = new HashSet<string> { "   " };
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => config.Validate());
-        Assert.Contains("Channel name or pattern cannot be null, empty, or whitespace", exception.Message);
-    }
-
-    #endregion
-
-    #region Enum Tests
-
-    [Fact]
-    public void PubSubChannelMode_HasCorrectValues()
-    {
-        // Assert
-        Assert.Equal(0, (int)PubSubChannelMode.Exact);
-        Assert.Equal(1, (int)PubSubChannelMode.Pattern);
-    }
-
-    [Fact]
-    public void PubSubClusterChannelMode_HasCorrectValues()
-    {
-        // Assert
-        Assert.Equal(0, (int)PubSubClusterChannelMode.Exact);
-        Assert.Equal(1, (int)PubSubClusterChannelMode.Pattern);
-        Assert.Equal(2, (int)PubSubClusterChannelMode.Sharded);
-    }
-
-    #endregion
 }

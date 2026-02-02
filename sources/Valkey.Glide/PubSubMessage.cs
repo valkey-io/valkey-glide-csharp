@@ -9,18 +9,11 @@ namespace Valkey.Glide;
 /// </summary>
 public enum PubSubChannelMode
 {
-    /// <summary>
-    /// Exact channel name subscription (SUBSCRIBE).
-    /// </summary>
+    /// <summary>Exact channel name subscription (SUBSCRIBE).</summary>
     Exact = 0,
-    /// <summary>
-    /// Pattern-based subscription (PSUBSCRIBE).
-    /// </summary>
+    /// <summary>Pattern-based subscription (PSUBSCRIBE).</summary>
     Pattern = 1,
-    /// <summary>
-    /// Sharded channel subscription (SSUBSCRIBE).
-    /// Available only in cluster mode with Valkey 7.0 or higher.
-    /// </summary>
+    /// <summary>Sharded channel subscription (SSUBSCRIBE).</summary>
     Sharded = 2
 }
 
@@ -55,9 +48,9 @@ public sealed class PubSubMessage
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
-    public static PubSubMessage ExactMessage(string message, string channel)
+    internal static PubSubMessage ExactMessage(string message, string channel)
     {
-        return new(message, channel, null, PubSubChannelMode.Exact);
+        return new(PubSubChannelMode.Exact, message, channel, null);
     }
 
     /// <summary>
@@ -67,10 +60,10 @@ public sealed class PubSubMessage
     /// <param name="channel">The channel on which the message was received.</param>
     /// <param name="pattern">The pattern that matched the channel.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
-    public static PubSubMessage PatternMessage(string message, string channel, string pattern)
+    internal static PubSubMessage PatternMessage(string message, string channel, string pattern)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(pattern, nameof(pattern));
-        return new(message, channel, pattern, PubSubChannelMode.Pattern);
+        return new(PubSubChannelMode.Pattern, message, channel, pattern);
     }
 
     /// <summary>
@@ -79,9 +72,9 @@ public sealed class PubSubMessage
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
-    public static PubSubMessage ShardedMessage(string message, string channel)
+    internal static PubSubMessage ShardedMessage(string message, string channel)
     {
-        return new(message, channel, null, PubSubChannelMode.Sharded);
+        return new(PubSubChannelMode.Sharded, message, channel, null);
     }
 
     /// <summary>
@@ -108,7 +101,7 @@ public sealed class PubSubMessage
     /// Determines whether the specified object is equal to the current PubSubMessage.
     /// </summary>
     /// <param name="obj">The object to compare with the current PubSubMessage.</param>
-    /// <returns>true if the specified object is equal to the current PubSubMessage; otherwise, false.</returns>
+    /// <returns>True if the specified object is equal to the current PubSubMessage; otherwise, false.</returns>
     public override bool Equals(object? obj) =>
         obj is PubSubMessage other &&
         ChannelMode == other.ChannelMode &&
@@ -122,7 +115,10 @@ public sealed class PubSubMessage
     /// <returns>A hash code for the current PubSubMessage.</returns>
     public override int GetHashCode() => HashCode.Combine(ChannelMode, Message, Channel, Pattern);
 
-    private PubSubMessage(string message, string channel, string? pattern, PubSubChannelMode channelMode)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PubSubMessage"/> class.
+    /// </summary>
+    private PubSubMessage(PubSubChannelMode channelMode, string message, string channel, string? pattern)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
         ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));

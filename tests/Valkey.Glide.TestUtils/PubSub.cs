@@ -10,22 +10,37 @@ public static class PubSub
     public static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(0.5);
 
     /// <summary>
-    /// Returns a unique message for testing.
-    /// If specified, the message will include a pattern that matches the channel.
+    /// Returns a unique exact channel message for testing.
     /// </summary>
-    public static PubSubMessage BuildMessage(bool withPattern = false)
+    public static PubSubMessage BuildExactMessage()
     {
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";
         var channel = $"test-{id}-channel";
+        return PubSubMessage.ExactMessage(message, channel);
+    }
 
-        if (!withPattern)
-        {
-            return new PubSubMessage(message, channel);
-        }
-
+    /// <summary>
+    /// Returns a unique pattern channel message for testing.
+    /// </summary>
+    public static PubSubMessage BuildPatternMessage()
+    {
+        var id = Guid.NewGuid().ToString();
+        var message = $"test-{id}-message";
+        var channel = $"test-{id}-channel";
         var pattern = $"test-{id}-*";
-        return new PubSubMessage(message, channel, pattern);
+        return PubSubMessage.PatternMessage(message, channel, pattern);
+    }
+
+    /// <summary>
+    /// Returns a unique sharded channel message for testing.
+    /// </summary>
+    public static PubSubMessage BuildShardedMessage()
+    {
+        var id = Guid.NewGuid().ToString();
+        var message = $"test-{id}-message";
+        var channel = $"test-{id}-channel";
+        return PubSubMessage.ShardedMessage(message, channel);
     }
 
     /// <summary>
