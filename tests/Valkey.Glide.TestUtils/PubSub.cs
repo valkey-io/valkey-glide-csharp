@@ -17,7 +17,8 @@ public static class PubSub
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";
         var channel = $"test-{id}-channel";
-        return PubSubMessage.ExactMessage(message, channel);
+
+        return PubSubMessage.FromChannel(message, channel);
     }
 
         return PubSubMessage.FromChannel(message, channel);
