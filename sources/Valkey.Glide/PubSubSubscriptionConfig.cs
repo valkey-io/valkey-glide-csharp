@@ -7,10 +7,10 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class BasePubSubSubscriptionConfig
 {
-    internal MessageCallback? Callback { get; set; }
-    internal object? Context { get; set; }
-    internal Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
-    internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
+    private MessageCallback? Callback { get; set; }
+    private object? Context { get; set; }
+    private Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
+    private PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
     /// Configure a message callback to be invoked when messages are received.
@@ -29,13 +29,10 @@ public abstract class BasePubSubSubscriptionConfig
     /// <summary>
     /// Add an exact channel subscription.
     /// </summary>
-    /// <param name="channel">The channel name to subscribe to.</param>
+    /// <param name="channel">The channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
     public virtual BasePubSubSubscriptionConfig WithChannel(string channel)
-    {
-        AddSubscription(PubSubChannelMode.Exact, channel);
-        return this;
-    }
+        => AddSubscription(PubSubChannelMode.Channel, channel);
 
     /// <summary>
     /// Add a pattern subscription.
@@ -43,17 +40,15 @@ public abstract class BasePubSubSubscriptionConfig
     /// <param name="pattern">The pattern to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
     public virtual BasePubSubSubscriptionConfig WithPattern(string pattern)
-    {
-        AddSubscription(PubSubChannelMode.Pattern, pattern);
-        return this;
-    }
+        => AddSubscription(PubSubChannelMode.Pattern, pattern);
 
     /// <summary>
     /// Add a channel or pattern subscription.
     /// </summary>
-    /// <param name="mode">The subscription mode.</param>
-    /// <param name="channelOrPattern">The channel name or pattern to subscribe to.</param>
-    protected void AddSubscription(PubSubChannelMode mode, string channelOrPattern)
+    /// <param name="mode">The channel subscription mode.</param>
+    /// <param name="channelOrPattern">The channel or pattern to subscribe to.</param>
+    /// <returns>This configuration instance for method chaining.</returns>
+    protected BasePubSubSubscriptionConfig AddSubscription(PubSubChannelMode mode, string channelOrPattern)
     {
         if (string.IsNullOrWhiteSpace(channelOrPattern))
             throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
@@ -63,6 +58,8 @@ public abstract class BasePubSubSubscriptionConfig
             Subscriptions[modeValue] = new HashSet<string>();
 
         Subscriptions[modeValue].Add(channelOrPattern);
+
+        return this;
     }
 }
 
@@ -78,24 +75,15 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
 
     /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
-    {
-        base.WithCallback(callback, context);
-        return this;
-    }
+        => (StandalonePubSubSubscriptionConfig)base.WithCallback(callback, context);
 
     /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithChannel(string channel)
-    {
-        base.WithChannel(channel);
-        return this;
-    }
+        => (StandalonePubSubSubscriptionConfig)base.WithChannel(channel);
 
     /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithPattern(string pattern)
-    {
-        base.WithPattern(pattern);
-        return this;
-    }
+        => (StandalonePubSubSubscriptionConfig)base.WithPattern(pattern);
 }
 
 /// <summary>
@@ -110,33 +98,21 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
 
     /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
-    {
-        base.WithCallback(callback, context);
-        return this;
-    }
+        => (ClusterPubSubSubscriptionConfig)base.WithCallback(callback, context);
 
     /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithChannel(string channel)
-    {
-        base.WithChannel(channel);
-        return this;
-    }
+        => (ClusterPubSubSubscriptionConfig)base.WithChannel(channel);
 
     /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithPattern(string pattern)
-    {
-        base.WithPattern(pattern);
-        return this;
-    }
+        => (ClusterPubSubSubscriptionConfig)base.WithPattern(pattern);
 
     /// <summary>
     /// Add a shard channel subscription.
     /// </summary>
-    /// <param name="channel">The shard channel name to subscribe to.</param>
+    /// <param name="channel">The shard channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
     public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel)
-    {
-        AddSubscription(PubSubChannelMode.Sharded, channel);
-        return this;
-    }
+        => (ClusterPubSubSubscriptionConfig)AddSubscription(PubSubChannelMode.Sharded, channel);
 }
