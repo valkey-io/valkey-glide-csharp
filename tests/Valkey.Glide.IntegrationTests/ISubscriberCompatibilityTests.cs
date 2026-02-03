@@ -646,4 +646,118 @@ public class ISubscriberCompatibilityTests
 
         Assert.Fail("Expected messages not received within the timeout period.");
     }
+
+    [Fact]
+    public async Task Queue_UnsubscribeOneOfMultiple_OtherQueuesStillReceive()
+    {
+        var config = ConfigurationOptions.Parse(TestConfiguration.STANDALONE_ADDRESS.ToString());
+        config.Ssl = TestConfiguration.TLS;
+        await using var conn = await ConnectionMultiplexer.ConnectAsync(config);
+        var sub = conn.GetSubscriber();
+
+        var channel = ValkeyChannel.Literal($"test-{Guid.NewGuid()}");
+        var queue1 = await sub.SubscribeAsync(channel);
+        var queue2 = await sub.SubscribeAsync(channel);
+
+        await Task.Delay(100);
+        await sub.PublishAsync(channel, "message1");
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var msg1 = await queue1.ReadAsync(cts.Token);
+        var msg2 = await queue2.ReadAsync(cts.Token);
+        Assert.Equal("message1", msg1.Message.ToString());
+        Assert.Equal("message1", msg2.Message.ToString());
+
+        // Verify queue1 is not completed before unsubscribe
+        Assert.False(queue1.Completion.IsCompleted);
+        Assert.False(queue2.Completion.IsCompleted);
+
+        await queue1.UnsubscribeAsync();
+        await Task.Delay(100);
+
+        // Verify queue1 is completed after unsubscribe
+        Assert.True(queue1.Completion.IsCompleted);
+        Assert.False(queue2.Completion.IsCompleted);
+
+        await sub.PublishAsync(channel, "message2");
+
+        cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var msg3 = await queue2.ReadAsync(cts.Token);
+        Assert.Equal("message2", msg3.Message.ToString());
+
+        // Verify queue1 cannot read after unsubscribe (would throw or timeout)
+        await Assert.ThrowsAsync<ChannelClosedException>(async () => await queue1.ReadAsync());
+    }
+
+    [Fact]
+    public async Task MixedHandlersAndQueues_UnsubscribeHandler_QueueStillReceives()
+    {
+        var config = ConfigurationOptions.Parse(TestConfiguration.STANDALONE_ADDRESS.ToString());
+        config.Ssl = TestConfiguration.TLS;
+        await using var conn = await ConnectionMultiplexer.ConnectAsync(config);
+        var sub = conn.GetSubscriber();
+
+        var channel = ValkeyChannel.Literal($"test-{Guid.NewGuid()}");
+        int handlerCount = 0;
+
+        void Handler(ValkeyChannel ch, ValkeyValue msg) => Interlocked.Increment(ref handlerCount);
+
+        await sub.SubscribeAsync(channel, Handler);
+        var queue = await sub.SubscribeAsync(channel);
+
+        await Task.Delay(100);
+        await sub.PublishAsync(channel, "message1");
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var msg1 = await queue.ReadAsync(cts.Token);
+        Assert.Equal("message1", msg1.Message.ToString());
+        await Task.Delay(100);
+        Assert.Equal(1, Volatile.Read(ref handlerCount));
+
+        await sub.UnsubscribeAsync(channel, Handler);
+        await Task.Delay(100);
+        await sub.PublishAsync(channel, "message2");
+
+        cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var msg2 = await queue.ReadAsync(cts.Token);
+        Assert.Equal("message2", msg2.Message.ToString());
+        Assert.Equal(1, Volatile.Read(ref handlerCount));
+    }
+
+    [Fact]
+    public async Task MixedHandlersAndQueues_UnsubscribeQueue_HandlerStillReceives()
+    {
+        var config = ConfigurationOptions.Parse(TestConfiguration.STANDALONE_ADDRESS.ToString());
+        config.Ssl = TestConfiguration.TLS;
+        await using var conn = await ConnectionMultiplexer.ConnectAsync(config);
+        var sub = conn.GetSubscriber();
+
+        var channel = ValkeyChannel.Literal($"test-{Guid.NewGuid()}");
+        int handlerCount = 0;
+        var messageEvent = new ManualResetEventSlim(false);
+
+        await sub.SubscribeAsync(channel, (ch, msg) =>
+        {
+            Interlocked.Increment(ref handlerCount);
+            messageEvent.Set();
+        });
+        var queue = await sub.SubscribeAsync(channel);
+
+        await Task.Delay(100);
+        await sub.PublishAsync(channel, "message1");
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var msg1 = await queue.ReadAsync(cts.Token);
+        Assert.Equal("message1", msg1.Message.ToString());
+        Assert.True(messageEvent.Wait(TimeSpan.FromSeconds(2)));
+        Assert.Equal(1, Volatile.Read(ref handlerCount));
+
+        messageEvent.Reset();
+        await queue.UnsubscribeAsync();
+        await Task.Delay(100);
+        await sub.PublishAsync(channel, "message2");
+
+        Assert.True(messageEvent.Wait(TimeSpan.FromSeconds(2)));
+        Assert.Equal(2, Volatile.Read(ref handlerCount));
+    }
 }
