@@ -94,23 +94,11 @@ internal sealed class Subscription
     }
 
     /// <summary>
-    /// Returns true if this subscription is completed.
+    /// Returns true if this subscription is empty.
     /// </summary>
-    /// <returns>True if completed, otherwise false.</returns>
-    public bool IsCompleted()
+    /// <returns>True if empty, otherwise false.</returns>
+    public bool IsEmpty()
     {
-        return _handlers == null & _queues == null;
-    }
-
-    /// <summary>
-    /// Marks this subscription as completed.
-    /// </summary>
-    public void MarkCompleted()
-    {
-        lock (_handlersLock)
-        {
-            _handlers = null;
-        }
-        ChannelMessageQueue.MarkAllCompleted(ref _queues);
+        return _handlers == null && _queues == null;
     }
 }

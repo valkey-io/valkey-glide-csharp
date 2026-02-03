@@ -152,7 +152,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     public ISubscriber GetSubscriber(object? asyncState = null)
     {
         Utils.Requires<NotImplementedException>(asyncState is null, "Async state is not supported by GLIDE");
-        return new Subscriber(_db!);
+        return new Subscriber(this, _db!);
     }
 
     public IDatabase GetDatabase(int db = -1, object? asyncState = null)
@@ -251,29 +251,46 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
 
-    internal Subscription GetOrAddSubscription(ValkeyChannel channel)
+    /// <summary>
+    /// Gets the subscription for the specified channel, creating it if it does not exist.
+    /// </summary>
+    /// <param name="channel"></param>
+    /// <returns></returns>
+    internal Subscription GetSubscription(ValkeyChannel channel)
+        => _subscriptions.GetOrAdd(channel, _ => new Subscription());
+
+    /// <summary>
+    /// Removes a handler from the subscription for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to remove the handler from.</param>
+    /// <param name="handler">The handler to remove.</param>
+    internal void RemoveHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
     {
         lock (_subscriptions)
         {
-            if (!_subscriptions.TryGetValue(channel, out var sub))
+            if (_subscriptions.TryGetValue(channel, out var sub))
             {
-                sub = new Subscription();
-                _subscriptions.TryAdd(channel, sub);
+                sub.RemoveHandler(handler);
+                if (sub.IsEmpty())
+                {
+                    _subscriptions.TryRemove(channel, out _);
+                }
             }
-            return sub;
         }
     }
 
-    internal bool TryGetSubscription(ValkeyChannel channel, out Subscription? sub)
-        => _subscriptions.TryGetValue(channel, out sub);
+    /// <summary>
+    /// Removes the subscription for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to remove the subscription for.</param>
+    internal void RemoveSubscription(ValkeyChannel channel)
+        => _subscriptions.Remove(channel, out _);
 
-    internal bool TryRemoveSubscription(ValkeyChannel channel, out Subscription? sub)
-    {
-        lock (_subscriptions)
-        {
-            return _subscriptions.TryRemove(channel, out sub);
-        }
-    }
+    /// <summary>
+    /// Removes all subscriptions.
+    /// </summary>
+    internal void RemoveAllSubscriptions()
+        => _subscriptions.Clear();
 
     /// <summary>
     /// Handles incoming Pub/Sub messages and routes them to the appropriate subscription handlers.
@@ -281,31 +298,10 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <param name="message">The incoming PubSubMessage.</param>
     internal void OnMessage(PubSubMessage message)
     {
-        var channel = ToValkeyChannel(message);
+        var channel = ValkeyChannel.FromPubSubMessage(message);
         if (_subscriptions.TryGetValue(channel, out var sub))
         {
             sub.OnMessage(channel, message.Message);
-        }
-    }
-
-    /// <summary>
-    /// Converts a <see cref="PubSubMessage"/> to a <see cref="ValkeyChannel"/>.
-    /// </summary>
-    /// <param name="message">The PubSubMessage to convert.</param>
-    /// <returns>A ValkeyChannel representing the message's channel.</returns>
-    private ValkeyChannel ToValkeyChannel(PubSubMessage message)
-    {
-        var channelMode = message.ChannelMode;
-        switch (channelMode)
-        {
-            case PubSubChannelMode.Exact:
-                return ValkeyChannel.Literal(message.Channel);
-            case PubSubChannelMode.Pattern:
-                return ValkeyChannel.Pattern(message.Pattern!);
-            case PubSubChannelMode.Sharded:
-                return ValkeyChannel.Sharded(message.Channel);
-            default:
-                throw new InvalidOperationException($"Unknown channel mode: {channelMode}");
         }
     }
 

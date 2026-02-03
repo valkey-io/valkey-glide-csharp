@@ -7,10 +7,10 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class BasePubSubSubscriptionConfig
 {
-    private MessageCallback? Callback { get; set; }
-    private object? Context { get; set; }
-    private Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
-    private PubSubPerformanceConfig? PerformanceConfig { get; set; }
+    internal MessageCallback? Callback { get; set; }
+    internal object? Context { get; set; }
+    internal Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
+    internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
     /// Configure a message callback to be invoked when messages are received.
@@ -20,7 +20,7 @@ public abstract class BasePubSubSubscriptionConfig
     /// <returns>This configuration instance for method chaining.</returns>
     public virtual BasePubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
     {
-        ArgumentNullException.ThrowIfNull(callback);
+        ArgumentNullException.ThrowIfNull(callback, nameof(callback));
         Callback = callback;
         Context = context;
         return this;
@@ -32,7 +32,7 @@ public abstract class BasePubSubSubscriptionConfig
     /// <param name="channel">The channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
     public virtual BasePubSubSubscriptionConfig WithChannel(string channel)
-        => AddSubscription(PubSubChannelMode.Channel, channel);
+        => AddSubscription(PubSubChannelMode.Exact, channel);
 
     /// <summary>
     /// Add a pattern subscription.

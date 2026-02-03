@@ -267,4 +267,28 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
     public static implicit operator ValkeyChannel(byte[]? key)
         => key is null ? default : new ValkeyChannel(key, s_DefaultPatternMode);
+
+    // Valkey GLIDE specified methods
+    // ------------------------------
+
+    /// <summary>
+    /// Converts a <see cref="PubSubMessage"/> to a <see cref="ValkeyChannel"/>.
+    /// </summary>
+    /// <param name="message">The PubSubMessage to convert.</param>
+    /// <returns>A ValkeyChannel representing the message's channel.</returns>
+    internal static ValkeyChannel FromPubSubMessage(PubSubMessage message)
+    {
+        var channelMode = message.ChannelMode;
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                return ValkeyChannel.Literal(message.Channel);
+            case PubSubChannelMode.Pattern:
+                return ValkeyChannel.Pattern(message.Pattern!);
+            case PubSubChannelMode.Sharded:
+                return ValkeyChannel.Sharded(message.Channel);
+            default:
+                throw new InvalidOperationException($"Unknown channel mode: {channelMode}");
+        }
+    }
 }

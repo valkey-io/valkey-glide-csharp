@@ -739,6 +739,7 @@ public abstract class ConnectionConfiguration
         public StandaloneClientConfigurationBuilder WithPubSubSubscriptions(StandalonePubSubSubscriptionConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
+
             Config.PubSubSubscriptions = config;
             return this;
         }
