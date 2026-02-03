@@ -178,7 +178,6 @@ internal sealed class Subscriber : ISubscriber
         ArgumentNullException.ThrowIfNull(message, nameof(message));
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // Send PUBLISH command to server.
         return await SendPublishCommand(channel, message);
     }
 
@@ -193,7 +192,6 @@ internal sealed class Subscriber : ISubscriber
         var subscription = _multiplexer.GetSubscription(channel);
         subscription.AddHandler(handler);
 
-        // Send SUBSCRIBE command to server.
         await SendSubscribeCommand(channel);
     }
 
@@ -208,7 +206,6 @@ internal sealed class Subscriber : ISubscriber
         var subscription = _multiplexer.GetSubscription(channel);
         subscription.AddQueue(queue);
 
-        // Send SUBSCRIBE command to server.
         await SendSubscribeCommand(channel);
 
         return queue;
@@ -230,7 +227,6 @@ internal sealed class Subscriber : ISubscriber
             _multiplexer.RemoveSubscription(channel);
         }
 
-        // Send UNSUBSCRIBE command to server.
         await SendUnsubscribeCommand(channel);
     }
 
@@ -241,7 +237,6 @@ internal sealed class Subscriber : ISubscriber
         // Remove all subscriptions from multiplexer.
         _multiplexer.RemoveAllSubscriptions();
 
-        // Send UNSUBSCRIBE commands to server.
         await _client.UnsubscribeAsync();
         await _client.PUnsubscribeAsync();
 
