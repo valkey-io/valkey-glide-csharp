@@ -69,7 +69,7 @@ public class PubSubSubscriptionConfigTests
         MessageCallback callback = (message, ctx) => { };
 
         // Act
-        var result = config.WithCallback<StandalonePubSubSubscriptionConfig>(callback, context);
+        var result = config.WithCallback(callback, context);
 
         // Assert
         Assert.Same(config, result);
@@ -84,7 +84,7 @@ public class PubSubSubscriptionConfigTests
         var config = new StandalonePubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => config.WithCallback<StandalonePubSubSubscriptionConfig>(null!));
+        Assert.Throws<ArgumentNullException>(() => config.WithCallback(null!));
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class PubSubSubscriptionConfigTests
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("channel1")
             .WithPattern("pattern*")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) => { }, "context");
+            .WithCallback((msg, ctx) => { }, "context");
 
         // Assert
         Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Exact));
@@ -212,7 +212,7 @@ public class PubSubSubscriptionConfigTests
         MessageCallback callback = (message, ctx) => { };
 
         // Act
-        var result = config.WithCallback<ClusterPubSubSubscriptionConfig>(callback, context);
+        var result = config.WithCallback(callback, context);
 
         // Assert
         Assert.Same(config, result);
@@ -227,7 +227,7 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => config.WithCallback<ClusterPubSubSubscriptionConfig>(null!));
+        Assert.Throws<ArgumentNullException>(() => config.WithCallback(null!));
     }
 
     [Fact]
@@ -238,7 +238,7 @@ public class PubSubSubscriptionConfigTests
             .WithChannel("channel1")
             .WithPattern("pattern*")
             .WithShardedChannel("sharded1")
-            .WithCallback<ClusterPubSubSubscriptionConfig>((msg, ctx) => { }, "context");
+            .WithCallback((msg, ctx) => { }, "context");
 
         // Assert
         Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Exact));

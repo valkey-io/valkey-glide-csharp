@@ -53,7 +53,7 @@ public class PubSubConfigurationTests
 
         var pubSubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback<StandalonePubSubSubscriptionConfig>(callback, context);
+            .WithCallback(callback, context);
 
         // Act
         var builder = new StandaloneClientConfigurationBuilder()
@@ -148,7 +148,7 @@ public class PubSubConfigurationTests
 
         var pubSubConfig = new ClusterPubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback<ClusterPubSubSubscriptionConfig>(callback, context);
+            .WithCallback(callback, context);
 
         // Act
         var builder = new ClusterClientConfigurationBuilder()

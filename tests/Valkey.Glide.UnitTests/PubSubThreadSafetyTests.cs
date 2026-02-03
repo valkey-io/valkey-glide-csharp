@@ -17,7 +17,7 @@ public class PubSubThreadSafetyTests
         var messagesReceived = new ConcurrentBag<PubSubMessage>();
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 messagesReceived.Add(msg);
                 Thread.Sleep(1); // Simulate some processing
@@ -54,7 +54,7 @@ public class PubSubThreadSafetyTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 processingStarted.Set();
                 continueProcessing.Wait(TimeSpan.FromSeconds(5));
@@ -134,7 +134,7 @@ public class PubSubThreadSafetyTests
         {
             var config = new StandalonePubSubSubscriptionConfig()
                 .WithChannel("test-channel")
-                .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) => { }, null);
+                .WithCallback((msg, ctx) => { }, null);
 
             var client = CreateMockClientWithPubSub(config);
 
@@ -166,7 +166,7 @@ public class PubSubThreadSafetyTests
         var disposeStarted = new ManualResetEventSlim(false);
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 // This callback will block during disposal
                 disposeStarted.Wait(TimeSpan.FromSeconds(10));

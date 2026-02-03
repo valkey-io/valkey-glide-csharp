@@ -22,7 +22,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("perf-test")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 Interlocked.Increment(ref messagesReceived);
             }, null);
@@ -58,7 +58,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("gc-test")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 Interlocked.Increment(ref messagesReceived);
             }, null);
@@ -122,7 +122,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("concurrent-test")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 Interlocked.Increment(ref messagesReceived);
             }, null);
@@ -168,7 +168,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("burst-test")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 Interlocked.Increment(ref messagesReceived);
             }, null);
@@ -220,7 +220,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("long-running-test")
-            .WithCallback<StandalonePubSubSubscriptionConfig>((msg, ctx) =>
+            .WithCallback((msg, ctx) =>
             {
                 Interlocked.Increment(ref messagesReceived);
             }, null);
