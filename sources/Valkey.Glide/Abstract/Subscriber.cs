@@ -153,42 +153,116 @@ internal sealed class Subscriber : ISubscriber
     #endregion
     #region SyncMethods
 
-    /// <inheritdoc/>
     public long Publish(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
         => PublishAsync(channel, message, flags).GetAwaiter().GetResult();
 
-    /// <inheritdoc/>
     public void Subscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None)
         => SubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
 
-    /// <inheritdoc/>
     public ChannelMessageQueue Subscribe(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
         => SubscribeAsync(channel, flags).GetAwaiter().GetResult();
 
-    /// <inheritdoc/>
     public void Unsubscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None)
         => UnsubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
 
-    /// <inheritdoc/>
     public void UnsubscribeAll(CommandFlags flags = CommandFlags.None)
         => UnsubscribeAllAsync(flags).GetAwaiter().GetResult();
 
     #endregion
+    #region AsyncMethods
+
+    public async Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
+    {
+        // Validate arguments.
+        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
+        ArgumentNullException.ThrowIfNull(message, nameof(message));
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        // Send PUBLISH command to server.
+        return await SendPublishCommand(channel, message);
+    }
+
+    public async Task SubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None)
+    {
+        // Validate arguments.
+        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
+        ArgumentNullException.ThrowIfNull(handler, nameof(handler));
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        // Add handler to multiplexer.
+        var subscription = _multiplexer.GetSubscription(channel);
+        subscription.AddHandler(handler);
+
+        // Send SUBSCRIBE command to server.
+        await SendSubscribeCommand(channel);
+    }
+
+    public async Task<ChannelMessageQueue> SubscribeAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
+    {
+        // Validate arguments.
+        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        // Add new queue to multiplexer.
+        var queue = new ChannelMessageQueue(channel, this);
+        var subscription = _multiplexer.GetSubscription(channel);
+        subscription.AddQueue(queue);
+
+        // Send SUBSCRIBE command to server.
+        await SendSubscribeCommand(channel);
+
+        return queue;
+    }
+
+    public async Task UnsubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None)
+    {
+        // Validate arguments.
+        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        // Remove handler or subscription from multiplexer.
+        if (handler != null)
+        {
+            _multiplexer.RemoveHandler(channel, handler);
+        }
+        else
+        {
+            _multiplexer.RemoveSubscription(channel);
+        }
+
+        // Send UNSUBSCRIBE command to server.
+        await SendUnsubscribeCommand(channel);
+    }
+
+    public async Task UnsubscribeAllAsync(CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        // Remove all subscriptions from multiplexer.
+        _multiplexer.RemoveAllSubscriptions();
+
+        // Send UNSUBSCRIBE commands to server.
+        await _client.UnsubscribeAsync();
+        await _client.PUnsubscribeAsync();
+
+        if (_client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.SUnsubscribeAsync();
+        }
+    }
+
+    #endregion
     #region NotSupportedMethods
 
-    /// <inheritdoc/>
     public bool IsConnected(ValkeyChannel channel = default)
     => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
-    /// <inheritdoc/>
     public EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
         => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
-    /// <inheritdoc/>
     public Task<EndPoint?> IdentifyEndpointAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
         => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
-    /// <inheritdoc/>
     public EndPoint? SubscribedEndpoint(ValkeyChannel channel)
         => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
@@ -285,6 +359,83 @@ internal sealed class Subscriber : ISubscriber
     /// <exception cref="ArgumentException"></exception>
     private static void ThrowIfChannelNullOrEmpty(ValkeyChannel channel)
     {
+        var channelStr = channel.ToString();
+        var messageStr = message.ToString();
+
+        if (channel.IsSharded)
+        {
+            if (_client is not GlideClusterClient clusterClient)
+                throw new ArgumentException("Can only publish to shard channels in cluster mode.");
+
+            return await clusterClient.SPublishAsync(channelStr, messageStr);
+        }
+        else
+        {
+            return await _client.PublishAsync(channelStr, messageStr);
+        }
+    }
+
+    /// <summary>
+    /// Sends the SUBSCRIBE command to the server for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to subscribe to.</param>
+    private async Task SendSubscribeCommand(ValkeyChannel channel)
+    {
+        var channelStr = channel.ToString();
+
+        if (channel.IsSharded)
+        {
+            if (_client is not GlideClusterClient clusterClient)
+                throw new ArgumentException("Can only subscribe to shard channels in cluster mode.");
+
+            await clusterClient.SSubscribeAsync(channelStr);
+        }
+        else if (channel.IsPattern)
+        {
+            await _client.PSubscribeAsync(channelStr);
+        }
+        else
+        {
+            await _client.SubscribeAsync(channelStr);
+        }
+    }
+
+    /// <summary>
+    /// Sends the UNSUBSCRIBE command to the server for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to unsubscribe from.</param>
+    private async Task SendUnsubscribeCommand(ValkeyChannel channel)
+    {
+        var channelStr = channel.ToString();
+
+        if (channel.IsSharded)
+        {
+            if (_client is not GlideClusterClient clusterClient)
+                throw new ArgumentException("Can only subscribe to shard channels in cluster mode.");
+
+            await clusterClient.SUnsubscribeAsync(channelStr);
+        }
+        else if (channel.IsPattern)
+        {
+            await _client.PUnsubscribeAsync(channelStr);
+        }
+        else
+        {
+            await _client.UnsubscribeAsync(channelStr);
+        }
+    }
+
+    /// <summary>
+    /// Throws if the specified channel is null or empty.
+    /// </summary>
+    /// <param name="channel">The channel to check.</param>
+    /// <param name="param">The name of the parameter to include in the exception message.</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    private static void ThrowIfValkeyChannelNullOrEmpty(ValkeyChannel channel, string param)
+    {
+        ArgumentNullException.ThrowIfNull(channel, param);
+
         if (channel.IsNullOrEmpty)
             throw new ArgumentException("Channel cannot be null or empty");
     }

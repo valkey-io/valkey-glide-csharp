@@ -6,7 +6,7 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// A connection used as the subscriber in a pub/sub scenario.
-/// Compatible with StackExchange.Redis <c>ISubscriber</c>.
+/// Compatible with StackExchange.Valkey <c>ISubscriber</c>.
 /// </summary>
 public interface ISubscriber
 {

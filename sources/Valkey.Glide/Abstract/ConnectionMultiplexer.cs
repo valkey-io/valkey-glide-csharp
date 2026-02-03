@@ -385,7 +385,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <param name="message">The incoming PubSubMessage.</param>
     internal void OnMessage(PubSubMessage message)
     {
-        var channel = ToValkeyChannel(message);
+        var channel = ValkeyChannel.FromPubSubMessage(message);
         if (_subscriptions.TryGetValue(channel, out var sub))
         {
             sub.OnMessage(channel, message.Message);

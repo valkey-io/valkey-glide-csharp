@@ -7,10 +7,10 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class BasePubSubSubscriptionConfig
 {
-    private MessageCallback? Callback { get; set; }
-    private object? Context { get; set; }
-    private Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
-    private PubSubPerformanceConfig? PerformanceConfig { get; set; }
+    internal MessageCallback? Callback { get; set; }
+    internal object? Context { get; set; }
+    internal Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
+    internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
     /// Configure a message callback to be invoked when messages are received.
