@@ -44,7 +44,6 @@ internal sealed class Subscriber : ISubscriber
     {
         // Validate arguments.
         ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
-        ArgumentNullException.ThrowIfNull(message, nameof(message));
         GuardClauses.ThrowIfCommandFlags(flags);
 
         return await SendPublishCommand(channel, message);
@@ -212,16 +211,11 @@ internal sealed class Subscriber : ISubscriber
     /// </summary>
     /// <param name="channel">The channel to check.</param>
     /// <param name="param">The name of the parameter to include in the exception message.</param>
-    /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     private static void ThrowIfValkeyChannelNullOrEmpty(ValkeyChannel channel, string param)
     {
-        ArgumentNullException.ThrowIfNull(channel, param);
-
         if (channel.IsNullOrEmpty)
             throw new ArgumentException("Channel cannot be null or empty", param);
-
-        return;
     }
 
     #endregion
