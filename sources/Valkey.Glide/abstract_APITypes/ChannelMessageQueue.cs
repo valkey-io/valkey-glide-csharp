@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -71,7 +73,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// The Channel that was subscribed for this queue.
     /// </summary>
     public ValkeyChannel Channel { get; }
-    private ISubscriber? _parent;
+    private Subscriber? _parent;
 
     /// <inheritdoc/>
     public override string? ToString() => (string?)Channel;
@@ -81,7 +83,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// </summary>
     public Task Completion => _queue.Reader.Completion;
 
-    internal ChannelMessageQueue(in ValkeyChannel channel, ISubscriber parent)
+    internal ChannelMessageQueue(in ValkeyChannel channel, Subscriber parent)
     {
         Channel = channel;
         _parent = parent;
@@ -285,45 +287,35 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         var current = Interlocked.Exchange(ref head, null);
         while (current != null)
         {
-            current.MarkCompleted();
+            current._parent = null;
+            current._queue.Writer.TryComplete();
             current = Volatile.Read(ref current._next);
         }
     }
 
-    private void MarkCompleted(Exception? error = null)
-    {
-        _parent = null;
-        _queue.Writer.TryComplete(error);
-    }
+    /// <summary>
+    /// Stop receiving messages on this channel.
+    /// </summary>
+    public void Unsubscribe(CommandFlags flags = CommandFlags.None)
+        => UnsubscribeAsync(flags).GetAwaiter().GetResult();
 
-    internal void UnsubscribeImpl(Exception? error = null, CommandFlags flags = CommandFlags.None)
+    /// <summary>
+    /// Stop receiving messages on this channel.
+    /// </summary>
+    public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
         var parent = _parent;
         _parent = null;
-        parent?.Unsubscribe(Channel, null, flags);
-        _queue.Writer.TryComplete(error);
-    }
 
-    internal async Task UnsubscribeAsyncImpl(Exception? error = null, CommandFlags flags = CommandFlags.None)
-    {
-        var parent = _parent;
-        _parent = null;
         if (parent != null)
         {
-            await parent.UnsubscribeAsync(Channel, null, flags).ConfigureAwait(false);
+            await parent.UnsubscribeAsync(this);
         }
-        _queue.Writer.TryComplete(error);
+
+        _queue.Writer.TryComplete();
     }
-
-    /// <summary>
-    /// Stop receiving messages on this channel.
-    /// </summary>
-    public void Unsubscribe(CommandFlags flags = CommandFlags.None) => UnsubscribeImpl(null, flags);
-
-    /// <summary>
-    /// Stop receiving messages on this channel.
-    /// </summary>
-    public Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None) => UnsubscribeAsyncImpl(null, flags);
 
     /// <inheritdoc/>
     public async IAsyncEnumerator<ChannelMessage> GetAsyncEnumerator(CancellationToken cancellationToken = default)

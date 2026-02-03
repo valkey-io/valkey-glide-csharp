@@ -252,29 +252,79 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
 
     /// <summary>
-    /// Gets the subscription for the specified channel, creating it if it does not exist.
+    /// Determines whether there is a subscription for the specified channel.
     /// </summary>
-    /// <param name="channel"></param>
-    /// <returns></returns>
-    internal Subscription GetSubscription(ValkeyChannel channel)
-        => _subscriptions.GetOrAdd(channel, _ => new Subscription());
+    /// <param name="channel">The channel to check for a subscription.</param>
+    /// <returns>True if there is a subscription for the specified channel, false otherwise.</returns>
+    internal bool ContainsSubscription(ValkeyChannel channel)
+        => _subscriptions.ContainsKey(channel);
 
     /// <summary>
-    /// Removes a handler from the subscription for the specified channel.
+    /// Adds a subscription handler for the specified channel.
     /// </summary>
-    /// <param name="channel">The channel to remove the handler from.</param>
-    /// <param name="handler">The handler to remove.</param>
-    internal void RemoveHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    /// <param name="channel">The channel to subscribe to.</param>
+    /// <param name="handler">The handler to invoke when a message is received on the channel.</param>
+    internal void AddSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
     {
         lock (_subscriptions)
         {
-            if (_subscriptions.TryGetValue(channel, out var sub))
+            var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
+            subscription.AddHandler(handler);
+        }
+    }
+
+    /// <summary>
+    /// Adds a subscription queue for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to subscribe to.</param>
+    /// <returns>The subscription queue for the specified channel.</returns>
+    internal void AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
+    {
+        lock (_subscriptions)
+        {
+            var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
+            subscription.AddQueue(queue);
+        }
+    }
+
+    /// <summary>
+    /// Removes a subscription handler for the specified channel.
+    /// If the subscription is empty after removing the handler, the subscription is removed.
+    /// </summary>
+    /// <param name="channel">The channel to unsubscribe from.</param>
+    /// <param name="handler">The handler to remove.</param>
+    /// <returns>True if the subscription should be removed from the server (no handlers/queues remain), false otherwise.</returns>
+    internal void RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    {
+        lock (_subscriptions)
+        {
+            if (_subscriptions.TryGetValue(channel, out var subscription))
             {
-                sub.RemoveHandler(handler);
-                if (sub.IsEmpty())
-                {
-                    _subscriptions.TryRemove(channel, out _);
-                }
+                subscription.RemoveHandler(handler);
+
+                if (subscription.IsEmpty())
+                    RemoveSubscription(channel);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes a subscription queue for the specified channel.
+    /// If the subscription is empty after removing the queue, the subscription is removed.
+    /// </summary>
+    /// <param name="queue">The queue to remove.</param>
+    internal void RemoveSubscriptionQueue(ChannelMessageQueue queue)
+    {
+        var channel = queue.Channel;
+
+        lock (_subscriptions)
+        {
+            if (_subscriptions.TryGetValue(channel, out var subscription))
+            {
+                subscription.RemoveQueue(queue);
+
+                if (subscription.IsEmpty())
+                    RemoveSubscription(channel);
             }
         }
     }
@@ -282,15 +332,29 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <summary>
     /// Removes the subscription for the specified channel.
     /// </summary>
-    /// <param name="channel">The channel to remove the subscription for.</param>
+    /// <param name="channel">The channel to unsubscribe from.</param>
     internal void RemoveSubscription(ValkeyChannel channel)
-        => _subscriptions.Remove(channel, out _);
+    {
+        lock (_subscriptions)
+        {
+            _subscriptions.Remove(channel, out var subscription);
+            subscription?.Clear();
+        }
+    }
 
     /// <summary>
     /// Removes all subscriptions.
     /// </summary>
     internal void RemoveAllSubscriptions()
-        => _subscriptions.Clear();
+    {
+        lock (_subscriptions)
+        {
+            foreach (var subscription in _subscriptions.Values)
+                subscription.Clear();
+
+            _subscriptions.Clear();
+        }
+    }
 
     /// <summary>
     /// Handles incoming Pub/Sub messages and routes them to the appropriate subscription handlers.

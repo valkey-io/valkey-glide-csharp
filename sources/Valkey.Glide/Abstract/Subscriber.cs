@@ -56,10 +56,7 @@ internal sealed class Subscriber : ISubscriber
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // Add handler to multiplexer.
-        var subscription = _multiplexer.GetSubscription(channel);
-        subscription.AddHandler(handler);
-
+        _multiplexer.AddSubscriptionHandler(channel, handler);
         await SendSubscribeCommand(channel);
     }
 
@@ -69,11 +66,8 @@ internal sealed class Subscriber : ISubscriber
         ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // Add new queue to multiplexer.
         var queue = new ChannelMessageQueue(channel, this);
-        var subscription = _multiplexer.GetSubscription(channel);
-        subscription.AddQueue(queue);
-
+        _multiplexer.AddSubscriptionQueue(channel, queue);
         await SendSubscribeCommand(channel);
 
         return queue;
@@ -88,21 +82,45 @@ internal sealed class Subscriber : ISubscriber
         // Remove handler or subscription from multiplexer.
         if (handler != null)
         {
-            _multiplexer.RemoveHandler(channel, handler);
+            _multiplexer.RemoveSubscriptionHandler(channel, handler);
         }
         else
         {
             _multiplexer.RemoveSubscription(channel);
         }
 
-        await SendUnsubscribeCommand(channel);
+        // Unsubscribe if subscription was removed.
+        if (!_multiplexer.ContainsSubscription(channel))
+        {
+            await SendUnsubscribeCommand(channel);
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribes from the specified channel queue.
+    /// </summary>
+    /// <param name="queue">The channel message queue to unsubscribe.</param>
+    /// <returns></returns>
+    internal async Task UnsubscribeAsync(ChannelMessageQueue queue)
+    {
+        // Validate arguments.
+        var channel = queue.Channel;
+        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(queue));
+
+        // Remove queue from multiplexer.
+        _multiplexer.RemoveSubscriptionQueue(queue);
+
+        // Unsubscribe if subscription was removed.
+        if (!_multiplexer.ContainsSubscription(channel))
+        {
+            await SendUnsubscribeCommand(channel);
+        }
     }
 
     public async Task UnsubscribeAllAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // Remove all subscriptions from multiplexer.
         _multiplexer.RemoveAllSubscriptions();
 
         await _client.UnsubscribeAsync();
@@ -150,6 +168,7 @@ internal sealed class Subscriber : ISubscriber
 
             return await clusterClient.SPublishAsync(channelStr, messageStr);
         }
+
         else
         {
             return await _client.PublishAsync(channelStr, messageStr);
@@ -171,10 +190,12 @@ internal sealed class Subscriber : ISubscriber
 
             await clusterClient.SSubscribeAsync(channelStr);
         }
+
         else if (channel.IsPattern)
         {
             await _client.PSubscribeAsync(channelStr);
         }
+
         else
         {
             await _client.SubscribeAsync(channelStr);
@@ -196,10 +217,12 @@ internal sealed class Subscriber : ISubscriber
 
             await clusterClient.SUnsubscribeAsync(channelStr);
         }
+
         else if (channel.IsPattern)
         {
             await _client.PUnsubscribeAsync(channelStr);
         }
+
         else
         {
             await _client.UnsubscribeAsync(channelStr);

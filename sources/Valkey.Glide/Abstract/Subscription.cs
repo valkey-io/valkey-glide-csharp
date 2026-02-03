@@ -8,8 +8,8 @@ namespace Valkey.Glide;
 internal sealed class Subscription
 {
     private Action<ValkeyChannel, ValkeyValue>? _handlers;
-    private readonly object _handlersLock = new();
     private ChannelMessageQueue? _queues;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Subscription"/> class.
@@ -22,10 +22,7 @@ internal sealed class Subscription
     /// <param name="handler">The handler to add.</param>
     public void AddHandler(Action<ValkeyChannel, ValkeyValue> handler)
     {
-        lock (_handlersLock)
-        {
-            _handlers += handler;
-        }
+        _handlers += handler;
     }
 
     /// <summary>
@@ -34,10 +31,7 @@ internal sealed class Subscription
     /// <param name="handler">The specific handler to remove.</param>
     public void RemoveHandler(Action<ValkeyChannel, ValkeyValue> handler)
     {
-        lock (_handlersLock)
-        {
-            _handlers -= handler;
-        }
+        _handlers -= handler;
     }
 
     /// <summary>
@@ -50,7 +44,7 @@ internal sealed class Subscription
     }
 
     /// <summary>
-    /// Removes a queue from this subscription.
+    /// Removes a message queue from this subscription.
     /// </summary>
     /// <param name="queue">The queue to remove.</param>
     public void RemoveQueue(ChannelMessageQueue queue)
@@ -100,5 +94,20 @@ internal sealed class Subscription
     public bool IsEmpty()
     {
         return _handlers == null && _queues == null;
+    }
+
+    /// <summary>
+    /// Clears all handlers and queues from this subscription.
+    /// </summary>
+    public void Clear()
+    {
+        var queues = Volatile.Read(ref _queues);
+        if (queues != null)
+        {
+            ChannelMessageQueue.MarkAllCompleted(ref queues);
+        }
+
+        _handlers = null;
+        _queues = null;
     }
 }
