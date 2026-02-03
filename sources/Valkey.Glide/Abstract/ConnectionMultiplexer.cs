@@ -310,7 +310,37 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            if (_subscriptions.TryGetValue(channel, out var sub))
+            var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
+            subscription.AddHandler(handler);
+        }
+    }
+
+    /// <summary>
+    /// Adds a subscription queue for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to subscribe to.</param>
+    /// <returns>The subscription queue for the specified channel.</returns>
+    internal void AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
+    {
+        lock (_subscriptions)
+        {
+            var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
+            subscription.AddQueue(queue);
+        }
+    }
+
+    /// <summary>
+    /// Removes a subscription handler for the specified channel.
+    /// If the subscription is empty after removing the handler, the subscription is removed.
+    /// </summary>
+    /// <param name="channel">The channel to unsubscribe from.</param>
+    /// <param name="handler">The handler to remove.</param>
+    /// <returns>True if the subscription should be removed from the server (no handlers/queues remain), false otherwise.</returns>
+    internal void RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    {
+        lock (_subscriptions)
+        {
+            if (_subscriptions.TryGetValue(channel, out var subscription))
             {
                 sub.RemoveHandler(handler);
 
