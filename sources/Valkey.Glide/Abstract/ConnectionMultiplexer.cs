@@ -340,7 +340,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            if (_subscriptions.TryGetValue(channel, out var subscription))
+            if (_subscriptions.TryGetValue(channel, out var sub))
             {
                 sub.RemoveHandler(handler);
 
@@ -415,7 +415,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <param name="message">The incoming PubSubMessage.</param>
     internal void OnMessage(PubSubMessage message)
     {
-        var channel = ValkeyChannel.FromPubSubMessage(message);
+        var channel = ToValkeyChannel(message);
         if (_subscriptions.TryGetValue(channel, out var sub))
         {
             sub.OnMessage(channel, message.Message);
