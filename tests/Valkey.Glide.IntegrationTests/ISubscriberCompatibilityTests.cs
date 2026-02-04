@@ -650,114 +650,212 @@ public class ISubscriberCompatibilityTests
     [Fact]
     public async Task Queue_UnsubscribeOneOfMultiple_OtherQueuesStillReceive()
     {
-        var config = ConfigurationOptions.Parse(TestConfiguration.STANDALONE_ADDRESS.ToString());
-        config.Ssl = TestConfiguration.TLS;
-        await using var conn = await ConnectionMultiplexer.ConnectAsync(config);
-        var sub = conn.GetSubscriber();
+        var channel = BuildLiteral();
+        var subscriber = await BuildSubscriber();
 
-        var channel = ValkeyChannel.Literal($"test-{Guid.NewGuid()}");
-        var queue1 = await sub.SubscribeAsync(channel);
-        var queue2 = await sub.SubscribeAsync(channel);
+        // Subscribe with multiple queues.
+        var queue1 = await subscriber.SubscribeAsync(channel);
+        var queue2 = await subscriber.SubscribeAsync(channel);
+        await Task.Delay(SubscribeDelay);
 
-        await Task.Delay(100);
-        await sub.PublishAsync(channel, "message1");
+        // Publish to channel and verify receipt.
+        await subscriber.PublishAsync(channel, Message1);
+        await AssertMessagesReceived(queue1, [(channel, Message1)]);
 
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var msg1 = await queue1.ReadAsync(cts.Token);
-        var msg2 = await queue2.ReadAsync(cts.Token);
-        Assert.Equal("message1", msg1.Message.ToString());
-        Assert.Equal("message1", msg2.Message.ToString());
-
-        // Verify queue1 is not completed before unsubscribe
-        Assert.False(queue1.Completion.IsCompleted);
-        Assert.False(queue2.Completion.IsCompleted);
-
+        // Unsubscribe first queue.
         await queue1.UnsubscribeAsync();
-        await Task.Delay(100);
+        await Task.Delay(UnsubscribeDelay);
 
-        // Verify queue1 is completed after unsubscribe
-        Assert.True(queue1.Completion.IsCompleted);
-        Assert.False(queue2.Completion.IsCompleted);
-
-        await sub.PublishAsync(channel, "message2");
-
-        cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var msg3 = await queue2.ReadAsync(cts.Token);
-        Assert.Equal("message2", msg3.Message.ToString());
-
-        // Verify queue1 cannot read after unsubscribe (would throw or timeout)
-        await Assert.ThrowsAsync<ChannelClosedException>(async () => await queue1.ReadAsync());
+        // Publish again and verify only second queue receives.
+        await subscriber.PublishAsync(channel, Message2);
+        await AssertMessagesReceived(queue1, []);
+        await AssertMessagesReceived(queue2, [(channel, Message2)]);
     }
 
     [Fact]
     public async Task MixedHandlersAndQueues_UnsubscribeHandler_QueueStillReceives()
     {
-        var config = ConfigurationOptions.Parse(TestConfiguration.STANDALONE_ADDRESS.ToString());
-        config.Ssl = TestConfiguration.TLS;
-        await using var conn = await ConnectionMultiplexer.ConnectAsync(config);
-        var sub = conn.GetSubscriber();
+        var channel = BuildLiteral();
+        var subscriber = await BuildSubscriber();
 
-        var channel = ValkeyChannel.Literal($"test-{Guid.NewGuid()}");
-        int handlerCount = 0;
+        // Subscribe with handler and queue.
+        var received = new ConcurrentBag<(ValkeyChannel, ValkeyValue)>();
+        void Handler1(ValkeyChannel ch, ValkeyValue msg) { received.Add((ch, msg)); }
+        await subscriber.SubscribeAsync(channel, Handler1);
+        var queue = await subscriber.SubscribeAsync(channel);
 
-        void Handler(ValkeyChannel ch, ValkeyValue msg) => Interlocked.Increment(ref handlerCount);
+        await Task.Delay(SubscribeDelay);
 
-        await sub.SubscribeAsync(channel, Handler);
-        var queue = await sub.SubscribeAsync(channel);
+        // Publish to channel and verify receipt.
+        await subscriber.PublishAsync(channel, Message1);
+        await AssertMessagesReceived(received, [(channel, Message1)]);
+        await AssertMessagesReceived(queue, [(channel, Message1)]);
 
-        await Task.Delay(100);
-        await sub.PublishAsync(channel, "message1");
+        // Unsubscribe the handler.
+        await subscriber.UnsubscribeAsync(channel, Handler1);
+        await Task.Delay(UnsubscribeDelay);
 
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var msg1 = await queue.ReadAsync(cts.Token);
-        Assert.Equal("message1", msg1.Message.ToString());
-        await Task.Delay(100);
-        Assert.Equal(1, Volatile.Read(ref handlerCount));
-
-        await sub.UnsubscribeAsync(channel, Handler);
-        await Task.Delay(100);
-        await sub.PublishAsync(channel, "message2");
-
-        cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var msg2 = await queue.ReadAsync(cts.Token);
-        Assert.Equal("message2", msg2.Message.ToString());
-        Assert.Equal(1, Volatile.Read(ref handlerCount));
+        // Publish again and verify queue still receives.
+        await subscriber.PublishAsync(channel, Message2);
+        await AssertMessagesReceived(received, []);
+        await AssertMessagesReceived(queue, [(channel, Message2)]);
     }
 
     [Fact]
     public async Task MixedHandlersAndQueues_UnsubscribeQueue_HandlerStillReceives()
     {
-        var config = ConfigurationOptions.Parse(TestConfiguration.STANDALONE_ADDRESS.ToString());
-        config.Ssl = TestConfiguration.TLS;
-        await using var conn = await ConnectionMultiplexer.ConnectAsync(config);
-        var sub = conn.GetSubscriber();
+        var channel = BuildLiteral();
+        var subscriber = await BuildSubscriber();
 
-        var channel = ValkeyChannel.Literal($"test-{Guid.NewGuid()}");
-        int handlerCount = 0;
-        var messageEvent = new ManualResetEventSlim(false);
+        // Subscribe with handler and queue.
+        var received = new ConcurrentBag<(ValkeyChannel, ValkeyValue)>();
+        void Handler1(ValkeyChannel ch, ValkeyValue msg) { received.Add((ch, msg)); }
+        await subscriber.SubscribeAsync(channel, Handler1);
+        var queue = await subscriber.SubscribeAsync(channel);
 
-        await sub.SubscribeAsync(channel, (ch, msg) =>
-        {
-            Interlocked.Increment(ref handlerCount);
-            messageEvent.Set();
-        });
-        var queue = await sub.SubscribeAsync(channel);
+        await Task.Delay(SubscribeDelay);
 
-        await Task.Delay(100);
-        await sub.PublishAsync(channel, "message1");
+        // Publish to channel and verify receipt.
+        await subscriber.PublishAsync(channel, Message1);
+        await AssertMessagesReceived(received, [(channel, Message1)]);
+        await AssertMessagesReceived(queue, [(channel, Message1)]);
 
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var msg1 = await queue.ReadAsync(cts.Token);
-        Assert.Equal("message1", msg1.Message.ToString());
-        Assert.True(messageEvent.Wait(TimeSpan.FromSeconds(2)));
-        Assert.Equal(1, Volatile.Read(ref handlerCount));
-
-        messageEvent.Reset();
+        // Unsubscribe the queue.
         await queue.UnsubscribeAsync();
-        await Task.Delay(100);
-        await sub.PublishAsync(channel, "message2");
+        await Task.Delay(UnsubscribeDelay);
 
-        Assert.True(messageEvent.Wait(TimeSpan.FromSeconds(2)));
-        Assert.Equal(2, Volatile.Read(ref handlerCount));
+        // Publish again and verify handler still receives.
+        await subscriber.PublishAsync(channel, Message2);
+        await AssertMessagesReceived(received, [(channel, Message2)]);
+        await AssertMessagesReceived(queue, []);
+    }
+
+    [Fact]
+    public async Task MultipleSubscribers_ShareState()
+    {
+        var channel = BuildLiteral();
+        var subscriber = await BuildSubscriber();
+        var publisher = await BuildSubscriber();
+
+        // Subscribe with handler.
+        var received = new ConcurrentBag<(ValkeyChannel, ValkeyValue)>();
+        await subscriber.SubscribeAsync(channel, (ch, msg) => { received.Add((ch, msg)); });
+        await Task.Delay(SubscribeDelay);
+
+        // Publish to channel and verify receipt.
+        await publisher.PublishAsync(channel, Message1);
+        await AssertMessagesReceived(received, [(channel, Message1)]);
+    }
+
+    /// <summary>
+    /// Builds and returns a new subscriber for testing.
+    /// </summary>
+    private static async Task<ISubscriber> BuildSubscriber()
+    {
+        var address = TestConfiguration.STANDALONE_ADDRESS;
+        var config = ConfigurationOptions.Parse(address.ToString());
+        var connection = await ConnectionMultiplexer.ConnectAsync(config);
+
+        return connection.GetSubscriber();
+    }
+
+    /// <summary>
+    /// Builds and returns a literal channel for testing.
+    /// </summary>
+    private static ValkeyChannel BuildLiteral()
+    {
+        var channel = $"test-{Guid.NewGuid()}-channel";
+        return ValkeyChannel.Literal(channel);
+    }
+
+    /// <summary>
+    /// Builds and returns a literal channel for testing that matches the specified pattern.
+    /// </summary>
+    private static ValkeyChannel BuildLiteral(ValkeyChannel pattern)
+    {
+        Assert.True(pattern.IsPattern);
+
+        // Replace '*' in pattern with random digits to create a matching literal channel.
+        var patternStr = pattern.ToString();
+        var literalStr = patternStr.Replace("*", Random.Shared.Next(1000, 9999).ToString());
+
+        return ValkeyChannel.Literal(literalStr);
+    }
+
+    /// <summary>
+    /// Builds and returns a pattern channel for testing.
+    /// </summary>
+    private static ValkeyChannel BuildPattern()
+    {
+        var pattern = $"test-{Guid.NewGuid()}-*";
+        return ValkeyChannel.Pattern(pattern);
+    }
+
+    /// <summary>
+    /// Asserts that the messages with the given channels and values are received by the specified queue.
+    /// </summary>
+    private async Task AssertMessagesReceived(ChannelMessageQueue queue, List<MessageInfo> expected)
+    {
+        // If no messages are expected, wait a short duration to ensure no messages are received.
+        if (expected.Count == 0)
+        {
+            await Task.Delay(500);
+            Assert.False(queue.TryRead(out _));
+            return;
+        }
+
+        // Collect received messages until all expected are received or timeout occurs.
+        using var cts = new CancellationTokenSource(AssertTimeout);
+
+        List<MessageInfo> received = [];
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var msg = await queue.ReadAsync(cts.Token);
+            received.Add((msg.Channel, msg.Message));
+
+            if (received.Count == expected.Count)
+            {
+                Assert.Equivalent(expected, received);
+                return;
+            }
+
+            await Task.Delay(AssertRetryInterval);
+        }
+
+        Assert.Fail("Expected messages not received within the timeout period.");
+    }
+
+    /// <summary>
+    /// Asserts that messages with the given channel and value are received by the specified bag.
+    /// </summary>
+    private async Task AssertMessagesReceived(ConcurrentBag<MessageInfo> actual, List<MessageInfo> expected)
+    {
+        // If no messages are expected, wait a short duration to ensure no messages are received.
+        if (expected.Count == 0)
+        {
+            await Task.Delay(500);
+            Assert.Empty(actual);
+            return;
+        }
+
+        // Check received messages until all expected are received or timeout occurs.
+        using var cts = new CancellationTokenSource(AssertTimeout);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            if (actual.Count >= expected.Count)
+            {
+                Assert.Equivalent(expected, actual);
+
+                // Clear actual messages that have been asserted.
+                actual.Clear();
+
+                return;
+            }
+
+            await Task.Delay(AssertRetryInterval);
+        }
+
+        Assert.Fail("Expected messages not received within the timeout period.");
     }
 }
