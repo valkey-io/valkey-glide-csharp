@@ -7,9 +7,8 @@ namespace Valkey.Glide;
 /// </summary>
 internal sealed class Subscription
 {
-    private Action<ValkeyChannel, ValkeyValue>? _handlers;
-    private ChannelMessageQueue? _queues;
-
+    private Action<ValkeyChannel, ValkeyValue>? _handlers = null;
+    private ChannelMessageQueue? _queues = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Subscription"/> class.
@@ -101,10 +100,9 @@ internal sealed class Subscription
     /// </summary>
     public void Clear()
     {
-        var queues = Volatile.Read(ref _queues);
-        if (queues != null)
+        if (_queues != null)
         {
-            ChannelMessageQueue.MarkAllCompleted(ref queues);
+            ChannelMessageQueue.MarkAllCompleted(ref _queues);
         }
 
         _handlers = null;

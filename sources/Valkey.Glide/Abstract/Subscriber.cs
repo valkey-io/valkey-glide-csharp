@@ -90,7 +90,7 @@ internal sealed class Subscriber : ISubscriber
         }
 
         // Unsubscribe if subscription was removed.
-        if (!_multiplexer.ContainsSubscription(channel))
+        if (!_multiplexer.HasSubscription(channel))
         {
             await SendUnsubscribeCommand(channel);
         }
@@ -111,7 +111,7 @@ internal sealed class Subscriber : ISubscriber
         _multiplexer.RemoveSubscriptionQueue(queue);
 
         // Unsubscribe if subscription was removed.
-        if (!_multiplexer.ContainsSubscription(channel))
+        if (!_multiplexer.HasSubscription(channel))
         {
             await SendUnsubscribeCommand(channel);
         }

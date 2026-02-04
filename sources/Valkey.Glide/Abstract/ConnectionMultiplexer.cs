@@ -256,7 +256,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// </summary>
     /// <param name="channel">The channel to check for a subscription.</param>
     /// <returns>True if there is a subscription for the specified channel, false otherwise.</returns>
-    internal bool ContainsSubscription(ValkeyChannel channel)
+    internal bool HasSubscription(ValkeyChannel channel)
         => _subscriptions.ContainsKey(channel);
 
     /// <summary>
@@ -298,11 +298,11 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            if (_subscriptions.TryGetValue(channel, out var subscription))
+            if (_subscriptions.TryGetValue(channel, out var sub))
             {
-                subscription.RemoveHandler(handler);
+                sub.RemoveHandler(handler);
 
-                if (subscription.IsEmpty())
+                if (sub.IsEmpty())
                     RemoveSubscription(channel);
             }
         }
@@ -319,11 +319,11 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
         lock (_subscriptions)
         {
-            if (_subscriptions.TryGetValue(channel, out var subscription))
+            if (_subscriptions.TryGetValue(channel, out var sub))
             {
-                subscription.RemoveQueue(queue);
+                sub.RemoveQueue(queue);
 
-                if (subscription.IsEmpty())
+                if (sub.IsEmpty())
                     RemoveSubscription(channel);
             }
         }
@@ -337,8 +337,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            _subscriptions.Remove(channel, out var subscription);
-            subscription?.Clear();
+            _subscriptions.Remove(channel, out var sub);
+            sub?.Clear();
         }
     }
 
@@ -349,8 +349,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            foreach (var subscription in _subscriptions.Values)
-                subscription.Clear();
+            foreach (var sub in _subscriptions.Values)
+                sub.Clear();
 
             _subscriptions.Clear();
         }
@@ -362,10 +362,31 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <param name="message">The incoming PubSubMessage.</param>
     internal void OnMessage(PubSubMessage message)
     {
-        var channel = ValkeyChannel.FromPubSubMessage(message);
+        var channel = ToValkeyChannel(message);
         if (_subscriptions.TryGetValue(channel, out var sub))
         {
             sub.OnMessage(channel, message.Message);
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="PubSubMessage"/> to a <see cref="ValkeyChannel"/>.
+    /// </summary>
+    /// <param name="message">The <see cref="PubSubMessage"/> to convert.</param>
+    /// <returns>A ValkeyChannel representing the message's channel.</returns>
+    private static ValkeyChannel ToValkeyChannel(PubSubMessage message)
+    {
+        var channelMode = message.ChannelMode;
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                return ValkeyChannel.Literal(message.Channel);
+            case PubSubChannelMode.Pattern:
+                return ValkeyChannel.Pattern(message.Pattern!);
+            case PubSubChannelMode.Sharded:
+                return ValkeyChannel.Sharded(message.Channel);
+            default:
+                throw new InvalidOperationException($"Unknown channel mode: {channelMode}");
         }
     }
 
