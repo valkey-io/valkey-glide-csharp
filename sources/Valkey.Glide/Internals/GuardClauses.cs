@@ -37,4 +37,17 @@ internal static class GuardClauses
             throw new NotImplementedException("Command flags are not supported by GLIDE");
         }
     }
+
+    /// <summary>
+    /// Throws a <see cref="NotImplementedException"/> if async state is specified.
+    /// </summary>
+    /// <param name="asyncState">The async state to validate.</param>
+    /// <exception cref="NotImplementedException">Thrown when <paramref name="asyncState"/> is not null.</exception>
+    public static void ThrowIfAsyncState(object? asyncState)
+    {
+        if (asyncState is not null)
+        {
+            throw new NotImplementedException("Async state is not supported by GLIDE");
+        }
+    }
 }

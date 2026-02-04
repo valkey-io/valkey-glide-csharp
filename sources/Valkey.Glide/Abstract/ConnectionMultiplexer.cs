@@ -105,7 +105,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     public IServer GetServer(EndPoint endpoint, object? asyncState = null)
     {
-        Utils.Requires<NotImplementedException>(asyncState is null, "Async state is not supported by GLIDE");
+        GuardClauses.ThrowIfAsyncState(asyncState);
+
         foreach (IServer server in GetServers())
         {
             if (server.EndPoint.Equals(endpoint))
@@ -151,14 +152,14 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <inheritdoc/>
     public ISubscriber GetSubscriber(object? asyncState = null)
     {
-        Utils.Requires<NotImplementedException>(asyncState is null, "Async state is not supported by GLIDE");
+        GuardClauses.ThrowIfAsyncState(asyncState);
         return new Subscriber(this, _db!);
     }
 
     public IDatabase GetDatabase(int db = -1, object? asyncState = null)
     {
         Utils.Requires<NotImplementedException>(db == -1, "To switch the database, please use `SELECT` command.");
-        Utils.Requires<NotImplementedException>(asyncState is null, "Async state is not supported by GLIDE");
+        GuardClauses.ThrowIfAsyncState(asyncState);
         return _db!;
     }
 
