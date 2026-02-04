@@ -647,11 +647,12 @@ public class ISubscriberCompatibilityTests
         Assert.Fail("Expected messages not received within the timeout period.");
     }
 
-    [Fact]
-    public async Task Queue_UnsubscribeOneOfMultiple_OtherQueuesStillReceive()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task Queue_UnsubscribeOneOfMultiple_OtherQueuesStillReceive(bool isCluster)
     {
         var channel = BuildLiteral();
-        var subscriber = await BuildSubscriber();
+        var subscriber = await BuildSubscriber(isCluster);
 
         // Subscribe with multiple queues.
         var queue1 = await subscriber.SubscribeAsync(channel);
@@ -672,11 +673,12 @@ public class ISubscriberCompatibilityTests
         await AssertMessagesReceived(queue2, [(channel, Message2)]);
     }
 
-    [Fact]
-    public async Task MixedHandlersAndQueues_UnsubscribeHandler_QueueStillReceives()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task MixedHandlersAndQueues_UnsubscribeHandler_QueueStillReceives(bool isCluster)
     {
         var channel = BuildLiteral();
-        var subscriber = await BuildSubscriber();
+        var subscriber = await BuildSubscriber(isCluster);
 
         // Subscribe with handler and queue.
         var received = new ConcurrentBag<(ValkeyChannel, ValkeyValue)>();
@@ -701,11 +703,12 @@ public class ISubscriberCompatibilityTests
         await AssertMessagesReceived(queue, [(channel, Message2)]);
     }
 
-    [Fact]
-    public async Task MixedHandlersAndQueues_UnsubscribeQueue_HandlerStillReceives()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task MixedHandlersAndQueues_UnsubscribeQueue_HandlerStillReceives(bool isCluster)
     {
         var channel = BuildLiteral();
-        var subscriber = await BuildSubscriber();
+        var subscriber = await BuildSubscriber(isCluster);
 
         // Subscribe with handler and queue.
         var received = new ConcurrentBag<(ValkeyChannel, ValkeyValue)>();
@@ -730,12 +733,13 @@ public class ISubscriberCompatibilityTests
         await AssertMessagesReceived(queue, []);
     }
 
-    [Fact]
-    public async Task MultipleSubscribers_ShareState()
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task MultipleSubscribers_ShareState(bool isCluster)
     {
         var channel = BuildLiteral();
-        var subscriber = await BuildSubscriber();
-        var publisher = await BuildSubscriber();
+        var subscriber = await BuildSubscriber(isCluster);
+        var publisher = await BuildSubscriber(isCluster);
 
         // Subscribe with handler.
         var received = new ConcurrentBag<(ValkeyChannel, ValkeyValue)>();
@@ -750,9 +754,9 @@ public class ISubscriberCompatibilityTests
     /// <summary>
     /// Builds and returns a new subscriber for testing.
     /// </summary>
-    private static async Task<ISubscriber> BuildSubscriber()
+    private static async Task<ISubscriber> BuildSubscriber(bool isCluster)
     {
-        var address = TestConfiguration.STANDALONE_ADDRESS;
+        var address = isCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
         var config = ConfigurationOptions.Parse(address.ToString());
         var connection = await ConnectionMultiplexer.ConnectAsync(config);
 
