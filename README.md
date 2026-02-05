@@ -196,6 +196,30 @@ var isMember = await client.SetIsMemberAsync("tags", "csharp");
 var allTags = await client.SetMembersAsync("tags");
 ```
 
+### Pub/Sub Operations
+
+```csharp
+// Configure subscriptions at connection time.
+var config = new StandaloneClientConfigurationBuilder()
+    .WithAddress("localhost", 6379)
+    .WithPubSubSubscriptionConfig(new StandalonePubSubSubscriptionConfig()
+        .WithChannel("alerts")
+        .WithPattern("log:*")
+        .WithCallback((msg, ctx) => {
+            Console.WriteLine($"Received message: {msg.Message}");
+        }))
+    .Build();
+
+await using var client = await GlideClient.CreateClient(config);
+
+// Subscribe or unsubscribe dynamically.
+client.PSubscribeAsync("news*");
+client.UnsubscribeAsync("alerts");
+
+// Publish using a different client.
+otherClient.PublishAsync("news-sports", "Local team wins championship!");
+```
+
 ### Building & Testing
 
 Development instructions for local building & testing the package are in the [DEVELOPER.md](DEVELOPER.md) file.
