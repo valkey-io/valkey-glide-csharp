@@ -314,7 +314,11 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
             var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
             subscription.AddHandler(handler);
 
-            return isAdded;
+            subscription = new Subscription();
+            subscription.AddHandler(handler);
+            _subscriptions[channel] = subscription;
+
+            return true;
         }
     }
 
@@ -327,11 +331,17 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            var isAdded = !_subscriptions.ContainsKey(channel);
-            var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
-            subscription.AddQueue(queue);
+            if (_subscriptions.TryGetValue(channel, out var subscription))
+            {
+                subscription.AddQueue(queue);
+                return false;
+            }
 
-            return isAdded;
+            subscription = new Subscription();
+            subscription.AddQueue(queue);
+            _subscriptions[channel] = subscription;
+
+            return true;
         }
     }
 
@@ -408,7 +418,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            // Cleanup references in all subscriptions.
             foreach (var sub in _subscriptions.Values)
                 sub.Dispose();
 
