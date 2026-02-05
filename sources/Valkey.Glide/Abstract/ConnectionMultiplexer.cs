@@ -257,16 +257,16 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
     /// <param name="handler">The handler to invoke when a message is received on the channel.</param>
-    /// <returns>True if a new subscription was created, false if an existing subscription was updated.</returns>
+    /// <returns>True if a new subscription was added, false if an existing subscription was updated.</returns>
     internal bool AddSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
     {
         lock (_subscriptions)
         {
-            bool isNewSubscription = !_subscriptions.ContainsKey(channel);
+            bool isAdded = !_subscriptions.ContainsKey(channel);
             var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
             subscription.AddHandler(handler);
 
-            return isNewSubscription;
+            return isAdded;
         }
     }
 
@@ -274,16 +274,16 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// Adds a subscription queue for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
-    /// <returns>True if a new subscription was created, false if an existing subscription was updated.</returns>
+    /// <returns>True if a new subscription was added, false if an existing subscription was updated.</returns>
     internal bool AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
     {
         lock (_subscriptions)
         {
-            var isNewSubscription = !_subscriptions.ContainsKey(channel);
+            var isAdded = !_subscriptions.ContainsKey(channel);
             var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
             subscription.AddQueue(queue);
 
-            return isNewSubscription;
+            return isAdded;
         }
     }
 

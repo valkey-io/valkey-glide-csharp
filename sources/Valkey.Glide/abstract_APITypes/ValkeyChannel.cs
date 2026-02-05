@@ -266,5 +266,5 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
 
     [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
     public static implicit operator ValkeyChannel(byte[]? key)
-        => key is null ? default : new ValkeyChannel(key, s_DefaultPatternMode);
+        => throw new NotSupportedException("This method is not supported by Valkey GLIDE.");
 }
