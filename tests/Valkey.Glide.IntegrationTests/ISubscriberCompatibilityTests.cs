@@ -15,9 +15,9 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class ISubscriberCompatibilityTests
 {
-    // Skip tests if Valkey GLIDE version is less than 7.0.0
-    private static readonly bool IsSharedPubSubSupported = TestConfiguration.IsVersionAtLeast("7.0.0");
-    private static readonly string SkipSharedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
+    // TODO Implement support for sharded pub/sub.
+    private static readonly bool IsSharedPubSubSupported = false;
+    private static readonly string SkipSharedPubSubMessage = "Sharded PubSub is not yet supported in Valkey GLIDE.";
 
     // Messages for testing.
     private static readonly ValkeyValue Message1 = "message1";

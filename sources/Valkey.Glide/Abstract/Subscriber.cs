@@ -181,7 +181,10 @@ internal sealed class Subscriber : ISubscriber
         if (channel.IsSharded)
         {
             if (_client is not GlideClusterClient clusterClient)
-                throw new ArgumentException("Can only publish to shard channels in cluster mode.");
+            {
+                // TODO Implement support for sharded pub/sub.
+                throw new NotImplementedException("Sharded PubSub is not yet supported in Valkey GLIDE.");
+            }
 
             return await clusterClient.SPublishAsync(channelStr, messageStr);
         }
@@ -203,7 +206,10 @@ internal sealed class Subscriber : ISubscriber
         if (channel.IsSharded)
         {
             if (_client is not GlideClusterClient clusterClient)
-                throw new ArgumentException("Can only subscribe to shard channels in cluster mode.");
+            {
+                // TODO Implement support for sharded pub/sub.
+                throw new NotImplementedException("Sharded PubSub is not yet supported in Valkey GLIDE.");
+            }
 
             await clusterClient.SSubscribeAsync(channelStr);
         }
@@ -230,7 +236,10 @@ internal sealed class Subscriber : ISubscriber
         if (channel.IsSharded)
         {
             if (_client is not GlideClusterClient clusterClient)
-                throw new ArgumentException("Can only unsubscribe from shard channels in cluster mode.");
+            {
+                // TODO Implement support for sharded pub/sub.
+                throw new NotImplementedException("Sharded PubSub is not yet supported in Valkey GLIDE.");
+            }
 
             await clusterClient.SUnsubscribeAsync(channelStr);
         }
