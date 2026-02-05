@@ -310,8 +310,11 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
+            bool isNewSubscription = !_subscriptions.ContainsKey(channel);
             var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
             subscription.AddHandler(handler);
+
+            return isNewSubscription;
         }
     }
 
@@ -319,13 +322,16 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// Adds a subscription queue for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
-    /// <returns>The subscription queue for the specified channel.</returns>
-    internal void AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
+    /// <returns>True if a new subscription was created, false if an existing subscription was updated.</returns>
+    internal bool AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
     {
         lock (_subscriptions)
         {
+            var isNewSubscription = !_subscriptions.ContainsKey(channel);
             var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
             subscription.AddQueue(queue);
+
+            return isNewSubscription;
         }
     }
 
@@ -335,8 +341,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// </summary>
     /// <param name="channel">The channel to unsubscribe from.</param>
     /// <param name="handler">The handler to remove.</param>
-    /// <returns>True if the subscription should be removed from the server (no handlers/queues remain), false otherwise.</returns>
-    internal void RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    /// <returns>True if the subscription was removed, false otherwise.</returns>
+    internal bool RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
     {
         lock (_subscriptions)
         {
@@ -402,6 +408,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
+            // Cleanup references in all subscriptions.
             foreach (var sub in _subscriptions.Values)
                 sub.Dispose();
 
