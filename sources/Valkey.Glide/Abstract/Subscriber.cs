@@ -145,8 +145,7 @@ internal sealed class Subscriber : ISubscriber
 
         if (_client.IsCluster)
         {
-            var route = Route.Random;
-            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE"]), route);
+            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE"]), Route.Random);
         }
     }
 
