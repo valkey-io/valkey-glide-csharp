@@ -86,9 +86,9 @@ public sealed class PubSubMessage
         var messageObject = new
         {
             ChannelMode = ChannelMode.ToString(),
-            Message = Message,
-            Channel = Channel,
-            Pattern = Pattern
+            Message,
+            Channel,
+            Pattern
         };
 
         return JsonSerializer.Serialize(messageObject, new JsonSerializerOptions
