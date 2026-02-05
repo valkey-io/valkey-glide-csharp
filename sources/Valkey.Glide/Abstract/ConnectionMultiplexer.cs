@@ -253,24 +253,20 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
 
     /// <summary>
-    /// Determines whether there is a subscription for the specified channel.
-    /// </summary>
-    /// <param name="channel">The channel to check for a subscription.</param>
-    /// <returns>True if there is a subscription for the specified channel, false otherwise.</returns>
-    internal bool HasSubscription(ValkeyChannel channel)
-        => _subscriptions.ContainsKey(channel);
-
-    /// <summary>
     /// Adds a subscription handler for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
     /// <param name="handler">The handler to invoke when a message is received on the channel.</param>
-    internal void AddSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    /// <returns>True if a new subscription was created, false if an existing subscription was updated.</returns>
+    internal bool AddSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
     {
         lock (_subscriptions)
         {
+            bool isNewSubscription = !_subscriptions.ContainsKey(channel);
             var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
             subscription.AddHandler(handler);
+
+            return isNewSubscription;
         }
     }
 
@@ -278,13 +274,16 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// Adds a subscription queue for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
-    /// <returns>The subscription queue for the specified channel.</returns>
-    internal void AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
+    /// <returns>True if a new subscription was created, false if an existing subscription was updated.</returns>
+    internal bool AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
     {
         lock (_subscriptions)
         {
+            var isNewSubscription = !_subscriptions.ContainsKey(channel);
             var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
             subscription.AddQueue(queue);
+
+            return isNewSubscription;
         }
     }
 
@@ -294,8 +293,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// </summary>
     /// <param name="channel">The channel to unsubscribe from.</param>
     /// <param name="handler">The handler to remove.</param>
-    /// <returns>True if the subscription should be removed from the server (no handlers/queues remain), false otherwise.</returns>
-    internal void RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    /// <returns>True if the subscription was removed, false otherwise.</returns>
+    internal bool RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
     {
         lock (_subscriptions)
         {
@@ -304,9 +303,14 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
                 sub.RemoveHandler(handler);
 
                 if (sub.IsEmpty())
+                {
                     RemoveSubscription(channel);
+                    return true;
+                }
             }
         }
+
+        return false;
     }
 
     /// <summary>
@@ -314,7 +318,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// If the subscription is empty after removing the queue, the subscription is removed.
     /// </summary>
     /// <param name="queue">The queue to remove.</param>
-    internal void RemoveSubscriptionQueue(ChannelMessageQueue queue)
+    /// <returns>True if the subscription was removed, false otherwise.</returns>
+    internal bool RemoveSubscriptionQueue(ChannelMessageQueue queue)
     {
         var channel = queue.Channel;
 
@@ -325,13 +330,18 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
                 sub.RemoveQueue(queue);
 
                 if (sub.IsEmpty())
+                {
                     RemoveSubscription(channel);
+                    return true;
+                }
             }
         }
+
+        return false;
     }
 
     /// <summary>
-    /// Removes the subscription for the specified channel.
+    /// Removes the subscription (all handlers and queues) for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to unsubscribe from.</param>
     internal void RemoveSubscription(ValkeyChannel channel)
@@ -339,17 +349,20 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         lock (_subscriptions)
         {
             _subscriptions.Remove(channel, out var sub);
+
+            // Cleanup references in the subscription.
             sub?.Clear();
         }
     }
 
     /// <summary>
-    /// Removes all subscriptions.
+    /// Removes all subscriptions (all handlers and queues).
     /// </summary>
     internal void RemoveAllSubscriptions()
     {
         lock (_subscriptions)
         {
+            // Cleanup references in all subscriptions.
             foreach (var sub in _subscriptions.Values)
                 sub.Clear();
 
@@ -400,15 +413,12 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <returns>True if the configuration corresponds to a cluster server; otherwise, false.</returns>
     private static async Task<bool> IsCluster(ConfigurationOptions configuration)
     {
-        // Create standalone client to determine server type.
-        var standaloneConfigBuilder = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration);
-        GlideClient standalone = GlideClient.CreateClient(standaloneConfigBuilder.Build()).GetAwaiter().GetResult();
+        // Create standalone client.
+        StandaloneClientConfiguration standaloneConfig = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration).Build();
+        using GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
 
-        string info = standalone.InfoAsync([Section.CLUSTER]).GetAwaiter().GetResult();
-        bool isCluster = info.Contains("cluster_enabled:1");
-
-        await standalone.DisposeAsync().AsTask();
-
-        return isCluster;
+        // Query server info to determine if it's a cluster.
+        string info = await standalone.InfoAsync([Section.CLUSTER]);
+        return info.Contains("cluster_enabled:1");
     }
 }

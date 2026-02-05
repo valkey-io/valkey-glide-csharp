@@ -73,15 +73,12 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
     /// </summary>
     public StandalonePubSubSubscriptionConfig() { }
 
-    /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
         => (StandalonePubSubSubscriptionConfig)base.WithCallback(callback, context);
 
-    /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithChannel(string channel)
         => (StandalonePubSubSubscriptionConfig)base.WithChannel(channel);
 
-    /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithPattern(string pattern)
         => (StandalonePubSubSubscriptionConfig)base.WithPattern(pattern);
 }
@@ -96,15 +93,12 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
     /// </summary>
     public ClusterPubSubSubscriptionConfig() { }
 
-    /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
         => (ClusterPubSubSubscriptionConfig)base.WithCallback(callback, context);
 
-    /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithChannel(string channel)
         => (ClusterPubSubSubscriptionConfig)base.WithChannel(channel);
 
-    /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithPattern(string pattern)
         => (ClusterPubSubSubscriptionConfig)base.WithPattern(pattern);
 

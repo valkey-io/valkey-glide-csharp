@@ -11,7 +11,7 @@ public class PubSubMessageTests
     private static readonly string Pattern = "test-*";
 
     [Fact]
-    public void PubSubMessage_Exact_SetsPropertiesCorrectly()
+    public void PubSubMessage_FromChannel_SetsPropertiesCorrectly()
     {
         // Act
         var pubSubMessage = PubSubMessage.FromChannel(Message, Channel);
@@ -24,7 +24,7 @@ public class PubSubMessageTests
     }
 
     [Fact]
-    public void PubSubMessage_Pattern_SetsPropertiesCorrectly()
+    public void PubSubMessage_FromPattern_SetsPropertiesCorrectly()
     {
         // Act
         var pubSubMessage = PubSubMessage.FromPattern(Message, Channel, Pattern);
@@ -37,7 +37,7 @@ public class PubSubMessageTests
     }
 
     [Fact]
-    public void PubSubMessage_Sharded_SetsPropertiesCorrectly()
+    public void PubSubMessage_FromShardChannel_SetsPropertiesCorrectly()
     {
         // Act
         var pubSubMessage = PubSubMessage.FromShardChannel(Message, Channel);
@@ -50,7 +50,7 @@ public class PubSubMessageTests
     }
 
     [Fact]
-    public void PubSubMessage_ToString_Exact_ReturnsValidJsonWithNullPattern()
+    public void PubSubMessage_ToString_Channel_ReturnsValidJsonWithNullPattern()
     {
         // Arrange
         var pubSubMessage = PubSubMessage.FromChannel(Message, Channel);
@@ -92,7 +92,7 @@ public class PubSubMessageTests
     }
 
     [Fact]
-    public void PubSubMessage_ToString_Sharded_ReturnsValidJsonWithNullPattern()
+    public void PubSubMessage_ToString_ShardChannel_ReturnsValidJsonWithNullPattern()
     {
         // Arrange
         var pubSubMessage = PubSubMessage.FromShardChannel(Message, Channel);
@@ -129,23 +129,25 @@ public class PubSubMessageTests
     public void PubSubMessage_Equals_ReturnsFalseForDifferentMessages()
     {
         // Arrange
-        var pubSubMessage1 = PubSubMessage.FromPattern("message1", Channel, Pattern);
-        var pubSubMessage2 = PubSubMessage.FromPattern("message2", Channel, Pattern);
+        var pubSubMessage = PubSubMessage.FromPattern(Message, Channel, Pattern);
+
+        List<PubSubMessage?> notEqualMessages =
+        [
+            PubSubMessage.FromPattern("OTHER", Channel, Pattern),
+            PubSubMessage.FromPattern(Message, "OTHER", Pattern),
+            PubSubMessage.FromPattern(Message, Channel, "OTHER"),
+            PubSubMessage.FromChannel(Message, Channel),
+            PubSubMessage.FromShardChannel(Message, Channel),
+            null
+        ];
 
         // Act & Assert
-        Assert.NotEqual(pubSubMessage1, pubSubMessage2);
-        Assert.False(pubSubMessage1.Equals(pubSubMessage2));
-        Assert.False(pubSubMessage2.Equals(pubSubMessage1));
-    }
-
-    [Fact]
-    public void PubSubMessage_Equals_ReturnsFalseForNull()
-    {
-        // Arrange
-        var pubSubMessage = PubSubMessage.FromChannel(Message, Channel);
-
-        // Act & Assert
-        Assert.False(pubSubMessage.Equals(null));
+        foreach (var other in notEqualMessages)
+        {
+            Assert.NotEqual(pubSubMessage, other);
+            Assert.False(pubSubMessage.Equals(other));
+            Assert.False(other?.Equals(pubSubMessage) ?? false);
+        }
     }
 
     [Fact]

@@ -43,7 +43,7 @@ internal sealed class Subscriber : ISubscriber
     public async Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
         // Validate arguments.
-        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
+        ThrowIfChannelNullOrEmpty(channel);
         GuardClauses.ThrowIfCommandFlags(flags);
 
         return await SendPublishCommand(channel, message);
@@ -52,23 +52,35 @@ internal sealed class Subscriber : ISubscriber
     public async Task SubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None)
     {
         // Validate arguments.
-        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
-        ArgumentNullException.ThrowIfNull(handler, nameof(handler));
+        ThrowIfChannelNullOrEmpty(channel);
+        ArgumentNullException.ThrowIfNull(handler);
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        _multiplexer.AddSubscriptionHandler(channel, handler);
-        await SendSubscribeCommand(channel);
+        // Add handler to multiplexer.
+        bool added = _multiplexer.AddSubscriptionHandler(channel, handler);
+
+        // Send subscribe command if subscription was added.
+        if (added)
+        {
+            await SendSubscribeCommand(channel);
+        }
     }
 
     public async Task<ChannelMessageQueue> SubscribeAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
     {
         // Validate arguments.
-        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
+        ThrowIfChannelNullOrEmpty(channel);
         GuardClauses.ThrowIfCommandFlags(flags);
 
+        // Add queue to multiplexer.
         var queue = new ChannelMessageQueue(channel, this);
-        _multiplexer.AddSubscriptionQueue(channel, queue);
-        await SendSubscribeCommand(channel);
+        bool added = _multiplexer.AddSubscriptionQueue(channel, queue);
+
+        // Send subscribe command if subscription was added.
+        if (added)
+        {
+            await SendSubscribeCommand(channel);
+        }
 
         return queue;
     }
@@ -76,21 +88,23 @@ internal sealed class Subscriber : ISubscriber
     public async Task UnsubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None)
     {
         // Validate arguments.
-        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(channel));
+        ThrowIfChannelNullOrEmpty(channel);
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // Remove handler or subscription from multiplexer.
+        // Remove handler from subscription or remove entire subscription.
+        bool removed;
         if (handler != null)
         {
-            _multiplexer.RemoveSubscriptionHandler(channel, handler);
+            removed = _multiplexer.RemoveSubscriptionHandler(channel, handler);
         }
         else
         {
             _multiplexer.RemoveSubscription(channel);
+            removed = true;
         }
 
-        // Unsubscribe if subscription was removed.
-        if (!_multiplexer.HasSubscription(channel))
+        // Send unsubscribe command if subscription was removed.
+        if (removed)
         {
             await SendUnsubscribeCommand(channel);
         }
@@ -105,13 +119,13 @@ internal sealed class Subscriber : ISubscriber
     {
         // Validate arguments.
         var channel = queue.Channel;
-        ThrowIfValkeyChannelNullOrEmpty(channel, nameof(queue));
+        ThrowIfChannelNullOrEmpty(channel);
 
         // Remove queue from multiplexer.
-        _multiplexer.RemoveSubscriptionQueue(queue);
+        bool removed = _multiplexer.RemoveSubscriptionQueue(queue);
 
-        // Unsubscribe if subscription was removed.
-        if (!_multiplexer.HasSubscription(channel))
+        // Send unsubscribe command if subscription was removed.
+        if (removed)
         {
             await SendUnsubscribeCommand(channel);
         }
@@ -119,10 +133,13 @@ internal sealed class Subscriber : ISubscriber
 
     public async Task UnsubscribeAllAsync(CommandFlags flags = CommandFlags.None)
     {
+        // Validate arguments.
         GuardClauses.ThrowIfCommandFlags(flags);
 
+        // Remove all subscriptions from multiplexer.
         _multiplexer.RemoveAllSubscriptions();
 
+        // Send unsubscribe commands for all channel modes.
         await _client.UnsubscribeAsync();
         await _client.PUnsubscribeAsync();
 
@@ -151,7 +168,7 @@ internal sealed class Subscriber : ISubscriber
     #region HelperMethods
 
     /// <summary>
-    /// Sends the PUBLISH command to the server with the specified channel and message.
+    /// Sends a PUBLISH command to the server with the specified channel and message.
     /// </summary>
     /// <param name="channel">The channel to publish to.</param>
     /// <param name="message">The message to publish.</param>
@@ -176,7 +193,7 @@ internal sealed class Subscriber : ISubscriber
     }
 
     /// <summary>
-    /// Sends the SUBSCRIBE command to the server for the specified channel.
+    /// Sends a SUBSCRIBE command to the server for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
     private async Task SendSubscribeCommand(ValkeyChannel channel)
@@ -203,7 +220,7 @@ internal sealed class Subscriber : ISubscriber
     }
 
     /// <summary>
-    /// Sends the UNSUBSCRIBE command to the server for the specified channel.
+    /// Sends an UNSUBSCRIBE command to the server for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to unsubscribe from.</param>
     private async Task SendUnsubscribeCommand(ValkeyChannel channel)
@@ -213,7 +230,7 @@ internal sealed class Subscriber : ISubscriber
         if (channel.IsSharded)
         {
             if (_client is not GlideClusterClient clusterClient)
-                throw new ArgumentException("Can only subscribe to shard channels in cluster mode.");
+                throw new ArgumentException("Can only unsubscribe from shard channels in cluster mode.");
 
             await clusterClient.SUnsubscribeAsync(channelStr);
         }
@@ -233,12 +250,11 @@ internal sealed class Subscriber : ISubscriber
     /// Throws if the specified channel is null or empty.
     /// </summary>
     /// <param name="channel">The channel to check.</param>
-    /// <param name="param">The name of the parameter to include in the exception message.</param>
     /// <exception cref="ArgumentException"></exception>
-    private static void ThrowIfValkeyChannelNullOrEmpty(ValkeyChannel channel, string param)
+    private static void ThrowIfChannelNullOrEmpty(ValkeyChannel channel)
     {
         if (channel.IsNullOrEmpty)
-            throw new ArgumentException("Channel cannot be null or empty", param);
+            throw new ArgumentException("Channel cannot be null or empty");
     }
 
     #endregion

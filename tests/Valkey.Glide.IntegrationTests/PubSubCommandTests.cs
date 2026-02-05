@@ -24,7 +24,7 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PublishAsync_WithNoSubscribers_ReturnsZero(bool isCluster)
     {
-        var msg = FromChannel();
+        var msg = ChannelMessage();
         using var client = BuildClient(isCluster);
 
         // Publish to channel and verify no subscribers.
@@ -35,7 +35,7 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PublishAsync_WithSubscriber_ReturnsSubscriberCount(bool isCluster)
     {
-        var msg = FromChannel();
+        var msg = ChannelMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -55,7 +55,7 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task SubscribeAsync_OneChannel_ReceivesMessage(bool isCluster)
     {
-        var msg = FromChannel();
+        var msg = ChannelMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -73,8 +73,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task SubscribeAsync_MultipleChannels_ReceivesMessages(bool isCluster)
     {
-        var msg1 = FromChannel();
-        var msg2 = FromChannel();
+        var msg1 = ChannelMessage();
+        var msg2 = ChannelMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -95,7 +95,7 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PSubscribeAsync_OnePattern_ReceivesMessage(bool isCluster)
     {
-        var msg = FromPattern();
+        var msg = PatternMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -113,8 +113,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PSubscribeAsync_MultiplePatterns_ReceivesMessages(bool isCluster)
     {
-        var msg1 = FromPattern();
-        var msg2 = FromPattern();
+        var msg1 = PatternMessage();
+        var msg2 = PatternMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -138,8 +138,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task UnsubscribeAsync_AllChannels_ReceivesNoMessages(bool isCluster)
     {
-        var msg1 = FromChannel();
-        var msg2 = FromChannel();
+        var msg1 = ChannelMessage();
+        var msg2 = ChannelMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -164,8 +164,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task UnsubscribeAsync_OneChannel(bool isCluster)
     {
-        var msg1 = FromChannel();
-        var msg2 = FromChannel();
+        var msg1 = ChannelMessage();
+        var msg2 = ChannelMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -191,8 +191,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task UnsubscribeAsync_MultipleChannels_ReceivesNoMessages(bool isCluster)
     {
-        var msg1 = FromChannel();
-        var msg2 = FromChannel();
+        var msg1 = ChannelMessage();
+        var msg2 = ChannelMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -217,8 +217,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PUnsubscribeAsync_AllPatterns_ReceivesNoMessages(bool isCluster)
     {
-        var msg1 = FromPattern();
-        var msg2 = FromPattern();
+        var msg1 = PatternMessage();
+        var msg2 = PatternMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -243,8 +243,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PUnsubscribeAsync_OnePattern_ReceivesNoMessages(bool isCluster)
     {
-        var msg1 = FromPattern();
-        var msg2 = FromPattern();
+        var msg1 = PatternMessage();
+        var msg2 = PatternMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -269,8 +269,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PUnsubscribeAsync_MultiplePatterns_ReceivesNoMessages(bool isCluster)
     {
-        var msg1 = FromPattern();
-        var msg2 = FromPattern();
+        var msg1 = PatternMessage();
+        var msg2 = PatternMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -308,7 +308,7 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
     {
-        var msg = FromChannel();
+        var msg = ChannelMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -325,7 +325,7 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
     {
-        var msg = FromPattern();
+        var msg = PatternMessage();
 
         using var subscriber = BuildClient(isCluster);
         using var publisher = BuildClient(isCluster);
@@ -342,7 +342,7 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
     {
-        var msg = FromChannel();
+        var msg = ChannelMessage();
         using var client = BuildClient(isCluster);
 
         // Verify no subscribers to channel.
@@ -355,8 +355,8 @@ public class PubSubCommandTests()
     [MemberData(nameof(IsCluster))]
     public async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
     {
-        var msg1 = FromChannel();
-        var msg2 = FromChannel();
+        var msg1 = ChannelMessage();
+        var msg2 = ChannelMessage();
 
         using var subscriber1 = BuildClient(isCluster);
         using var subscriber2 = BuildClient(isCluster);

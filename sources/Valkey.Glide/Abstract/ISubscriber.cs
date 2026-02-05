@@ -35,6 +35,7 @@ public interface ISubscriber
     /// See
     /// <seealso href="https://valkey.io/commands/subscribe"/>,
     /// <seealso href="https://valkey.io/commands/psubscribe"/>.
+    /// <seealso href="https://valkey.io/commands/ssubscribe"/>.
     /// </remarks>
     void Subscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None);
 
@@ -48,6 +49,7 @@ public interface ISubscriber
     /// See
     /// <seealso href="https://valkey.io/commands/subscribe"/>,
     /// <seealso href="https://valkey.io/commands/psubscribe"/>.
+    /// <seealso href="https://valkey.io/commands/ssubscribe"/>.
     /// </remarks>
     ChannelMessageQueue Subscribe(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
 
@@ -63,6 +65,7 @@ public interface ISubscriber
     /// See
     /// <seealso href="https://valkey.io/commands/unsubscribe"/>,
     /// <seealso href="https://valkey.io/commands/punsubscribe"/>.
+    /// <seealso href="https://valkey.io/commands/sunsubscribe"/>.
     /// </remarks>
     void Unsubscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None);
 

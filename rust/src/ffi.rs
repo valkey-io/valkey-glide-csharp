@@ -770,7 +770,7 @@ pub enum PushKind {
     Message = 3,
     /// Pattern-based message received via PSUBSCRIBE.
     PMessage = 4,
-    /// shard channel message received via SSUBSCRIBE.
+    /// Sharded channel message received via SSUBSCRIBE.
     SMessage = 5,
     /// Unsubscribe confirmation.
     Unsubscribe = 6,

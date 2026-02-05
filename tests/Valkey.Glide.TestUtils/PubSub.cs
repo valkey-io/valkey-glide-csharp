@@ -12,7 +12,7 @@ public static class PubSub
     /// <summary>
     /// Returns a unique exact channel message for testing.
     /// </summary>
-    public static PubSubMessage FromChannel()
+    public static PubSubMessage ChannelMessage()
     {
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";
@@ -24,7 +24,7 @@ public static class PubSub
     /// <summary>
     /// Returns a unique pattern channel message for testing.
     /// </summary>
-    public static PubSubMessage FromPattern()
+    public static PubSubMessage PatternMessage()
     {
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";
@@ -37,7 +37,7 @@ public static class PubSub
     /// <summary>
     /// Returns a unique shard channel message for testing.
     /// </summary>
-    public static PubSubMessage FromShardChannel()
+    public static PubSubMessage ShardChannelMessage()
     {
         var id = Guid.NewGuid().ToString();
         var message = $"test-{id}-message";

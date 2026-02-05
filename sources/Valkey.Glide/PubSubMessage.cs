@@ -13,7 +13,7 @@ public enum PubSubChannelMode
     Exact = 0,
     /// <summary>Pattern-based subscription (PSUBSCRIBE).</summary>
     Pattern = 1,
-    /// <summary>shard channel subscription (SSUBSCRIBE).</summary>
+    /// <summary>Shard channel subscription (SSUBSCRIBE).</summary>
     Sharded = 2
 }
 
@@ -43,7 +43,7 @@ public sealed class PubSubMessage
     public string? Pattern { get; }
 
     /// <summary>
-    /// Creates a new <see cref="PubSubMessage"/> for an exact channel subscription (SUBSCRIBE).
+    /// Creates a new <see cref="PubSubMessage"/> for an exact channel subscription.
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
@@ -54,7 +54,7 @@ public sealed class PubSubMessage
     }
 
     /// <summary>
-    /// Creates a new <see cref="PubSubMessage"/> for a pattern-based subscription (PSUBSCRIBE).
+    /// Creates a new <see cref="PubSubMessage"/> for a pattern-based subscription.
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
@@ -67,7 +67,7 @@ public sealed class PubSubMessage
     }
 
     /// <summary>
-    /// Creates a new <see cref="PubSubMessage"/> for a shard channel subscription (SSUBSCRIBE).
+    /// Creates a new <see cref="PubSubMessage"/> for a shard channel subscription.
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
@@ -85,10 +85,10 @@ public sealed class PubSubMessage
     {
         var messageObject = new
         {
-            ChannelMode,
-            Message,
-            Channel,
-            Pattern
+            ChannelMode = ChannelMode.ToString(),
+            Message = Message,
+            Channel = Channel,
+            Pattern = Pattern
         };
 
         return JsonSerializer.Serialize(messageObject, new JsonSerializerOptions
