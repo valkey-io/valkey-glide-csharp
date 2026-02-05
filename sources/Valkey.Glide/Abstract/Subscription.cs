@@ -4,11 +4,13 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// Represents a subscription to a pub/sub channel with associated handlers and queues.
+/// Must only be accessed from a single thread at a time, as synchronization is not handled internally.
 /// </summary>
-internal sealed class Subscription
+internal sealed class Subscription : IDisposable
 {
     private Action<ValkeyChannel, ValkeyValue>? _handlers = null;
     private ChannelMessageQueue? _queues = null;
+    private readonly object _lock = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Subscription"/> class.
@@ -95,17 +97,19 @@ internal sealed class Subscription
         return _handlers == null && _queues == null;
     }
 
-    /// <summary>
-    /// Clears all handlers and queues from this subscription.
-    /// </summary>
-    public void Clear()
+    /// <inheritdoc/>
+    public void Dispose()
     {
-        if (_queues != null)
+        GC.SuppressFinalize(this);
+        lock (_lock)
         {
-            ChannelMessageQueue.MarkAllCompleted(ref _queues);
-        }
+            if (_queues != null)
+            {
+                ChannelMessageQueue.MarkAllCompleted(ref _queues);
+            }
 
-        _handlers = null;
-        _queues = null;
+            _handlers = null;
+            _queues = null;
+        }
     }
 }
