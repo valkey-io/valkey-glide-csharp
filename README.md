@@ -142,6 +142,8 @@ var otelConfig = OpenTelemetryConfig.CreateBuilder()
 OpenTelemetry.Init(otelConfig);
 ```
 
+TODO #198: Add example for pub/sub reconciliation interval.
+
 ## Core API Examples
 
 ### String Operations
