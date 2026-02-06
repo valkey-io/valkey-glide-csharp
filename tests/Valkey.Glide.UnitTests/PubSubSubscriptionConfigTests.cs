@@ -5,12 +5,12 @@ namespace Valkey.Glide.UnitTests;
 public class PubSubSubscriptionConfigTests
 {
     // Test constants
-    private const string TestChannel = "test-channel";
-    private const string TestPattern = "test-*";
-    private const string TestShardedChannel = "sharded-channel";
+    private static readonly string TestChannel = "test-channel";
+    private static readonly string TestPattern = "test-*";
+    private static readonly string TestShardedChannel = "sharded-channel";
 
-    private readonly MessageCallback Callback = (message, ctx) => { };
-    private readonly object Context = new { TestData = "test" };
+    private static readonly MessageCallback Callback = (message, ctx) => { };
+    private static readonly object Context = new { TestData = "test" };
 
     #region StandalonePubSubSubscriptionConfig Tests
 
