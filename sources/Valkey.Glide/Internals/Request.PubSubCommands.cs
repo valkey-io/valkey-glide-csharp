@@ -164,4 +164,16 @@ internal partial class Request
     }
 
     #endregion
+
+    #region GetSubscriptions
+
+    // TODO Can this be simplified?
+    /// <summary>
+    /// Gets the current PubSub subscription state.
+    /// </summary>
+    /// <returns>Command that returns the subscription state as a raw object array.</returns>
+    public static Cmd<object[], object[]> GetSubscriptions()
+        => new(RequestType.GetSubscriptions, [], false, objects => objects);
+
+    #endregion
 }

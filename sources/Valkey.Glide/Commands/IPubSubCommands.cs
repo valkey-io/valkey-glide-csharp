@@ -38,7 +38,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to subscribe to.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been subscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -55,7 +54,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channels">An array of channels to subscribe to.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been subscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -72,7 +70,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to subscribe to.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been subscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -89,7 +86,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
     /// <param name="patterns">An array of patterns to subscribe to.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been subscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -108,7 +104,6 @@ public interface IPubSubCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been unsubscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -125,7 +120,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to unsubscribe from.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been unsubscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -143,7 +137,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="channels">An array of channels to unsubscribe from.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been unsubscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -165,7 +158,6 @@ public interface IPubSubCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been unsubscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -182,7 +174,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to unsubscribe from.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been unsubscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -200,7 +191,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="patterns">An array of patterns to unsubscribe from.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the client has been unsubscribed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -288,6 +278,19 @@ public interface IPubSubCommands
     /// </example>
     /// </remarks>
     abstract Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the current pub/sub subscription state.
+    /// </summary>
+    /// <returns>The pub/sub subscription state.</returns>
+    /// <example>
+    /// <code>
+    /// var state = await client.GetSubscriptionsAsync();
+    /// var desiredChannels = state.[PubSubChannelMode.Exact];
+    /// var actualPatterns = state.Actual[PubSubChannelMode.Pattern];
+    /// </code>
+    /// </example>
+    Task<PubSubState> GetSubscriptionsAsync();
 
     #endregion
 }

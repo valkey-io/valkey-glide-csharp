@@ -396,4 +396,38 @@ public class ConnectionConfigurationTests
 
         Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
     }
+
+    // Pub/Sub Reconciliation Interval
+    // -------------------------------
+
+    [Fact]
+    public void PubSubReconciliationInterval_Default()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Null(builder.Build().Request.PubSubReconciliationInterval);
+    }
+
+    [Fact]
+    public void PubSubReconciliationInterval_PositiveSucceeds()
+    {
+        var interval = TimeSpan.FromSeconds(30);
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithPubSubReconciliationInterval(interval);
+
+        Assert.Equal(interval.TotalMilliseconds, builder.Build().Request.PubSubReconciliationInterval!.Value.TotalMilliseconds);
+    }
+
+    [Fact]
+    public void PubSubReconciliationInterval_NegativeThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.FromSeconds(-1)));
+    }
+
+    [Fact]
+    public void PubSubReconciliationInterval_ZeroThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
+    }
 }

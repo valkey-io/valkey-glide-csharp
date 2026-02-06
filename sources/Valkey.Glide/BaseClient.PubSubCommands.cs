@@ -108,5 +108,41 @@ public abstract partial class BaseClient : IPubSubCommands
         return await Command(Request.PubSubNumPat());
     }
 
+    public async Task<PubSubState> GetSubscriptionsAsync()
+    {
+        var response = await Command(Request.GetSubscriptions());
+        return ParsePubSubState(response);
+    }
+
     #endregion
+
+    private static PubSubState ParsePubSubState(object[] response)
+    {
+        var desiredSubscriptions = ParseSubscriptionsMap((Dictionary<GlideString, object>)response[0]);
+        var actualSubscriptions = ParseSubscriptionsMap((Dictionary<GlideString, object>)response[1]);
+
+        return new PubSubState(desiredSubscriptions, actualSubscriptions);
+    }
+
+    /// <summary>
+    /// Builds and returns a pub/sub subscription map from the given response dictionary.
+    /// </summary>
+    private static Dictionary<PubSubChannelMode, IReadOnlySet<string>> ParseSubscriptionsMap(Dictionary<GlideString, object> responseDict)
+    {
+        var subscriptions = new Dictionary<PubSubChannelMode, IReadOnlySet<string>>();
+
+        // TODO: Populate with empty sets for each channel mode.
+
+        foreach (var entry in responseDict)
+        {
+            var channelMode = entry.Key.ToString();
+
+            // The channels/patterns are returned as an array of GLIDE strings.
+            var channels = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
+
+            // TODO: Complete mapping.
+        }
+
+        return subscriptions;
+    }
 }
