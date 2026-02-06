@@ -485,5 +485,55 @@ public class PubSubCommandTests()
         Assert.Fail($"Expected 0 subscribers for channels '{string.Join(", ", channels)}'");
     }
 
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
+    {
+        using var client = BuildClient(isCluster);
+        var state = await client.GetSubscriptionsAsync();
+
+        var desired = state.Desired;
+        Assert.Empty(desired[PubSubChannelMode.Exact]);
+        Assert.Empty(desired[PubSubChannelMode.Pattern]);
+
+        var actual = state.Actual;
+        Assert.Empty(actual[PubSubChannelMode.Exact]);
+        Assert.Empty(actual[PubSubChannelMode.Pattern]);
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
+    {
+        var msg = BuildMessage(pattern: true);
+        using var client = BuildClient(isCluster);
+
+        await client.SubscribeAsync(msg.Channel);
+        await client.PSubscribeAsync(msg.Pattern!);
+
+        var state = await client.GetSubscriptionsAsync();
+
+        var desired = state.Desired;
+        Assert.Equivalent([msg.Channel], desired[PubSubChannelMode.Exact]);
+        Assert.Equivalent([msg.Pattern!], desired[PubSubChannelMode.Pattern]);
+
+        var actual = state.Actual;
+        Assert.Empty(actual[PubSubChannelMode.Exact]);
+        Assert.Empty(actual[PubSubChannelMode.Pattern]);
+
+        // Default reconciliation delay is 3 seconds.
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        state = await client.GetSubscriptionsAsync();
+
+        desired = state.Desired;
+        Assert.Equivalent([msg.Channel], desired[PubSubChannelMode.Exact]);
+        Assert.Equivalent([msg.Pattern!], desired[PubSubChannelMode.Pattern]);
+
+        actual = state.Actual;
+        Assert.Equivalent([msg.Channel], actual[PubSubChannelMode.Exact]);
+        Assert.Equivalent([msg.Pattern!], actual[PubSubChannelMode.Pattern]);
+    }
+
     #endregion
 }
