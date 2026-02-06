@@ -145,6 +145,7 @@ internal sealed class Subscriber : ISubscriber
 
         if (_client.IsCluster)
         {
+            // TODO #205: Refactor to use GlideClusterClient instead of custom command.
             await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE"]), Route.Random);
         }
     }
@@ -181,6 +182,8 @@ internal sealed class Subscriber : ISubscriber
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
+
+            // TODO #205: Refactor to use GlideClusterClient instead of custom command.
             var result = await _client.Command(Request.CustomCommand(["SPUBLISH", channelStr, messageStr]), Route.Random);
             return Convert.ToInt64(result);
         }
@@ -222,6 +225,8 @@ internal sealed class Subscriber : ISubscriber
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
+
+            // TODO #205: Refactor to use GlideClusterClient instead of custom command.
             await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE", channelStr]), Route.Random);
         }
         else if (channel.IsPattern)
