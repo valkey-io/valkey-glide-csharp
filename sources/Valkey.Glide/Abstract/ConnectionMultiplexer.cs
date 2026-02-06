@@ -1,5 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Collections.Concurrent;
 using System.Net;
 
 using Valkey.Glide.Internals;
@@ -52,14 +53,38 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     public static async Task<ConnectionMultiplexer> ConnectAsync(ConfigurationOptions configuration, TextWriter? log = null)
     {
         Utils.Requires<NotImplementedException>(log == null, "Log writer is not supported by GLIDE");
-        StandaloneClientConfiguration standaloneConfig = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration).Build();
-        GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
-        string info = await standalone.InfoAsync([Section.CLUSTER]);
-        BaseClientConfiguration config = info.Contains("cluster_enabled:1")
-            ? CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(configuration).Build()
-            : standaloneConfig;
 
-        return new(configuration, await Database.Create(config));
+        bool isCluster = await IsCluster(configuration);
+
+        ConnectionMultiplexer multiplexer = new(configuration);
+
+        // Configure pub/sub to route messages to this multiplexer.
+        BaseClientConfiguration config;
+        if (isCluster)
+        {
+            var configBuilder = CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(configuration);
+
+            var subscriptionsConfig = new ClusterPubSubSubscriptionConfig();
+            subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
+            configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
+
+            config = configBuilder.Build();
+        }
+
+        else
+        {
+            var configBuilder = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration);
+
+            var subscriptionsConfig = new StandalonePubSubSubscriptionConfig();
+            subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
+            configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
+
+            config = configBuilder.Build();
+        }
+
+        multiplexer._db = await Database.Create(config);
+
+        return multiplexer;
     }
 
     public EndPoint[] GetEndPoints(bool configuredOnly)
@@ -80,7 +105,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     public IServer GetServer(EndPoint endpoint, object? asyncState = null)
     {
-        Utils.Requires<NotImplementedException>(asyncState is null, "Async state is not supported by GLIDE");
+        GuardClauses.ThrowIfAsyncState(asyncState);
+
         foreach (IServer server in GetServers())
         {
             if (server.EndPoint.Equals(endpoint))
@@ -123,10 +149,17 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     public bool IsConnecting => false;
 
+    /// <inheritdoc/>
+    public ISubscriber GetSubscriber(object? asyncState = null)
+    {
+        GuardClauses.ThrowIfAsyncState(asyncState);
+        return new Subscriber(this, _db!);
+    }
+
     public IDatabase GetDatabase(int db = -1, object? asyncState = null)
     {
         Utils.Requires<NotImplementedException>(db == -1, "To switch the database, please use `SELECT` command.");
-        Utils.Requires<NotImplementedException>(asyncState is null, "Async state is not supported by GLIDE");
+        GuardClauses.ThrowIfAsyncState(asyncState);
         return _db!;
     }
 
@@ -166,10 +199,9 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     private readonly object _lock = new();
     private Database? _db;
 
-    private ConnectionMultiplexer(ConfigurationOptions configuration, Database db)
+    private ConnectionMultiplexer(ConfigurationOptions configuration)
     {
         RawConfig = configuration;
-        _db = db;
     }
 
     internal static T CreateClientConfigBuilder<T>(ConfigurationOptions configuration)
@@ -215,4 +247,187 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     /// <inheritdoc/>
     Task IConnectionMultiplexer.CloseAsync() => DisposeAsync().AsTask();
+
+    #region Subscriptions
+
+    private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
+
+    /// <summary>
+    /// Adds a subscription handler for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to subscribe to.</param>
+    /// <param name="handler">The handler to invoke when a message is received on the channel.</param>
+    /// <returns>True if a new subscription was added, false if an existing subscription was updated.</returns>
+    internal bool AddSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    {
+        lock (_subscriptions)
+        {
+            if (_subscriptions.TryGetValue(channel, out var subscription))
+            {
+                subscription.AddHandler(handler);
+                return false;
+            }
+
+            subscription = new Subscription();
+            subscription.AddHandler(handler);
+            _subscriptions[channel] = subscription;
+
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Adds a subscription queue for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to subscribe to.</param>
+    /// <returns>True if a new subscription was added, false if an existing subscription was updated.</returns>
+    internal bool AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
+    {
+        lock (_subscriptions)
+        {
+            if (_subscriptions.TryGetValue(channel, out var subscription))
+            {
+                subscription.AddQueue(queue);
+                return false;
+            }
+
+            subscription = new Subscription();
+            subscription.AddQueue(queue);
+            _subscriptions[channel] = subscription;
+
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Removes a subscription handler for the specified channel.
+    /// If the subscription is empty after removing the handler, the subscription is removed.
+    /// </summary>
+    /// <param name="channel">The channel to unsubscribe from.</param>
+    /// <param name="handler">The handler to remove.</param>
+    /// <returns>True if the subscription was removed, false otherwise.</returns>
+    internal bool RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
+    {
+        lock (_subscriptions)
+        {
+            if (_subscriptions.TryGetValue(channel, out var sub))
+            {
+                sub.RemoveHandler(handler);
+
+                if (sub.IsEmpty())
+                {
+                    RemoveSubscription(channel);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Removes a subscription queue for the specified channel.
+    /// If the subscription is empty after removing the queue, the subscription is removed.
+    /// </summary>
+    /// <param name="queue">The queue to remove.</param>
+    /// <returns>True if the subscription was removed, false otherwise.</returns>
+    internal bool RemoveSubscriptionQueue(ChannelMessageQueue queue)
+    {
+        var channel = queue.Channel;
+
+        lock (_subscriptions)
+        {
+            if (_subscriptions.TryGetValue(channel, out var sub))
+            {
+                sub.RemoveQueue(queue);
+
+                if (sub.IsEmpty())
+                {
+                    RemoveSubscription(channel);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Removes the subscription (all handlers and queues) for the specified channel.
+    /// </summary>
+    /// <param name="channel">The channel to unsubscribe from.</param>
+    internal void RemoveSubscription(ValkeyChannel channel)
+    {
+        lock (_subscriptions)
+        {
+            _subscriptions.Remove(channel, out var sub);
+            sub?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Removes all subscriptions (all handlers and queues).
+    /// </summary>
+    internal void RemoveAllSubscriptions()
+    {
+        lock (_subscriptions)
+        {
+            foreach (var sub in _subscriptions.Values)
+                sub.Dispose();
+
+            _subscriptions.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Handles incoming Pub/Sub messages and routes them to the appropriate subscription handlers.
+    /// </summary>
+    /// <param name="message">The incoming PubSubMessage.</param>
+    internal void OnMessage(PubSubMessage message)
+    {
+        var channel = ToValkeyChannel(message);
+        if (_subscriptions.TryGetValue(channel, out var sub))
+        {
+            sub.OnMessage(channel, message.Message);
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="PubSubMessage"/> to a <see cref="ValkeyChannel"/>.
+    /// </summary>
+    /// <param name="message">The <see cref="PubSubMessage"/> to convert.</param>
+    /// <returns>A ValkeyChannel representing the message's channel.</returns>
+    private static ValkeyChannel ToValkeyChannel(PubSubMessage message)
+    {
+        var channelMode = message.ChannelMode;
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                return ValkeyChannel.Literal(message.Channel);
+            case PubSubChannelMode.Pattern:
+                return ValkeyChannel.Pattern(message.Pattern!);
+            case PubSubChannelMode.Sharded:
+                return ValkeyChannel.Sharded(message.Channel);
+            default:
+                throw new InvalidOperationException($"Unknown channel mode: {channelMode}");
+        }
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Determines whether the given configuration corresponds to a cluster server.
+    /// </summary>
+    /// <param name="configuration">The configuration options to check.</param>
+    /// <returns>True if the configuration corresponds to a cluster server; otherwise, false.</returns>
+    private static async Task<bool> IsCluster(ConfigurationOptions configuration)
+    {
+        // Create standalone client.
+        StandaloneClientConfiguration standaloneConfig = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration).Build();
+        using GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
+
+        // Query server info to determine if it's a cluster.
+        string info = await standalone.InfoAsync([Section.CLUSTER]);
+        return info.Contains("cluster_enabled:1");
+    }
 }

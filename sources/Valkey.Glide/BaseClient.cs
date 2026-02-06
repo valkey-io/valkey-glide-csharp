@@ -351,7 +351,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         {
             PushKind.PushMessage => true,       // Regular channel message
             PushKind.PushPMessage => true,      // Pattern-based message
-            PushKind.PushSMessage => true,      // Sharded channel message
+            PushKind.PushSMessage => true,      // Shard channel message
             PushKind.PushDisconnection => false,
             PushKind.PushOther => false,
             PushKind.PushInvalidate => false,
@@ -393,9 +393,14 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         string? pattern = patternBytes != null ? System.Text.Encoding.UTF8.GetString(patternBytes) : null;
 
         // Create the appropriate PubSubMessage based on whether pattern is present
-        return pattern != null
-            ? new PubSubMessage(message, channel, pattern)
-            : new PubSubMessage(message, channel);
+        if (pushKind == PushKind.PushMessage)
+            return PubSubMessage.FromChannel(message, channel);
+        else if (pushKind == PushKind.PushPMessage)
+            return PubSubMessage.FromPattern(message, channel, pattern!);
+        else if (pushKind == PushKind.PushSMessage)
+            return PubSubMessage.FromShardChannel(message, channel);
+        else
+            throw new ArgumentOutOfRangeException(nameof(pushKind), $"Unsupported PushKind: {pushKind}");
     }
 
     ~BaseClient() => Dispose();

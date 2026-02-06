@@ -45,7 +45,7 @@ public class PubSubMessageHandlerTests
         });
 
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, context);
-        PubSubMessage message = new PubSubMessage("test-message", "test-channel");
+        PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
         handler.HandleMessage(message);
@@ -61,7 +61,7 @@ public class PubSubMessageHandlerTests
     {
         // Arrange
         using PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
-        PubSubMessage message = new PubSubMessage("test-message", "test-channel");
+        PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
         handler.HandleMessage(message);
@@ -86,7 +86,7 @@ public class PubSubMessageHandlerTests
         });
 
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
-        PubSubMessage message = new PubSubMessage("test-message", "test-channel");
+        PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act & Assert - Exception should be caught and not propagate
         handler.HandleMessage(message);
@@ -102,9 +102,9 @@ public class PubSubMessageHandlerTests
         MessageCallback callback = new MessageCallback((msg, ctx) => receivedMessages.Add(msg));
 
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
-        PubSubMessage message1 = new PubSubMessage("message1", "channel1");
-        PubSubMessage message2 = new PubSubMessage("message2", "channel2");
-        PubSubMessage message3 = new PubSubMessage("message3", "channel3");
+        PubSubMessage message1 = PubSubMessage.FromChannel("message1", "channel1");
+        PubSubMessage message2 = PubSubMessage.FromChannel("message2", "channel2");
+        PubSubMessage message3 = PubSubMessage.FromChannel("message3", "channel3");
 
         // Act
         handler.HandleMessage(message1);
@@ -126,13 +126,14 @@ public class PubSubMessageHandlerTests
         MessageCallback callback = new MessageCallback((msg, ctx) => receivedMessage = msg);
 
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
-        PubSubMessage message = new PubSubMessage("test-message", "test-channel", "test-pattern");
+        PubSubMessage message = PubSubMessage.FromPattern("test-message", "test-channel", "test-pattern");
 
         // Act
         handler.HandleMessage(message);
 
         // Assert
         Assert.NotNull(receivedMessage);
+        Assert.Equal(PubSubChannelMode.Pattern, receivedMessage.ChannelMode);
         Assert.Equal("test-message", receivedMessage.Message);
         Assert.Equal("test-channel", receivedMessage.Channel);
         Assert.Equal("test-pattern", receivedMessage.Pattern);
@@ -154,7 +155,7 @@ public class PubSubMessageHandlerTests
         // Arrange
         PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
         handler.Dispose();
-        PubSubMessage message = new PubSubMessage("test-message", "test-channel");
+        PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act & Assert
         Assert.Throws<ObjectDisposedException>(() => handler.HandleMessage(message));
@@ -211,7 +212,7 @@ public class PubSubMessageHandlerTests
         });
 
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
-        PubSubMessage message = new PubSubMessage("test-message", "test-channel");
+        PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
         handler.HandleMessage(message);
@@ -238,9 +239,9 @@ public class PubSubMessageHandlerTests
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
         PubSubMessage[] messages =
         [
-            new PubSubMessage("message1", "channel1"),
-            new PubSubMessage("message2", "channel2"),
-            new PubSubMessage("message3", "channel3")
+            PubSubMessage.FromChannel("message1", "channel1"),
+            PubSubMessage.FromChannel("message2", "channel2"),
+            PubSubMessage.FromChannel("message3", "channel3")
         ];
 
         // Act
@@ -271,7 +272,7 @@ public class PubSubMessageHandlerTests
         });
 
         PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
-        PubSubMessage message = new PubSubMessage("test-message", "test-channel");
+        PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
         Task handleTask = Task.Run(() => handler.HandleMessage(message));

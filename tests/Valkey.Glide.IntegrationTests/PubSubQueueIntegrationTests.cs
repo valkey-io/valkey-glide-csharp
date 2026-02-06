@@ -384,7 +384,7 @@ public class PubSubQueueIntegrationTests
         // Create config WITH callback
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 // Callback mode
             });

@@ -739,7 +739,7 @@ public abstract class ConnectionConfiguration
         public StandaloneClientConfigurationBuilder WithPubSubSubscriptions(StandalonePubSubSubscriptionConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
-            config.Validate();
+
             Config.PubSubSubscriptions = config;
             return this;
         }
@@ -797,7 +797,6 @@ public abstract class ConnectionConfiguration
         public ClusterClientConfigurationBuilder WithPubSubSubscriptions(ClusterPubSubSubscriptionConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
-            config.Validate();
             Config.PubSubSubscriptions = config;
             return this;
         }

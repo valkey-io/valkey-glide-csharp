@@ -18,13 +18,13 @@ internal class Database : GlideClient, IDatabase
 
     public IBatch CreateBatch(object? asyncState = null)
     {
-        Utils.Requires<ArgumentException>(asyncState is null, "Async state is not supported by GLIDE");
+        GuardClauses.ThrowIfAsyncState(asyncState);
         return new ValkeyBatch(this);
     }
 
     public ITransaction CreateTransaction(object? asyncState = null)
     {
-        Utils.Requires<ArgumentException>(asyncState is null, "Async state is not supported by GLIDE");
+        GuardClauses.ThrowIfAsyncState(asyncState);
         return new ValkeyTransaction(this);
     }
 

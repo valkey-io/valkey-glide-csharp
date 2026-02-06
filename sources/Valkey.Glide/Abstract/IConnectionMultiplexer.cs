@@ -59,6 +59,12 @@ public interface IConnectionMultiplexer : IDisposable, IAsyncDisposable
     /// </summary>
     bool IsConnecting { get; }
 
+    /// <summary>
+    /// Obtain a pub/sub subscriber connection to the specified server.
+    /// </summary>
+    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
+    ISubscriber GetSubscriber(object? asyncState = null);
+
     // TODO add link to `SELECT` once implemented
     /// <summary>
     /// Obtain an interactive connection to a database inside server.

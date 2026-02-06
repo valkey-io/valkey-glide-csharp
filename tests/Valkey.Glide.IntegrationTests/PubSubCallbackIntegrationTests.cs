@@ -26,7 +26,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 receivedMessage = message;
                 _messageReceivedEvent.Set();
@@ -70,7 +70,7 @@ public class PubSubCallbackIntegrationTests
 
         ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<ClusterPubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 receivedMessage = message;
                 _messageReceivedEvent.Set();
@@ -115,7 +115,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithPattern(testPattern)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 receivedMessage = message;
                 _messageReceivedEvent.Set();
@@ -159,7 +159,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 int invocation = Interlocked.Increment(ref callbackInvocations);
 
@@ -215,7 +215,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 Stopwatch sw = Stopwatch.StartNew();
 
@@ -286,7 +286,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 lock (_lockObject)
                 {
@@ -362,7 +362,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 int count = Interlocked.Increment(ref callbackCount);
 
@@ -430,7 +430,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig1 = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 int count = Interlocked.Increment(ref subscriber1Received);
                 if (subscriber1Received >= 1 && subscriber2Received >= 1)
@@ -441,7 +441,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig2 = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 int count = Interlocked.Increment(ref subscriber2Received);
                 if (subscriber1Received >= 1 && subscriber2Received >= 1)
@@ -494,7 +494,7 @@ public class PubSubCallbackIntegrationTests
 
         StandalonePubSubSubscriptionConfig pubsubConfig = new StandalonePubSubSubscriptionConfig()
             .WithChannel(testChannel)
-            .WithCallback<StandalonePubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 lock (receivedMessages)
                 {
@@ -558,7 +558,7 @@ public class PubSubCallbackIntegrationTests
 
         ClusterPubSubSubscriptionConfig pubsubConfig = new ClusterPubSubSubscriptionConfig()
             .WithPattern(testPattern)
-            .WithCallback<ClusterPubSubSubscriptionConfig>((message, context) =>
+            .WithCallback((message, context) =>
             {
                 receivedMessage = message;
                 _messageReceivedEvent.Set();

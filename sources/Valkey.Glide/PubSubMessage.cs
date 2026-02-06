@@ -5,10 +5,28 @@ using System.Text.Json;
 namespace Valkey.Glide;
 
 /// <summary>
+/// Pub/sub channel subscription mode.
+/// </summary>
+public enum PubSubChannelMode
+{
+    /// <summary>Exact channel name subscription (SUBSCRIBE).</summary>
+    Exact = 0,
+    /// <summary>Pattern-based subscription (PSUBSCRIBE).</summary>
+    Pattern = 1,
+    /// <summary>Shard channel subscription (SSUBSCRIBE).</summary>
+    Sharded = 2
+}
+
+/// <summary>
 /// Represents a message received through PubSub subscription.
 /// </summary>
 public sealed class PubSubMessage
 {
+    /// <summary>
+    /// The channel subscription mode for this message.
+    /// </summary>
+    public PubSubChannelMode ChannelMode { get; }
+
     /// <summary>
     /// The message content.
     /// </summary>
@@ -20,69 +38,43 @@ public sealed class PubSubMessage
     public string Channel { get; }
 
     /// <summary>
-    /// The pattern that matched the channel (null for exact channel subscriptions).
+    /// The pattern that matched the channel (null for exact and shard channel subscriptions).
     /// </summary>
     public string? Pattern { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PubSubMessage"/> class for exact channel subscriptions.
+    /// Creates a new <see cref="PubSubMessage"/> for an exact channel subscription.
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
-    /// <exception cref="ArgumentNullException">Thrown when message or channel is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when message or channel is empty.</exception>
-    public PubSubMessage(string message, string channel)
+    /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
+    public static PubSubMessage FromChannel(string message, string channel)
     {
-        ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(channel);
-
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            throw new ArgumentException("Message is required and cannot be empty", nameof(message));
-        }
-
-        if (string.IsNullOrWhiteSpace(channel))
-        {
-            throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
-        }
-
-        Message = message;
-        Channel = channel;
-        Pattern = null;
+        return new(PubSubChannelMode.Exact, message, channel, null);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PubSubMessage"/> class for pattern-based subscriptions.
+    /// Creates a new <see cref="PubSubMessage"/> for a pattern-based subscription.
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <param name="pattern">The pattern that matched the channel.</param>
-    /// <exception cref="ArgumentNullException">Thrown when message, channel, or pattern is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when message, channel, or pattern is empty.</exception>
-    public PubSubMessage(string message, string channel, string pattern)
+    /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
+    public static PubSubMessage FromPattern(string message, string channel, string pattern)
     {
-        ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(channel);
-        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(pattern, nameof(pattern));
+        return new(PubSubChannelMode.Pattern, message, channel, pattern);
+    }
 
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            throw new ArgumentException("Message is required and cannot be empty", nameof(message));
-        }
-
-        if (string.IsNullOrWhiteSpace(channel))
-        {
-            throw new ArgumentException("Channel is required and cannot be empty", nameof(channel));
-        }
-
-        if (string.IsNullOrWhiteSpace(pattern))
-        {
-            throw new ArgumentException("Pattern is required and cannot be empty", nameof(pattern));
-        }
-
-        Message = message;
-        Channel = channel;
-        Pattern = pattern;
+    /// <summary>
+    /// Creates a new <see cref="PubSubMessage"/> for a shard channel subscription.
+    /// </summary>
+    /// <param name="message">The message content.</param>
+    /// <param name="channel">The channel on which the message was received.</param>
+    /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
+    public static PubSubMessage FromShardChannel(string message, string channel)
+    {
+        return new(PubSubChannelMode.Sharded, message, channel, null);
     }
 
     /// <summary>
@@ -93,6 +85,7 @@ public sealed class PubSubMessage
     {
         var messageObject = new
         {
+            ChannelMode = ChannelMode.ToString(),
             Message,
             Channel,
             Pattern
@@ -108,9 +101,10 @@ public sealed class PubSubMessage
     /// Determines whether the specified object is equal to the current PubSubMessage.
     /// </summary>
     /// <param name="obj">The object to compare with the current PubSubMessage.</param>
-    /// <returns>true if the specified object is equal to the current PubSubMessage; otherwise, false.</returns>
+    /// <returns>True if the specified object is equal to the current PubSubMessage; otherwise, false.</returns>
     public override bool Equals(object? obj) =>
         obj is PubSubMessage other &&
+        ChannelMode == other.ChannelMode &&
         Message == other.Message &&
         Channel == other.Channel &&
         Pattern == other.Pattern;
@@ -119,5 +113,19 @@ public sealed class PubSubMessage
     /// Returns the hash code for this PubSubMessage.
     /// </summary>
     /// <returns>A hash code for the current PubSubMessage.</returns>
-    public override int GetHashCode() => HashCode.Combine(Message, Channel, Pattern);
+    public override int GetHashCode() => HashCode.Combine(ChannelMode, Message, Channel, Pattern);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PubSubMessage"/> class.
+    /// </summary>
+    private PubSubMessage(PubSubChannelMode channelMode, string message, string channel, string? pattern)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
+
+        ChannelMode = channelMode;
+        Message = message;
+        Channel = channel;
+        Pattern = pattern;
+    }
 }

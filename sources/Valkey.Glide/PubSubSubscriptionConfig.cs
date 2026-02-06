@@ -3,30 +3,6 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// PubSub subscription modes for standalone clients.
-/// </summary>
-public enum PubSubChannelMode
-{
-    /// <summary>Exact channel name subscription.</summary>
-    Exact = 0,
-    /// <summary>Pattern-based subscription.</summary>
-    Pattern = 1
-}
-
-/// <summary>
-/// PubSub subscription modes for cluster clients.
-/// </summary>
-public enum PubSubClusterChannelMode
-{
-    /// <summary>Exact channel name subscription.</summary>
-    Exact = 0,
-    /// <summary>Pattern-based subscription.</summary>
-    Pattern = 1,
-    /// <summary>Sharded channel subscription (cluster-specific).</summary>
-    Sharded = 2
-}
-
-/// <summary>
 /// Base configuration for PubSub subscriptions.
 /// </summary>
 public abstract class BasePubSubSubscriptionConfig
@@ -42,35 +18,48 @@ public abstract class BasePubSubSubscriptionConfig
     /// <param name="callback">The callback function to invoke for received messages.</param>
     /// <param name="context">Optional context object to pass to the callback.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when callback is null.</exception>
-    public T WithCallback<T>(MessageCallback callback, object? context = null) where T : BasePubSubSubscriptionConfig
+    public virtual BasePubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
     {
-        Callback = callback ?? throw new ArgumentNullException(nameof(callback), "Callback cannot be null");
+        ArgumentNullException.ThrowIfNull(callback, nameof(callback));
+        Callback = callback;
         Context = context;
-        return (T)this;
+        return this;
     }
 
     /// <summary>
-    /// Validates the subscription configuration.
+    /// Add an exact channel subscription.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when configuration is invalid.</exception>
-    internal virtual void Validate()
-    {
-        foreach (KeyValuePair<uint, ISet<string>> kvp in Subscriptions)
-        {
-            if (kvp.Value == null || kvp.Value.Count == 0)
-            {
-                throw new ArgumentException($"Subscription mode {kvp.Key} has no channels or patterns configured");
-            }
+    /// <param name="channel">The channel to subscribe to.</param>
+    /// <returns>This configuration instance for method chaining.</returns>
+    public virtual BasePubSubSubscriptionConfig WithChannel(string channel)
+        => AddSubscription(PubSubChannelMode.Exact, channel);
 
-            foreach (string channelOrPattern in kvp.Value)
-            {
-                if (string.IsNullOrWhiteSpace(channelOrPattern))
-                {
-                    throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace");
-                }
-            }
-        }
+    /// <summary>
+    /// Add a pattern subscription.
+    /// </summary>
+    /// <param name="pattern">The pattern to subscribe to.</param>
+    /// <returns>This configuration instance for method chaining.</returns>
+    public virtual BasePubSubSubscriptionConfig WithPattern(string pattern)
+        => AddSubscription(PubSubChannelMode.Pattern, pattern);
+
+    /// <summary>
+    /// Add a channel or pattern subscription.
+    /// </summary>
+    /// <param name="mode">The channel subscription mode.</param>
+    /// <param name="channelOrPattern">The channel or pattern to subscribe to.</param>
+    /// <returns>This configuration instance for method chaining.</returns>
+    protected BasePubSubSubscriptionConfig AddSubscription(PubSubChannelMode mode, string channelOrPattern)
+    {
+        if (string.IsNullOrWhiteSpace(channelOrPattern))
+            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
+
+        uint modeValue = (uint)mode;
+        if (!Subscriptions.ContainsKey(modeValue))
+            Subscriptions[modeValue] = new HashSet<string>();
+
+        Subscriptions[modeValue].Add(channelOrPattern);
+
+        return this;
     }
 }
 
@@ -79,79 +68,19 @@ public abstract class BasePubSubSubscriptionConfig
 /// </summary>
 public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionConfig
 {
-    private static readonly HashSet<uint> ValidModes = [.. Enum.GetValues<PubSubChannelMode>().Select(m => (uint)m)];
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StandalonePubSubSubscriptionConfig"/> class.
     /// </summary>
-    public StandalonePubSubSubscriptionConfig()
-    {
-    }
+    public StandalonePubSubSubscriptionConfig() { }
 
-    /// <summary>
-    /// Add a channel or pattern subscription.
-    /// </summary>
-    /// <param name="mode">The subscription mode (Exact or Pattern).</param>
-    /// <param name="channelOrPattern">The channel name or pattern to subscribe to.</param>
-    /// <returns>This configuration instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when channelOrPattern is null, empty, or whitespace.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when mode is not valid for standalone clients.</exception>
-    public StandalonePubSubSubscriptionConfig WithSubscription(PubSubChannelMode mode, string channelOrPattern)
-    {
-        if (!Enum.IsDefined(typeof(PubSubChannelMode), mode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(mode), "Invalid PubSub channel mode for standalone client");
-        }
+    public override StandalonePubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
+        => (StandalonePubSubSubscriptionConfig)base.WithCallback(callback, context);
 
-        if (string.IsNullOrWhiteSpace(channelOrPattern))
-        {
-            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
-        }
+    public override StandalonePubSubSubscriptionConfig WithChannel(string channel)
+        => (StandalonePubSubSubscriptionConfig)base.WithChannel(channel);
 
-        uint modeValue = (uint)mode;
-        if (!Subscriptions.ContainsKey(modeValue))
-        {
-            Subscriptions[modeValue] = new HashSet<string>();
-        }
-
-        Subscriptions[modeValue].Add(channelOrPattern);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Add an exact channel subscription.
-    /// </summary>
-    /// <param name="channel">The channel name to subscribe to.</param>
-    ///    /// <returns>Thistion instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when channel is null, empty, or whitespace.</exception>
-    public StandalonePubSubSubscriptionConfig WithChannel(string channel) => WithSubscription(PubSubChannelMode.Exact, channel);
-
-    /// <summary>
-    /// Add a pattern subscription.
-    /// </summary>
-    /// <param name="pattern">The pattern to subscribe to.</param>
-    /// <returns>This configuration instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when pattern is null, empty, or whitespace.</exception>
-    public StandalonePubSubSubscriptionConfig WithPattern(string pattern) => WithSubscription(PubSubChannelMode.Pattern, pattern);
-
-    /// <summary>
-    /// Validates the standalone subscription configuration.
-    /// </summary>
-    /// <exception cref="ArgumentException">Thrown when configuration is invalid.</exception>
-    internal override void Validate()
-    {
-        base.Validate();
-
-        // Ensure only valid modes for standalone clients are used
-        foreach (uint mode in Subscriptions.Keys)
-        {
-            if (!ValidModes.Contains(mode))
-            {
-                throw new ArgumentException($"Subscription mode {mode} is not valid for standalone clients");
-            }
-        }
-    }
+    public override StandalonePubSubSubscriptionConfig WithPattern(string pattern)
+        => (StandalonePubSubSubscriptionConfig)base.WithPattern(pattern);
 }
 
 /// <summary>
@@ -159,85 +88,25 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
 /// </summary>
 public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConfig
 {
-    private static readonly HashSet<uint> ValidModes = [.. Enum.GetValues<PubSubClusterChannelMode>().Select(m => (uint)m)];
-
     /// <summary>
-    /// /// Initializes a ne of the <see cref="ClusterPubSubSubscriptionConfig"/> class.
+    /// /// Initializes a new instance of the <see cref="ClusterPubSubSubscriptionConfig"/> class.
     /// </summary>
-    public ClusterPubSubSubscriptionConfig()
-    {
-    }
+    public ClusterPubSubSubscriptionConfig() { }
 
-    /// <summary>
-    /// Add a channel, pattern, or sharded subscription.
-    /// </summary>
-    /// <param name="mode">The subscription mode (Exact, Pattern, or Sharded).</param>
-    /// <param name="channelOrPattern">The channel name or pattern to subscribe to.</param>
-    /// <returns>This configuration instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when channelOrPattern is null, empty, or whitespace.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when mode is not valid for cluster clients.</exception>
-    public ClusterPubSubSubscriptionConfig WithSubscription(PubSubClusterChannelMode mode, string channelOrPattern)
-    {
-        if (!Enum.IsDefined(typeof(PubSubClusterChannelMode), mode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(mode), "Invalid PubSub channel mode for cluster client");
-        }
+    public override ClusterPubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
+        => (ClusterPubSubSubscriptionConfig)base.WithCallback(callback, context);
 
-        if (string.IsNullOrWhiteSpace(channelOrPattern))
-        {
-            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
-        }
+    public override ClusterPubSubSubscriptionConfig WithChannel(string channel)
+        => (ClusterPubSubSubscriptionConfig)base.WithChannel(channel);
 
-        uint modeValue = (uint)mode;
-        if (!Subscriptions.ContainsKey(modeValue))
-        {
-            Subscriptions[modeValue] = new HashSet<string>();
-        }
-
-        Subscriptions[modeValue].Add(channelOrPattern);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Add an exact channel subscription.
-    /// </summary>
-    /// <param name="channel">The channel name to subscribe to.</param>
-    /// <returns>This configuration instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when channel is null, empty, or whitespace.</exception>
-    public ClusterPubSubSubscriptionConfig WithChannel(string channel) => WithSubscription(PubSubClusterChannelMode.Exact, channel);
-
-    /// <summary>
-    /// Add a pattern subscription.
-    /// </summary>
-    /// <param name="pattern">The pattern to subscribe to.</param>
-    /// <returns>This configuration instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when pattern is null, empty, or whitespace.</exception>
-    public ClusterPubSubSubscriptionConfig WithPattern(string pattern) => WithSubscription(PubSubClusterChannelMode.Pattern, pattern);
+    public override ClusterPubSubSubscriptionConfig WithPattern(string pattern)
+        => (ClusterPubSubSubscriptionConfig)base.WithPattern(pattern);
 
     /// <summary>
     /// Add a shard channel subscription.
     /// </summary>
-    /// <param name="channel">The shard channel name to subscribe to.</param>
+    /// <param name="channel">The shard channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when channel is null, empty, or whitespace.</exception>
-    public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel) => WithSubscription(PubSubClusterChannelMode.Sharded, channel);
-
-    /// <summary>
-    /// Validates the cluster subscription configuration.
-    /// </summary>
-    /// <exception cref="ArgumentException">Thrown when configuration is invalid.</exception>
-    internal override void Validate()
-    {
-        base.Validate();
-
-        // Ensure only valid modes for cluster clients are used
-        foreach (uint mode in Subscriptions.Keys)
-        {
-            if (!ValidModes.Contains(mode))
-            {
-                throw new ArgumentException($"Subscription mode {mode} is not valid for cluster clients");
-            }
-        }
-    }
+    public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel)
+        => (ClusterPubSubSubscriptionConfig)AddSubscription(PubSubChannelMode.Sharded, channel);
 }
