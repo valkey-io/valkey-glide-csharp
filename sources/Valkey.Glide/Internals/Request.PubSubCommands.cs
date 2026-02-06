@@ -102,7 +102,7 @@ internal partial class Request
         => new(RequestType.PubSubChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified channels.
+    /// Lists the number of subscribers for the specified channels.
     /// </summary>
     /// <param name="channels">The channels to query.</param>
     /// <returns>Command that returns a dictionary mapping channel names to subscriber counts.</returns>
@@ -122,7 +122,7 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Returns the number of active pattern subscriptions.
+    /// Gets the number of active pattern subscriptions.
     /// </summary>
     /// <returns>Command that returns the number of pattern subscriptions.</returns>
     public static Cmd<long, long> PubSubNumPat()
@@ -144,7 +144,7 @@ internal partial class Request
         => new(RequestType.PubSubShardChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified shard channels (cluster mode).
+    /// Lists the number of subscribers for the specified shard channels (cluster mode).
     /// </summary>
     /// <param name="channels">The shard channels to query.</param>
     /// <returns>Command that returns a dictionary mapping shard channel names to subscriber counts.</returns>
@@ -167,13 +167,12 @@ internal partial class Request
 
     #region GetSubscriptions
 
-    // TODO Can this be simplified?
     /// <summary>
-    /// Gets the current PubSub subscription state.
+    /// Gets the current pub/sub subscription state.
     /// </summary>
-    /// <returns>Command that returns the subscription state as a raw object array.</returns>
+    /// <returns>Command that returns the pub/sub subscription state as a raw object array.</returns>
     public static Cmd<object[], object[]> GetSubscriptions()
-        => new(RequestType.GetSubscriptions, [], false, objects => objects);
+        => Simple<object[]>(RequestType.GetSubscriptions, [], false);
 
     #endregion
 }
