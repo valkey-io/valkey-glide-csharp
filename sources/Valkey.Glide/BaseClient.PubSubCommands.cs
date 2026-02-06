@@ -123,18 +123,17 @@ public abstract partial class BaseClient : IPubSubCommands
     {
         var subscriptions = new Dictionary<PubSubChannelMode, IReadOnlySet<string>>();
 
-        // TODO #198: Implement once channel modes merged.
         // Populate with empty sets for each channel mode.
+        foreach (var mode in Enum.GetValues<PubSubChannelMode>())
+            subscriptions[mode] = new HashSet<string>();
 
         foreach (var entry in responseDict)
         {
-            var channelMode = entry.Key.ToString();
-
-            // The channels are returned as an array of GLIDE strings.
-            var channels = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
-
-            // TODO #198: Implement once channel modes merged.
-            // Add channels/patterns to the dictionary.
+            if (Enum.TryParse(entry.Key.ToString(), ignoreCase: true, out PubSubChannelMode mode))
+            {
+                // The channels are returned as an array of GLIDE strings.
+                subscriptions[mode] = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
+            }
         }
 
         return subscriptions;
