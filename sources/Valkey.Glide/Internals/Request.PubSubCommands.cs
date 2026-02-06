@@ -84,7 +84,7 @@ internal partial class Request
         => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
 
     #endregion
-    #region PubSubInfoCommands
+    #region InfoCommands
 
     /// <summary>
     /// Lists all active channels.
@@ -163,16 +163,19 @@ internal partial class Request
         });
     }
 
-    #endregion
-
-    #region GetSubscriptions
-
     /// <summary>
     /// Gets the current pub/sub subscription state.
     /// </summary>
-    /// <returns>Command that returns the pub/sub subscription state as a raw object array.</returns>
-    public static Cmd<object[], object[]> GetSubscriptions()
-        => Simple<object[]>(RequestType.GetSubscriptions, [], false);
+    /// <returns>Command that returns desired and actual subscription dictionaries.</returns>
+    public static Cmd<object[], (Dictionary<GlideString, object>, Dictionary<GlideString, object>)> GetSubscriptions()
+    {
+        return new(RequestType.GetSubscriptions, [], false, objects =>
+        {
+            return (
+                (Dictionary<GlideString, object>)objects[1],
+                (Dictionary<GlideString, object>)objects[3]);
+        });
+    }
 
     #endregion
 }

@@ -110,19 +110,11 @@ public abstract partial class BaseClient : IPubSubCommands
 
     public async Task<PubSubState> GetSubscriptionsAsync()
     {
-        var response = await Command(Request.GetSubscriptions());
-        return ParsePubSubState(response);
+        var (desired, actual) = await Command(Request.GetSubscriptions());
+        return new PubSubState(ParseSubscriptionsMap(desired), ParseSubscriptionsMap(actual));
     }
 
     #endregion
-
-    private static PubSubState ParsePubSubState(object[] response)
-    {
-        var desiredSubscriptions = ParseSubscriptionsMap((Dictionary<GlideString, object>)response[0]);
-        var actualSubscriptions = ParseSubscriptionsMap((Dictionary<GlideString, object>)response[1]);
-
-        return new PubSubState(desiredSubscriptions, actualSubscriptions);
-    }
 
     /// <summary>
     /// Builds and returns a pub/sub subscription map from the given response dictionary.
