@@ -11,6 +11,7 @@ namespace Valkey.Glide;
 public abstract class ConnectionConfiguration
 {
     #region Structs and Enums definitions
+
     internal record ConnectionConfig
     {
         public List<NodeAddress> Addresses = [];
@@ -28,6 +29,7 @@ public abstract class ConnectionConfiguration
         public bool RefreshTopologyFromInitialNodes;
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
         public readonly List<byte[]> RootCertificates = [];
+        public TimeSpan? PubSubReconciliationInterval;
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(
@@ -45,7 +47,8 @@ public abstract class ConnectionConfiguration
                 LazyConnect,
                 RefreshTopologyFromInitialNodes,
                 PubSubSubscriptions,
-                RootCertificates
+                RootCertificates,
+                (uint?)PubSubReconciliationInterval?.TotalMilliseconds
             );
     }
 
@@ -172,6 +175,7 @@ public abstract class ConnectionConfiguration
         /// </summary>
         RESP3 = 1,
     }
+
     #endregion
 
     private static readonly string DEFAULT_HOST = "localhost";
@@ -388,9 +392,10 @@ public abstract class ConnectionConfiguration
             get => new(this);
             set { } // needed for +=
         }
-        #endregion
 
+        #endregion
         #region TLS
+
         /// <summary>
         /// Configure whether to use Transport Layer Security (TLS) when connecting to the server.<br />
         /// Must match the TLS connection of the server or cluster.
@@ -491,9 +496,10 @@ public abstract class ConnectionConfiguration
             TrustedCertificates.Add(certificateData);
             return (T)this;
         }
-        #endregion
 
+        #endregion
         #region Request Timeout
+
         /// <summary>
         /// The duration that the client should wait for a request to complete. This
         /// duration encompasses sending the request, awaiting for a response from the server, and any
@@ -512,8 +518,10 @@ public abstract class ConnectionConfiguration
             RequestTimeout = requestTimeout;
             return (T)this;
         }
+
         #endregion
         #region Connection Timeout
+
         /// <summary>
         /// The duration to wait for a TCP/TLS connection to complete.
         /// This applies both during initial client creation and any reconnections that may occur during request processing.<br />
@@ -531,8 +539,10 @@ public abstract class ConnectionConfiguration
             ConnectionTimeout = connectionTimeout;
             return (T)this;
         }
+
         #endregion
         #region Read From
+
         /// <summary>
         /// Configure the client's read from strategy. If not set, <seealso cref="ReadFromStrategy.Primary" /> will be used.
         /// </summary>
@@ -546,8 +556,10 @@ public abstract class ConnectionConfiguration
             ReadFrom = readFrom;
             return (T)this;
         }
+
         #endregion
         #region Authentication
+
         /// <summary>
         /// Configure server credentials for authentication process.
         /// Supports both password-based and IAM authentication.
@@ -617,8 +629,10 @@ public abstract class ConnectionConfiguration
         {
             return WithCredentials(new ServerCredentials(username, iamConfig));
         }
+
         #endregion
         #region Protocol
+
         /// <summary>
         /// Configure the protocol version to use. If not set, <seealso cref="Protocol.RESP3" /> will be used.<br />
         /// See also <seealso cref="Protocol" />.
@@ -635,8 +649,10 @@ public abstract class ConnectionConfiguration
             ProtocolVersion = protocol;
             return (T)this;
         }
+
         #endregion
         #region Client Name
+
         /// <summary>
         /// Client name to be used for the client. Will be used with <c>CLIENT SETNAME</c> command during connection establishment.
         /// </summary>
@@ -652,8 +668,10 @@ public abstract class ConnectionConfiguration
             ClientName = clientName;
             return (T)this;
         }
+
         #endregion
         #region Connection Retry Strategy
+
         /// <summary>
         /// Strategy used to determine how and when to reconnect, in case of connection failures.<br />
         /// See also <seealso cref="RetryStrategy" />
@@ -662,6 +680,7 @@ public abstract class ConnectionConfiguration
         {
             set => Config.RetryStrategy = value;
         }
+
         /// <inheritdoc cref="ConnectionRetryStrategy" />
         public T WithConnectionRetryStrategy(RetryStrategy connectionRetryStrategy)
         {
@@ -673,8 +692,10 @@ public abstract class ConnectionConfiguration
         /// <inheritdoc cref="RetryStrategy(uint, uint, uint, uint?)" />
         public T WithConnectionRetryStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
             => WithConnectionRetryStrategy(new RetryStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
+
         #endregion
         #region DataBase ID
+
         /// <summary>
         /// Index of the logical database to connect to. Must be non-negative and within the range
         /// supported by the server configuration. If not specified, defaults to database 0.
@@ -690,8 +711,10 @@ public abstract class ConnectionConfiguration
             DataBaseId = dataBaseId;
             return (T)this;
         }
+
         #endregion
         #region Lazy Connect
+
         /// <summary>
         /// Configure whether to defer connections until the first command is executed.<br />
         /// If not explicitly set, a default value of <c>false</c> will be used.
@@ -708,6 +731,32 @@ public abstract class ConnectionConfiguration
             LazyConnect = lazyConnect;
             return (T)this;
         }
+
+        #endregion
+        #region PubSub Reconciliation Interval
+
+        /// <summary>
+        /// The interval between pub/sub subscription reconciliation attempts.
+        /// </summary>
+        public TimeSpan? PubSubReconciliationInterval
+        {
+            get => Config.PubSubReconciliationInterval;
+            set
+            {
+                if (value <= TimeSpan.Zero)
+                    throw new ArgumentException("PubSubReconciliationInterval must be positive", nameof(value));
+
+                Config.PubSubReconciliationInterval = value;
+            }
+        }
+
+        /// <inheritdoc cref="PubSubReconciliationInterval" />
+        public T WithPubSubReconciliationInterval(TimeSpan interval)
+        {
+            PubSubReconciliationInterval = interval;
+            return (T)this;
+        }
+
         #endregion
 
         internal ConnectionConfig Build() => Config;

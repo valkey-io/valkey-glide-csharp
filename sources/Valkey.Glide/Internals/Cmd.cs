@@ -107,6 +107,7 @@ internal class Cmd<R, T> : ICmd
         RequestType.PubSubNumPat => ["PUBSUB", "NUMPAT"],
         RequestType.PubSubShardChannels => ["PUBSUB", "SHARDCHANNELS"],
         RequestType.PubSubShardNumSub => ["PUBSUB", "SHARDNUMSUB"],
+        RequestType.GetSubscriptions => ["GET_SUBSCRIPTIONS"],
         _ => [requestType.ToString().ToUpper()]
     };
 #pragma warning restore IDE0072 // Populate switch

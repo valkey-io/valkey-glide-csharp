@@ -84,7 +84,7 @@ internal partial class Request
         => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
 
     #endregion
-    #region PubSubInfoCommands
+    #region InfoCommands
 
     /// <summary>
     /// Lists all active channels.
@@ -102,7 +102,7 @@ internal partial class Request
         => new(RequestType.PubSubChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified channels.
+    /// Lists the number of subscribers for the specified channels.
     /// </summary>
     /// <param name="channels">The channels to query.</param>
     /// <returns>Command that returns a dictionary mapping channel names to subscriber counts.</returns>
@@ -122,7 +122,7 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Returns the number of active pattern subscriptions.
+    /// Gets the number of active pattern subscriptions.
     /// </summary>
     /// <returns>Command that returns the number of pattern subscriptions.</returns>
     public static Cmd<long, long> PubSubNumPat()
@@ -144,7 +144,7 @@ internal partial class Request
         => new(RequestType.PubSubShardChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified shard channels (cluster mode).
+    /// Lists the number of subscribers for the specified shard channels (cluster mode).
     /// </summary>
     /// <param name="channels">The shard channels to query.</param>
     /// <returns>Command that returns a dictionary mapping shard channel names to subscriber counts.</returns>
@@ -160,6 +160,20 @@ internal partial class Request
                 result[channel] = count;
             }
             return result;
+        });
+    }
+
+    /// <summary>
+    /// Gets the current pub/sub subscription state.
+    /// </summary>
+    /// <returns>Command that returns desired and actual subscription dictionaries.</returns>
+    public static Cmd<object[], (Dictionary<GlideString, object>, Dictionary<GlideString, object>)> GetSubscriptions()
+    {
+        return new(RequestType.GetSubscriptions, [], false, objects =>
+        {
+            return (
+                (Dictionary<GlideString, object>)objects[1],
+                (Dictionary<GlideString, object>)objects[3]);
         });
     }
 

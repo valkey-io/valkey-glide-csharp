@@ -202,6 +202,7 @@ var allTags = await client.SetMembersAsync("tags");
 // Configure subscriptions at connection time.
 var config = new StandaloneClientConfigurationBuilder()
     .WithAddress("localhost", 6379)
+    .WithPubSubReconciliationInterval(TimeSpan.FromSeconds(1))
     .WithPubSubSubscriptionConfig(new StandalonePubSubSubscriptionConfig()
         .WithChannel("alerts")
         .WithPattern("log:*")

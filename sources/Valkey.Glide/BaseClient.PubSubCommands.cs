@@ -7,6 +7,14 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient : IPubSubCommands
 {
+    /// <summary>Maps from the channel mode strings returned by GLIDE core to the corresponding PubSubChannelMode enum value.</summary>
+    private static readonly Dictionary<string, PubSubChannelMode> ChannelModeMap = new()
+    {
+        { "Exact", PubSubChannelMode.Exact },
+        { "Pattern", PubSubChannelMode.Pattern },
+        { "Sharded", PubSubChannelMode.Sharded }
+    };
+
     #region PublishCommands
 
     public async Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
@@ -108,5 +116,34 @@ public abstract partial class BaseClient : IPubSubCommands
         return await Command(Request.PubSubNumPat());
     }
 
+    public async Task<PubSubState> GetSubscriptionsAsync()
+    {
+        var (desired, actual) = await Command(Request.GetSubscriptions());
+        return new PubSubState(ParseSubscriptionsMap(desired), ParseSubscriptionsMap(actual));
+    }
+
     #endregion
+
+    /// <summary>
+    /// Builds and returns a pub/sub subscription map from the given response dictionary.
+    /// </summary>
+    private static Dictionary<PubSubChannelMode, IReadOnlySet<string>> ParseSubscriptionsMap(Dictionary<GlideString, object> responseDict)
+    {
+        var subscriptions = new Dictionary<PubSubChannelMode, IReadOnlySet<string>>();
+
+        // Populate with empty sets for each channel mode.
+        foreach (var mode in Enum.GetValues<PubSubChannelMode>())
+            subscriptions[mode] = new HashSet<string>();
+
+        foreach (var entry in responseDict)
+        {
+            if (!ChannelModeMap.TryGetValue(entry.Key.ToString(), out var mode))
+                throw new ArgumentException($"Unexpected channel mode '{entry.Key}' returned by GLIDE core.");
+
+            // The channels are returned as an array of GLIDE strings.
+            subscriptions[mode] = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
+        }
+
+        return subscriptions;
+    }
 }
