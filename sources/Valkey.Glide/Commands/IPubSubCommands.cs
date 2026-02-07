@@ -280,14 +280,14 @@ public interface IPubSubCommands
     abstract Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns the current pub/sub subscription state.
+    /// Returns the current pub/sub subscription state, which includes both the desired and
+    /// actual subscriptions for the client. See <see cref="PubSubState"/> for more details.
     /// </summary>
-    /// <seealso href="PubSubState" />
     /// <returns>The pub/sub subscription state.</returns>
     /// <example>
     /// <code>
     /// var state = await client.GetSubscriptionsAsync();
-    /// var desiredChannels = state.[PubSubChannelMode.Exact];
+    /// var desiredChannels = state.Desired[PubSubChannelMode.Exact];
     /// var actualPatterns = state.Actual[PubSubChannelMode.Pattern];
     /// </code>
     /// </example>

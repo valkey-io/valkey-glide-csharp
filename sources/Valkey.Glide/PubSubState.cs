@@ -5,7 +5,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// The pub/sub subscription state for a client.
 /// <para />
-/// The desired state represent the subscriptions that the client has requested using
+/// The desired state represents the subscriptions that the client has requested using
 /// subscribe and unsubscribe commands, while the actual state represents the subscriptions
 /// that are currently active on the server.
 /// <para />
