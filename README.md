@@ -142,8 +142,6 @@ var otelConfig = OpenTelemetryConfig.CreateBuilder()
 OpenTelemetry.Init(otelConfig);
 ```
 
-TODO #198: Add example for pub/sub reconciliation interval.
-
 ## Core API Examples
 
 ### String Operations
@@ -204,6 +202,7 @@ var allTags = await client.SetMembersAsync("tags");
 // Configure subscriptions at connection time.
 var config = new StandaloneClientConfigurationBuilder()
     .WithAddress("localhost", 6379)
+    .WithPubSubReconciliationInterval(TimeSpan.FromSeconds(1))
     .WithPubSubSubscriptionConfig(new StandalonePubSubSubscriptionConfig()
         .WithChannel("alerts")
         .WithPattern("log:*")

@@ -7,6 +7,14 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient : IPubSubCommands
 {
+    /// <summary>Maps from the channel mode strings returned by GLIDE core to the corresponding PubSubChannelMode enum value.</summary>
+    private static readonly Dictionary<string, PubSubChannelMode> ChannelModeMap = new()
+    {
+        "Exact" = PubSubChannelMode.Channel,
+        "Pattern" = PubSubChannelMode.Pattern,
+        "Sharded" = PubSubChannelMode.Sharded
+    };
+
     #region PublishCommands
 
     public async Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
@@ -129,11 +137,12 @@ public abstract partial class BaseClient : IPubSubCommands
 
         foreach (var entry in responseDict)
         {
-            if (Enum.TryParse(entry.Key.ToString(), ignoreCase: true, out PubSubChannelMode mode))
-            {
-                // The channels are returned as an array of GLIDE strings.
-                subscriptions[mode] = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
-            }
+            var channelModeStr = entry.Key.ToString();
+            if (!ChannelModeMap.ContainsKey(channelModeStr))
+                throw new InvalidArgumentException($"Unexpected channel mode '{channelModeStr}' returned by GLIDE core.");
+
+            // The channels are returned as an array of GLIDE strings.
+            subscriptions[mode] = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
         }
 
         return subscriptions;

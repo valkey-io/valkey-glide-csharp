@@ -21,9 +21,6 @@ public static class PubSub
         return PubSubMessage.FromChannel(message, channel);
     }
 
-        return PubSubMessage.FromChannel(message, channel);
-    }
-
     /// <summary>
     /// Returns a unique pattern channel message for testing.
     /// </summary>

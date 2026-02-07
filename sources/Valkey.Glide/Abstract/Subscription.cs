@@ -17,12 +17,6 @@ internal sealed class Subscription : IDisposable
     /// </summary>
     public Subscription() { }
 
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Subscription"/> class.
-    /// </summary>
-    public Subscription() { }
-
     /// <summary>
     /// Adds a new message handler to this subscription.
     /// </summary>

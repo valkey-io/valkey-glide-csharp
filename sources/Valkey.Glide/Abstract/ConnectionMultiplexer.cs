@@ -310,52 +310,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            bool isNewSubscription = !_subscriptions.ContainsKey(channel);
-            var subscription = _subscriptions.GetOrAdd(channel, _ => new Subscription());
-            subscription.AddHandler(handler);
-
-            subscription = new Subscription();
-            subscription.AddHandler(handler);
-            _subscriptions[channel] = subscription;
-
-            return true;
-        }
-    }
-
-    /// <summary>
-    /// Adds a subscription queue for the specified channel.
-    /// </summary>
-    /// <param name="channel">The channel to subscribe to.</param>
-    /// <returns>True if a new subscription was added, false if an existing subscription was updated.</returns>
-    internal bool AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
-    {
-        lock (_subscriptions)
-        {
-            if (_subscriptions.TryGetValue(channel, out var subscription))
-            {
-                subscription.AddQueue(queue);
-                return false;
-            }
-
-            subscription = new Subscription();
-            subscription.AddQueue(queue);
-            _subscriptions[channel] = subscription;
-
-            return true;
-        }
-    }
-
-    /// <summary>
-    /// Removes a subscription handler for the specified channel.
-    /// If the subscription is empty after removing the handler, the subscription is removed.
-    /// </summary>
-    /// <param name="channel">The channel to unsubscribe from.</param>
-    /// <param name="handler">The handler to remove.</param>
-    /// <returns>True if the subscription was removed, false otherwise.</returns>
-    internal bool RemoveSubscriptionHandler(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler)
-    {
-        lock (_subscriptions)
-        {
             if (_subscriptions.TryGetValue(channel, out var sub))
             {
                 sub.RemoveHandler(handler);

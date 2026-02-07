@@ -13,6 +13,7 @@ namespace Valkey.Glide;
 /// desired subscriptions, handling any discrepancies that may arise due to network
 /// issues, server restarts, connection drops, or topology changes.
 /// </summary>
+/// <seealso cref="ConnectionConfiguration.PubSubReconciliationInterval"/>
 public class PubSubState
 {
     /// <summary>The desired subscriptions, indexed by channel mode.</summary>
@@ -21,6 +22,10 @@ public class PubSubState
     /// <summary>The actual subscriptions, indexed by channel mode.</summary>
     public IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>> Actual { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PubSubState"/> class
+    /// with the specified desired and actual subscription states.
+    /// </summary>
     internal PubSubState(
         IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>> desired,
         IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>> actual)

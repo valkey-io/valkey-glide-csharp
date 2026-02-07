@@ -282,6 +282,7 @@ public interface IPubSubCommands
     /// <summary>
     /// Returns the current pub/sub subscription state.
     /// </summary>
+    /// <seealso href="PubSubState" />
     /// <returns>The pub/sub subscription state.</returns>
     /// <example>
     /// <code>

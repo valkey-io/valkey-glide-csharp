@@ -106,9 +106,6 @@ public interface ISubscriber
     bool IsConnected(ValkeyChannel channel = default);
 
     [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    bool IsConnected(ValkeyChannel channel = default);
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
     EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
 
     [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
