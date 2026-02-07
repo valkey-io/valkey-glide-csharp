@@ -13,7 +13,7 @@ namespace Valkey.Glide;
 /// desired subscriptions, handling any discrepancies that may arise due to network
 /// issues, server restarts, connection drops, or topology changes.
 /// </summary>
-/// <seealso cref="ConnectionConfiguration.PubSubReconciliationInterval"/>
+/// <seealso cref="ConnectionConfiguration.ClientConfigurationBuilder{T}.PubSubReconciliationInterval"/>
 public class PubSubState
 {
     /// <summary>The desired subscriptions, indexed by channel mode.</summary>
