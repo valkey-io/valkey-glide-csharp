@@ -460,6 +460,8 @@ public class ISubscriberCompatibilityTests
     [MemberData(nameof(IsCluster))]
     public async Task QueueAndHandler_UnsubscribeAll(bool isCluster)
     {
+        var isSharded = PubSubUtils.IsShardedSupported(isCluster);
+
         var literalChannel = BuildLiteral();
         var pattern = BuildPattern();
         var patternChannel = BuildLiteralForPattern(pattern);
@@ -484,7 +486,7 @@ public class ISubscriberCompatibilityTests
         var shardedHandler = BuildHandler(shardedReceived);
         ChannelMessageQueue? shardedQueue = null;
 
-        if (isCluster && IsSharedPubSubSupported)
+        if (isSharded)
         {
             await subscriber.SubscribeAsync(shardedChannel, shardedHandler);
             shardedQueue = await subscriber.SubscribeAsync(shardedChannel);
@@ -501,7 +503,7 @@ public class ISubscriberCompatibilityTests
         await AssertHandlerReceives(patternReceived, [(pattern, Message1)]);
         await AssertQueueReceives(patternQueue, [(pattern, Message1)]);
 
-        if (isCluster && IsSharedPubSubSupported)
+        if (isSharded)
         {
             await publisher.PublishAsync(shardedChannel, Message1);
             await AssertHandlerReceives(shardedReceived, [(shardedChannel, Message1)]);
@@ -521,7 +523,7 @@ public class ISubscriberCompatibilityTests
         await AssertHandlerReceives(patternReceived, []);
         await AssertQueueReceives(patternQueue, []);
 
-        if (isCluster && IsSharedPubSubSupported)
+        if (isSharded)
         {
             await publisher.PublishAsync(shardedChannel, Message2);
             await AssertHandlerReceives(shardedReceived, []);

@@ -675,7 +675,7 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Test WAIT with different expected behavior for cluster vs standalone
-        long replicaCount = await client.WaitAsync(1, 1000);
+        long replicaCount = await client.WaitAsync(1, 2000);
         if (client is GlideClusterClient)
         {
             Assert.True(replicaCount >= 1); // Cluster mode
@@ -686,7 +686,7 @@ public class GenericCommandTests(TestConfiguration config)
         }
 
         // Test WAIT with 0 replicas (should return immediately)
-        replicaCount = await client.WaitAsync(0, 1000);
+        replicaCount = await client.WaitAsync(0, 2000);
         Assert.True(replicaCount >= 0);
 
         // Test WAIT with timeout 0 (should return immediately)

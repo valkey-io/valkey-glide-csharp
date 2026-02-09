@@ -84,22 +84,22 @@ internal partial class Request
         => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
 
     #endregion
-    #region InfoCommands
+    #region IntrospectionCommands
 
     /// <summary>
     /// Lists all active channels.
     /// </summary>
-    /// <returns>Command that returns an array of active channel names.</returns>
-    public static Cmd<object[], string[]> PubSubChannels()
-        => new(RequestType.PubSubChannels, [], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
+    /// <returns>Command that returns a set of active channel names.</returns>
+    public static Cmd<object[], ISet<string>> PubSubChannels()
+        => new(RequestType.PubSubChannels, [], false, ToStringSet);
 
     /// <summary>
     /// Lists active channels matching the specified pattern.
     /// </summary>
     /// <param name="pattern">The pattern to match channel names against.</param>
-    /// <returns>Command that returns an array of matching channel names.</returns>
-    public static Cmd<object[], string[]> PubSubChannels(GlideString pattern)
-        => new(RequestType.PubSubChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
+    /// <returns>Command that returns a set of matching channel names.</returns>
+    public static Cmd<object[], ISet<string>> PubSubChannels(GlideString pattern)
+        => new(RequestType.PubSubChannels, [pattern], false, ToStringSet);
 
     /// <summary>
     /// Lists the number of subscribers for the specified channels.
@@ -131,17 +131,17 @@ internal partial class Request
     /// <summary>
     /// Lists all active shard channels (cluster mode).
     /// </summary>
-    /// <returns>Command that returns an array of active shard channel names.</returns>
-    public static Cmd<object[], string[]> PubSubShardChannels()
-        => new(RequestType.PubSubShardChannels, [], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
+    /// <returns>Command that returns a set of active shard channel names.</returns>
+    public static Cmd<object[], ISet<string>> PubSubShardChannels()
+        => new(RequestType.PubSubShardChannels, [], false, ToStringSet);
 
     /// <summary>
     /// Lists active shard channels matching the specified pattern (cluster mode).
     /// </summary>
     /// <param name="pattern">The pattern to match channel names against.</param>
-    /// <returns>Command that returns an array of matching shard channel names.</returns>
-    public static Cmd<object[], string[]> PubSubShardChannels(GlideString pattern)
-        => new(RequestType.PubSubShardChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
+    /// <returns>Command that returns a set of matching shard channel names.</returns>
+    public static Cmd<object[], ISet<string>> PubSubShardChannels(GlideString pattern)
+        => new(RequestType.PubSubShardChannels, [pattern], false, ToStringSet);
 
     /// <summary>
     /// Lists the number of subscribers for the specified shard channels (cluster mode).
@@ -167,7 +167,7 @@ internal partial class Request
     /// Gets the current pub/sub subscription state.
     /// </summary>
     /// <returns>Command that returns a tuple of desired and actual pub/sub subscription dictionaries.</returns>
-    public static Cmd<object[], (Dictionary<string, string[]>, Dictionary<string, string[]>)> GetSubscriptions()
+    public static Cmd<object[], (Dictionary<string, IReadOnlySet<string>>, Dictionary<string, IReadOnlySet<string>>)> GetSubscriptions()
     {
         return new(RequestType.GetSubscriptions, [], false, objects =>
         {
@@ -184,14 +184,15 @@ internal partial class Request
     /// <summary>
     /// Parses and returns a dictionary from the given <see cref="GetSubscriptions"/> response dictionary.
     /// </summary>
-    private static Dictionary<string, string[]> ParseGetSubscriptionsResponse(Dictionary<GlideString, object> response)
+    private static Dictionary<string, IReadOnlySet<string>> ParseGetSubscriptionsResponse(Dictionary<GlideString, object> response)
     {
-        Dictionary<string, string[]> resultDict = [];
+        Dictionary<string, IReadOnlySet<string>> resultDict = [];
 
         foreach (var entry in response)
         {
             string channelMode = entry.Key.ToString();
-            string[] channels = [.. ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString())];
+            IReadOnlySet<string> channels = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
+
             resultDict[channelMode] = channels;
         }
 
