@@ -118,32 +118,35 @@ public abstract partial class BaseClient : IPubSubCommands
 
     public async Task<PubSubState> GetSubscriptionsAsync()
     {
-        var (desired, actual) = await Command(Request.GetSubscriptions());
-        return new PubSubState(ParseSubscriptionsMap(desired), ParseSubscriptionsMap(actual));
+        var (desiredResponse, actualResponse) = await Command(Request.GetSubscriptions());
+
+        var desired = BuildPubSubSubscriptionsMap(desiredResponse);
+        var actual = BuildPubSubSubscriptionsMap(actualResponse);
+
+        return new PubSubState(desired, actual);
     }
 
     #endregion
 
     /// <summary>
-    /// Builds and returns a pub/sub subscription map from the given response dictionary.
+    /// Builds a pub/sub subscriptions map from the given response dictionary returned by GLIDE core.
     /// </summary>
-    private static Dictionary<PubSubChannelMode, IReadOnlySet<string>> ParseSubscriptionsMap(Dictionary<GlideString, object> responseDict)
+    private static Dictionary<PubSubChannelMode, IReadOnlySet<string>> BuildPubSubSubscriptionsMap(Dictionary<string, string[]> response)
     {
-        var subscriptions = new Dictionary<PubSubChannelMode, IReadOnlySet<string>>();
+        var subscriptionsMap = new Dictionary<PubSubChannelMode, IReadOnlySet<string>>();
 
         // Populate with empty sets for each channel mode.
         foreach (var mode in Enum.GetValues<PubSubChannelMode>())
-            subscriptions[mode] = new HashSet<string>();
+            subscriptionsMap[mode] = new HashSet<string>();
 
-        foreach (var entry in responseDict)
+        foreach (var entry in response)
         {
-            if (!ChannelModeMap.TryGetValue(entry.Key.ToString(), out var mode))
+            if (!ChannelModeMap.TryGetValue(entry.Key, out var mode))
                 throw new ArgumentException($"Unexpected channel mode '{entry.Key}' returned by GLIDE core.");
 
-            // The channels are returned as an array of GLIDE strings.
-            subscriptions[mode] = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
+            subscriptionsMap[mode] = entry.Value.ToHashSet();
         }
 
-        return subscriptions;
+        return subscriptionsMap;
     }
 }

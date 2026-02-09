@@ -166,16 +166,35 @@ internal partial class Request
     /// <summary>
     /// Gets the current pub/sub subscription state.
     /// </summary>
-    /// <returns>Command that returns desired and actual subscription dictionaries.</returns>
-    public static Cmd<object[], (Dictionary<GlideString, object>, Dictionary<GlideString, object>)> GetSubscriptions()
+    /// <returns>Command that returns a tuple of desired and actual pub/sub subscription dictionaries.</returns>
+    public static Cmd<object[], (Dictionary<string, string[]>, Dictionary<string, string[]>)> GetSubscriptions()
     {
         return new(RequestType.GetSubscriptions, [], false, objects =>
         {
-            return (
-                (Dictionary<GlideString, object>)objects[1],
-                (Dictionary<GlideString, object>)objects[3]);
+            // Parse desired and actual pub/sub subscription dictionaries from the response.
+            var desiredDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[1]);
+            var actualDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[3]);
+
+            return (desiredDict, actualDict);
         });
     }
 
     #endregion
+
+    /// <summary>
+    /// Parses and returns a dictionary from the given <see cref="GetSubscriptions"/> response dictionary.
+    /// </summary>
+    private static Dictionary<string, string[]> ParseGetSubscriptionsResponse(Dictionary<GlideString, object> response)
+    {
+        Dictionary<string, string[]> resultDict = [];
+
+        foreach (var entry in response)
+        {
+            string channelMode = entry.Key.ToString();
+            string[] channels = [.. ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString())];
+            resultDict[channelMode] = channels;
+        }
+
+        return resultDict;
+    }
 }
