@@ -79,6 +79,9 @@ pub struct ConnectionConfig {
     pub root_certs_count: usize,
     pub root_certs: *const *const u8,
     pub root_certs_len: *const usize,
+
+    pub has_pubsub_reconciliation_interval_ms: bool,
+    pub pubsub_reconciliation_interval_ms: u32,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -227,36 +230,20 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         database_id: config.database_id.into(),
-        protocol: if config.has_protocol {
-            Some(config.protocol)
-        } else {
-            None
-        },
-        tls_mode: if config.has_tls {
-            Some(config.tls_mode)
-        } else {
-            None
-        },
+        protocol: config.has_protocol.then_some(config.protocol),
+        tls_mode: config.has_tls.then_some(config.tls_mode),
         addresses: unsafe { convert_node_addresses(config.addresses, config.address_count) },
         cluster_mode_enabled: config.cluster_mode,
-        request_timeout: if config.has_request_timeout {
-            Some(config.request_timeout)
-        } else {
-            None
-        },
-        connection_timeout: if config.has_connection_timeout {
-            Some(config.connection_timeout)
-        } else {
-            None
-        },
-        connection_retry_strategy: if config.has_connection_retry_strategy {
-            Some(config.connection_retry_strategy)
-        } else {
-            None
-        },
+        request_timeout: config.has_request_timeout.then_some(config.request_timeout),
+        connection_timeout: config
+            .has_connection_timeout
+            .then_some(config.connection_timeout),
+        connection_retry_strategy: config
+            .has_connection_retry_strategy
+            .then_some(config.connection_retry_strategy),
         lazy_connect: config.lazy_connect,
         refresh_topology_from_initial_nodes: config.refresh_topology_from_initial_nodes,
-        pubsub_subscriptions: Some(unsafe {convert_pubsub_config(&config.pubsub_config)}),
+        pubsub_subscriptions: Some(unsafe { convert_pubsub_config(&config.pubsub_config) }),
         root_certs: unsafe {
             convert_byte_array_to_owned(
                 config.root_certs,
@@ -264,13 +251,14 @@ pub(crate) unsafe fn create_connection_request(
                 config.root_certs_len,
             )
         },
+        pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
+            .then_some(config.pubsub_reconciliation_interval_ms),
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),
         client_key: Vec::new(),
         compression_config: None,
         tcp_nodelay: false,
-        pubsub_reconciliation_interval_ms: None,
         periodic_checks: None,
         inflight_requests_limit: None,
     }
