@@ -271,6 +271,40 @@ public class PubSubClusterCommandTests()
         Assert.Equivalent(expected, actual);
     }
 
+    [Fact]
+    public async Task GetSubscriptionsAsync_NoSubscriptions()
+    {
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
+
+        using var server = new ClusterServer();
+        using var client = await server.CreateClusterClient();
+
+        var state = await client.GetSubscriptionsAsync();
+
+        Assert.Empty(state.Desired[PubSubChannelMode.Sharded]);
+        Assert.Empty(state.Actual[PubSubChannelMode.Sharded]);
+    }
+
+    [Fact]
+    public async Task GetSubscriptionsAsync_WithSubscriptions()
+    {
+        Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
+
+        var msg = ShardChannelMessage();
+        using var server = new ClusterServer();
+        using var client = await server.CreateClusterClient();
+
+        await client.SSubscribeAsync(msg.Channel);
+
+        // Default reconciliation delay is 3 seconds.
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        var state = await client.GetSubscriptionsAsync();
+
+        Assert.Equal(new HashSet<string> { msg.Channel }, state.Desired[PubSubChannelMode.Sharded]);
+        Assert.Equal(new HashSet<string> { msg.Channel }, state.Actual[PubSubChannelMode.Sharded]);
+    }
+
     #endregion
     #region HelperMethods
 

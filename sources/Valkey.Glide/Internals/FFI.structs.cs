@@ -215,7 +215,8 @@ internal partial class FFI
             bool lazyConnect,
             bool refreshTopologyFromInitialNodes,
             BasePubSubSubscriptionConfig? pubSubSubscriptions,
-            List<byte[]> rootCertificates)
+            List<byte[]> rootCertificates,
+            uint? pubSubReconciliationIntervalMs)
         {
             _request = new()
             {
@@ -244,6 +245,8 @@ internal partial class FFI
                 RootCertsCount = (nuint)rootCertificates.Count,
                 RootCertsPtr = MarshallRootCertificates(rootCertificates),
                 RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
+                HasPubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs.HasValue,
+                PubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs ?? default,
             };
         }
 
@@ -793,6 +796,7 @@ internal partial class FFI
         Subscribe = 911,
         SUnsubscribe = 912,
         Unsubscribe = 913,
+        GetSubscriptions = 920,
 
         //// Scripting and Functions commands
         Eval = 1001,
@@ -1107,6 +1111,10 @@ internal partial class FFI
         public nuint RootCertsCount;
         public IntPtr RootCertsPtr;
         public IntPtr RootCertsLensPtr;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasPubSubReconciliationIntervalMs;
+        public uint PubSubReconciliationIntervalMs;
 
         // TODO more config params, see ffi.rs
     }

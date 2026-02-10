@@ -402,6 +402,49 @@ public class PubSubCommandTests()
         Assert.Equal(2L, await publisher.PubSubNumPatAsync());
     }
 
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
+    {
+        using var server = BuildServer(isCluster);
+        using var client = await server.CreateClient();
+
+        var state = await client.GetSubscriptionsAsync();
+
+        var desired = state.Desired;
+        Assert.Empty(desired[PubSubChannelMode.Exact]);
+        Assert.Empty(desired[PubSubChannelMode.Pattern]);
+
+        var actual = state.Actual;
+        Assert.Empty(actual[PubSubChannelMode.Exact]);
+        Assert.Empty(actual[PubSubChannelMode.Pattern]);
+    }
+
+    [Theory]
+    [MemberData(nameof(IsCluster))]
+    public async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
+    {
+        var msg = PatternMessage();
+        using var server = BuildServer(isCluster);
+        using var client = await server.CreateClient();
+
+        await client.SubscribeAsync(msg.Channel);
+        await client.PSubscribeAsync(msg.Pattern!);
+
+        // Default reconciliation delay is 3 seconds.
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        var state = await client.GetSubscriptionsAsync();
+
+        var desired = state.Desired;
+        Assert.Equivalent(new HashSet<string> { msg.Channel }, desired[PubSubChannelMode.Exact]);
+        Assert.Equivalent(new HashSet<string> { msg.Pattern! }, desired[PubSubChannelMode.Pattern]);
+
+        var actual = state.Actual;
+        Assert.Equivalent(new HashSet<string> { msg.Channel }, actual[PubSubChannelMode.Exact]);
+        Assert.Equivalent(new HashSet<string> { msg.Pattern! }, actual[PubSubChannelMode.Pattern]);
+    }
+
     #endregion
     #region HelperMethods
 

@@ -84,7 +84,7 @@ internal partial class Request
         => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
 
     #endregion
-    #region PubSubInfoCommands
+    #region InfoCommands
 
     /// <summary>
     /// Lists all active channels.
@@ -102,7 +102,7 @@ internal partial class Request
         => new(RequestType.PubSubChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified channels.
+    /// Lists the number of subscribers for the specified channels.
     /// </summary>
     /// <param name="channels">The channels to query.</param>
     /// <returns>Command that returns a dictionary mapping channel names to subscriber counts.</returns>
@@ -122,7 +122,7 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Returns the number of active pattern subscriptions.
+    /// Gets the number of active pattern subscriptions.
     /// </summary>
     /// <returns>Command that returns the number of pattern subscriptions.</returns>
     public static Cmd<long, long> PubSubNumPat()
@@ -144,7 +144,7 @@ internal partial class Request
         => new(RequestType.PubSubShardChannels, [pattern], false, objects => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())]);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified shard channels (cluster mode).
+    /// Lists the number of subscribers for the specified shard channels (cluster mode).
     /// </summary>
     /// <param name="channels">The shard channels to query.</param>
     /// <returns>Command that returns a dictionary mapping shard channel names to subscriber counts.</returns>
@@ -163,5 +163,38 @@ internal partial class Request
         });
     }
 
+    /// <summary>
+    /// Gets the current pub/sub subscription state.
+    /// </summary>
+    /// <returns>Command that returns a tuple of desired and actual pub/sub subscription dictionaries.</returns>
+    public static Cmd<object[], (Dictionary<string, string[]>, Dictionary<string, string[]>)> GetSubscriptions()
+    {
+        return new(RequestType.GetSubscriptions, [], false, objects =>
+        {
+            // Parse desired and actual pub/sub subscription dictionaries from the response.
+            var desiredDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[1]);
+            var actualDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[3]);
+
+            return (desiredDict, actualDict);
+        });
+    }
+
     #endregion
+
+    /// <summary>
+    /// Parses and returns a dictionary from the given <see cref="GetSubscriptions"/> response dictionary.
+    /// </summary>
+    private static Dictionary<string, string[]> ParseGetSubscriptionsResponse(Dictionary<GlideString, object> response)
+    {
+        Dictionary<string, string[]> resultDict = [];
+
+        foreach (var entry in response)
+        {
+            string channelMode = entry.Key.ToString();
+            string[] channels = [.. ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString())];
+            resultDict[channelMode] = channels;
+        }
+
+        return resultDict;
+    }
 }
