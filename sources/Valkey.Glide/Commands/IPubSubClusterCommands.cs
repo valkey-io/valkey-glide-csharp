@@ -35,6 +35,30 @@ public interface IPubSubClusterCommands
     /// <summary>
     /// Subscribes the client to the specified shard channel.
     /// <para />
+    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <param name="shardChannel">The shard channel to subscribe to.</param>
+    /// <param name="timeout">Maximum time to wait for server confirmation. <see cref="TimeSpan.Zero"/> waits indefinitely.</param>
+    /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
+    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    abstract Task SSubscribeAsync(string shardChannel, TimeSpan timeout = default);
+
+    /// <summary>
+    /// Subscribes the client to the specified shard channels.
+    /// <para />
+    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <param name="shardChannels">A collection of shard channels to subscribe to.</param>
+    /// <param name="timeout">Maximum time to wait for server confirmation. <see cref="TimeSpan.Zero"/> waits indefinitely.</param>
+    /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
+    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    abstract Task SSubscribeAsync(IEnumerable<string> shardChannels, TimeSpan timeout = default);
+
+    /// <summary>
+    /// Subscribes the client to the specified shard channel.
+    /// <para />
     /// This command updates the client's desired subscription state without waiting
     /// for server confirmation. The client will attempt to subscribe asynchronously
     /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
@@ -75,6 +99,41 @@ public interface IPubSubClusterCommands
 
     #endregion
     #region UnsubscribeCommands
+
+    /// <summary>
+    /// Unsubscribes the client from all shard channels.
+    /// <para />
+    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <param name="timeout">Maximum time to wait for server confirmation. <see cref="TimeSpan.Zero"/> waits indefinitely.</param>
+    /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
+    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    abstract Task SUnsubscribeAsync(TimeSpan timeout = default);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified shard channel.
+    /// <para />
+    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <param name="shardChannel">The shard channel to unsubscribe from.</param>
+    /// <param name="timeout">Maximum time to wait for server confirmation. <see cref="TimeSpan.Zero"/> waits indefinitely.</param>
+    /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
+    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    abstract Task SUnsubscribeAsync(string shardChannel, TimeSpan timeout = default);
+
+    /// <summary>
+    /// Unsubscribes the client from the specified shard channels.
+    /// <para />
+    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <param name="shardChannels">A collection of shard channels to unsubscribe from.</param>
+    /// <param name="timeout">Maximum time to wait for server confirmation. <see cref="TimeSpan.Zero"/> waits indefinitely.</param>
+    /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
+    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    abstract Task SUnsubscribeAsync(IEnumerable<string> shardChannels, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from all shard channels.
