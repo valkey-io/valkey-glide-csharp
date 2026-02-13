@@ -796,6 +796,12 @@ internal partial class FFI
         Subscribe = 911,
         SUnsubscribe = 912,
         Unsubscribe = 913,
+        SubscribeBlocking = 914,
+        UnsubscribeBlocking = 915,
+        PSubscribeBlocking = 916,
+        PUnsubscribeBlocking = 917,
+        SSubscribeBlocking = 918,
+        SUnsubscribeBlocking = 919,
         GetSubscriptions = 920,
 
         //// Scripting and Functions commands
