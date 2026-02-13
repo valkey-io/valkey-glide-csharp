@@ -32,9 +32,7 @@ public interface IPubSubCommands
     #region SubscribeCommands
 
     /// <summary>
-    /// Subscribes the client to the specified channel.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Subscribes the client to the specified channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to subscribe to.</param>
@@ -44,7 +42,7 @@ public interface IPubSubCommands
     abstract Task SubscribeAsync(string channel, TimeSpan timeout = default);
 
     /// <summary>
-    /// Subscribes the client to the specified channels.
+    /// Subscribes the client to the specified channels and waits for server confirmation.
     /// <para />
     /// This command updates the client's desired subscription state and waits for server confirmation.
     /// </summary>
@@ -56,16 +54,15 @@ public interface IPubSubCommands
     abstract Task SubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
 
     /// <summary>
-    /// Subscribes the client to the specified channel.
+    /// Subscribes the client to the specified channel and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to subscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// See <see cref="SubscribeAsync(string, TimeSpan)"/> for the blocking version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to subscribe to.</param>
     /// <remarks>
+    /// The client will attempt to subscribe asynchronously in the background.
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// <example>
     /// <code>
     /// await client.SubscribeLazyAsync("news");
@@ -76,16 +73,15 @@ public interface IPubSubCommands
     abstract Task SubscribeLazyAsync(string channel);
 
     /// <summary>
-    /// Subscribes the client to the specified channels.
+    /// Subscribes the client to the specified channels and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to subscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// See <see cref="SubscribeAsync(IEnumerable{string}, TimeSpan)"/> for the blocking version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channels">A collection of channels to subscribe to.</param>
     /// <remarks>
+    /// The client will attempt to subscribe asynchronously in the background.
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// <example>
     /// <code>
     /// var channels = new string[] { "news", "updates" };
@@ -97,9 +93,7 @@ public interface IPubSubCommands
     abstract Task SubscribeLazyAsync(IEnumerable<string> channels);
 
     /// <summary>
-    /// Subscribes the client to the specified pattern.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Subscribes the client to the specified pattern and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to subscribe to.</param>
@@ -109,9 +103,7 @@ public interface IPubSubCommands
     abstract Task PSubscribeAsync(string pattern, TimeSpan timeout = default);
 
     /// <summary>
-    /// Subscribes the client to the specified patterns.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Subscribes the client to the specified patterns and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
     /// <param name="patterns">A collection of patterns to subscribe to.</param>
@@ -121,12 +113,11 @@ public interface IPubSubCommands
     abstract Task PSubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
 
     /// <summary>
-    /// Subscribes the client to the specified pattern.
+    /// Subscribes the client to the specified pattern and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to subscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to subscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to subscribe to.</param>
@@ -141,12 +132,11 @@ public interface IPubSubCommands
     abstract Task PSubscribeLazyAsync(string pattern);
 
     /// <summary>
-    /// Subscribes the client to the specified patterns.
+    /// Subscribes the client to the specified patterns and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to subscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to subscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
     /// <param name="patterns">A collection of patterns to subscribe to.</param>
@@ -165,9 +155,7 @@ public interface IPubSubCommands
     #region UnsubscribeCommands
 
     /// <summary>
-    /// Unsubscribes the client from all channels.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Unsubscribes the client from all channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
@@ -176,9 +164,7 @@ public interface IPubSubCommands
     abstract Task UnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from the specified channel.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Unsubscribes the client from the specified channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to unsubscribe from.</param>
@@ -188,9 +174,9 @@ public interface IPubSubCommands
     abstract Task UnsubscribeAsync(string channel, TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from the specified channels.
+    /// Unsubscribes the client from the specified channels and waits for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// If no channels or <see cref="PubSub.AllChannels"/> is specified, unsubscribes the client from all channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="channels">A collection of channels to unsubscribe from.</param>
@@ -200,12 +186,11 @@ public interface IPubSubCommands
     abstract Task UnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from all channels.
+    /// Unsubscribes the client from all channels and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to unsubscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to unsubscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <remarks>
@@ -219,12 +204,11 @@ public interface IPubSubCommands
     abstract Task UnsubscribeLazyAsync();
 
     /// <summary>
-    /// Unsubscribes the client from the specified channel.
+    /// Unsubscribes the client from the specified channel and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to unsubscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to unsubscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to unsubscribe from.</param>
@@ -239,14 +223,13 @@ public interface IPubSubCommands
     abstract Task UnsubscribeLazyAsync(string channel);
 
     /// <summary>
-    /// Unsubscribes the client from the specified channels.
+    /// Unsubscribes the client from the specified channels and returns without waiting for server confirmation.
     /// <para />
     /// If no channels or <see cref="PubSub.AllChannels"/> is specified, unsubscribes the client from all channels.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to unsubscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to unsubscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="channels">A collection of channels to unsubscribe from.</param>
@@ -268,9 +251,7 @@ public interface IPubSubCommands
     abstract Task UnsubscribeLazyAsync(IEnumerable<string> channels);
 
     /// <summary>
-    /// Unsubscribes the client from all patterns.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Unsubscribes the client from all patterns and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
@@ -279,9 +260,7 @@ public interface IPubSubCommands
     abstract Task PUnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from the specified pattern.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Unsubscribes the client from the specified pattern and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to unsubscribe from.</param>
@@ -291,9 +270,7 @@ public interface IPubSubCommands
     abstract Task PUnsubscribeAsync(string pattern, TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from the specified patterns.
-    /// <para />
-    /// This command updates the client's desired subscription state and waits for server confirmation.
+    /// Unsubscribes the client from the specified patterns and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="patterns">A collection of patterns to unsubscribe from.</param>
@@ -303,12 +280,11 @@ public interface IPubSubCommands
     abstract Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from all patterns.
+    /// Unsubscribes the client from all patterns and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to unsubscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to unsubscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <remarks>
@@ -322,25 +298,11 @@ public interface IPubSubCommands
     abstract Task PUnsubscribeLazyAsync();
 
     /// <summary>
-    /// Unsubscribes the client from the specified pattern.
+    /// Unsubscribes the client from the specified pattern and returns without waiting for server confirmation.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to unsubscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
-    /// <param name="patterns">A collection of patterns to unsubscribe from.</param>
-    /// <param name="timeout">Maximum time to wait for confirmation. Zero waits indefinitely.</param>
-    abstract Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
-
-    /// <summary>
-    /// Unsubscribes the client from the specified pattern.
-    /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to unsubscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to unsubscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to unsubscribe from.</param>
@@ -355,14 +317,13 @@ public interface IPubSubCommands
     abstract Task PUnsubscribeLazyAsync(string pattern);
 
     /// <summary>
-    /// Unsubscribes the client from the specified patterns.
+    /// Unsubscribes the client from the specified patterns and returns without waiting for server confirmation.
     /// <para />
     /// If no patterns or <see cref="PubSub.AllPatterns"/> is specified, unsubscribes the client from all patterns.
     /// <para />
-    /// This command updates the client's desired subscription state without waiting
-    /// for server confirmation. The client will attempt to unsubscribe asynchronously
-    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
-    /// verify the actual server subscription state.
+    /// The client will attempt to unsubscribe asynchronously in the background.
+    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="patterns">A collection of patterns to unsubscribe from.</param>
