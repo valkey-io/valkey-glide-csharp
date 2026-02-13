@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// PubSub commands available in both standalone and cluster modes.
+/// Pub/sub commands available in both standalone and cluster modes.
 /// <br />
 /// See more on <see href="https://valkey.io/commands/#pubsub">valkey.io</see>.
 /// </summary>
@@ -17,7 +17,6 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/publish/">valkey.io</seealso>
     /// <param name="channel">The channel to publish the message to.</param>
     /// <param name="message">The message to publish.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of clients that received the message.</returns>
     /// <remarks>
     /// <example>
@@ -27,233 +26,277 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<long> PublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None);
+    abstract Task<long> PublishAsync(string channel, string message);
 
     #endregion
     #region SubscribeCommands
 
     /// <summary>
     /// Subscribes the client to the specified channel.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to subscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to subscribe to.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.SubscribeAsync("news");
-    /// Console.WriteLine("Subscribed to news channel");
+    /// await client.SubscribeLazyAsync("news");
+    /// Console.WriteLine("Subscribed to 'news' channel");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task SubscribeLazyAsync(string channel);
 
     /// <summary>
     /// Subscribes the client to the specified channels.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to subscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
-    /// <param name="channels">An array of channels to subscribe to.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="channels">A collection of channels to subscribe to.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.SubscribeAsync(["news", "updates"]);
-    /// Console.WriteLine("Subscribed to news and updates channels");
+    /// var channels = new string[] { "news", "updates" };
+    /// await client.SubscribeLazyAsync(channels);
+    /// Console.WriteLine("Subscribed to 'news' and 'updates' channels");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task SubscribeLazyAsync(IEnumerable<string> channels);
 
     /// <summary>
     /// Subscribes the client to the specified pattern.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to subscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to subscribe to.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.PSubscribeAsync("news.*");
-    /// Console.WriteLine("Subscribed to news.* pattern");
+    /// await client.PSubscribeLazyAsync("news.*");
+    /// Console.WriteLine("Subscribed to 'news.*' pattern");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PSubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task PSubscribeLazyAsync(string pattern);
 
     /// <summary>
     /// Subscribes the client to the specified patterns.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to subscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
-    /// <param name="patterns">An array of patterns to subscribe to.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="patterns">A collection of patterns to subscribe to.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.PSubscribeAsync(["news.*", "updates.*"]);
-    /// Console.WriteLine("Subscribed to news.* and updates.* patterns");
+    /// var patterns = new string[] { "news.*", "updates.*" };
+    /// await client.PSubscribeLazyAsync(patterns);
+    /// Console.WriteLine("Subscribed to 'news.*' and 'updates.*' patterns");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PSubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
+    abstract Task PSubscribeLazyAsync(IEnumerable<string> patterns);
 
     #endregion
     #region UnsubscribeCommands
 
     /// <summary>
     /// Unsubscribes the client from all channels.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to unsubscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.UnsubscribeAsync();
+    /// await client.UnsubscribeLazyAsync();
     /// Console.WriteLine("Unsubscribed from all channels");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task UnsubscribeLazyAsync();
 
     /// <summary>
     /// Unsubscribes the client from the specified channel.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to unsubscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to unsubscribe from.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.UnsubscribeAsync("news");
-    /// Console.WriteLine("Unsubscribed from news channel");
+    /// await client.UnsubscribeLazyAsync("news");
+    /// Console.WriteLine("Unsubscribed from 'news' channel");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task UnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None);
+    abstract Task UnsubscribeLazyAsync(string channel);
 
     /// <summary>
     /// Unsubscribes the client from the specified channels.
-    /// If no channels are specified, unsubscribes the client from all channels.
+    /// <para />
+    /// If no channels or <see cref="PubSub.AllChannels"/> is specified, unsubscribes the client from all channels.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to unsubscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
-    /// <param name="channels">An array of channels to unsubscribe from.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="channels">A collection of channels to unsubscribe from.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.UnsubscribeAsync(["news", "updates"]);
-    /// Console.WriteLine("Unsubscribed from news and updates channels");
+    /// var channels = new string[] { "news", "updates" };
+    /// await client.UnsubscribeLazyAsync(channels);
+    /// Console.WriteLine("Unsubscribed from 'news' and 'updates' channels");
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// await client.UnsubscribeAsync([]);
+    /// await client.UnsubscribeLazyAsync(PubSub.AllChannels);
     /// Console.WriteLine("Unsubscribed from all channels");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task UnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task UnsubscribeLazyAsync(IEnumerable<string> channels);
 
     /// <summary>
     /// Unsubscribes the client from all patterns.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to unsubscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.PUnsubscribeAsync();
+    /// await client.PUnsubscribeLazyAsync();
     /// Console.WriteLine("Unsubscribed from all patterns");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PUnsubscribeAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task PUnsubscribeLazyAsync();
 
     /// <summary>
     /// Unsubscribes the client from the specified pattern.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to unsubscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="pattern">The pattern to unsubscribe from.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.PUnsubscribeAsync("news.*");
-    /// Console.WriteLine("Unsubscribed from news.* pattern");
+    /// await client.PUnsubscribeLazyAsync("news.*");
+    /// Console.WriteLine("Unsubscribed from 'news.*' pattern");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PUnsubscribeAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task PUnsubscribeLazyAsync(string pattern);
 
     /// <summary>
     /// Unsubscribes the client from the specified patterns.
-    /// If no patterns are specified, unsubscribes the client from all patterns.
+    /// <para />
+    /// If no patterns or <see cref="PubSub.AllPatterns"/> is specified, unsubscribes the client from all patterns.
+    /// <para />
+    /// This command updates the client's desired subscription state without waiting
+    /// for server confirmation. The client will attempt to unsubscribe asynchronously
+    /// in the background. Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to
+    /// verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
-    /// <param name="patterns">An array of patterns to unsubscribe from.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="patterns">A collection of patterns to unsubscribe from.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.PUnsubscribeAsync(["news.*", "updates.*"]);
-    /// Console.WriteLine("Unsubscribed from news.* and updates.* patterns");
+    /// var patterns = new string[] { "news.*", "updates.*" };
+    /// await client.PUnsubscribeLazyAsync(patterns);
+    /// Console.WriteLine("Unsubscribed from 'news.*' and 'updates.*' patterns");
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// await client.PUnsubscribeAsync([]);
+    /// await client.PUnsubscribeLazyAsync(PubSub.AllPatterns);
     /// Console.WriteLine("Unsubscribed from all patterns");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PUnsubscribeAsync(string[] patterns, CommandFlags flags = CommandFlags.None);
+    abstract Task PUnsubscribeLazyAsync(IEnumerable<string> patterns);
 
     #endregion
-    #region PubSubInfoCommands
+    #region IntrospectionCommands
 
     /// <summary>
     /// Lists the currently active channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-channels/">valkey.io</seealso>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of active channel names.</returns>
+    /// <returns>A set of active channel names.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string[] channels = await client.PubSubChannelsAsync();
-    /// Console.WriteLine($"Active channels: {string.Join(", ", channels)}");
+    /// var channels = await client.PubSubChannelsAsync();
+    /// Console.WriteLine($"Active channels: {string.Join("', '", channels)}");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<string[]> PubSubChannelsAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task<ISet<string>> PubSubChannelsAsync();
 
     /// <summary>
     /// Lists the currently active channels matching the specified pattern.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-channels/">valkey.io</seealso>
     /// <param name="pattern">A glob-style pattern to filter channel names.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>An array of active channel names matching the pattern.</returns>
+    /// <returns>A set of active channel names matching the pattern.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string[] channels = await client.PubSubChannelsAsync("news.*");
-    /// Console.WriteLine($"News channels: {string.Join(", ", channels)}");
+    /// var channels = await client.PubSubChannelsAsync("news.*");
+    /// Console.WriteLine($"News channels: {string.Join("', '", channels)}");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<string[]> PubSubChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None);
+    abstract Task<ISet<string>> PubSubChannelsAsync(string pattern);
 
     /// <summary>
     /// Returns the number of subscribers for the specified channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-numsub/">valkey.io</seealso>
-    /// <param name="channels">An array of channel names to query.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="channels">A set of channel names to query.</param>
     /// <returns>A dictionary mapping channel names to their subscriber counts.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, long&gt; counts = await client.PubSubNumSubAsync(new[] { "channel1", "channel2" });
+    /// var channels = new string[] { "news", "updates" };
+    /// Dictionary&lt;string, long&gt; counts = await client.PubSubNumSubAsync(channels);
     /// foreach (var kvp in counts)
     /// {
     ///     Console.WriteLine($"{kvp.Key}: {kvp.Value} subscribers");
@@ -261,13 +304,12 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<Dictionary<string, long>> PubSubNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None);
+    abstract Task<Dictionary<string, long>> PubSubNumSubAsync(IEnumerable<string> channels);
 
     /// <summary>
     /// Returns the number of active pattern subscriptions.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-numpat/">valkey.io</seealso>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of patterns all clients are subscribed to.</returns>
     /// <remarks>
     /// <example>
@@ -277,7 +319,7 @@ public interface IPubSubCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<long> PubSubNumPatAsync(CommandFlags flags = CommandFlags.None);
+    abstract Task<long> PubSubNumPatAsync();
 
     /// <summary>
     /// Returns the current pub/sub subscription state, which includes both the desired and

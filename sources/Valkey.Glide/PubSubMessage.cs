@@ -5,19 +5,6 @@ using System.Text.Json;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Pub/sub channel subscription mode.
-/// </summary>
-public enum PubSubChannelMode
-{
-    /// <summary>Exact channel name subscription (SUBSCRIBE).</summary>
-    Exact = 0,
-    /// <summary>Pattern-based subscription (PSUBSCRIBE).</summary>
-    Pattern = 1,
-    /// <summary>Shard channel subscription (SSUBSCRIBE).</summary>
-    Sharded = 2
-}
-
-/// <summary>
 /// Represents a message received through PubSub subscription.
 /// </summary>
 public sealed class PubSubMessage

@@ -9,7 +9,7 @@ public abstract class BasePubSubSubscriptionConfig
 {
     internal MessageCallback? Callback { get; set; }
     internal object? Context { get; set; }
-    internal Dictionary<uint, ISet<string>> Subscriptions { get; set; } = [];
+    internal Dictionary<PubSubChannelMode, ISet<string>> Subscriptions { get; set; } = [];
     internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
@@ -53,11 +53,10 @@ public abstract class BasePubSubSubscriptionConfig
         if (string.IsNullOrWhiteSpace(channelOrPattern))
             throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
 
-        uint modeValue = (uint)mode;
-        if (!Subscriptions.ContainsKey(modeValue))
-            Subscriptions[modeValue] = new HashSet<string>();
+        if (!Subscriptions.ContainsKey(mode))
+            Subscriptions[mode] = new HashSet<string>();
 
-        Subscriptions[modeValue].Add(channelOrPattern);
+        Subscriptions[mode].Add(channelOrPattern);
 
         return this;
     }
@@ -107,6 +106,6 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
     /// </summary>
     /// <param name="channel">The shard channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel)
+    public ClusterPubSubSubscriptionConfig WithShardChannel(string channel)
         => (ClusterPubSubSubscriptionConfig)AddSubscription(PubSubChannelMode.Sharded, channel);
 }

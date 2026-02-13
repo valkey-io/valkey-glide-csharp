@@ -9,68 +9,41 @@ public partial class GlideClusterClient : IPubSubClusterCommands
 {
     #region PublishCommands
 
-    public async Task<long> SPublishAsync(string channel, string message, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SPublish(channel, message));
-    }
+    public async Task<long> SPublishAsync(string channel, string message)
+        => await Command(Request.SPublish(channel, message));
 
     #endregion
     #region SubscribeCommands
 
-    public async Task SSubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SSubscribe([channel]));
-    }
+    public async Task SSubscribeLazyAsync(string channel)
+        => await Command(Request.SSubscribe([channel]));
 
-    public async Task SSubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SSubscribe(channels.ToGlideStrings()));
-    }
+    public async Task SSubscribeLazyAsync(IEnumerable<string> channels)
+        => await Command(Request.SSubscribe(channels.ToHashSet().ToGlideStrings()));
 
     #endregion
     #region UnsubscribeCommands
 
-    public async Task SUnsubscribeAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe([]));
-    }
+    public async Task SUnsubscribeLazyAsync()
+        => await Command(Request.SUnsubscribe([]));
 
-    public async Task SUnsubscribeAsync(string channel, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe([channel]));
-    }
+    public async Task SUnsubscribeLazyAsync(string channel)
+        => await Command(Request.SUnsubscribe([channel]));
 
-    public async Task SUnsubscribeAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.SUnsubscribe(channels.ToGlideStrings()));
-    }
+    public async Task SUnsubscribeLazyAsync(IEnumerable<string> channels)
+        => await Command(Request.SUnsubscribe(channels.ToHashSet().ToGlideStrings()));
 
     #endregion
-    #region PubSubInfoCommands
+    #region IntrospectionCommands
 
-    public async Task<string[]> PubSubShardChannelsAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.PubSubShardChannels());
-    }
+    public async Task<ISet<string>> PubSubShardChannelsAsync()
+        => await Command(Request.PubSubShardChannels());
 
-    public async Task<string[]> PubSubShardChannelsAsync(string pattern, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.PubSubShardChannels(pattern));
-    }
+    public async Task<ISet<string>> PubSubShardChannelsAsync(string pattern)
+        => await Command(Request.PubSubShardChannels(pattern));
 
-    public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(string[] channels, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.PubSubShardNumSub(channels.ToGlideStrings()));
-    }
+    public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(IEnumerable<string> channels)
+        => await Command(Request.PubSubShardNumSub(channels.ToHashSet().ToGlideStrings()));
 
     #endregion
 }

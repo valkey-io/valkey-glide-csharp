@@ -380,9 +380,9 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     }
 
     /// <summary>
-    /// Handles incoming Pub/Sub messages and routes them to the appropriate subscription handlers.
+    /// Handles incoming pub/sub messages and routes them to the appropriate subscription handlers.
     /// </summary>
-    /// <param name="message">The incoming PubSubMessage.</param>
+    /// <param name="message">The incoming pub/sub message.</param>
     internal void OnMessage(PubSubMessage message)
     {
         var channel = ToValkeyChannel(message);

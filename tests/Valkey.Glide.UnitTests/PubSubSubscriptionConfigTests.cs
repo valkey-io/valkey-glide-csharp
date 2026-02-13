@@ -25,8 +25,8 @@ public class PubSubSubscriptionConfigTests
 
         // Assert
         Assert.Same(config, result); // Should return same instance for chaining
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Exact));
-        Assert.Contains(TestChannel, config.Subscriptions[(uint)PubSubChannelMode.Exact]);
+        Assert.True(config.Subscriptions.ContainsKey(PubSubChannelMode.Exact));
+        Assert.Contains(TestChannel, config.Subscriptions[PubSubChannelMode.Exact]);
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public class PubSubSubscriptionConfigTests
 
         // Assert
         Assert.Same(config, result); // Should return same instance for chaining
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Pattern));
-        Assert.Contains(TestPattern, config.Subscriptions[(uint)PubSubChannelMode.Pattern]);
+        Assert.True(config.Subscriptions.ContainsKey(PubSubChannelMode.Pattern));
+        Assert.Contains(TestPattern, config.Subscriptions[PubSubChannelMode.Pattern]);
     }
 
     [Fact]
@@ -103,8 +103,8 @@ public class PubSubSubscriptionConfigTests
             .WithCallback(Callback, Context);
 
         // Assert
-        Assert.Contains(TestChannel, config.Subscriptions[(uint)PubSubChannelMode.Exact]);
-        Assert.Contains(TestPattern, config.Subscriptions[(uint)PubSubChannelMode.Pattern]);
+        Assert.Contains(TestChannel, config.Subscriptions[PubSubChannelMode.Exact]);
+        Assert.Contains(TestPattern, config.Subscriptions[PubSubChannelMode.Pattern]);
         Assert.Equal(Callback, config.Callback);
         Assert.Equal(Context, config.Context);
     }
@@ -124,7 +124,7 @@ public class PubSubSubscriptionConfigTests
 
         // Assert
         Assert.Same(config, result);
-        Assert.Contains(TestChannel, config.Subscriptions[(uint)PubSubChannelMode.Exact]);
+        Assert.Contains(TestChannel, config.Subscriptions[PubSubChannelMode.Exact]);
     }
 
     [Fact]
@@ -138,21 +138,21 @@ public class PubSubSubscriptionConfigTests
 
         // Assert
         Assert.Same(config, result);
-        Assert.Contains(TestPattern, config.Subscriptions[(uint)PubSubChannelMode.Pattern]);
+        Assert.Contains(TestPattern, config.Subscriptions[PubSubChannelMode.Pattern]);
     }
 
     [Fact]
-    public void ClusterConfig_WithShardedChannel_AddsShardedSubscription()
+    public void ClusterConfig_WithShardChannel_AddsShardedSubscription()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act
-        var result = config.WithShardedChannel(TestShardedChannel);
+        var result = config.WithShardChannel(TestShardedChannel);
 
         // Assert
         Assert.Same(config, result);
-        Assert.Contains(TestShardedChannel, config.Subscriptions[(uint)PubSubChannelMode.Sharded]);
+        Assert.Contains(TestShardedChannel, config.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
     [Fact]
@@ -180,15 +180,15 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void ClusterConfig_WithShardedChannel_NullOrEmptyChannel_ThrowsArgumentException()
+    public void ClusterConfig_WithShardChannel_NullOrEmptyChannel_ThrowsArgumentException()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithShardedChannel(null!));
-        Assert.Throws<ArgumentException>(() => config.WithShardedChannel(""));
-        Assert.Throws<ArgumentException>(() => config.WithShardedChannel("   "));
+        Assert.Throws<ArgumentException>(() => config.WithShardChannel(null!));
+        Assert.Throws<ArgumentException>(() => config.WithShardChannel(""));
+        Assert.Throws<ArgumentException>(() => config.WithShardChannel("   "));
     }
 
     [Fact]
@@ -198,12 +198,12 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act
-        config.WithShardedChannel(TestShardedChannel);
-        config.WithShardedChannel(TestShardedChannel); // Add same channel again
+        config.WithShardChannel(TestShardedChannel);
+        config.WithShardChannel(TestShardedChannel); // Add same channel again
 
         // Assert
-        Assert.Single(config.Subscriptions[(uint)PubSubChannelMode.Sharded]);
-        Assert.Contains(TestShardedChannel, config.Subscriptions[(uint)PubSubChannelMode.Sharded]);
+        Assert.Single(config.Subscriptions[PubSubChannelMode.Sharded]);
+        Assert.Contains(TestShardedChannel, config.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
     [Fact]
@@ -238,13 +238,13 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig()
             .WithChannel("channel1")
             .WithPattern("pattern*")
-            .WithShardedChannel("sharded1")
+            .WithShardChannel("sharded1")
             .WithCallback(Callback, Context);
 
         // Assert
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Exact));
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Pattern));
-        Assert.True(config.Subscriptions.ContainsKey((uint)PubSubChannelMode.Sharded));
+        Assert.True(config.Subscriptions.ContainsKey(PubSubChannelMode.Exact));
+        Assert.True(config.Subscriptions.ContainsKey(PubSubChannelMode.Pattern));
+        Assert.True(config.Subscriptions.ContainsKey(PubSubChannelMode.Sharded));
         Assert.Equal(Callback, config.Callback);
         Assert.Equal(Context, config.Context);
     }
