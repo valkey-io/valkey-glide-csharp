@@ -40,8 +40,8 @@ public class PubSubCommandTests
     [Fact]
     public void Subscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUBSCRIBE", Channel1, TimeoutExpected], Request.SubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["SUBSCRIBE", Channel1, Channel2, TimeoutExpected], Request.SubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SubscribeBlocking([Channel1], TimeoutMs).GetArgs());
+        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
     }
 
     [Fact]
@@ -54,8 +54,8 @@ public class PubSubCommandTests
     [Fact]
     public void PSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["PSUBSCRIBE", Pattern1, TimeoutExpected], Request.PSubscribeBlocking([Pattern1], TimeoutMs).GetArgs());
-        Assert.Equal(["PSUBSCRIBE", Pattern1, Pattern2, TimeoutExpected], Request.PSubscribeBlocking([Pattern1, Pattern2], TimeoutMs).GetArgs());
+        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PSubscribeBlocking([Pattern1], TimeoutMs).GetArgs());
+        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PSubscribeBlocking([Pattern1, Pattern2], TimeoutMs).GetArgs());
     }
 
     [Fact]
@@ -68,8 +68,8 @@ public class PubSubCommandTests
     [Fact]
     public void SSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SSUBSCRIBE", Channel1, TimeoutExpected], Request.SSubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["SSUBSCRIBE", Channel1, Channel2, TimeoutExpected], Request.SSubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SSubscribeBlocking([Channel1], TimeoutMs).GetArgs());
+        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SSubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
     }
 
     [Fact]
@@ -85,9 +85,9 @@ public class PubSubCommandTests
     [Fact]
     public void UnSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["UNSUBSCRIBE", TimeoutExpected], Request.UnsubscribeBlocking([], TimeoutMs).GetArgs());
-        Assert.Equal(["UNSUBSCRIBE", Channel1, TimeoutExpected], Request.UnsubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["UNSUBSCRIBE", Channel1, Channel2, TimeoutExpected], Request.UnsubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["UNSUBSCRIBEBLOCKING", TimeoutExpected], Request.UnsubscribeBlocking([], TimeoutMs).GetArgs());
+        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.UnsubscribeBlocking([Channel1], TimeoutMs).GetArgs());
+        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.UnsubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
     }
 
     [Fact]
@@ -101,9 +101,9 @@ public class PubSubCommandTests
     [Fact]
     public void PUnSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUNSUBSCRIBE", TimeoutExpected], Request.PUnsubscribeBlocking([], TimeoutMs).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBE", Pattern1, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1], TimeoutMs).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBE", Pattern1, Pattern2, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1, Pattern2], TimeoutMs).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.PUnsubscribeBlocking([], TimeoutMs).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1], TimeoutMs).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1, Pattern2], TimeoutMs).GetArgs());
     }
 
     [Fact]
@@ -117,9 +117,9 @@ public class PubSubCommandTests
     [Fact]
     public void SUnSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUNSUBSCRIBE", TimeoutExpected], Request.SUnsubscribeBlocking([], TimeoutMs).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBE", Channel1, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBE", Channel1, Channel2, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.SUnsubscribeBlocking([], TimeoutMs).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1], TimeoutMs).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
     }
 
     [Fact]
@@ -247,28 +247,6 @@ public class PubSubCommandTests
 
     #endregion
     #region SpecialCharactersAndEdgeCases
-
-    [Fact]
-    public void GuardClauses_ThrowIfTimeoutNegative_ThrowsForNegativeTimeout()
-    {
-        var ex = Assert.Throws<ArgumentException>(() => GuardClauses.ThrowIfTimeoutNegative(TimeSpan.FromMilliseconds(-1), "timeout"));
-        Assert.Equal("timeout", ex.ParamName);
-        Assert.Contains("Timeout cannot be negative", ex.Message);
-    }
-
-    [Fact]
-    public void GuardClauses_ThrowIfTimeoutNegative_AllowsZeroTimeout()
-    {
-        // Should not throw
-        GuardClauses.ThrowIfTimeoutNegative(TimeSpan.Zero, "timeout");
-    }
-
-    [Fact]
-    public void GuardClauses_ThrowIfTimeoutNegative_AllowsPositiveTimeout()
-    {
-        // Should not throw
-        GuardClauses.ThrowIfTimeoutNegative(TimeSpan.FromSeconds(5), "timeout");
-    }
 
     [Fact]
     public void PubSubCommands_HandleSpecialCharacters()

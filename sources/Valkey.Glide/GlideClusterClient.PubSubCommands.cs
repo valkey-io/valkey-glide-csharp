@@ -24,14 +24,14 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task SSubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SSubscribeBlocking(channels.ToSortedSet().ToGlideStrings(), timeout.TotalMilliseconds));
+        await Command(Request.SSubscribeBlocking(channels.ToGlideStrings(), timeout.TotalMilliseconds));
     }
 
     public async Task SSubscribeLazyAsync(string channel)
         => await Command(Request.SSubscribe([channel]));
 
     public async Task SSubscribeLazyAsync(IEnumerable<string> channels)
-        => await Command(Request.SSubscribe(channels.ToSortedSet().ToGlideStrings()));
+        => await Command(Request.SSubscribe(channels.ToGlideStrings()));
 
     #endregion
     #region UnsubscribeCommands
@@ -51,7 +51,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task SUnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SUnsubscribeBlocking(channels.ToSortedSet().ToGlideStrings(), timeout.TotalMilliseconds));
+        await Command(Request.SUnsubscribeBlocking(channels.ToGlideStrings(), timeout.TotalMilliseconds));
     }
 
     public async Task SUnsubscribeLazyAsync()
@@ -61,7 +61,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
         => await Command(Request.SUnsubscribe([channel]));
 
     public async Task SUnsubscribeLazyAsync(IEnumerable<string> channels)
-        => await Command(Request.SUnsubscribe(channels.ToSortedSet().ToGlideStrings()));
+        => await Command(Request.SUnsubscribe(channels.ToGlideStrings()));
 
     #endregion
     #region IntrospectionCommands
@@ -73,7 +73,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
         => await Command(Request.PubSubShardChannels(pattern));
 
     public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(IEnumerable<string> channels)
-        => await Command(Request.PubSubShardNumSub(channels.ToSortedSet().ToGlideStrings()));
+        => await Command(Request.PubSubShardNumSub(channels.ToGlideStrings()));
 
     #endregion
 }
