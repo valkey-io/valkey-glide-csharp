@@ -15,14 +15,44 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     #endregion
     #region SubscribeCommands
 
+    public async Task SSubscribeAsync(string channel, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        await Command(Request.SSubscribeBlocking([channel], timeout.TotalMilliseconds));
+    }
+
+    public async Task SSubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        await Command(Request.SSubscribeBlocking(channels.ToSortedSet().ToGlideStrings(), timeout.TotalMilliseconds));
+    }
+
     public async Task SSubscribeLazyAsync(string channel)
         => await Command(Request.SSubscribe([channel]));
 
     public async Task SSubscribeLazyAsync(IEnumerable<string> channels)
-        => await Command(Request.SSubscribe(channels.ToHashSet().ToGlideStrings()));
+        => await Command(Request.SSubscribe(channels.ToSortedSet().ToGlideStrings()));
 
     #endregion
     #region UnsubscribeCommands
+
+    public async Task SUnsubscribeAsync(TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        await Command(Request.SUnsubscribeBlocking([], timeout.TotalMilliseconds));
+    }
+
+    public async Task SUnsubscribeAsync(string channel, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        await Command(Request.SUnsubscribeBlocking([channel], timeout.TotalMilliseconds));
+    }
+
+    public async Task SUnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        await Command(Request.SUnsubscribeBlocking(channels.ToSortedSet().ToGlideStrings(), timeout.TotalMilliseconds));
+    }
 
     public async Task SUnsubscribeLazyAsync()
         => await Command(Request.SUnsubscribe([]));
@@ -31,7 +61,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
         => await Command(Request.SUnsubscribe([channel]));
 
     public async Task SUnsubscribeLazyAsync(IEnumerable<string> channels)
-        => await Command(Request.SUnsubscribe(channels.ToHashSet().ToGlideStrings()));
+        => await Command(Request.SUnsubscribe(channels.ToSortedSet().ToGlideStrings()));
 
     #endregion
     #region IntrospectionCommands
@@ -43,7 +73,7 @@ public partial class GlideClusterClient : IPubSubClusterCommands
         => await Command(Request.PubSubShardChannels(pattern));
 
     public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(IEnumerable<string> channels)
-        => await Command(Request.PubSubShardNumSub(channels.ToHashSet().ToGlideStrings()));
+        => await Command(Request.PubSubShardNumSub(channels.ToSortedSet().ToGlideStrings()));
 
     #endregion
 }

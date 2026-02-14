@@ -29,7 +29,7 @@ internal static class GuardClauses
     /// Throws a <see cref="NotImplementedException"/> if command flags are specified.
     /// </summary>
     /// <param name="flags">The command flags to validate.</param>
-    /// <exception cref="NotImplementedException">Thrown when <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     public static void ThrowIfCommandFlags(CommandFlags flags)
     {
         if (flags != CommandFlags.None)
@@ -42,12 +42,25 @@ internal static class GuardClauses
     /// Throws a <see cref="NotImplementedException"/> if async state is specified.
     /// </summary>
     /// <param name="asyncState">The async state to validate.</param>
-    /// <exception cref="NotImplementedException">Thrown when <paramref name="asyncState"/> is not null.</exception>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="asyncState"/> is not null.</exception>
     public static void ThrowIfAsyncState(object? asyncState)
     {
         if (asyncState is not null)
         {
             throw new NotImplementedException("Async state is not supported by GLIDE");
+        }
+    }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentException"/> if the given time span is negative.
+    /// </summary>
+    /// <param name="value">The time span value to validate.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is negative.</exception>
+    public static void ThrowIfTimeSpanNegative(TimeSpan value)
+    {
+        if (value < TimeSpan.Zero)
+        {
+            throw new ArgumentException("Time span cannot be negative.");
         }
     }
 }
