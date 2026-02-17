@@ -16,19 +16,8 @@ public static class PubSubUtils
     /// </summary>
     public enum SubscribeMode
     {
-        /// <summary>
-        /// Configuration subscription (during client initialization).
-        /// </summary>
         Config,
-
-        /// <summary>
-        /// Lazy subscription (returns immediately without waiting for server confirmation).
-        /// </summary>
         Lazy,
-
-        /// <summary>
-        /// Blocking subscription (waits for server confirmation).
-        /// </summary>
         Blocking
     }
 
@@ -37,43 +26,21 @@ public static class PubSubUtils
     /// </summary>
     public enum UnsubscribeMode
     {
-        /// <summary>
-        /// Lazy unsubscribe (returns immediately without waiting for server confirmation).
-        /// </summary>
         Lazy,
-
-        /// <summary>
-        /// Blocking unsubscribe (waits for server confirmation).
-        /// </summary>
         Blocking
     }
 
     #endregion
     #region Data
 
-    /// <summary>
-    /// Theory data for cluster mode (cluster vs standalone).
-    /// </summary>
-    public static TheoryData<bool> ClusterModeData => [
-        true,
-        false];
+    /// <summary>Theory data for cluster mode (cluster vs standalone).</summary>
+    public static TheoryData<bool> ClusterModeData => [true, false];
 
-    /// <summary>
-    /// Theory data for pub/sub channel modes (exact, pattern, and shard channels).
-    /// </summary>
-    public static TheoryData<PubSubChannelMode> ChannelModeData => [
-        PubSubChannelMode.Exact,
-        PubSubChannelMode.Pattern,
-        PubSubChannelMode.Sharded];
+    /// <summary>Theory data for pub/sub channel modes (exact, pattern, and shard channels).</summary>
+    public static TheoryData<PubSubChannelMode> ChannelModeData => Enum.GetValues<PubSubChannelMode>().ToTheoryData();
 
-    /// <summary>
-    /// Theory data for subscription modes (config-based, lazy, and blocking).
-    /// </summary>
-    public static TheoryData<SubscribeMode> SubscribeModeData => [
-        SubscribeMode.Config,
-        SubscribeMode.Lazy,
-        SubscribeMode.Blocking];
-
+    /// <summary>Theory data for subscription modes (config-based, lazy, and blocking).</summary>
+    public static TheoryData<SubscribeMode> SubscribeModeData => Enum.GetValues<SubscribeMode>().ToTheoryData();
 
     /// <summary>
     /// Theory data for all valid combinations of cluster mode and subscription mode.
@@ -132,6 +99,26 @@ public static class PubSubUtils
                 }
             }
 
+            return data;
+        }
+    }
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode, channel mode, and unsubscribe mode.
+    /// </summary>
+    public static TheoryData<bool, PubSubChannelMode, UnsubscribeMode> UnsubscribeData
+    {
+        get
+        {
+            var data = new TheoryData<bool, PubSubChannelMode, UnsubscribeMode>();
+            foreach (bool isCluster in new[] { false, true })
+                foreach (PubSubChannelMode channelMode in Enum.GetValues<PubSubChannelMode>())
+                {
+                    if (!isCluster && channelMode == PubSubChannelMode.Sharded)
+                        continue;
+                    foreach (UnsubscribeMode unsubMode in Enum.GetValues<UnsubscribeMode>())
+                        data.Add(isCluster, channelMode, unsubMode);
+                }
             return data;
         }
     }
@@ -448,6 +435,103 @@ public static class PubSubUtils
             : new StandaloneServer();
     }
 
+    /// <summary>
+    /// Unsubscribes from the specified messages based on channel mode and unsubscribe mode.
+    /// </summary>
+    public static async Task UnsubscribeAsync(
+        BaseClient subscriber,
+        PubSubChannelMode channelMode,
+        UnsubscribeMode unsubscribeMode,
+        PubSubMessage[] messages)
+    {
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                var channels = messages.Select(m => m.Channel).ToArray();
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await subscriber.UnsubscribeLazyAsync(channels);
+                else
+                    await subscriber.UnsubscribeAsync(channels);
+                break;
+            case PubSubChannelMode.Pattern:
+                var patterns = messages.Select(m => m.Pattern!).ToArray();
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await subscriber.PUnsubscribeLazyAsync(patterns);
+                else
+                    await subscriber.PUnsubscribeAsync(patterns);
+                break;
+            case PubSubChannelMode.Sharded:
+                var shardChannels = messages.Select(m => m.Channel).ToArray();
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync(shardChannels);
+                else
+                    await ((GlideClusterClient)subscriber).SUnsubscribeAsync(shardChannels);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribes from all channels/patterns based on channel mode and unsubscribe mode.
+    /// </summary>
+    public static async Task UnsubscribeAllAsync(
+        BaseClient subscriber,
+        PubSubChannelMode channelMode,
+        UnsubscribeMode unsubscribeMode)
+    {
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await subscriber.UnsubscribeLazyAsync(PubSub.AllChannels);
+                else
+                    await subscriber.UnsubscribeAsync(PubSub.AllChannels);
+                break;
+            case PubSubChannelMode.Pattern:
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await subscriber.PUnsubscribeLazyAsync(PubSub.AllPatterns);
+                else
+                    await subscriber.PUnsubscribeAsync(PubSub.AllPatterns);
+                break;
+            case PubSubChannelMode.Sharded:
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync(PubSub.AllShardChannels);
+                else
+                    await ((GlideClusterClient)subscriber).SUnsubscribeAsync(PubSub.AllShardChannels);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribes from all channels/patterns by calling the method with no arguments.
+    /// </summary>
+    public static async Task UnsubscribeEmptyAsync(
+        BaseClient subscriber,
+        PubSubChannelMode channelMode,
+        UnsubscribeMode unsubscribeMode)
+    {
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await subscriber.UnsubscribeLazyAsync();
+                else
+                    await subscriber.UnsubscribeAsync();
+                break;
+            case PubSubChannelMode.Pattern:
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await subscriber.PUnsubscribeLazyAsync();
+                else
+                    await subscriber.PUnsubscribeAsync();
+                break;
+            case PubSubChannelMode.Sharded:
+                if (unsubscribeMode == UnsubscribeMode.Lazy)
+                    await ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync();
+                else
+                    await ((GlideClusterClient)subscriber).SUnsubscribeAsync();
+                break;
+        }
+    }
+
     #endregion
     #region Assertions
 
@@ -688,6 +772,63 @@ public static class PubSubUtils
         }
 
         Assert.Fail($"Expected zero subscribers for shard channels '{string.Join("', '", shardChannels)}'");
+    }
+
+    /// <summary>
+    /// Asserts that there is at least one subscriber based on channel mode and messages.
+    /// </summary>
+    public static async Task AssertSubscribedAsync(BaseClient client, PubSubChannelMode channelMode, PubSubMessage[] messages)
+    {
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                await AssertSubscribedAsync(client, messages.Select(m => m.Channel));
+                break;
+            case PubSubChannelMode.Pattern:
+                await AssertPSubscribedAsync(client, messages.Select(m => m.Pattern!));
+                break;
+            case PubSubChannelMode.Sharded:
+                await AssertSSubscribedAsync((GlideClusterClient)client, messages.Select(m => m.Channel));
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Asserts that there are no subscribers based on channel mode and messages.
+    /// </summary>
+    public static async Task AssertNotSubscribedAsync(BaseClient client, PubSubChannelMode channelMode, PubSubMessage[] messages)
+    {
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                await AssertNotSubscribedAsync(client, messages.Select(m => m.Channel));
+                break;
+            case PubSubChannelMode.Pattern:
+                await AssertNotPSubscribedAsync(client, messages.Select(m => m.Pattern!));
+                break;
+            case PubSubChannelMode.Sharded:
+                await AssertNotSSubscribedAsync((GlideClusterClient)client, messages.Select(m => m.Channel));
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Asserts that there are no subscribers based on channel mode and channels/patterns.
+    /// </summary>
+    public static async Task AssertNotSubscribedAsync(BaseClient client, PubSubChannelMode channelMode, IEnumerable<string> channelsOrPatterns)
+    {
+        switch (channelMode)
+        {
+            case PubSubChannelMode.Exact:
+                await AssertNotSubscribedAsync(client, channelsOrPatterns);
+                break;
+            case PubSubChannelMode.Pattern:
+                await AssertNotPSubscribedAsync(client, channelsOrPatterns);
+                break;
+            case PubSubChannelMode.Sharded:
+                await AssertNotSSubscribedAsync((GlideClusterClient)client, channelsOrPatterns);
+                break;
+        }
     }
 
     /// <summary>

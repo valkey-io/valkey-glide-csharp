@@ -12,177 +12,69 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubUnsubscribeTests
 {
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task UnsubscribeLazy_Channel_RemovesOne(bool isCluster)
+    [MemberData(nameof(UnsubscribeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_Single_RemovesOne(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        var message1 = BuildChannelMessage();
-        var message2 = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [message1.Channel, message2.Channel]);
-        await subscriber.UnsubscribeLazyAsync(message1.Channel);
+        var message1 = BuildMessage(channelMode);
+        var message2 = BuildMessage(channelMode);
+        var messages = new[] { message1, message2 };
 
-        await AssertNotSubscribedAsync(subscriber, [message1.Channel]);
-        await AssertSubscribedAsync(subscriber, [message2.Channel]);
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, SubscribeMode.Config, messages);
+        await UnsubscribeAsync(subscriber, channelMode, unsubscribeMode, [message1]);
+
+        await AssertNotSubscribedAsync(subscriber, channelMode, [message1]);
+        await AssertSubscribedAsync(subscriber, channelMode, [message2]);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task UnsubscribeLazy_Channels_RemovesMultiple(bool isCluster)
+    [MemberData(nameof(UnsubscribeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_Multiple_RemovesMultiple(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        var message1 = BuildChannelMessage();
-        var message2 = BuildChannelMessage();
-        var message3 = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        var channels = new List<string> { message1.Channel, message2.Channel, message3.Channel };
-        using var subscriber = await BuildSubscriber(isCluster, channels: channels);
+        var message1 = BuildMessage(channelMode);
+        var message2 = BuildMessage(channelMode);
+        var message3 = BuildMessage(channelMode);
+        var messages = new[] { message1, message2, message3 };
 
-        await subscriber.UnsubscribeLazyAsync(channels[0..2]);
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, SubscribeMode.Config, messages);
+        await UnsubscribeAsync(subscriber, channelMode, unsubscribeMode, [message1, message2]);
 
-        await AssertNotSubscribedAsync(subscriber, channels[0..2]);
-        await AssertSubscribedAsync(subscriber, channels[2..3]);
+        await AssertNotSubscribedAsync(subscriber, channelMode, [message1, message2]);
+        await AssertSubscribedAsync(subscriber, channelMode, [message3]);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task UnsubscribeLazy_AllChannels_RemovesAll(bool isCluster)
+    [MemberData(nameof(UnsubscribeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_All_RemovesAll(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        var message1 = BuildChannelMessage();
-        var message2 = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [message1.Channel, message2.Channel]);
-        await subscriber.UnsubscribeLazyAsync(PubSub.AllChannels);
+        var message1 = BuildMessage(channelMode);
+        var message2 = BuildMessage(channelMode);
+        var messages = new[] { message1, message2 };
 
-        await AssertNotSubscribedAsync(subscriber, PubSub.AllChannels);
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, SubscribeMode.Config, messages);
+        await UnsubscribeAllAsync(subscriber, channelMode, unsubscribeMode);
+
+        await AssertNotSubscribedAsync(subscriber, channelMode, channelMode == PubSubChannelMode.Pattern ? PubSub.AllPatterns : channelMode == PubSubChannelMode.Sharded ? PubSub.AllShardChannels : PubSub.AllChannels);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task UnsubscribeLazy_NoChannels_RemovesAll(bool isCluster)
+    [MemberData(nameof(UnsubscribeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_Empty_RemovesAll(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        var message1 = BuildChannelMessage();
-        var message2 = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [message1.Channel, message2.Channel]);
-        await subscriber.UnsubscribeLazyAsync();
+        var message1 = BuildMessage(channelMode);
+        var message2 = BuildMessage(channelMode);
+        var messages = new[] { message1, message2 };
 
-        await AssertNotSubscribedAsync(subscriber, PubSub.AllChannels);
-    }
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, SubscribeMode.Config, messages);
+        await UnsubscribeEmptyAsync(subscriber, channelMode, unsubscribeMode);
 
-    [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task PUnsubscribeLazy_Pattern_RemovesOne(bool isCluster)
-    {
-        var message1 = BuildPatternMessage();
-        var message2 = BuildPatternMessage();
-
-        using var subscriber = await BuildSubscriber(isCluster, patterns: [message1.Pattern!, message2.Pattern!]);
-        await subscriber.PUnsubscribeLazyAsync(message1.Pattern!);
-
-        await AssertNotPSubscribedAsync(subscriber, [message1.Pattern!]);
-        await AssertPSubscribedAsync(subscriber, [message2.Pattern!]);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task PUnsubscribeLazy_Patterns_RemovesMultiple(bool isCluster)
-    {
-        var message1 = BuildPatternMessage();
-        var message2 = BuildPatternMessage();
-        var message3 = BuildPatternMessage();
-
-        var patterns = new string[] { message1.Pattern!, message2.Pattern!, message3.Pattern! };
-        using var subscriber = await BuildSubscriber(isCluster, patterns: patterns);
-
-        await subscriber.PUnsubscribeLazyAsync(patterns[0..2]);
-
-        await AssertNotPSubscribedAsync(subscriber, patterns[0..2]);
-        await AssertPSubscribedAsync(subscriber, patterns[2..3]);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task PUnsubscribeLazy_AllPatterns_RemovesAll(bool isCluster)
-    {
-        var message1 = BuildPatternMessage();
-        var message2 = BuildPatternMessage();
-
-        using var subscriber = await BuildSubscriber(isCluster, patterns: [message1.Pattern!, message2.Pattern!]);
-
-        await subscriber.PUnsubscribeLazyAsync(PubSub.AllPatterns);
-        await AssertNotPSubscribedAsync(subscriber, PubSub.AllPatterns);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task PUnsubscribeLazy_NoPatterns_RemovesAll(bool isCluster)
-    {
-        var message1 = BuildPatternMessage();
-        var message2 = BuildPatternMessage();
-
-        using var subscriber = await BuildSubscriber(isCluster, patterns: [message1.Pattern!, message2.Pattern!]);
-
-        await subscriber.PUnsubscribeLazyAsync();
-        await AssertNotPSubscribedAsync(subscriber, PubSub.AllPatterns);
-    }
-
-    [Fact]
-    public async Task SUnsubscribeLazy_ShardChannel_RemovesOne()
-    {
-        SkipUnlessShardedSupported();
-
-        var message1 = BuildShardChannelMessage();
-        var message2 = BuildShardChannelMessage();
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: [message1.Channel, message2.Channel]);
-        await subscriber.SUnsubscribeLazyAsync(message1.Channel);
-
-        await AssertNotSSubscribedAsync(subscriber, [message1.Channel]);
-        await AssertSSubscribedAsync(subscriber, [message2.Channel]);
-    }
-
-    [Fact]
-    public async Task SUnsubscribeLazy_ShardChannels_RemovesMultiple()
-    {
-        SkipUnlessShardedSupported();
-
-        var message1 = BuildShardChannelMessage();
-        var message2 = BuildShardChannelMessage();
-        var message3 = BuildShardChannelMessage();
-
-        var shardChannels = new string[] { message1.Channel, message2.Channel, message3.Channel };
-        using var subscriber = await BuildClusterSubscriber(shardChannels: shardChannels);
-
-        await subscriber.SUnsubscribeLazyAsync(shardChannels[0..2]);
-
-        await AssertNotSSubscribedAsync(subscriber, shardChannels[0..2]);
-        await AssertSSubscribedAsync(subscriber, shardChannels[2..3]);
-    }
-
-    [Fact]
-    public async Task SUnsubscribeLazy_AllShardChannels_RemovesAll()
-    {
-        SkipUnlessShardedSupported();
-
-        var message1 = BuildShardChannelMessage();
-        var message2 = BuildShardChannelMessage();
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: [message1.Channel, message2.Channel]);
-
-        await subscriber.SUnsubscribeLazyAsync(PubSub.AllShardChannels);
-        await AssertNotSSubscribedAsync(subscriber, PubSub.AllShardChannels);
-    }
-
-    [Fact]
-    public async Task SUnsubscribeLazy_NoShardChannels_RemovesAll()
-    {
-        SkipUnlessShardedSupported();
-
-        var message1 = BuildShardChannelMessage();
-        var message2 = BuildShardChannelMessage();
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: [message1.Channel, message2.Channel]);
-        await subscriber.SUnsubscribeLazyAsync();
-
-        await AssertNotSSubscribedAsync(subscriber, PubSub.AllShardChannels);
+        await AssertNotSubscribedAsync(subscriber, channelMode, channelMode == PubSubChannelMode.Pattern ? PubSub.AllPatterns : channelMode == PubSubChannelMode.Sharded ? PubSub.AllShardChannels : PubSub.AllChannels);
     }
 }
