@@ -5,6 +5,27 @@ using Valkey.Glide.TestUtils;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
+/// Subscription mode for pub/sub integration tests.
+/// </summary>
+public enum SubscriptionMode
+{
+    /// <summary>
+    /// Configuration subscription (during client initialization).
+    /// </summary>
+    Config,
+
+    /// <summary>
+    /// Lazy subscription (returns immediately without waiting for server confirmation).
+    /// </summary>
+    Lazy,
+
+    /// <summary>
+    /// Blocking subscription (waits for server confirmation).
+    /// </summary>
+    Blocking
+}
+
+/// <summary>
 /// Utility methods for pub/sub integration tests.
 /// </summary>
 public static class PubSubUtils
@@ -126,62 +147,118 @@ public static class PubSubUtils
     /// </summary>
     public static async Task<BaseClient> BuildSubscriber(
         bool isCluster,
+        SubscriptionMode mode = SubscriptionMode.Config,
         IEnumerable<string>? channels = null,
         IEnumerable<string>? patterns = null,
         IEnumerable<string>? shardChannels = null,
-        MessageCallback? callback = null)
+        MessageCallback? callback = null,
+        TimeSpan? timeout = null)
     {
-        if (isCluster)
-            return await BuildClusterSubscriber(channels, patterns, shardChannels, callback);
-
-        if (shardChannels != null && shardChannels.Any())
+        // Validate parameters.
+        if (!isCluster && shardChannels != null && shardChannels.Any())
             throw new ArgumentException("Shard channels are not supported for standalone clients.");
 
-        return await BuildStandaloneSubscriber(channels, patterns, callback);
+        if (mode != SubscriptionMode.Blocking && timeout != null)
+            throw new ArgumentException("Timeout is only suported for blocking subscriptions.");
+
+        return isCluster
+            ? await BuildClusterSubscriber(mode, channels, patterns, shardChannels, callback, timeout)
+            : await BuildStandaloneSubscriber(mode, channels, patterns, callback, timeout);
     }
 
     /// <summary>
     /// Builds and returns a standalone subscriber client with the specified subscriptions.
     /// </summary>
     public static async Task<GlideClient> BuildStandaloneSubscriber(
+        SubscriptionMode mode = SubscriptionMode.Config,
         IEnumerable<string>? channels = null,
         IEnumerable<string>? patterns = null,
-        MessageCallback? callback = null)
+        MessageCallback? callback = null,
+        TimeSpan? timeout = null)
     {
-        var config = new StandalonePubSubSubscriptionConfig();
+        var configBuilder = TestConfiguration.DefaultClientConfig();
 
-        if (channels != null) foreach (var ch in channels) config.WithChannel(ch);
-        if (patterns != null) foreach (var p in patterns) config.WithPattern(p);
-        if (callback != null) config.WithCallback(callback);
+        // Set defaults.
+        channels ??= [];
+        patterns ??= [];
+        timeout ??= MaxDuration;
 
-        var clientConfig = TestConfiguration.DefaultClientConfig()
-            .WithPubSubSubscriptions(config)
-            .Build();
+        if (mode == SubscriptionMode.Config)
+        {
+            var pubSubConfig = new StandalonePubSubSubscriptionConfig();
 
-        return await GlideClient.CreateClient(clientConfig);
+            foreach (var ch in channels) pubSubConfig.WithChannel(ch);
+            foreach (var p in patterns) pubSubConfig.WithPattern(p);
+            if (callback != null) pubSubConfig.WithCallback(callback);
+
+            var config = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
+            return await GlideClient.CreateClient(config);
+        }
+
+        var client = await GlideClient.CreateClient(configBuilder.Build());
+
+        if (mode == SubscriptionMode.Lazy)
+        {
+            await client.SubscribeLazyAsync(channels!);
+            await client.PSubscribeLazyAsync(patterns!);
+        }
+        else
+        {
+            await client.SubscribeAsync(channels!, timeout.Value);
+            await client.PSubscribeAsync(patterns!, timeout.Value);
+        }
+
+        return client;
     }
 
     /// <summary>
     /// Builds and returns a cluster subscriber client with the specified subscriptions.
     /// </summary>
     public static async Task<GlideClusterClient> BuildClusterSubscriber(
+        SubscriptionMode mode = SubscriptionMode.Config,
         IEnumerable<string>? channels = null,
         IEnumerable<string>? patterns = null,
         IEnumerable<string>? shardChannels = null,
-        MessageCallback? callback = null)
+        MessageCallback? callback = null,
+        TimeSpan? timeout = null)
     {
-        var config = new ClusterPubSubSubscriptionConfig();
+        var configBuilder = TestConfiguration.DefaultClusterClientConfig();
 
-        if (channels != null) foreach (var ch in channels) config.WithChannel(ch);
-        if (patterns != null) foreach (var p in patterns) config.WithPattern(p);
-        if (shardChannels != null) foreach (var ch in shardChannels) config.WithShardChannel(ch);
-        if (callback != null) config.WithCallback(callback);
+        // Set defaults.
+        channels ??= [];
+        patterns ??= [];
+        shardChannels ??= [];
+        timeout ??= MaxDuration;
 
-        var clientConfig = TestConfiguration.DefaultClusterClientConfig()
-            .WithPubSubSubscriptions(config)
-            .Build();
+        if (mode == SubscriptionMode.Config)
+        {
+            var pubSubConfig = new ClusterPubSubSubscriptionConfig();
 
-        return await GlideClusterClient.CreateClient(clientConfig);
+            foreach (var ch in channels) pubSubConfig.WithChannel(ch);
+            foreach (var p in patterns) pubSubConfig.WithPattern(p);
+            foreach (var ch in shardChannels) pubSubConfig.WithShardChannel(ch);
+            if (callback != null) pubSubConfig.WithCallback(callback);
+
+            var clientConfig = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
+            return await GlideClusterClient.CreateClient(clientConfig);
+        }
+
+        var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+
+        if (mode == SubscriptionMode.Lazy)
+        {
+            await client.SubscribeLazyAsync(channels!);
+            await client.PSubscribeLazyAsync(patterns!);
+            await client.SSubscribeLazyAsync(shardChannels!);
+        }
+        else
+        {
+            await client.SubscribeAsync(channels, timeout.Value);
+            await client.PSubscribeAsync(patterns, timeout.Value);
+            await client.SSubscribeAsync(shardChannels, timeout.Value);
+        }
+
+        return client;
     }
 
     /// <summary>
