@@ -42,7 +42,7 @@ public class PubSubCombinedTests
         if (isSharded) await ((GlideClusterClient)publisher).SPublishAsync(shardChannelMessage.Channel, shardChannelMessage.Message);
 
         // Verify that all messages are received.
-        await AssertMessagesReceivedAsync(subscriber, expectedMessages);
+        await AssertReceivedAsync(subscriber, expectedMessages);
     }
 
     [Theory]
@@ -80,8 +80,8 @@ public class PubSubCombinedTests
         if (isSharded) await ((GlideClusterClient)publisher).SPublishAsync(shardChannelMessage.Channel, shardChannelMessage.Message);
 
         // Verify that all messages are received.
-        await AssertMessagesReceivedAsync(subscriber1, expectedMessages);
-        await AssertMessagesReceivedAsync(subscriber2, expectedMessages);
+        await AssertReceivedAsync(subscriber1, expectedMessages);
+        await AssertReceivedAsync(subscriber2, expectedMessages);
     }
 
     [Theory]
@@ -117,6 +117,6 @@ public class PubSubCombinedTests
         if (isSharded) await ((GlideClusterClient)publisher).SPublishAsync(channel, shardChannelMessage.Message);
 
         // Verify that all messages are received.
-        await AssertMessagesReceivedAsync(subscriber, expectedMessages);
+        await AssertReceivedAsync(subscriber, expectedMessages);
     }
 }

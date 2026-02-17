@@ -21,7 +21,7 @@ public class PubSubQueueTests
         using var publisher = BuildClient(isCluster);
 
         await publisher.PublishAsync(message.Channel, message.Message);
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        await AssertReceivedAsync(subscriber, [message]);
     }
 
     [Theory]
@@ -34,7 +34,7 @@ public class PubSubQueueTests
         using var publisher = BuildClient(isCluster);
 
         await publisher.PublishAsync(message.Channel, message.Message);
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        await AssertReceivedAsync(subscriber, [message]);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class PubSubQueueTests
         using var publisher = BuildClusterClient();
 
         await publisher.SPublishAsync(message.Channel, message.Message);
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        await AssertReceivedAsync(subscriber, [message]);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class PubSubQueueTests
             await publisher.PublishAsync(msg.Channel, msg.Message);
 
         // Verify that order is preserved.
-        await AssertMessagesReceivedAsync(subscriber, expectedMessages);
+        await AssertReceivedAsync(subscriber, expectedMessages);
     }
 
     [Fact]

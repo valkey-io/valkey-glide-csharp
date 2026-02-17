@@ -18,12 +18,14 @@ public class PubSubBasicTests
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
         var message = BuildMessage(channelMode);
+        var messages = new[] { message };
 
-        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, [message]);
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, messages);
+        await AssertSubscribedAsync(subscriber, channelMode, messages);
+
         using var publisher = BuildClient(isCluster);
-
-        await PublishMessageAsync(publisher, channelMode, message);
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        await PublishMessagesAsync(publisher, channelMode, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
@@ -34,13 +36,14 @@ public class PubSubBasicTests
 
         var message1 = BuildMessage(channelMode);
         var message2 = BuildMessage(channelMode);
+        var messages = new[] { message1, message2 };
 
-        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, [message1, message2]);
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, messages);
+        await AssertSubscribedAsync(subscriber, channelMode, messages);
+
         using var publisher = BuildClient(isCluster);
-
-        await PublishMessageAsync(publisher, channelMode, message1);
-        await PublishMessageAsync(publisher, channelMode, message2);
-        await AssertMessagesReceivedAsync(subscriber, [message1, message2]);
+        await PublishMessagesAsync(publisher, channelMode, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
@@ -50,14 +53,18 @@ public class PubSubBasicTests
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
         var message = BuildMessage(channelMode);
+        var messages = new[] { message };
 
-        using var subscriber1 = await BuildSubscriber(isCluster, channelMode, subMode, [message]);
-        using var subscriber2 = await BuildSubscriber(isCluster, channelMode, subMode, [message]);
+        using var subscriber1 = await BuildSubscriber(isCluster, channelMode, subMode, messages);
+        await AssertSubscribedAsync(subscriber1, channelMode, messages);
+
+        using var subscriber2 = await BuildSubscriber(isCluster, channelMode, subMode, messages);
+        await AssertSubscribedAsync(subscriber2, channelMode, messages);
+
         using var publisher = BuildClient(isCluster);
+        await PublishMessagesAsync(publisher, channelMode, messages);
 
-        await PublishMessageAsync(publisher, channelMode, message);
-
-        await AssertMessagesReceivedAsync(subscriber1, [message]);
-        await AssertMessagesReceivedAsync(subscriber2, [message]);
+        await AssertReceivedAsync(subscriber1, messages);
+        await AssertReceivedAsync(subscriber2, messages);
     }
 }

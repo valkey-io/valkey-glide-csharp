@@ -27,7 +27,7 @@ public class PubSubCoexistenceTests
         foreach (var message in messages)
             await publisher.PublishAsync(message.Channel, message.Message);
 
-        await AssertMessagesReceivedAsync(subscriber, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
@@ -46,7 +46,7 @@ public class PubSubCoexistenceTests
         foreach (var message in messages)
             await publisher.PublishAsync(message.Channel, message.Message);
 
-        await AssertMessagesReceivedAsync(subscriber, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class PubSubCoexistenceTests
         foreach (var message in messages)
             await publisher.SPublishAsync(message.Channel, message.Message);
 
-        await AssertMessagesReceivedAsync(subscriber, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public class PubSubCoexistenceTests
             await publisher.CustomCommand(args);
         }
 
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        await AssertReceivedAsync(subscriber, [message]);
     }
 
     [Fact]
@@ -110,6 +110,6 @@ public class PubSubCoexistenceTests
         var args = new GlideString[] { "SPUBLISH", message.Channel, message.Message };
         await publisher.CustomCommand(args);
 
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        await AssertReceivedAsync(subscriber, [message]);
     }
 }

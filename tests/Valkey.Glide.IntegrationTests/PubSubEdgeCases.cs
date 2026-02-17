@@ -24,7 +24,7 @@ public class PubSubEdgeCaseTests
         await publisher.PublishAsync(channel, largeMessage);
 
         var expected = PubSubMessage.FromChannel(largeMessage, channel);
-        await AssertMessagesReceivedAsync(subscriber, [expected]);
+        await AssertReceivedAsync(subscriber, [expected]);
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public class PubSubEdgeCaseTests
         await publisher.PublishAsync(channel, largeMessage);
 
         var expected = PubSubMessage.FromPattern(largeMessage, channel, pattern);
-        await AssertMessagesReceivedAsync(subscriber, [expected]);
+        await AssertReceivedAsync(subscriber, [expected]);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class PubSubEdgeCaseTests
         await publisher.SPublishAsync(channel, largeMessage);
 
         var expected = PubSubMessage.FromShardChannel(largeMessage, channel);
-        await AssertMessagesReceivedAsync(subscriber, [expected]);
+        await AssertReceivedAsync(subscriber, [expected]);
     }
 
     [Theory]
@@ -79,7 +79,7 @@ public class PubSubEdgeCaseTests
         foreach (var message in messages)
             await publisher.PublishAsync(channel, message.Message);
 
-        await AssertMessagesReceivedAsync(subscriber, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     /// <summary>

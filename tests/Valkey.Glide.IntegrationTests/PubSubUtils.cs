@@ -136,7 +136,7 @@ public static class PubSubUtils
     };
 
     /// <summary>
-    /// Builds a subscriber from messages, extracting the appropriate subscription targets for the given channel mode.
+    /// Builds a subscriber that will receive the specified messages using the given subscription mode.
     /// </summary>
     public static Task<BaseClient> BuildSubscriber(
         bool isCluster,
@@ -158,19 +158,25 @@ public static class PubSubUtils
     }
 
     /// <summary>
-    /// Publishes the given message using the appropriate publish method for the specified channel mode.
+    /// Publishes the specified messages sequentially using the appropriate publish method for the channel mode.
     /// </summary>
-    public static Task PublishMessageAsync(BaseClient publisher, PubSubChannelMode channelMode, PubSubMessage message)
+    public static async Task PublishMessagesAsync(BaseClient publisher, PubSubChannelMode channelMode, IEnumerable<PubSubMessage> messages)
     {
         if (channelMode == PubSubChannelMode.Sharded)
         {
-            if (publisher is not GlideClusterClient clusterPublisher)
+            if (publisher is not GlideClusterClient)
                 throw new ArgumentException("Cluster client is required for publishing to shard channels.");
 
-            return AssertSPublishAsync(clusterPublisher, message);
+            foreach (var message in messages)
+                await AssertSPublishAsync((GlideClusterClient)publisher, message);
+
+            return;
         }
 
-        return AssertPublishAsync(publisher, message);
+        foreach (var message in messages)
+            await AssertPublishAsync(publisher, message);
+
+        return;
     }
 
     /// <summary>
@@ -178,7 +184,7 @@ public static class PubSubUtils
     /// </summary>
     public static string BuildChannel()
     {
-        return $"test-{Guid.NewGuid()}-channel";
+        return $"{{test:{Guid.NewGuid()}}}:channel";
     }
 
     /// <summary>
@@ -187,7 +193,7 @@ public static class PubSubUtils
     public static (string, string) BuildChannelAndPattern()
     {
         var id = Guid.NewGuid().ToString();
-        return ($"test-{id}-channel", $"test-{id}-*");
+        return ($"{{test:{id}}}:channel", $"{{test:{id}}}:*");
     }
 
     /// <summary>
@@ -196,8 +202,8 @@ public static class PubSubUtils
     public static PubSubMessage BuildChannelMessage()
     {
         var id = Guid.NewGuid().ToString();
-        var message = $"test-{id}-message";
-        var channel = $"test-{id}-channel";
+        var message = $"{{test:{id}}}:message";
+        var channel = $"{{test:{id}}}:channel";
 
         return PubSubMessage.FromChannel(message, channel);
     }
@@ -208,9 +214,9 @@ public static class PubSubUtils
     public static PubSubMessage BuildPatternMessage()
     {
         var id = Guid.NewGuid().ToString();
-        var message = $"test-{id}-message";
-        var channel = $"test-{id}-channel";
-        var pattern = $"test-{id}-*";
+        var message = $"{{test:{id}}}:message";
+        var channel = $"{{test:{id}}}:channel";
+        var pattern = $"{{test:{id}}}:*";
 
         return PubSubMessage.FromPattern(message, channel, pattern);
     }
@@ -221,8 +227,8 @@ public static class PubSubUtils
     public static PubSubMessage BuildShardChannelMessage()
     {
         var id = Guid.NewGuid().ToString();
-        var message = $"test-{id}-message";
-        var channel = $"test-{id}-channel";
+        var message = $"{{test:{id}}}:message";
+        var channel = $"{{test:{id}}}:channel";
 
         return PubSubMessage.FromShardChannel(message, channel);
     }
@@ -281,17 +287,12 @@ public static class PubSubUtils
     {
         var configBuilder = TestConfiguration.DefaultClientConfig();
 
-        // Set defaults.
-        channels ??= [];
-        patterns ??= [];
-        timeout ??= MaxDuration;
-
         if (mode == SubscriptionMode.Config)
         {
             var pubSubConfig = new StandalonePubSubSubscriptionConfig();
 
-            foreach (var ch in channels) pubSubConfig.WithChannel(ch);
-            foreach (var p in patterns) pubSubConfig.WithPattern(p);
+            if (channels != null) foreach (var ch in channels) pubSubConfig.WithChannel(ch);
+            if (patterns != null) foreach (var p in patterns) pubSubConfig.WithPattern(p);
             if (callback != null) pubSubConfig.WithCallback(callback);
 
             var config = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
@@ -302,13 +303,14 @@ public static class PubSubUtils
 
         if (mode == SubscriptionMode.Lazy)
         {
-            await client.SubscribeLazyAsync(channels!);
-            await client.PSubscribeLazyAsync(patterns!);
+            if (channels != null && channels.Any()) await client.SubscribeLazyAsync(channels);
+            if (patterns != null && patterns.Any()) await client.PSubscribeLazyAsync(patterns);
         }
         else
         {
-            await client.SubscribeAsync(channels!, timeout.Value);
-            await client.PSubscribeAsync(patterns!, timeout.Value);
+            timeout ??= MaxDuration;
+            if (channels != null && channels.Any()) await client.SubscribeAsync(channels, timeout.Value);
+            if (patterns != null && patterns.Any()) await client.PSubscribeAsync(patterns, timeout.Value);
         }
 
         return client;
@@ -327,19 +329,13 @@ public static class PubSubUtils
     {
         var configBuilder = TestConfiguration.DefaultClusterClientConfig();
 
-        // Set defaults.
-        channels ??= [];
-        patterns ??= [];
-        shardChannels ??= [];
-        timeout ??= MaxDuration;
-
         if (mode == SubscriptionMode.Config)
         {
             var pubSubConfig = new ClusterPubSubSubscriptionConfig();
 
-            foreach (var ch in channels) pubSubConfig.WithChannel(ch);
-            foreach (var p in patterns) pubSubConfig.WithPattern(p);
-            foreach (var ch in shardChannels) pubSubConfig.WithShardChannel(ch);
+            if (channels != null) foreach (var ch in channels) pubSubConfig.WithChannel(ch);
+            if (patterns != null) foreach (var p in patterns) pubSubConfig.WithPattern(p);
+            if (shardChannels != null) foreach (var ch in shardChannels) pubSubConfig.WithShardChannel(ch);
             if (callback != null) pubSubConfig.WithCallback(callback);
 
             var clientConfig = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
@@ -350,15 +346,16 @@ public static class PubSubUtils
 
         if (mode == SubscriptionMode.Lazy)
         {
-            await client.SubscribeLazyAsync(channels!);
-            await client.PSubscribeLazyAsync(patterns!);
-            await client.SSubscribeLazyAsync(shardChannels!);
+            if (channels != null && channels.Any()) await client.SubscribeLazyAsync(channels);
+            if (patterns != null && patterns.Any()) await client.PSubscribeLazyAsync(patterns);
+            if (shardChannels != null && shardChannels.Any()) await client.SSubscribeLazyAsync(shardChannels);
         }
         else
         {
-            await client.SubscribeAsync(channels, timeout.Value);
-            await client.PSubscribeAsync(patterns, timeout.Value);
-            await client.SSubscribeAsync(shardChannels, timeout.Value);
+            timeout ??= MaxDuration;
+            if (channels != null && channels.Any()) await client.SubscribeAsync(channels, timeout.Value);
+            if (patterns != null && patterns.Any()) await client.PSubscribeAsync(patterns, timeout.Value);
+            if (shardChannels != null && shardChannels.Any()) await client.SSubscribeAsync(shardChannels, timeout.Value);
         }
 
         return client;
@@ -413,6 +410,42 @@ public static class PubSubUtils
         }
 
         Assert.Fail($"Expected at least one subscriber for shard channel '{message.Channel}'");
+    }
+
+    /// <summary>
+    /// Asserts that the client is subscribed to receive the specified messages over the given channel mode.
+    /// </summary>
+    public static Task AssertSubscribedAsync(BaseClient client, PubSubChannelMode channelMode, IEnumerable<PubSubMessage> messages)
+    {
+        var targets = channelMode == PubSubChannelMode.Pattern
+            ? messages.Select(m => m.Pattern!)
+            : messages.Select(m => m.Channel);
+
+        return channelMode switch
+        {
+            PubSubChannelMode.Exact => AssertSubscribedAsync(client, targets),
+            PubSubChannelMode.Pattern => AssertPSubscribedAsync(client, targets),
+            PubSubChannelMode.Sharded => client is GlideClusterClient clusterClient
+                ? AssertSSubscribedAsync(clusterClient, targets)
+                : throw new ArgumentException("Cluster client is required for shard channel subscriptions."),
+            _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
+        };
+    }
+
+    /// <summary>
+    /// Asserts that there is at least one subscriber to each of the specified targets based on the given channel mode.
+    /// </summary>
+    public static Task AssertSubscribedAsync(BaseClient client, PubSubChannelMode channelMode, IEnumerable<string> targets)
+    {
+        return channelMode switch
+        {
+            PubSubChannelMode.Exact => AssertSubscribedAsync(client, targets),
+            PubSubChannelMode.Pattern => AssertPSubscribedAsync(client, targets),
+            PubSubChannelMode.Sharded => client is GlideClusterClient clusterClient
+                ? AssertSSubscribedAsync(clusterClient, targets)
+                : throw new ArgumentException("Cluster client is required for asserting shard channel subscriptions."),
+            _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
+        };
     }
 
     /// <summary>
@@ -583,7 +616,7 @@ public static class PubSubUtils
     /// <summary>
     /// Asserts that the specified messages have been received by the given client.
     /// </summary>
-    public static async Task AssertMessagesReceivedAsync(BaseClient client, IEnumerable<PubSubMessage> expected)
+    public static async Task AssertReceivedAsync(BaseClient client, IEnumerable<PubSubMessage> expected)
     {
         PubSubMessageQueue? queue = client.PubSubQueue;
         Assert.NotNull(queue);

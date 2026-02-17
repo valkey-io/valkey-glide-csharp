@@ -30,7 +30,7 @@ public class PubSubReconnectionTests
 
         var beforeMessage = PubSubMessage.FromChannel("before_kill", channel);
         await publisher.PublishAsync(channel, beforeMessage.Message);
-        await AssertMessagesReceivedAsync(subscriber, [beforeMessage]);
+        await AssertReceivedAsync(subscriber, [beforeMessage]);
 
         // Kill connections and wait for reconnection.
         await KillConnections(publisher);
@@ -41,7 +41,7 @@ public class PubSubReconnectionTests
 
         var afterMessage = PubSubMessage.FromChannel("after_kill", channel);
         await publisher.PublishAsync(channel, afterMessage.Message);
-        await AssertMessagesReceivedAsync(subscriber, [afterMessage]);
+        await AssertReceivedAsync(subscriber, [afterMessage]);
     }
 
     [Theory]
@@ -61,7 +61,7 @@ public class PubSubReconnectionTests
 
         var beforeMessage = PubSubMessage.FromPattern("before_kill", channel, pattern);
         await publisher.PublishAsync(channel, beforeMessage.Message);
-        await AssertMessagesReceivedAsync(subscriber, [beforeMessage]);
+        await AssertReceivedAsync(subscriber, [beforeMessage]);
 
         // Kill connections and wait for reconnection.
         await KillConnections(publisher);
@@ -72,7 +72,7 @@ public class PubSubReconnectionTests
 
         var afterMessage = PubSubMessage.FromPattern("after_kill", channel, pattern);
         await publisher.PublishAsync(channel, afterMessage.Message);
-        await AssertMessagesReceivedAsync(subscriber, [afterMessage]);
+        await AssertReceivedAsync(subscriber, [afterMessage]);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class PubSubReconnectionTests
 
         var beforeMessage = PubSubMessage.FromShardChannel("before_kill", shardChannel);
         await publisher.SPublishAsync(shardChannel, beforeMessage.Message);
-        await AssertMessagesReceivedAsync(subscriber, [beforeMessage]);
+        await AssertReceivedAsync(subscriber, [beforeMessage]);
 
         // Kill connections and wait for reconnection.
         await KillConnections(publisher);
@@ -103,7 +103,7 @@ public class PubSubReconnectionTests
 
         var afterMessage = PubSubMessage.FromShardChannel("after_kill", shardChannel);
         await publisher.SPublishAsync(shardChannel, afterMessage.Message);
-        await AssertMessagesReceivedAsync(subscriber, [afterMessage]);
+        await AssertReceivedAsync(subscriber, [afterMessage]);
     }
 
     /// <summary>
