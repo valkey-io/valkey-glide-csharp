@@ -46,7 +46,7 @@ public class PubSubCallbackTests
     [Fact]
     public async Task Callback_ShardChannel_ReceivesMessage()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message = BuildShardChannelMessage();
         var received = new TaskCompletionSource<PubSubMessage>();

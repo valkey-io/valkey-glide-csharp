@@ -126,7 +126,7 @@ public class PubSubIntrospectionTests()
     [Fact]
     public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsEmpty()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         using var server = new ClusterServer();
         using var client = await server.CreateClusterClient();
@@ -138,7 +138,7 @@ public class PubSubIntrospectionTests()
     [Fact]
     public async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var msg = BuildShardChannelMessage();
 
@@ -156,7 +156,7 @@ public class PubSubIntrospectionTests()
     [Fact]
     public async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var msg = BuildShardChannelMessage();
 
@@ -174,7 +174,7 @@ public class PubSubIntrospectionTests()
     [Fact]
     public async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var msg = BuildShardChannelMessage();
         using var client = TestConfiguration.DefaultClusterClient();
@@ -188,7 +188,7 @@ public class PubSubIntrospectionTests()
     [Fact]
     public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardChannelCounts()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var msg1 = BuildShardChannelMessage();
         var msg2 = BuildShardChannelMessage();

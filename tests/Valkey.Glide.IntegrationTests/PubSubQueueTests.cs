@@ -40,7 +40,7 @@ public class PubSubQueueTests
     [Fact]
     public async Task Queue_ShardChannel_ReceivesMessage()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message = BuildShardChannelMessage();
 

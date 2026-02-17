@@ -46,7 +46,7 @@ public class PubSubEdgeCaseTests
     [Fact]
     public async Task LargeMessage_ShardChannel_DeliversSuccessfully()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var channel = BuildChannel();
         var largeMessage = GenerateLargeMessage();

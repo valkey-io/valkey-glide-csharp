@@ -128,7 +128,7 @@ public class PubSubUnsubscribeTests
     [Fact]
     public async Task SUnsubscribeLazy_ShardChannel_RemovesOne()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message1 = BuildShardChannelMessage();
         var message2 = BuildShardChannelMessage();
@@ -143,7 +143,7 @@ public class PubSubUnsubscribeTests
     [Fact]
     public async Task SUnsubscribeLazy_ShardChannels_RemovesMultiple()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message1 = BuildShardChannelMessage();
         var message2 = BuildShardChannelMessage();
@@ -161,7 +161,7 @@ public class PubSubUnsubscribeTests
     [Fact]
     public async Task SUnsubscribeLazy_AllShardChannels_RemovesAll()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message1 = BuildShardChannelMessage();
         var message2 = BuildShardChannelMessage();
@@ -175,7 +175,7 @@ public class PubSubUnsubscribeTests
     [Fact]
     public async Task SUnsubscribeLazy_NoShardChannels_RemovesAll()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message1 = BuildShardChannelMessage();
         var message2 = BuildShardChannelMessage();

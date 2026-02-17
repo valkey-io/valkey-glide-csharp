@@ -52,7 +52,7 @@ public class PubSubCoexistenceTests
     [Fact]
     public async Task ManyShardChannels_Coexistence_NoInterference()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var messages = Enumerable.Range(0, 5)
             .Select(_ => BuildShardChannelMessage())
@@ -98,7 +98,7 @@ public class PubSubCoexistenceTests
     [Fact]
     public async Task CustomSPublishCommand_WithPubSub_WorksCorrectly()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message = BuildShardChannelMessage();
 

@@ -78,7 +78,7 @@ public class PubSubReconnectionTests
     [Fact]
     public async Task ResubscribeAfterConnectionKill_ShardChannel_ResubscribesAutomatically()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var shardChannel = BuildChannel();
         var shardChannels = new[] { shardChannel };

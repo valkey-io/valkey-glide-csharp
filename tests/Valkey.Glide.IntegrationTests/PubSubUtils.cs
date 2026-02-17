@@ -30,6 +30,34 @@ public enum SubscriptionMode
 /// </summary>
 public static class PubSubUtils
 {
+    #region Test Data
+
+    /// <summary>
+    /// Theory data for parameterized tests that support both standalone and cluster modes.
+    /// </summary>
+    public static TheoryData<bool> IsCluster => [true, false];
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode, channel mode, and subscription mode.
+    /// </summary>
+    public static TheoryData<bool, PubSubChannelMode, SubscriptionMode> SubscriptionData
+    {
+        get
+        {
+            var data = new TheoryData<bool, PubSubChannelMode, SubscriptionMode>();
+            foreach (bool isCluster in new[] { false, true })
+                foreach (PubSubChannelMode channelMode in Enum.GetValues<PubSubChannelMode>())
+                {
+                    if (!isCluster && channelMode == PubSubChannelMode.Sharded)
+                        continue;
+                    foreach (SubscriptionMode subMode in Enum.GetValues<SubscriptionMode>())
+                        data.Add(isCluster, channelMode, subMode);
+                }
+            return data;
+        }
+    }
+
+    #endregion
     #region Constants
 
     /// <summary>
@@ -41,16 +69,6 @@ public static class PubSubUtils
     /// Retry interval for pub/sub assertions.
     /// </summary>
     public static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(0.5);
-
-    /// <summary>
-    /// Skip message for tests requiring sharded PubSub support.
-    /// </summary>
-    public const string SkipShardedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
-
-    /// <summary>
-    /// Theory data for parameterized tests that support both standalone and cluster modes.
-    /// </summary>
-    public static TheoryData<bool> IsCluster => [true, false];
 
     #endregion
     #region Helpers
@@ -65,10 +83,95 @@ public static class PubSubUtils
     /// Returns true if sharded pub/sub is supported for the given cluster mode.
     /// </summary>
     public static bool IsShardedSupported(bool isCluster)
-        => isCluster && IsShardedSupported();
+        => isCluster && TestConfiguration.IsVersionAtLeast("7.0.0");
+
+    /// <summary>
+    /// Skips the current test unless sharded pub/sub is supported.
+    /// </summary>
+    public static void SkipUnlessShardedSupported()
+    {
+        if (!IsShardedSupported())
+        {
+            Assert.Skip("Sharded pub/sub is supported since Valkey 7.0.0");
+        }
+    }
+
+    /// <summary>
+    /// Skips the current test unless sharded pub/sub is supported for the given cluster mode.
+    /// </summary>
+    public static void SkipUnlessShardedSupported(bool isCluster)
+    {
+        if (!isCluster)
+        {
+            Assert.Skip("Sharded pub/sub is not supported for standalone clients.");
+            return;
+        }
+
+        SkipUnlessShardedSupported();
+    }
+
+    /// <summary>
+    /// Skips the current test unless the given cluster and channel mode are supported.
+    /// </summary>
+    public static void SkipUnlessChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
+    {
+        if (channelMode != PubSubChannelMode.Sharded)
+            return;
+
+        SkipUnlessShardedSupported(isCluster);
+    }
 
     #endregion
     #region Builders
+
+    /// <summary>
+    /// Returns a message appropriate for the given channel mode.
+    /// </summary>
+    public static PubSubMessage BuildMessage(PubSubChannelMode channelMode) => channelMode switch
+    {
+        PubSubChannelMode.Exact => BuildChannelMessage(),
+        PubSubChannelMode.Pattern => BuildPatternMessage(),
+        PubSubChannelMode.Sharded => BuildShardChannelMessage(),
+        _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
+    };
+
+    /// <summary>
+    /// Builds a subscriber from messages, extracting the appropriate subscription targets for the given channel mode.
+    /// </summary>
+    public static Task<BaseClient> BuildSubscriber(
+        bool isCluster,
+        PubSubChannelMode channelMode,
+        SubscriptionMode subscriptionMode,
+        IEnumerable<PubSubMessage> messages)
+    {
+        var targets = channelMode == PubSubChannelMode.Pattern
+            ? messages.Select(m => m.Pattern!)
+            : messages.Select(m => m.Channel);
+
+        return channelMode switch
+        {
+            PubSubChannelMode.Exact => BuildSubscriber(isCluster, subscriptionMode, channels: targets),
+            PubSubChannelMode.Pattern => BuildSubscriber(isCluster, subscriptionMode, patterns: targets),
+            PubSubChannelMode.Sharded => BuildSubscriber(isCluster, subscriptionMode, shardChannels: targets),
+            _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
+        };
+    }
+
+    /// <summary>
+    /// Publishes the given message using the appropriate publish method for the specified channel mode.
+    /// </summary>
+    public static Task PublishMessageAsync(BaseClient publisher, PubSubChannelMode channelMode, PubSubMessage message)
+    {
+        if (channelMode == PubSubChannelMode.Sharded)
+        {
+            if (publisher is not GlideClusterClient clusterPublisher)
+                throw new ArgumentException("Cluster client is required for publishing to shard channels.");
+
+            return AssertSPublishAsync(clusterPublisher, message);
+        }
+
+        return AssertPublishAsync(publisher, message);
+    }
 
     /// <summary>
     /// Returns a unique exact channel name for testing.

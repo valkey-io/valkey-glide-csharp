@@ -12,141 +12,50 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubBasicTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ChannelSubscription_SingleChannel_ReceivesMessage(bool isCluster)
+    [MemberData(nameof(SubscriptionData), MemberType = typeof(PubSubUtils))]
+    public static async Task SingleSubscription_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode, SubscriptionMode subscriptionMode)
     {
-        var message = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [message.Channel]);
+        var message = BuildMessage(channelMode);
+
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, [message]);
         using var publisher = BuildClient(isCluster);
 
-        await publisher.PublishAsync(message.Channel, message.Message);
-
+        await PublishMessageAsync(publisher, channelMode, message);
         await AssertMessagesReceivedAsync(subscriber, [message]);
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ChannelSubscription_ManyChannels_ReceivesAllMessages(bool isCluster)
+    [MemberData(nameof(SubscriptionData), MemberType = typeof(PubSubUtils))]
+    public static async Task ManySubscriptions_ReceivesAllMessages(bool isCluster, PubSubChannelMode channelMode, SubscriptionMode subscriptionMode)
     {
-        var message1 = BuildChannelMessage();
-        var message2 = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [message1.Channel, message2.Channel]);
+        var message1 = BuildMessage(channelMode);
+        var message2 = BuildMessage(channelMode);
+
+        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, [message1, message2]);
         using var publisher = BuildClient(isCluster);
 
-        await publisher.PublishAsync(message1.Channel, message1.Message);
-        await publisher.PublishAsync(message2.Channel, message2.Message);
-
+        await PublishMessageAsync(publisher, channelMode, message1);
+        await PublishMessageAsync(publisher, channelMode, message2);
         await AssertMessagesReceivedAsync(subscriber, [message1, message2]);
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ChannelSubscription_MultipleSubscribers_AllReceiveMessage(bool isCluster)
+    [MemberData(nameof(SubscriptionData), MemberType = typeof(PubSubUtils))]
+    public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, PubSubChannelMode channelMode, SubscriptionMode subMode)
     {
-        var message = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        using var subscriber1 = await BuildSubscriber(isCluster, channels: [message.Channel]);
-        using var subscriber2 = await BuildSubscriber(isCluster, channels: [message.Channel]);
+        var message = BuildMessage(channelMode);
+
+        using var subscriber1 = await BuildSubscriber(isCluster, channelMode, subMode, [message]);
+        using var subscriber2 = await BuildSubscriber(isCluster, channelMode, subMode, [message]);
         using var publisher = BuildClient(isCluster);
 
-        await publisher.PublishAsync(message.Channel, message.Message);
-
-        await AssertMessagesReceivedAsync(subscriber1, [message]);
-        await AssertMessagesReceivedAsync(subscriber2, [message]);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task PatternSubscription_SinglePattern_ReceivesMatchingMessages(bool isCluster)
-    {
-        var message = BuildPatternMessage();
-
-        using var subscriber = await BuildSubscriber(isCluster, patterns: [message.Pattern!]);
-        using var publisher = BuildClient(isCluster);
-
-        await publisher.PublishAsync(message.Channel, message.Message);
-
-        await AssertMessagesReceivedAsync(subscriber, [message]);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task PatternSubscription_ManyPatterns_ReceivesAllMatchingMessages(bool isCluster)
-    {
-        var message1 = BuildPatternMessage();
-        var message2 = BuildPatternMessage();
-
-        using var subscriber = await BuildSubscriber(isCluster, patterns: [message1.Pattern!, message2.Pattern!]);
-        using var publisher = BuildClient(isCluster);
-
-        await publisher.PublishAsync(message1.Channel, message1.Message);
-        await publisher.PublishAsync(message2.Channel, message2.Message);
-
-        await AssertMessagesReceivedAsync(subscriber, [message1, message2]);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task PatternSubscription_MultipleSubscribers_AllReceiveMessage(bool isCluster)
-    {
-        var message = BuildPatternMessage();
-
-        using var subscriber1 = await BuildSubscriber(isCluster, patterns: [message.Pattern!]);
-        using var subscriber2 = await BuildSubscriber(isCluster, patterns: [message.Pattern!]);
-        using var publisher = BuildClient(isCluster);
-
-        await publisher.PublishAsync(message.Channel, message.Message);
-
-        await AssertMessagesReceivedAsync(subscriber1, [message]);
-        await AssertMessagesReceivedAsync(subscriber2, [message]);
-    }
-
-    [Fact]
-    public async Task ShardChannelSubscription_SingleChannel_ReceivesMessage()
-    {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var message = BuildShardChannelMessage();
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: [message.Channel]);
-        using var publisher = await GlideClusterClient.CreateClient(TestConfiguration.DefaultClusterClientConfig().Build());
-
-        await publisher.SPublishAsync(message.Channel, message.Message);
-
-        await AssertMessagesReceivedAsync(subscriber, [message]);
-    }
-
-    [Fact]
-    public async Task ShardChannelSubscription_ManyChannels_ReceivesAllMessages()
-    {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var message1 = BuildShardChannelMessage();
-        var message2 = BuildShardChannelMessage();
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: [message1.Channel, message2.Channel]);
-        using var publisher = await GlideClusterClient.CreateClient(TestConfiguration.DefaultClusterClientConfig().Build());
-
-        await publisher.SPublishAsync(message1.Channel, message1.Message);
-        await publisher.SPublishAsync(message2.Channel, message2.Message);
-
-        await AssertMessagesReceivedAsync(subscriber, [message1, message2]);
-    }
-
-    [Fact]
-    public async Task ShardChannelSubscription_MultipleSubscribers_AllReceiveMessage()
-    {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var message = BuildShardChannelMessage();
-
-        using var subscriber1 = await BuildClusterSubscriber(shardChannels: [message.Channel]);
-        using var subscriber2 = await BuildClusterSubscriber(shardChannels: [message.Channel]);
-        using var publisher = BuildClusterClient();
-
-        await publisher.SPublishAsync(message.Channel, message.Message);
+        await PublishMessageAsync(publisher, channelMode, message);
 
         await AssertMessagesReceivedAsync(subscriber1, [message]);
         await AssertMessagesReceivedAsync(subscriber2, [message]);

@@ -36,7 +36,7 @@ public class PubSubSubscriptionMethodsTests
     [Fact]
     public async Task ConfigSubscription_ShardChannel_SubscribesImmediately()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message = BuildShardChannelMessage();
         var shardChannels = new[] { message.Channel };
@@ -127,7 +127,7 @@ public class PubSubSubscriptionMethodsTests
     [Fact]
     public async Task LazySubscription_ShardChannel_SubscribesAsynchronously()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message = BuildShardChannelMessage();
         var shardChannels = new string[] { message.Channel };
@@ -141,7 +141,7 @@ public class PubSubSubscriptionMethodsTests
     [Fact]
     public async Task LazySubscription_ShardChannels_SubscribesAsynchronously()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
         var message1 = BuildShardChannelMessage();
         var message2 = BuildShardChannelMessage();
