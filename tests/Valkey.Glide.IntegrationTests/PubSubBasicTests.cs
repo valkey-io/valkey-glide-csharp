@@ -12,8 +12,8 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubBasicTests
 {
     [Theory]
-    [MemberData(nameof(SubscriptionData), MemberType = typeof(PubSubUtils))]
-    public static async Task SingleSubscription_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode, SubscriptionMode subscriptionMode)
+    [MemberData(nameof(SubscriptionAndChannelModeOptions), MemberType = typeof(PubSubUtils))]
+    public static async Task SingleSubscription_ReceivesMessage(bool isCluster, SubscribeMode subscriptionMode, PubSubChannelMode channelMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
@@ -29,8 +29,8 @@ public class PubSubBasicTests
     }
 
     [Theory]
-    [MemberData(nameof(SubscriptionData), MemberType = typeof(PubSubUtils))]
-    public static async Task ManySubscriptions_ReceivesAllMessages(bool isCluster, PubSubChannelMode channelMode, SubscriptionMode subscriptionMode)
+    [MemberData(nameof(SubscriptionAndChannelModeOptions), MemberType = typeof(PubSubUtils))]
+    public static async Task ManySubscriptions_ReceivesAllMessages(bool isCluster, SubscribeMode subscriptionMode, PubSubChannelMode channelMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
@@ -47,8 +47,8 @@ public class PubSubBasicTests
     }
 
     [Theory]
-    [MemberData(nameof(SubscriptionData), MemberType = typeof(PubSubUtils))]
-    public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, PubSubChannelMode channelMode, SubscriptionMode subMode)
+    [MemberData(nameof(SubscriptionAndChannelModeOptions), MemberType = typeof(PubSubUtils))]
+    public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, SubscribeMode subMode, PubSubChannelMode channelMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 

@@ -12,7 +12,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubUnsubscribeTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task UnsubscribeLazy_Channel_RemovesOne(bool isCluster)
     {
         var message1 = BuildChannelMessage();
@@ -26,7 +26,7 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task UnsubscribeLazy_Channels_RemovesMultiple(bool isCluster)
     {
         var message1 = BuildChannelMessage();
@@ -43,7 +43,7 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task UnsubscribeLazy_AllChannels_RemovesAll(bool isCluster)
     {
         var message1 = BuildChannelMessage();
@@ -56,7 +56,7 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task UnsubscribeLazy_NoChannels_RemovesAll(bool isCluster)
     {
         var message1 = BuildChannelMessage();
@@ -69,7 +69,7 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PUnsubscribeLazy_Pattern_RemovesOne(bool isCluster)
     {
         var message1 = BuildPatternMessage();
@@ -83,7 +83,7 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PUnsubscribeLazy_Patterns_RemovesMultiple(bool isCluster)
     {
         var message1 = BuildPatternMessage();
@@ -100,7 +100,7 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PUnsubscribeLazy_AllPatterns_RemovesAll(bool isCluster)
     {
         var message1 = BuildPatternMessage();
@@ -113,7 +113,7 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PUnsubscribeLazy_NoPatterns_RemovesAll(bool isCluster)
     {
         var message1 = BuildPatternMessage();

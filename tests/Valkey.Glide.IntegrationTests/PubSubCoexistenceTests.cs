@@ -12,7 +12,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCoexistenceTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task ManyChannels_Coexistence_NoInterference(bool isCluster)
     {
         var messages = Enumerable.Range(0, 5)
@@ -31,7 +31,7 @@ public class PubSubCoexistenceTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task ManyPatterns_Coexistence_NoInterference(bool isCluster)
     {
         var messages = Enumerable.Range(0, 5)
@@ -69,7 +69,7 @@ public class PubSubCoexistenceTests
     }
 
     [Theory]
-    [MemberData(nameof(PubSubUtils.IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task CustomPublishCommand_WithPubSub_WorksCorrectly(bool isCluster)
     {
         var message = BuildChannelMessage();

@@ -2,6 +2,8 @@
 
 using System.Collections.Concurrent;
 
+using static Valkey.Glide.IntegrationTests.PubSubUtils;
+
 // Type alias for readability.
 using MessageInfo = (Valkey.Glide.ValkeyChannel Channel, Valkey.Glide.ValkeyValue Message);
 
@@ -29,11 +31,8 @@ public class ISubscriberCompatibilityTests
     private static readonly TimeSpan AssertRetryInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan AssertTimeout = TimeSpan.FromSeconds(5);
 
-    // Parametrized data to test both standalone and cluster clients.
-    public static TheoryData<bool> IsCluster => [true, false];
-
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Literal_Subscribe_Handler(bool isCluster)
     {
         var literal = BuildLiteral();
@@ -60,7 +59,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Literal_Subscribe_Queue(bool isCluster)
     {
         var literal = BuildLiteral();
@@ -85,7 +84,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Pattern_Subscribe_Handler(bool isCluster)
     {
         var pattern = BuildPattern();
@@ -113,7 +112,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Pattern_Subscribe_Queue(bool isCluster)
     {
         var pattern = BuildPattern();
@@ -199,7 +198,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task MultipleHandlers(bool isCluster)
     {
         var channel = BuildLiteral();
@@ -242,7 +241,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task MultipleQueues(bool isCluster)
     {
         var channel = BuildLiteral();
@@ -279,7 +278,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task QueueAndHandler_UnsubscribeHandler(bool isCluster)
     {
         var channel = BuildLiteral();
@@ -319,7 +318,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task QueueAndHandler_UnsubscribeQueue(bool isCluster)
     {
         var channel = BuildLiteral();
@@ -359,7 +358,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task QueueAndHandler_UnsubscribeChannel(bool isCluster)
     {
         var channel = BuildLiteral();
@@ -390,7 +389,7 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task QueueAndHandler_UnsubscribePattern(bool isCluster)
     {
         var pattern = BuildPattern();
@@ -457,10 +456,10 @@ public class ISubscriberCompatibilityTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task QueueAndHandler_UnsubscribeAll(bool isCluster)
     {
-        var isSharded = PubSubUtils.IsShardedSupported(isCluster);
+        var isSharded = IsShardedSupported(isCluster);
 
         var literalChannel = BuildLiteral();
         var pattern = BuildPattern();

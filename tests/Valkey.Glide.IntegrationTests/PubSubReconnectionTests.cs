@@ -14,7 +14,7 @@ public class PubSubReconnectionTests
     private static readonly GlideString[] ClientKillArgs = ["CLIENT", "KILL", "TYPE", "NORMAL", "SKIPME", "yes"];
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task ResubscribeAfterConnectionKill_Channel_ResubscribesAutomatically(bool isCluster)
     {
         var channel = BuildChannel();
@@ -45,7 +45,7 @@ public class PubSubReconnectionTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task ResubscribeAfterConnectionKill_Pattern_ResubscribesAutomatically(bool isCluster)
     {
         var (channel, pattern) = BuildChannelAndPattern();

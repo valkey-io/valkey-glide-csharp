@@ -12,7 +12,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCallbackTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Callback_Channel_ReceivesMessage(bool isCluster)
     {
         var message = BuildChannelMessage();
@@ -28,7 +28,7 @@ public class PubSubCallbackTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Callback_Pattern_ReceivesMessage(bool isCluster)
     {
         var message = BuildPatternMessage();

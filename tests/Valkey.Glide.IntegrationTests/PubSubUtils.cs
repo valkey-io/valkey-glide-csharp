@@ -5,57 +5,137 @@ using Valkey.Glide.TestUtils;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Subscription mode for pub/sub integration tests.
-/// </summary>
-public enum SubscriptionMode
-{
-    /// <summary>
-    /// Configuration subscription (during client initialization).
-    /// </summary>
-    Config,
-
-    /// <summary>
-    /// Lazy subscription (returns immediately without waiting for server confirmation).
-    /// </summary>
-    Lazy,
-
-    /// <summary>
-    /// Blocking subscription (waits for server confirmation).
-    /// </summary>
-    Blocking
-}
-
-/// <summary>
 /// Utility methods for pub/sub integration tests.
 /// </summary>
 public static class PubSubUtils
 {
-    #region Test Data
+    #region Enums
 
     /// <summary>
-    /// Theory data for parameterized tests that support both standalone and cluster modes.
+    /// Subscription mode for pub/sub integration tests.
     /// </summary>
-    public static TheoryData<bool> IsCluster => [true, false];
+    public enum SubscribeMode
+    {
+        /// <summary>
+        /// Configuration subscription (during client initialization).
+        /// </summary>
+        Config,
+
+        /// <summary>
+        /// Lazy subscription (returns immediately without waiting for server confirmation).
+        /// </summary>
+        Lazy,
+
+        /// <summary>
+        /// Blocking subscription (waits for server confirmation).
+        /// </summary>
+        Blocking
+    }
 
     /// <summary>
-    /// Theory data for all valid combinations of cluster mode, channel mode, and subscription mode.
+    /// Unsubscribe mode for pub/sub integration tests.
     /// </summary>
-    public static TheoryData<bool, PubSubChannelMode, SubscriptionMode> SubscriptionData
+    public enum UnsubscribeMode
+    {
+        /// <summary>
+        /// Lazy unsubscribe (returns immediately without waiting for server confirmation).
+        /// </summary>
+        Lazy,
+
+        /// <summary>
+        /// Blocking unsubscribe (waits for server confirmation).
+        /// </summary>
+        Blocking
+    }
+
+    #endregion
+    #region Data
+
+    /// <summary>
+    /// Theory data for cluster mode (cluster vs standalone).
+    /// </summary>
+    public static TheoryData<bool> ClusterModeData => [
+        true,
+        false];
+
+    /// <summary>
+    /// Theory data for pub/sub channel modes (exact, pattern, and shard channels).
+    /// </summary>
+    public static TheoryData<PubSubChannelMode> ChannelModeData => [
+        PubSubChannelMode.Exact,
+        PubSubChannelMode.Pattern,
+        PubSubChannelMode.Sharded];
+
+    /// <summary>
+    /// Theory data for subscription modes (config-based, lazy, and blocking).
+    /// </summary>
+    public static TheoryData<SubscribeMode> SubscribeModeData => [
+        SubscribeMode.Config,
+        SubscribeMode.Lazy,
+        SubscribeMode.Blocking];
+
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode and subscription mode.
+    /// </summary>
+    public static TheoryData<bool, SubscribeMode> SubscribeModeOptions
     {
         get
         {
-            var data = new TheoryData<bool, PubSubChannelMode, SubscriptionMode>();
-            foreach (bool isCluster in new[] { false, true })
-                foreach (PubSubChannelMode channelMode in Enum.GetValues<PubSubChannelMode>())
-                {
-                    if (!isCluster && channelMode == PubSubChannelMode.Sharded)
-                        continue;
-                    foreach (SubscriptionMode subMode in Enum.GetValues<SubscriptionMode>())
-                        data.Add(isCluster, channelMode, subMode);
-                }
+            var data = new TheoryData<bool, SubscribeMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var subscriptionMode in SubscribeModeData)
+                    data.Add(isCluster, subscriptionMode);
+            }
+
             return data;
         }
     }
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode and channel mode.
+    /// </summary>
+    public static TheoryData<bool, PubSubChannelMode> ChannelModeOptions
+    {
+        get
+        {
+            var data = new TheoryData<bool, PubSubChannelMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var channelMode in ChannelModeData)
+                    if (IsChannelModeSupported(isCluster, channelMode))
+                        data.Add(isCluster, channelMode);
+            }
+
+            return data;
+        }
+    }
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode, subscription mode, and channel mode.
+    /// </summary>
+    public static TheoryData<bool, SubscribeMode, PubSubChannelMode> SubscriptionAndChannelModeOptions
+    {
+        get
+        {
+            var data = new TheoryData<bool, SubscribeMode, PubSubChannelMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var subscriptionMode in SubscribeModeData)
+                {
+                    foreach (var channelMode in ChannelModeData)
+                    {
+                        if (IsChannelModeSupported(isCluster, channelMode))
+                            data.Add(isCluster, subscriptionMode, channelMode);
+                    }
+                }
+            }
+
+            return data;
+        }
+    }
+
 
     #endregion
     #region Constants
@@ -83,7 +163,13 @@ public static class PubSubUtils
     /// Returns true if sharded pub/sub is supported for the given cluster mode.
     /// </summary>
     public static bool IsShardedSupported(bool isCluster)
-        => isCluster && TestConfiguration.IsVersionAtLeast("7.0.0");
+        => isCluster && IsShardedSupported();
+
+    /// <summary>
+    /// Returns true if the given cluster mode and channel mode is supported.
+    /// </summary>
+    public static bool IsChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
+        => channelMode != PubSubChannelMode.Sharded || IsShardedSupported(isCluster);
 
     /// <summary>
     /// Skips the current test unless sharded pub/sub is supported.
@@ -91,9 +177,7 @@ public static class PubSubUtils
     public static void SkipUnlessShardedSupported()
     {
         if (!IsShardedSupported())
-        {
-            Assert.Skip("Sharded pub/sub is supported since Valkey 7.0.0");
-        }
+            Assert.Skip("Sharded pub/sub is supported for cluster clients since Valkey 7.0.0");
     }
 
     /// <summary>
@@ -101,13 +185,8 @@ public static class PubSubUtils
     /// </summary>
     public static void SkipUnlessShardedSupported(bool isCluster)
     {
-        if (!isCluster)
-        {
-            Assert.Skip("Sharded pub/sub is not supported for standalone clients.");
-            return;
-        }
-
-        SkipUnlessShardedSupported();
+        if (!IsShardedSupported(isCluster))
+            Assert.Skip("Sharded pub/sub is supported for cluster clients since Valkey 7.0.0");
     }
 
     /// <summary>
@@ -115,10 +194,8 @@ public static class PubSubUtils
     /// </summary>
     public static void SkipUnlessChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
     {
-        if (channelMode != PubSubChannelMode.Sharded)
-            return;
-
-        SkipUnlessShardedSupported(isCluster);
+        if (!IsChannelModeSupported(isCluster, channelMode))
+            Assert.Skip("Sharded pub/sub is supported for cluster clients since Valkey 7.0.0");
     }
 
     #endregion
@@ -141,7 +218,7 @@ public static class PubSubUtils
     public static Task<BaseClient> BuildSubscriber(
         bool isCluster,
         PubSubChannelMode channelMode,
-        SubscriptionMode subscriptionMode,
+        SubscribeMode subscriptionMode,
         IEnumerable<PubSubMessage> messages)
     {
         var targets = channelMode == PubSubChannelMode.Pattern
@@ -256,7 +333,7 @@ public static class PubSubUtils
     /// </summary>
     public static async Task<BaseClient> BuildSubscriber(
         bool isCluster,
-        SubscriptionMode mode = SubscriptionMode.Config,
+        SubscribeMode mode = SubscribeMode.Config,
         IEnumerable<string>? channels = null,
         IEnumerable<string>? patterns = null,
         IEnumerable<string>? shardChannels = null,
@@ -267,7 +344,7 @@ public static class PubSubUtils
         if (!isCluster && shardChannels != null && shardChannels.Any())
             throw new ArgumentException("Shard channels are not supported for standalone clients.");
 
-        if (mode != SubscriptionMode.Blocking && timeout != null)
+        if (mode != SubscribeMode.Blocking && timeout != null)
             throw new ArgumentException("Timeout is only suported for blocking subscriptions.");
 
         return isCluster
@@ -279,7 +356,7 @@ public static class PubSubUtils
     /// Builds and returns a standalone subscriber client with the specified subscriptions.
     /// </summary>
     public static async Task<GlideClient> BuildStandaloneSubscriber(
-        SubscriptionMode mode = SubscriptionMode.Config,
+        SubscribeMode mode = SubscribeMode.Config,
         IEnumerable<string>? channels = null,
         IEnumerable<string>? patterns = null,
         MessageCallback? callback = null,
@@ -287,7 +364,7 @@ public static class PubSubUtils
     {
         var configBuilder = TestConfiguration.DefaultClientConfig();
 
-        if (mode == SubscriptionMode.Config)
+        if (mode == SubscribeMode.Config)
         {
             var pubSubConfig = new StandalonePubSubSubscriptionConfig();
 
@@ -301,7 +378,7 @@ public static class PubSubUtils
 
         var client = await GlideClient.CreateClient(configBuilder.Build());
 
-        if (mode == SubscriptionMode.Lazy)
+        if (mode == SubscribeMode.Lazy)
         {
             if (channels != null && channels.Any()) await client.SubscribeLazyAsync(channels);
             if (patterns != null && patterns.Any()) await client.PSubscribeLazyAsync(patterns);
@@ -320,7 +397,7 @@ public static class PubSubUtils
     /// Builds and returns a cluster subscriber client with the specified subscriptions.
     /// </summary>
     public static async Task<GlideClusterClient> BuildClusterSubscriber(
-        SubscriptionMode mode = SubscriptionMode.Config,
+        SubscribeMode mode = SubscribeMode.Config,
         IEnumerable<string>? channels = null,
         IEnumerable<string>? patterns = null,
         IEnumerable<string>? shardChannels = null,
@@ -329,7 +406,7 @@ public static class PubSubUtils
     {
         var configBuilder = TestConfiguration.DefaultClusterClientConfig();
 
-        if (mode == SubscriptionMode.Config)
+        if (mode == SubscribeMode.Config)
         {
             var pubSubConfig = new ClusterPubSubSubscriptionConfig();
 
@@ -344,7 +421,7 @@ public static class PubSubUtils
 
         var client = await GlideClusterClient.CreateClient(configBuilder.Build());
 
-        if (mode == SubscriptionMode.Lazy)
+        if (mode == SubscribeMode.Lazy)
         {
             if (channels != null && channels.Any()) await client.SubscribeLazyAsync(channels);
             if (patterns != null && patterns.Any()) await client.PSubscribeLazyAsync(patterns);

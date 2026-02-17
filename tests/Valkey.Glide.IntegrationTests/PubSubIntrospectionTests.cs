@@ -14,7 +14,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubIntrospectionTests()
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PubSubChannelsAsync_WithNoChannels_ReturnsEmpty(bool isCluster)
     {
         using var server = BuildServer(isCluster);
@@ -25,7 +25,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
     {
         var msg = BuildChannelMessage();
@@ -42,7 +42,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
     {
         var msg = BuildPatternMessage();
@@ -59,7 +59,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
     {
         var msg = BuildChannelMessage();
@@ -72,7 +72,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
     {
         var msg1 = BuildChannelMessage();
@@ -96,7 +96,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
     {
         using var server = BuildServer(isCluster);
@@ -107,7 +107,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
     {
         using var server = BuildServer(isCluster);
@@ -209,7 +209,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
     {
         using var subscriber = await BuildSubscriber(isCluster);
@@ -224,7 +224,7 @@ public class PubSubIntrospectionTests()
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
     {
         var msg = BuildPatternMessage();

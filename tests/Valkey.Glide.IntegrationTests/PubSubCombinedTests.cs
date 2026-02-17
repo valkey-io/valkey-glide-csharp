@@ -12,7 +12,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCombinedTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Combined_OneClient_ReceivesAllTypes(bool isCluster)
     {
         bool isSharded = IsShardedSupported(isCluster);
@@ -46,7 +46,7 @@ public class PubSubCombinedTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task Combined_MultipleClients_ReceiveAllTypes(bool isCluster)
     {
         var isSharded = IsShardedSupported(isCluster);
@@ -85,7 +85,7 @@ public class PubSubCombinedTests
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task DifferentChannelsWithSameName_ExactPatternSharded_IsolatedCorrectly(bool isCluster)
     {
         bool isSharded = IsShardedSupported(isCluster);

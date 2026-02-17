@@ -12,7 +12,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubEdgeCaseTests
 {
     [Theory]
-    [MemberData(nameof(PubSubUtils.IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task LargeMessage_Channel_DeliversSuccessfully(bool isCluster)
     {
         var channel = BuildChannel();
@@ -28,7 +28,7 @@ public class PubSubEdgeCaseTests
     }
 
     [Theory]
-    [MemberData(nameof(PubSubUtils.IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task LargeMessage_Pattern_DeliversSuccessfully(bool isCluster)
     {
         var (channel, pattern) = BuildChannelAndPattern();
@@ -61,7 +61,7 @@ public class PubSubEdgeCaseTests
     }
 
     [Theory]
-    [MemberData(nameof(PubSubUtils.IsCluster), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public async Task UnicodeAndSpecialCharacters_DeliversCorrectly(bool isCluster)
     {
         string channel = BuildChannel();
