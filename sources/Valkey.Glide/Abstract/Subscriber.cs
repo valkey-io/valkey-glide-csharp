@@ -140,8 +140,8 @@ internal sealed class Subscriber : ISubscriber
         _multiplexer.RemoveAllSubscriptions();
 
         // Send unsubscribe commands for all channel modes.
-        await _client.UnsubscribeLazyAsync();
-        await _client.PUnsubscribeLazyAsync();
+        await _client.UnsubscribeAsync();
+        await _client.PUnsubscribeAsync();
 
         if (_client.IsCluster)
         {
@@ -206,11 +206,11 @@ internal sealed class Subscriber : ISubscriber
         }
         else if (channel.IsPattern)
         {
-            await _client.PSubscribeLazyAsync(channelStr);
+            await _client.PSubscribeAsync(channelStr);
         }
         else
         {
-            await _client.SubscribeLazyAsync(channelStr);
+            await _client.SubscribeAsync(channelStr);
         }
     }
 
@@ -231,11 +231,11 @@ internal sealed class Subscriber : ISubscriber
         }
         else if (channel.IsPattern)
         {
-            await _client.PUnsubscribeLazyAsync(channelStr);
+            await _client.PUnsubscribeAsync(channelStr);
         }
         else
         {
-            await _client.UnsubscribeLazyAsync(channelStr);
+            await _client.UnsubscribeAsync(channelStr);
         }
     }
 
