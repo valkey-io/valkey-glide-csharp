@@ -22,7 +22,19 @@ public class PubSubQueueTests
 
         using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, message);
-        await AssertReceivedAsync(subscriber, message);
+
+        // Verify that message is received.
+        PubSubMessageQueue queue = subscriber.PubSubQueue!;
+
+        using var cts = new CancellationTokenSource(MaxDuration);
+        while (!cts.Token.IsCancellationRequested)
+        {
+            if (queue.Count > 0) break;
+            await Task.Delay(RetryInterval);
+        }
+
+        var received = await queue.GetMessageAsync(cts.Token);
+        Assert.Equal(message, received);
     }
 
     [Theory]
@@ -47,7 +59,7 @@ public class PubSubQueueTests
         while (!cts.Token.IsCancellationRequested)
         {
             if (queue!.Count >= messageCount) break;
-            await Task.Delay(100);
+            await Task.Delay(RetryInterval);
         }
 
         Assert.Equal(messageCount, queue.Count);
