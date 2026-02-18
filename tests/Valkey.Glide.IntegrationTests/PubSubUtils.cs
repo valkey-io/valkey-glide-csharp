@@ -259,20 +259,15 @@ public static class PubSubUtils
         TimeSpan? timeout = null
     )
     {
-        // Validate arguments.
-        if (subscribeMode != SubscribeMode.Config && callback != null)
-            throw new ArgumentException($"Callbacks are only supported for {SubscribeMode.Config} subscriptions.");
-
-        if (subscribeMode != SubscribeMode.Blocking && timeout != null)
-            throw new ArgumentException($"Timeouts are only supported for {SubscribeMode.Blocking} subscriptions.");
-
         // Get channels, patterns, and sharded channels.
         var targets = BuildSubscriptions(messages);
         var channels = targets[PubSubChannelMode.Exact];
         var patterns = targets[PubSubChannelMode.Pattern];
         var shardedChannels = targets[PubSubChannelMode.Sharded];
 
+        // Build configuration.
         var configBuilder = TestConfiguration.DefaultClusterClientConfig();
+
         if (subscribeMode == SubscribeMode.Config)
         {
             var pubSubConfig = new ClusterPubSubSubscriptionConfig();
@@ -282,12 +277,21 @@ public static class PubSubUtils
             foreach (var sc in shardedChannels) pubSubConfig.WithShardedChannel(sc);
             if (callback != null) pubSubConfig.WithCallback(callback);
 
-            var config = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
-            return await GlideClusterClient.CreateClient(config);
+            configBuilder.WithPubSubSubscriptions(pubSubConfig);
         }
 
+        else if (callback != null)
+        {
+            var pubSubConfig = new ClusterPubSubSubscriptionConfig();
+            pubSubConfig.WithCallback(callback);
+
+            configBuilder.WithPubSubSubscriptions(pubSubConfig);
+        }
+
+        // Build client.
         var client = await GlideClusterClient.CreateClient(configBuilder.Build());
 
+        // Dynamically subscribe.
         if (subscribeMode == SubscribeMode.Lazy)
         {
             if (channels.Count > 0) await client.SubscribeLazyAsync(channels);
@@ -518,25 +522,20 @@ public static class PubSubUtils
         IEnumerable<PubSubMessage> messages,
         SubscribeMode subscribeMode = SubscribeMode.Config,
         MessageCallback? callback = null,
-        TimeSpan? timeout = null
-    )
+        TimeSpan? timeout = null)
     {
-        // Validate arguments.
-        if (messages.Any(m => m.ChannelMode == PubSubChannelMode.Sharded))
-            throw new ArgumentException("Standalone clients do not support sharded channel subscriptions.");
-
-        if (subscribeMode != SubscribeMode.Config && callback != null)
-            throw new ArgumentException("Callbacks are only supported for config-based subscriptions.");
-
-        if (subscribeMode != SubscribeMode.Blocking && timeout != null)
-            throw new ArgumentException("Timeouts are only supported for blocking subscriptions.");
-
         // Get channels and patterns.
         var targets = BuildSubscriptions(messages);
+
+        if (targets[PubSubChannelMode.Sharded].Count > 0)
+            throw new ArgumentException("Standalone clients do not support sharded channel subscriptions.");
+
         var channels = targets[PubSubChannelMode.Exact];
         var patterns = targets[PubSubChannelMode.Pattern];
 
+        // Build configuration.
         var configBuilder = TestConfiguration.DefaultClientConfig();
+
         if (subscribeMode == SubscribeMode.Config)
         {
             var pubSubConfig = new StandalonePubSubSubscriptionConfig();
@@ -545,12 +544,19 @@ public static class PubSubUtils
             foreach (var p in patterns) pubSubConfig.WithPattern(p);
             if (callback != null) pubSubConfig.WithCallback(callback);
 
-            var config = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
-            return await GlideClient.CreateClient(config);
+            configBuilder.WithPubSubSubscriptions(pubSubConfig);
         }
 
+        else if (callback != null)
+        {
+            var pubSubConfig = new StandalonePubSubSubscriptionConfig().WithCallback(callback);
+            configBuilder.WithPubSubSubscriptions(pubSubConfig);
+        }
+
+        // Build client.
         var client = await GlideClient.CreateClient(configBuilder.Build());
 
+        // Dynamically subscribe.
         if (subscribeMode == SubscribeMode.Lazy)
         {
             if (channels.Count > 0) await client.SubscribeLazyAsync(channels);
