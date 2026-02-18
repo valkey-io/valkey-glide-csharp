@@ -11,7 +11,7 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubReconnectionTests
 {
-    private static readonly GlideString[] ClientKillArgs = ["CLIENT", "KILL", "TYPE", "NORMAL", "SKIPME", "yes"];
+    private static readonly GlideString[] ClientKillArgs = ["CLIENT", "KILL", "SKIPME", "yes"];
 
     [Theory]
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
