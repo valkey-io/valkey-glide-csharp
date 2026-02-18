@@ -198,6 +198,7 @@ internal sealed class Subscriber : ISubscriber
     private async Task SendSubscribeCommand(ValkeyChannel channel)
     {
         var channelStr = channel.ToString();
+        var timeout = GetTimeout();
 
         if (channel.IsSharded)
         {
@@ -206,11 +207,11 @@ internal sealed class Subscriber : ISubscriber
         }
         else if (channel.IsPattern)
         {
-            await _client.PSubscribeAsync(channelStr);
+            await _client.PSubscribeAsync(channelStr, timeout);
         }
         else
         {
-            await _client.SubscribeAsync(channelStr);
+            await _client.SubscribeAsync(channelStr, timeout);
         }
     }
 
@@ -221,6 +222,7 @@ internal sealed class Subscriber : ISubscriber
     private async Task SendUnsubscribeCommand(ValkeyChannel channel)
     {
         var channelStr = channel.ToString();
+        var timeout = GetTimeout();
 
         if (channel.IsSharded)
         {
@@ -231,12 +233,23 @@ internal sealed class Subscriber : ISubscriber
         }
         else if (channel.IsPattern)
         {
-            await _client.PUnsubscribeAsync(channelStr);
+            await _client.PUnsubscribeAsync(channelStr, timeout);
         }
         else
         {
-            await _client.UnsubscribeAsync(channelStr);
+            await _client.UnsubscribeAsync(channelStr, timeout);
         }
+    }
+
+    /// <summary>
+    /// Gets the timeout to use for subscribe/unsubscribe operations.
+    /// </summary>
+    private TimeSpan GetTimeout()
+    {
+        // Match default StackExchange.Redis async timeout.
+        const int defaultTimeoutMs = 5000;
+
+        return TimeSpan.FromMilliseconds(_multiplexer.RawConfig.AsyncTimeout ?? defaultTimeoutMs);
     }
 
     /// <summary>
