@@ -11,9 +11,27 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubCallbackTests
 {
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode and subscribe mode.
+    /// </summary>
+    public static TheoryData<bool, SubscribeMode> ClusterAndSubscribeModeData
+    {
+        get
+        {
+            var data = new TheoryData<bool, SubscribeMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var subscriptionMode in SubscribeModeData)
+                    data.Add(isCluster, subscriptionMode);
+            }
+
+            return data;
+        }
+    }
+
     [Theory]
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
-    public static async Task Callback_Channel_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)
+    public static async Task Callback_ChannelMode_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
@@ -21,13 +39,37 @@ public class PubSubCallbackTests
 
         // Build subscriber with callback that captures received message.
         var received = new TaskCompletionSource<PubSubMessage>();
-        using var subscriber = await BuildSubscriber(isCluster, message, callback: (msg, ctx) => received.SetResult(msg));
+        using var subscriber = await BuildSubscriber(
+            isCluster,
+            message: message,
+            callback: (msg, ctx) => received.SetResult(msg));
 
         // Publish message and verify receipt via callback.
         using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, message);
         Assert.Equal(message, await received.Task.WaitAsync(MaxDuration));
     }
+
+    [Theory]
+    [MemberData(nameof(ClusterAndSubscribeModeData))]
+    public static async Task Callback_SubscribeMode_ReceivesMessage(bool isCluster, SubscribeMode subscribeMode)
+    {
+        var message = BuildMessage();
+
+        // Build subscriber with callback that captures received message.
+        var received = new TaskCompletionSource<PubSubMessage>();
+        using var subscriber = await BuildSubscriber(
+            isCluster,
+            message,
+            subscribeMode: subscribeMode,
+            callback: (msg, ctx) => received.SetResult(msg));
+
+        // Publish message and verify receipt via callback.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, message);
+        Assert.Equal(message, await received.Task.WaitAsync(MaxDuration));
+    }
+
 
     [Theory]
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]

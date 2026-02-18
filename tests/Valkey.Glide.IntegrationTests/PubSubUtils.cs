@@ -219,10 +219,10 @@ public static class PubSubUtils
     public static async Task<BaseClient> BuildSubscriber(
         bool isCluster,
         PubSubMessage? message = null,
-        SubscribeMode mode = SubscribeMode.Config,
+        SubscribeMode subscribeMode = SubscribeMode.Config,
         MessageCallback? callback = null,
         TimeSpan? timeout = null)
-        => await BuildSubscriber(isCluster, message != null ? [message] : [], mode, callback, timeout);
+        => await BuildSubscriber(isCluster, message != null ? [message] : [], subscribeMode, callback, timeout);
 
     /// <summary>
     /// Builds and returns a client that is subscribed to receive the specified messages using the given subscription mode.
@@ -230,13 +230,13 @@ public static class PubSubUtils
     public static async Task<BaseClient> BuildSubscriber(
         bool isCluster,
         IEnumerable<PubSubMessage> messages,
-        SubscribeMode mode = SubscribeMode.Config,
+        SubscribeMode subscribeMode = SubscribeMode.Config,
         MessageCallback? callback = null,
         TimeSpan? timeout = null)
     {
         return isCluster
-            ? await BuildClusterSubscriber(messages, mode, callback, timeout)
-            : await BuildStandaloneSubscriber(messages, mode, callback, timeout);
+            ? await BuildClusterSubscriber(messages, subscribeMode, callback, timeout)
+            : await BuildStandaloneSubscriber(messages, subscribeMode, callback, timeout);
     }
 
     /// <summary>
@@ -244,26 +244,26 @@ public static class PubSubUtils
     /// </summary>
     public static async Task<GlideClusterClient> BuildClusterSubscriber(
         PubSubMessage messages,
-        SubscribeMode mode = SubscribeMode.Config,
+        SubscribeMode subscribeMode = SubscribeMode.Config,
         MessageCallback? callback = null,
         TimeSpan? timeout = null
-    ) => await BuildClusterSubscriber([messages], mode, callback, timeout);
+    ) => await BuildClusterSubscriber([messages], subscribeMode, callback, timeout);
 
     /// <summary>
     /// Builds and returns a cluster subscriber client with the specified subscriptions.
     /// </summary>
     public static async Task<GlideClusterClient> BuildClusterSubscriber(
         IEnumerable<PubSubMessage> messages,
-        SubscribeMode mode = SubscribeMode.Config,
+        SubscribeMode subscribeMode = SubscribeMode.Config,
         MessageCallback? callback = null,
         TimeSpan? timeout = null
     )
     {
         // Validate arguments.
-        if (mode != SubscribeMode.Config && callback != null)
+        if (subscribeMode != SubscribeMode.Config && callback != null)
             throw new ArgumentException($"Callbacks are only supported for {SubscribeMode.Config} subscriptions.");
 
-        if (mode != SubscribeMode.Blocking && timeout != null)
+        if (subscribeMode != SubscribeMode.Blocking && timeout != null)
             throw new ArgumentException($"Timeouts are only supported for {SubscribeMode.Blocking} subscriptions.");
 
         // Get channels, patterns, and sharded channels.
@@ -273,7 +273,7 @@ public static class PubSubUtils
         var shardChannels = targets[PubSubChannelMode.Sharded];
 
         var configBuilder = TestConfiguration.DefaultClusterClientConfig();
-        if (mode == SubscribeMode.Config)
+        if (subscribeMode == SubscribeMode.Config)
         {
             var pubSubConfig = new ClusterPubSubSubscriptionConfig();
 
@@ -288,7 +288,7 @@ public static class PubSubUtils
 
         var client = await GlideClusterClient.CreateClient(configBuilder.Build());
 
-        if (mode == SubscribeMode.Lazy)
+        if (subscribeMode == SubscribeMode.Lazy)
         {
             if (channels.Count > 0) await client.SubscribeLazyAsync(channels);
             if (patterns.Count > 0) await client.PSubscribeLazyAsync(patterns);
@@ -516,7 +516,7 @@ public static class PubSubUtils
     /// </summary>
     private static async Task<GlideClient> BuildStandaloneSubscriber(
         IEnumerable<PubSubMessage> messages,
-        SubscribeMode mode = SubscribeMode.Config,
+        SubscribeMode subscribeMode = SubscribeMode.Config,
         MessageCallback? callback = null,
         TimeSpan? timeout = null
     )
@@ -525,10 +525,10 @@ public static class PubSubUtils
         if (messages.Any(m => m.ChannelMode == PubSubChannelMode.Sharded))
             throw new ArgumentException("Standalone clients do not support sharded channel subscriptions.");
 
-        if (mode != SubscribeMode.Config && callback != null)
+        if (subscribeMode != SubscribeMode.Config && callback != null)
             throw new ArgumentException("Callbacks are only supported for config-based subscriptions.");
 
-        if (mode != SubscribeMode.Blocking && timeout != null)
+        if (subscribeMode != SubscribeMode.Blocking && timeout != null)
             throw new ArgumentException("Timeouts are only supported for blocking subscriptions.");
 
         // Get channels and patterns.
@@ -537,7 +537,7 @@ public static class PubSubUtils
         var patterns = targets[PubSubChannelMode.Pattern];
 
         var configBuilder = TestConfiguration.DefaultClientConfig();
-        if (mode == SubscribeMode.Config)
+        if (subscribeMode == SubscribeMode.Config)
         {
             var pubSubConfig = new StandalonePubSubSubscriptionConfig();
 
@@ -551,7 +551,7 @@ public static class PubSubUtils
 
         var client = await GlideClient.CreateClient(configBuilder.Build());
 
-        if (mode == SubscribeMode.Lazy)
+        if (subscribeMode == SubscribeMode.Lazy)
         {
             if (channels.Count > 0) await client.SubscribeLazyAsync(channels);
             if (patterns.Count > 0) await client.PSubscribeLazyAsync(patterns);
