@@ -270,7 +270,7 @@ public static class PubSubUtils
         var targets = BuildSubscriptions(messages);
         var channels = targets[PubSubChannelMode.Exact];
         var patterns = targets[PubSubChannelMode.Pattern];
-        var shardChannels = targets[PubSubChannelMode.Sharded];
+        var shardedChannels = targets[PubSubChannelMode.Sharded];
 
         var configBuilder = TestConfiguration.DefaultClusterClientConfig();
         if (subscribeMode == SubscribeMode.Config)
@@ -279,7 +279,7 @@ public static class PubSubUtils
 
             foreach (var ch in channels) pubSubConfig.WithChannel(ch);
             foreach (var p in patterns) pubSubConfig.WithPattern(p);
-            foreach (var sc in shardChannels) pubSubConfig.WithShardedChannel(sc);
+            foreach (var sc in shardedChannels) pubSubConfig.WithShardedChannel(sc);
             if (callback != null) pubSubConfig.WithCallback(callback);
 
             var config = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
@@ -292,14 +292,14 @@ public static class PubSubUtils
         {
             if (channels.Count > 0) await client.SubscribeLazyAsync(channels);
             if (patterns.Count > 0) await client.PSubscribeLazyAsync(patterns);
-            if (shardChannels.Count > 0) await client.SSubscribeLazyAsync(shardChannels);
+            if (shardedChannels.Count > 0) await client.SSubscribeLazyAsync(shardedChannels);
         }
         else
         {
             timeout ??= MaxDuration;
             if (channels.Count > 0) await client.SubscribeAsync(channels, timeout.Value);
             if (patterns.Count > 0) await client.PSubscribeAsync(patterns, timeout.Value);
-            if (shardChannels.Count > 0) await client.SSubscribeAsync(shardChannels, timeout.Value);
+            if (shardedChannels.Count > 0) await client.SSubscribeAsync(shardedChannels, timeout.Value);
         }
 
         return client;

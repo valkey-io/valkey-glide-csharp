@@ -70,10 +70,10 @@ public class PubSubSubscribeTests
 
         var channelMessage = BuildMessage(PubSubChannelMode.Exact);
         var patternMessage = BuildMessage(PubSubChannelMode.Pattern);
-        var shardChannelMessage = isSharded ? BuildMessage(PubSubChannelMode.Sharded) : null;
+        var shardedChannelMessage = isSharded ? BuildMessage(PubSubChannelMode.Sharded) : null;
 
         var expectedMessages = new List<PubSubMessage> { channelMessage, patternMessage };
-        if (isSharded) expectedMessages.Add(shardChannelMessage!);
+        if (isSharded) expectedMessages.Add(shardedChannelMessage!);
 
         using var subscriber = await BuildSubscriber(isCluster, expectedMessages);
         await AssertSubscribedAsync(subscriber, [.. expectedMessages]);

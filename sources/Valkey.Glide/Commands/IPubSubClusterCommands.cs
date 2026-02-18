@@ -15,7 +15,7 @@ public interface IPubSubClusterCommands
     /// Publishes a message to the specified sharded channel.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/spublish/">valkey.io</seealso>
-    /// <param name="shardChannel">The sharded channel to publish the message to.</param>
+    /// <param name="shardedChannel">The sharded channel to publish the message to.</param>
     /// <param name="message">The message to publish.</param>
     /// <returns>The number of clients that received the message.</returns>
     /// <remarks>
@@ -27,7 +27,7 @@ public interface IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<long> SPublishAsync(string shardChannel, string message);
+    abstract Task<long> SPublishAsync(string shardedChannel, string message);
 
     #endregion
     #region SubscribeCommands
@@ -36,21 +36,21 @@ public interface IPubSubClusterCommands
     /// Subscribes the client to the specified sharded channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The sharded channel to subscribe to.</param>
+    /// <param name="shardedChannel">The sharded channel to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SSubscribeAsync(string shardChannel, TimeSpan timeout = default);
+    abstract Task SSubscribeAsync(string shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of sharded channels to subscribe to.</param>
+    /// <param name="shardedChannels">A collection of sharded channels to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SSubscribeAsync(IEnumerable<string> shardChannels, TimeSpan timeout = default);
+    abstract Task SSubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channel and returns without waiting for server confirmation.
@@ -60,7 +60,7 @@ public interface IPubSubClusterCommands
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The sharded channel to subscribe to.</param>
+    /// <param name="shardedChannel">The sharded channel to subscribe to.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -69,7 +69,7 @@ public interface IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SSubscribeLazyAsync(string shardChannel);
+    abstract Task SSubscribeLazyAsync(string shardedChannel);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channels and returns without waiting for server confirmation.
@@ -79,17 +79,17 @@ public interface IPubSubClusterCommands
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of sharded channels to subscribe to.</param>
+    /// <param name="shardedChannels">A collection of sharded channels to subscribe to.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardChannels = new string[] { "shard-news", "shard-updates" };
-    /// await clusterClient.SSubscribeLazyAsync(shardChannels);
+    /// var shardedChannels = new string[] { "shard-news", "shard-updates" };
+    /// await clusterClient.SSubscribeLazyAsync(shardedChannels);
     /// Console.WriteLine("Subscribed to 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SSubscribeLazyAsync(IEnumerable<string> shardChannels);
+    abstract Task SSubscribeLazyAsync(IEnumerable<string> shardedChannels);
 
     #endregion
     #region UnsubscribeCommands
@@ -107,21 +107,21 @@ public interface IPubSubClusterCommands
     /// Unsubscribes the client from the specified sharded channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The sharded channel to unsubscribe from.</param>
+    /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SUnsubscribeAsync(string shardChannel, TimeSpan timeout = default);
+    abstract Task SUnsubscribeAsync(string shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from the specified sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of sharded channels to unsubscribe from.</param>
+    /// <param name="shardedChannels">A collection of sharded channels to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SUnsubscribeAsync(IEnumerable<string> shardChannels, TimeSpan timeout = default);
+    abstract Task SUnsubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from all sharded channels and returns without waiting for server confirmation.
@@ -148,7 +148,7 @@ public interface IPubSubClusterCommands
     /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The sharded channel to unsubscribe from.</param>
+    /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -157,7 +157,7 @@ public interface IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SUnsubscribeLazyAsync(string shardChannel);
+    abstract Task SUnsubscribeLazyAsync(string shardedChannel);
 
     /// <summary>
     /// Unsubscribes the client from the specified sharded channels and returns without waiting for server confirmation.
@@ -168,12 +168,12 @@ public interface IPubSubClusterCommands
     /// If no sharded channels or <see cref="PubSub.AllShardedChannels"/> is specified, unsubscribes the client from all sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of sharded channels to unsubscribe from.</param>
+    /// <param name="shardedChannels">A collection of sharded channels to unsubscribe from.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardChannels = new string[] { "shard-news", "shard-updates" };
-    /// await clusterClient.SUnsubscribeLazyAsync(shardChannels);
+    /// var shardedChannels = new string[] { "shard-news", "shard-updates" };
+    /// await clusterClient.SUnsubscribeLazyAsync(shardedChannels);
     /// Console.WriteLine("Unsubscribed from 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
@@ -184,7 +184,7 @@ public interface IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SUnsubscribeLazyAsync(IEnumerable<string> shardChannels);
+    abstract Task SUnsubscribeLazyAsync(IEnumerable<string> shardedChannels);
 
     #endregion
     #region IntrospectionCommands
@@ -197,8 +197,8 @@ public interface IPubSubClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardChannels = await clusterClient.PubSubShardChannelsAsync();
-    /// Console.WriteLine($"Active sharded channels: {string.Join("', '", shardChannels)}");
+    /// var shardedChannels = await clusterClient.PubSubShardChannelsAsync();
+    /// Console.WriteLine($"Active sharded channels: {string.Join("', '", shardedChannels)}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -213,8 +213,8 @@ public interface IPubSubClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardChannels = await clusterClient.PubSubShardChannelsAsync("shard.*");
-    /// Console.WriteLine($"Matching sharded channels: {string.Join("', '", shardChannels)}");
+    /// var shardedChannels = await clusterClient.PubSubShardChannelsAsync("shard.*");
+    /// Console.WriteLine($"Matching sharded channels: {string.Join("', '", shardedChannels)}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -224,13 +224,13 @@ public interface IPubSubClusterCommands
     /// Returns the number of subscribers for the specified sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardnumsub/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of sharded channel names to query.</param>
+    /// <param name="shardedChannels">A collection of sharded channel names to query.</param>
     /// <returns>A dictionary mapping sharded channel names to their subscriber counts.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardChannels = new string[] { "shard-news", "shard-updates" };
-    /// Dictionary&lt;string, long&gt; counts = await clusterClient.PubSubShardNumSubAsync(shardChannels);
+    /// var shardedChannels = new string[] { "shard-news", "shard-updates" };
+    /// Dictionary&lt;string, long&gt; counts = await clusterClient.PubSubShardNumSubAsync(shardedChannels);
     /// foreach (var kvp in counts)
     /// {
     ///     Console.WriteLine($"{kvp.Key}: {kvp.Value} subscribers");
@@ -238,7 +238,7 @@ public interface IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<Dictionary<string, long>> PubSubShardNumSubAsync(IEnumerable<string> shardChannels);
+    abstract Task<Dictionary<string, long>> PubSubShardNumSubAsync(IEnumerable<string> shardedChannels);
 
     #endregion
 }
