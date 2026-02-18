@@ -13,110 +13,79 @@ public class PubSubCombinedTests
 {
     [Theory]
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task Combined_OneClient_ReceivesAllTypes(bool isCluster)
+    public static async Task Combined_OneClient_ReceivesAllTypes(bool isCluster)
     {
         bool isSharded = IsShardedSupported(isCluster);
 
-        // Build expected messages.
-        var exactMessage = BuildChannelMessage();
-        var patternMessage = BuildPatternMessage();
-        var shardChannelMessage = BuildShardChannelMessage();
+        // Build messages.
+        var messages = new List<PubSubMessage>
+        {
+            BuildMessage(PubSubChannelMode.Exact),
+            BuildMessage(PubSubChannelMode.Pattern)
+        };
 
-        var expectedMessages = new List<PubSubMessage> { exactMessage, patternMessage };
-        if (isSharded) expectedMessages.Add(shardChannelMessage);
+        if (isSharded)
+            messages.Add(BuildMessage(PubSubChannelMode.Sharded));
 
-        // Build client with all channel mode subscriptions.
-        var channels = new string[] { exactMessage.Channel };
-        var patterns = new string[] { patternMessage.Pattern! };
-        var shardChannels = isSharded ? new string[] { shardChannelMessage.Channel } : null;
+        using var subscriber = await BuildSubscriber(isCluster, messages);
 
-        using var subscriber = await BuildSubscriber(isCluster,
-            channels: channels,
-            patterns: patterns,
-            shardChannels: shardChannels);
-        using var publisher = BuildClient(isCluster);
-
-        // Publish messages for all channel modes.
-        await publisher.PublishAsync(exactMessage.Channel, exactMessage.Message);
-        await publisher.PublishAsync(patternMessage.Channel, patternMessage.Message);
-        if (isSharded) await ((GlideClusterClient)publisher).SPublishAsync(shardChannelMessage.Channel, shardChannelMessage.Message);
-
-        // Verify that all messages are received.
-        await AssertReceivedAsync(subscriber, expectedMessages);
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task Combined_MultipleClients_ReceiveAllTypes(bool isCluster)
+    public static async Task Combined_MultipleClients_ReceiveAllTypes(bool isCluster)
     {
         var isSharded = IsShardedSupported(isCluster);
 
-        // Build expected messages.
-        var exactMessage = BuildChannelMessage();
-        var patternMessage = BuildPatternMessage();
-        var shardChannelMessage = BuildShardChannelMessage();
+        // Build messages.
+        var messages = new List<PubSubMessage>
+        {
+            BuildMessage(PubSubChannelMode.Exact),
+            BuildMessage(PubSubChannelMode.Pattern)
+        };
 
-        var expectedMessages = new List<PubSubMessage> { exactMessage, patternMessage };
-        if (isSharded) expectedMessages.Add(shardChannelMessage);
+        if (isSharded)
+            messages.Add(BuildMessage(PubSubChannelMode.Sharded));
 
-        // Build clients with all channel mode subscriptions.
-        var channels = new string[] { exactMessage.Channel };
-        var patterns = new string[] { patternMessage.Pattern! };
-        var shardChannels = isSharded ? new string[] { shardChannelMessage.Channel } : null;
+        using var subscriber1 = await BuildSubscriber(isCluster, messages);
+        using var subscriber2 = await BuildSubscriber(isCluster, messages);
 
-        using var subscriber1 = await BuildSubscriber(isCluster,
-            channels: channels,
-            patterns: patterns,
-            shardChannels: shardChannels);
-        using var subscriber2 = await BuildSubscriber(isCluster,
-            channels: channels,
-            patterns: patterns,
-            shardChannels: shardChannels);
-        using var publisher = BuildClient(isCluster);
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
 
-        // Publish messages for all channel modes.
-        await publisher.PublishAsync(exactMessage.Channel, exactMessage.Message);
-        await publisher.PublishAsync(patternMessage.Channel, patternMessage.Message);
-        if (isSharded) await ((GlideClusterClient)publisher).SPublishAsync(shardChannelMessage.Channel, shardChannelMessage.Message);
-
-        // Verify that all messages are received.
-        await AssertReceivedAsync(subscriber1, expectedMessages);
-        await AssertReceivedAsync(subscriber2, expectedMessages);
+        await AssertReceivedAsync(subscriber1, messages);
+        await AssertReceivedAsync(subscriber2, messages);
     }
 
     [Theory]
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task DifferentChannelsWithSameName_ExactPatternSharded_IsolatedCorrectly(bool isCluster)
+    public static async Task DifferentChannelsWithSameName_ExactPatternSharded_IsolatedCorrectly(bool isCluster)
     {
         bool isSharded = IsShardedSupported(isCluster);
 
-        // Build expected messages that all match the same name.
-        var message = "test-message";
-        var (channel, pattern) = BuildChannelAndPattern();
+        // Build messages that all use the same name.
+        var channel = BuildChannel();
+        var message = "message";
 
-        var channelMessage = PubSubMessage.FromChannel(message, channel);
-        var patternMessage = PubSubMessage.FromPattern(message, channel, pattern);
-        var shardChannelMessage = PubSubMessage.FromShardChannel(message, channel);
+        var messages = new List<PubSubMessage>
+        {
+            PubSubMessage.FromChannel(message, channel),
+            PubSubMessage.FromPattern(message, channel, channel)
+        };
 
-        var expectedMessages = new List<PubSubMessage> { channelMessage, patternMessage };
-        if (isSharded) expectedMessages.Add(shardChannelMessage);
+        if (isSharded)
+            messages.Add(PubSubMessage.FromShardChannel(message, channel));
 
-        // Build client that is subscribed to all channel modes for channel name.
-        var channels = new string[] { channel };
-        var patterns = new string[] { pattern };
-        var shardChannels = isSharded ? new string[] { channel } : null;
-
-        using var subscriber = await BuildSubscriber(isCluster,
-            channels: channels,
-            patterns: patterns,
-            shardChannels: shardChannels);
-        using var publisher = BuildClient(isCluster);
+        using var subscriber = await BuildSubscriber(isCluster, messages);
 
         // Publish to channel and shard channel.
-        await publisher.PublishAsync(channel, channelMessage.Message);
-        if (isSharded) await ((GlideClusterClient)publisher).SPublishAsync(channel, shardChannelMessage.Message);
-
-        // Verify that all messages are received.
-        await AssertReceivedAsync(subscriber, expectedMessages);
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 }

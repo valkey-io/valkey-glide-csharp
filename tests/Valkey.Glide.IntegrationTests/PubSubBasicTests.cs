@@ -11,60 +11,122 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubBasicTests
 {
+    /// <summary>
+    /// Theory data for basic tests that covers all valid combinations of cluster mode, channel mode, subscribe mode, and unsubscribe mode.
+    /// </summary>
+    public static TheoryData<bool, PubSubChannelMode, SubscribeMode, UnsubscribeMode> BasicTestsData
+    {
+        get
+        {
+            var data = new TheoryData<bool, PubSubChannelMode, SubscribeMode, UnsubscribeMode>();
+
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var channelMode in ChannelModeData)
+                {
+                    if (!IsChannelModeSupported(isCluster, channelMode))
+                        continue;
+
+                    foreach (var subscribeMode in SubscribeModeData)
+                    {
+                        foreach (var unsubscribeMode in UnsubscribeModeData)
+                            data.Add(isCluster, channelMode, subscribeMode, unsubscribeMode);
+                    }
+                }
+            }
+
+            return data;
+        }
+    }
+
     [Theory]
-    [MemberData(nameof(SubscriptionAndChannelModeOptions), MemberType = typeof(PubSubUtils))]
-    public static async Task SingleSubscription_ReceivesMessage(bool isCluster, SubscribeMode subscriptionMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(BasicTestsData))]
+    public static async Task SingleSubscription_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscriptionMode, UnsubscribeMode unsubscribeMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
         var message = BuildMessage(channelMode);
-        var messages = new[] { message };
 
-        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, messages);
-        await AssertSubscribedAsync(subscriber, channelMode, messages);
+        // Build client and verify subscription.
+        using var subscriber = await BuildSubscriber(isCluster, message, subscriptionMode);
+        await AssertSubscribedAsync(subscriber, message);
 
-        using var publisher = BuildClient(isCluster);
-        await PublishMessagesAsync(publisher, channelMode, messages);
-        await AssertReceivedAsync(subscriber, messages);
+        using var publisher = BuildPublisher(isCluster);
+
+        // Publish messages and verify receipt.
+        await PublishAsync(publisher, message);
+        await AssertReceivedAsync(subscriber, message);
+
+        // Unsubscribe and verify unsubscription.
+        await UnsubscribeAsync(subscriber, unsubscribeMode, message);
+        await AssertNotSubscribedAsync(subscriber, message);
+
+        // Publish messages again and verify they are not received.
+        await PublishAsync(publisher, message);
+        await AssertNotReceivedAsync(subscriber, message);
     }
 
     [Theory]
-    [MemberData(nameof(SubscriptionAndChannelModeOptions), MemberType = typeof(PubSubUtils))]
-    public static async Task ManySubscriptions_ReceivesAllMessages(bool isCluster, SubscribeMode subscriptionMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(BasicTestsData))]
+    public static async Task ManySubscriptions_ReceivesAllMessages(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscriptionMode, UnsubscribeMode unsubscribeMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        var message1 = BuildMessage(channelMode);
-        var message2 = BuildMessage(channelMode);
-        var messages = new[] { message1, message2 };
+        var messages = new[] {
+            BuildMessage(channelMode),
+            BuildMessage(channelMode) };
 
-        using var subscriber = await BuildSubscriber(isCluster, channelMode, subscriptionMode, messages);
-        await AssertSubscribedAsync(subscriber, channelMode, messages);
+        // Build client and verify subscription.
+        using var subscriber = await BuildSubscriber(isCluster, messages, subscriptionMode);
+        await AssertSubscribedAsync(subscriber, messages);
 
-        using var publisher = BuildClient(isCluster);
-        await PublishMessagesAsync(publisher, channelMode, messages);
+        using var publisher = BuildPublisher(isCluster);
+
+        // Publish messages and verify receipt.
+        await PublishAsync(publisher, messages);
         await AssertReceivedAsync(subscriber, messages);
+
+        // Unsubscribe and verify unsubscription.
+        await UnsubscribeAsync(subscriber, unsubscribeMode, messages);
+        await AssertNotSubscribedAsync(subscriber, messages);
+
+        // Publish messages again and verify they are not received.
+        await PublishAsync(publisher, messages);
+        await AssertNotReceivedAsync(subscriber, messages);
     }
 
     [Theory]
-    [MemberData(nameof(SubscriptionAndChannelModeOptions), MemberType = typeof(PubSubUtils))]
-    public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, SubscribeMode subMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(BasicTestsData))]
+    public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subMode, UnsubscribeMode unsubscribeMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
         var message = BuildMessage(channelMode);
-        var messages = new[] { message };
 
-        using var subscriber1 = await BuildSubscriber(isCluster, channelMode, subMode, messages);
-        await AssertSubscribedAsync(subscriber1, channelMode, messages);
+        // Build clients and verify subscriptions.
+        using var subscriber1 = await BuildSubscriber(isCluster, message, subMode);
+        await AssertSubscribedAsync(subscriber1, message);
 
-        using var subscriber2 = await BuildSubscriber(isCluster, channelMode, subMode, messages);
-        await AssertSubscribedAsync(subscriber2, channelMode, messages);
+        using var subscriber2 = await BuildSubscriber(isCluster, message, subMode);
+        await AssertSubscribedAsync(subscriber2, message);
 
-        using var publisher = BuildClient(isCluster);
-        await PublishMessagesAsync(publisher, channelMode, messages);
+        using var publisher = BuildPublisher(isCluster);
 
-        await AssertReceivedAsync(subscriber1, messages);
-        await AssertReceivedAsync(subscriber2, messages);
+        // Publish message and verify receipt.
+        await PublishAsync(publisher, message);
+        await AssertReceivedAsync(subscriber1, message);
+        await AssertReceivedAsync(subscriber2, message);
+
+        // Unsubscribe and verify unsubscription.
+        await UnsubscribeAsync(subscriber1, unsubscribeMode, message);
+        await AssertNotSubscribedAsync(subscriber1, message);
+
+        await UnsubscribeAsync(subscriber2, unsubscribeMode, message);
+        await AssertNotSubscribedAsync(subscriber2, message);
+
+        // Publish message again and verify it is not received.
+        await PublishAsync(publisher, message);
+        await AssertNotReceivedAsync(subscriber1, message);
+        await AssertNotReceivedAsync(subscriber2, message);
     }
 }

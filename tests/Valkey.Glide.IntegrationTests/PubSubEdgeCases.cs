@@ -12,58 +12,35 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubEdgeCaseTests
 {
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task LargeMessage_Channel_DeliversSuccessfully(bool isCluster)
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task LargeMessage_DeliversSuccessfully(bool isCluster, PubSubChannelMode channelMode)
     {
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
+
+        // Build large message.
         var channel = BuildChannel();
         var largeMessage = GenerateLargeMessage();
+        var message = channelMode switch
+        {
+            PubSubChannelMode.Exact => PubSubMessage.FromChannel(largeMessage, channel),
+            PubSubChannelMode.Pattern => PubSubMessage.FromPattern(largeMessage, channel, channel),
+            PubSubChannelMode.Sharded => PubSubMessage.FromShardChannel(largeMessage, channel),
+            _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
+        };
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [channel]);
-        using var publisher = BuildClient(isCluster);
+        using var subscriber = await BuildSubscriber(isCluster, message);
+        using var publisher = BuildPublisher(isCluster);
 
-        await publisher.PublishAsync(channel, largeMessage);
-
-        var expected = PubSubMessage.FromChannel(largeMessage, channel);
-        await AssertReceivedAsync(subscriber, [expected]);
+        // Publish large message and verify receipt.
+        await PublishAsync(publisher, message);
+        await AssertReceivedAsync(subscriber, message);
     }
 
     [Theory]
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task LargeMessage_Pattern_DeliversSuccessfully(bool isCluster)
+    public static async Task UnicodeAndSpecialCharacters_DeliversCorrectly(bool isCluster)
     {
-        var (channel, pattern) = BuildChannelAndPattern();
-        var largeMessage = GenerateLargeMessage();
-
-        await using var subscriber = await BuildSubscriber(isCluster, patterns: [pattern]);
-        await using var publisher = BuildClient(isCluster);
-
-        await publisher.PublishAsync(channel, largeMessage);
-
-        var expected = PubSubMessage.FromPattern(largeMessage, channel, pattern);
-        await AssertReceivedAsync(subscriber, [expected]);
-    }
-
-    [Fact]
-    public async Task LargeMessage_ShardChannel_DeliversSuccessfully()
-    {
-        SkipUnlessShardedSupported();
-
-        var channel = BuildChannel();
-        var largeMessage = GenerateLargeMessage();
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: [channel]);
-        using var publisher = BuildClusterClient();
-
-        await publisher.SPublishAsync(channel, largeMessage);
-
-        var expected = PubSubMessage.FromShardChannel(largeMessage, channel);
-        await AssertReceivedAsync(subscriber, [expected]);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task UnicodeAndSpecialCharacters_DeliversCorrectly(bool isCluster)
-    {
+        // Build messages with various Unicode and special characters.
         string channel = BuildChannel();
         var messages = new[] {
             PubSubMessage.FromChannel("Simple ASCII", channel),
@@ -73,12 +50,11 @@ public class PubSubEdgeCaseTests
             PubSubMessage.FromChannel("Mixed: Hello世界!🌟", channel)
         };
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [channel]);
-        using var publisher = BuildClient(isCluster);
+        using var subscriber = await BuildSubscriber(isCluster, messages);
+        using var publisher = BuildPublisher(isCluster);
 
-        foreach (var message in messages)
-            await publisher.PublishAsync(channel, message.Message);
-
+        // Publish messages and verify receipt.
+        await PublishAsync(publisher, messages);
         await AssertReceivedAsync(subscriber, messages);
     }
 

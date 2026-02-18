@@ -12,75 +12,33 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubQueueTests
 {
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task Queue_Channel_ReceivesMessage(bool isCluster)
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Queue_Channel_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)
     {
-        var message = BuildChannelMessage();
+        SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [message.Channel]);
-        using var publisher = BuildClient(isCluster);
+        var message = BuildMessage(channelMode);
+        using var subscriber = await BuildSubscriber(isCluster, message);
 
-        await publisher.PublishAsync(message.Channel, message.Message);
-        await AssertReceivedAsync(subscriber, [message]);
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, message);
+        await AssertReceivedAsync(subscriber, message);
     }
 
     [Theory]
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public async Task Queue_Pattern_ReceivesMessage(bool isCluster)
-    {
-        var message = BuildPatternMessage();
-
-        using var subscriber = await BuildSubscriber(isCluster, patterns: [message.Pattern!]);
-        using var publisher = BuildClient(isCluster);
-
-        await publisher.PublishAsync(message.Channel, message.Message);
-        await AssertReceivedAsync(subscriber, [message]);
-    }
-
-    [Fact]
-    public async Task Queue_ShardChannel_ReceivesMessage()
-    {
-        SkipUnlessShardedSupported();
-
-        var message = BuildShardChannelMessage();
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: [message.Channel]);
-        using var publisher = BuildClusterClient();
-
-        await publisher.SPublishAsync(message.Channel, message.Message);
-        await AssertReceivedAsync(subscriber, [message]);
-    }
-
-    [Fact]
-    public async Task Queue_WithMultipleMessages_PreservesOrder()
+    public static async Task Queue_WithHighVolume_HandlesAllMessages(bool isCluster)
     {
         var channel = BuildChannel();
-        var messageCount = 20;
-        var expectedMessages = Enumerable.Range(0, messageCount).Select(i => PubSubMessage.FromChannel($"Message-{i:D3}", channel)).ToList();
 
-        using var subscriber = await BuildStandaloneSubscriber(channels: [channel]);
-        using var publisher = BuildStandaloneClient();
-
-        // Publish all messages.
-        foreach (var msg in expectedMessages)
-            await publisher.PublishAsync(msg.Channel, msg.Message);
-
-        // Verify that order is preserved.
-        await AssertReceivedAsync(subscriber, expectedMessages);
-    }
-
-    [Fact]
-    public async Task Queue_WithHighVolume_HandlesAllMessages()
-    {
-        var channel = BuildChannel();
         var messageCount = 100;
+        var messages = Enumerable.Range(0, messageCount).Select(i => PubSubMessage.FromChannel($"Message-{i:D3}", channel)).ToArray();
 
-        using var subscriber = await BuildStandaloneSubscriber(channels: [channel]);
-        using var publisher = BuildStandaloneClient();
+        using var subscriber = await BuildSubscriber(isCluster, messages);
 
         // Publish many messages rapidly.
-        for (int i = 0; i < messageCount; i++)
-            await publisher.PublishAsync(channel, $"Message-{i:D3}");
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
 
         // Verify that all messages are received.
         PubSubMessageQueue queue = subscriber.PubSubQueue!;
