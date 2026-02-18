@@ -12,10 +12,10 @@ public interface IPubSubClusterCommands
     #region PublishCommands
 
     /// <summary>
-    /// Publishes a message to the specified shard channel.
+    /// Publishes a message to the specified sharded channel.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/spublish/">valkey.io</seealso>
-    /// <param name="shardChannel">The shard channel to publish the message to.</param>
+    /// <param name="shardChannel">The sharded channel to publish the message to.</param>
     /// <param name="message">The message to publish.</param>
     /// <returns>The number of clients that received the message.</returns>
     /// <remarks>
@@ -33,59 +33,59 @@ public interface IPubSubClusterCommands
     #region SubscribeCommands
 
     /// <summary>
-    /// Subscribes the client to the specified shard channel and waits for server confirmation.
+    /// Subscribes the client to the specified sharded channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The shard channel to subscribe to.</param>
+    /// <param name="shardChannel">The sharded channel to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SSubscribeAsync(string shardChannel, TimeSpan timeout = default);
 
     /// <summary>
-    /// Subscribes the client to the specified shard channels and waits for server confirmation.
+    /// Subscribes the client to the specified sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of shard channels to subscribe to.</param>
+    /// <param name="shardChannels">A collection of sharded channels to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SSubscribeAsync(IEnumerable<string> shardChannels, TimeSpan timeout = default);
 
     /// <summary>
-    /// Subscribes the client to the specified shard channel and returns without waiting for server confirmation.
+    /// Subscribes the client to the specified sharded channel and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to subscribe asynchronously in the background.
     /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The shard channel to subscribe to.</param>
+    /// <param name="shardChannel">The sharded channel to subscribe to.</param>
     /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SSubscribeLazyAsync("shard-news");
-    /// Console.WriteLine("Subscribed to 'shard-news' shard channel");
+    /// Console.WriteLine("Subscribed to 'shard-news' sharded channel");
     /// </code>
     /// </example>
     /// </remarks>
     abstract Task SSubscribeLazyAsync(string shardChannel);
 
     /// <summary>
-    /// Subscribes the client to the specified shard channels and returns without waiting for server confirmation.
+    /// Subscribes the client to the specified sharded channels and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to subscribe asynchronously in the background.
     /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of shard channels to subscribe to.</param>
+    /// <param name="shardChannels">A collection of sharded channels to subscribe to.</param>
     /// <remarks>
     /// <example>
     /// <code>
     /// var shardChannels = new string[] { "shard-news", "shard-updates" };
     /// await clusterClient.SSubscribeLazyAsync(shardChannels);
-    /// Console.WriteLine("Subscribed to 'shard-news' and 'shard-updates' shard channels");
+    /// Console.WriteLine("Subscribed to 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
     /// </remarks>
@@ -95,7 +95,7 @@ public interface IPubSubClusterCommands
     #region UnsubscribeCommands
 
     /// <summary>
-    /// Unsubscribes the client from all shard channels and waits for server confirmation.
+    /// Unsubscribes the client from all sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
@@ -104,27 +104,27 @@ public interface IPubSubClusterCommands
     abstract Task SUnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from the specified shard channel and waits for server confirmation.
+    /// Unsubscribes the client from the specified sharded channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The shard channel to unsubscribe from.</param>
+    /// <param name="shardChannel">The sharded channel to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SUnsubscribeAsync(string shardChannel, TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from the specified shard channels and waits for server confirmation.
+    /// Unsubscribes the client from the specified sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of shard channels to unsubscribe from.</param>
+    /// <param name="shardChannels">A collection of sharded channels to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SUnsubscribeAsync(IEnumerable<string> shardChannels, TimeSpan timeout = default);
 
     /// <summary>
-    /// Unsubscribes the client from all shard channels and returns without waiting for server confirmation.
+    /// Unsubscribes the client from all sharded channels and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
     /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
@@ -135,52 +135,52 @@ public interface IPubSubClusterCommands
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeLazyAsync();
-    /// Console.WriteLine("Unsubscribed from all shard channels");
+    /// Console.WriteLine("Unsubscribed from all sharded channels");
     /// </code>
     /// </example>
     /// </remarks>
     abstract Task SUnsubscribeLazyAsync();
 
     /// <summary>
-    /// Unsubscribes the client from the specified shard channel and returns without waiting for server confirmation.
+    /// Unsubscribes the client from the specified sharded channel and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
     /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannel">The shard channel to unsubscribe from.</param>
+    /// <param name="shardChannel">The sharded channel to unsubscribe from.</param>
     /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeLazyAsync("shard-news");
-    /// Console.WriteLine("Unsubscribed from 'shard-news' shard channel");
+    /// Console.WriteLine("Unsubscribed from 'shard-news' sharded channel");
     /// </code>
     /// </example>
     /// </remarks>
     abstract Task SUnsubscribeLazyAsync(string shardChannel);
 
     /// <summary>
-    /// Unsubscribes the client from the specified shard channels and returns without waiting for server confirmation.
+    /// Unsubscribes the client from the specified sharded channels and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
     /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// <para />
-    /// If no shard channels or <see cref="PubSub.AllShardChannels"/> is specified, unsubscribes the client from all shard channels.
+    /// If no sharded channels or <see cref="PubSub.AllShardedChannels"/> is specified, unsubscribes the client from all sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of shard channels to unsubscribe from.</param>
+    /// <param name="shardChannels">A collection of sharded channels to unsubscribe from.</param>
     /// <remarks>
     /// <example>
     /// <code>
     /// var shardChannels = new string[] { "shard-news", "shard-updates" };
     /// await clusterClient.SUnsubscribeLazyAsync(shardChannels);
-    /// Console.WriteLine("Unsubscribed from 'shard-news' and 'shard-updates' shard channels");
+    /// Console.WriteLine("Unsubscribed from 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// await clusterClient.SUnsubscribeLazyAsync(PubSub.AllShardChannels);
-    /// Console.WriteLine("Unsubscribed from all shard channels");
+    /// await clusterClient.SUnsubscribeLazyAsync(PubSub.AllShardedChannels);
+    /// Console.WriteLine("Unsubscribed from all sharded channels");
     /// </code>
     /// </example>
     /// </remarks>
@@ -190,42 +190,42 @@ public interface IPubSubClusterCommands
     #region IntrospectionCommands
 
     /// <summary>
-    /// Lists the currently active shard channels.
+    /// Lists the currently active sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
-    /// <returns>A set of active shard channel names.</returns>
+    /// <returns>A set of active sharded channel names.</returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// var shardChannels = await clusterClient.PubSubShardChannelsAsync();
-    /// Console.WriteLine($"Active shard channels: {string.Join("', '", shardChannels)}");
+    /// Console.WriteLine($"Active sharded channels: {string.Join("', '", shardChannels)}");
     /// </code>
     /// </example>
     /// </remarks>
     abstract Task<ISet<string>> PubSubShardChannelsAsync();
 
     /// <summary>
-    /// Lists the currently active shard channels matching the specified pattern.
+    /// Lists the currently active sharded channels matching the specified pattern.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
-    /// <param name="pattern">A glob-style pattern to filter shard channel names.</param>
-    /// <returns>A set of active shard channel names matching the pattern.</returns>
+    /// <param name="pattern">A glob-style pattern to filter sharded channel names.</param>
+    /// <returns>A set of active sharded channel names matching the pattern.</returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// var shardChannels = await clusterClient.PubSubShardChannelsAsync("shard.*");
-    /// Console.WriteLine($"Matching shard channels: {string.Join("', '", shardChannels)}");
+    /// Console.WriteLine($"Matching sharded channels: {string.Join("', '", shardChannels)}");
     /// </code>
     /// </example>
     /// </remarks>
     abstract Task<ISet<string>> PubSubShardChannelsAsync(string pattern);
 
     /// <summary>
-    /// Returns the number of subscribers for the specified shard channels.
+    /// Returns the number of subscribers for the specified sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardnumsub/">valkey.io</seealso>
-    /// <param name="shardChannels">A collection of shard channel names to query.</param>
-    /// <returns>A dictionary mapping shard channel names to their subscriber counts.</returns>
+    /// <param name="shardChannels">A collection of sharded channel names to query.</param>
+    /// <returns>A dictionary mapping sharded channel names to their subscriber counts.</returns>
     /// <remarks>
     /// <example>
     /// <code>

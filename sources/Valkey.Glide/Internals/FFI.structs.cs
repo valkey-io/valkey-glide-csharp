@@ -411,7 +411,7 @@ internal partial class FFI
                 pubSubConfig.PatternCount = (uint)patterns.Count;
             }
 
-            // Marshal shard channels - only for cluster clients.
+            // Marshal sharded channels - only for cluster clients.
             if (subscriptions.TryGetValue(PubSubChannelMode.Sharded, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
             {
                 pubSubConfig.ShardedChannelsPtr = MarshalStringArray(shardedChannels);
@@ -533,7 +533,7 @@ internal partial class FFI
 
             else if (pushKind == PushKind.PushSMessage)
             {
-                return PubSubMessage.FromShardChannel(message, channel);
+                return PubSubMessage.FromShardedChannel(message, channel);
             }
 
             else if (pushKind == PushKind.PushPMessage)

@@ -398,7 +398,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         else if (pushKind == PushKind.PushPMessage)
             return PubSubMessage.FromPattern(message, channel, pattern!);
         else if (pushKind == PushKind.PushSMessage)
-            return PubSubMessage.FromShardChannel(message, channel);
+            return PubSubMessage.FromShardedChannel(message, channel);
         else
             throw new ArgumentOutOfRangeException(nameof(pushKind), $"Unsupported PushKind: {pushKind}");
     }

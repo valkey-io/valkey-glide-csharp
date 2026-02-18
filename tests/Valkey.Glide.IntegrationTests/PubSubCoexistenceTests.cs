@@ -60,7 +60,7 @@ public class PubSubCoexistenceTests
         using var subscriber = await BuildClusterSubscriber(message);
         using var publisher = BuildPublisher(isCluster: true);
 
-        // Publish to shard channel with custom command and verify receipt.
+        // Publish to sharded channel with custom command and verify receipt.
         await ((GlideClusterClient)publisher).CustomCommand(["SPUBLISH", message.Channel, message.Message]);
         await AssertReceivedAsync(subscriber, message);
     }

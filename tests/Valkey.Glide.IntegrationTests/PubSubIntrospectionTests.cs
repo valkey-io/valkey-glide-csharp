@@ -121,7 +121,7 @@ public class PubSubIntrospectionTests()
         var message = BuildMessage(PubSubChannelMode.Sharded);
         using var subscriber = await BuildClusterSubscriber(message);
 
-        // Verify that shard channel is active.
+        // Verify that sharded channel is active.
         Assert.Contains(message.Channel, await subscriber.PubSubShardChannelsAsync());
     }
 
@@ -133,7 +133,7 @@ public class PubSubIntrospectionTests()
         var message = BuildMessage(PubSubChannelMode.Sharded);
         using var subscriber = await BuildClusterSubscriber(message);
 
-        // Verify that shard channel is active.
+        // Verify that sharded channel is active.
         Assert.Equivalent(new[] { message.Channel }, await subscriber.PubSubShardChannelsAsync(message.Channel));
     }
 
@@ -145,14 +145,14 @@ public class PubSubIntrospectionTests()
         var channel = BuildChannel();
         using var client = TestConfiguration.DefaultClusterClient();
 
-        // Verify no subscribers to shard channel.
+        // Verify no subscribers to sharded channel.
         var expected = new Dictionary<string, long> { { channel, 0L } };
         var actual = await client.PubSubShardNumSubAsync([.. expected.Keys]);
         Assert.Equivalent(expected, actual);
     }
 
     [Fact]
-    public static async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardChannelCounts()
+    public static async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardedChannelCounts()
     {
         SkipUnlessShardedSupported();
 
@@ -162,7 +162,7 @@ public class PubSubIntrospectionTests()
         var messages = new[] { message1, message2 };
         using var subscriber = await BuildClusterSubscriber(messages);
 
-        // Verify subscription counts for both shard channels.
+        // Verify subscription counts for both sharded channels.
         var expected = new Dictionary<string, long> { { message1.Channel, 1L }, { message2.Channel, 1L } };
         var actual = await subscriber.PubSubShardNumSubAsync([message1.Channel, message2.Channel]);
         Assert.Equivalent(expected, actual);

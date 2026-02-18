@@ -142,13 +142,13 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void ClusterConfig_WithShardChannel_AddsShardedSubscription()
+    public void ClusterConfig_WithShardedChannel_AddsShardedSubscription()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act
-        var result = config.WithShardChannel(TestShardedChannel);
+        var result = config.WithShardedChannel(TestShardedChannel);
 
         // Assert
         Assert.Same(config, result);
@@ -180,15 +180,15 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void ClusterConfig_WithShardChannel_NullOrEmptyChannel_ThrowsArgumentException()
+    public void ClusterConfig_WithShardedChannel_NullOrEmptyChannel_ThrowsArgumentException()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithShardChannel(null!));
-        Assert.Throws<ArgumentException>(() => config.WithShardChannel(""));
-        Assert.Throws<ArgumentException>(() => config.WithShardChannel("   "));
+        Assert.Throws<ArgumentException>(() => config.WithShardedChannel(null!));
+        Assert.Throws<ArgumentException>(() => config.WithShardedChannel(""));
+        Assert.Throws<ArgumentException>(() => config.WithShardedChannel("   "));
     }
 
     [Fact]
@@ -198,8 +198,8 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act
-        config.WithShardChannel(TestShardedChannel);
-        config.WithShardChannel(TestShardedChannel); // Add same channel again
+        config.WithShardedChannel(TestShardedChannel);
+        config.WithShardedChannel(TestShardedChannel); // Add same channel again
 
         // Assert
         Assert.Single(config.Subscriptions[PubSubChannelMode.Sharded]);
@@ -238,7 +238,7 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig()
             .WithChannel("channel1")
             .WithPattern("pattern*")
-            .WithShardChannel("sharded1")
+            .WithShardedChannel("sharded1")
             .WithCallback(Callback, Context);
 
         // Assert

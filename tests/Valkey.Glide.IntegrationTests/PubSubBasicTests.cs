@@ -72,7 +72,7 @@ public class PubSubBasicTests
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
-        const var messageCount = 256;
+        const int messageCount = 256;
         var messages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
 
         // Build client and verify subscription.
@@ -103,8 +103,8 @@ public class PubSubBasicTests
         var message = BuildMessage(channelMode);
 
         // Build clients and verify subscriptions.
-        const var numSubscribers = 10;
-        var subscribers = Enumerable.Range(0, numSubscribers).Select(_ => BuildSubscriber(isCluster, message, subscribeMode)).ToArray();
+        const int numSubscribers = 10;
+        var subscribers = await Task.WhenAll(Enumerable.Range(0, numSubscribers).Select(_ => BuildSubscriber(isCluster, message, subscribeMode)));
 
         using var publisher = BuildPublisher(isCluster);
 

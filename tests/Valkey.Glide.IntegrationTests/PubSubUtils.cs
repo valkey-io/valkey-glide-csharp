@@ -14,7 +14,7 @@ public static class PubSubUtils
     /// <summary>Theory data for cluster mode (cluster vs standalone).</summary>
     public static TheoryData<bool> ClusterModeData => [true, false];
 
-    /// <summary>Theory data for pub/sub channel modes (exact, pattern, and shard channels).</summary>
+    /// <summary>Theory data for pub/sub channel modes (exact, pattern, and sharded channels).</summary>
     public static TheoryData<PubSubChannelMode> ChannelModeData => [
         PubSubChannelMode.Exact,
         PubSubChannelMode.Pattern,
@@ -142,7 +142,7 @@ public static class PubSubUtils
         {
             PubSubChannelMode.Exact => PubSubMessage.FromChannel(message, channel),
             PubSubChannelMode.Pattern => PubSubMessage.FromPattern(message, channel, pattern),
-            PubSubChannelMode.Sharded => PubSubMessage.FromShardChannel(message, channel),
+            PubSubChannelMode.Sharded => PubSubMessage.FromShardedChannel(message, channel),
             _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
         };
     }
@@ -266,7 +266,7 @@ public static class PubSubUtils
         if (mode != SubscribeMode.Blocking && timeout != null)
             throw new ArgumentException($"Timeouts are only supported for {SubscribeMode.Blocking} subscriptions.");
 
-        // Get channels, patterns, and shard channels.
+        // Get channels, patterns, and sharded channels.
         var targets = BuildSubscriptions(messages);
         var channels = targets[PubSubChannelMode.Exact];
         var patterns = targets[PubSubChannelMode.Pattern];
@@ -279,7 +279,7 @@ public static class PubSubUtils
 
             foreach (var ch in channels) pubSubConfig.WithChannel(ch);
             foreach (var p in patterns) pubSubConfig.WithPattern(p);
-            foreach (var sc in shardChannels) pubSubConfig.WithShardChannel(sc);
+            foreach (var sc in shardChannels) pubSubConfig.WithShardedChannel(sc);
             if (callback != null) pubSubConfig.WithCallback(callback);
 
             var config = configBuilder.WithPubSubSubscriptions(pubSubConfig).Build();
@@ -523,7 +523,7 @@ public static class PubSubUtils
     {
         // Validate arguments.
         if (messages.Any(m => m.ChannelMode == PubSubChannelMode.Sharded))
-            throw new ArgumentException("Standalone clients do not support shard channel subscriptions.");
+            throw new ArgumentException("Standalone clients do not support sharded channel subscriptions.");
 
         if (mode != SubscribeMode.Config && callback != null)
             throw new ArgumentException("Callbacks are only supported for config-based subscriptions.");

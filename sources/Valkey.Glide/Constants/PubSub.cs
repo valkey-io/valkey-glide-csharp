@@ -20,8 +20,8 @@ public static class PubSub
     public static readonly IEnumerable<string> AllPatterns = [];
 
     /// <summary>
-    /// Unsubscribes from all shard channels.
+    /// Unsubscribes from all sharded channels.
     /// See <see cref="GlideClusterClient.SUnsubscribeLazyAsync(IEnumerable{string})"/>.
     /// </summary>
-    public static readonly IEnumerable<string> AllShardChannels = [];
+    public static readonly IEnumerable<string> AllShardedChannels = [];
 }

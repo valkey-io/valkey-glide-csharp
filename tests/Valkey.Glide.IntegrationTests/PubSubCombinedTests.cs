@@ -5,7 +5,7 @@ using static Valkey.Glide.IntegrationTests.PubSubUtils;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for combined pub/sub subscriptions (channel, pattern, and shard channel).
+/// Integration tests for combined pub/sub subscriptions (channel, pattern, and sharded channel).
 /// </summary>
 [Collection(typeof(PubSubCombinedTests))]
 [CollectionDefinition(DisableParallelization = true)]
@@ -79,11 +79,11 @@ public class PubSubCombinedTests
         };
 
         if (isSharded)
-            messages.Add(PubSubMessage.FromShardChannel(message, channel));
+            messages.Add(PubSubMessage.FromShardedChannel(message, channel));
 
         using var subscriber = await BuildSubscriber(isCluster, messages);
 
-        // Publish to channel and shard channel.
+        // Publish to channel and sharded channel.
         using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertReceivedAsync(subscriber, messages);

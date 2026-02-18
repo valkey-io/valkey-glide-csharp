@@ -18,9 +18,9 @@ internal partial class Request
         => Simple<long>(RequestType.Publish, [channel, message]);
 
     /// <summary>
-    /// Publishes a message to the specified shard channel (cluster mode).
+    /// Publishes a message to the specified sharded channel (cluster mode).
     /// </summary>
-    /// <param name="channel">The shard channel to publish to.</param>
+    /// <param name="channel">The sharded channel to publish to.</param>
     /// <param name="message">The message to publish.</param>
     /// <returns>Command that returns the number of clients that received the message.</returns>
     public static Cmd<long, long> SPublish(GlideString channel, GlideString message)
@@ -64,19 +64,19 @@ internal partial class Request
         => Simple<object>(RequestType.PSubscribeBlocking, [.. patterns, timeoutMs.ToString()], isNullable: true);
 
     /// <summary>
-    /// Subscribes to the specified shard channels and returns without waiting for server confirmation.
+    /// Subscribes to the specified sharded channels and returns without waiting for server confirmation.
     /// </summary>
-    /// <param name="channels">The shard channels to subscribe to.</param>
-    /// <returns>Command for subscribing to shard channels.</returns>
+    /// <param name="channels">The sharded channels to subscribe to.</param>
+    /// <returns>Command for subscribing to sharded channels.</returns>
     public static Cmd<object, object> SSubscribe(GlideString[] channels)
         => Simple<object>(RequestType.SSubscribe, channels, isNullable: true);
 
     /// <summary>
-    /// Subscribes to the specified shard channels and waits for server confirmation.
+    /// Subscribes to the specified sharded channels and waits for server confirmation.
     /// </summary>
-    /// <param name="channels">The shard channels to subscribe to.</param>
+    /// <param name="channels">The sharded channels to subscribe to.</param>
     /// <param name="timeoutMs">Timeout in milliseconds.</param>
-    /// <returns>Command for subscribing to shard channels with blocking confirmation.</returns>
+    /// <returns>Command for subscribing to sharded channels with blocking confirmation.</returns>
     public static Cmd<object, object> SSubscribeBlocking(GlideString[] channels, double timeoutMs)
         => Simple<object>(RequestType.SSubscribeBlocking, [.. channels, timeoutMs.ToString()], isNullable: true);
 
@@ -122,21 +122,21 @@ internal partial class Request
         => Simple<object>(RequestType.PUnsubscribeBlocking, [.. patterns, timeoutMs.ToString()], isNullable: true);
 
     /// <summary>
-    /// Unsubscribes from the specified shard channels and returns without waiting for server confirmation.
-    /// If no shard channels are specified, unsubscribes from all shard channels.
+    /// Unsubscribes from the specified sharded channels and returns without waiting for server confirmation.
+    /// If no sharded channels are specified, unsubscribes from all sharded channels.
     /// </summary>
-    /// <param name="channels">The shard channels to unsubscribe from.</param>
-    /// <returns>Command for unsubscribing from shard channels.</returns>
+    /// <param name="channels">The sharded channels to unsubscribe from.</param>
+    /// <returns>Command for unsubscribing from sharded channels.</returns>
     public static Cmd<object, object> SUnsubscribe(GlideString[] channels)
         => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
 
     /// <summary>
-    /// Unsubscribes from the specified shard channels and waits for server confirmation.
-    /// If no shard channels are specified, unsubscribes from all shard channels.
+    /// Unsubscribes from the specified sharded channels and waits for server confirmation.
+    /// If no sharded channels are specified, unsubscribes from all sharded channels.
     /// </summary>
-    /// <param name="channels">The shard channels to unsubscribe from.</param>
+    /// <param name="channels">The sharded channels to unsubscribe from.</param>
     /// <param name="timeoutMs">Timeout in milliseconds.</param>
-    /// <returns>Command for unsubscribing from shard channels.</returns>
+    /// <returns>Command for unsubscribing from sharded channels.</returns>
     public static Cmd<object, object> SUnsubscribeBlocking(GlideString[] channels, double timeoutMs)
         => Simple<object>(RequestType.SUnsubscribeBlocking, [.. channels, timeoutMs.ToString()], isNullable: true);
 
@@ -186,25 +186,25 @@ internal partial class Request
         => Simple<long>(RequestType.PubSubNumPat, []);
 
     /// <summary>
-    /// Lists all active shard channels (cluster mode).
+    /// Lists all active sharded channels (cluster mode).
     /// </summary>
-    /// <returns>Command that returns a set of active shard channel names.</returns>
+    /// <returns>Command that returns a set of active sharded channel names.</returns>
     public static Cmd<object[], ISet<string>> PubSubShardChannels()
         => new(RequestType.PubSubShardChannels, [], false, ToStringSet);
 
     /// <summary>
-    /// Lists active shard channels matching the specified pattern (cluster mode).
+    /// Lists active sharded channels matching the specified pattern (cluster mode).
     /// </summary>
     /// <param name="pattern">The pattern to match channel names against.</param>
-    /// <returns>Command that returns a set of matching shard channel names.</returns>
+    /// <returns>Command that returns a set of matching sharded channel names.</returns>
     public static Cmd<object[], ISet<string>> PubSubShardChannels(GlideString pattern)
         => new(RequestType.PubSubShardChannels, [pattern], false, ToStringSet);
 
     /// <summary>
-    /// Lists the number of subscribers for the specified shard channels (cluster mode).
+    /// Lists the number of subscribers for the specified sharded channels (cluster mode).
     /// </summary>
-    /// <param name="channels">The shard channels to query.</param>
-    /// <returns>Command that returns a dictionary mapping shard channel names to subscriber counts.</returns>
+    /// <param name="channels">The sharded channels to query.</param>
+    /// <returns>Command that returns a dictionary mapping sharded channel names to subscriber counts.</returns>
     public static Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> PubSubShardNumSub(GlideString[] channels)
     {
         return new(RequestType.PubSubShardNumSub, channels, false, dict =>

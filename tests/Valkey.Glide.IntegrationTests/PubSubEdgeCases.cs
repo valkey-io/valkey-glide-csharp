@@ -24,7 +24,7 @@ public class PubSubEdgeCaseTests
         {
             PubSubChannelMode.Exact => PubSubMessage.FromChannel(largeMessage, channel),
             PubSubChannelMode.Pattern => PubSubMessage.FromPattern(largeMessage, channel, channel),
-            PubSubChannelMode.Sharded => PubSubMessage.FromShardChannel(largeMessage, channel),
+            PubSubChannelMode.Sharded => PubSubMessage.FromShardedChannel(largeMessage, channel),
             _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
         };
 

@@ -103,9 +103,9 @@ public class PubSubUnsubscribeTests
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Pattern)
             await subscriber.PUnsubscribeAsync(PubSub.AllPatterns);
         else if (unsubscribeMode == UnsubscribeMode.Lazy && channelMode == PubSubChannelMode.Sharded)
-            await ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync(PubSub.AllShardChannels);
+            await ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync(PubSub.AllShardedChannels);
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Sharded)
-            await ((GlideClusterClient)subscriber).SUnsubscribeAsync(PubSub.AllShardChannels);
+            await ((GlideClusterClient)subscriber).SUnsubscribeAsync(PubSub.AllShardedChannels);
 
         await AssertNotSubscribedAsync(subscriber, messages);
     }
