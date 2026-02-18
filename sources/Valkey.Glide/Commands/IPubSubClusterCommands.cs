@@ -39,7 +39,7 @@ public interface IPubSubClusterCommands
     /// <param name="shardedChannel">The sharded channel to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SSubscribeAsync(string shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
@@ -49,7 +49,7 @@ public interface IPubSubClusterCommands
     /// <param name="shardedChannels">A collection of sharded channels to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SSubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>
@@ -100,7 +100,7 @@ public interface IPubSubClusterCommands
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SUnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
@@ -110,7 +110,7 @@ public interface IPubSubClusterCommands
     /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SUnsubscribeAsync(string shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
@@ -120,7 +120,7 @@ public interface IPubSubClusterCommands
     /// <param name="shardedChannels">A collection of sharded channels to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SUnsubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>

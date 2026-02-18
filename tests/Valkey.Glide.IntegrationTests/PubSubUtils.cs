@@ -183,13 +183,13 @@ public static class PubSubUtils
     {
         foreach (var message in messages)
         {
-            _ = message.ChannelMode switch
+            await (message.ChannelMode switch
             {
-                PubSubChannelMode.Exact => await publisher.PublishAsync(message.Channel, message.Message),
-                PubSubChannelMode.Pattern => await publisher.PublishAsync(message.Channel, message.Message),
-                PubSubChannelMode.Sharded => await ((GlideClusterClient)publisher).SPublishAsync(message.Channel, message.Message),
+                PubSubChannelMode.Exact => publisher.PublishAsync(message.Channel, message.Message),
+                PubSubChannelMode.Pattern => publisher.PublishAsync(message.Channel, message.Message),
+                PubSubChannelMode.Sharded => ((GlideClusterClient)publisher).SPublishAsync(message.Channel, message.Message),
                 _ => throw new InvalidOperationException($"Unsupported channel mode: {message.ChannelMode}")
-            };
+            });
         }
     }
 

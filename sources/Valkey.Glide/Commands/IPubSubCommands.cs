@@ -38,7 +38,7 @@ public interface IPubSubCommands
     /// <param name="channel">The channel to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SubscribeAsync(string channel, TimeSpan timeout = default);
 
     /// <summary>
@@ -50,7 +50,7 @@ public interface IPubSubCommands
     /// <param name="channels">A collection of channels to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
 
     /// <summary>
@@ -99,7 +99,7 @@ public interface IPubSubCommands
     /// <param name="pattern">The pattern to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PSubscribeAsync(string pattern, TimeSpan timeout = default);
 
     /// <summary>
@@ -109,7 +109,7 @@ public interface IPubSubCommands
     /// <param name="patterns">A collection of patterns to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PSubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
 
     /// <summary>
@@ -160,7 +160,7 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task UnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
@@ -170,7 +170,7 @@ public interface IPubSubCommands
     /// <param name="channel">The channel to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task UnsubscribeAsync(string channel, TimeSpan timeout = default);
 
     /// <summary>
@@ -182,7 +182,7 @@ public interface IPubSubCommands
     /// <param name="channels">A collection of channels to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task UnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
 
     /// <summary>
@@ -256,7 +256,7 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PUnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
@@ -266,7 +266,7 @@ public interface IPubSubCommands
     /// <param name="pattern">The pattern to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PUnsubscribeAsync(string pattern, TimeSpan timeout = default);
 
     /// <summary>
@@ -276,7 +276,7 @@ public interface IPubSubCommands
     /// <param name="patterns">A collection of patterns to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
 
     /// <summary>
