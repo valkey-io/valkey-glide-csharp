@@ -18,13 +18,13 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task SSubscribeAsync(string channel, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SSubscribeBlocking([channel], timeout.TotalMilliseconds));
+        await Command(Request.SSubscribeBlocking([channel], (uint)timeout.TotalMilliseconds));
     }
 
     public async Task SSubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SSubscribeBlocking(channels.ToGlideStrings(), timeout.TotalMilliseconds));
+        await Command(Request.SSubscribeBlocking(channels.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
     }
 
     public async Task SSubscribeLazyAsync(string channel)
@@ -39,19 +39,19 @@ public partial class GlideClusterClient : IPubSubClusterCommands
     public async Task SUnsubscribeAsync(TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SUnsubscribeBlocking([], timeout.TotalMilliseconds));
+        await Command(Request.SUnsubscribeBlocking([], (uint)timeout.TotalMilliseconds));
     }
 
     public async Task SUnsubscribeAsync(string channel, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SUnsubscribeBlocking([channel], timeout.TotalMilliseconds));
+        await Command(Request.SUnsubscribeBlocking([channel], (uint)timeout.TotalMilliseconds));
     }
 
     public async Task SUnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SUnsubscribeBlocking(channels.ToGlideStrings(), timeout.TotalMilliseconds));
+        await Command(Request.SUnsubscribeBlocking(channels.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
     }
 
     public async Task SUnsubscribeLazyAsync()

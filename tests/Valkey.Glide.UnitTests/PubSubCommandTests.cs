@@ -13,7 +13,7 @@ public class PubSubCommandTests
     private static readonly string Pattern1 = "news.*";
     private static readonly string Pattern2 = "weather.*";
     private static readonly string Message = "message";
-    private static readonly double TimeoutMs = 123;
+    private static readonly uint TimeoutMs = 123;
     private static readonly string TimeoutExpected = TimeoutMs.ToString();
 
     #region PublishCommands
