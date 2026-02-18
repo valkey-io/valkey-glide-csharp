@@ -3,8 +3,7 @@
 namespace Valkey.Glide.UnitTests;
 
 /// <summary>
-/// Unit tests for PubSub command request building and parameter validation.
-/// Tests command argument construction, parameter validation, and interface segregation.
+/// Unit tests for pub/sub command request building and parameter validation.
 /// </summary>
 public class PubSubCommandTests
 {
@@ -85,7 +84,7 @@ public class PubSubCommandTests
     }
 
     #endregion
-    #region PubSubInfoCommands
+    #region IntrospectionCommands
 
     [Fact]
     public void PubSubChannels_BuildsCorrectCommand()

@@ -71,4 +71,12 @@ internal partial class Request
     private static Cmd<Dictionary<GlideString, object>, HashEntry[]> DictionaryToHashEntries(RequestType request, GlideString[] args, bool isNullable = false)
         => new(request, args, isNullable, dict => [.. dict.Select(he =>
             new HashEntry(he.Key, (GlideString)he.Value))]);
+
+    /// <summary>
+    /// Converts an object array to a string set and returns the result.
+    /// </summary>
+    /// <param name="objects">The object array to convert.</param>
+    /// <returns>A converted string set.</returns>
+    private static HashSet<string> ToStringSet(object[] objects)
+        => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())];
 }
