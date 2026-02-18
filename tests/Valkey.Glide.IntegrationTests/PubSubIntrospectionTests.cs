@@ -42,8 +42,11 @@ public class PubSubIntrospectionTests()
         var message = BuildMessage(PubSubChannelMode.Exact);
         using var subscriber = await BuildSubscriber(isCluster, message);
 
+        // Create matching pattern by replacing 'channel' with wildcard.
+        var pattern = message.Channel.Replace("channel", "*");
+
         // Verify that channel matching pattern is returned.
-        Assert.Contains(message.Channel, await subscriber.PubSubChannelsAsync(message.Channel));
+        Assert.Contains(message.Channel, await subscriber.PubSubChannelsAsync(pattern));
     }
 
     [Theory]
