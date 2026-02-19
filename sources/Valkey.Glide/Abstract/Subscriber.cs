@@ -11,6 +11,9 @@ namespace Valkey.Glide;
 /// </summary>
 internal sealed class Subscriber : ISubscriber
 {
+    // Default async timeout for StackExchange.Redis compabitility.
+    private static readonly int DefaultTimeoutMs = 5000;
+
     private readonly ConnectionMultiplexer _multiplexer;
     private readonly Database _client;
 
@@ -145,8 +148,9 @@ internal sealed class Subscriber : ISubscriber
 
         if (_client.IsCluster)
         {
+
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE"]), Route.Random);
+            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
         }
     }
 
@@ -203,7 +207,9 @@ internal sealed class Subscriber : ISubscriber
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
-            await _client.Command(Request.CustomCommand(["SSUBSCRIBE", channelStr]), Route.Random);
+
+            // TODO #205: Refactor to use GlideClusterClient instead of custom command.
+            await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
@@ -229,7 +235,7 @@ internal sealed class Subscriber : ISubscriber
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE", channelStr]), Route.Random);
+            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
@@ -242,15 +248,14 @@ internal sealed class Subscriber : ISubscriber
     }
 
     /// <summary>
-    /// Gets the timeout to use for subscribe/unsubscribe operations.
+    /// Returns the timeout for subscribe/unsubscribe operations.
     /// </summary>
-    private TimeSpan GetTimeout()
-    {
-        // Match default StackExchange.Redis async timeout.
-        const int defaultTimeoutMs = 5000;
+    private TimeSpan GetTimeout() => TimeSpan.FromMilliseconds(GetTimeoutMs());
 
-        return TimeSpan.FromMilliseconds(_multiplexer.RawConfig.AsyncTimeout ?? defaultTimeoutMs);
-    }
+    /// <summary>
+    /// Returns the timeout in milliseconds for subscribe/unsubscribe operations.
+    /// </summary>
+    private int GetTimeoutMs() => _multiplexer.RawConfig.AsyncTimeout ?? DefaultTimeoutMs;
 
     /// <summary>
     /// Throws if the client is not in cluster mode.
