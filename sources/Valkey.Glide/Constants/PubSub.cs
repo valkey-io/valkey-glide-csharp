@@ -9,19 +9,22 @@ public static class PubSub
 {
     /// <summary>
     /// Unsubscribes from all channels.
-    /// See <see cref="BaseClient.UnsubscribeLazyAsync(IEnumerable{string})"/>.
+    /// See <see cref="BaseClient.UnsubscribeAsync(IEnumerable{string})"/>
+    /// and <see cref="BaseClient.UnsubscribeLazyAsync(IEnumerable{string})"/>.
     /// </summary>
     public static readonly IEnumerable<string> AllChannels = [];
 
     /// <summary>
     /// Unsubscribes from all patterns.
-    /// See <see cref="BaseClient.PUnsubscribeLazyAsync(IEnumerable{string})"/>.
+    /// See <see cref="BaseClient.PUnsubscribeAsync(IEnumerable{string})"/>
+    /// and <see cref="BaseClient.PUnsubscribeLazyAsync(IEnumerable{string})"/>.
     /// </summary>
     public static readonly IEnumerable<string> AllPatterns = [];
 
     /// <summary>
     /// Unsubscribes from all sharded channels.
-    /// See <see cref="GlideClusterClient.SUnsubscribeLazyAsync(IEnumerable{string})"/>.
+    /// See <see cref="GlideClusterClient.SUnsubscribeAsync(IEnumerable{string})"/>
+    /// and <see cref="GlideClusterClient.SUnsubscribeLazyAsync(IEnumerable{string})"/>.
     /// </summary>
     public static readonly IEnumerable<string> AllShardedChannels = [];
 }
