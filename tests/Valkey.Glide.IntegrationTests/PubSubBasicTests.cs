@@ -104,7 +104,14 @@ public class PubSubBasicTests
 
         // Build clients and verify subscriptions.
         const int numSubscribers = 10;
-        var subscribers = await Task.WhenAll(Enumerable.Range(0, numSubscribers).Select(_ => BuildSubscriber(isCluster, message, subscribeMode)));
+        for (int i = 0; i < numSubscribers; i++)
+        {
+            subscribers.Add(await BuildSubscriber(isCluster, message, subscribeMode));
+
+            // Add a short delay between subscriber creations
+            // to avoid overloading the connection multiplexer.
+            await Task.Delay(100);
+        }
 
         using var publisher = BuildPublisher(isCluster);
 
