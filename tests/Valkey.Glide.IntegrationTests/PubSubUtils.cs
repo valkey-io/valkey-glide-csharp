@@ -9,6 +9,28 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 public static class PubSubUtils
 {
+    #region Enums
+
+    /// <summary>
+    /// Unsubscribe mode for pub/sub integration tests.
+    /// </summary>
+    public enum UnsubscribeMode
+    {
+        Lazy,
+        Blocking
+    }
+
+    /// <summary>
+    /// Subscription mode for pub/sub integration tests.
+    /// </summary>
+    public enum SubscribeMode
+    {
+        Config,
+        Lazy,
+        Blocking
+    }
+
+    #endregion
     #region Data
 
     /// <summary>Theory data for cluster mode (cluster vs standalone).</summary>
@@ -56,6 +78,24 @@ public static class PubSubUtils
     }
 
     /// <summary>
+    /// Theory data for all valid combinations of cluster mode and unsubscribe mode.
+    /// </summary>
+    public static TheoryData<bool, UnsubscribeMode> ClusterAndUnsubscribeModeData
+    {
+        get
+        {
+            var data = new TheoryData<bool, UnsubscribeMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var unsubscribeMode in Enum.GetValues<UnsubscribeMode>())
+                    data.Add(isCluster, unsubscribeMode);
+            }
+
+            return data;
+        }
+    }
+
+    /// <summary>
     /// Theory data for all valid combinations of cluster mode, channel mode, and subscribe mode.
     /// </summary>
     public static TheoryData<bool, PubSubChannelMode, SubscribeMode> ClusterChannelAndSubscribeModeData
@@ -70,7 +110,7 @@ public static class PubSubUtils
                     if (!IsClusterAndChannelModeSupported(isCluster, channelMode))
                         continue;
 
-                    foreach (var subscribeMode in SubscribeModeData)
+                    foreach (var subscribeMode in Enum.GetValues<SubscribeMode>())
                         data.Add(isCluster, channelMode, subscribeMode);
                 }
             }
@@ -94,7 +134,7 @@ public static class PubSubUtils
                     if (!IsClusterAndChannelModeSupported(isCluster, channelMode))
                         continue;
 
-                    foreach (var unsubscribeMode in UnsubscribeModeData)
+                    foreach (var unsubscribeMode in Enum.GetValues<UnsubscribeMode>())
                         data.Add(isCluster, channelMode, unsubscribeMode);
                 }
             }
@@ -118,8 +158,8 @@ public static class PubSubUtils
                     if (!IsClusterAndChannelModeSupported(isCluster, channelMode))
                         continue;
 
-                    foreach (var subscribeMode in SubscribeModeData)
-                        foreach (var unsubscribeMode in UnsubscribeModeData)
+                    foreach (var subscribeMode in Enum.GetValues<SubscribeMode>())
+                        foreach (var unsubscribeMode in Enum.GetValues<UnsubscribeMode>())
                             data.Add(isCluster, channelMode, subscribeMode, unsubscribeMode);
                 }
             }
@@ -237,9 +277,6 @@ public static class PubSubUtils
             : new StandaloneServer();
     }
 
-    #endregion
-    #region Publish
-
     /// <summary>
     /// Builds and returns a publisher client with the specified cluster mode.
     /// </summary>
@@ -249,49 +286,6 @@ public static class PubSubUtils
             ? TestConfiguration.DefaultClusterClient()
             : TestConfiguration.DefaultStandaloneClient();
     }
-
-    /// <summary>
-    /// Publishes the specified message using the appropriate publish method based on its channel mode.
-    /// </summary>
-    public static async Task PublishAsync(BaseClient publisher, PubSubMessage message)
-        => await PublishAsync(publisher, [message]);
-
-    /// <summary>
-    /// Publishes the specified messages sequentially using the appropriate publish method based on each message's channel mode.
-    /// </summary>
-    public static async Task PublishAsync(BaseClient publisher, IEnumerable<PubSubMessage> messages)
-    {
-        foreach (var message in messages)
-        {
-            await (message.ChannelMode switch
-            {
-                PubSubChannelMode.Exact => publisher.PublishAsync(message.Channel, message.Message),
-                PubSubChannelMode.Pattern => publisher.PublishAsync(message.Channel, message.Message),
-                PubSubChannelMode.Sharded => ((GlideClusterClient)publisher).SPublishAsync(message.Channel, message.Message),
-                _ => throw new InvalidOperationException($"Unsupported channel mode: {message.ChannelMode}")
-            });
-        }
-    }
-
-    #endregion
-
-    #region Subscribe
-
-    /// <summary>
-    /// Subscription mode for pub/sub integration tests.
-    /// </summary>
-    public enum SubscribeMode
-    {
-        Config,
-        Lazy,
-        Blocking
-    }
-
-    /// <summary>Theory data for subscription modes.</summary>
-    public static TheoryData<SubscribeMode> SubscribeModeData => [
-        SubscribeMode.Config,
-        SubscribeMode.Lazy,
-        SubscribeMode.Blocking];
 
     /// <summary>
     /// Builds and returns a client that is subscribed to receive the specified message using the given subscription mode.
@@ -447,34 +441,94 @@ public static class PubSubUtils
     }
 
     #endregion
-    #region Unsubscribe
+    #region PublishAsync
 
     /// <summary>
-    /// Unsubscribe mode for pub/sub integration tests.
+    /// Publishes the specified message using the appropriate publish method based on its channel mode.
     /// </summary>
-    public enum UnsubscribeMode
+    public static async Task PublishAsync(BaseClient publisher, PubSubMessage message)
+        => await PublishAsync(publisher, [message]);
+
+    /// <summary>
+    /// Publishes the specified messages sequentially using the appropriate publish method based on each message's channel mode.
+    /// </summary>
+    public static async Task PublishAsync(BaseClient publisher, IEnumerable<PubSubMessage> messages)
     {
-        Lazy,
-        Blocking
+        foreach (var message in messages)
+        {
+            await (message.ChannelMode switch
+            {
+                PubSubChannelMode.Exact => publisher.PublishAsync(message.Channel, message.Message),
+                PubSubChannelMode.Pattern => publisher.PublishAsync(message.Channel, message.Message),
+                PubSubChannelMode.Sharded => ((GlideClusterClient)publisher).SPublishAsync(message.Channel, message.Message),
+                _ => throw new InvalidOperationException($"Unsupported channel mode: {message.ChannelMode}")
+            });
+        }
+    }
+
+    #endregion
+
+    #region SubscribeAsync
+
+    /// <summary>
+    /// Subscribes the client to receive the given message and waits for server confirmation.
+    /// </summary>
+    public static async Task SubscribeAsync(BaseClient subscriber, PubSubMessage message)
+        => await SubscribeAsync(subscriber, [message]);
+
+    /// <summary>
+    /// Subscribes the client to receive the given messages and waits for server confirmation.
+    /// </summary>
+    public static async Task SubscribeAsync(BaseClient subscriber, IEnumerable<PubSubMessage> messages)
+    {
+        var subscriptions = BuildSubscriptions(messages);
+
+        if (subscriptions[PubSubChannelMode.Exact].Count > 0)
+            await subscriber.SubscribeAsync(subscriptions[PubSubChannelMode.Exact]);
+
+        if (subscriptions[PubSubChannelMode.Pattern].Count > 0)
+            await subscriber.PSubscribeAsync(subscriptions[PubSubChannelMode.Pattern]);
+
+        if (subscriptions[PubSubChannelMode.Sharded].Count > 0)
+            await ((GlideClusterClient)subscriber).SSubscribeAsync(subscriptions[PubSubChannelMode.Sharded]);
     }
 
     /// <summary>
-    /// Theory data for unsubscribe modes.
+    /// Subscribes the client to receive the given message and return without waiting for server confirmation.
     /// </summary>
-    public static TheoryData<UnsubscribeMode> UnsubscribeModeData => [
-        UnsubscribeMode.Lazy,
-        UnsubscribeMode.Blocking];
+    public static async Task SubscribeLazyAsync(BaseClient subscriber, PubSubMessage message)
+        => await SubscribeLazyAsync(subscriber, [message]);
+
+    /// <summary>
+    /// Subscribes the client to receive the given messages and return without waiting for server confirmation.
+    /// </summary>
+    public static async Task SubscribeLazyAsync(BaseClient subscriber, IEnumerable<PubSubMessage> messages)
+    {
+        var subscriptions = BuildSubscriptions(messages);
+
+        if (subscriptions[PubSubChannelMode.Exact].Count > 0)
+            await subscriber.SubscribeLazyAsync(subscriptions[PubSubChannelMode.Exact]);
+
+        if (subscriptions[PubSubChannelMode.Pattern].Count > 0)
+            await subscriber.PSubscribeLazyAsync(subscriptions[PubSubChannelMode.Pattern]);
+
+        if (subscriptions[PubSubChannelMode.Sharded].Count > 0)
+            await ((GlideClusterClient)subscriber).SSubscribeLazyAsync(subscriptions[PubSubChannelMode.Sharded]);
+    }
+
+    #endregion
+    #region UnsubscribeAsync
 
     /// <summary>
     /// Unsubscribes the client with the using the given mode from receiving the specified message.
     /// </summary>
-    public static async Task UnsubscribeAsync(BaseClient subscriber, UnsubscribeMode unsubscribeMode, PubSubMessage message)
-        => await UnsubscribeAsync(subscriber, unsubscribeMode, [message]);
+    public static async Task UnsubscribeAsync(BaseClient subscriber, PubSubMessage message, UnsubscribeMode unsubscribeMode)
+        => await UnsubscribeAsync(subscriber, [message], unsubscribeMode);
 
     /// <summary>
     /// Unsubscribes the client with the using the given mode from receiving the specified messages.
     /// </summary>
-    public static async Task UnsubscribeAsync(BaseClient subscriber, UnsubscribeMode unsubscribeMode, PubSubMessage[] messages)
+    public static async Task UnsubscribeAsync(BaseClient subscriber, IEnumerable<PubSubMessage> messages, UnsubscribeMode unsubscribeMode)
     {
         var unsubscriptionTargets = BuildSubscriptions(messages);
 

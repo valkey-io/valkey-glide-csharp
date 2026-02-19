@@ -11,24 +11,6 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubCallbackTests
 {
-    /// <summary>
-    /// Theory data for all valid combinations of cluster mode and subscribe mode.
-    /// </summary>
-    public static TheoryData<bool, SubscribeMode> ClusterAndSubscribeModeData
-    {
-        get
-        {
-            var data = new TheoryData<bool, SubscribeMode>();
-            foreach (var isCluster in ClusterModeData)
-            {
-                foreach (var subscriptionMode in SubscribeModeData)
-                    data.Add(isCluster, subscriptionMode);
-            }
-
-            return data;
-        }
-    }
-
     [Theory]
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task Callback_ChannelMode_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)

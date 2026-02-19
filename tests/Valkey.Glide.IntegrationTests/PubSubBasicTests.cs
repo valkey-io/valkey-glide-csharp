@@ -5,7 +5,8 @@ using static Valkey.Glide.IntegrationTests.PubSubUtils;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for basic pub/sub subscription and message delivery.
+/// Integration tests for basic pub/sub subscription, publishing, and unsubscription operations.
+/// See <see cref="PubSubSubscribeTests"/> and <see cref="PubSubUnsubscribeTests"/> for more subscribe and unsubscribe tests.
 /// </summary>
 [Collection(typeof(PubSubBasicTests))]
 [CollectionDefinition(DisableParallelization = true)]
@@ -28,7 +29,7 @@ public class PubSubBasicTests
         await AssertReceivedAsync(subscriber, message);
 
         // Unsubscribe and verify unsubscription.
-        await UnsubscribeAsync(subscriber, unsubscribeMode, message);
+        await UnsubscribeAsync(subscriber, message, unsubscribeMode);
         await AssertNotSubscribedAsync(subscriber, message, unsubscribeMode);
 
         // Publish messages again and verify they are not received.
@@ -38,10 +39,13 @@ public class PubSubBasicTests
 
     [Theory]
     [MemberData(nameof(AllModesData), MemberType = typeof(PubSubUtils))]
-    public static async Task ManySubscriptions_ReceivesAllMessages(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode, UnsubscribeMode unsubscribeMode)
+    public static async Task MultipleSubscriptions_ReceivesAllMessages(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode, UnsubscribeMode unsubscribeMode)
     {
-        const int messageCount = 256;
-        var messages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
+        var messages = new List<PubSubMessage>
+        {
+            BuildMessage(channelMode),
+            BuildMessage(channelMode)
+        };
 
         // Build client and verify subscription.
         using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
@@ -54,7 +58,7 @@ public class PubSubBasicTests
         await AssertReceivedAsync(subscriber, messages);
 
         // Unsubscribe and verify unsubscription.
-        await UnsubscribeAsync(subscriber, unsubscribeMode, messages);
+        await UnsubscribeAsync(subscriber, messages, unsubscribeMode);
         await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
 
         // Publish messages again and verify they are not received.
@@ -83,10 +87,10 @@ public class PubSubBasicTests
         await AssertReceivedAsync(subscriber2, message);
 
         // Unsubscribe and verify unsubscription.
-        await UnsubscribeAsync(subscriber1, unsubscribeMode, message);
+        await UnsubscribeAsync(subscriber1, message, unsubscribeMode);
         await AssertNotSubscribedAsync(subscriber1, message, unsubscribeMode);
 
-        await UnsubscribeAsync(subscriber2, unsubscribeMode, message);
+        await UnsubscribeAsync(subscriber2, message, unsubscribeMode);
         await AssertNotSubscribedAsync(subscriber2, message, unsubscribeMode);
 
         // Publish message again and verify it is not received.
