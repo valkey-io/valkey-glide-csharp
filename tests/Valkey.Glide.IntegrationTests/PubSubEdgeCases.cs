@@ -12,7 +12,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubEdgeCaseTests
 {
     [Theory]
-    [MemberData(nameof(ClusterChannelAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task LargeMessage_DeliversSuccessfully(bool isCluster, PubSubChannelMode channelMode)
     {
         // Build large message.

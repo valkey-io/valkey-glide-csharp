@@ -31,7 +31,7 @@ public class PubSubCallbackTests
     }
 
     [Theory]
-    [MemberData(nameof(ClusterAndSubscribeModeData))]
+    [MemberData(nameof(ClusterAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
     public static async Task Callback_SubscribeMode_ReceivesMessage(bool isCluster, SubscribeMode subscribeMode)
     {
         var message = BuildMessage();

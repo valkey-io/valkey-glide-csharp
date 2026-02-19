@@ -14,19 +14,6 @@ public class PubSubSubscribeTests
 {
     [Theory]
     [MemberData(nameof(ClusterChannelAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
-    public static async Task SingleSubscription_SingleChannelMode_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode)
-    {
-        // Build one message for the specified channel mode.
-        var message = BuildMessage(channelMode);
-        var messages = new[] { message };
-
-        // Build subscriber using the specified subscribe mode.
-        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
-        await AssertSubscribedAsync(subscriber, messages, subscribeMode);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterChannelAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
     public static async Task ManySubscriptions_SingleChannelMode_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode)
     {
         // Build many messages for the specified channel mode.
@@ -38,6 +25,11 @@ public class PubSubSubscribeTests
         // Build subscriber using the specified subscribe mode.
         using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
         await AssertSubscribedAsync(subscriber, messages, subscribeMode);
+
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
@@ -57,6 +49,11 @@ public class PubSubSubscribeTests
         // Build subscriber using the specified subscribe mode.
         using var subscriber = await BuildSubscriber(isCluster, expectedMessages, subscribeMode);
         await AssertSubscribedAsync(subscriber, expectedMessages, subscribeMode);
+
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, expectedMessages);
+        await AssertReceivedAsync(subscriber, expectedMessages);
     }
 
     [Theory]
@@ -71,14 +68,19 @@ public class PubSubSubscribeTests
         var patternMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Pattern)).ToArray();
         var shardedChannelMessages = isSharded ? Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Sharded)).ToArray() : null;
 
-        var expectedMessages = new List<PubSubMessage>();
-        expectedMessages.AddRange(channelMessages);
-        expectedMessages.AddRange(patternMessages);
-        if (isSharded) expectedMessages.AddRange(shardedChannelMessages!);
+        var messages = new List<PubSubMessage>();
+        messages.AddRange(channelMessages);
+        messages.AddRange(patternMessages);
+        if (isSharded) messages.AddRange(shardedChannelMessages!);
 
         // Build subscriber using the specified subscribe mode.
-        using var subscriber = await BuildSubscriber(isCluster, expectedMessages, subscribeMode);
-        await AssertSubscribedAsync(subscriber, expectedMessages, subscribeMode);
+        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await AssertSubscribedAsync(subscriber, messages, subscribeMode);
+
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
@@ -89,6 +91,7 @@ public class PubSubSubscribeTests
         var configMessage = BuildMessage(channelMode);
         var lazyMessage = BuildMessage(channelMode);
         var blockingMessage = BuildMessage(channelMode);
+        var messages = new[] { configMessage, lazyMessage, blockingMessage };
 
         // Subscribe to each message using the corresponding subscribe mode.
         using var subscriber = await BuildSubscriber(isCluster, [configMessage], SubscribeMode.Config);
@@ -99,6 +102,11 @@ public class PubSubSubscribeTests
 
         await SubscribeLazyAsync(subscriber, lazyMessage);
         await AssertSubscribedAsync(subscriber, [lazyMessage], SubscribeMode.Lazy);
+
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
@@ -111,6 +119,11 @@ public class PubSubSubscribeTests
         var lazyMessages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
         var blockingMessages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
 
+        var messages = new List<PubSubMessage>();
+        messages.AddRange(configMessages);
+        messages.AddRange(lazyMessages);
+        messages.AddRange(blockingMessages);
+
         // Subscribe to all messages using the corresponding subscribe mode.
         using var subscriber = await BuildSubscriber(isCluster, configMessages, SubscribeMode.Config);
         await AssertSubscribedAsync(subscriber, configMessages, SubscribeMode.Config);
@@ -120,5 +133,10 @@ public class PubSubSubscribeTests
 
         await SubscribeLazyAsync(subscriber, lazyMessages);
         await AssertSubscribedAsync(subscriber, lazyMessages, SubscribeMode.Lazy);
+
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 }

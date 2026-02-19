@@ -98,4 +98,31 @@ public class PubSubBasicTests
         await AssertNotReceivedAsync(subscriber1, message);
         await AssertNotReceivedAsync(subscriber2, message);
     }
+
+    [Theory]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task DifferentChannelsWithSameName_ExactPatternSharded_IsolatedCorrectly(bool isCluster)
+    {
+        bool isSharded = IsShardedSupported(isCluster);
+
+        // Build messages that all use the same channel/pattern name but different channel modes.
+        var channel = BuildChannel();
+        var message = "message";
+
+        var messages = new List<PubSubMessage>
+        {
+            PubSubMessage.FromChannel(message, channel),
+            PubSubMessage.FromPattern(message, channel, channel)
+        };
+
+        if (isSharded)
+            messages.Add(PubSubMessage.FromShardedChannel(message, channel));
+
+        using var subscriber = await BuildSubscriber(isCluster, messages);
+
+        // Publish to channel and sharded channel.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
+    }
 }

@@ -21,7 +21,7 @@ public static class PubSubUtils
     }
 
     /// <summary>
-    /// Subscription mode for pub/sub integration tests.
+    /// Subscribe mode for pub/sub integration tests.
     /// </summary>
     public enum SubscribeMode
     {
@@ -211,33 +211,6 @@ public static class PubSubUtils
             Assert.Skip("Sharded pub/sub is supported for cluster clients since Valkey 7.0.0");
     }
 
-    /// <summary>
-    /// Skips the current test unless sharded pub/sub is supported for the given cluster mode.
-    /// </summary>
-    public static void SkipUnlessShardedSupported(bool isCluster)
-    {
-        if (!IsShardedSupported(isCluster))
-            Assert.Skip("Sharded pub/sub is supported for cluster clients since Valkey 7.0.0");
-    }
-
-    /// <summary>
-    /// Builds and returns the expected subscriptions for the given messages, indexed by channel mode.
-    /// </summary>
-    public static Dictionary<PubSubChannelMode, HashSet<string>> BuildSubscriptions(IEnumerable<PubSubMessage> messages)
-    {
-        var targets = new Dictionary<PubSubChannelMode, HashSet<string>>();
-
-        foreach (var mode in Enum.GetValues<PubSubChannelMode>())
-            targets[mode] = [];
-
-        foreach (var message in messages)
-        {
-            var target = message.ChannelMode == PubSubChannelMode.Pattern ? message.Pattern! : message.Channel;
-            targets[message.ChannelMode].Add(target);
-        }
-        return targets;
-    }
-
     #endregion
     #region Builders
 
@@ -268,13 +241,21 @@ public static class PubSubUtils
     }
 
     /// <summary>
-    /// Builds and returns a Valkey server based on cluster mode.
+    /// Builds and returns the expected subscriptions for the given messages, indexed by channel mode.
     /// </summary>
-    public static Server BuildServer(bool isCluster)
+    public static Dictionary<PubSubChannelMode, HashSet<string>> BuildSubscriptions(IEnumerable<PubSubMessage> messages)
     {
-        return isCluster
-            ? new ClusterServer()
-            : new StandaloneServer();
+        var targets = new Dictionary<PubSubChannelMode, HashSet<string>>();
+
+        foreach (var mode in Enum.GetValues<PubSubChannelMode>())
+            targets[mode] = [];
+
+        foreach (var message in messages)
+        {
+            var target = message.ChannelMode == PubSubChannelMode.Pattern ? message.Pattern! : message.Channel;
+            targets[message.ChannelMode].Add(target);
+        }
+        return targets;
     }
 
     /// <summary>
@@ -440,8 +421,18 @@ public static class PubSubUtils
         return client;
     }
 
+    /// <summary>
+    /// Builds and returns a Valkey server based on cluster mode.
+    /// </summary>
+    public static Server BuildServer(bool isCluster)
+    {
+        return isCluster
+            ? new ClusterServer()
+            : new StandaloneServer();
+    }
+
     #endregion
-    #region PublishAsync
+    #region Publish
 
     /// <summary>
     /// Publishes the specified message using the appropriate publish method based on its channel mode.
@@ -467,8 +458,7 @@ public static class PubSubUtils
     }
 
     #endregion
-
-    #region SubscribeAsync
+    #region Subscribe
 
     /// <summary>
     /// Subscribes the client to receive the given message and waits for server confirmation.
@@ -517,7 +507,7 @@ public static class PubSubUtils
     }
 
     #endregion
-    #region UnsubscribeAsync
+    #region Unsubscribe
 
     /// <summary>
     /// Unsubscribes the client with the using the given mode from receiving the specified message.
@@ -536,11 +526,14 @@ public static class PubSubUtils
         foreach (var item in unsubscriptionTargets)
         {
             var channels = item.Value;
+
+            // Skip if no channels/patterns for this mode,
+            // since an empty collection will unsuscribe from all.
             if (channels.Count == 0)
                 continue;
 
             var channelMode = item.Key;
-            _ = channelMode switch
+            await (channelMode switch
             {
                 PubSubChannelMode.Exact =>
                     unsubscribeMode == UnsubscribeMode.Lazy
@@ -558,7 +551,7 @@ public static class PubSubUtils
                         : ((GlideClusterClient)subscriber).SUnsubscribeAsync(channels),
 
                 _ => throw new InvalidOperationException($"Unsupported channel mode: {channelMode}")
-            };
+            });
         }
     }
 
@@ -601,21 +594,21 @@ public static class PubSubUtils
         Assert.Fail("Expected subscriptions were not found.");
     }
 
-    /// <summary>
+    /// <summary>543
     /// Asserts that the client is not subscribed to receive the specified message.
     /// </summary>
-    public static async Task AssertNotSubscribedAsync(BaseClient client, PubSubMessage message, UnsubscribeMode? mode = null)
+    public static async Task AssertNotSubscribedAsync(BaseClient client, PubSubMessage message, UnsubscribeMode mode)
         => await AssertNotSubscribedAsync(client, [message], mode);
 
     /// <summary>
     /// Asserts that the client is not subscribed to receive the specified messages.
     /// </summary>
-    public static async Task AssertNotSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages, UnsubscribeMode? mode = null)
+    public static async Task AssertNotSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages, UnsubscribeMode mode)
     {
         var notExpected = BuildSubscriptions(messages);
 
-        // If unsubscribe mode is not specified or blocking, expect unsubscription on first attempt (no retries).
-        if (mode == null || mode == UnsubscribeMode.Blocking)
+        // If unsubscribe mode is blocking, expect unsubscription on first attempt (no retries).
+        if (mode == UnsubscribeMode.Blocking)
         {
             if (!await IsNotSubscribedAsync(client, notExpected))
                 Assert.Fail("Unexpected subscriptions were found.");
