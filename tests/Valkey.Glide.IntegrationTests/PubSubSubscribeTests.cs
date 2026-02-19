@@ -5,189 +5,138 @@ using static Valkey.Glide.IntegrationTests.PubSubUtils;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for pub/sub subscription methods (config-based and lazy).
+/// Integration tests for pub/sub subscription operations.
+/// Tests more subscribe scenarios compared to <see cref="PubSubBasicTests"/>.
 /// </summary>
-[Collection(typeof(PubSubSubscriptionMethodsTests))]
+[Collection(typeof(PubSubSubscribeTests))]
 [CollectionDefinition(DisableParallelization = true)]
-public class PubSubSubscriptionMethodsTests
+public class PubSubSubscribeTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ConfigSubscription_Channel_SubscribesImmediately(bool isCluster)
+    [MemberData(nameof(ClusterChannelAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task ManySubscriptions_SingleChannelMode_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode)
     {
-        var message = BuildChannelMessage();
-        var channels = new[] { message.Channel };
+        // Build many messages for the specified channel mode.
+        var messagesCount = 256;
+        var messages = Enumerable.Range(0, messagesCount)
+            .Select(i => BuildMessage(channelMode))
+            .ToArray();
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: channels);
-        await AssertSubscribedAsync(subscriber, channels);
+        // Build subscriber using the specified subscribe mode.
+        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await AssertSubscribedAsync(subscriber, messages, subscribeMode);
+
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ConfigSubscription_Pattern_SubscribesImmediately(bool isCluster)
-    {
-        var message = BuildPatternMessage();
-        var patterns = new[] { message.Pattern! };
-
-        using var subscriber = await BuildSubscriber(isCluster, patterns: patterns);
-        await AssertPSubscribedAsync(subscriber, patterns);
-    }
-
-    [Fact]
-    public async Task ConfigSubscription_ShardChannel_SubscribesImmediately()
-    {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var message = BuildShardChannelMessage();
-        var shardChannels = new[] { message.Channel };
-
-        using var subscriber = await BuildClusterSubscriber(shardChannels: shardChannels);
-        await AssertSSubscribedAsync(subscriber, shardChannels);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ConfigSubscription_AllChannelModes_SubscribesImmediately(bool isCluster)
+    [MemberData(nameof(ClusterAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task SingleSubscription_AllChannelModes_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode)
     {
         var isSharded = IsShardedSupported(isCluster);
 
-        var channelMessage = BuildChannelMessage();
-        var patternMessage = BuildPatternMessage();
-        var shardMessage = BuildShardChannelMessage();
+        // Build one message for each channel mode.
+        var channelMessage = BuildMessage(PubSubChannelMode.Exact);
+        var patternMessage = BuildMessage(PubSubChannelMode.Pattern);
+        var shardedChannelMessage = isSharded ? BuildMessage(PubSubChannelMode.Sharded) : null;
 
-        var channels = new[] { channelMessage.Channel };
-        var patterns = new[] { patternMessage.Pattern! };
-        var shardChannels = isSharded ? new[] { shardMessage.Channel } : [];
+        var expectedMessages = new List<PubSubMessage> { channelMessage, patternMessage };
+        if (isSharded) expectedMessages.Add(shardedChannelMessage!);
 
-        using var subscriber = await BuildSubscriber(
-            isCluster,
-            channels: channels,
-            patterns: patterns,
-            shardChannels: shardChannels);
+        // Build subscriber using the specified subscribe mode.
+        using var subscriber = await BuildSubscriber(isCluster, expectedMessages, subscribeMode);
+        await AssertSubscribedAsync(subscriber, expectedMessages, subscribeMode);
 
-        await AssertSubscribedAsync(subscriber, channels);
-        await AssertPSubscribedAsync(subscriber, patterns);
-        if (isSharded) await AssertSSubscribedAsync((GlideClusterClient)subscriber, shardChannels);
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, expectedMessages);
+        await AssertReceivedAsync(subscriber, expectedMessages);
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task LazySubscription_Channel_SubscribesAsynchronously(bool isCluster)
-    {
-        var message = BuildChannelMessage();
-        var channels = new string[] { message.Channel };
-
-        using var subscriber = await BuildSubscriber(isCluster);
-        await subscriber.SubscribeLazyAsync(channels);
-
-        await AssertSubscribedAsync(subscriber, channels);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task LazySubscription_Channels_SubscribesAsynchronously(bool isCluster)
-    {
-        var message1 = BuildChannelMessage();
-        var message2 = BuildChannelMessage();
-        var channels = new string[] { message1.Channel, message2.Channel };
-
-        using var subscriber = await BuildSubscriber(isCluster);
-        await subscriber.SubscribeLazyAsync(channels);
-
-        await AssertSubscribedAsync(subscriber, channels);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task LazySubscription_Pattern_SubscribesAsynchronously(bool isCluster)
-    {
-        var message = BuildPatternMessage();
-        var patterns = new string[] { message.Pattern! };
-
-        using var subscriber = await BuildSubscriber(isCluster);
-        await subscriber.PSubscribeLazyAsync(patterns);
-
-        await AssertPSubscribedAsync(subscriber, patterns);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task LazySubscription_Patterns_SubscribesAsynchronously(bool isCluster)
-    {
-        var message1 = BuildPatternMessage();
-        var message2 = BuildPatternMessage();
-        var patterns = new string[] { message1.Pattern!, message2.Pattern! };
-
-        using var subscriber = await BuildSubscriber(isCluster);
-        await subscriber.PSubscribeLazyAsync(patterns);
-
-        await AssertPSubscribedAsync(subscriber, patterns);
-    }
-
-    [Fact]
-    public async Task LazySubscription_ShardChannel_SubscribesAsynchronously()
-    {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var message = BuildShardChannelMessage();
-        var shardChannels = new string[] { message.Channel };
-
-        using var subscriber = await BuildClusterSubscriber();
-        await subscriber.SSubscribeLazyAsync(shardChannels);
-
-        await AssertSSubscribedAsync(subscriber, shardChannels);
-    }
-
-    [Fact]
-    public async Task LazySubscription_ShardChannels_SubscribesAsynchronously()
-    {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var message1 = BuildShardChannelMessage();
-        var message2 = BuildShardChannelMessage();
-        var shardChannels = new string[] { message1.Channel, message2.Channel };
-
-        using var subscriber = await BuildClusterSubscriber();
-        await subscriber.SSubscribeLazyAsync(shardChannels);
-
-        await AssertSSubscribedAsync(subscriber, shardChannels);
-    }
-
-    [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task LazySubscription_AllChannelModes_SubscribesAsynchronously(bool isCluster)
+    [MemberData(nameof(ClusterAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task ManySubscriptions_AllChannelModes_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode)
     {
         var isSharded = IsShardedSupported(isCluster);
 
-        var channelMessage = BuildChannelMessage();
-        var patternMessage = BuildPatternMessage();
-        var shardMessage = BuildShardChannelMessage();
+        // Build many messages for each channel mode.
+        var messagesPerChannelMode = 128;
+        var channelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Exact)).ToArray();
+        var patternMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Pattern)).ToArray();
+        var shardedChannelMessages = isSharded ? Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Sharded)).ToArray() : null;
 
-        using var subscriber = await BuildSubscriber(isCluster);
+        var messages = new List<PubSubMessage>();
+        messages.AddRange(channelMessages);
+        messages.AddRange(patternMessages);
+        if (isSharded) messages.AddRange(shardedChannelMessages!);
 
-        await subscriber.SubscribeLazyAsync(channelMessage.Channel);
-        await subscriber.PSubscribeLazyAsync(patternMessage.Pattern!);
-        if (isSharded) await ((GlideClusterClient)subscriber).SSubscribeLazyAsync(shardMessage.Channel);
+        // Build subscriber using the specified subscribe mode.
+        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await AssertSubscribedAsync(subscriber, messages, subscribeMode);
 
-        await AssertSubscribedAsync(subscriber, [channelMessage.Channel]);
-        await AssertPSubscribedAsync(subscriber, [patternMessage.Pattern!]);
-        if (isSharded) await AssertSSubscribedAsync((GlideClusterClient)subscriber, [shardMessage.Channel]);
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task MixedSubscription_AllTypes_AllWork(bool isCluster)
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task SingleSubscription_AllSubscribeModes_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode)
     {
-        var configMessage = BuildChannelMessage();
-        var lazyMessage = BuildChannelMessage();
+        // Build one message for each subscribe mode.
+        var configMessage = BuildMessage(channelMode);
+        var lazyMessage = BuildMessage(channelMode);
+        var blockingMessage = BuildMessage(channelMode);
+        var messages = new[] { configMessage, lazyMessage, blockingMessage };
 
-        using var subscriber = await BuildSubscriber(isCluster, channels: [configMessage.Channel]);
+        // Subscribe to each message using the corresponding subscribe mode.
+        using var subscriber = await BuildSubscriber(isCluster, [configMessage], SubscribeMode.Config);
+        await AssertSubscribedAsync(subscriber, [configMessage], SubscribeMode.Config);
 
-        await AssertSubscribedAsync(subscriber, [configMessage.Channel]);
-        await AssertNotSubscribedAsync(subscriber, [lazyMessage.Channel]);
+        await SubscribeAsync(subscriber, blockingMessage);
+        await AssertSubscribedAsync(subscriber, [blockingMessage], SubscribeMode.Blocking);
 
-        await subscriber.SubscribeLazyAsync(lazyMessage.Channel);
+        await SubscribeLazyAsync(subscriber, lazyMessage);
+        await AssertSubscribedAsync(subscriber, [lazyMessage], SubscribeMode.Lazy);
 
-        await AssertSubscribedAsync(subscriber, [configMessage.Channel, lazyMessage.Channel]);
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task ManySubscriptions_AllSubscribeModes_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode)
+    {
+        // Build many messages for each subscribe mode.
+        var messageCount = 128;
+        var configMessages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
+        var lazyMessages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
+        var blockingMessages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
+
+        var messages = new List<PubSubMessage>();
+        messages.AddRange(configMessages);
+        messages.AddRange(lazyMessages);
+        messages.AddRange(blockingMessages);
+
+        // Subscribe to all messages using the corresponding subscribe mode.
+        using var subscriber = await BuildSubscriber(isCluster, configMessages, SubscribeMode.Config);
+        await AssertSubscribedAsync(subscriber, configMessages, SubscribeMode.Config);
+
+        await SubscribeAsync(subscriber, blockingMessages);
+        await AssertSubscribedAsync(subscriber, blockingMessages, SubscribeMode.Blocking);
+
+        await SubscribeLazyAsync(subscriber, lazyMessages);
+        await AssertSubscribedAsync(subscriber, lazyMessages, SubscribeMode.Lazy);
+
+        // Publish messages and verify receipt.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 }

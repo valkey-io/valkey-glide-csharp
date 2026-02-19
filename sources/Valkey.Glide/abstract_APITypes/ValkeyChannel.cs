@@ -33,7 +33,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     public bool IsPattern => (Options & ValkeyChannelOptions.Pattern) != 0;
 
     /// <summary>
-    /// Indicates whether this channel represents a shard channel (see <c>SSUBSCRIBE</c>).
+    /// Indicates whether this channel represents a sharded channel (see <c>SSUBSCRIBE</c>).
     /// </summary>
     public bool IsSharded => (Options & ValkeyChannelOptions.Sharded) != 0;
 
@@ -85,12 +85,12 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     }
 
     /// <summary>
-    /// Create a new channel from a buffer, representing a shard channel.
+    /// Create a new channel from a buffer, representing a sharded channel.
     /// </summary>
     public static ValkeyChannel Sharded(byte[]? value) => new(value, ValkeyChannelOptions.Sharded);
 
     /// <summary>
-    /// Create a new channel from a string, representing a shard channel.
+    /// Create a new channel from a string, representing a sharded channel.
     /// </summary>
     public static ValkeyChannel Sharded(string value) => new(value, ValkeyChannelOptions.Sharded);
 

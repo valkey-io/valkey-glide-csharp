@@ -411,7 +411,7 @@ internal partial class FFI
                 pubSubConfig.PatternCount = (uint)patterns.Count;
             }
 
-            // Marshal shard channels - only for cluster clients.
+            // Marshal sharded channels - only for cluster clients.
             if (subscriptions.TryGetValue(PubSubChannelMode.Sharded, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
             {
                 pubSubConfig.ShardedChannelsPtr = MarshalStringArray(shardedChannels);
@@ -533,7 +533,7 @@ internal partial class FFI
 
             else if (pushKind == PushKind.PushSMessage)
             {
-                return PubSubMessage.FromShardChannel(message, channel);
+                return PubSubMessage.FromShardedChannel(message, channel);
             }
 
             else if (pushKind == PushKind.PushPMessage)
@@ -796,6 +796,12 @@ internal partial class FFI
         Subscribe = 911,
         SUnsubscribe = 912,
         Unsubscribe = 913,
+        SubscribeBlocking = 914,
+        UnsubscribeBlocking = 915,
+        PSubscribeBlocking = 916,
+        PUnsubscribeBlocking = 917,
+        SSubscribeBlocking = 918,
+        SUnsubscribeBlocking = 919,
         GetSubscriptions = 920,
 
         //// Scripting and Functions commands

@@ -16,8 +16,8 @@ public class PubSubConfigurationTests
     private static readonly string Channel2 = "channel2";
     private static readonly string Pattern1 = "pattern1*";
     private static readonly string Pattern2 = "pattern2*";
-    private static readonly string ShardChannel1 = "shard1";
-    private static readonly string ShardChannel2 = "shard2";
+    private static readonly string ShardedChannel1 = "shard1";
+    private static readonly string ShardedChannel2 = "shard2";
     private static readonly Object Context = new { TestData = "test" };
     private static readonly MessageCallback Callback = (message, ctx) => { /* test callback */ };
 
@@ -111,7 +111,7 @@ public class PubSubConfigurationTests
         var pubSubConfig = new ClusterPubSubSubscriptionConfig()
             .WithChannel(Channel1)
             .WithPattern(Pattern1)
-            .WithShardChannel(ShardChannel1);
+            .WithShardedChannel(ShardedChannel1);
 
         // Act
         var builder = new ClusterClientConfigurationBuilder()
@@ -165,8 +165,8 @@ public class PubSubConfigurationTests
             .WithChannel(Channel2)
             .WithPattern(Pattern1)
             .WithPattern(Pattern2)
-            .WithShardChannel(ShardChannel1)
-            .WithShardChannel(ShardChannel2);
+            .WithShardedChannel(ShardedChannel1)
+            .WithShardedChannel(ShardedChannel2);
 
         // Act
         var builder = new ClusterClientConfigurationBuilder()
@@ -179,10 +179,10 @@ public class PubSubConfigurationTests
         var storedConfig = config.Request.PubSubSubscriptions as ClusterPubSubSubscriptionConfig;
         Assert.NotNull(storedConfig);
 
-        // Check exact channels, patterns, and shard channels.
+        // Check exact channels, patterns, and sharded channels.
         Assert.Equivalent(new HashSet<string> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
         Assert.Equivalent(new HashSet<string> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
-        Assert.Equivalent(new HashSet<string> { ShardChannel1, ShardChannel2 }, storedConfig.Subscriptions[PubSubChannelMode.Sharded]);
+        Assert.Equivalent(new HashSet<string> { ShardedChannel1, ShardedChannel2 }, storedConfig.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
     #endregion
@@ -209,7 +209,7 @@ public class PubSubConfigurationTests
     {
         // Arrange
         var pubSubConfig = new ClusterPubSubSubscriptionConfig()
-            .WithShardChannel(ShardChannel1);
+            .WithShardedChannel(ShardedChannel1);
 
         // Act & Assert - Should not throw
         var builder = new ClusterClientConfigurationBuilder()
@@ -236,7 +236,7 @@ public class PubSubConfigurationTests
         var builder = new ClusterClientConfigurationBuilder();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => { new ClusterPubSubSubscriptionConfig().WithShardChannel(""); });
+        Assert.Throws<ArgumentException>(() => { new ClusterPubSubSubscriptionConfig().WithShardedChannel(""); });
     }
 
     #endregion

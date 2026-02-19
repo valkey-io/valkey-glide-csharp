@@ -153,7 +153,7 @@ unsafe fn convert_pubsub_config(
         );
     }
 
-    // Convert shard channels
+    // Convert sharded channels
     if config.sharded_channel_count > 0 {
         let sharded = unsafe {
             convert_string_array(config.sharded_channels_ptr, config.sharded_channel_count)

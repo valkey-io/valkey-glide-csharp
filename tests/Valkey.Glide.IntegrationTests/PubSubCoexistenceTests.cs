@@ -12,104 +12,54 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCoexistenceTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ManyChannels_Coexistence_NoInterference(bool isCluster)
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task ManySubscriptions_Coexistence_NoInterference(bool isCluster, PubSubChannelMode channelMode)
     {
+        // Build messages.
         var messages = Enumerable.Range(0, 5)
-            .Select(_ => BuildChannelMessage())
+            .Select(_ => BuildMessage(channelMode))
             .ToArray();
 
-        using var subscriber = await BuildSubscriber(
-            isCluster,
-            channels: [.. messages.Select(m => m.Channel)]);
-        using var publisher = BuildClient(isCluster);
+        using var subscriber = await BuildSubscriber(isCluster, messages);
+        using var publisher = BuildPublisher(isCluster);
 
-        foreach (var message in messages)
-            await publisher.PublishAsync(message.Channel, message.Message);
-
-        await AssertMessagesReceivedAsync(subscriber, messages);
+        // Publish messages and verify receipt.
+        await PublishAsync(publisher, messages);
+        await AssertReceivedAsync(subscriber, messages);
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task ManyPatterns_Coexistence_NoInterference(bool isCluster)
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task CustomPublishCommand_WithPubSub_WorksCorrectly(bool isCluster)
     {
-        var messages = Enumerable.Range(0, 5)
-            .Select(_ => BuildPatternMessage())
-            .ToArray();
+        var message = BuildMessage();
 
-        using var subscriber = await BuildSubscriber(
-            isCluster,
-            patterns: [.. messages.Select(m => m.Pattern!)]);
-        using var publisher = BuildClient(isCluster);
+        using var subscriber = await BuildSubscriber(isCluster, message);
+        using var publisher = BuildPublisher(isCluster);
 
-        foreach (var message in messages)
-            await publisher.PublishAsync(message.Channel, message.Message);
-
-        await AssertMessagesReceivedAsync(subscriber, messages);
-    }
-
-    [Fact]
-    public async Task ManyShardChannels_Coexistence_NoInterference()
-    {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var messages = Enumerable.Range(0, 5)
-            .Select(_ => BuildShardChannelMessage())
-            .ToArray();
-
-        using var subscriber = await BuildClusterSubscriber(
-            shardChannels: [.. messages.Select(m => m.Channel!)]);
-        using var publisher = BuildClusterClient();
-
-        foreach (var message in messages)
-            await publisher.SPublishAsync(message.Channel, message.Message);
-
-        await AssertMessagesReceivedAsync(subscriber, messages);
-    }
-
-    [Theory]
-    [MemberData(nameof(PubSubUtils.IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task CustomPublishCommand_WithPubSub_WorksCorrectly(bool isCluster)
-    {
-        var message = BuildChannelMessage();
-
-        using var subscriber = await BuildSubscriber(
-            isCluster,
-            channels: [message.Channel]);
-
-        // Publish to channel with custom command.
+        // Publish to channel with custom command and verify receipt.
         var args = new GlideString[] { "PUBLISH", message.Channel, message.Message };
 
         if (isCluster)
-        {
-            using var publisher = BuildClusterClient();
-            await publisher.CustomCommand(args);
-        }
+            await ((GlideClusterClient)publisher).CustomCommand(args);
         else
-        {
-            using var publisher = BuildStandaloneClient();
-            await publisher.CustomCommand(args);
-        }
+            await ((GlideClient)publisher).CustomCommand(args);
 
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        await AssertReceivedAsync(subscriber, [message]);
     }
 
     [Fact]
-    public async Task CustomSPublishCommand_WithPubSub_WorksCorrectly()
+    public static async Task CustomSPublishCommand_WithPubSub_WorksCorrectly()
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
+        SkipUnlessShardedSupported();
 
-        var message = BuildShardChannelMessage();
+        var message = BuildMessage(PubSubChannelMode.Sharded);
 
-        using var subscriber = await BuildClusterSubscriber(
-            shardChannels: [message.Channel]);
-        using var publisher = BuildClusterClient();
+        using var subscriber = await BuildClusterSubscriber(message);
+        using var publisher = BuildPublisher(isCluster: true);
 
-        // Publish to shard channel with custom command.
-        var args = new GlideString[] { "SPUBLISH", message.Channel, message.Message };
-        await publisher.CustomCommand(args);
-
-        await AssertMessagesReceivedAsync(subscriber, [message]);
+        // Publish to sharded channel with custom command and verify receipt.
+        await ((GlideClusterClient)publisher).CustomCommand(["SPUBLISH", message.Channel, message.Message]);
+        await AssertReceivedAsync(subscriber, message);
     }
 }
