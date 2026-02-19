@@ -12,8 +12,8 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCombinedTests
 {
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
-    public static async Task Combined_OneClient_ReceivesAllTypes(bool isCluster)
+    [MemberData(nameof(ClusterAndSubscribeModeData))]
+    public static async Task Combined_OneClient_ReceivesAllTypes(bool isCluster, SubscribeMode subscribeMode)
     {
         bool isSharded = IsShardedSupported(isCluster);
 
@@ -27,7 +27,7 @@ public class PubSubCombinedTests
         if (isSharded)
             messages.Add(BuildMessage(PubSubChannelMode.Sharded));
 
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
 
         // Publish messages and verify receipt.
         using var publisher = BuildPublisher(isCluster);
@@ -36,7 +36,7 @@ public class PubSubCombinedTests
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
     public static async Task Combined_MultipleClients_ReceiveAllTypes(bool isCluster)
     {
         var isSharded = IsShardedSupported(isCluster);

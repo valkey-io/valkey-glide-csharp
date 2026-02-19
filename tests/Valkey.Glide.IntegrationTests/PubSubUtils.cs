@@ -38,6 +38,24 @@ public static class PubSubUtils
     }
 
     /// <summary>
+    /// Theory data for all valid combinations of cluster mode and subscribe mode.
+    /// </summary>
+    public static TheoryData<bool, SubscribeMode> ClusterAndSubscribeModeData
+    {
+        get
+        {
+            var data = new TheoryData<bool, SubscribeMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var subscribeMode in Enum.GetValues<SubscribeMode>())
+                    data.Add(isCluster, subscribeMode);
+            }
+
+            return data;
+        }
+    }
+
+    /// <summary>
     /// Theory data for all valid combinations of cluster mode, channel mode, and subscribe mode.
     /// </summary>
     public static TheoryData<bool, PubSubChannelMode, SubscribeMode> ClusterChannelAndSubscribeModeData
