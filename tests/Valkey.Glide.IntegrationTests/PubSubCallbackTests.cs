@@ -33,8 +33,6 @@ public class PubSubCallbackTests
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task Callback_ChannelMode_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var message = BuildMessage(channelMode);
 
         // Build subscriber with callback that captures received message.

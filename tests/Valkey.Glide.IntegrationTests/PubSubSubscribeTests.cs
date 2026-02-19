@@ -11,36 +11,10 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubSubscribeTests
 {
-    /// <summary>
-    /// Theory data for all valid combinations of cluster mode, subscribe mode, and channel mode.
-    /// </summary>
-    public static TheoryData<bool, SubscribeMode, PubSubChannelMode> SubscribeTestData
-    {
-        get
-        {
-            var data = new TheoryData<bool, SubscribeMode, PubSubChannelMode>();
-            foreach (var isCluster in ClusterModeData)
-            {
-                foreach (var subscriptionMode in SubscribeModeData)
-                {
-                    foreach (var channelMode in ChannelModeData)
-                    {
-                        if (IsChannelModeSupported(isCluster, channelMode))
-                            data.Add(isCluster, subscriptionMode, channelMode);
-                    }
-                }
-            }
-
-            return data;
-        }
-    }
-
     [Theory]
-    [MemberData(nameof(SubscribeTestData))]
-    public static async Task SingleSubscription_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(ClusterChannelAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task SingleSubscription_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var message = BuildMessage(channelMode);
         var messages = new[] { message };
 
@@ -49,11 +23,9 @@ public class PubSubSubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(SubscribeTestData))]
-    public static async Task MultipleSubscriptions_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(ClusterChannelAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task MultipleSubscriptions_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var message1 = BuildMessage(channelMode);
         var message2 = BuildMessage(channelMode);
         var messages = new[] { message1, message2 };
@@ -83,8 +55,6 @@ public class PubSubSubscribeTests
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task AllSubscribeModes_SubscribesSuccessfully(bool isCluster, PubSubChannelMode channelMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var configMessage = BuildMessage(channelMode);
         var lazyMessage = BuildMessage(channelMode);
         var blockingMessage = BuildMessage(channelMode);

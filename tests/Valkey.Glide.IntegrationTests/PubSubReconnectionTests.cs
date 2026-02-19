@@ -17,8 +17,6 @@ public class PubSubReconnectionTests
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task ResubscribeAfterConnectionKill_Channel_ResubscribesAutomatically(bool isCluster, PubSubChannelMode channelMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var message = BuildMessage(channelMode);
 
         using var subscriber = await BuildSubscriber(isCluster, message);

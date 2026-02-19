@@ -11,40 +11,10 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubBasicTests
 {
-    /// <summary>
-    /// Theory data for basic tests that covers all valid combinations of cluster mode, channel mode, subscribe mode, and unsubscribe mode.
-    /// </summary>
-    public static TheoryData<bool, PubSubChannelMode, SubscribeMode, UnsubscribeMode> BasicTestsData
-    {
-        get
-        {
-            var data = new TheoryData<bool, PubSubChannelMode, SubscribeMode, UnsubscribeMode>();
-
-            foreach (var isCluster in ClusterModeData)
-            {
-                foreach (var channelMode in ChannelModeData)
-                {
-                    if (!IsChannelModeSupported(isCluster, channelMode))
-                        continue;
-
-                    foreach (var subscribeMode in SubscribeModeData)
-                    {
-                        foreach (var unsubscribeMode in UnsubscribeModeData)
-                            data.Add(isCluster, channelMode, subscribeMode, unsubscribeMode);
-                    }
-                }
-            }
-
-            return data;
-        }
-    }
-
     [Theory]
-    [MemberData(nameof(BasicTestsData))]
+    [MemberData(nameof(AllModesData), MemberType = typeof(PubSubUtils))]
     public static async Task SingleSubscription_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode, UnsubscribeMode unsubscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var message = BuildMessage(channelMode);
 
         // Build client and verify subscription.
@@ -67,11 +37,9 @@ public class PubSubBasicTests
     }
 
     [Theory]
-    [MemberData(nameof(BasicTestsData))]
+    [MemberData(nameof(AllModesData), MemberType = typeof(PubSubUtils))]
     public static async Task ManySubscriptions_ReceivesAllMessages(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode, UnsubscribeMode unsubscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         const int messageCount = 256;
         var messages = Enumerable.Range(0, messageCount).Select(_ => BuildMessage(channelMode)).ToArray();
 
@@ -95,11 +63,9 @@ public class PubSubBasicTests
     }
 
     [Theory]
-    [MemberData(nameof(BasicTestsData))]
+    [MemberData(nameof(AllModesData), MemberType = typeof(PubSubUtils))]
     public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode, UnsubscribeMode unsubscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var message = BuildMessage(channelMode);
 
         // Build clients and verify subscriptions.

@@ -15,8 +15,6 @@ public class PubSubCoexistenceTests
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task ManySubscriptions_Coexistence_NoInterference(bool isCluster, PubSubChannelMode channelMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         // Build messages.
         var messages = Enumerable.Range(0, 5)
             .Select(_ => BuildMessage(channelMode))

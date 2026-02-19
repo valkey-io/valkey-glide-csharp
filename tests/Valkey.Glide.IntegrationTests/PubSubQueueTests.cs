@@ -15,8 +15,6 @@ public class PubSubQueueTests
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task Queue_Channel_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         var message = BuildMessage(channelMode);
         using var subscriber = await BuildSubscriber(isCluster, message);
 

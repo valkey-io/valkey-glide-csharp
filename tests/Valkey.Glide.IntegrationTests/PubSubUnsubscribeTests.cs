@@ -11,36 +11,10 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubUnsubscribeTests
 {
-    /// <summary>
-    /// Theory data for all valid combinations of cluster mode, unsubscribe mode, and channel mode.
-    /// </summary>
-    public static TheoryData<bool, UnsubscribeMode, PubSubChannelMode> UnsubscribeTestsData
-    {
-        get
-        {
-            var data = new TheoryData<bool, UnsubscribeMode, PubSubChannelMode>();
-            foreach (var isCluster in ClusterModeData)
-            {
-                foreach (var unsubscribeMode in Enum.GetValues<UnsubscribeMode>())
-                {
-                    foreach (var channelMode in ChannelModeData)
-                    {
-                        if (IsChannelModeSupported(isCluster, channelMode))
-                            data.Add(isCluster, unsubscribeMode, channelMode);
-                    }
-                }
-            }
-
-            return data;
-        }
-    }
-
     [Theory]
-    [MemberData(nameof(UnsubscribeTestsData))]
-    public static async Task Unsubscribe_Single_RemovesOne(bool isCluster, UnsubscribeMode unsubscribeMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(ClusterChannelAndUnsubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_Single_RemovesOne(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         // Build messages.
         var message1 = BuildMessage(channelMode);
         var message2 = BuildMessage(channelMode);
@@ -57,11 +31,9 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(UnsubscribeTestsData))]
-    public static async Task Unsubscribe_Multiple_RemovesMultiple(bool isCluster, UnsubscribeMode unsubscribeMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(ClusterChannelAndUnsubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_Multiple_RemovesMultiple(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         // Build messages.
         var message1 = BuildMessage(channelMode);
         var message2 = BuildMessage(channelMode);
@@ -79,11 +51,9 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(UnsubscribeTestsData))]
-    public static async Task Unsubscribe_All_RemovesAll(bool isCluster, UnsubscribeMode unsubscribeMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(ClusterChannelAndUnsubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_All_RemovesAll(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         // Build messages.
         var message1 = BuildMessage(channelMode);
         var message2 = BuildMessage(channelMode);
@@ -111,11 +81,9 @@ public class PubSubUnsubscribeTests
     }
 
     [Theory]
-    [MemberData(nameof(UnsubscribeTestsData))]
-    public static async Task Unsubscribe_Empty_RemovesAll(bool isCluster, UnsubscribeMode unsubscribeMode, PubSubChannelMode channelMode)
+    [MemberData(nameof(ClusterChannelAndUnsubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Unsubscribe_Empty_RemovesAll(bool isCluster, PubSubChannelMode channelMode, UnsubscribeMode unsubscribeMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         // Build messages.
         var message1 = BuildMessage(channelMode);
         var message2 = BuildMessage(channelMode);

@@ -15,8 +15,6 @@ public class PubSubEdgeCaseTests
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task LargeMessage_DeliversSuccessfully(bool isCluster, PubSubChannelMode channelMode)
     {
-        SkipUnlessChannelModeSupported(isCluster, channelMode);
-
         // Build large message.
         var channel = BuildChannel();
         var largeMessage = GenerateLargeMessage();

@@ -14,12 +14,6 @@ public static class PubSubUtils
     /// <summary>Theory data for cluster mode (cluster vs standalone).</summary>
     public static TheoryData<bool> ClusterModeData => [true, false];
 
-    /// <summary>Theory data for pub/sub channel modes (exact, pattern, and sharded channels).</summary>
-    public static TheoryData<PubSubChannelMode> ChannelModeData => [
-        PubSubChannelMode.Exact,
-        PubSubChannelMode.Pattern,
-        PubSubChannelMode.Sharded];
-
     /// <summary>
     /// Theory data for all valid combinations of cluster mode and channel mode.
     /// </summary>
@@ -30,9 +24,86 @@ public static class PubSubUtils
             var data = new TheoryData<bool, PubSubChannelMode>();
             foreach (var isCluster in ClusterModeData)
             {
-                foreach (var channelMode in ChannelModeData)
-                    if (IsChannelModeSupported(isCluster, channelMode))
-                        data.Add(isCluster, channelMode);
+                foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
+                {
+                    if (!IsClusterAndChannelModeSupported(isCluster, channelMode))
+                        continue;
+
+                    data.Add(isCluster, channelMode);
+                }
+            }
+
+            return data;
+        }
+    }
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode, channel mode, and subscribe mode.
+    /// </summary>
+    public static TheoryData<bool, PubSubChannelMode, SubscribeMode> ClusterChannelAndSubscribeModeData
+    {
+        get
+        {
+            var data = new TheoryData<bool, PubSubChannelMode, SubscribeMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
+                {
+                    if (!IsClusterAndChannelModeSupported(isCluster, channelMode))
+                        continue;
+
+                    foreach (var subscribeMode in SubscribeModeData)
+                        data.Add(isCluster, channelMode, subscribeMode);
+                }
+            }
+
+            return data;
+        }
+    }
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode, channel mode, and unsubscribe mode.
+    /// </summary>
+    public static TheoryData<bool, PubSubChannelMode, UnsubscribeMode> ClusterChannelAndUnsubscribeModeData
+    {
+        get
+        {
+            var data = new TheoryData<bool, PubSubChannelMode, UnsubscribeMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
+                {
+                    if (!IsClusterAndChannelModeSupported(isCluster, channelMode))
+                        continue;
+
+                    foreach (var unsubscribeMode in UnsubscribeModeData)
+                        data.Add(isCluster, channelMode, unsubscribeMode);
+                }
+            }
+
+            return data;
+        }
+    }
+
+    /// <summary>
+    /// Theory data for all valid combinations of cluster mode, channel mode, subscribe mode, and unsubscribe mode.
+    /// </summary>
+    public static TheoryData<bool, PubSubChannelMode, SubscribeMode, UnsubscribeMode> AllModesData
+    {
+        get
+        {
+            var data = new TheoryData<bool, PubSubChannelMode, SubscribeMode, UnsubscribeMode>();
+            foreach (var isCluster in ClusterModeData)
+            {
+                foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
+                {
+                    if (!IsClusterAndChannelModeSupported(isCluster, channelMode))
+                        continue;
+
+                    foreach (var subscribeMode in SubscribeModeData)
+                        foreach (var unsubscribeMode in UnsubscribeModeData)
+                            data.Add(isCluster, channelMode, subscribeMode, unsubscribeMode);
+                }
             }
 
             return data;
@@ -68,9 +139,9 @@ public static class PubSubUtils
         => isCluster && IsShardedSupported();
 
     /// <summary>
-    /// Returns true if the given cluster mode and channel mode is supported.
+    /// Returns true if the given cluster mode and channel mode combination is supported.
     /// </summary>
-    public static bool IsChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
+    private static bool IsClusterAndChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
         => channelMode != PubSubChannelMode.Sharded || IsShardedSupported(isCluster);
 
     /// <summary>
@@ -88,15 +159,6 @@ public static class PubSubUtils
     public static void SkipUnlessShardedSupported(bool isCluster)
     {
         if (!IsShardedSupported(isCluster))
-            Assert.Skip("Sharded pub/sub is supported for cluster clients since Valkey 7.0.0");
-    }
-
-    /// <summary>
-    /// Skips the current test unless the given cluster and channel mode are supported.
-    /// </summary>
-    public static void SkipUnlessChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
-    {
-        if (!IsChannelModeSupported(isCluster, channelMode))
             Assert.Skip("Sharded pub/sub is supported for cluster clients since Valkey 7.0.0");
     }
 
