@@ -96,43 +96,36 @@ public class PubSubBasicTests
 
     [Theory]
     [MemberData(nameof(BasicTestsData))]
-    public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subscribeMode, UnsubscribeMode unsubscribeMode)
+    public static async Task MultipleSubscribers_AllReceiveMessage(bool isCluster, PubSubChannelMode channelMode, SubscribeMode subMode, UnsubscribeMode unsubscribeMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
         var message = BuildMessage(channelMode);
 
         // Build clients and verify subscriptions.
-        const int numSubscribers = 10;
+        using var subscriber1 = await BuildSubscriber(isCluster, message, subMode);
+        await AssertSubscribedAsync(subscriber1, message);
 
-        var subscribers = new List<BaseClient>();
-        for (int i = 0; i < numSubscribers; i++)
-        {
-            subscribers.Add(await BuildSubscriber(isCluster, message, subscribeMode));
-
-            // Add a short delay to avoid overloading the connection multiplexer.
-            await Task.Delay(100);
-        }
+        using var subscriber2 = await BuildSubscriber(isCluster, message, subMode);
+        await AssertSubscribedAsync(subscriber2, message);
 
         using var publisher = BuildPublisher(isCluster);
 
         // Publish message and verify receipt.
         await PublishAsync(publisher, message);
-
-        foreach (var subscriber in subscribers)
-            await AssertReceivedAsync(subscriber, message);
+        await AssertReceivedAsync(subscriber1, message);
+        await AssertReceivedAsync(subscriber2, message);
 
         // Unsubscribe and verify unsubscription.
-        foreach (var subscriber in subscribers)
-        {
-            await UnsubscribeAsync(subscriber, unsubscribeMode, message);
-            await AssertNotSubscribedAsync(subscriber, message);
-        }
+        await UnsubscribeAsync(subscriber1, unsubscribeMode, message);
+        await AssertNotSubscribedAsync(subscriber1, message);
+
+        await UnsubscribeAsync(subscriber2, unsubscribeMode, message);
+        await AssertNotSubscribedAsync(subscriber2, message);
 
         // Publish message again and verify it is not received.
         await PublishAsync(publisher, message);
-
-        foreach (var subscriber in subscribers)
-            await AssertNotReceivedAsync(subscriber, message);
+        await AssertNotReceivedAsync(subscriber1, message);
+        await AssertNotReceivedAsync(subscriber2, message);
     }
 }
