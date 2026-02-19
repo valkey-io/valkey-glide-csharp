@@ -377,85 +377,73 @@ public static class PubSubUtils
     /// <summary>
     /// Asserts that the client is subscribed to receive the specified message.
     /// </summary>
-    public static async Task AssertSubscribedAsync(BaseClient client, PubSubMessage message)
-        => await AssertSubscribedAsync(client, [message]);
+    public static async Task AssertSubscribedAsync(BaseClient client, PubSubMessage message, SubscribeMode? mode = null)
+        => await AssertSubscribedAsync(client, [message], mode);
 
     /// <summary>
     /// Asserts that the client is subscribed to receive the specified messages.
     /// </summary>
-    public static async Task AssertSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages)
+    public static async Task AssertSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages, SubscribeMode? mode = null)
     {
         var expectedSubscriptions = BuildSubscriptions(messages);
 
-        // Retry until subscribed or timeout occurs.
+        // If subscribe mode is not specified, blocking, or config, expect subscription on first attempt (no retries).
+        if (mode == null || mode == SubscribeMode.Blocking || mode == SubscribeMode.Config)
+        {
+            if (!await IsSubscribedAsync(client, expectedSubscriptions))
+                Assert.Fail("Expected subscriptions were not found.");
+
+            return;
+        }
+
+        // For lazy mode, retry until subscribed or timeout occurs.
         using var cts = new CancellationTokenSource(MaxDuration);
 
         while (!cts.Token.IsCancellationRequested)
         {
-            var isSubset = true;
-            var actual = (await client.GetSubscriptionsAsync()).Actual;
-
-            foreach (var item in expectedSubscriptions)
-            {
-                var mode = item.Key;
-                var expected = item.Value;
-
-                if (!expected.IsSubsetOf(actual[mode]))
-                {
-                    isSubset = false;
-                    break;
-                }
-            }
-
-            if (isSubset)
+            if (await IsSubscribedAsync(client, expectedSubscriptions))
                 return;
 
             await Task.Delay(RetryInterval);
         }
 
-        Assert.Fail($"Unexpected subscribers.");
+        Assert.Fail("Expected subscriptions were not found.");
     }
 
     /// <summary>
     /// Asserts that the client is not subscribed to receive the specified message.
     /// </summary>
-    public static async Task AssertNotSubscribedAsync(BaseClient client, PubSubMessage message)
-        => await AssertNotSubscribedAsync(client, [message]);
+    public static async Task AssertNotSubscribedAsync(BaseClient client, PubSubMessage message, UnsubscribeMode? mode = null)
+        => await AssertNotSubscribedAsync(client, [message], mode);
 
     /// <summary>
     /// Asserts that the client is not subscribed to receive the specified messages.
     /// </summary>
-    public static async Task AssertNotSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages)
+    public static async Task AssertNotSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages, UnsubscribeMode? mode = null)
     {
         var notExpected = BuildSubscriptions(messages);
 
-        // Retry until unsubscribed or timeout occurs.
+        // If unsubscribe mode is not specified or blocking, expect unsubscription on first attempt (no retries).
+        if (mode == null || mode == UnsubscribeMode.Blocking)
+        {
+            if (!await IsNotSubscribedAsync(client, notExpected))
+                Assert.Fail("Unexpected subscriptions were found.");
+
+            return;
+        }
+
+        // For lazy mode, retry until unsubscribed or timeout occurs.
         using var cts = new CancellationTokenSource(MaxDuration);
 
         while (!cts.Token.IsCancellationRequested)
         {
-            bool hasOverlap = false;
-            var actual = (await client.GetSubscriptionsAsync()).Actual;
-
-            foreach (var item in notExpected)
-            {
-                var mode = item.Key;
-                var expected = item.Value;
-
-                if (expected.Overlaps(actual[mode]))
-                {
-                    hasOverlap = true;
-                    break;
-                }
-            }
-
-            if (!hasOverlap)
+            if (await IsNotSubscribedAsync(client, notExpected))
                 return;
 
             await Task.Delay(RetryInterval);
         }
 
-        Assert.Fail($"Unexpected subscribers.");
+        Assert.Fail("Unexpected subscriptions were found.");
     }
 
     /// <summary>
@@ -511,6 +499,44 @@ public static class PubSubUtils
             Assert.DoesNotContain(received, expected);
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Returns true if the client is subscribed to the specified channels, patterns, and sharded channels.
+    /// </summary>
+    private static async Task<bool> IsSubscribedAsync(BaseClient client, Dictionary<PubSubChannelMode, HashSet<string>> expected)
+    {
+        var actual = (await client.GetSubscriptionsAsync()).Actual;
+
+        foreach (var item in expected)
+        {
+            var channelMode = item.Key;
+            var expectedChannels = item.Value;
+
+            if (!expectedChannels.IsSubsetOf(actual[channelMode]))
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Returns true if the client is not subscribed to the specified channels, patterns, and sharded channels.
+    /// </summary>
+    private static async Task<bool> IsNotSubscribedAsync(BaseClient client, Dictionary<PubSubChannelMode, HashSet<string>> notExpected)
+    {
+        var actual = (await client.GetSubscriptionsAsync()).Actual;
+
+        foreach (var item in notExpected)
+        {
+            var channelMode = item.Key;
+            var notExpectedChannels = item.Value;
+
+            if (notExpectedChannels.Overlaps(actual[channelMode]))
+                return false;
+        }
+
+        return true;
     }
 
     #endregion

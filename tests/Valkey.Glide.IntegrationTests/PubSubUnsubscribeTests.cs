@@ -52,7 +52,7 @@ public class PubSubUnsubscribeTests
 
         // Unsubscribe from one and verify subscriptions.
         await UnsubscribeAsync(subscriber, unsubscribeMode, [message1]);
-        await AssertNotSubscribedAsync(subscriber, [message1]);
+        await AssertNotSubscribedAsync(subscriber, [message1], unsubscribeMode);
         await AssertSubscribedAsync(subscriber, [message2]);
     }
 
@@ -74,7 +74,7 @@ public class PubSubUnsubscribeTests
 
         // Unsubscribe from multiple and verify subscriptions.
         await UnsubscribeAsync(subscriber, unsubscribeMode, [message1, message2]);
-        await AssertNotSubscribedAsync(subscriber, [message1, message2]);
+        await AssertNotSubscribedAsync(subscriber, [message1, message2], unsubscribeMode);
         await AssertSubscribedAsync(subscriber, [message3]);
     }
 
@@ -107,7 +107,7 @@ public class PubSubUnsubscribeTests
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Sharded)
             await ((GlideClusterClient)subscriber).SUnsubscribeAsync(PubSub.AllShardedChannels);
 
-        await AssertNotSubscribedAsync(subscriber, messages);
+        await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
     }
 
     [Theory]
@@ -139,6 +139,6 @@ public class PubSubUnsubscribeTests
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Sharded)
             await ((GlideClusterClient)subscriber).SUnsubscribeAsync();
 
-        await AssertNotSubscribedAsync(subscriber, messages);
+        await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
     }
 }

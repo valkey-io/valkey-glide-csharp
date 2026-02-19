@@ -37,20 +37,20 @@ public class PubSubSubscribeTests
 
     [Theory]
     [MemberData(nameof(SubscribeTestData))]
-    public static async Task SingleSubscription_SubscribesSuccessfully(bool isCluster, SubscribeMode subscriptionMode, PubSubChannelMode channelMode)
+    public static async Task SingleSubscription_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode, PubSubChannelMode channelMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
         var message = BuildMessage(channelMode);
         var messages = new[] { message };
 
-        using var subscriber = await BuildSubscriber(isCluster, messages, subscriptionMode);
-        await AssertSubscribedAsync(subscriber, messages);
+        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await AssertSubscribedAsync(subscriber, messages, subscribeMode);
     }
 
     [Theory]
     [MemberData(nameof(SubscribeTestData))]
-    public static async Task MultipleSubscriptions_SubscribesSuccessfully(bool isCluster, SubscribeMode subscriptionMode, PubSubChannelMode channelMode)
+    public static async Task MultipleSubscriptions_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode, PubSubChannelMode channelMode)
     {
         SkipUnlessChannelModeSupported(isCluster, channelMode);
 
@@ -58,8 +58,8 @@ public class PubSubSubscribeTests
         var message2 = BuildMessage(channelMode);
         var messages = new[] { message1, message2 };
 
-        using var subscriber = await BuildSubscriber(isCluster, messages, subscriptionMode);
-        await AssertSubscribedAsync(subscriber, messages);
+        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await AssertSubscribedAsync(subscriber, messages, subscribeMode);
     }
 
     [Theory]
@@ -76,7 +76,7 @@ public class PubSubSubscribeTests
         if (isSharded) expectedMessages.Add(shardedChannelMessage!);
 
         using var subscriber = await BuildSubscriber(isCluster, expectedMessages);
-        await AssertSubscribedAsync(subscriber, [.. expectedMessages]);
+        await AssertSubscribedAsync(subscriber, expectedMessages);
     }
 
     [Theory]
@@ -90,13 +90,13 @@ public class PubSubSubscribeTests
         var blockingMessage = BuildMessage(channelMode);
 
         using var subscriber = await BuildSubscriber(isCluster, [configMessage], SubscribeMode.Config);
-        await AssertSubscribedAsync(subscriber, [configMessage]);
+        await AssertSubscribedAsync(subscriber, [configMessage], SubscribeMode.Config);
 
         await SubscribeAsync(subscriber, blockingMessage);
-        await AssertSubscribedAsync(subscriber, [blockingMessage]);
+        await AssertSubscribedAsync(subscriber, [blockingMessage], SubscribeMode.Blocking);
 
         await SubscribeLazyAsync(subscriber, lazyMessage);
-        await AssertSubscribedAsync(subscriber, [lazyMessage]);
+        await AssertSubscribedAsync(subscriber, [lazyMessage], SubscribeMode.Lazy);
     }
 
     /// <summary>

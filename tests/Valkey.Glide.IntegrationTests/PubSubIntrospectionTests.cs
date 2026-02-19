@@ -200,7 +200,7 @@ public class PubSubIntrospectionTests()
         if (IsShardedSupported(isCluster))
             messages.Add(BuildMessage(PubSubChannelMode.Sharded));
 
-        using var subscriber = await BuildSubscriber(isCluster, messages, SubscribeMode.Config);
+        using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Verify subscriptions.
