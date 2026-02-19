@@ -104,12 +104,13 @@ public class PubSubBasicTests
 
         // Build clients and verify subscriptions.
         const int numSubscribers = 10;
+
+        var subscribers = new List<BaseClient>();
         for (int i = 0; i < numSubscribers; i++)
         {
             subscribers.Add(await BuildSubscriber(isCluster, message, subscribeMode));
 
-            // Add a short delay between subscriber creations
-            // to avoid overloading the connection multiplexer.
+            // Add a short delay to avoid overloading the connection multiplexer.
             await Task.Delay(100);
         }
 
