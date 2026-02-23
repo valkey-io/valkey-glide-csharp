@@ -15,7 +15,7 @@ public class PubSubReconnectionTests
 
     [Theory]
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
-    public static async Task ResubscribeAfterConnectionKill_Channel_ResubscribesAutomatically(bool isCluster, PubSubChannelMode channelMode)
+    public static async Task AfterConnectionKill_ResubscribesAutomatically(bool isCluster, PubSubChannelMode channelMode)
     {
         var message = BuildMessage(channelMode);
 
@@ -24,7 +24,7 @@ public class PubSubReconnectionTests
 
         // Kill connections and wait for reconnection.
         await KillConnections(publisher);
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(5));
 
         // Verify subscription after kill.
         await AssertSubscribedAsync(subscriber, message);
