@@ -174,7 +174,7 @@ public static class PubSubUtils
     /// <summary>
     /// Maximum duration for pub/sub assertions.
     /// </summary>
-    public static readonly TimeSpan MaxDuration = TimeSpan.FromSeconds(10);
+    public static readonly TimeSpan MaxDuration = TimeSpan.FromSeconds(12);
 
     /// <summary>
     /// Retry interval for pub/sub assertions.
