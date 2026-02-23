@@ -13,7 +13,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Zstd_Standalone_CompressesAndDecompresses(GlideClient testClient)
+    public async Task Compression_Zstd_Standalone_CompressesAndDecompresses(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
@@ -23,16 +23,14 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
-        // Test with compressible data
         string key = $"compression_test_{Guid.NewGuid()}";
-        string largeValue = new string('a', 1000); // Highly compressible
+        string largeValue = new string('a', 1000);
 
         await client.StringSetAsync(key, largeValue);
         var retrieved = await client.StringGetAsync(key);
 
         Assert.Equal(largeValue, retrieved.ToString());
 
-        // Verify statistics
         var stats = BaseClient.GetCompressionStatistics();
         Assert.True(stats.TotalValuesCompressed > 0);
         Assert.True(stats.TotalBytesCompressed < stats.TotalOriginalBytes);
@@ -40,7 +38,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Lz4_Standalone_CompressesAndDecompresses(GlideClient testClient)
+    public async Task Compression_Lz4_Standalone_CompressesAndDecompresses(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
@@ -64,7 +62,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Zstd_Cluster_CompressesAndDecompresses(GlideClusterClient testClient)
+    public async Task Compression_Zstd_Cluster_CompressesAndDecompresses(GlideClusterClient _)
     {
         var clientConfig = new ClusterClientConfigurationBuilder()
             .WithAddress(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port)
@@ -72,13 +70,13 @@ public class CompressionTests(TestConfiguration config)
             .WithTls(TestConfiguration.TLS)
             .Build();
 
-        await using var clusterClient = await GlideClusterClient.CreateClient(clientConfig);
+        await using var client = await GlideClusterClient.CreateClient(clientConfig);
 
         string key = $"compression_cluster_test_{Guid.NewGuid()}";
         string largeValue = new string('c', 1000);
 
-        await clusterClient.StringSetAsync(key, largeValue);
-        var retrieved = await clusterClient.StringGetAsync(key);
+        await client.StringSetAsync(key, largeValue);
+        var retrieved = await client.StringGetAsync(key);
 
         Assert.Equal(largeValue, retrieved.ToString());
 
@@ -88,7 +86,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_MinSize_SkipsSmallValues(GlideClient testClient)
+    public async Task Compression_MinSize_SkipsSmallValues(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
@@ -100,7 +98,6 @@ public class CompressionTests(TestConfiguration config)
 
         var statsBefore = BaseClient.GetCompressionStatistics();
 
-        // Small value - should not be compressed
         string smallKey = $"small_{Guid.NewGuid()}";
         string smallValue = new string('x', 100);
         await client.StringSetAsync(smallKey, smallValue);
@@ -108,7 +105,6 @@ public class CompressionTests(TestConfiguration config)
         var statsAfterSmall = BaseClient.GetCompressionStatistics();
         var skippedCountSmall = statsAfterSmall.CompressionSkippedCount - statsBefore.CompressionSkippedCount;
 
-        // Large value - should be compressed
         string largeKey = $"large_{Guid.NewGuid()}";
         string largeValue = new string('y', 1000);
         await client.StringSetAsync(largeKey, largeValue);
@@ -122,7 +118,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_CustomLevel_WorksCorrectly(GlideClient testClient)
+    public async Task Compression_CustomLevel_WorksCorrectly(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
@@ -143,9 +139,8 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_BackwardCompatibility_ReadsUncompressedData(GlideClient testClient)
+    public async Task Compression_BackwardCompatibility_ReadsUncompressedData(GlideClient _)
     {
-        // First, write data without compression
         var configNoCompression = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
             .WithTls(TestConfiguration.TLS)
@@ -158,7 +153,6 @@ public class CompressionTests(TestConfiguration config)
 
         await clientNoCompression.StringSetAsync(key, value);
 
-        // Now read with compression enabled
         var configWithCompression = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
             .WithCompression(CompressionConfig.Zstd())
@@ -173,7 +167,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_MultipleOperations_MaintainsDataIntegrity(GlideClient testClient)
+    public async Task Compression_MultipleOperations_MaintainsDataIntegrity(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
@@ -192,7 +186,6 @@ public class CompressionTests(TestConfiguration config)
             await client.StringSetAsync(key, value);
         }
 
-        // Verify all data
         foreach (var kvp in testData)
         {
             var retrieved = await client.StringGetAsync(kvp.Key);
@@ -202,7 +195,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_BinaryData_HandlesCorrectly(GlideClient testClient)
+    public async Task Compression_BinaryData_HandlesCorrectly(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
@@ -219,12 +212,12 @@ public class CompressionTests(TestConfiguration config)
         await client.StringSetAsync(key, binaryData);
         var retrieved = await client.StringGetAsync(key);
 
-        Assert.Equal(binaryData, (byte[])retrieved);
+        Assert.Equal(binaryData, (byte[]?)retrieved);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Statistics_ReflectOperations(GlideClient testClient)
+    public async Task Compression_Statistics_ReflectOperations(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
