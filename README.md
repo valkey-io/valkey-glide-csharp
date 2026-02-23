@@ -21,6 +21,7 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 - **[Cluster Scan](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan)** – Unified key iteration across shards using a consistent, high-level API
 - **[Batching (Pipeline and Transaction)](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#batching-pipeline-and-transaction)** – Execute multiple commands efficiently in a single network roundtrip
 - **[OpenTelemetry](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#opentelemetry)** – Integrated tracing support for enhanced observability
+- **[Transparent Compression](#compression-operations)** – Automatic value compression with Zstd and LZ4 backends to reduce bandwidth and storage
 
 > [!IMPORTANT]
 > Valkey.Glide C# wrapper is in a preview state and still has many features that remain to be implemented before GA.
@@ -219,6 +220,33 @@ client.UnsubscribeAsync("alerts");
 
 // Publish using a different client.
 otherClient.PublishAsync("news-sports", "Local team wins championship!");
+```
+
+### Compression Operations
+
+```csharp
+// Enable transparent compression with Zstd
+var config = new StandaloneClientConfigurationBuilder()
+    .WithAddress("localhost", 6379)
+    .WithCompression(CompressionConfig.Zstd())
+    .Build();
+
+await using var client = await GlideClient.CreateClient(config);
+
+// Values are automatically compressed/decompressed
+await client.StringSetAsync("large_data", new string('a', 10000));
+var retrieved = await client.StringGetAsync("large_data");
+
+// Monitor compression statistics
+var stats = BaseClient.GetCompressionStatistics();
+Console.WriteLine($"Compression ratio: {stats.CompressionRatio:F2}x");
+Console.WriteLine($"Space saved: {stats.SpaceSavedPercent:F2}%");
+
+// Use LZ4 for faster compression
+var lz4Config = new StandaloneClientConfigurationBuilder()
+    .WithAddress("localhost", 6379)
+    .WithCompression(CompressionConfig.Lz4(compressionLevel: 5, minCompressionSize: 128))
+    .Build();
 ```
 
 ### Building & Testing
