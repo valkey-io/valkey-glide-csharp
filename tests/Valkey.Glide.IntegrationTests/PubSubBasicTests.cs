@@ -119,6 +119,7 @@ public class PubSubBasicTests
             messages.Add(PubSubMessage.FromShardedChannel(message, channel));
 
         using var subscriber = await BuildSubscriber(isCluster, messages);
+        await AssertSubscribedAsync(subscriber, messages);
 
         // Publish to channel and sharded channel.
         using var publisher = BuildPublisher(isCluster);
