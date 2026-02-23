@@ -113,6 +113,10 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "drop_otel_span")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
+
+    [LibraryImport("libglide_rs", EntryPoint = "get_statistics")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial Statistics GetStatisticsFfi();
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
     public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -181,5 +185,8 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_otel_span")]
     public static extern void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "get_statistics")]
+    public static extern Statistics GetStatisticsFfi();
 #endif
 }

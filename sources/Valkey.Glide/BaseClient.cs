@@ -145,6 +145,26 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Get compression statistics from the Rust core.
+    /// Returns statistics about compression operations including:
+    /// - Total values compressed/decompressed
+    /// - Total bytes before and after compression
+    /// - Number of times compression was skipped
+    /// </summary>
+    /// <returns>A <see cref="CompressionStatistics"/> object containing compression metrics.</returns>
+    public static CompressionStatistics GetCompressionStatistics()
+    {
+        var stats = GetStatisticsFfi();
+        return new CompressionStatistics
+        {
+            TotalValuesCompressed = stats.TotalValuesCompressed,
+            TotalOriginalBytes = stats.TotalOriginalBytes,
+            TotalBytesCompressed = stats.TotalBytesCompressed,
+            CompressionSkippedCount = stats.CompressionSkippedCount
+        };
+    }
+
     #endregion public methods
 
     #region protected methods

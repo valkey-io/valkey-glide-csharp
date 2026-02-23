@@ -216,7 +216,8 @@ internal partial class FFI
             bool refreshTopologyFromInitialNodes,
             BasePubSubSubscriptionConfig? pubSubSubscriptions,
             List<byte[]> rootCertificates,
-            uint? pubSubReconciliationIntervalMs)
+            uint? pubSubReconciliationIntervalMs,
+            CompressionConfig? compressionConfig)
         {
             _request = new()
             {
@@ -247,6 +248,8 @@ internal partial class FFI
                 RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
                 HasPubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs.HasValue,
                 PubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs ?? default,
+                HasCompressionConfig = compressionConfig.HasValue,
+                CompressionConfig = compressionConfig ?? default,
             };
         }
 
@@ -1116,6 +1119,10 @@ internal partial class FFI
         public bool HasPubSubReconciliationIntervalMs;
         public uint PubSubReconciliationIntervalMs;
 
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasCompressionConfig;
+        public CompressionConfig CompressionConfig;
+
         // TODO more config params, see ffi.rs
     }
 
@@ -1151,6 +1158,22 @@ internal partial class FFI
         public IntPtr Ptr;
         public UIntPtr Len;
         public UIntPtr Capacity;
+    }
+
+    /// <summary>
+    /// Statistics structure containing telemetry data from Rust core.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Statistics
+    {
+        public ulong TotalConnections;
+        public ulong TotalClients;
+        public ulong TotalValuesCompressed;
+        public ulong TotalValuesDecompressed;
+        public ulong TotalOriginalBytes;
+        public ulong TotalBytesCompressed;
+        public ulong TotalBytesDecompressed;
+        public ulong CompressionSkippedCount;
     }
 
     /// <summary>
