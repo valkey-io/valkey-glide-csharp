@@ -102,10 +102,10 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
         => (ClusterPubSubSubscriptionConfig)base.WithPattern(pattern);
 
     /// <summary>
-    /// Add a shard channel subscription.
+    /// Add a sharded channel subscription.
     /// </summary>
-    /// <param name="channel">The shard channel to subscribe to.</param>
+    /// <param name="channel">The sharded channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    public ClusterPubSubSubscriptionConfig WithShardChannel(string channel)
+    public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel)
         => (ClusterPubSubSubscriptionConfig)AddSubscription(PubSubChannelMode.Sharded, channel);
 }

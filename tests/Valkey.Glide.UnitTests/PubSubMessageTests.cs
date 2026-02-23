@@ -37,10 +37,10 @@ public class PubSubMessageTests
     }
 
     [Fact]
-    public void PubSubMessage_FromShardChannel_SetsPropertiesCorrectly()
+    public void PubSubMessage_FromShardedChannel_SetsPropertiesCorrectly()
     {
         // Act
-        var pubSubMessage = PubSubMessage.FromShardChannel(Message, Channel);
+        var pubSubMessage = PubSubMessage.FromShardedChannel(Message, Channel);
 
         // Assert
         Assert.Equal(PubSubChannelMode.Sharded, pubSubMessage.ChannelMode);
@@ -92,10 +92,10 @@ public class PubSubMessageTests
     }
 
     [Fact]
-    public void PubSubMessage_ToString_ShardChannel_ReturnsValidJsonWithNullPattern()
+    public void PubSubMessage_ToString_ShardedChannel_ReturnsValidJsonWithNullPattern()
     {
         // Arrange
-        var pubSubMessage = PubSubMessage.FromShardChannel(Message, Channel);
+        var pubSubMessage = PubSubMessage.FromShardedChannel(Message, Channel);
 
         // Act
         var jsonString = pubSubMessage.ToString();
@@ -137,7 +137,7 @@ public class PubSubMessageTests
             PubSubMessage.FromPattern(Message, "OTHER", Pattern),
             PubSubMessage.FromPattern(Message, Channel, "OTHER"),
             PubSubMessage.FromChannel(Message, Channel),
-            PubSubMessage.FromShardChannel(Message, Channel),
+            PubSubMessage.FromShardedChannel(Message, Channel),
             null
         ];
 

@@ -11,6 +11,9 @@ namespace Valkey.Glide;
 /// </summary>
 internal sealed class Subscriber : ISubscriber
 {
+    // Default async timeout for StackExchange.Redis compabitility.
+    private static readonly int DefaultTimeoutMs = 5000;
+
     private readonly ConnectionMultiplexer _multiplexer;
     private readonly Database _client;
 
@@ -140,13 +143,14 @@ internal sealed class Subscriber : ISubscriber
         _multiplexer.RemoveAllSubscriptions();
 
         // Send unsubscribe commands for all channel modes.
-        await _client.UnsubscribeLazyAsync();
-        await _client.PUnsubscribeLazyAsync();
+        await _client.UnsubscribeAsync();
+        await _client.PUnsubscribeAsync();
 
         if (_client.IsCluster)
         {
+
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE"]), Route.Random);
+            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
         }
     }
 
@@ -198,19 +202,22 @@ internal sealed class Subscriber : ISubscriber
     private async Task SendSubscribeCommand(ValkeyChannel channel)
     {
         var channelStr = channel.ToString();
+        var timeout = GetTimeout();
 
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
-            await _client.Command(Request.CustomCommand(["SSUBSCRIBE", channelStr]), Route.Random);
+
+            // TODO #205: Refactor to use GlideClusterClient instead of custom command.
+            await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
-            await _client.PSubscribeLazyAsync(channelStr);
+            await _client.PSubscribeAsync(channelStr, timeout);
         }
         else
         {
-            await _client.SubscribeLazyAsync(channelStr);
+            await _client.SubscribeAsync(channelStr, timeout);
         }
     }
 
@@ -221,23 +228,34 @@ internal sealed class Subscriber : ISubscriber
     private async Task SendUnsubscribeCommand(ValkeyChannel channel)
     {
         var channelStr = channel.ToString();
+        var timeout = GetTimeout();
 
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE", channelStr]), Route.Random);
+            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
-            await _client.PUnsubscribeLazyAsync(channelStr);
+            await _client.PUnsubscribeAsync(channelStr, timeout);
         }
         else
         {
-            await _client.UnsubscribeLazyAsync(channelStr);
+            await _client.UnsubscribeAsync(channelStr, timeout);
         }
     }
+
+    /// <summary>
+    /// Returns the timeout for subscribe/unsubscribe operations.
+    /// </summary>
+    private TimeSpan GetTimeout() => TimeSpan.FromMilliseconds(GetTimeoutMs());
+
+    /// <summary>
+    /// Returns the timeout in milliseconds for subscribe/unsubscribe operations.
+    /// </summary>
+    private int GetTimeoutMs() => _multiplexer.RawConfig.AsyncTimeout ?? DefaultTimeoutMs;
 
     /// <summary>
     /// Throws if the client is not in cluster mode.
