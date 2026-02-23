@@ -1,25 +1,18 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection("Sequential")]
 public class CompressionTests : IAsyncLifetime
 {
-    private readonly ITestOutputHelper _output;
     private GlideClient? _client;
     private GlideClusterClient? _clusterClient;
 
-    public CompressionTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
-    public Task InitializeAsync() => Task.CompletedTask;
-
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_client != null)
         {
@@ -31,7 +24,7 @@ public class CompressionTests : IAsyncLifetime
         }
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_Zstd_Standalone_CompressesAndDecompresses()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -56,12 +49,9 @@ public class CompressionTests : IAsyncLifetime
         var stats = BaseClient.GetCompressionStatistics();
         Assert.True(stats.TotalValuesCompressed > 0);
         Assert.True(stats.TotalBytesCompressed < stats.TotalOriginalBytes);
-
-        _output.WriteLine($"Compression ratio: {stats.CompressionRatio:F2}");
-        _output.WriteLine($"Space saved: {stats.SpaceSavedPercent:F2}%");
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_Lz4_Standalone_CompressesAndDecompresses()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -85,7 +75,7 @@ public class CompressionTests : IAsyncLifetime
         Assert.True(stats.TotalValuesCompressed > 0);
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_Zstd_Cluster_CompressesAndDecompresses()
     {
         Skip.IfNot(TestConfiguration.IsClusterAvailable, "Cluster not available");
@@ -109,7 +99,7 @@ public class CompressionTests : IAsyncLifetime
         Assert.True(stats.TotalValuesCompressed > 0);
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_MinSize_SkipsSmallValues()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -143,7 +133,7 @@ public class CompressionTests : IAsyncLifetime
         Assert.True(compressedCountLarge > 0, "Large value should have been compressed");
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_CustomLevel_WorksCorrectly()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -164,7 +154,7 @@ public class CompressionTests : IAsyncLifetime
         Assert.Equal(value, retrieved.ToString());
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_BackwardCompatibility_ReadsUncompressedData()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -193,7 +183,7 @@ public class CompressionTests : IAsyncLifetime
         Assert.Equal(value, retrieved.ToString());
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_MultipleOperations_MaintainsDataIntegrity()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -222,7 +212,7 @@ public class CompressionTests : IAsyncLifetime
         }
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_BinaryData_HandlesCorrectly()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -244,7 +234,7 @@ public class CompressionTests : IAsyncLifetime
         Assert.Equal(binaryData, retrieved.ToByteArray());
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Compression_Statistics_ReflectOperations()
     {
         Skip.IfNot(TestConfiguration.IsStandaloneAvailable, "Standalone server not available");
@@ -269,9 +259,5 @@ public class CompressionTests : IAsyncLifetime
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
         Assert.True(statsAfter.TotalOriginalBytes > statsBefore.TotalOriginalBytes);
         Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed);
-
-        _output.WriteLine($"Values compressed: {statsAfter.TotalValuesCompressed - statsBefore.TotalValuesCompressed}");
-        _output.WriteLine($"Original bytes: {statsAfter.TotalOriginalBytes - statsBefore.TotalOriginalBytes}");
-        _output.WriteLine($"Compressed bytes: {statsAfter.TotalBytesCompressed - statsBefore.TotalBytesCompressed}");
     }
 }
