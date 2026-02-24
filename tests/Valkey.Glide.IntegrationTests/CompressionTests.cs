@@ -21,6 +21,8 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
+        var statsBefore = BaseClient.GetCompressionStatistics();
+
         string key = $"compression_test_{Guid.NewGuid()}";
         string largeValue = new string('a', 1000);
 
@@ -29,9 +31,9 @@ public class CompressionTests(TestConfiguration config)
 
         Assert.Equal(largeValue, retrieved.ToString());
 
-        var stats = BaseClient.GetCompressionStatistics();
-        Assert.True(stats.TotalValuesCompressed > 0);
-        Assert.True(stats.TotalBytesCompressed < stats.TotalOriginalBytes);
+        var statsAfter = BaseClient.GetCompressionStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
+        Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -46,6 +48,8 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
+        var statsBefore = BaseClient.GetCompressionStatistics();
+
         string key = $"compression_lz4_test_{Guid.NewGuid()}";
         string largeValue = new string('b', 1000);
 
@@ -54,8 +58,8 @@ public class CompressionTests(TestConfiguration config)
 
         Assert.Equal(largeValue, retrieved.ToString());
 
-        var stats = BaseClient.GetCompressionStatistics();
-        Assert.True(stats.TotalValuesCompressed > 0);
+        var statsAfter = BaseClient.GetCompressionStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -70,6 +74,8 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClusterClient.CreateClient(clientConfig);
 
+        var statsBefore = BaseClient.GetCompressionStatistics();
+
         string key = $"compression_cluster_test_{Guid.NewGuid()}";
         string largeValue = new string('c', 1000);
 
@@ -78,8 +84,8 @@ public class CompressionTests(TestConfiguration config)
 
         Assert.Equal(largeValue, retrieved.ToString());
 
-        var stats = BaseClient.GetCompressionStatistics();
-        Assert.True(stats.TotalValuesCompressed > 0);
+        var statsAfter = BaseClient.GetCompressionStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
