@@ -1691,7 +1691,7 @@ pub struct Statistics {
 /// A `Statistics` struct with the current statistics values.
 #[unsafe(no_mangle)]
 pub extern "C" fn get_statistics() -> Statistics {
-    use glide_core::telemetry::Telemetry;
+    use glide_core::Telemetry;
     
     Statistics {
         total_connections: Telemetry::total_connections() as u64,
