@@ -1652,3 +1652,55 @@ fn create_span(command_name: &str) -> *const c_void {
 
     span_ptr
 }
+
+// ========================================================================================
+// Compression Statistics
+// ========================================================================================
+
+/// Statistics structure containing telemetry data.
+///
+/// This struct provides compression and connection statistics for the client.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct Statistics {
+    /// Total number of connections opened to Valkey
+    pub total_connections: u64,
+    /// Total number of GLIDE clients
+    pub total_clients: u64,
+    /// Total number of values compressed
+    pub total_values_compressed: u64,
+    /// Total number of values decompressed
+    pub total_values_decompressed: u64,
+    /// Total original bytes before compression
+    pub total_original_bytes: u64,
+    /// Total bytes after compression
+    pub total_bytes_compressed: u64,
+    /// Total bytes after decompression
+    pub total_bytes_decompressed: u64,
+    /// Number of times compression was skipped
+    pub compression_skipped_count: u64,
+}
+
+/// Get compression and connection statistics.
+///
+/// Returns a `Statistics` struct containing current telemetry data.
+/// This function is thread-safe and can be called at any time.
+///
+/// # Returns
+///
+/// A `Statistics` struct with the current statistics values.
+#[unsafe(no_mangle)]
+pub extern "C" fn get_statistics() -> Statistics {
+    use glide_core::telemetry::Telemetry;
+    
+    Statistics {
+        total_connections: Telemetry::total_connections() as u64,
+        total_clients: Telemetry::total_clients() as u64,
+        total_values_compressed: Telemetry::total_values_compressed() as u64,
+        total_values_decompressed: Telemetry::total_values_decompressed() as u64,
+        total_original_bytes: Telemetry::total_original_bytes() as u64,
+        total_bytes_compressed: Telemetry::total_bytes_compressed() as u64,
+        total_bytes_decompressed: Telemetry::total_bytes_decompressed() as u64,
+        compression_skipped_count: Telemetry::compression_skipped_count() as u64,
+    }
+}
