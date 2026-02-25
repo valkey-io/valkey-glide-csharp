@@ -34,6 +34,12 @@ public struct CompressionConfig
     public CompressionBackend Backend;
 
     /// <summary>
+    /// Whether compression is enabled.
+    /// </summary>
+    [MarshalAs(UnmanagedType.U1)]
+    public bool Enabled;
+
+    /// <summary>
     /// Creates a new compression configuration.
     /// </summary>
     /// <param name="backend">The compression backend to use.</param>
@@ -53,6 +59,7 @@ public struct CompressionConfig
         MinCompressionSize = minCompressionSize;
         CompressionLevel = compressionLevel ?? 0;
         Backend = backend;
+        Enabled = true;
     }
 
     /// <summary>

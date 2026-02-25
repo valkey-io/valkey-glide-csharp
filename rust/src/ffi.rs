@@ -53,6 +53,7 @@ pub struct CompressionConfig {
     pub min_compression_size: usize,
     pub compression_level: i32,
     pub backend: CompressionBackend,
+    pub enabled: bool,
 }
 
 #[repr(u32)]
@@ -274,7 +275,7 @@ pub(crate) unsafe fn create_connection_request(
             .then_some(config.pubsub_reconciliation_interval_ms),
         compression_config: if config.has_compression_config {
             Some(glide_core::compression::CompressionConfig {
-                enabled: true,
+                enabled: config.compression_config.enabled,
                 min_compression_size: config.compression_config.min_compression_size,
                 compression_level: if config.compression_config.compression_level == 0 {
                     None
