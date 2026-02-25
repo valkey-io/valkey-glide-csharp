@@ -49,6 +49,24 @@ unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Option<String> {
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
+pub struct CompressionConfig {
+    pub min_compression_size: usize,
+    pub compression_level: i32,
+    pub backend: CompressionBackend,
+    pub skip_compressible_data_check: bool,
+    pub skip_decompression_on_failure: bool,
+}
+
+#[repr(u32)]
+#[derive(Debug, Clone, Copy)]
+pub enum CompressionBackend {
+    Zstd = 0,
+    Lz4 = 1,
+}
+
+/// A mirror of [`ConnectionRequest`] adopted for FFI.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub struct ConnectionConfig {
     pub address_count: usize,
     /// Pointer to an array.
@@ -82,6 +100,9 @@ pub struct ConnectionConfig {
 
     pub has_pubsub_reconciliation_interval_ms: bool,
     pub pubsub_reconciliation_interval_ms: u32,
+
+    pub has_compression_config: bool,
+    pub compression_config: CompressionConfig,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -253,11 +274,28 @@ pub(crate) unsafe fn create_connection_request(
         },
         pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
+        compression_config: if config.has_compression_config {
+            Some(glide_core::client::CompressionConfig {
+                min_compression_size: config.compression_config.min_compression_size,
+                compression_level: config.compression_config.compression_level,
+                backend: match config.compression_config.backend {
+                    CompressionBackend::Zstd => glide_core::compression::CompressionBackend::Zstd,
+                    CompressionBackend::Lz4 => glide_core::compression::CompressionBackend::Lz4,
+                },
+                skip_compressible_data_check: config
+                    .compression_config
+                    .skip_compressible_data_check,
+                skip_decompression_on_failure: config
+                    .compression_config
+                    .skip_decompression_on_failure,
+            })
+        } else {
+            None
+        },
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),
         client_key: Vec::new(),
-        compression_config: None,
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
