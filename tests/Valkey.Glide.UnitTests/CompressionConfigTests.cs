@@ -9,9 +9,8 @@ public class CompressionConfigTests
     {
         var config = CompressionConfig.Zstd();
 
-        Assert.True(config.Enabled);
         Assert.Equal(CompressionBackend.Zstd, config.Backend);
-        Assert.False(config.HasCompressionLevel);
+        Assert.Equal(0, config.CompressionLevel);
         Assert.Equal((nuint)64, config.MinCompressionSize);
     }
 
@@ -20,9 +19,8 @@ public class CompressionConfigTests
     {
         var config = CompressionConfig.Lz4();
 
-        Assert.True(config.Enabled);
         Assert.Equal(CompressionBackend.Lz4, config.Backend);
-        Assert.False(config.HasCompressionLevel);
+        Assert.Equal(0, config.CompressionLevel);
         Assert.Equal((nuint)64, config.MinCompressionSize);
     }
 
@@ -31,7 +29,6 @@ public class CompressionConfigTests
     {
         var config = CompressionConfig.Zstd(compressionLevel: 5);
 
-        Assert.True(config.HasCompressionLevel);
         Assert.Equal(5, config.CompressionLevel);
     }
 
@@ -57,9 +54,7 @@ public class CompressionConfigTests
     {
         var config = new CompressionConfig(CompressionBackend.Zstd, 10, 100);
 
-        Assert.True(config.Enabled);
         Assert.Equal(CompressionBackend.Zstd, config.Backend);
-        Assert.True(config.HasCompressionLevel);
         Assert.Equal(10, config.CompressionLevel);
         Assert.Equal((nuint)100, config.MinCompressionSize);
     }

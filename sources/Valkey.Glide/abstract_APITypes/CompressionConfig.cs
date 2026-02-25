@@ -13,33 +13,25 @@ namespace Valkey.Glide;
 public struct CompressionConfig
 {
     /// <summary>
-    /// Whether compression is enabled.
-    /// </summary>
-    [MarshalAs(UnmanagedType.U1)]
-    public bool Enabled;
-
-    /// <summary>
-    /// The compression backend to use.
-    /// </summary>
-    public CompressionBackend Backend;
-
-    /// <summary>
-    /// Compression level for the backend.
-    /// If null, uses the backend's default level.
-    /// - Zstd: 1-22 (default: 3)
-    /// - LZ4: 0-12 (default: 0)
-    /// </summary>
-    [MarshalAs(UnmanagedType.U1)]
-    internal bool HasCompressionLevel;
-    public int CompressionLevel;
-
-    /// <summary>
     /// Minimum value size in bytes to compress.
     /// Values smaller than this will not be compressed.
     /// Default: 64 bytes
     /// Minimum: 16 bytes
     /// </summary>
     public nuint MinCompressionSize;
+
+    /// <summary>
+    /// Compression level for the backend.
+    /// 0 means use backend default.
+    /// - Zstd: 1-22 (default: 3)
+    /// - LZ4: 0-12 (default: 0)
+    /// </summary>
+    public int CompressionLevel;
+
+    /// <summary>
+    /// The compression backend to use.
+    /// </summary>
+    public CompressionBackend Backend;
 
     /// <summary>
     /// Creates a new compression configuration.
@@ -58,11 +50,9 @@ public struct CompressionConfig
             throw new ArgumentException("minCompressionSize must be at least 16 bytes", nameof(minCompressionSize));
         }
 
-        Enabled = true;
-        Backend = backend;
-        HasCompressionLevel = compressionLevel.HasValue;
-        CompressionLevel = compressionLevel ?? 0;
         MinCompressionSize = minCompressionSize;
+        CompressionLevel = compressionLevel ?? 0;
+        Backend = backend;
     }
 
     /// <summary>

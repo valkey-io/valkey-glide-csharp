@@ -53,8 +53,6 @@ pub struct CompressionConfig {
     pub min_compression_size: usize,
     pub compression_level: i32,
     pub backend: CompressionBackend,
-    pub skip_compressible_data_check: bool,
-    pub skip_decompression_on_failure: bool,
 }
 
 #[repr(u32)]
@@ -275,19 +273,22 @@ pub(crate) unsafe fn create_connection_request(
         pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
         compression_config: if config.has_compression_config {
-            Some(glide_core::client::CompressionConfig {
+            Some(glide_core::compression::CompressionConfig {
+                enabled: true,
                 min_compression_size: config.compression_config.min_compression_size,
-                compression_level: config.compression_config.compression_level,
-                backend: match config.compression_config.backend {
-                    CompressionBackend::Zstd => glide_core::compression::CompressionBackend::Zstd,
-                    CompressionBackend::Lz4 => glide_core::compression::CompressionBackend::Lz4,
+                compression_level: if config.compression_config.compression_level == 0 {
+                    None
+                } else {
+                    Some(config.compression_config.compression_level)
                 },
-                skip_compressible_data_check: config
-                    .compression_config
-                    .skip_compressible_data_check,
-                skip_decompression_on_failure: config
-                    .compression_config
-                    .skip_decompression_on_failure,
+                backend: match config.compression_config.backend {
+                    CompressionBackend::Zstd => {
+                        glide_core::compression::CompressionBackendType::Zstd
+                    }
+                    CompressionBackend::Lz4 => {
+                        glide_core::compression::CompressionBackendType::Lz4
+                    }
+                },
             })
         } else {
             None
