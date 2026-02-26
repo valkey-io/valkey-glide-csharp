@@ -156,6 +156,12 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     public static CompressionStatistics GetCompressionStatistics()
     {
         var stats = GetStatisticsFfi();
+        Logger.Log(Level.Debug, "GetCompressionStatistics",
+            $"FFI returned - Compressed: {stats.TotalValuesCompressed}, " +
+            $"Original: {stats.TotalOriginalBytes}, " +
+            $"CompressedBytes: {stats.TotalBytesCompressed}, " +
+            $"Skipped: {stats.CompressionSkippedCount}, " +
+            $"Decompressed: {stats.TotalValuesDecompressed}");
         return new CompressionStatistics
         {
             TotalValuesCompressed = stats.TotalValuesCompressed,
@@ -171,6 +177,15 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     protected static async Task<T> CreateClient<T>(BaseClientConfiguration config, Func<T> ctor) where T : BaseClient
     {
         T client = ctor();
+
+        if (config.Request.CompressionConfig != null)
+        {
+            var cc = config.Request.CompressionConfig.Value;
+            Logger.Log(Level.Debug, "CreateClient",
+                $"Creating client with compression enabled - Backend: {cc.Backend}, " +
+                $"Level: {cc.CompressionLevel}, " +
+                $"MinSize: {cc.MinCompressionSize}");
+        }
 
         nint successCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._successCallbackDelegate);
         nint failureCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._failureCallbackDelegate);

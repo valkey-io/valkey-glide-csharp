@@ -776,6 +776,10 @@ public abstract class ConnectionConfiguration
         /// <inheritdoc cref="CompressionConfig" />
         public T WithCompression(CompressionConfig compressionConfig)
         {
+            Logger.Log(Level.Debug, "WithCompression",
+                $"Setting compression - Backend: {compressionConfig.Backend}, " +
+                $"Level: {compressionConfig.CompressionLevel}, " +
+                $"MinSize: {compressionConfig.MinCompressionSize}");
             CompressionConfig = compressionConfig;
             return (T)this;
         }

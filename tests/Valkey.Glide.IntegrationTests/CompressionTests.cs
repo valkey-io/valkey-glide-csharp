@@ -13,6 +13,8 @@ public class CompressionTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task Compression_Zstd_Standalone_CompressesAndDecompresses(GlideClient _)
     {
+        Logger.Init(Level.Debug);
+
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
             .WithCompression(CompressionConfig.Zstd())
@@ -22,6 +24,7 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         var statsBefore = BaseClient.GetCompressionStatistics();
+        Console.WriteLine($"[ZSTD Standalone] Before - Compressed: {statsBefore.TotalValuesCompressed}, Bytes: {statsBefore.TotalBytesCompressed}, Original: {statsBefore.TotalOriginalBytes}, Skipped: {statsBefore.CompressionSkippedCount}");
 
         string key = $"compression_test_{Guid.NewGuid()}";
         string largeValue = new string('a', 1000);
@@ -32,8 +35,9 @@ public class CompressionTests(TestConfiguration config)
         Assert.Equal(largeValue, retrieved.ToString());
 
         var statsAfter = BaseClient.GetCompressionStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
-        Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed);
+        Console.WriteLine($"[ZSTD Standalone] After - Compressed: {statsAfter.TotalValuesCompressed}, Bytes: {statsAfter.TotalBytesCompressed}, Original: {statsAfter.TotalOriginalBytes}, Skipped: {statsAfter.CompressionSkippedCount}");
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression to occur. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+        Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed, $"Expected bytes compressed. Before: {statsBefore.TotalBytesCompressed}, After: {statsAfter.TotalBytesCompressed}");
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -75,6 +79,7 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClusterClient.CreateClient(clientConfig);
 
         var statsBefore = BaseClient.GetCompressionStatistics();
+        Console.WriteLine($"[ZSTD Cluster] Before - Compressed: {statsBefore.TotalValuesCompressed}, Bytes: {statsBefore.TotalBytesCompressed}");
 
         string key = $"compression_cluster_test_{Guid.NewGuid()}";
         string largeValue = new string('c', 1000);
@@ -85,7 +90,8 @@ public class CompressionTests(TestConfiguration config)
         Assert.Equal(largeValue, retrieved.ToString());
 
         var statsAfter = BaseClient.GetCompressionStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
+        Console.WriteLine($"[ZSTD Cluster] After - Compressed: {statsAfter.TotalValuesCompressed}, Bytes: {statsAfter.TotalBytesCompressed}");
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -101,6 +107,7 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         var statsBefore = BaseClient.GetCompressionStatistics();
+        Console.WriteLine($"[MinSize] Before - Compressed: {statsBefore.TotalValuesCompressed}, Skipped: {statsBefore.CompressionSkippedCount}");
 
         string smallKey = $"small_{Guid.NewGuid()}";
         string smallValue = new string('x', 100);
@@ -108,6 +115,7 @@ public class CompressionTests(TestConfiguration config)
 
         var statsAfterSmall = BaseClient.GetCompressionStatistics();
         var skippedCountSmall = statsAfterSmall.CompressionSkippedCount - statsBefore.CompressionSkippedCount;
+        Console.WriteLine($"[MinSize] After small - Compressed: {statsAfterSmall.TotalValuesCompressed}, Skipped: {statsAfterSmall.CompressionSkippedCount}, Delta: {skippedCountSmall}");
 
         string largeKey = $"large_{Guid.NewGuid()}";
         string largeValue = new string('y', 1000);
@@ -115,9 +123,10 @@ public class CompressionTests(TestConfiguration config)
 
         var statsAfterLarge = BaseClient.GetCompressionStatistics();
         var compressedCountLarge = statsAfterLarge.TotalValuesCompressed - statsAfterSmall.TotalValuesCompressed;
+        Console.WriteLine($"[MinSize] After large - Compressed: {statsAfterLarge.TotalValuesCompressed}, Delta: {compressedCountLarge}");
 
-        Assert.True(skippedCountSmall > 0, "Small value should have been skipped");
-        Assert.True(compressedCountLarge > 0, "Large value should have been compressed");
+        Assert.True(skippedCountSmall > 0, $"Small value should have been skipped. Skipped delta: {skippedCountSmall}");
+        Assert.True(compressedCountLarge > 0, $"Large value should have been compressed. Compressed delta: {compressedCountLarge}");
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -232,6 +241,7 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         var statsBefore = BaseClient.GetCompressionStatistics();
+        Console.WriteLine($"[Statistics] Before - Compressed: {statsBefore.TotalValuesCompressed}, OrigBytes: {statsBefore.TotalOriginalBytes}, CompBytes: {statsBefore.TotalBytesCompressed}");
 
         string key = $"stats_test_{Guid.NewGuid()}";
         string value = new string('m', 1000);
@@ -240,9 +250,10 @@ public class CompressionTests(TestConfiguration config)
         await client.StringGetAsync(key);
 
         var statsAfter = BaseClient.GetCompressionStatistics();
+        Console.WriteLine($"[Statistics] After - Compressed: {statsAfter.TotalValuesCompressed}, OrigBytes: {statsAfter.TotalOriginalBytes}, CompBytes: {statsAfter.TotalBytesCompressed}");
 
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
-        Assert.True(statsAfter.TotalOriginalBytes > statsBefore.TotalOriginalBytes);
-        Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed);
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+        Assert.True(statsAfter.TotalOriginalBytes > statsBefore.TotalOriginalBytes, $"Expected original bytes. Before: {statsBefore.TotalOriginalBytes}, After: {statsAfter.TotalOriginalBytes}");
+        Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed, $"Expected compressed bytes. Before: {statsBefore.TotalBytesCompressed}, After: {statsAfter.TotalBytesCompressed}");
     }
 }
