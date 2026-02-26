@@ -7,6 +7,14 @@ namespace Valkey.Glide.IntegrationTests;
 [Collection("GlideTests")]
 public class CompressionTests(TestConfiguration config)
 {
+    private const int LargeValueSize = 1000;
+    private const int SmallValueSize = 100;
+    private const int MinSizeThreshold = 500;
+    private const int CustomCompressionLevel = 10;
+    private const int MultiOpCount = 10;
+    private const int MultiOpBaseSize = 500;
+    private const int MultiOpSizeIncrement = 100;
+
     public TestConfiguration Config { get; } = config;
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -24,7 +32,7 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetCompressionStatistics();
 
         string key = $"compression_test_{Guid.NewGuid()}";
-        string largeValue = new string('a', 1000);
+        string largeValue = new string('a', LargeValueSize);
 
         await client.StringSetAsync(key, largeValue);
         var retrieved = await client.StringGetAsync(key);
@@ -51,7 +59,7 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetCompressionStatistics();
 
         string key = $"compression_lz4_test_{Guid.NewGuid()}";
-        string largeValue = new string('b', 1000);
+        string largeValue = new string('b', LargeValueSize);
 
         await client.StringSetAsync(key, largeValue);
         var retrieved = await client.StringGetAsync(key);
@@ -77,7 +85,7 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetCompressionStatistics();
 
         string key = $"compression_cluster_test_{Guid.NewGuid()}";
-        string largeValue = new string('c', 1000);
+        string largeValue = new string('c', LargeValueSize);
 
         await client.StringSetAsync(key, largeValue);
         var retrieved = await client.StringGetAsync(key);
@@ -94,7 +102,7 @@ public class CompressionTests(TestConfiguration config)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd(minCompressionSize: 500))
+            .WithCompression(CompressionConfig.Zstd(minCompressionSize: MinSizeThreshold))
             .WithTls(TestConfiguration.TLS)
             .Build();
 
@@ -103,14 +111,14 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetCompressionStatistics();
 
         string smallKey = $"small_{Guid.NewGuid()}";
-        string smallValue = new string('x', 100);
+        string smallValue = new string('x', SmallValueSize);
         await client.StringSetAsync(smallKey, smallValue);
 
         var statsAfterSmall = BaseClient.GetCompressionStatistics();
         var skippedCountSmall = statsAfterSmall.CompressionSkippedCount - statsBefore.CompressionSkippedCount;
 
         string largeKey = $"large_{Guid.NewGuid()}";
-        string largeValue = new string('y', 1000);
+        string largeValue = new string('y', LargeValueSize);
         await client.StringSetAsync(largeKey, largeValue);
 
         var statsAfterLarge = BaseClient.GetCompressionStatistics();
@@ -126,14 +134,14 @@ public class CompressionTests(TestConfiguration config)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd(compressionLevel: 10))
+            .WithCompression(CompressionConfig.Zstd(compressionLevel: CustomCompressionLevel))
             .WithTls(TestConfiguration.TLS)
             .Build();
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         string key = $"compression_level_test_{Guid.NewGuid()}";
-        string value = new string('z', 1000);
+        string value = new string('z', LargeValueSize);
 
         await client.StringSetAsync(key, value);
         var retrieved = await client.StringGetAsync(key);
@@ -182,10 +190,10 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         var testData = new Dictionary<string, string>();
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < MultiOpCount; i++)
         {
             string key = $"multi_op_test_{i}_{Guid.NewGuid()}";
-            string value = new string((char)('a' + i), 500 + i * 100);
+            string value = new string((char)('a' + i), MultiOpBaseSize + i * MultiOpSizeIncrement);
             testData[key] = value;
             await client.StringSetAsync(key, value);
         }
@@ -210,7 +218,7 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         string key = $"binary_test_{Guid.NewGuid()}";
-        byte[] binaryData = new byte[1000];
+        byte[] binaryData = new byte[LargeValueSize];
         new Random().NextBytes(binaryData);
 
         await client.StringSetAsync(key, binaryData);
@@ -234,7 +242,7 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetCompressionStatistics();
 
         string key = $"stats_test_{Guid.NewGuid()}";
-        string value = new string('m', 1000);
+        string value = new string('m', LargeValueSize);
 
         await client.StringSetAsync(key, value);
         await client.StringGetAsync(key);

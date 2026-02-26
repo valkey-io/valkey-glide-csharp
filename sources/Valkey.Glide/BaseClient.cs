@@ -156,12 +156,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     public static CompressionStatistics GetCompressionStatistics()
     {
         var stats = GetStatisticsFfi();
-        Logger.Log(Level.Debug, "GetCompressionStatistics",
-            $"FFI returned - Compressed: {stats.TotalValuesCompressed}, " +
-            $"Original: {stats.TotalOriginalBytes}, " +
-            $"CompressedBytes: {stats.TotalBytesCompressed}, " +
-            $"Skipped: {stats.CompressionSkippedCount}, " +
-            $"Decompressed: {stats.TotalValuesDecompressed}");
         return new CompressionStatistics
         {
             TotalValuesCompressed = stats.TotalValuesCompressed,
