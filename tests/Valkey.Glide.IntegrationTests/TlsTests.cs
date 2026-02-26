@@ -33,6 +33,10 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     private readonly TlsServersFixture _fixture = fixture;
     private static readonly string ServerCertificatePath = ServerManager.ServerCertificatePath;
 
+    // Host addresses. See 'cluster_manager.py' for details.
+    private static readonly string HostAddressIpv4 = "127.0.0.1";
+    private static readonly string HostAddressIpv6 = "::1";
+
     // Cluster TLS Tests
     // -----------------
 
@@ -72,7 +76,7 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     }
 
     [Fact]
-    public async Task Cluster_WithCertificateData_Success()
+    public async Task Cluster_WithCertificateData_Succeeds()
     {
         var configBuilder = _fixture.TlsClusterServer.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
         await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
@@ -80,7 +84,7 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     }
 
     [Fact]
-    public async Task Cluster_WithCertificatePath_Success()
+    public async Task Cluster_WithCertificatePath_Succeeds()
     {
         var configBuilder = _fixture.TlsClusterServer.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
         await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
@@ -88,7 +92,7 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     }
 
     [Fact]
-    public async Task Cluster_WithInsecureTls_Success()
+    public async Task Cluster_WithInsecureTls_Succeeds()
     {
         var configBuilder = _fixture.TlsClusterServer.CreateConfigBuilder().WithInsecureTls();
         await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
@@ -100,6 +104,28 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     {
         var configBuilder = _fixture.NonTlsClusterServer.CreateConfigBuilder().WithTls().WithInsecureTls();
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClusterClient.CreateClient(configBuilder.Build()));
+    }
+
+    [Fact]
+    public async Task Cluster_WithIpv4_Succeeds()
+    {
+        var port = _fixture.TlsClusterServer.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
+            .WithAddress(HostAddressIpv4, port)
+            .WithTrustedCertificate(GetValidCertificateData());
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task Cluster_WithIpv6_Succeeds()
+    {
+        var port = _fixture.TlsClusterServer.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
+            .WithAddress(HostAddressIpv6, port)
+            .WithTrustedCertificate(GetValidCertificateData());
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
     }
 
     // Standalone TLS Tests
@@ -141,7 +167,7 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     }
 
     [Fact]
-    public async Task Standalone_WithCertificateData_Success()
+    public async Task Standalone_WithCertificateData_Succeeds()
     {
         var configBuilder = _fixture.TlsStandaloneServer.CreateConfigBuilder().WithTrustedCertificate(GetValidCertificateData());
         await using var client = await GlideClient.CreateClient(configBuilder.Build());
@@ -149,7 +175,7 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     }
 
     [Fact]
-    public async Task Standalone_WithCertificatePath_Success()
+    public async Task Standalone_WithCertificatePath_Succeeds()
     {
         var configBuilder = _fixture.TlsStandaloneServer.CreateConfigBuilder().WithTrustedCertificate(ServerCertificatePath);
         await using var client = await GlideClient.CreateClient(configBuilder.Build());
@@ -157,7 +183,7 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     }
 
     [Fact]
-    public async Task Standalone_WithInsecureTls_Success()
+    public async Task Standalone_WithInsecureTls_Succeeds()
     {
         var configBuilder = _fixture.TlsStandaloneServer.CreateConfigBuilder().WithInsecureTls();
         await using var client = await GlideClient.CreateClient(configBuilder.Build());
@@ -169,6 +195,28 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
     {
         var configBuilder = _fixture.NonTlsStandaloneServer.CreateConfigBuilder().WithTls().WithInsecureTls();
         await Assert.ThrowsAsync<ConnectionException>(async () => await GlideClient.CreateClient(configBuilder.Build()));
+    }
+
+    [Fact]
+    public async Task Standalone_WithIpv4_Succeeds()
+    {
+        var port = _fixture.TlsStandaloneServer.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
+            .WithAddress(HostAddressIpv4, port)
+            .WithTrustedCertificate(GetValidCertificateData());
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task Standalone_WithIpv6_Succeeds()
+    {
+        var port = _fixture.TlsStandaloneServer.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
+            .WithAddress(HostAddressIpv6, port)
+            .WithTrustedCertificate(GetValidCertificateData());
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
     }
 
     // Helper Methods
