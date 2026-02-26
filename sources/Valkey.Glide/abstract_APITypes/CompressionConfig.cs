@@ -13,6 +13,11 @@ namespace Valkey.Glide;
 public struct CompressionConfig
 {
     /// <summary>
+    /// Minimum allowed value for minCompressionSize.
+    /// </summary>
+    public const nuint MinCompressionSizeLimit = 16;
+
+    /// <summary>
     /// Minimum value size in bytes to compress.
     /// Values smaller than this will not be compressed.
     /// Default: 64 bytes
@@ -51,9 +56,9 @@ public struct CompressionConfig
         int? compressionLevel = null,
         nuint minCompressionSize = 64)
     {
-        if (minCompressionSize < 16)
+        if (minCompressionSize < MinCompressionSizeLimit)
         {
-            throw new ArgumentException("minCompressionSize must be at least 16 bytes", nameof(minCompressionSize));
+            throw new ArgumentException($"minCompressionSize must be at least {MinCompressionSizeLimit} bytes", nameof(minCompressionSize));
         }
 
         MinCompressionSize = minCompressionSize;
