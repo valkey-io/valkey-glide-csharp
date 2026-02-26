@@ -4,14 +4,28 @@ namespace Valkey.Glide.Tests;
 
 public class CompressionConfigTests
 {
+    private const int DefaultCompressionLevel = 0;
+    private const nuint DefaultMinCompressionSize = 64;
+    private const int CustomCompressionLevel = 5;
+    private const nuint CustomMinCompressionSize = 128;
+    private const nuint InvalidMinCompressionSize = 10;
+    private const nuint ValidMinCompressionSize = 100;
+    private const ulong TestOriginalBytes = 1000;
+    private const ulong TestCompressedBytes500 = 500;
+    private const ulong TestCompressedBytes600 = 600;
+    private const double ExpectedRatio2x = 2.0;
+    private const double ExpectedRatioZero = 0.0;
+    private const ulong ExpectedSpaceSaved400 = 400;
+    private const double ExpectedSpaceSavedPercent40 = 40.0;
+
     [Fact]
     public void CompressionConfig_Zstd_CreatesValidConfig()
     {
         var config = CompressionConfig.Zstd();
 
         Assert.Equal(CompressionBackend.Zstd, config.Backend);
-        Assert.Equal(0, config.CompressionLevel);
-        Assert.Equal((nuint)64, config.MinCompressionSize);
+        Assert.Equal(DefaultCompressionLevel, config.CompressionLevel);
+        Assert.Equal(DefaultMinCompressionSize, config.MinCompressionSize);
     }
 
     [Fact]
@@ -20,31 +34,31 @@ public class CompressionConfigTests
         var config = CompressionConfig.Lz4();
 
         Assert.Equal(CompressionBackend.Lz4, config.Backend);
-        Assert.Equal(0, config.CompressionLevel);
-        Assert.Equal((nuint)64, config.MinCompressionSize);
+        Assert.Equal(DefaultCompressionLevel, config.CompressionLevel);
+        Assert.Equal(DefaultMinCompressionSize, config.MinCompressionSize);
     }
 
     [Fact]
     public void CompressionConfig_WithCustomLevel_SetsLevel()
     {
-        var config = CompressionConfig.Zstd(compressionLevel: 5);
+        var config = CompressionConfig.Zstd(compressionLevel: CustomCompressionLevel);
 
-        Assert.Equal(5, config.CompressionLevel);
+        Assert.Equal(CustomCompressionLevel, config.CompressionLevel);
     }
 
     [Fact]
     public void CompressionConfig_WithCustomMinSize_SetsMinSize()
     {
-        var config = CompressionConfig.Lz4(minCompressionSize: 128);
+        var config = CompressionConfig.Lz4(minCompressionSize: CustomMinCompressionSize);
 
-        Assert.Equal((nuint)128, config.MinCompressionSize);
+        Assert.Equal(CustomMinCompressionSize, config.MinCompressionSize);
     }
 
     [Fact]
     public void CompressionConfig_MinSizeTooSmall_ThrowsException()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
-            CompressionConfig.Zstd(minCompressionSize: 10));
+            CompressionConfig.Zstd(minCompressionSize: InvalidMinCompressionSize));
 
         Assert.Contains("minCompressionSize must be at least 16 bytes", exception.Message);
     }
@@ -52,11 +66,11 @@ public class CompressionConfigTests
     [Fact]
     public void CompressionConfig_Constructor_CreatesValidConfig()
     {
-        var config = new CompressionConfig(CompressionBackend.Zstd, 10, 100);
+        var config = new CompressionConfig(CompressionBackend.Zstd, CustomCompressionLevel, ValidMinCompressionSize);
 
         Assert.Equal(CompressionBackend.Zstd, config.Backend);
-        Assert.Equal(10, config.CompressionLevel);
-        Assert.Equal((nuint)100, config.MinCompressionSize);
+        Assert.Equal(CustomCompressionLevel, config.CompressionLevel);
+        Assert.Equal(ValidMinCompressionSize, config.MinCompressionSize);
     }
 
     [Fact]
@@ -64,11 +78,11 @@ public class CompressionConfigTests
     {
         var stats = new CompressionStatistics
         {
-            TotalOriginalBytes = 1000,
-            TotalBytesCompressed = 500
+            TotalOriginalBytes = TestOriginalBytes,
+            TotalBytesCompressed = TestCompressedBytes500
         };
 
-        Assert.Equal(2.0, stats.CompressionRatio);
+        Assert.Equal(ExpectedRatio2x, stats.CompressionRatio);
     }
 
     [Fact]
@@ -80,7 +94,7 @@ public class CompressionConfigTests
             TotalBytesCompressed = 0
         };
 
-        Assert.Equal(0.0, stats.CompressionRatio);
+        Assert.Equal(ExpectedRatioZero, stats.CompressionRatio);
     }
 
     [Fact]
@@ -88,11 +102,11 @@ public class CompressionConfigTests
     {
         var stats = new CompressionStatistics
         {
-            TotalOriginalBytes = 1000,
-            TotalBytesCompressed = 600
+            TotalOriginalBytes = TestOriginalBytes,
+            TotalBytesCompressed = TestCompressedBytes600
         };
 
-        Assert.Equal((ulong)400, stats.SpaceSaved);
+        Assert.Equal(ExpectedSpaceSaved400, stats.SpaceSaved);
     }
 
     [Fact]
@@ -100,10 +114,10 @@ public class CompressionConfigTests
     {
         var stats = new CompressionStatistics
         {
-            TotalOriginalBytes = 1000,
-            TotalBytesCompressed = 600
+            TotalOriginalBytes = TestOriginalBytes,
+            TotalBytesCompressed = TestCompressedBytes600
         };
 
-        Assert.Equal(40.0, stats.SpaceSavedPercent);
+        Assert.Equal(ExpectedSpaceSavedPercent40, stats.SpaceSavedPercent);
     }
 }
