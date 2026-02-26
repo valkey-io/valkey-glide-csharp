@@ -12,68 +12,61 @@ namespace Valkey.Glide.IntegrationTests;
 public class PubSubCallbackTests
 {
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task Callback_Channel_ReceivesMessage(bool isCluster)
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Callback_ChannelMode_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)
     {
-        var message = BuildChannelMessage();
+        var message = BuildMessage(channelMode);
+
+        // Build subscriber with callback that captures received message.
         var received = new TaskCompletionSource<PubSubMessage>();
+        using var subscriber = await BuildSubscriber(
+            isCluster,
+            message: message,
+            callback: (msg, ctx) => received.SetResult(msg));
 
-        using var subscriber = await BuildSubscriber(isCluster,
-            channels: [message.Channel],
-            callback: (msg, _) => received.TrySetResult(msg));
-        using var publisher = BuildClient(isCluster);
-
-        await publisher.PublishAsync(message.Channel, message.Message);
+        // Publish message and verify receipt via callback.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, message);
         Assert.Equal(message, await received.Task.WaitAsync(MaxDuration));
     }
 
     [Theory]
-    [MemberData(nameof(IsCluster), MemberType = typeof(PubSubUtils))]
-    public async Task Callback_Pattern_ReceivesMessage(bool isCluster)
+    [MemberData(nameof(ClusterAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Callback_SubscribeMode_ReceivesMessage(bool isCluster, SubscribeMode subscribeMode)
     {
-        var message = BuildPatternMessage();
+        var message = BuildMessage();
+
+        // Build subscriber with callback that captures received message.
         var received = new TaskCompletionSource<PubSubMessage>();
+        using var subscriber = await BuildSubscriber(
+            isCluster,
+            message,
+            subscribeMode: subscribeMode,
+            callback: (msg, ctx) => received.SetResult(msg));
 
-        using var subscriber = await BuildSubscriber(isCluster,
-            patterns: [message.Pattern!],
-            callback: (msg, _) => received.TrySetResult(msg));
-        using var publisher = BuildClient(isCluster);
-
-        await publisher.PublishAsync(message.Channel, message.Message);
+        // Publish message and verify receipt via callback.
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, message);
         Assert.Equal(message, await received.Task.WaitAsync(MaxDuration));
     }
 
-    [Fact]
-    public async Task Callback_ShardChannel_ReceivesMessage()
+
+    [Theory]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Callback_WithException_ContinuesProcessing(bool isCluster)
     {
-        Assert.SkipUnless(IsShardedSupported(), SkipShardedPubSubMessage);
-
-        var message = BuildShardChannelMessage();
-        var received = new TaskCompletionSource<PubSubMessage>();
-
-        using var subscriber = await BuildClusterSubscriber(
-            shardChannels: [message.Channel],
-            callback: (msg, _) => received.TrySetResult(msg));
-        using var publisher = BuildClusterClient();
-
-        await publisher.SPublishAsync(message.Channel, message.Message);
-        Assert.Equal(message, await received.Task.WaitAsync(MaxDuration));
-    }
-
-    [Fact]
-    public async Task Callback_WithException_ContinuesProcessing()
-    {
-        var message = BuildChannelMessage();
-        var channels = new string[] { message.Channel };
+        // Build messages.
+        var message = BuildMessage();
 
         // Setup callback that throws an exception on the first message, but succeeds on subsequent messages
         var receivedCount = 0;
         var succeededCount = 0;
         using var completed = new ManualResetEventSlim(false);
 
-        using var subscriber = await BuildStandaloneSubscriber(
-                channels: channels,
-                callback: (message, context) =>
+        using var subscriber = await BuildSubscriber(
+                isCluster,
+                message,
+                callback: (msg, context) =>
                 {
                     int invocation = Interlocked.Increment(ref receivedCount);
 
@@ -86,12 +79,13 @@ public class PubSubCallbackTests
                     if (invocation >= 3)
                         completed.Set();
                 });
-        using var publisher = BuildStandaloneClient();
+
+        using var publisher = BuildPublisher(isCluster);
 
         // Publish multiple messages.
-        await publisher.PublishAsync(message.Channel, message.Message);
-        await publisher.PublishAsync(message.Channel, message.Message);
-        await publisher.PublishAsync(message.Channel, message.Message);
+        await PublishAsync(publisher, message);
+        await PublishAsync(publisher, message);
+        await PublishAsync(publisher, message);
 
         // Verify that all messages received despite exception.
         completed.Wait(MaxDuration);
@@ -99,38 +93,36 @@ public class PubSubCallbackTests
         Assert.Equal(2, succeededCount);
     }
 
-    [Fact]
-    public async Task Callback_WithMultipleMessages_PreservesOrder()
+    [Theory]
+    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task Callback_WithMultipleMessages_PreservesOrder(bool isCluster)
     {
-        var channel = $"test-channel-{Guid.NewGuid()}";
-
         int messageCount = 20;
-        var expectedMessages = Enumerable.Range(0, messageCount).Select(i => $"Message-{i:D3}").ToList();
+        var messages = Enumerable.Range(0, messageCount).Select(i => BuildMessage()).ToList();
 
         // Setup callback to capture received messages.
-        List<string> receivedMessages = [];
+        List<PubSubMessage> receivedMessages = [];
         using var completed = new ManualResetEventSlim(false);
 
-        using var subscriber = await BuildStandaloneSubscriber(
-            channels: [channel],
+        using var subscriber = await BuildSubscriber(
+            isCluster,
+            messages,
             callback: (msg, context) =>
             {
                 lock (receivedMessages)
                 {
-                    receivedMessages.Add(msg.Message);
+                    receivedMessages.Add(msg);
                     if (receivedMessages.Count >= messageCount)
                         completed.Set();
                 }
             });
-        using var publisher = BuildStandaloneClient();
 
-        // Publish all messages.
-        foreach (var msg in expectedMessages)
-            await publisher.PublishAsync(channel, msg);
+        using var publisher = BuildPublisher(isCluster);
 
-
-        // Verify that order is preserved.
+        // Publish all messages and verify they are received in order.
+        await PublishAsync(publisher, messages);
         completed.Wait(MaxDuration);
-        Assert.Equivalent(expectedMessages, receivedMessages);
+        Assert.Equivalent(messages, receivedMessages);
     }
 }
+

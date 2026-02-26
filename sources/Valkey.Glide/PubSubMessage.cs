@@ -25,7 +25,7 @@ public sealed class PubSubMessage
     public string Channel { get; }
 
     /// <summary>
-    /// The pattern that matched the channel (null for exact and shard channel subscriptions).
+    /// The pattern that matched the channel (null for exact and sharded channel subscriptions).
     /// </summary>
     public string? Pattern { get; }
 
@@ -54,12 +54,12 @@ public sealed class PubSubMessage
     }
 
     /// <summary>
-    /// Creates a new <see cref="PubSubMessage"/> for a shard channel subscription.
+    /// Creates a new <see cref="PubSubMessage"/> for a sharded channel subscription.
     /// </summary>
     /// <param name="message">The message content.</param>
     /// <param name="channel">The channel on which the message was received.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
-    public static PubSubMessage FromShardChannel(string message, string channel)
+    public static PubSubMessage FromShardedChannel(string message, string channel)
     {
         return new(PubSubChannelMode.Sharded, message, channel, null);
     }
