@@ -29,12 +29,12 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Addresses of the server instances.
     /// </summary>
-    protected IList<Address> _addresses;
+    public IList<Address> Addresses { get; private set; } = null!;
 
     protected Server(bool useClusterMode, bool useTls)
     {
         _useTls = useTls;
-        _addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: _useTls);
+        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: _useTls);
     }
 
     ~Server() => Dispose();
@@ -70,7 +70,7 @@ public sealed class ClusterServer : Server
         var configBuilder = new ClusterClientConfigurationBuilder();
         configBuilder.WithTls(useTls: _useTls);
 
-        foreach (var (host, port) in _addresses)
+        foreach (var (host, port) in Addresses)
             configBuilder.WithAddress(host, port);
 
         return configBuilder;
@@ -102,7 +102,7 @@ public sealed class StandaloneServer : Server
         var configBuilder = new StandaloneClientConfigurationBuilder();
         configBuilder.WithTls(useTls: _useTls);
 
-        foreach (var (host, port) in _addresses)
+        foreach (var (host, port) in Addresses)
             configBuilder.WithAddress(host, port);
 
         return configBuilder;
