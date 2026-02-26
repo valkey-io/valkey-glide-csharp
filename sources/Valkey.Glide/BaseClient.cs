@@ -172,15 +172,6 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     {
         T client = ctor();
 
-        if (config.Request.CompressionConfig != null)
-        {
-            var cc = config.Request.CompressionConfig.Value;
-            Logger.Log(Level.Debug, "CreateClient",
-                $"Creating client with compression enabled - Backend: {cc.Backend}, " +
-                $"Level: {cc.CompressionLevel}, " +
-                $"MinSize: {cc.MinCompressionSize}");
-        }
-
         nint successCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._successCallbackDelegate);
         nint failureCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._failureCallbackDelegate);
         nint pubsubCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._pubsubCallbackDelegate);
