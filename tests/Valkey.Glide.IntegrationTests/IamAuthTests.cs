@@ -108,8 +108,8 @@ public class IamAuthTests
             // Verify connection with PING
             await client.PingAsync();
 
-            // Verify refreshIamToken()
-            await client.RefreshIamToken();
+            // Verify RefreshIamTokenAsync()
+            await client.RefreshIamTokenAsync();
 
             // Test basic SET/GET operations
             await client.StringSetAsync("iam_test_key", "iam_test_value");
@@ -168,8 +168,8 @@ public class IamAuthTests
             // Verify initial connection with PING
             await client.PingAsync();
 
-            // Verify refreshIamToken()
-            await client.RefreshIamToken();
+            // Verify RefreshIamTokenAsync()
+            await client.RefreshIamTokenAsync();
 
             // Wait for automatic token refresh (3 seconds to ensure refresh happens)
             await Task.Delay(TimeSpan.FromSeconds(3));
