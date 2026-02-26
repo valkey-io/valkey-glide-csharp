@@ -10,24 +10,8 @@ using static Valkey.Glide.TestUtils.Client;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Fixture class to manage server lifecycle for TLS tests.
+/// Tests for client configuration and connection with TLS.
 /// </summary>
-public class TlsServersFixture : IDisposable
-{
-    public ClusterServer TlsClusterServer = new(useTls: true);
-    public ClusterServer NonTlsClusterServer = new(useTls: false);
-    public StandaloneServer TlsStandaloneServer = new(useTls: true);
-    public StandaloneServer NonTlsStandaloneServer = new(useTls: false);
-
-    public void Dispose()
-    {
-        TlsClusterServer.Dispose();
-        NonTlsClusterServer.Dispose();
-        TlsStandaloneServer.Dispose();
-        NonTlsStandaloneServer.Dispose();
-    }
-}
-
 public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixture>
 {
     private readonly TlsServersFixture _fixture = fixture;
@@ -256,5 +240,24 @@ public class TlsTests(TlsServersFixture fixture) : IClassFixture<TlsServersFixtu
         certificateData[0] ^= 0xFF;
 
         return certificateData;
+    }
+}
+
+/// <summary>
+/// Fixture class to manage server lifecycle for TLS tests.
+/// </summary>
+public class TlsServersFixture : IDisposable
+{
+    public ClusterServer TlsClusterServer = new(useTls: true);
+    public ClusterServer NonTlsClusterServer = new(useTls: false);
+    public StandaloneServer TlsStandaloneServer = new(useTls: true);
+    public StandaloneServer NonTlsStandaloneServer = new(useTls: false);
+
+    public void Dispose()
+    {
+        TlsClusterServer.Dispose();
+        NonTlsClusterServer.Dispose();
+        TlsStandaloneServer.Dispose();
+        NonTlsStandaloneServer.Dispose();
     }
 }
