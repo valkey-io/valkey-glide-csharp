@@ -623,4 +623,28 @@ public class ClusterClientTests(TestConfiguration config)
         var connectCount = await TestUtils.Client.GetConnectionCount(referenceClient);
         Assert.True(initialCount < connectCount);
     }
+
+    [Fact]
+    public async Task Connect_WithValidHostname_Succeeds()
+    {
+        using var server = new ClusterServer(useTls: false);
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
+            .WithAddress(Server.HostnameNoTls, port);
+
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await TestUtils.Client.AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task Connect_WithInvalidHostname_Throws()
+    {
+        using var server = new ClusterServer(useTls: false);
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
+            .WithAddress("invalid", port);
+
+        await Assert.ThrowsAsync<ConnectionException>(async ()
+            => await GlideClusterClient.CreateClient(configBuilder.Build()));
+    }
 }

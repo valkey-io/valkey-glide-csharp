@@ -11,6 +11,12 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public abstract class Server : IDisposable
 {
+    // Supported server host names and addresses.
+    public static readonly string HostnameTls = "valkey.glide.test.tls.com";
+    public static readonly string HostnameNoTls = "valkey.glide.test.no_tls.com";
+    public static readonly string Ipv4Address = "127.0.0.1";
+    public static readonly string Ipv6Address = "::1";
+
     /// <summary>
     /// Name of the server.
     /// </summary>

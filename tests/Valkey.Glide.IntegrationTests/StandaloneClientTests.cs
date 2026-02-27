@@ -513,4 +513,28 @@ public class StandaloneClientTests(TestConfiguration config)
         var connectCount = await GetConnectionCount(referenceClient);
         Assert.True(initialCount < connectCount);
     }
+
+    [Fact]
+    public async Task ConnectWithValidHostname_Succeeds()
+    {
+        using var server = new StandaloneServer(useTls: false);
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
+            .WithAddress(Server.HostnameNoTls, port);
+
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task ConnectWithInvalidHostname_Throws()
+    {
+        using var server = new StandaloneServer(useTls: false);
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
+            .WithAddress("nonexistent.invalid", port);
+
+        await Assert.ThrowsAsync<ConnectionException>(async ()
+            => await GlideClient.CreateClient(configBuilder.Build()));
+    }
 }
