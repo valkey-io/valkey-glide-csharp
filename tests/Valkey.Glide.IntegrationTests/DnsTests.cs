@@ -9,7 +9,7 @@ using static Valkey.Glide.TestUtils.Client;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Tests for client connection with hostnames.
+/// Tests for client connection with hosts.
 /// <para>
 /// To run these tests, you need to add the following mappings to your hosts
 /// file then set the environment variable <c>VALKEY_GLIDE_DNS_TESTS_ENABLED</c>:
@@ -21,88 +21,106 @@ namespace Valkey.Glide.IntegrationTests;
 /// <item><c>::1 valkey.glide.test.no_tls.com</c></item>
 /// </list>
 /// </summary>
-public class DnsTests : IClassFixture<DnsServersFixture>
+public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixture>
 {
-    private readonly DnsServersFixture fixture;
-
-    // Hostname constants for testing.
+    // Host name and address constants.
     // See 'cluster_manager.py' for details.
-    private const string HostnameTls = "valkey.glide.test.tls.com";
-    private const string HostnameNoTls = "valkey.glide.test.no_tls.com";
+    private static readonly string hostTls = "valkey.glide.test.tls.com";
+    private static readonly string hostNoTls = "valkey.glide.test.no_tls.com";
+    private static readonly string HostAddressIpv4 = "127.0.0.1";
+    private static readonly string HostAddressIpv6 = "::1";
 
-    public DnsTests(DnsServersFixture fixture)
+    // Cluster and host address combinations to test.
+    public static TheoryData<bool> ClusterModeData => [true, false];
+
+    public static TheoryData<bool, string> HostAddressData => new()
     {
-        this.fixture = fixture;
-    }
+        { true, HostAddressIpv4 },
+        { false, HostAddressIpv4 },
+        { true, HostAddressIpv6 },
+        { false, HostAddressIpv6 }
+    };
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task NoTls_HostnameInMapping_Succeeds(bool useCluster)
+    [MemberData(nameof(ClusterModeData))]
+    public async Task NoTls_Withhost_InMapping_Succeeds(bool useCluster)
     {
-        await using var client = await BuildClient(useCluster, useTls: false, HostnameNoTls);
+        await using var client = await BuildClient(useCluster, useTls: false, hostNoTls);
         await AssertConnected(client);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task NoTls_HostnameNotInMapping_Fails(bool useCluster)
+    [MemberData(nameof(ClusterModeData))]
+    public async Task NoTls_Withhost_NotInMapping_Fails(bool useCluster)
     {
         await Assert.ThrowsAsync<ConnectionException>(async ()
         => await BuildClient(useCluster, useTls: false, "nonexistent.invalid"));
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Tls_HostnameInCertificate_Succeeds(bool useCluster)
+    [MemberData(nameof(HostAddressData))]
+    public async Task NoTls_WithHostAddress_Succeeds(bool useCluster, string hostAddress)
     {
-        await using var client = await BuildClient(useCluster, useTls: true, HostnameTls);
+        await using var client = await BuildClient(useCluster, useTls: false, hostAddress);
         await AssertConnected(client);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Tls_HostnameNotInCertificate_Fails(bool useCluster)
+    [MemberData(nameof(ClusterModeData))]
+    public async Task Tls_Withhost_InCertificate_Succeeds(bool useCluster)
+    {
+        await using var client = await BuildClient(useCluster, useTls: true, hostTls);
+        await AssertConnected(client);
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterModeData))]
+    public async Task Tls_Withhost_NotInCertificate_Fails(bool useCluster)
     {
         await Assert.ThrowsAsync<ConnectionException>(async ()
-        => await BuildClient(useCluster, useTls: true, HostnameNoTls));
+        => await BuildClient(useCluster, useTls: true, hostNoTls));
+    }
+
+    [Theory]
+    [MemberData(nameof(HostAddressData))]
+    public async Task Tls_WithHostAddress_Succeeds(bool useCluster, string hostAddress)
+    {
+        await using var client = await BuildClient(useCluster, useTls: true, hostAddress);
+        await AssertConnected(client);
     }
 
     // Helper Methods
     // --------------
 
-    private async Task<BaseClient> BuildClient(bool useCluster, bool useTls, string hostname)
+    /// <summary>
+    /// Builds and returns a client with the specified cluster mode, TLS setting, and host.
+    /// </summary>
+    private async Task<BaseClient> BuildClient(bool useCluster, bool useTls, string host)
     {
-        var server = useCluster
-            ? (useTls ? fixture.TlsClusterServer : fixture.NonTlsClusterServer)
-            : (useTls ? fixture.TlsStandaloneServer : fixture.NonTlsStandaloneServer);
-        var port = server.Addresses.First().Port;
-
-        var certificateBytes = File.ReadAllBytes(ServerManager.ServerCertificatePath);
-
         if (useCluster)
         {
-            var builder = new ClusterClientConfigurationBuilder()
-                .WithAddress(hostname, port)
+            var cluster = useTls ? fixture.TlsClusterServer : fixture.NonTlsClusterServer;
+            var port = cluster.Addresses.First().Port;
+            var builder = cluster.CreateConfigBuilder()
+                .WithAddress(host, port)
                 .WithTls(useTls);
 
             if (useTls)
-                builder.WithTrustedCertificate(certificateBytes);
+                builder.WithTrustedCertificate(cluster.CertificateData);
 
             return await GlideClusterClient.CreateClient(builder.Build());
         }
 
         else
         {
-            var builder = new StandaloneClientConfigurationBuilder()
-                .WithAddress(hostname, port)
+            var standalone = useTls ? fixture.TlsStandaloneServer : fixture.NonTlsStandaloneServer;
+            var port = standalone.Addresses.First().Port;
+            var builder = standalone.CreateConfigBuilder()
+                .WithAddress(host, port)
                 .WithTls(useTls);
 
             if (useTls)
-                builder.WithTrustedCertificate(certificateBytes);
+                builder.WithTrustedCertificate(standalone.CertificateData);
 
             return await GlideClient.CreateClient(builder.Build());
         }
@@ -110,14 +128,14 @@ public class DnsTests : IClassFixture<DnsServersFixture>
 }
 
 /// <summary>
-/// Fixture class to manage server lifecycle for DNS tests.
+/// Fixture class for host tests.
 /// </summary>
-public class DnsServersFixture : IDisposable
+public class HostTestsFixture : IDisposable
 {
-    public Server TlsClusterServer = new ClusterServer(useTls: true);
-    public Server NonTlsClusterServer = new ClusterServer(useTls: false);
-    public Server TlsStandaloneServer = new StandaloneServer(useTls: true);
-    public Server NonTlsStandaloneServer = new StandaloneServer(useTls: false);
+    public ClusterServer TlsClusterServer = new(useTls: true);
+    public ClusterServer NonTlsClusterServer = new(useTls: false);
+    public StandaloneServer TlsStandaloneServer = new(useTls: true);
+    public StandaloneServer NonTlsStandaloneServer = new(useTls: false);
 
     public void Dispose()
     {

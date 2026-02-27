@@ -17,24 +17,40 @@ public abstract class Server : IDisposable
     private string _name = $"Server_{Guid.NewGuid():N}";
 
     /// <summary>
-    /// Indicates whether the server has been stopped.
+    /// Addresses of the server instances.
     /// </summary>
-    private bool _disposed = false;
+    public IList<Address> Addresses { get; private set; }
 
     /// <summary>
     /// Indicates whether the server uses TLS.
     /// </summary>
-    protected bool _useTls;
+    protected bool UseTls = false;
 
     /// <summary>
-    /// Addresses of the server instances.
+    /// Certificate data path for the server.
     /// </summary>
-    public IList<Address> Addresses { get; private set; } = null!;
+    public string? CertificatePath { get; private set; } = null;
+
+    /// <summary>
+    /// Certificate data for the server.
+    /// </summary>
+    public byte[]? CertificateData { get; private set; } = null;
+
+    /// <summary>
+    /// Indicates whether the server has been stopped.
+    /// </summary>
+    private bool _disposed = false;
 
     protected Server(bool useClusterMode, bool useTls)
     {
-        _useTls = useTls;
-        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: _useTls);
+        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: useTls);
+
+        if (useTls)
+        {
+            UseTls = true;
+            CertificatePath = ServerManager.ServerCertificatePath;
+            CertificateData = File.ReadAllBytes(CertificatePath);
+        }
     }
 
     ~Server() => Dispose();
@@ -50,9 +66,9 @@ public abstract class Server : IDisposable
     }
 
     /// <summary>
-    /// Builds and returns a client for this Valkey server.
+    /// Builds and returns a client for this server.
     /// </summary>
-    public abstract Task<BaseClient> CreateClient();
+    public abstract Task<BaseClient> CreateClientAsync();
 }
 
 /// <summary>
@@ -63,12 +79,12 @@ public sealed class ClusterServer : Server
     public ClusterServer(bool useTls = false) : base(useClusterMode: true, useTls: useTls) { }
 
     /// <summary>
-    /// Builds and returns a cluster client configuration builder for this Valkey server.
+    /// Builds and returns a cluster client configuration builder for this server.
     /// </summary>
     public ClusterClientConfigurationBuilder CreateConfigBuilder()
     {
         var configBuilder = new ClusterClientConfigurationBuilder();
-        configBuilder.WithTls(useTls: _useTls);
+        configBuilder.WithTls(useTls: UseTls);
 
         foreach (var (host, port) in Addresses)
             configBuilder.WithAddress(host, port);
@@ -77,13 +93,13 @@ public sealed class ClusterServer : Server
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient()
-        => await CreateClusterClient();
+    public override async Task<BaseClient> CreateClientAsync()
+        => await CreateClusterClientAsync();
 
     /// <summary>
-    /// Builds and returns a cluster client for this Valkey server.
+    /// Builds and returns a cluster client for this server.
     /// </summary>
-    public async Task<GlideClusterClient> CreateClusterClient()
+    public async Task<GlideClusterClient> CreateClusterClientAsync()
         => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
 }
 
@@ -95,12 +111,12 @@ public sealed class StandaloneServer : Server
     public StandaloneServer(bool useTls = false) : base(useClusterMode: false, useTls: useTls) { }
 
     /// <summary>
-    /// Builds and returns a standalone client configuration builder for this Valkey server.
+    /// Builds and returns a standalone client configuration builder for this server.
     /// </summary>
     public StandaloneClientConfigurationBuilder CreateConfigBuilder()
     {
         var configBuilder = new StandaloneClientConfigurationBuilder();
-        configBuilder.WithTls(useTls: _useTls);
+        configBuilder.WithTls(useTls: UseTls);
 
         foreach (var (host, port) in Addresses)
             configBuilder.WithAddress(host, port);
@@ -109,12 +125,12 @@ public sealed class StandaloneServer : Server
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient()
-        => await CreateStandaloneClient();
+    public override async Task<BaseClient> CreateClientAsync()
+        => await CreateStandaloneClientAsync();
 
     /// <summary>
-    /// Builds and returns a standalone client for this Valkey server.
+    /// Builds and returns a standalone client for this server.
     /// </summary>
-    public async Task<GlideClient> CreateStandaloneClient()
+    public async Task<GlideClient> CreateStandaloneClientAsync()
         => await GlideClient.CreateClient(CreateConfigBuilder().Build());
 }

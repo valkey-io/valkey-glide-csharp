@@ -18,7 +18,7 @@ public class PubSubIntrospectionTests()
     public static async Task PubSubChannelsAsync_ReturnsEmpty(bool isCluster)
     {
         using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClient();
+        using var subscriber = await server.CreateClientAsync();
 
         // Verify no active channels.
         Assert.Empty(await subscriber.PubSubChannelsAsync());
@@ -82,7 +82,7 @@ public class PubSubIntrospectionTests()
     public static async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
     {
         using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClient();
+        using var subscriber = await server.CreateClientAsync();
 
         // Verify no active pattern subscriptions.
         Assert.Equal(0L, await subscriber.PubSubNumPatAsync());
@@ -93,7 +93,7 @@ public class PubSubIntrospectionTests()
     public static async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
     {
         using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClient();
+        using var subscriber = await server.CreateClientAsync();
 
         // Subscribe to patterns and wait to ensure subscriptions complete.
         string[] patterns = ["pattern1*", "pattern2*"];
@@ -110,7 +110,7 @@ public class PubSubIntrospectionTests()
         SkipUnlessShardedSupported();
 
         using var server = new ClusterServer();
-        using var subscriber = await server.CreateClusterClient();
+        using var subscriber = await server.CreateClusterClientAsync();
 
         // Verify no active channels.
         Assert.Empty(await subscriber.PubSubShardChannelsAsync());
