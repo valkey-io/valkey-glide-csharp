@@ -22,7 +22,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     [Fact]
     public async Task Cluster_WithCertificateData_NotTrusted_Throws()
     {
-        var server = _fixture.TlsClusterServer;;
+        var server = _fixture.TlsClusterServer;
         var configBuilder = server.CreateConfigBuilder();
         configBuilder.WithTrustedCertificate(GetUntrustedCertificateData());
 
@@ -62,7 +62,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     {
         var server = _fixture.NonTlsClusterServer;
         var configBuilder = server.CreateConfigBuilder();
-        configBuilder.WithTrustedCertificate(_fixture.TlsClusterServer.CertificateData);
+        configBuilder.WithTrustedCertificate(_fixture.TlsClusterServer.CertificateData!);
 
         await Assert.ThrowsAsync<ConnectionException>(async ()
         => await GlideClusterClient.CreateClient(configBuilder.Build()));
@@ -71,9 +71,9 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     [Fact]
     public async Task Cluster_WithCertificateData_Trusted_Succeeds()
     {
-        var server = _fixture.TlsClusterServer;;
+        var server = _fixture.TlsClusterServer;
         var configBuilder = server.CreateConfigBuilder();
-        configBuilder.WithTrustedCertificate(server.CertificateData);
+        configBuilder.WithTrustedCertificate(server.CertificateData!);
 
         using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
@@ -84,7 +84,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     {
         var server = _fixture.TlsClusterServer;
         var configBuilder = server.CreateConfigBuilder();
-        configBuilder.WithTrustedCertificate(server.CertificatePath);
+        configBuilder.WithTrustedCertificate(server.CertificateData!);
 
         using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
@@ -172,7 +172,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     {
         var server = _fixture.TlsStandaloneServer;
         var configBuilder = server.CreateConfigBuilder();
-        configBuilder.WithTrustedCertificate(server.CertificateData);
+        configBuilder.WithTrustedCertificate(server.CertificateData!);
 
         using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
@@ -183,7 +183,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     {
         var server = _fixture.TlsStandaloneServer;
         var configBuilder = server.CreateConfigBuilder();
-        configBuilder.WithTrustedCertificate(server.CertificatePath);
+        configBuilder.WithTrustedCertificate(server.CertificateData!);
 
         using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);

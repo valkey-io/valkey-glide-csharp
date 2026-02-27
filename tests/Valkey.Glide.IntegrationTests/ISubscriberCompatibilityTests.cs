@@ -1,12 +1,11 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.TestUtils;
-
 using System.Collections.Concurrent;
+
+using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
 using static Valkey.Glide.TestUtils.Data;
-
 // Type alias for readability.
 using MessageInfo = (Valkey.Glide.ValkeyChannel Channel, Valkey.Glide.ValkeyValue Message);
 

@@ -2,10 +2,8 @@
 
 using Valkey.Glide.TestUtils;
 
-using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.TestUtils.Client;
-using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -41,7 +39,7 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
     };
 
     [Theory]
-    [MemberData(nameof(ClusterMode))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task NoTls_Withhost_InMapping_Succeeds(bool useCluster)
     {
         await using var client = await BuildClient(useCluster, useTls: false, HostNameNoTls);
@@ -49,7 +47,7 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task NoTls_Withhost_NotInMapping_Fails(bool useCluster)
     {
         await Assert.ThrowsAsync<ConnectionException>(async ()
@@ -65,7 +63,7 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task Tls_Withhost_InCertificate_Succeeds(bool useCluster)
     {
         await using var client = await BuildClient(useCluster, useTls: true, HostNameTls);
@@ -73,7 +71,7 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task Tls_Withhost_NotInCertificate_Fails(bool useCluster)
     {
         await Assert.ThrowsAsync<ConnectionException>(async ()
@@ -105,7 +103,7 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
                 .WithTls(useTls);
 
             if (useTls)
-                builder.WithTrustedCertificate(cluster.CertificateData);
+                builder.WithTrustedCertificate(cluster.CertificateData!);
 
             return await GlideClusterClient.CreateClient(builder.Build());
         }
@@ -119,7 +117,7 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
                 .WithTls(useTls);
 
             if (useTls)
-                builder.WithTrustedCertificate(standalone.CertificateData);
+                builder.WithTrustedCertificate(standalone.CertificateData!);
 
             return await GlideClient.CreateClient(builder.Build());
         }
