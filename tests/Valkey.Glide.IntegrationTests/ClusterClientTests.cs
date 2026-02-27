@@ -642,7 +642,7 @@ public class ClusterClientTests(TestConfiguration config)
         using var server = new ClusterServer(useTls: false);
         var port = server.Addresses.First().Port;
         var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
-            .WithAddress("invalid", port);
+            .WithAddress("nonexistent.invalid", port);
 
         await Assert.ThrowsAsync<ConnectionException>(async ()
             => await GlideClusterClient.CreateClient(configBuilder.Build()));

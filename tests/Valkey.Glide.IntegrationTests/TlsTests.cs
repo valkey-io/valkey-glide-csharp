@@ -58,7 +58,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     }
 
     [Fact]
-    public async Task Cluster_WithCertificate_NoTlsServer_Throws()
+    public async Task Cluster_WithCertificate_NonTlsServer_Throws()
     {
         var server = _fixture.NonTlsClusterServer;
         var configBuilder = server.CreateConfigBuilder();
@@ -84,7 +84,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     {
         var server = _fixture.TlsClusterServer;
         var configBuilder = server.CreateConfigBuilder();
-        configBuilder.WithTrustedCertificate(server.CertificateData!);
+        configBuilder.WithTrustedCertificate(server.CertificatePath!);
 
         using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
@@ -102,7 +102,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     }
 
     [Fact]
-    public async Task Cluster_WithInsecureTls_WithNoTlsServer_Throws()
+    public async Task Cluster_WithInsecureTls_WithNonTlsServer_Throws()
     {
         var server = _fixture.NonTlsClusterServer;
         var configBuilder = server.CreateConfigBuilder();
@@ -158,7 +158,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     }
 
     [Fact]
-    public async Task Standalone_WithCertificate_NoTlsServer_Throws()
+    public async Task Standalone_WithCertificate_NonTlsServer_Throws()
     {
         var server = _fixture.NonTlsStandaloneServer;
         var configBuilder = server.CreateConfigBuilder();
@@ -183,7 +183,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     {
         var server = _fixture.TlsStandaloneServer;
         var configBuilder = server.CreateConfigBuilder();
-        configBuilder.WithTrustedCertificate(server.CertificateData!);
+        configBuilder.WithTrustedCertificate(server.CertificatePath!);
 
         using var client = await GlideClient.CreateClient(configBuilder.Build());
         await AssertConnected(client);
@@ -201,7 +201,7 @@ public class TlsTests(TlsTestsFixture fixture) : IClassFixture<TlsTestsFixture>
     }
 
     [Fact]
-    public async Task Standalone_WithInsecureTls_WithNoTlsServer_Throws()
+    public async Task Standalone_WithInsecureTls_WithNonTlsServer_Throws()
     {
         var server = _fixture.NonTlsStandaloneServer;
         var configBuilder = server.CreateConfigBuilder();

@@ -39,7 +39,7 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     {
         SkipIfDnsTestsNotEnabled();
         await Assert.ThrowsAsync<ConnectionException>(async ()
-        => await BuildClient(useCluster, useTls: false, "invalid"));
+        => await BuildClient(useCluster, useTls: false, "nonexistent.invalid"));
     }
 
     [Theory]
