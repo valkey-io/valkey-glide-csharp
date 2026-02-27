@@ -159,4 +159,4 @@ public class IamAuthTests
         await client.StringSetAsync("iam_auto_refresh_key", "iam_auto_refresh_value");
         var value = await client.StringGetAsync("iam_auto_refresh_key");
         Assert.Equal("iam_auto_refresh_value", value.ToString());
-}
+    }
