@@ -33,9 +33,6 @@ public static class PubSubUtils
     #endregion
     #region Data
 
-    /// <summary>Theory data for cluster mode (cluster vs standalone).</summary>
-    public static TheoryData<bool> ClusterModeData => [true, false];
-
     /// <summary>
     /// Theory data for all valid combinations of cluster mode and channel mode.
     /// </summary>
@@ -44,7 +41,7 @@ public static class PubSubUtils
         get
         {
             var data = new TheoryData<bool, PubSubChannelMode>();
-            foreach (var isCluster in ClusterModeData)
+            foreach (var isCluster in Data.ClusterMode)
             {
                 foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
                 {
@@ -67,7 +64,7 @@ public static class PubSubUtils
         get
         {
             var data = new TheoryData<bool, SubscribeMode>();
-            foreach (var isCluster in ClusterModeData)
+            foreach (var isCluster in Data.ClusterMode)
             {
                 foreach (var subscribeMode in Enum.GetValues<SubscribeMode>())
                     data.Add(isCluster, subscribeMode);
@@ -85,7 +82,7 @@ public static class PubSubUtils
         get
         {
             var data = new TheoryData<bool, UnsubscribeMode>();
-            foreach (var isCluster in ClusterModeData)
+            foreach (var isCluster in Data.ClusterMode)
             {
                 foreach (var unsubscribeMode in Enum.GetValues<UnsubscribeMode>())
                     data.Add(isCluster, unsubscribeMode);
@@ -103,7 +100,7 @@ public static class PubSubUtils
         get
         {
             var data = new TheoryData<bool, PubSubChannelMode, SubscribeMode>();
-            foreach (var isCluster in ClusterModeData)
+            foreach (var isCluster in Data.ClusterMode)
             {
                 foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
                 {
@@ -127,7 +124,7 @@ public static class PubSubUtils
         get
         {
             var data = new TheoryData<bool, PubSubChannelMode, UnsubscribeMode>();
-            foreach (var isCluster in ClusterModeData)
+            foreach (var isCluster in Data.ClusterMode)
             {
                 foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
                 {
@@ -151,7 +148,7 @@ public static class PubSubUtils
         get
         {
             var data = new TheoryData<bool, PubSubChannelMode, SubscribeMode, UnsubscribeMode>();
-            foreach (var isCluster in ClusterModeData)
+            foreach (var isCluster in Data.ClusterMode)
             {
                 foreach (var channelMode in Enum.GetValues<PubSubChannelMode>())
                 {

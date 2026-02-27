@@ -5,6 +5,7 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.TestUtils.Client;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -25,14 +26,12 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
 {
     // Host name and address constants.
     // See 'cluster_manager.py' for details.
-    private static readonly string hostTls = "valkey.glide.test.tls.com";
-    private static readonly string hostNoTls = "valkey.glide.test.no_tls.com";
+    private static readonly string HostNameTls = "valkey.glide.test.tls.com";
+    private static readonly string HostNameNoTls = "valkey.glide.test.no_tls.com";
     private static readonly string HostAddressIpv4 = "127.0.0.1";
     private static readonly string HostAddressIpv6 = "::1";
 
-    // Cluster and host address combinations to test.
-    public static TheoryData<bool> ClusterModeData => [true, false];
-
+    // Host address combinations to test.
     public static TheoryData<bool, string> HostAddressData => new()
     {
         { true, HostAddressIpv4 },
@@ -42,15 +41,15 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
     };
 
     [Theory]
-    [MemberData(nameof(ClusterModeData))]
+    [MemberData(nameof(ClusterMode))]
     public async Task NoTls_Withhost_InMapping_Succeeds(bool useCluster)
     {
-        await using var client = await BuildClient(useCluster, useTls: false, hostNoTls);
+        await using var client = await BuildClient(useCluster, useTls: false, HostNameNoTls);
         await AssertConnected(client);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData))]
+    [MemberData(nameof(ClusterMode))]
     public async Task NoTls_Withhost_NotInMapping_Fails(bool useCluster)
     {
         await Assert.ThrowsAsync<ConnectionException>(async ()
@@ -66,19 +65,19 @@ public class HostTests(HostTestsFixture fixture) : IClassFixture<HostTestsFixtur
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData))]
+    [MemberData(nameof(ClusterMode))]
     public async Task Tls_Withhost_InCertificate_Succeeds(bool useCluster)
     {
-        await using var client = await BuildClient(useCluster, useTls: true, hostTls);
+        await using var client = await BuildClient(useCluster, useTls: true, HostNameTls);
         await AssertConnected(client);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData))]
+    [MemberData(nameof(ClusterMode))]
     public async Task Tls_Withhost_NotInCertificate_Fails(bool useCluster)
     {
         await Assert.ThrowsAsync<ConnectionException>(async ()
-        => await BuildClient(useCluster, useTls: true, hostNoTls));
+        => await BuildClient(useCluster, useTls: true, HostNameNoTls));
     }
 
     [Theory]

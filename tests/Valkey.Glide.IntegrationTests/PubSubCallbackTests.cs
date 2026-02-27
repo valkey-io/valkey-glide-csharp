@@ -1,6 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -52,7 +55,7 @@ public class PubSubCallbackTests
 
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task Callback_WithException_ContinuesProcessing(bool isCluster)
     {
         // Build messages.
@@ -94,7 +97,7 @@ public class PubSubCallbackTests
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task Callback_WithMultipleMessages_PreservesOrder(bool isCluster)
     {
         int messageCount = 20;
