@@ -21,6 +21,9 @@ namespace Valkey.Glide.IntegrationTests;
 /// <item><c>::1 valkey.glide.test.tls.com</c></item>
 /// <item><c>::1 valkey.glide.test.no_tls.com</c></item>
 /// </list>
+/// <para>
+/// See <see cref="Valkey.Glide.TestUtils.Server"/> for more details.
+/// </para>
 /// </summary>
 public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
 {

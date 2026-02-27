@@ -624,27 +624,17 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.True(initialCount < connectCount);
     }
 
-    [Fact]
-    public async Task Connect_WithValidHostname_Succeeds()
+    [Theory]
+    [InlineData(Server.Ipv4Address)]
+    [InlineData(Server.Ipv6Address)]
+    public async Task Connect_WithIpAddress_Succeeds(string address)
     {
         using var server = new ClusterServer(useTls: false);
         var port = server.Addresses.First().Port;
         var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
-            .WithAddress(Server.HostnameNoTls, port);
+            .WithAddress(address, port);
 
         await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
         await TestUtils.Client.AssertConnected(client);
-    }
-
-    [Fact]
-    public async Task Connect_WithInvalidHostname_Throws()
-    {
-        using var server = new ClusterServer(useTls: false);
-        var port = server.Addresses.First().Port;
-        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
-            .WithAddress("nonexistent.invalid", port);
-
-        await Assert.ThrowsAsync<ConnectionException>(async ()
-            => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
 }
