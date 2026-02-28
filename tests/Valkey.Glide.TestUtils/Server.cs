@@ -49,11 +49,11 @@ public abstract class Server : IDisposable
 
     protected Server(bool useClusterMode, bool useTls)
     {
-        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: useTls);
+        UseTls = useTls;
+        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls);
 
-        if (useTls)
+        if (UseTls)
         {
-            UseTls = true;
             CertificatePath = ServerManager.ServerCertificatePath;
             CertificateData = File.ReadAllBytes(CertificatePath);
         }

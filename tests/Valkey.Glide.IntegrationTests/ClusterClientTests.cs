@@ -625,8 +625,7 @@ public class ClusterClientTests(TestConfiguration config)
     }
 
     [Theory]
-    [InlineData(Server.Ipv4Address)]
-    [InlineData(Server.Ipv6Address)]
+    [MemberData(nameof(TestUtils.Data.IpAddresses), MemberType = typeof(TestUtils.Data))]
     public async Task Connect_WithIpAddress_Succeeds(string address)
     {
         using var server = new ClusterServer(useTls: false);

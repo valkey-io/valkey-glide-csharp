@@ -11,4 +11,9 @@ public static class Data
     /// Cluster modes to test.
     /// </summary>
     public static TheoryData<bool> ClusterMode => [true, false];
+
+    /// <summary>
+    /// Server IP addresses to test.
+    /// </summary>
+    public static TheoryData<string> IpAddresses => [Server.Ipv4Address, Server.Ipv6Address];
 }
