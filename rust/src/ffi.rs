@@ -82,6 +82,7 @@ pub struct ConnectionConfig {
 
     pub has_pubsub_reconciliation_interval_ms: bool,
     pub pubsub_reconciliation_interval_ms: u32,
+    pub read_only: bool,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -253,6 +254,7 @@ pub(crate) unsafe fn create_connection_request(
         },
         pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
+        read_only: config.read_only,
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),
