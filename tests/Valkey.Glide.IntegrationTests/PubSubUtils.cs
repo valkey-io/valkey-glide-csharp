@@ -575,7 +575,7 @@ public static class PubSubUtils
         if (mode == null || mode == SubscribeMode.Blocking || mode == SubscribeMode.Config)
         {
             if (!await IsSubscribedAsync(client, expectedSubscriptions))
-                Assert.Fail("Expected subscriptions were not found.");
+                Assert.Fail("Expected subscriptions not found.");
 
             return;
         }
@@ -591,7 +591,7 @@ public static class PubSubUtils
             await Task.Delay(RetryInterval);
         }
 
-        Assert.Fail("Expected subscriptions were not found.");
+        Assert.Fail("Expected subscriptions not found.");
     }
 
     /// <summary>543
@@ -611,7 +611,7 @@ public static class PubSubUtils
         if (mode == UnsubscribeMode.Blocking)
         {
             if (!await IsNotSubscribedAsync(client, notExpected))
-                Assert.Fail("Unexpected subscriptions were found.");
+                Assert.Fail("Unexpected subscriptions found.");
 
             return;
         }
@@ -627,7 +627,7 @@ public static class PubSubUtils
             await Task.Delay(RetryInterval);
         }
 
-        Assert.Fail("Unexpected subscriptions were found.");
+        Assert.Fail("Unexpected subscriptions found.");
     }
 
     /// <summary>
@@ -644,25 +644,29 @@ public static class PubSubUtils
         PubSubMessageQueue? queue = client.PubSubQueue;
         Assert.NotNull(queue);
 
-        // Retry until all expected messages are received or timeout occurs.
-        using var cts = new CancellationTokenSource(MaxDuration);
-
-        while (!cts.Token.IsCancellationRequested)
+        try
         {
-            if (queue.Count >= expected.Count())
+            var received = new HashSet<PubSubMessage>();
+            using var cts = new CancellationTokenSource(MaxDuration);
+
+            await foreach (var message in queue.GetMessagesAsync(cts.Token))
             {
-                var received = new List<PubSubMessage>();
-                while (queue.TryGetMessage(out PubSubMessage? msg))
-                    received.Add(msg!);
+                received.Add(message);
 
-                Assert.Equivalent(expected, received);
-                return;
+                if (received.Count >= expected.Count())
+                {
+                    // Use set comparison because messages may be received out-of-order.
+                    if (received.SetEquals(expected))
+                        return;
+
+                    Assert.Fail("Unexpected messages received.");
+                }
             }
-
-            await Task.Delay(RetryInterval);
         }
-
-        Assert.Fail("Expected messages were not received within the timeout period.");
+        catch (OperationCanceledException)
+        {
+            Assert.Fail("Expected messages were not received within the timeout period.");
+        }
     }
 
     /// <summary>
