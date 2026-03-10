@@ -11,157 +11,114 @@ public class UpdateConnectionPasswordTests
 {
     private static readonly string Password = "PASSWORD";
     private static readonly string InvalidPassword = "INVALID";
-    private static readonly GlideString[] KillClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
 
-    [Fact]
-    public async Task UpdateConnectionPassword_Standalone_DelayAuth()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+
+    public async Task UpdateConnectionPassword_DelayAuth(bool clusterMode)
     {
         // Start server and build clients.
-        using var server = new StandaloneServer();
-        var config = server.CreateConfigBuilder().Build();
+        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
 
-        await using var client = await GlideClient.CreateClient(config);
+        await using var client = await server.CreateClient();
         await AssertConnected(client);
 
-        await using var adminClient = await GlideClient.CreateClient(config);
+        await using var adminClient = await server.CreateClient();
         await AssertConnected(adminClient);
 
-        // Update client connection password.
+        // Update client password and verify connection.
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
+        await AssertConnected(client);
 
-        await AssertConnected(client); // No reconnect
+        // Update server password, kill all clients, and verify reconnection.
+        await SetServerPassword(adminClient, Password);
+        await KillClients(adminClient);
+        await AssertReconnected(client);
 
-        // Update server password and kill all clients.
-        await adminClient.ConfigSetAsync("requirepass", Password);
-        await adminClient.CustomCommand(KillClientCommandArgs);
-        Task.Delay(1000).Wait();
-
-        await AssertConnected(client); // Reconnect
-
-        // Clear client connection password.
+        // Clear client connection password and verify connection.
         await client.ClearConnectionPasswordAsync(immediateAuth: false);
+        await AssertConnected(client);
 
-        await AssertConnected(client); // No reconnect
-
-        // Clear server password and kill all clients.
-        await adminClient.ConfigSetAsync("requirepass", "");
-        await adminClient.CustomCommand(KillClientCommandArgs);
-        Task.Delay(1000).Wait();
-
-        await AssertConnected(client); // Reconnect
+        // Clear server password, kill all clients, and verify reconnection.
+        await ClearServerPassword(adminClient);
+        await KillClients(adminClient);
+        await AssertReconnected(client);
     }
 
-    [Fact]
-    public async Task UpdateConnectionPassword_Standalone_ImmediateAuth()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UpdateConnectionPassword_ImmediateAuth(bool clusterMode)
     {
         // Start server and build client.
-        using var server = new StandaloneServer();
-        var config = server.CreateConfigBuilder().Build();
+        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
 
-        await using var client = await GlideClient.CreateClient(config);
+        await using var client = await server.CreateClient();
         await AssertConnected(client);
 
-        // Update server password.
-        await client.ConfigSetAsync("requirepass", Password);
-        Task.Delay(1000).Wait();
-
-        // Update client connection password.
+        // Update server and client passwords and verify connection.
+        await SetServerPassword(client, Password);
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
-
         await AssertConnected(client);
 
-        // Clear server password.
-        await client.ConfigSetAsync("requirepass", "");
-        Task.Delay(1000).Wait();
-
-        // Clear client connection password.
+        // Clear client and server passwords and verify connection.
         await client.ClearConnectionPasswordAsync(immediateAuth: false);
-
+        await ClearServerPassword(client);
         await AssertConnected(client);
     }
 
-    [Fact]
-    public async Task UpdateConnectionPassword_Standalone_InvalidPassword()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task UpdateConnectionPassword_Standalone_InvalidPassword(BaseClient client)
     {
-        await using var client = TestConfiguration.DefaultStandaloneClient();
         await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
         await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));
         await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync(InvalidPassword, immediateAuth: true));
     }
 
-    [Fact]
-    public async Task UpdateConnectionPassword_Cluster_DelayAuth()
+    /// <summary>
+    /// Sets the server password to the specified value.
+    /// </summary>
+    private static async Task SetServerPassword(BaseClient client, string password)
     {
-        // Start cluster and build clients.
-        using var server = new ClusterServer();
-        var config = server.CreateConfigBuilder().Build();
+        if (client is GlideClient standaloneClient)
+        {
+            await standaloneClient.ConfigSetAsync("requirepass", password);
+        }
+        else if (client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.ConfigSetAsync("requirepass", password, Route.AllNodes);
+        }
+        else
+        {
+            Assert.Fail("Unknown client type.");
+        }
 
-        await using var client = await GlideClusterClient.CreateClient(config);
-        await AssertConnected(client);
-
-        await using var adminClient = await GlideClusterClient.CreateClient(config);
-        await AssertConnected(adminClient);
-
-        // Update client connection password.
-        await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
-
-        await AssertConnected(client); // No reconnect
-
-        // Update server password and kill all clients.
-        await adminClient.ConfigSetAsync("requirepass", Password);
-        await adminClient.CustomCommand(KillClientCommandArgs);
-        Task.Delay(1000).Wait();
-
-        await AssertConnected(client); // Reconnect
-
-        // Clear client connection password.
-        await client.ClearConnectionPasswordAsync(immediateAuth: false);
-
-        await AssertConnected(client); // No reconnect
-
-        // Clear server password and kill all clients.
-        await adminClient.ConfigSetAsync("requirepass", "");
-        await adminClient.CustomCommand(KillClientCommandArgs);
-        Task.Delay(1000).Wait();
-
-        await AssertConnected(client); // Reconnect
+        // Wait for password update to propagate.
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
     }
 
-    [Fact]
-    public async Task UpdateConnectionPassword_Cluster_ImmediateAuth()
+    /// <summary>
+    /// Clears the server password.
+    /// </summary>
+    private static async Task ClearServerPassword(BaseClient client)
+        => await SetServerPassword(client, "");
+
+    private static async Task KillClients(BaseClient client)
     {
-        // Start cluster and build client.
-        using var server = new ClusterServer();
-        var config = server.CreateConfigBuilder().Build();
-
-        await using var client = await GlideClusterClient.CreateClient(config);
-        await AssertConnected(client);
-
-        // Update server password.
-        await client.ConfigSetAsync("requirepass", Password, Route.AllNodes);
-        Task.Delay(1000).Wait();
-
-        // Update client connection password.
-        await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
-
-        await AssertConnected(client);
-
-        // Clear server password.
-        await client.ConfigSetAsync("requirepass", "", Route.AllNodes);
-        Task.Delay(1000).Wait();
-
-        // Clear client connection password.
-        await client.ClearConnectionPasswordAsync(immediateAuth: false);
-
-        await AssertConnected(client);
-    }
-
-    [Fact]
-    public async Task UpdateConnectionPassword_Cluster_InvalidPassword()
-    {
-        await using var client = TestConfiguration.DefaultClusterClient();
-        await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
-        await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));
-        await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync(InvalidPassword, immediateAuth: true));
+        GlideString[] killClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
+        if (client is GlideClient standaloneClient)
+        {
+            await standaloneClient.CustomCommand(killClientCommandArgs);
+        }
+        else if (client is GlideClusterClient clusterClient)
+        {
+            await clusterClient.CustomCommand(killClientCommandArgs);
+        }
+        else
+        {
+            Assert.Fail("Unknown client type.");
+        }
     }
 }
