@@ -39,11 +39,11 @@ public static class Client
     /// <param name="client">The client to test.</param>
     public static async Task AssertReconnected(BaseClient client)
     {
-       // Retry connection until successful for timeout occurs.
-       using var cts = new CancellationTokenSource(ASSERT_TIMEOUT);
+        // Retry connection until successful for timeout occurs.
+        using var cts = new CancellationTokenSource(ASSERT_TIMEOUT);
 
-       while(!cts.Token.IsCancellationRequested)
-       {
+        while (!cts.Token.IsCancellationRequested)
+        {
             try
             {
                 await AssertConnected(client);
@@ -54,9 +54,9 @@ public static class Client
             {
                 await Task.Delay(ASSERT_RETRY);
             }
-       }
+        }
 
-       Assert.Fail("Reconnection failed.");
+        Assert.Fail("Reconnection failed.");
     }
 
     /// <summary>
