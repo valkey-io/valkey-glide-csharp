@@ -216,7 +216,8 @@ internal partial class FFI
             bool refreshTopologyFromInitialNodes,
             BasePubSubSubscriptionConfig? pubSubSubscriptions,
             List<byte[]> rootCertificates,
-            uint? pubSubReconciliationIntervalMs)
+            uint? pubSubReconciliationIntervalMs,
+            bool readOnly)
         {
             _request = new()
             {
@@ -247,6 +248,7 @@ internal partial class FFI
                 RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
                 HasPubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs.HasValue,
                 PubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs ?? default,
+                ReadOnly = readOnly,
             };
         }
 
@@ -1121,6 +1123,9 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasPubSubReconciliationIntervalMs;
         public uint PubSubReconciliationIntervalMs;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool ReadOnly;
 
         // TODO more config params, see ffi.rs
     }

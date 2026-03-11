@@ -30,6 +30,7 @@ public abstract class ConnectionConfiguration
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
         public readonly List<byte[]> RootCertificates = [];
         public TimeSpan? PubSubReconciliationInterval;
+        public bool ReadOnly;
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(
@@ -48,7 +49,8 @@ public abstract class ConnectionConfiguration
                 RefreshTopologyFromInitialNodes,
                 PubSubSubscriptions,
                 RootCertificates,
-                (uint?)PubSubReconciliationInterval?.TotalMilliseconds
+                (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
+                ReadOnly
             );
     }
 

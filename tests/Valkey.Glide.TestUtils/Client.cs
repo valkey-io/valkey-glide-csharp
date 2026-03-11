@@ -7,10 +7,14 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class Client
 {
+    // Intervals for assertions
+    private static readonly TimeSpan ASSERT_RETRY = TimeSpan.FromSeconds(0.5);
+    private static readonly TimeSpan ASSERT_TIMEOUT = TimeSpan.FromSeconds(10);
+
     private static readonly GlideString[] ClientListCommandArgs = ["CLIENT", "LIST"];
 
     /// <summary>
-    /// Asserts that a client is connected by sending a PING command.
+    /// Asserts that the given client is connected.
     /// </summary>
     /// <param name="client">The client to test.</param>
     public static async Task AssertConnected(BaseClient client)
@@ -27,6 +31,32 @@ public static class Client
         {
             Assert.Fail("Unknown client type.");
         }
+    }
+
+    /// <summary>
+    /// Asserts that the given client is reconnected.
+    /// </summary>
+    /// <param name="client">The client to test.</param>
+    public static async Task AssertReconnected(BaseClient client)
+    {
+        // Retry connection until successful for timeout occurs.
+        using var cts = new CancellationTokenSource(ASSERT_TIMEOUT);
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            try
+            {
+                await AssertConnected(client);
+                return;
+            }
+
+            catch (Exception ex) when (ex is Errors.TimeoutException or Errors.ConnectionException)
+            {
+                await Task.Delay(ASSERT_RETRY);
+            }
+        }
+
+        Assert.Fail("Reconnection failed.");
     }
 
     /// <summary>
