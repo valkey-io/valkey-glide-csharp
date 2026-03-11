@@ -21,10 +21,10 @@ public class UpdateConnectionPasswordTests
         // Start server and build clients.
         using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
 
-        await using var client = await server.CreateClient();
+        await using BaseClient client = await server.CreateClient();
         await AssertConnected(client);
 
-        await using var adminClient = await server.CreateClient();
+        await using BaseClient adminClient = await server.CreateClient();
         await AssertConnected(adminClient);
 
         // Update client password and verify connection.
@@ -54,7 +54,7 @@ public class UpdateConnectionPasswordTests
         // Start server and build client.
         using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
 
-        await using var client = await server.CreateClient();
+        await using BaseClient client = await server.CreateClient();
         await AssertConnected(client);
 
         // Update server and client passwords and verify connection.
@@ -72,9 +72,9 @@ public class UpdateConnectionPasswordTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task UpdateConnectionPassword_Standalone_InvalidPassword(BaseClient client)
     {
-        await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
-        await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));
-        await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync(InvalidPassword, immediateAuth: true));
+        _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
+        _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));
+        _ = await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync(InvalidPassword, immediateAuth: true));
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public class UpdateConnectionPasswordTests
         }
 
         // Wait for password update to propagate.
-        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        await Task.Delay(TimeSpan.FromSeconds(1));
     }
 
     /// <summary>
@@ -107,14 +107,14 @@ public class UpdateConnectionPasswordTests
 
     private static async Task KillClients(BaseClient client)
     {
-        GlideString[] killClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
+        gs[] killClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
         if (client is GlideClient standaloneClient)
         {
-            await standaloneClient.CustomCommand(killClientCommandArgs);
+            _ = await standaloneClient.CustomCommand(killClientCommandArgs);
         }
         else if (client is GlideClusterClient clusterClient)
         {
-            await clusterClient.CustomCommand(killClientCommandArgs);
+            _ = await clusterClient.CustomCommand(killClientCommandArgs);
         }
         else
         {
