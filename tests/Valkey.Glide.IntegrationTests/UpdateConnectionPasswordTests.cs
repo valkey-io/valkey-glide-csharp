@@ -26,16 +26,17 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
     : IClassFixture<UpdateConnectionPasswordFixture>
 {
     private static readonly string Password = "PASSWORD";
-    private static readonly string InvalidPassword = "INVALID";
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task UpdateConnectionPassword_DelayAuth(bool clusterMode)
     {
-        // Build clients from fixture servers.
+        // Build client from fixture servers.
         Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
         await using BaseClient client = await server.CreateClient();
+
+        // TODO
         await using BaseClient adminClient = await server.CreateClient();
 
         // Update client password and verify connection.
@@ -43,8 +44,8 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
         await AssertConnected(client);
 
         // Update server password, kill all clients, and verify reconnection.
-        await SetServerPassword(adminClient, Password);
-        await KillClients(adminClient);
+        await server.SetPassword(Password);
+        await server.KillClients();
         await AssertReconnected(client);
 
         // Clear client connection password and verify connection.
@@ -52,8 +53,8 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
         await AssertConnected(client);
 
         // Clear server password, kill all clients, and verify reconnection.
-        await ClearServerPassword(adminClient);
-        await KillClients(adminClient);
+        await server.ClearPassword();
+        await server.KillClients();
         await AssertReconnected(client);
     }
 
@@ -67,13 +68,13 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
         await using BaseClient client = await server.CreateClient();
 
         // Update server and client passwords and verify connection.
-        await SetServerPassword(client, Password);
+        await server.SetPassword(Password);
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
         await AssertConnected(client);
 
         // Clear client and server passwords and verify connection.
-        await client.ClearConnectionPasswordAsync(immediateAuth: false);
-        await ClearServerPassword(client);
+        await server.ClearPassword();
+        await server.KillClients();
         await AssertConnected(client);
     }
 
@@ -87,54 +88,6 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
 
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));
-        _ = await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync(InvalidPassword, immediateAuth: true));
-    }
-
-    /// <summary>
-    /// Sets the server password to the specified value.
-    /// </summary>
-    private static async Task SetServerPassword(BaseClient client, string password)
-    {
-        if (client is GlideClient standaloneClient)
-        {
-            await standaloneClient.ConfigSetAsync("requirepass", password);
-        }
-        else if (client is GlideClusterClient clusterClient)
-        {
-            await clusterClient.ConfigSetAsync("requirepass", password, Route.AllNodes);
-        }
-        else
-        {
-            Assert.Fail("Unknown client type.");
-        }
-
-        // Wait for password update to propagate.
-        await Task.Delay(TimeSpan.FromSeconds(1));
-    }
-
-    /// <summary>
-    /// Clears the server password.
-    /// </summary>
-    private static async Task ClearServerPassword(BaseClient client)
-        => await SetServerPassword(client, "");
-
-    /// <summary>
-    /// Kills all normal clients.
-    /// </summary>
-    private static async Task KillClients(BaseClient client)
-    {
-        gs[] killClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await standaloneClient.CustomCommand(killClientCommandArgs);
-        }
-        else if (client is GlideClusterClient clusterClient)
-        {
-            _ = await clusterClient.CustomCommand(killClientCommandArgs);
-        }
-        else
-        {
-            Assert.Fail("Unknown client type.");
-        }
+        _ = await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync("INVALID", immediateAuth: true));
     }
 }
