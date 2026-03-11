@@ -7,23 +7,7 @@ using static Valkey.Glide.TestUtils.Client;
 
 namespace Valkey.Glide.IntegrationTests;
 
-/// <summary>
-/// Fixture class to manage server lifecycle for update connection password tests.
-/// </summary>
-public class UpdateConnectionPasswordFixture : IDisposable
-{
-    public StandaloneServer StandaloneServer = new();
-    public ClusterServer ClusterServer = new();
-
-    public void Dispose()
-    {
-        StandaloneServer.Dispose();
-        ClusterServer.Dispose();
-    }
-}
-
-public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixture)
-    : IClassFixture<UpdateConnectionPasswordFixture>
+public class UpdateConnectionPasswordTests()
 {
     private static readonly string Password = "PASSWORD";
 
@@ -32,7 +16,7 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
     [InlineData(false)]
     public async Task UpdateConnectionPassword_DelayAuth(bool clusterMode)
     {
-        using Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
+        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
         await using BaseClient client = await server.CreateClientAsync();
 
         // Update password and verify connection.
@@ -59,7 +43,7 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
     [InlineData(false)]
     public async Task UpdateConnectionPassword_ImmediateAuth(bool clusterMode)
     {
-        using Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
+        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
         await using BaseClient client = await server.CreateClientAsync();
 
         // Update password and verify connection.
@@ -78,7 +62,7 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
     [InlineData(false)]
     public async Task UpdateConnectionPassword_InvalidPassword(bool clusterMode)
     {
-        using Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
+        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
         await using BaseClient client = await server.CreateClientAsync();
 
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
