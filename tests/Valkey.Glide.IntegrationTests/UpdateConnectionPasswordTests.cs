@@ -7,7 +7,23 @@ using static Valkey.Glide.TestUtils.Client;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class UpdateConnectionPasswordTests
+/// <summary>
+/// Fixture class to manage server lifecycle for update connection password tests.
+/// </summary>
+public class UpdateConnectionPasswordFixture : IDisposable
+{
+    public StandaloneServer StandaloneServer = new();
+    public ClusterServer ClusterServer = new();
+
+    public void Dispose()
+    {
+        StandaloneServer.Dispose();
+        ClusterServer.Dispose();
+    }
+}
+
+public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixture)
+    : IClassFixture<UpdateConnectionPasswordFixture>
 {
     private static readonly string Password = "PASSWORD";
     private static readonly string InvalidPassword = "INVALID";
@@ -15,17 +31,12 @@ public class UpdateConnectionPasswordTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-
     public async Task UpdateConnectionPassword_DelayAuth(bool clusterMode)
     {
-        // Start server and build clients.
-        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
-
+        // Build clients from fixture servers.
+        Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
         await using BaseClient client = await server.CreateClient();
-        await AssertConnected(client);
-
         await using BaseClient adminClient = await server.CreateClient();
-        await AssertConnected(adminClient);
 
         // Update client password and verify connection.
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
@@ -51,11 +62,9 @@ public class UpdateConnectionPasswordTests
     [InlineData(false)]
     public async Task UpdateConnectionPassword_ImmediateAuth(bool clusterMode)
     {
-        // Start server and build client.
-        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
-
+        // Build client from fixture server.
+        Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
         await using BaseClient client = await server.CreateClient();
-        await AssertConnected(client);
 
         // Update server and client passwords and verify connection.
         await SetServerPassword(client, Password);
@@ -68,10 +77,14 @@ public class UpdateConnectionPasswordTests
         await AssertConnected(client);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task UpdateConnectionPassword_Standalone_InvalidPassword(BaseClient client)
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UpdateConnectionPassword_InvalidPassword(bool clusterMode)
     {
+        Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
+        await using BaseClient client = await server.CreateClient();
+
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));
         _ = await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync(InvalidPassword, immediateAuth: true));
@@ -105,6 +118,9 @@ public class UpdateConnectionPasswordTests
     private static async Task ClearServerPassword(BaseClient client)
         => await SetServerPassword(client, "");
 
+    /// <summary>
+    /// Kills all normal clients.
+    /// </summary>
     private static async Task KillClients(BaseClient client)
     {
         gs[] killClientCommandArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
