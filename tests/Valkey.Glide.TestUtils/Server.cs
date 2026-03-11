@@ -23,6 +23,9 @@ public abstract class Server : IDisposable
     /// <summary>Indicates whether the server uses TLS.</summary>
     protected bool _useTls;
 
+    /// <summary>Current password set on the server, or null if no password is required.</summary>
+    protected string? _password;
+
     /// <summary>Addresses of the server instances.</summary>
     protected IList<Address> _addresses;
 
@@ -63,6 +66,11 @@ public abstract class Server : IDisposable
     /// Clears the password for the server.
     /// </summary>
     public abstract Task ClearPassword();
+
+    /// <summary>
+    /// Kill all normal clients on the server.
+    /// </summary>
+    public abstract Task KillClients();
 }
 
 /// <summary>
@@ -77,6 +85,11 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     {
         ClusterClientConfigurationBuilder configBuilder = new();
         _ = configBuilder.WithTls(useTls: _useTls);
+
+        if (_password is not null)
+        {
+            _ = configBuilder.WithAuthentication(_password);
+        }
 
         foreach ((string host, ushort port) in _addresses)
         {
@@ -100,12 +113,20 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     {
         using GlideClusterClient client = await CreateClusterClient();
         await client.ConfigSetAsync("requirepass", password, Route.AllNodes);
+        _password = password;
     }
 
     public override async Task ClearPassword()
     {
         using GlideClusterClient client = await CreateClusterClient();
         await client.ConfigSetAsync("requirepass", "", Route.AllNodes);
+        _password = null;
+    }
+
+    public override async Task KillClients()
+    {
+        using GlideClusterClient client = await CreateClusterClient();
+        _ = await client.CustomCommand(["CLIENT", "KILL", "TYPE", "NORMAL"]);
     }
 }
 
@@ -122,6 +143,11 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     {
         StandaloneClientConfigurationBuilder configBuilder = new();
         _ = configBuilder.WithTls(useTls: _useTls);
+
+        if (_password is not null)
+        {
+            _ = configBuilder.WithAuthentication(_password);
+        }
 
         foreach ((string host, ushort port) in _addresses)
         {
@@ -145,11 +171,19 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     {
         using GlideClient client = await CreateStandaloneClient();
         await client.ConfigSetAsync("requirepass", password);
+        _password = password;
     }
 
     public override async Task ClearPassword()
     {
         using GlideClient client = await CreateStandaloneClient();
         await client.ConfigSetAsync("requirepass", "");
+        _password = null;
+    }
+
+    public override async Task KillClients()
+    {
+        using GlideClient client = await CreateStandaloneClient();
+        _ = await client.CustomCommand(["CLIENT", "KILL", "TYPE", "NORMAL"]);
     }
 }
