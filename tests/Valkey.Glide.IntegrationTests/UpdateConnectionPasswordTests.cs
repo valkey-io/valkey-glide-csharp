@@ -33,15 +33,15 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
     public async Task UpdateConnectionPassword_DelayAuth(bool clusterMode)
     {
         using Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
-        await using BaseClient client = await server.CreateClient();
+        await using BaseClient client = await server.CreateClientAsync();
 
         // Update password and verify connection.
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: false);
         await AssertConnected(client);
 
         // Update password, kill clients, and verify reconnection.
-        await server.SetPassword(Password);
-        await server.KillClients();
+        await server.SetPasswordAsync(Password);
+        await server.KillClientAsync();
         await AssertReconnected(client);
 
         // Clear password and verify connection.
@@ -49,8 +49,8 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
         await AssertConnected(client);
 
         // Clear password, kill clients, and verify reconnection.
-        await server.ClearPassword();
-        await server.KillClients();
+        await server.ClearPasswordAsync();
+        await server.KillClientAsync();
         await AssertReconnected(client);
     }
 
@@ -60,16 +60,16 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
     public async Task UpdateConnectionPassword_ImmediateAuth(bool clusterMode)
     {
         using Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
-        await using BaseClient client = await server.CreateClient();
+        await using BaseClient client = await server.CreateClientAsync();
 
         // Update password and verify connection.
-        await server.SetPassword(Password);
+        await server.SetPasswordAsync(Password);
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
         await AssertConnected(client);
 
         // Clear passwords, kill clients, and verify reconnection.
-        await server.ClearPassword();
-        await server.KillClients();
+        await server.ClearPasswordAsync();
+        await server.KillClientAsync();
         await AssertConnected(client);
     }
 
@@ -79,7 +79,7 @@ public class UpdateConnectionPasswordTests(UpdateConnectionPasswordFixture fixtu
     public async Task UpdateConnectionPassword_InvalidPassword(bool clusterMode)
     {
         using Server server = clusterMode ? fixture.ClusterServer : fixture.StandaloneServer;
-        await using BaseClient client = await server.CreateClient();
+        await using BaseClient client = await server.CreateClientAsync();
 
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));

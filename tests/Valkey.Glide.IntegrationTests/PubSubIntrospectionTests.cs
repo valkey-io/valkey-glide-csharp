@@ -17,8 +17,8 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task PubSubChannelsAsync_ReturnsEmpty(bool isCluster)
     {
-        using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClient();
+        using Server server = BuildServer(isCluster);
+        using BaseClient subscriber = await server.CreateClientAsync();
 
         // Verify no active channels.
         Assert.Empty(await subscriber.PubSubChannelsAsync());
@@ -28,8 +28,8 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
     {
-        var message = BuildMessage(PubSubChannelMode.Exact);
-        using var subscriber = await BuildSubscriber(isCluster, message);
+        PubSubMessage message = BuildMessage(PubSubChannelMode.Exact);
+        using BaseClient subscriber = await BuildSubscriber(isCluster, message);
 
         // Verify channel is active.
         Assert.Contains(message.Channel, await subscriber.PubSubChannelsAsync());
@@ -39,11 +39,11 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
     {
-        var message = BuildMessage(PubSubChannelMode.Exact);
-        using var subscriber = await BuildSubscriber(isCluster, message);
+        PubSubMessage message = BuildMessage(PubSubChannelMode.Exact);
+        using BaseClient subscriber = await BuildSubscriber(isCluster, message);
 
         // Create matching pattern by replacing 'channel' with wildcard.
-        var pattern = message.Channel.Replace("channel", "*");
+        string pattern = message.Channel.Replace("channel", "*");
 
         // Verify that channel matching pattern is returned.
         Assert.Contains(message.Channel, await subscriber.PubSubChannelsAsync(pattern));
@@ -53,12 +53,12 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
     {
-        var channel = BuildChannel();
-        using var subscriber = await BuildSubscriber(isCluster);
+        string channel = BuildChannel();
+        using BaseClient subscriber = await BuildSubscriber(isCluster);
 
         // Verify no subscribers to channel.
-        var expected = new Dictionary<string, long> { { channel, 0L } };
-        var actual = await subscriber.PubSubNumSubAsync([.. expected.Keys]);
+        Dictionary<string, long> expected = new() { { channel, 0L } };
+        Dictionary<string, long> actual = await subscriber.PubSubNumSubAsync([.. expected.Keys]);
         Assert.Equivalent(expected, actual);
     }
 
@@ -66,14 +66,14 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
     {
-        var message1 = BuildMessage();
-        var message2 = BuildMessage();
+        PubSubMessage message1 = BuildMessage();
+        PubSubMessage message2 = BuildMessage();
 
-        using var subscriber = await BuildSubscriber(isCluster, [message1, message2]);
+        using BaseClient subscriber = await BuildSubscriber(isCluster, [message1, message2]);
 
         // Verify subscription counts for both channels.
-        var expected = new Dictionary<string, long> { { message1.Channel, 1L }, { message2.Channel, 1L } };
-        var actual = await subscriber.PubSubNumSubAsync([.. expected.Keys]);
+        Dictionary<string, long> expected = new() { { message1.Channel, 1L }, { message2.Channel, 1L } };
+        Dictionary<string, long> actual = await subscriber.PubSubNumSubAsync([.. expected.Keys]);
         Assert.Equivalent(expected, actual);
     }
 
@@ -81,8 +81,8 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
     {
-        using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClient();
+        using Server server = BuildServer(isCluster);
+        using BaseClient subscriber = await server.CreateClientAsync();
 
         // Verify no active pattern subscriptions.
         Assert.Equal(0L, await subscriber.PubSubNumPatAsync());
@@ -92,13 +92,13 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
     {
-        using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClient();
+        using Server server = BuildServer(isCluster);
+        using BaseClient subscriber = await server.CreateClientAsync();
 
         // Subscribe to patterns and wait to ensure subscriptions complete.
         string[] patterns = ["pattern1*", "pattern2*"];
         await subscriber.PSubscribeLazyAsync(patterns);
-        await Task.Delay(RetryInterval);
+        await Task.Delay(RetryInterval, TestContext.Current.CancellationToken);
 
         // Verify active pattern subscriptions.
         Assert.Equal(2L, await subscriber.PubSubNumPatAsync());
@@ -109,8 +109,8 @@ public class PubSubIntrospectionTests()
     {
         SkipUnlessShardedSupported();
 
-        using var server = new ClusterServer();
-        using var subscriber = await server.CreateClusterClient();
+        using ClusterServer server = new();
+        using GlideClusterClient subscriber = await server.CreateClusterClientAsync();
 
         // Verify no active channels.
         Assert.Empty(await subscriber.PubSubShardChannelsAsync());
@@ -121,8 +121,8 @@ public class PubSubIntrospectionTests()
     {
         SkipUnlessShardedSupported();
 
-        var message = BuildMessage(PubSubChannelMode.Sharded);
-        using var subscriber = await BuildClusterSubscriber(message);
+        PubSubMessage message = BuildMessage(PubSubChannelMode.Sharded);
+        using GlideClusterClient subscriber = await BuildClusterSubscriber(message);
 
         // Verify that sharded channel is active.
         Assert.Contains(message.Channel, await subscriber.PubSubShardChannelsAsync());
@@ -133,8 +133,8 @@ public class PubSubIntrospectionTests()
     {
         SkipUnlessShardedSupported();
 
-        var message = BuildMessage(PubSubChannelMode.Sharded);
-        using var subscriber = await BuildClusterSubscriber(message);
+        PubSubMessage message = BuildMessage(PubSubChannelMode.Sharded);
+        using GlideClusterClient subscriber = await BuildClusterSubscriber(message);
 
         // Verify that sharded channel is active.
         Assert.Equivalent(new[] { message.Channel }, await subscriber.PubSubShardChannelsAsync(message.Channel));
@@ -145,12 +145,12 @@ public class PubSubIntrospectionTests()
     {
         SkipUnlessShardedSupported();
 
-        var channel = BuildChannel();
-        using var client = TestConfiguration.DefaultClusterClient();
+        string channel = BuildChannel();
+        using GlideClusterClient client = TestConfiguration.DefaultClusterClient();
 
         // Verify no subscribers to sharded channel.
-        var expected = new Dictionary<string, long> { { channel, 0L } };
-        var actual = await client.PubSubShardNumSubAsync([.. expected.Keys]);
+        Dictionary<string, long> expected = new() { { channel, 0L } };
+        Dictionary<string, long> actual = await client.PubSubShardNumSubAsync([.. expected.Keys]);
         Assert.Equivalent(expected, actual);
     }
 
@@ -159,15 +159,15 @@ public class PubSubIntrospectionTests()
     {
         SkipUnlessShardedSupported();
 
-        var message1 = BuildMessage(PubSubChannelMode.Sharded);
-        var message2 = BuildMessage(PubSubChannelMode.Sharded);
+        PubSubMessage message1 = BuildMessage(PubSubChannelMode.Sharded);
+        PubSubMessage message2 = BuildMessage(PubSubChannelMode.Sharded);
 
-        var messages = new[] { message1, message2 };
-        using var subscriber = await BuildClusterSubscriber(messages);
+        PubSubMessage[] messages = [message1, message2];
+        using GlideClusterClient subscriber = await BuildClusterSubscriber(messages);
 
         // Verify subscription counts for both sharded channels.
-        var expected = new Dictionary<string, long> { { message1.Channel, 1L }, { message2.Channel, 1L } };
-        var actual = await subscriber.PubSubShardNumSubAsync([message1.Channel, message2.Channel]);
+        Dictionary<string, long> expected = new() { { message1.Channel, 1L }, { message2.Channel, 1L } };
+        Dictionary<string, long> actual = await subscriber.PubSubShardNumSubAsync([message1.Channel, message2.Channel]);
         Assert.Equivalent(expected, actual);
     }
 
@@ -175,14 +175,16 @@ public class PubSubIntrospectionTests()
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
     public static async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
     {
-        using var subscriber = await BuildSubscriber(isCluster, []);
-        var state = await subscriber.GetSubscriptionsAsync();
+        using BaseClient subscriber = await BuildSubscriber(isCluster, []);
+        PubSubState state = await subscriber.GetSubscriptionsAsync();
 
         // Verify subscriptions.
-        foreach (var subscriptions in new[] { state.Desired, state.Actual })
+        foreach (IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>>? subscriptions in new[] { state.Desired, state.Actual })
         {
-            foreach (var mode in Enum.GetValues<PubSubChannelMode>())
+            foreach (PubSubChannelMode mode in Enum.GetValues<PubSubChannelMode>())
+            {
                 Assert.Empty(subscriptions[mode]);
+            }
         }
     }
 
@@ -191,22 +193,24 @@ public class PubSubIntrospectionTests()
     public static async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
     {
         // Build messages
-        var messages = new List<PubSubMessage>()
-        {
+        List<PubSubMessage> messages =
+        [
             BuildMessage(PubSubChannelMode.Exact),
             BuildMessage(PubSubChannelMode.Pattern),
-        };
+        ];
 
         if (IsShardedSupported(isCluster))
+        {
             messages.Add(BuildMessage(PubSubChannelMode.Sharded));
+        }
 
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        using BaseClient subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Verify subscriptions.
-        var state = await subscriber.GetSubscriptionsAsync();
+        PubSubState state = await subscriber.GetSubscriptionsAsync();
 
-        var targets = BuildSubscriptions(messages);
+        Dictionary<PubSubChannelMode, HashSet<string>> targets = BuildSubscriptions(messages);
         Assert.Equivalent(targets, state.Desired);
         Assert.Equivalent(targets, state.Actual);
     }

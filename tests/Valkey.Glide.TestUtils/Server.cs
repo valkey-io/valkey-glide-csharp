@@ -11,22 +11,32 @@ public abstract class Server : IDisposable
 {
     #region PrivateFields
 
-    /// <summary>Name of the server.</summary>
+    /// <summary>
+    /// Name of the server.
+    /// </summary>
     private readonly string _name = $"Server_{Guid.NewGuid():N}";
 
     #endregion
     #region ProtectedFields
 
-    /// <summary>Indicates whether the server has been stopped.</summary>
+    /// <summary>
+    /// Indicates whether the server has been stopped.
+    /// </summary>
     private bool _disposed = false;
 
-    /// <summary>Indicates whether the server uses TLS.</summary>
+    /// <summary>
+    /// Indicates whether the server uses TLS.
+    /// </summary>
     protected bool _useTls;
 
-    /// <summary>Current password set on the server, or null if no password is required.</summary>
+    /// <summary>
+    /// Password for the server.
+    /// </summary>
     protected string? _password;
 
-    /// <summary>Addresses of the server instances.</summary>
+    /// <summary>
+    /// Addresses of the server instances.
+    /// </summary>
     protected IList<Address> _addresses;
 
     #endregion
@@ -54,23 +64,23 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Builds and returns a client for this Valkey server.
     /// </summary>
-    public abstract Task<BaseClient> CreateClient();
+    public abstract Task<BaseClient> CreateClientAsync();
 
     /// <summary>
     /// Updates the password for the server to the given value.
     /// </summary>
     /// <param name="password">The new server password.</param>
-    public abstract Task SetPassword(string password);
+    public abstract Task SetPasswordAsync(string password);
 
     /// <summary>
     /// Clears the password for the server.
     /// </summary>
-    public abstract Task ClearPassword();
+    public abstract Task ClearPasswordAsync();
 
     /// <summary>
     /// Kill all normal clients on the server.
     /// </summary>
-    public abstract Task KillClients();
+    public abstract Task KillClientAsync();
 }
 
 /// <summary>
@@ -100,32 +110,32 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient()
-        => await CreateClusterClient();
+    public override async Task<BaseClient> CreateClientAsync()
+        => await CreateClusterClientAsync();
 
     /// <summary>
     /// Builds and returns a cluster client for this Valkey server.
     /// </summary>
-    public async Task<GlideClusterClient> CreateClusterClient()
+    public async Task<GlideClusterClient> CreateClusterClientAsync()
         => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
 
-    public override async Task SetPassword(string password)
+    public override async Task SetPasswordAsync(string password)
     {
-        using GlideClusterClient client = await CreateClusterClient();
+        using GlideClusterClient client = await CreateClusterClientAsync();
         await client.ConfigSetAsync("requirepass", password, Route.AllNodes);
         _password = password;
     }
 
-    public override async Task ClearPassword()
+    public override async Task ClearPasswordAsync()
     {
-        using GlideClusterClient client = await CreateClusterClient();
+        using GlideClusterClient client = await CreateClusterClientAsync();
         await client.ConfigSetAsync("requirepass", "", Route.AllNodes);
         _password = null;
     }
 
-    public override async Task KillClients()
+    public override async Task KillClientAsync()
     {
-        using GlideClusterClient client = await CreateClusterClient();
+        using GlideClusterClient client = await CreateClusterClientAsync();
         _ = await client.CustomCommand(["CLIENT", "KILL", "TYPE", "NORMAL"]);
     }
 }
@@ -158,32 +168,32 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     }
 
     /// <inheritdoc/>
-    public override async Task<BaseClient> CreateClient()
-        => await CreateStandaloneClient();
+    public override async Task<BaseClient> CreateClientAsync()
+        => await CreateStandaloneClientAsync();
 
     /// <summary>
     /// Builds and returns a standalone client for this Valkey server.
     /// </summary>
-    public async Task<GlideClient> CreateStandaloneClient()
+    public async Task<GlideClient> CreateStandaloneClientAsync()
         => await GlideClient.CreateClient(CreateConfigBuilder().Build());
 
-    public override async Task SetPassword(string password)
+    public override async Task SetPasswordAsync(string password)
     {
-        using GlideClient client = await CreateStandaloneClient();
+        using GlideClient client = await CreateStandaloneClientAsync();
         await client.ConfigSetAsync("requirepass", password);
         _password = password;
     }
 
-    public override async Task ClearPassword()
+    public override async Task ClearPasswordAsync()
     {
-        using GlideClient client = await CreateStandaloneClient();
+        using GlideClient client = await CreateStandaloneClientAsync();
         await client.ConfigSetAsync("requirepass", "");
         _password = null;
     }
 
-    public override async Task KillClients()
+    public override async Task KillClientAsync()
     {
-        using GlideClient client = await CreateStandaloneClient();
+        using GlideClient client = await CreateStandaloneClientAsync();
         _ = await client.CustomCommand(["CLIENT", "KILL", "TYPE", "NORMAL"]);
     }
 }
