@@ -7,24 +7,33 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class Client
 {
+    // Assertion time spans.
+    private static readonly TimeSpan ReconnectTimeSpan = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan AssertTimeSpan = TimeSpan.FromSeconds(0.5);
+    private static readonly TimeSpan RetryTimeSpan = TimeSpan.FromSeconds(0.5);
+
     /// <summary>
     /// Asserts that the given client is connected.
     /// </summary>
     /// <param name="client">The client to test.</param>
     public static async Task AssertConnected(BaseClient client)
     {
+        Task<TimeSpan> assertTask;
         if (client is GlideClient standaloneClient)
         {
-            Assert.True(await standaloneClient.PingAsync() > TimeSpan.Zero);
+            assertTask = standaloneClient.PingAsync();
         }
         else if (client is GlideClusterClient clusterClient)
         {
-            Assert.True(await clusterClient.PingAsync() > TimeSpan.Zero);
+            assertTask = clusterClient.PingAsync();
         }
         else
         {
             Assert.Fail("Unknown client type.");
+            return;
         }
+
+        Assert.True(await assertTask.WaitAsync(AssertTimeSpan) > TimeSpan.Zero);
     }
 
     /// <summary>
@@ -33,23 +42,21 @@ public static class Client
     /// <param name="client">The client to test.</param>
     public static async Task AssertReconnected(BaseClient client)
     {
-        TimeSpan reconnedtTimeout = TimeSpan.FromSeconds(30);
-        TimeSpan retryInterval = TimeSpan.FromSeconds(0.5);
-
         // Retry connection until successful for timeout occurs.
-        using CancellationTokenSource cts = new(reconnedtTimeout);
+        using CancellationTokenSource cts = new(ReconnectTimeSpan);
 
         while (!cts.Token.IsCancellationRequested)
         {
             try
             {
-                await AssertConnected(client);
+                Task assertTask = AssertConnected(client);
+                await assertTask.WaitAsync(AssertTimeSpan);
                 return;
             }
 
-            catch (Exception ex) when (ex is Errors.TimeoutException or Errors.ConnectionException)
+            catch (Exception)
             {
-                await Task.Delay(retryInterval);
+                await Task.Delay(RetryTimeSpan);
             }
         }
 
