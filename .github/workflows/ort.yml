@@ -83,6 +83,11 @@ jobs:
             - name: Install Rust toolchain
               uses: dtolnay/rust-toolchain@stable
 
+            - name: Install ScanCode Toolkit
+              run: |
+                  pip install --upgrade pip
+                  pip install scancode-toolkit
+
             - name: Build and install ORT
               if: steps.cache-ort.outputs.cache-hit != 'true'
               working-directory: /tmp/ort
