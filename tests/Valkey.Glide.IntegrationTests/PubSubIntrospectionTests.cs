@@ -9,7 +9,7 @@ namespace Valkey.Glide.IntegrationTests;
 /// <summary>
 /// Fixture class to manage server lifecycle for pub/sub introspection tests.
 /// </summary>
-public class PubSubIntrospectionServersFixture : IAsyncLifetime
+public class PubSubIntrospectionFixture : IAsyncLifetime
 {
     // Empty and populated servers.
     private StandaloneServer? _emptyStandaloneServer;
@@ -77,7 +77,7 @@ public class PubSubIntrospectionServersFixture : IAsyncLifetime
 /// </summary>
 [Collection(typeof(PubSubIntrospectionTests))]
 [CollectionDefinition(DisableParallelization = true)]
-public class PubSubIntrospectionTests(PubSubIntrospectionServersFixture fixture) : IClassFixture<PubSubIntrospectionServersFixture>
+public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : IClassFixture<PubSubIntrospectionFixture>
 {
     [Theory]
     [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
