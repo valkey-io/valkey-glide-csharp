@@ -72,7 +72,7 @@ jobs:
               with:
                   repository: oss-review-toolkit/ort
                   path: ./ort
-                  ref: "46.0.0"
+                  ref: "82.1.0"
                   submodules: recursive
 
               # Move ORT outside of repo, otherwise it will try to analyze itself (can't checkout straight to /tmp)
