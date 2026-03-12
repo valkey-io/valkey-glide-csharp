@@ -7,11 +7,10 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class Client
 {
-    // Intervals for assertions
-    private static readonly TimeSpan ASSERT_RETRY = TimeSpan.FromSeconds(0.5);
-    private static readonly TimeSpan ASSERT_TIMEOUT = TimeSpan.FromSeconds(10);
-
-    private static readonly GlideString[] ClientListCommandArgs = ["CLIENT", "LIST"];
+    // Assertion time spans.
+    private static readonly TimeSpan ReconnectTimeSpan = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan AssertTimeSpan = TimeSpan.FromSeconds(0.5);
+    private static readonly TimeSpan RetryTimeSpan = TimeSpan.FromSeconds(0.5);
 
     /// <summary>
     /// Asserts that the given client is connected.
@@ -19,18 +18,22 @@ public static class Client
     /// <param name="client">The client to test.</param>
     public static async Task AssertConnected(BaseClient client)
     {
+        Task<TimeSpan> assertTask;
         if (client is GlideClient standaloneClient)
         {
-            Assert.True(await standaloneClient.PingAsync() > TimeSpan.Zero);
+            assertTask = standaloneClient.PingAsync();
         }
         else if (client is GlideClusterClient clusterClient)
         {
-            Assert.True(await clusterClient.PingAsync() > TimeSpan.Zero);
+            assertTask = clusterClient.PingAsync();
         }
         else
         {
             Assert.Fail("Unknown client type.");
+            return;
         }
+
+        Assert.True(await assertTask.WaitAsync(AssertTimeSpan) > TimeSpan.Zero);
     }
 
     /// <summary>
@@ -40,19 +43,20 @@ public static class Client
     public static async Task AssertReconnected(BaseClient client)
     {
         // Retry connection until successful for timeout occurs.
-        using var cts = new CancellationTokenSource(ASSERT_TIMEOUT);
+        using CancellationTokenSource cts = new(ReconnectTimeSpan);
 
         while (!cts.Token.IsCancellationRequested)
         {
             try
             {
-                await AssertConnected(client);
+                Task assertTask = AssertConnected(client);
+                await assertTask.WaitAsync(AssertTimeSpan);
                 return;
             }
 
-            catch (Exception ex) when (ex is Errors.TimeoutException or Errors.ConnectionException)
+            catch (Exception)
             {
-                await Task.Delay(ASSERT_RETRY);
+                await Task.Delay(RetryTimeSpan);
             }
         }
 
@@ -66,15 +70,16 @@ public static class Client
     /// <returns>A task that resolves to the total number of client connections.</returns>
     public static async Task<int> GetConnectionCount(BaseClient client)
     {
+        GlideString[] clientListCommandArgs = ["CLIENT", "LIST"];
         if (client is GlideClient standaloneClient)
         {
-            var result = await standaloneClient.CustomCommand(ClientListCommandArgs);
+            object? result = await standaloneClient.CustomCommand(clientListCommandArgs);
             return result!.ToString()!.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
         }
         else if (client is GlideClusterClient clusterClient)
         {
-            var result = await clusterClient.CustomCommand(ClientListCommandArgs, new Route.AllPrimariesRoute());
-            return result!.MultiValue.Values.Sum(nodeResult =>
+            ClusterValue<object?> result = await clusterClient.CustomCommand(clientListCommandArgs, new Route.AllPrimariesRoute());
+            return result!.MultiValue.Values.Sum(static nodeResult =>
                 nodeResult!.ToString()!.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length);
         }
         else
@@ -91,12 +96,12 @@ public static class Client
     public static Version GetVersion(BaseClient client)
     {
         string info =
-            client is GlideClient
-            ? ((GlideClient)client).InfoAsync().GetAwaiter().GetResult()
+            client is GlideClient standaloneClient
+            ? standaloneClient.InfoAsync().GetAwaiter().GetResult()
             : ((GlideClusterClient)client).InfoAsync(Route.Random).GetAwaiter().GetResult().SingleValue;
 
         string[] lines = info.Split();
-        string versionLine = lines.FirstOrDefault(l => l.Contains("valkey_version")) ?? lines.First(l => l.Contains("redis_version"));
+        string versionLine = lines.FirstOrDefault(static l => l.Contains("valkey_version")) ?? lines.First(static l => l.Contains("redis_version"));
         return new(versionLine.Split(':')[1]);
     }
 }
