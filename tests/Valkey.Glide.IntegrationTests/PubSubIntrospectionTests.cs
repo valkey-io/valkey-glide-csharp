@@ -49,8 +49,7 @@ public class PubSubIntrospectionFixture : IAsyncLifetime
             await client.PSubscribeAsync(Pattern);
         }
 
-        // Sharded pub/sub requires cluster mode and Valkey 7.0+.
-        if (IsShardedSupported(isCluster: true))
+        if (IsShardedSupported())
         {
             await ClusterClient.SSubscribeAsync(ShardedChannel);
         }

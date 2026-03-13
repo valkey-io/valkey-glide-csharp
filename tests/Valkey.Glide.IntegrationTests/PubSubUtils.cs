@@ -207,7 +207,7 @@ public static class PubSubUtils
     /// <summary>
     /// Returns true if sharded pub/sub is supported.
     /// </summary>
-    private static bool IsShardedSupported()
+    public static bool IsShardedSupported()
         => TestConfiguration.IsVersionAtLeast("7.0.0");
 
     /// <summary>
