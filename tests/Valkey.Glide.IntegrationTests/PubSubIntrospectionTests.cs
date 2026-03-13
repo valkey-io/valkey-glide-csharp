@@ -49,7 +49,11 @@ public class PubSubIntrospectionFixture : IAsyncLifetime
             await client.PSubscribeAsync(Pattern);
         }
 
-        await ClusterClient.SSubscribeAsync(ShardedChannel);
+        // Sharded pub/sub requires cluster mode and Valkey 7.0+.
+        if (IsShardedSupported(isCluster: true))
+        {
+            await ClusterClient.SSubscribeAsync(ShardedChannel);
+        }
     }
 
     public ValueTask DisposeAsync()
@@ -232,7 +236,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         {
             [PubSubChannelMode.Exact] = [fixture.Channel],
             [PubSubChannelMode.Pattern] = [fixture.Pattern],
-            [PubSubChannelMode.Sharded] = isCluster ? [fixture.ShardedChannel] : []
+            [PubSubChannelMode.Sharded] = IsShardedSupported(isCluster) ? [fixture.ShardedChannel] : []
         };
 
         Assert.Equivalent(expected, state.Desired);
