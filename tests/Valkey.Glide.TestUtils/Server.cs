@@ -9,6 +9,15 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public abstract class Server : IDisposable
 {
+    #region Constants
+
+    /// <summary>
+    /// Timeout for client connection and reconnection attempts.
+    /// Use a longer timeout to allows for slower connections in CI environments.
+    /// </summary>
+    protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(10);
+
+    #endregion
     #region PrivateFields
 
     /// <summary>
@@ -93,8 +102,11 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     /// </summary>
     public ClusterClientConfigurationBuilder CreateConfigBuilder()
     {
-        ClusterClientConfigurationBuilder configBuilder = new();
-        _ = configBuilder.WithTls(useTls: _useTls);
+        ClusterClientConfigurationBuilder configBuilder = new()
+        {
+            UseTls = _useTls,
+            ConnectionTimeout = ConnectionTimeout
+        };
 
         if (_password is not null)
         {
@@ -145,14 +157,16 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
 /// </summary>
 public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMode: false, useTls: useTls)
 {
-
     /// <summary>
     /// Builds and returns a standalone client configuration builder for this Valkey server.
     /// </summary>
     public StandaloneClientConfigurationBuilder CreateConfigBuilder()
     {
-        StandaloneClientConfigurationBuilder configBuilder = new();
-        _ = configBuilder.WithTls(useTls: _useTls);
+        StandaloneClientConfigurationBuilder configBuilder = new()
+        {
+            UseTls = _useTls,
+            ConnectionTimeout = ConnectionTimeout
+        };
 
         if (_password is not null)
         {
