@@ -708,7 +708,7 @@ public abstract class ConnectionConfiguration
             set => Config.DatabaseId = value;
         }
         /// <inheritdoc cref="DataBaseId" />
-        public T WithDataBaseId(uint dataBaseId)
+        public T WithDatabaseId(uint dataBaseId)
         {
             DataBaseId = dataBaseId;
             return (T)this;
