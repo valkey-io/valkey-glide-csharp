@@ -281,7 +281,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return true;
     }
 
-    internal static int GetHashCode(ReadOnlySpan<byte> span)
+    internal static unsafe int GetHashCode(ReadOnlySpan<byte> span)
     {
         unchecked
         {

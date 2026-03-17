@@ -32,7 +32,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(a => a.ToString()!) ?? []]), MakeRoute());
+        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(static a => a.ToString()!) ?? []]), MakeRoute());
         return ValkeyResult.Create(res);
     }
 
@@ -60,12 +60,12 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
         return _conn
             .Command(Request.Info(sections), MakeRoute())
-            .ContinueWith(task => (string?)task.Result);
+            .ContinueWith(static task => (string?)task.Result);
     }
 
     public Task<IGrouping<string, KeyValuePair<string, string>>[]> InfoAsync(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
-        => InfoRawAsync(section, flags).ContinueWith(t
-            => Utils.ParseInfoResponse(t.Result!).GroupBy(x => x.Item1, x => x.Item2).ToArray());
+        => InfoRawAsync(section, flags).ContinueWith(static t
+            => Utils.ParseInfoResponse(t.Result!).GroupBy(static x => x.Item1, static x => x.Item2).ToArray());
 
     public string? InfoRaw(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
         => InfoRawAsync(section, flags).GetAwaiter().GetResult();
@@ -73,18 +73,22 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         Stopwatch stopwatch = Stopwatch.StartNew();
-        await _conn.Command(Request.Ping(), MakeRoute());
+        _ = await _conn.Command(Request.Ping(), MakeRoute());
         stopwatch.Stop();
+
         return stopwatch.Elapsed;
     }
 
     public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         Stopwatch stopwatch = Stopwatch.StartNew();
-        await _conn.Command(Request.Ping(message), MakeRoute());
+        _ = await _conn.Command(Request.Ping(message), MakeRoute());
         stopwatch.Stop();
+
         return stopwatch.Elapsed;
     }
 
@@ -115,19 +119,19 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
+        _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
     }
 
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -139,13 +143,13 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
+        _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
+        _ = await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
@@ -240,6 +244,6 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
     }
 }
