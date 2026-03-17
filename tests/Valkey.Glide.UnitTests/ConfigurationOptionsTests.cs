@@ -8,8 +8,8 @@ namespace Valkey.Glide.UnitTests;
 
 public class ConfigurationOptionsTests
 {
-    static readonly X509Certificate2 Certificate = CreateTestCertificate();
-    static readonly byte[] CertificateData = Certificate.Export(X509ContentType.Cert);
+    private static readonly X509Certificate2 Certificate = CreateTestCertificate();
+    private static readonly byte[] CertificateData = Certificate.Export(X509ContentType.Cert);
 
     [Fact]
     public void TrustIssuer_WithPath_NullThrows()
@@ -22,7 +22,7 @@ public class ConfigurationOptionsTests
     public void TrustIssuer_WithPath_NonExistentThrows()
     {
         var options = new ConfigurationOptions();
-        Assert.Throws<FileNotFoundException>(() => options.TrustIssuer("nonexistent.crt"));
+        _ = Assert.Throws<FileNotFoundException>(() => options.TrustIssuer("nonexistent.crt"));
     }
 
     [Fact]
@@ -31,14 +31,14 @@ public class ConfigurationOptionsTests
         using var tempFile = new TempFile();
 
         var options = new ConfigurationOptions();
-        Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
+        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
     public void TrustIssuer_WithCertificate_NullThrows()
     {
         var options = new ConfigurationOptions();
-        Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((X509Certificate2)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((X509Certificate2)null!));
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class ConfigurationOptionsTests
         }
 
         var options = new ConfigurationOptions();
-        Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
+        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.TrustIssuer(tempFile.Path);
 
-        Assert.Single(options._trustedIssuers);
+        _ = Assert.Single(options._trustedIssuers);
     }
 
     private static X509Certificate2 CreateTestCertificate()
