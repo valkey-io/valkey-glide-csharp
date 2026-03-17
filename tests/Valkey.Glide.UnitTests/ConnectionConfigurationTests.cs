@@ -454,7 +454,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase));
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -468,7 +467,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -482,7 +480,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase);
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -496,7 +493,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -517,7 +513,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase));
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -531,7 +526,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -545,7 +539,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase);
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -559,7 +552,6 @@ public class ConnectionConfigurationTests
             .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
 
         var strategy = builder.Build().Request.RetryStrategy!.Value;
-
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
