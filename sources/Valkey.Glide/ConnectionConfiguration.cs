@@ -497,10 +497,9 @@ public abstract class ConnectionConfiguration
                 throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
             }
 
-            FileInfo fileInfo = new(certificatePath);
-            if (fileInfo.Length > CertificateMaxSize)
+            if (new FileInfo(certificatePath).Length > CertificateMaxSize)
             {
-                var msg = $"Certificate file exceeds maximum allowed size of 10 MB: {fileInfo.Length} bytes";
+                var msg = $"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes";
                 throw new ArgumentException(msg, nameof(certificatePath));
             }
 
@@ -513,7 +512,7 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
-        /// <exception cref="ArgumentException">If the certificate data is null or empty</exception>
+        /// <exception cref="ArgumentException">If the certificate data is null, empty, or exceeds <see cref="CertificateMaxSize"/></exception>
         public T WithTrustedCertificate(byte[] certificateData)
         {
             if (certificateData == null)
@@ -523,6 +522,11 @@ public abstract class ConnectionConfiguration
             else if (certificateData.Length == 0)
             {
                 throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
+            }
+            else if (certificateData.Length > CertificateMaxSize)
+            {
+                var msg = $"Certificate data exceeds maximum allowed size of {CertificateMaxSize} bytes: {certificateData.Length} bytes";
+                throw new ArgumentException(msg, nameof(certificateData));
             }
 
             TrustedCertificates.Add(certificateData);

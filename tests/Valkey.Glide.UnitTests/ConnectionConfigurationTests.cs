@@ -361,6 +361,14 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
+    public void WithTrustedCertificate_ByteArray_OversizedThrows()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        var oversizedData = new byte[CertificateMaxSize];
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(oversizedData));
+    }
+
+    [Fact]
     public void WithTrustedCertificate_Path_Succeeds()
     {
         using var tempFile = new TempFile(CertificateData1);
