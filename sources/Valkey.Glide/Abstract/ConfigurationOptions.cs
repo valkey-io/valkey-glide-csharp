@@ -280,27 +280,32 @@ public sealed class ConfigurationOptions : ICloneable
     {
         ArgumentNullException.ThrowIfNull(certificatePath);
 
-        certificatePath = Path.GetFullPath(certificatePath);
-        if (!File.Exists(certificatePath))
+        // Normalize path and check file length within try/catch block to
+        // avoid race condition where file is deleted before being read.
+        try
+        {
+            var fullPath = Path.GetFullPath(certificatePath);
+
+            var fileLength = new FileInfo(fullPath).Length;
+            if (fileLength == 0)
+            {
+                throw new ArgumentException("Certificate file cannot be empty", nameof(fullPath));
+            }
+            else if (fileLength > CertificateMaxSize)
+            {
+                throw new ArgumentException($"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes", nameof(fullPath));
+            }
+
+            var certificateData = File.ReadAllBytes(fullPath);
+            _trustedIssuers.Add(certificateData);
+
+            return;
+        }
+
+        catch (FileNotFoundException)
         {
             throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
         }
-
-        long fileLength = new FileInfo(certificatePath).Length;
-        if (fileLength == 0)
-        {
-            throw new ArgumentException("Certificate file cannot be empty", nameof(certificatePath));
-        }
-        else if (fileLength > CertificateMaxSize)
-        {
-            var msg = $"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes";
-            throw new ArgumentException(msg, nameof(certificatePath));
-        }
-
-        var certificateData = File.ReadAllBytes(certificatePath);
-        _trustedIssuers.Add(certificateData);
-
-        return;
     }
 
     /// <summary>

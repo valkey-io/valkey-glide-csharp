@@ -492,20 +492,26 @@ public abstract class ConnectionConfiguration
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
 
-            certificatePath = Path.GetFullPath(certificatePath);
-            if (!File.Exists(certificatePath))
+            // Normalize path and check file length within try/catch block to
+            // avoid race condition where file is deleted before being read.
+            try
+            {
+                var fullPath = Path.GetFullPath(certificatePath);
+
+                var fileLength = new FileInfo(fullPath).Length;
+                if (fileLength > CertificateMaxSize)
+                {
+                    throw new ArgumentException($"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes", nameof(fullPath));
+                }
+
+                var certificateData = File.ReadAllBytes(fullPath);
+                return WithTrustedCertificate(certificateData);
+            }
+
+            catch (FileNotFoundException)
             {
                 throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
             }
-
-            if (new FileInfo(certificatePath).Length > CertificateMaxSize)
-            {
-                var msg = $"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes";
-                throw new ArgumentException(msg, nameof(certificatePath));
-            }
-
-            var certificateData = File.ReadAllBytes(certificatePath);
-            return WithTrustedCertificate(certificateData);
         }
 
         /// <summary>
