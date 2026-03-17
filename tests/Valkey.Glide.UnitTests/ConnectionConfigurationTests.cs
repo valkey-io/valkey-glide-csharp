@@ -8,16 +8,22 @@ namespace Valkey.Glide.UnitTests;
 
 public class ConnectionConfigurationTests
 {
-    // Test constants
+    // Authentication constants.
     private const string Username = "testUsername";
     private const string Password = "testPassword";
     private const string ClusterName = "testClusterName";
     private const string Region = "testRegion";
     private const uint RefreshIntervalSeconds = 600;
 
+    // Certificate data constants.
     private static readonly byte[] CertificateData1 = [0x30, 0x82, 0x01, 0x00];
     private static readonly byte[] CertificateData2 = [0x30, 0x82, 0x02, 0x00];
 
+    // Connection retry strategy constants.
+    private static readonly uint NumberOfRetries = 3u;
+    private static readonly uint Factor = 50u;
+    private static readonly uint ExponentBase = 2u;
+    private static readonly uint JitterPercent = 10u;
 
     // Authentication & Credentials
     // ----------------------------
@@ -25,8 +31,8 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithAuthentication_UsernamePassword()
     {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithAuthentication(Username, Password);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithAuthentication(Username, Password);
 
         var config = builder.Build();
         var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -35,14 +41,14 @@ public class ConnectionConfigurationTests
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
 
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null!));
     }
 
     [Fact]
     public void WithAuthentication_PasswordOnly()
     {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithAuthentication(Password);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithAuthentication(Password);
 
         var config = builder.Build();
         var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -51,15 +57,15 @@ public class ConnectionConfigurationTests
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
 
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!));
     }
 
     [Fact]
     public void WithAuthentication_UsernameIamAuthConfig()
     {
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds);
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithAuthentication(Username, iamConfig);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithAuthentication(Username, iamConfig);
 
         var config = builder.Build();
         var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -75,18 +81,18 @@ public class ConnectionConfigurationTests
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
         Assert.Equal(600u, iamCredentials.RefreshIntervalSeconds);
 
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
-        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
     }
 
     [Fact]
     public void WithAuthentication_MultipleCalls_LastWins()
     {
         // Password-based authentication last.
-        var builder = new StandaloneClientConfigurationBuilder();
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region);
-        builder.WithAuthentication(Username, iamConfig);
-        builder.WithAuthentication(Username, Password);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithAuthentication(Username, iamConfig)
+            .WithAuthentication(Username, Password);
 
         var config = builder.Build();
         var authenticationInfo = config.Request.AuthenticationInfo!.Value;
@@ -96,9 +102,9 @@ public class ConnectionConfigurationTests
         Assert.False(authenticationInfo.HasIamCredentials);
 
         // IAM authentication last.
-        builder = new StandaloneClientConfigurationBuilder();
-        builder.WithAuthentication(Username, Password);
-        builder.WithAuthentication(Username, iamConfig);
+        builder = new StandaloneClientConfigurationBuilder()
+            .WithAuthentication(Username, Password)
+            .WithAuthentication(Username, iamConfig);
 
         config = builder.Build();
         authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -119,8 +125,8 @@ public class ConnectionConfigurationTests
     {
         var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region);
         var credentials = new ServerCredentials(Username, iamConfig);
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithCredentials(credentials);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithCredentials(credentials);
 
         var config = builder.Build();
         var authenticationInfo = config.Request.AuthenticationInfo!.Value;
@@ -135,7 +141,7 @@ public class ConnectionConfigurationTests
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
 
-        Assert.Throws<ArgumentNullException>(() => builder.WithCredentials(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithCredentials(null!));
     }
 
     [Fact]
@@ -146,9 +152,9 @@ public class ConnectionConfigurationTests
         var passwordServerCredentials = new ServerCredentials(Username, Password);
 
         // Password-based authentication last.
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithCredentials(iamServerCredentials);
-        builder.WithCredentials(passwordServerCredentials);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithCredentials(iamServerCredentials)
+            .WithCredentials(passwordServerCredentials);
 
         var config = builder.Build();
         var authenticationInfo = config.Request.AuthenticationInfo!.Value;
@@ -158,9 +164,9 @@ public class ConnectionConfigurationTests
         Assert.False(authenticationInfo.HasIamCredentials);
 
         // IAM authentication last.
-        builder = new StandaloneClientConfigurationBuilder();
-        builder.WithCredentials(passwordServerCredentials);
-        builder.WithCredentials(iamServerCredentials);
+        builder = new StandaloneClientConfigurationBuilder()
+            .WithCredentials(passwordServerCredentials)
+            .WithCredentials(iamServerCredentials);
 
         config = builder.Build();
         authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -190,8 +196,8 @@ public class ConnectionConfigurationTests
     [Fact]
     public void RefreshTopologyFromInitialNodes_True()
     {
-        var builder = new ClusterClientConfigurationBuilder();
-        builder.WithRefreshTopologyFromInitialNodes(true);
+        var builder = new ClusterClientConfigurationBuilder()
+            .WithRefreshTopologyFromInitialNodes(true);
         var config = builder.Build();
         Assert.True(config.Request.RefreshTopologyFromInitialNodes);
     }
@@ -199,8 +205,8 @@ public class ConnectionConfigurationTests
     [Fact]
     public void RefreshTopologyFromInitialNodes_False()
     {
-        var builder = new ClusterClientConfigurationBuilder();
-        builder.WithRefreshTopologyFromInitialNodes(false);
+        var builder = new ClusterClientConfigurationBuilder()
+            .WithRefreshTopologyFromInitialNodes(false);
         var config = builder.Build();
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
     }
@@ -243,20 +249,20 @@ public class ConnectionConfigurationTests
         Assert.False(builder.UseTls);
 
         // Enable TLS.
-        builder.WithTls(true);
+        _ = builder.WithTls(true);
         Assert.True(builder.UseTls);
 
         // Disable TLS.
-        builder.WithTls(false);
+        _ = builder.WithTls(false);
         Assert.False(builder.UseTls);
 
         // Enable TLS (no parameter).
-        builder.WithTls();
+        _ = builder.WithTls();
         Assert.True(builder.UseTls);
 
         // Disable TLS when insecure TLS enabled.
-        builder.WithInsecureTls();
-        builder.WithTls(false);
+        _ = builder.WithInsecureTls();
+        _ = builder.WithTls(false);
         Assert.False(builder.UseTls);
     }
 
@@ -269,8 +275,8 @@ public class ConnectionConfigurationTests
         Assert.False(builder.UseInsecureTls);
 
         // Configure insecure TLS without TLS enabled.
-        Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = true);
-        Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = false);
+        _ = Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = true);
+        _ = Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = false);
 
         builder.UseTls = true;
 
@@ -300,34 +306,34 @@ public class ConnectionConfigurationTests
         Assert.False(builder.UseInsecureTls);
 
         // Configure insecure TLS without TLS enabled.
-        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls());
-        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(true));
-        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(false));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithInsecureTls());
+        _ = Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(true));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(false));
 
-        builder.WithTls();
+        _ = builder.WithTls();
 
         // Enable insecure TLS.
-        builder.WithInsecureTls(true);
+        _ = builder.WithInsecureTls(true);
         Assert.True(builder.UseInsecureTls);
 
         // Disable insecure TLS.
-        builder.WithInsecureTls(false);
+        _ = builder.WithInsecureTls(false);
         Assert.False(builder.UseInsecureTls);
 
         // Enable insecure TLS (no parameter).
-        builder.WithInsecureTls(true);
+        _ = builder.WithInsecureTls(true);
         Assert.True(builder.UseInsecureTls);
 
         // Disable TLS when insecure TLS enabled.
-        builder.WithTls(false);
+        _ = builder.WithTls(false);
         Assert.False(builder.UseInsecureTls);
     }
 
     [Fact]
     public void WithTrustedCertificate_ByteArray()
     {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(CertificateData1);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithTrustedCertificate(CertificateData1);
         var config = builder.Build();
         Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
     }
@@ -336,25 +342,27 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_ByteArray_NullThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
     }
 
     [Fact]
     public void WithTrustedCertificate_ByteArray_EmptyThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate([]));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate([]));
     }
 
     [Fact]
     public void WithTrustedCertificate_ByteArray_MultipleCertificates()
     {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(CertificateData1);
-        builder.WithTrustedCertificate(CertificateData2);
-        var config = builder.Build();
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithTrustedCertificate(CertificateData1)
+            .WithTrustedCertificate(CertificateData2)
+            .Build();
 
-        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1, CertificateData2 },
+            config.Request.RootCertificates);
     }
 
     [Fact]
@@ -362,8 +370,8 @@ public class ConnectionConfigurationTests
     {
         using var tempFile = new TempFile(CertificateData1);
 
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(tempFile.Path);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithTrustedCertificate(tempFile.Path);
         var config = builder.Build();
 
         Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
@@ -373,14 +381,14 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_Path_FileNotFoundThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
+        _ = Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
     }
 
     [Fact]
     public void WithTrustedCertificate_Path_NullThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((string)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((string)null!));
     }
 
     [Fact]
@@ -389,9 +397,9 @@ public class ConnectionConfigurationTests
         using var tempFile1 = new TempFile(CertificateData1);
         using var tempFile2 = new TempFile(CertificateData2);
 
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(tempFile1.Path);
-        builder.WithTrustedCertificate(tempFile2.Path);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithTrustedCertificate(tempFile1.Path)
+            .WithTrustedCertificate(tempFile2.Path);
         var config = builder.Build();
 
         Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
@@ -411,8 +419,8 @@ public class ConnectionConfigurationTests
     public void PubSubReconciliationInterval_PositiveSucceeds()
     {
         var interval = TimeSpan.FromSeconds(30);
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithPubSubReconciliationInterval(interval);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithPubSubReconciliationInterval(interval);
 
         Assert.Equal(interval.TotalMilliseconds, builder.Build().Request.PubSubReconciliationInterval!.Value.TotalMilliseconds);
     }
@@ -421,13 +429,134 @@ public class ConnectionConfigurationTests
     public void PubSubReconciliationInterval_NegativeThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.FromSeconds(-1)));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.FromSeconds(-1)));
     }
 
     [Fact]
     public void PubSubReconciliationInterval_ZeroThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
+    }
+
+    // Connection Retry Strategy
+    // -------------------------
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Standalone_NotSpecified()
+    {
+        var config = new StandaloneClientConfigurationBuilder().Build();
+        Assert.Null(config.Request.RetryStrategy);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Standalone_RetryStrategy_NoJitter()
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase));
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(0u, strategy.JitterPercent);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Standalone_RetryStrategy_WithJitter()
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(JitterPercent, strategy.JitterPercent);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Standalone_UintParams_NoJitter()
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase);
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(0u, strategy.JitterPercent);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Standalone_UintParams_WithJitter()
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(JitterPercent, strategy.JitterPercent);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Cluster_NotSpecified()
+    {
+        var config = new ClusterClientConfigurationBuilder().Build();
+        Assert.Null(config.Request.RetryStrategy);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Cluster_RetryStrategy_NoJitter()
+    {
+        var builder = new ClusterClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase));
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(0u, strategy.JitterPercent);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Cluster_RetryStrategy_WithJitter()
+    {
+        var builder = new ClusterClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(JitterPercent, strategy.JitterPercent);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Cluster_UintParams_NoJitter()
+    {
+        var builder = new ClusterClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase);
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(0u, strategy.JitterPercent);
+    }
+
+    [Fact]
+    public void WithConnectionRetryStrategy_Cluster_UintParams_WithJitter()
+    {
+        var builder = new ClusterClientConfigurationBuilder()
+            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
+
+        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
+        Assert.Equal(Factor, strategy.Factor);
+        Assert.Equal(ExponentBase, strategy.ExponentBase);
+        Assert.Equal(JitterPercent, strategy.JitterPercent);
     }
 }

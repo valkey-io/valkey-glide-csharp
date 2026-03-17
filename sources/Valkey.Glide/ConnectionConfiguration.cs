@@ -798,8 +798,7 @@ public abstract class ConnectionConfiguration
     }
 
     /// <summary>
-    /// Represents the configuration settings for a Cluster GLIDE client.<br />
-    /// Notes: Currently, the reconnection strategy in cluster mode is not configurable, and exponential backoff with fixed values is used.
+    /// Represents the configuration settings for a Cluster GLIDE client.
     /// </summary>
     public class ClusterClientConfigurationBuilder : ClientConfigurationBuilder<ClusterClientConfigurationBuilder>
     {
