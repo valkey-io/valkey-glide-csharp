@@ -26,32 +26,32 @@ public class ConnectionConfigurationTests
     public void WithAuthentication_UsernamePassword()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithAuthentication(Username, Password);
+        builder.WithAuthentication(Username, Password);
 
-        StandaloneClientConfiguration config = builder.Build();
-        FFI.AuthenticationInfo authenticationInfo = config!.Request.AuthenticationInfo!.Value;
+        var config = builder.Build();
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
 
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null!));
     }
 
     [Fact]
     public void WithAuthentication_PasswordOnly()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithAuthentication(Password);
+        builder.WithAuthentication(Password);
 
-        StandaloneClientConfiguration config = builder.Build();
-        FFI.AuthenticationInfo authenticationInfo = config!.Request.AuthenticationInfo!.Value;
+        var config = builder.Build();
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
 
         Assert.Null(authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
 
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!));
     }
 
     [Fact]
@@ -59,24 +59,24 @@ public class ConnectionConfigurationTests
     {
         IamAuthConfig iamConfig = new(ClusterName, ServiceType.ElastiCache, Region, RefreshIntervalSeconds);
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithAuthentication(Username, iamConfig);
+        builder.WithAuthentication(Username, iamConfig);
 
-        StandaloneClientConfiguration config = builder.Build();
-        FFI.AuthenticationInfo authenticationInfo = config!.Request.AuthenticationInfo!.Value;
+        var config = builder.Build();
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Null(authenticationInfo.Password);
         Assert.True(authenticationInfo.HasIamCredentials);
 
-        FFI.IamCredentials iamCredentials = authenticationInfo.IamCredentials!;
+        var iamCredentials = authenticationInfo.IamCredentials!;
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
         Assert.Equal(600u, iamCredentials.RefreshIntervalSeconds);
 
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
+        Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
     }
 
     [Fact]
@@ -85,11 +85,11 @@ public class ConnectionConfigurationTests
         // Password-based authentication last.
         StandaloneClientConfigurationBuilder builder = new();
         IamAuthConfig iamConfig = new(ClusterName, ServiceType.MemoryDB, Region);
-        _ = builder.WithAuthentication(Username, iamConfig);
-        _ = builder.WithAuthentication(Username, Password);
+        builder.WithAuthentication(Username, iamConfig);
+        builder.WithAuthentication(Username, Password);
 
-        StandaloneClientConfiguration config = builder.Build();
-        FFI.AuthenticationInfo authenticationInfo = config.Request.AuthenticationInfo!.Value;
+        var config = builder.Build();
+        var authenticationInfo = config.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
@@ -97,8 +97,8 @@ public class ConnectionConfigurationTests
 
         // IAM authentication last.
         builder = new StandaloneClientConfigurationBuilder();
-        _ = builder.WithAuthentication(Username, Password);
-        _ = builder.WithAuthentication(Username, iamConfig);
+        builder.WithAuthentication(Username, Password);
+        builder.WithAuthentication(Username, iamConfig);
 
         config = builder.Build();
         authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -107,7 +107,7 @@ public class ConnectionConfigurationTests
         Assert.Null(authenticationInfo.Password);
         Assert.True(authenticationInfo.HasIamCredentials);
 
-        FFI.IamCredentials iamCredentials = authenticationInfo.IamCredentials!;
+        var iamCredentials = authenticationInfo.IamCredentials!;
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
@@ -120,22 +120,22 @@ public class ConnectionConfigurationTests
         IamAuthConfig iamConfig = new(ClusterName, ServiceType.MemoryDB, Region);
         ServerCredentials credentials = new(Username, iamConfig);
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithCredentials(credentials);
+        builder.WithCredentials(credentials);
 
-        StandaloneClientConfiguration config = builder.Build();
-        FFI.AuthenticationInfo authenticationInfo = config.Request.AuthenticationInfo!.Value;
+        var config = builder.Build();
+        var authenticationInfo = config.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Null(authenticationInfo.Password);
         Assert.True(authenticationInfo.HasIamCredentials);
 
-        FFI.IamCredentials iamCredentials = authenticationInfo.IamCredentials!;
+        var iamCredentials = authenticationInfo.IamCredentials!;
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
 
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithCredentials(null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithCredentials(null!));
     }
 
     [Fact]
@@ -146,21 +146,21 @@ public class ConnectionConfigurationTests
         ServerCredentials passwordServerCredentials = new(Username, Password);
 
         // Password-based authentication last.
-        StandaloneClientConfigurationBuilder builder = new StandaloneClientConfigurationBuilder();
-        _ = builder.WithCredentials(iamServerCredentials);
-        _ = builder.WithCredentials(passwordServerCredentials);
+        StandaloneClientConfigurationBuilder builder = new();
+        builder.WithCredentials(iamServerCredentials);
+        builder.WithCredentials(passwordServerCredentials);
 
-        StandaloneClientConfiguration config = builder.Build();
-        FFI.AuthenticationInfo authenticationInfo = config.Request.AuthenticationInfo!.Value;
+        var config = builder.Build();
+        var authenticationInfo = config.Request.AuthenticationInfo!.Value;
 
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
 
         // IAM authentication last.
-        builder = new();
-        _ = builder.WithCredentials(passwordServerCredentials);
-        _ = builder.WithCredentials(iamServerCredentials);
+        builder = new StandaloneClientConfigurationBuilder();
+        builder.WithCredentials(passwordServerCredentials);
+        builder.WithCredentials(iamServerCredentials);
 
         config = builder.Build();
         authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -169,7 +169,7 @@ public class ConnectionConfigurationTests
         Assert.Null(authenticationInfo.Password);
         Assert.True(authenticationInfo.HasIamCredentials);
 
-        FFI.IamCredentials iamCredentials = authenticationInfo.IamCredentials!;
+        var iamCredentials = authenticationInfo.IamCredentials!;
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
@@ -183,7 +183,7 @@ public class ConnectionConfigurationTests
     public void RefreshTopologyFromInitialNodes_Default()
     {
         ClusterClientConfigurationBuilder builder = new();
-        ClusterClientConfiguration config = builder.Build();
+        var config = builder.Build();
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
     }
 
@@ -192,7 +192,7 @@ public class ConnectionConfigurationTests
     {
         ClusterClientConfigurationBuilder builder = new();
         _ = builder.WithRefreshTopologyFromInitialNodes(true);
-        ClusterClientConfiguration config = builder.Build();
+        var config = builder.Build();
         Assert.True(config.Request.RefreshTopologyFromInitialNodes);
     }
 
@@ -201,7 +201,7 @@ public class ConnectionConfigurationTests
     {
         ClusterClientConfigurationBuilder builder = new();
         _ = builder.WithRefreshTopologyFromInitialNodes(false);
-        ClusterClientConfiguration config = builder.Build();
+        var config = builder.Build();
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
     }
 
@@ -243,20 +243,20 @@ public class ConnectionConfigurationTests
         Assert.False(builder.UseTls);
 
         // Enable TLS.
-        _ = builder.WithTls(true);
+        builder.WithTls(true);
         Assert.True(builder.UseTls);
 
         // Disable TLS.
-        _ = builder.WithTls(false);
+        builder.WithTls(false);
         Assert.False(builder.UseTls);
 
         // Enable TLS (no parameter).
-        _ = builder.WithTls();
+        builder.WithTls();
         Assert.True(builder.UseTls);
 
         // Disable TLS when insecure TLS enabled.
-        _ = builder.WithInsecureTls();
-        _ = builder.WithTls(false);
+        builder.WithInsecureTls();
+        builder.WithTls(false);
         Assert.False(builder.UseTls);
     }
 
@@ -269,8 +269,8 @@ public class ConnectionConfigurationTests
         Assert.False(builder.UseInsecureTls);
 
         // Configure insecure TLS without TLS enabled.
-        _ = Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = true);
-        _ = Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = false);
+        Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = true);
+        Assert.Throws<ArgumentException>(() => builder.UseInsecureTls = false);
 
         builder.UseTls = true;
 
@@ -300,26 +300,26 @@ public class ConnectionConfigurationTests
         Assert.False(builder.UseInsecureTls);
 
         // Configure insecure TLS without TLS enabled.
-        _ = Assert.Throws<ArgumentException>(() => builder.WithInsecureTls());
-        _ = Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(true));
-        _ = Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(false));
+        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls());
+        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(true));
+        Assert.Throws<ArgumentException>(() => builder.WithInsecureTls(false));
 
-        _ = builder.WithTls();
+        builder.WithTls();
 
         // Enable insecure TLS.
-        _ = builder.WithInsecureTls(true);
+        builder.WithInsecureTls(true);
         Assert.True(builder.UseInsecureTls);
 
         // Disable insecure TLS.
-        _ = builder.WithInsecureTls(false);
+        builder.WithInsecureTls(false);
         Assert.False(builder.UseInsecureTls);
 
         // Enable insecure TLS (no parameter).
-        _ = builder.WithInsecureTls(true);
+        builder.WithInsecureTls(true);
         Assert.True(builder.UseInsecureTls);
 
         // Disable TLS when insecure TLS enabled.
-        _ = builder.WithTls(false);
+        builder.WithTls(false);
         Assert.False(builder.UseInsecureTls);
     }
 
@@ -327,8 +327,8 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_ByteArray()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithTrustedCertificate(CertificateData1);
-        StandaloneClientConfiguration config = builder.Build();
+        builder.WithTrustedCertificate(CertificateData1);
+        var config = builder.Build();
         Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
     }
 
@@ -336,23 +336,23 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_ByteArray_NullThrows()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
     }
 
     [Fact]
     public void WithTrustedCertificate_ByteArray_EmptyThrows()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate([]));
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate([]));
     }
 
     [Fact]
     public void WithTrustedCertificate_ByteArray_MultipleCertificates()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithTrustedCertificate(CertificateData1);
-        _ = builder.WithTrustedCertificate(CertificateData2);
-        StandaloneClientConfiguration config = builder.Build();
+        builder.WithTrustedCertificate(CertificateData1);
+        builder.WithTrustedCertificate(CertificateData2);
+        var config = builder.Build();
 
         Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
     }
@@ -363,8 +363,8 @@ public class ConnectionConfigurationTests
         using TempFile tempFile = new(CertificateData1);
 
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithTrustedCertificate(tempFile.Path);
-        StandaloneClientConfiguration config = builder.Build();
+        builder.WithTrustedCertificate(tempFile.Path);
+        var config = builder.Build();
 
         Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
     }
@@ -373,14 +373,14 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_Path_FileNotFoundThrows()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
+        Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
     }
 
     [Fact]
     public void WithTrustedCertificate_Path_NullThrows()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((string)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((string)null!));
     }
 
     [Fact]
@@ -390,9 +390,9 @@ public class ConnectionConfigurationTests
         using TempFile tempFile2 = new(CertificateData2);
 
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithTrustedCertificate(tempFile1.Path);
-        _ = builder.WithTrustedCertificate(tempFile2.Path);
-        StandaloneClientConfiguration config = builder.Build();
+        builder.WithTrustedCertificate(tempFile1.Path);
+        builder.WithTrustedCertificate(tempFile2.Path);
+        var config = builder.Build();
 
         Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
     }
@@ -412,7 +412,7 @@ public class ConnectionConfigurationTests
     {
         TimeSpan interval = TimeSpan.FromSeconds(30);
         StandaloneClientConfigurationBuilder builder = new();
-        _ = builder.WithPubSubReconciliationInterval(interval);
+        builder.WithPubSubReconciliationInterval(interval);
 
         Assert.Equal(interval.TotalMilliseconds, builder.Build().Request.PubSubReconciliationInterval!.Value.TotalMilliseconds);
     }
@@ -421,14 +421,14 @@ public class ConnectionConfigurationTests
     public void PubSubReconciliationInterval_NegativeThrows()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.FromSeconds(-1)));
+        Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.FromSeconds(-1)));
     }
 
     [Fact]
     public void PubSubReconciliationInterval_ZeroThrows()
     {
         StandaloneClientConfigurationBuilder builder = new();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
+        Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
     }
 
     // Connection Retry Strategy
