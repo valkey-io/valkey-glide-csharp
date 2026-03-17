@@ -275,28 +275,31 @@ public sealed class ConfigurationOptions : ICloneable
     /// <param name="certificatePath">Trusted certificate file path</param>
     /// <exception cref="ArgumentNullException">If the certificate path is null.</exception>
     /// <exception cref="FileNotFoundException">If the certificate file does not exist.</exception>
-    /// <exception cref="ArgumentException">If the certificate file is empty.</exception>
+    /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.</exception>
     public void TrustIssuer(string certificatePath)
     {
         ArgumentNullException.ThrowIfNull(certificatePath);
 
         certificatePath = Path.GetFullPath(certificatePath);
-
         if (!File.Exists(certificatePath))
+        {
             throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+        }
 
-        FileInfo fileInfo = new(certificatePath);
-        const long maxCertificateFileSize = 10 * 1024 * 1024; // 10 MB
-        if (fileInfo.Length > maxCertificateFileSize)
-            throw new ArgumentException(
-                $"Certificate file exceeds maximum allowed size of 10 MB: {fileInfo.Length} bytes",
-                nameof(certificatePath));
+        long fileLength = new FileInfo(certificatePath).Length;
+        if (fileLength == 0)
+        {
+            throw new ArgumentException("Certificate file cannot be empty", nameof(certificatePath));
+        }
+        else if (fileLength > CertificateMaxSize)
+        {
+            var msg = $"Certificate file exceeds maximum allowed size of 10 MB: {fileLength} bytes";
+            throw new ArgumentException(msg, nameof(certificatePath));
+        }
 
         var certificateData = File.ReadAllBytes(certificatePath);
-        if (certificateData.Length == 0)
-            throw new ArgumentException("Certificate file cannot be empty", nameof(certificatePath));
-
         _trustedIssuers.Add(certificateData);
+
         return;
     }
 

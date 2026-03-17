@@ -10,6 +10,11 @@ namespace Valkey.Glide;
 
 public abstract class ConnectionConfiguration
 {
+    /// <summary>
+    /// Maximum root certificate size for TLS connections.
+    /// </summary>
+    public static readonly long CertificateMaxSize = 10 * 1024 * 1024;
+
     #region Structs and Enums definitions
 
     internal record ConnectionConfig
@@ -309,9 +314,6 @@ public abstract class ConnectionConfiguration
     public abstract class ClientConfigurationBuilder<T>
         where T : ClientConfigurationBuilder<T>, new()
     {
-        // 10 MB maximum for TLS certificates.
-        private static readonly long MaxCertificateSize = 10 * 1024 * 1024;
-
         internal ConnectionConfig Config;
 
         /// <summary>
@@ -484,27 +486,26 @@ public abstract class ConnectionConfiguration
         /// <param name="certificatePath">Trusted certificate file path</param>
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
-        /// <exception cref="ArgumentException">If the certificate file is empty</exception>
+        /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/></exception>
         public T WithTrustedCertificate(string certificatePath)
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
 
             certificatePath = Path.GetFullPath(certificatePath);
-
             if (!File.Exists(certificatePath))
             {
                 throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
             }
 
             FileInfo fileInfo = new(certificatePath);
-
-            if (fileInfo.Length > MaxCertificateSize)
+            if (fileInfo.Length > CertificateMaxSize)
             {
                 var msg = $"Certificate file exceeds maximum allowed size of 10 MB: {fileInfo.Length} bytes";
                 throw new ArgumentException(msg, nameof(certificatePath));
             }
 
-            return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
+            var certificateDate = File.ReadAllBytes(certificatePath);
+            return WithTrustedCertificate(certificateDate);
         }
 
         /// <summary>
