@@ -458,7 +458,7 @@ public abstract class ConnectionConfiguration
                     var msg = "SECURITY WARNING: Insecure TLS mode enabled. "
                         + "Certificate verification is disabled. "
                         + "This is strongly discouraged in production environments.";
-                    Logger.Log(Level.Warn, "ClientConfigurationBuilder", msg);
+                    Logger.Log(Level.Warn, GetType().Name, msg);
                 }
 
                 Config.TlsMode =
