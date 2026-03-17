@@ -40,7 +40,7 @@ public class ConfigurationOptionsTests
         using var tempFile = new TempFile();
         using (var fs = new FileStream(tempFile.Path, FileMode.Create))
         {
-            fs.SetLength(ConnectionConfiguration.CertificateMaxSize);
+            fs.SetLength(ConnectionConfiguration.CertificateMaxSize + 1);
         }
 
         var options = new ConfigurationOptions();

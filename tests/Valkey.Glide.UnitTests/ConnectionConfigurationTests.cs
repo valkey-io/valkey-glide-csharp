@@ -387,7 +387,7 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_ByteArray_OversizedThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(new byte[CertificateMaxSize]));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(new byte[CertificateMaxSize + 1]));
     }
 
     [Fact]
