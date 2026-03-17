@@ -126,7 +126,8 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue response = await client.PingAsync();
+    /// var response = await client.PingAsync();
+    /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
@@ -142,7 +143,8 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue response = await client.PingAsync("test message");
+    /// var response = await client.PingAsync("test message");
+    /// Console.WriteLine(response); // Output: "test message"
     /// </code>
     /// </example>
     /// </remarks>
@@ -158,7 +160,8 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue response = await client.PingAsync(Route.AllPrimaries);
+    /// var response = await client.PingAsync(Route.AllPrimaries);
+    /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
@@ -175,7 +178,8 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue response = await client.PingAsync("Hello World", Route.AllPrimaries);
+    /// var response = await client.PingAsync("Hello World", Route.AllPrimaries);
+    /// Console.WriteLine(response); // Output: "test message"
     /// </code>
     /// </example>
     /// </remarks>

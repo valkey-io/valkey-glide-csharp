@@ -69,7 +69,8 @@ public interface IServerManagementCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue response = await client.PingAsync();
+    /// var response = await client.PingAsync();
+    /// Console.WriteLine(result); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
@@ -84,7 +85,8 @@ public interface IServerManagementCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue response = await client.PingAsync("test message");
+    /// var response = await client.PingAsync("test message");
+    /// Console.WriteLine(result); // Output: "test message"
     /// </code>
     /// </example>
     /// </remarks>
