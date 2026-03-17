@@ -13,7 +13,7 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Maximum root certificate size for TLS connections.
     /// </summary>
-    public static readonly long CertificateMaxSize = 10 * 1024 * 1024;
+    public static readonly long CertificateMaxSize = 10 * 1024 * 1024; // 10 MB
 
     #region Structs and Enums definitions
 
