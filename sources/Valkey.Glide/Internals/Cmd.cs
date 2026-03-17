@@ -109,6 +109,16 @@ internal class Cmd<R, T> : ICmd
         RequestType.PubSubShardChannels => ["PUBSUB", "SHARDCHANNELS"],
         RequestType.PubSubShardNumSub => ["PUBSUB", "SHARDNUMSUB"],
         RequestType.GetSubscriptions => ["GET_SUBSCRIPTIONS"],
+        RequestType.FtList => ["FT._LIST"],
+        RequestType.FtAggregate => ["FT.AGGREGATE"],
+        RequestType.FtAliasAdd => ["FT.ALIASADD"],
+        RequestType.FtAliasDel => ["FT.ALIASDEL"],
+        RequestType.FtAliasList => ["FT._ALIASLIST"],
+        RequestType.FtAliasUpdate => ["FT.ALIASUPDATE"],
+        RequestType.FtCreate => ["FT.CREATE"],
+        RequestType.FtDropIndex => ["FT.DROPINDEX"],
+        RequestType.FtInfo => ["FT.INFO"],
+        RequestType.FtSearch => ["FT.SEARCH"],
         _ => [requestType.ToString().ToUpper()]
     };
 #pragma warning restore IDE0072 // Populate switch
