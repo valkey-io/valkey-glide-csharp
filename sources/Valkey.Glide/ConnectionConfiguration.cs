@@ -309,6 +309,9 @@ public abstract class ConnectionConfiguration
     public abstract class ClientConfigurationBuilder<T>
         where T : ClientConfigurationBuilder<T>, new()
     {
+        // 10 MB maximum for TLS certificates.
+        private static readonly long MaxCertificateSize = 10 * 1024 * 1024;
+
         internal ConnectionConfig Config;
 
         /// <summary>
@@ -410,7 +413,9 @@ public abstract class ConnectionConfiguration
                 if (value)
                 {
                     if (Config.TlsMode == TlsMode.NoTls)
+                    {
                         Config.TlsMode = TlsMode.SecureTls;
+                    }
                 }
                 else
                 {
@@ -442,7 +447,9 @@ public abstract class ConnectionConfiguration
             set
             {
                 if (Config.TlsMode == TlsMode.NoTls)
+                {
                     throw new ArgumentException("Cannot configure insecure TLS when TLS is disabled.");
+                }
 
                 if (value)
                 {
@@ -485,14 +492,17 @@ public abstract class ConnectionConfiguration
             certificatePath = Path.GetFullPath(certificatePath);
 
             if (!File.Exists(certificatePath))
+            {
                 throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+            }
 
             FileInfo fileInfo = new(certificatePath);
-            const long maxCertificateFileSize = 10 * 1024 * 1024; // 10 MB
-            if (fileInfo.Length > maxCertificateFileSize)
-                throw new ArgumentException(
-                    $"Certificate file exceeds maximum allowed size of 10 MB: {fileInfo.Length} bytes",
-                    nameof(certificatePath));
+
+            if (fileInfo.Length > MaxCertificateSize)
+            {
+                var msg = $"Certificate file exceeds maximum allowed size of 10 MB: {fileInfo.Length} bytes";
+                throw new ArgumentException(msg, nameof(certificatePath));
+            }
 
             return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
         }
@@ -506,10 +516,13 @@ public abstract class ConnectionConfiguration
         public T WithTrustedCertificate(byte[] certificateData)
         {
             if (certificateData == null)
+            {
                 throw new ArgumentException("Certificate data cannot be null", nameof(certificateData));
-
+            }
             else if (certificateData.Length == 0)
+            {
                 throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
+            }
 
             TrustedCertificates.Add(certificateData);
             return (T)this;
@@ -591,7 +604,7 @@ public abstract class ConnectionConfiguration
             IamCredentials? iamCredentials = null;
             if (credentials.IamConfig != null)
             {
-                var serviceType = credentials.IamConfig.ServiceType switch
+                FFI.ServiceType serviceType = credentials.IamConfig.ServiceType switch
                 {
                     ServiceType.ElastiCache => FFI.ServiceType.ElastiCache,
                     ServiceType.MemoryDB => FFI.ServiceType.MemoryDB,
@@ -623,9 +636,7 @@ public abstract class ConnectionConfiguration
         /// <param name="password">The password for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string? username, string password)
-        {
-            return WithCredentials(new ServerCredentials(username, password));
-        }
+            => WithCredentials(new ServerCredentials(username, password));
 
         /// <summary>
         /// Configure server credentials for password-based authentication with username "default".
@@ -633,9 +644,7 @@ public abstract class ConnectionConfiguration
         /// <param name="password">The password for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string password)
-        {
-            return WithCredentials(new ServerCredentials(password));
-        }
+            => WithCredentials(new ServerCredentials(password));
 
         /// <summary>
         /// Configure server credentials for IAM authentication.
@@ -644,9 +653,7 @@ public abstract class ConnectionConfiguration
         /// <param name="iamConfig">The IAM authentication configuration.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string username, IamAuthConfig iamConfig)
-        {
-            return WithCredentials(new ServerCredentials(username, iamConfig));
-        }
+            => WithCredentials(new ServerCredentials(username, iamConfig));
 
         #endregion
         #region Protocol
@@ -762,7 +769,9 @@ public abstract class ConnectionConfiguration
             set
             {
                 if (value <= TimeSpan.Zero)
+                {
                     throw new ArgumentException("PubSubReconciliationInterval must be positive", nameof(value));
+                }
 
                 Config.PubSubReconciliationInterval = value;
             }
