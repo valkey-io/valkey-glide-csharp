@@ -79,17 +79,11 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         return await Command(Request.Echo(message));
     }
 
-    public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping());
-    }
+    public async Task<ValkeyValue> PingAsync()
+        => await Command(Request.Ping());
 
-    public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping(message));
-    }
+    public async Task<ValkeyValue> PingAsync(ValkeyValue message)
+        => await Command(Request.Ping(message));
 
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {

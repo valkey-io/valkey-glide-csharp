@@ -804,7 +804,7 @@ public static class PubSubUtils
         PubSubMessageQueue? queue = client.PubSubQueue;
         Assert.NotNull(queue);
 
-        while (queue!.TryGetMessage(out PubSubMessage? received))
+        while (queue.TryGetMessage(out PubSubMessage? received))
         {
             Assert.DoesNotContain(received, expected);
         }

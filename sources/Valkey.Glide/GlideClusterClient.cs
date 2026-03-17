@@ -98,29 +98,17 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         return await Command(Request.Echo(message), Route.Random);
     }
 
-    public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping(), AllPrimaries);
-    }
+    public async Task<ValkeyValue> PingAsync()
+        => await Command(Request.Ping(), AllPrimaries);
 
-    public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping(message), AllPrimaries);
-    }
+    public async Task<ValkeyValue> PingAsync(ValkeyValue message)
+        => await Command(Request.Ping(message), AllPrimaries);
 
-    public async Task<TimeSpan> PingAsync(Route route, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping(), route);
-    }
+    public async Task<ValkeyValue> PingAsync(Route route)
+        => await Command(Request.Ping(), route);
 
-    public async Task<TimeSpan> PingAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping(message), route);
-    }
+    public async Task<ValkeyValue> PingAsync(ValkeyValue message, Route route)
+        => await Command(Request.Ping(message), route);
 
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
@@ -271,9 +259,6 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
-
-    public async Task<TimeSpan> PingAsync(ValkeyValue message, Route route)
-        => await Command(Request.Ping(message), route);
 
     public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
     {

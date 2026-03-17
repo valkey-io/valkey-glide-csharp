@@ -183,16 +183,16 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_NoMessage(GlideClusterClient client)
     {
-        TimeSpan result = await client.PingAsync();
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync();
+        Assert.Equal("PONG", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_NoMessage_WithRoute(GlideClusterClient client)
     {
-        TimeSpan result = await client.PingAsync(AllNodes);
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync(AllNodes);
+        Assert.Equal("PONG", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -200,8 +200,8 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task TestPing_WithMessage(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
-        TimeSpan result = await client.PingAsync(message);
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync(message);
+        Assert.Equal(message, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -209,8 +209,8 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task TestPing_WithMessage_WithRoute(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
-        TimeSpan result = await client.PingAsync(message, AllNodes);
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync(message, AllNodes);
+        Assert.Equal(message, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -523,8 +523,8 @@ public class ClusterClientTests(TestConfiguration config)
         await using var client = await GlideClusterClient.CreateClient(config);
 
         // Verify we can connect with database ID 1
-        TimeSpan result = await client.PingAsync();
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync();
+        Assert.Equal("PONG", result.ToString());
 
         // Verify database isolation by setting a key in database 1
         string testKey = Guid.NewGuid().ToString();
