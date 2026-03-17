@@ -127,7 +127,7 @@ public class ConnectionConfigurationTests
         // IAM authentication last.
         builder = new StandaloneClientConfigurationBuilder()
             .WithAuthentication(Username, Password)
-            .WithAuthentication(Username, IamAuthConfig);
+            .WithAuthentication(Username, iamConfig);
 
         var authenticationInfo2 = builder.Build().Request.AuthenticationInfo!.Value;
         Assert.Equal(Username, authenticationInfo2.Username);
@@ -155,7 +155,7 @@ public class ConnectionConfigurationTests
         var iamCredentials = authenticationInfo.IamCredentials!;
         Assert.Equal(ClusterName, iamCredentials.ClusterName);
         Assert.Equal(Region, iamCredentials.Region);
-        Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
+        Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.Equal(RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
     }
 
@@ -373,7 +373,7 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_ByteArray_NullThrows()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate((byte[])null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((byte[])null!));
     }
 
     [Fact]
@@ -472,7 +472,7 @@ public class ConnectionConfigurationTests
         // Set temp file size so that it exceeds the maximum size.
         using (var fs = new FileStream(tempFile.Path, FileMode.Create))
         {
-            fs.SetLength(CertificateMaxSize);
+            fs.SetLength(CertificateMaxSize + 1);
         }
 
         var builder = new StandaloneClientConfigurationBuilder();
