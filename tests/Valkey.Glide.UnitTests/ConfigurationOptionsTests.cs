@@ -61,11 +61,8 @@ public class ConfigurationOptionsTests
         Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
     }
 
-    // Security Hardening — Bug Condition Exploration Tests
-    // ----------------------------------------------------
-
     [Fact]
-    public void TrustIssuer_WithPath_OversizedFileThrows()
+    public void TrustIssuer_WithPath_OversizedThrows()
     {
         // Create a file just over 10 MB — should be rejected.
         const long oversizedLength = 10 * 1024 * 1024 + 1;
@@ -77,6 +74,23 @@ public class ConfigurationOptionsTests
 
         var options = new ConfigurationOptions();
         _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
+    }
+
+    [Fact]
+    public void TrustIssuer_WithPath_MaxSizeSucceeds()
+    {
+        // A file at exactly 10 MB should be accepted.
+        const long exactMaxSize = 10 * 1024 * 1024;
+        using var tempFile = new TempFile();
+        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
+        {
+            fs.SetLength(exactMaxSize);
+        }
+
+        var options = new ConfigurationOptions();
+        options.TrustIssuer(tempFile.Path);
+
+        _ = Assert.Single(options._trustedIssuers);
     }
 
     [Fact]
@@ -92,23 +106,6 @@ public class ConfigurationOptionsTests
         options.TrustIssuer(traversalPath);
 
         Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
-    }
-
-    [Fact]
-    public void TrustIssuer_WithPath_ExactlyMaxSizeSucceeds()
-    {
-        // A file at exactly 10 MB should be accepted.
-        const long exactMaxSize = 10 * 1024 * 1024;
-        using var tempFile = new TempFile();
-        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
-        {
-            fs.SetLength(exactMaxSize);
-        }
-
-        var options = new ConfigurationOptions();
-        options.TrustIssuer(tempFile.Path);
-
-        _ = Assert.Single(options._trustedIssuers);
     }
 
     private static X509Certificate2 CreateTestCertificate()
