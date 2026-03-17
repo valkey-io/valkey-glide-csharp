@@ -275,7 +275,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <param name="certificatePath">Trusted certificate file path</param>
     /// <exception cref="ArgumentNullException">If the certificate path is null.</exception>
     /// <exception cref="FileNotFoundException">If the certificate file does not exist.</exception>
-    /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.</exception>
+    /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/>.</exception>
     public void TrustIssuer(string certificatePath)
     {
         ArgumentNullException.ThrowIfNull(certificatePath);
@@ -293,7 +293,7 @@ public sealed class ConfigurationOptions : ICloneable
         }
         else if (fileLength > CertificateMaxSize)
         {
-            var msg = $"Certificate file exceeds maximum allowed size of 10 MB: {fileLength} bytes";
+            var msg = $"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes";
             throw new ArgumentException(msg, nameof(certificatePath));
         }
 

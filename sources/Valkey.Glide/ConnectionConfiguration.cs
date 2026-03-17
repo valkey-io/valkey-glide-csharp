@@ -504,8 +504,8 @@ public abstract class ConnectionConfiguration
                 throw new ArgumentException(msg, nameof(certificatePath));
             }
 
-            var certificateDate = File.ReadAllBytes(certificatePath);
-            return WithTrustedCertificate(certificateDate);
+            var certificateData = File.ReadAllBytes(certificatePath);
+            return WithTrustedCertificate(certificateData);
         }
 
         /// <summary>
@@ -518,7 +518,7 @@ public abstract class ConnectionConfiguration
         {
             if (certificateData == null)
             {
-                throw new ArgumentException("Certificate data cannot be null", nameof(certificateData));
+                throw new ArgumentNullException(nameof(certificateData), "Certificate data cannot be null");
             }
             else if (certificateData.Length == 0)
             {

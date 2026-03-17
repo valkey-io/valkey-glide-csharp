@@ -27,7 +27,7 @@ public class AzAffinityTests(TestConfiguration config)
     private static async Task<int> GetReplicaCountInCluster(GlideClusterClient client)
     {
         ClusterValue<string> clusterInfo = await client.InfoAsync([Section.REPLICATION], new SlotKeyRoute("_", SlotType.Primary));
-        foreach (string line in clusterInfo.SingleValue!.Split('\n'))
+        foreach (string line in clusterInfo.SingleValue.Split('\n'))
         {
             string[] parts = line.Split(':', 2);
             if (parts.Length == 2 && parts[0].Trim() == "connected_slaves")
