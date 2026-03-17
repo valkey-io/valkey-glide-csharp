@@ -80,7 +80,7 @@ public static class MainClass
     private static double Percentile(double[] sequence, double excelPercentile)
     {
         Array.Sort(sequence);
-        var n = ((sequence.Length - 1) * excelPercentile) + 1;
+        double n = ((sequence.Length - 1) * excelPercentile) + 1;
         if (n == 1d)
         {
             return sequence[0];
@@ -91,8 +91,8 @@ public static class MainClass
         }
         else
         {
-            var k = (int)n;
-            var d = n - k;
+            int k = (int)n;
+            double d = n - k;
             return sequence[k - 1] + (d * (sequence[k] - sequence[k - 1]));
         }
     }
@@ -101,12 +101,12 @@ public static class MainClass
 
     private static void PrintResults(string resultsFile)
     {
-        var dir = Path.GetDirectoryName(resultsFile);
+        string? dir = Path.GetDirectoryName(resultsFile);
         if (dir is not null && dir?.Length > 0)
         {
             _ = Directory.CreateDirectory(dir);
         }
-        using var createStream = File.Create(resultsFile);
+        using FileStream createStream = File.Create(resultsFile);
         JsonSerializer.Serialize(createStream, BenchJsonResults);
     }
 
@@ -120,9 +120,9 @@ public static class MainClass
         do
         {
             _ = Interlocked.Increment(ref s_started_tasks_counter);
-            var index = (int)(s_started_tasks_counter % clients.Length);
-            var client = clients[index];
-            var action = ChooseAction();
+            int index = (int)(s_started_tasks_counter % clients.Length);
+            ClientWrapper client = clients[index];
+            ChosenAction action = ChooseAction();
             stopwatch.Start();
             switch (action)
             {
@@ -139,7 +139,7 @@ public static class MainClass
                     break;
             }
             stopwatch.Stop();
-            var latency_list = action_latencies[action];
+            ConcurrentBag<double> latency_list = action_latencies[action];
             latency_list.Add(((double)stopwatch.ElapsedMilliseconds) / 1000);
         } while (s_started_tasks_counter < total_commands);
     }
@@ -153,9 +153,9 @@ public static class MainClass
     )
     {
         s_started_tasks_counter = 0;
-        var stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
         List<Task> running_tasks = [];
-        for (var i = 0; i < num_of_concurrent_tasks; i++)
+        for (int i = 0; i < num_of_concurrent_tasks; i++)
         {
             running_tasks.Add(
                 RedisBenchmark(clients, total_commands, data, action_latencies)
@@ -193,24 +193,24 @@ public static class MainClass
             {ChosenAction.GET_EXISTING, new()},
             {ChosenAction.SET, new()},
         };
-        var data = GenerateValue(data_size);
-        var elapsed_milliseconds = await CreateBenchTasks(
+        string data = GenerateValue(data_size);
+        long elapsed_milliseconds = await CreateBenchTasks(
             clients,
             total_commands,
             data,
             num_of_concurrent_tasks,
             action_latencies
         );
-        var tps = Math.Round(s_started_tasks_counter / ((double)elapsed_milliseconds / 1000));
+        double tps = Math.Round(s_started_tasks_counter / ((double)elapsed_milliseconds / 1000));
 
-        var get_non_existing_latencies = action_latencies[ChosenAction.GET_NON_EXISTING];
-        var get_non_existing_latency_results = LatencyResults("get_non_existing", get_non_existing_latencies);
+        ConcurrentBag<double> get_non_existing_latencies = action_latencies[ChosenAction.GET_NON_EXISTING];
+        Dictionary<string, object> get_non_existing_latency_results = LatencyResults("get_non_existing", get_non_existing_latencies);
 
-        var get_existing_latencies = action_latencies[ChosenAction.GET_EXISTING];
-        var get_existing_latency_results = LatencyResults("get_existing", get_existing_latencies);
+        ConcurrentBag<double> get_existing_latencies = action_latencies[ChosenAction.GET_EXISTING];
+        Dictionary<string, object> get_existing_latency_results = LatencyResults("get_existing", get_existing_latencies);
 
-        var set_latencies = action_latencies[ChosenAction.SET];
-        var set_latency_results = LatencyResults("set", set_latencies);
+        ConcurrentBag<double> set_latencies = action_latencies[ChosenAction.SET];
+        Dictionary<string, object> set_latency_results = LatencyResults("set", set_latencies);
 
         Dictionary<string, object> result = new()
         {
@@ -251,9 +251,9 @@ public static class MainClass
                    Func<string, string, Task>,
                    Action)>> clientCreation)
     {
-        var tasks = Enumerable.Range(0, clientCount).Select(async (_) =>
+        IEnumerable<Task<ClientWrapper>> tasks = Enumerable.Range(0, clientCount).Select(async (_) =>
         {
-            var tuple = await clientCreation();
+            (Func<string, Task<string?>>, Func<string, string, Task>, Action) tuple = await clientCreation();
             return new ClientWrapper(tuple.Item1, tuple.Item2, tuple.Item3);
         });
         return await Task.WhenAll(tasks);
@@ -271,25 +271,25 @@ public static class MainClass
     {
         if (clientsToRun is "all" or "glide")
         {
-            var clients = await CreateClients(clientCount, () =>
+            ClientWrapper[] clients = await CreateClients(clientCount, () =>
             {
                 BaseClient glideClient;
                 if (!isCluster)
                 {
-                    var config = new StandaloneClientConfigurationBuilder()
+                    StandaloneClientConfiguration config = new StandaloneClientConfigurationBuilder()
                         .WithAddress(host, port).WithTls(useTLS).Build();
                     glideClient = GlideClient.CreateClient(config).GetAwaiter().GetResult();
                 }
                 else
                 {
-                    var config = new ClusterClientConfigurationBuilder()
+                    ClusterClientConfiguration config = new ClusterClientConfigurationBuilder()
                         .WithAddress(host, port).WithTls(useTLS).Build();
                     glideClient = GlideClusterClient.CreateClient(config).GetAwaiter().GetResult();
                 }
                 return Task.FromResult<(Func<string, Task<string?>>, Func<string, string, Task>, Action)>(
                     (async (key) =>
                     {
-                        var result = await glideClient.StringGetAsync(key);
+                        ValkeyValue result = await glideClient.StringGetAsync(key);
                         return result.IsNull ? null : result.ToString();
                     },
                      async (key, value) => await glideClient.StringSetAsync(key, value),
@@ -308,10 +308,10 @@ public static class MainClass
 
         if (clientsToRun == "all")
         {
-            var clients = await CreateClients(clientCount, () =>
+            ClientWrapper[] clients = await CreateClients(clientCount, () =>
                 {
-                    var connection = SER_Connection.Connect(GetAddressForStackExchangeRedis(host, port, useTLS));
-                    var db = connection.GetDatabase();
+                    SER_Connection connection = SER_Connection.Connect(GetAddressForStackExchangeRedis(host, port, useTLS));
+                    SER_Db db = connection.GetDatabase();
                     return Task.FromResult<(Func<string, Task<string?>>, Func<string, string, Task>, Action)>(
                         (async (key) => await db.StringGetAsync(key),
                          async (key, value) => await db.StringSetAsync(key, value),
@@ -326,7 +326,7 @@ public static class MainClass
                 numOfConcurrentTasks
             );
 
-            foreach (var client in clients)
+            foreach (ClientWrapper client in clients)
             {
                 client.Dispose();
             }
@@ -344,12 +344,12 @@ public static class MainClass
         Logger.SetLoggerConfig(Level.Info, Path.GetFileNameWithoutExtension(options.ResultsFile));
         IEnumerable<(int concurrentTasks, int dataSize, int clientCount)> product = options.ConcurrentTasks.SelectMany(concurrentTasks =>
             options.ClientCount.Select(clientCount => (concurrentTasks, options.DataSize, clientCount))).Where(tuple => tuple.concurrentTasks >= tuple.clientCount);
-        foreach ((var concurrentTasks, var dataSize, var clientCount) in product)
+        foreach ((int concurrentTasks, int dataSize, int clientCount) in product)
         {
-            var iterations = options.Minimal ? 1000 : NumberOfIterations(concurrentTasks);
+            int iterations = options.Minimal ? 1000 : NumberOfIterations(concurrentTasks);
             await RunWithParameters(iterations, dataSize, concurrentTasks, options.ClientsToRun, options.Host, options.Port, clientCount, options.Tls, options.ClusterMode);
         }
-        var resultsFile = Path.Combine(Directory.GetCurrentDirectory(), "../valkey-glide/benchmarks", options.ResultsFile);
+        string resultsFile = Path.Combine(Directory.GetCurrentDirectory(), "../valkey-glide/benchmarks", options.ResultsFile);
 
         PrintResults(Path.GetFullPath(resultsFile));
     }
