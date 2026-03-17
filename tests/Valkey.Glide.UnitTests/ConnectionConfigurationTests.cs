@@ -153,8 +153,8 @@ public class ConnectionConfigurationTests
 
         // Password-based authentication last.
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithCredentials(iamServerCredentials);
-        _ = builder.WithCredentials(passwordServerCredentials);
+            .WithCredentials(iamServerCredentials)
+            .WithCredentials(passwordServerCredentials);
 
         var config = builder.Build();
         var authenticationInfo = config.Request.AuthenticationInfo!.Value;
@@ -165,8 +165,8 @@ public class ConnectionConfigurationTests
 
         // IAM authentication last.
         builder = new StandaloneClientConfigurationBuilder()
-            .WithCredentials(passwordServerCredentials);
-        _ = builder.WithCredentials(iamServerCredentials);
+            .WithCredentials(passwordServerCredentials)
+            .WithCredentials(iamServerCredentials);
 
         config = builder.Build();
         authenticationInfo = config!.Request.AuthenticationInfo!.Value;
@@ -355,12 +355,14 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithTrustedCertificate_ByteArray_MultipleCertificates()
     {
-        var builder = new StandaloneClientConfigurationBuilder()
-            .WithTrustedCertificate(CertificateData1);
-        _ = builder.WithTrustedCertificate(CertificateData2);
-        var config = builder.Build();
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithTrustedCertificate(CertificateData1)
+            .WithTrustedCertificate(CertificateData2)
+            .Build();
 
-        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1, CertificateData2 },
+            config.Request.RootCertificates);
     }
 
     [Fact]
@@ -396,8 +398,8 @@ public class ConnectionConfigurationTests
         using var tempFile2 = new TempFile(CertificateData2);
 
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithTrustedCertificate(tempFile1.Path);
-        _ = builder.WithTrustedCertificate(tempFile2.Path);
+            .WithTrustedCertificate(tempFile1.Path)
+            .WithTrustedCertificate(tempFile2.Path);
         var config = builder.Build();
 
         Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
