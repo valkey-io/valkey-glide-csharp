@@ -444,6 +444,13 @@ public abstract class ConnectionConfiguration
                 if (Config.TlsMode == TlsMode.NoTls)
                     throw new ArgumentException("Cannot configure insecure TLS when TLS is disabled.");
 
+                if (value)
+                {
+                    Logger.Log(Level.Warn, "ClientConfigurationBuilder",
+                        "SECURITY WARNING: Insecure TLS mode enabled. Certificate verification is disabled. "
+                        + "This is strongly discouraged in production environments.");
+                }
+
                 Config.TlsMode =
                     value
                     ? TlsMode.InsecureTls
@@ -475,8 +482,17 @@ public abstract class ConnectionConfiguration
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
 
+            certificatePath = Path.GetFullPath(certificatePath);
+
             if (!File.Exists(certificatePath))
                 throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+
+            FileInfo fileInfo = new(certificatePath);
+            const long maxCertificateFileSize = 10 * 1024 * 1024; // 10 MB
+            if (fileInfo.Length > maxCertificateFileSize)
+                throw new ArgumentException(
+                    $"Certificate file exceeds maximum allowed size of 10 MB: {fileInfo.Length} bytes",
+                    nameof(certificatePath));
 
             return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
         }

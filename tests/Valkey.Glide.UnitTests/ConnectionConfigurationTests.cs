@@ -400,6 +400,61 @@ public class ConnectionConfigurationTests
     // Pub/Sub Reconciliation Interval
     // -------------------------------
 
+    // Security Hardening — Bug Condition Exploration Tests
+    // ----------------------------------------------------
+
+    [Fact]
+    public void WithTrustedCertificate_Path_OversizedFileThrows()
+    {
+        // Create a file just over 10 MB — should be rejected.
+        const long oversizedLength = 10 * 1024 * 1024 + 1;
+        using var tempFile = new TempFile();
+        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
+        {
+            fs.SetLength(oversizedLength);
+        }
+
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(tempFile.Path));
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_TraversalPathCanonicalized()
+    {
+        // Create a temp file and construct a traversal path that resolves to it.
+        using var tempFile = new TempFile(CertificateData1);
+        string dir = Path.GetDirectoryName(tempFile.Path)!;
+        string fileName = Path.GetFileName(tempFile.Path);
+        string traversalPath = Path.Combine(dir, "subdir", "..", fileName);
+
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(traversalPath);
+        var config = builder.Build();
+
+        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_ExactlyMaxSizeSucceeds()
+    {
+        // A file at exactly 10 MB should be accepted.
+        const long exactMaxSize = 10 * 1024 * 1024;
+        using var tempFile = new TempFile();
+        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
+        {
+            fs.SetLength(exactMaxSize);
+        }
+
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(tempFile.Path);
+        var config = builder.Build();
+
+        Assert.Single(config.Request.RootCertificates);
+    }
+
+    // Pub/Sub Reconciliation Interval
+    // -------------------------------
+
     [Fact]
     public void PubSubReconciliationInterval_Default()
     {

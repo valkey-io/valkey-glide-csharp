@@ -280,8 +280,17 @@ public sealed class ConfigurationOptions : ICloneable
     {
         ArgumentNullException.ThrowIfNull(certificatePath);
 
+        certificatePath = Path.GetFullPath(certificatePath);
+
         if (!File.Exists(certificatePath))
             throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+
+        FileInfo fileInfo = new(certificatePath);
+        const long maxCertificateFileSize = 10 * 1024 * 1024; // 10 MB
+        if (fileInfo.Length > maxCertificateFileSize)
+            throw new ArgumentException(
+                $"Certificate file exceeds maximum allowed size of 10 MB: {fileInfo.Length} bytes",
+                nameof(certificatePath));
 
         var certificateData = File.ReadAllBytes(certificatePath);
         if (certificateData.Length == 0)
