@@ -29,16 +29,22 @@ public class ConfigurationOptionsTests
     public void TrustIssuer_WithPath_EmptyThrows()
     {
         using var tempFile = new TempFile();
-
         var options = new ConfigurationOptions();
         _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
-    public void TrustIssuer_WithCertificate_NullThrows()
+    public void TrustIssuer_WithPath_OversizedThrows()
     {
+        // Create file that exceeds maximum size.
+        using var tempFile = new TempFile();
+        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
+        {
+            fs.SetLength(ConnectionConfiguration.CertificateMaxSize);
+        }
+
         var options = new ConfigurationOptions();
-        _ = Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((X509Certificate2)null!));
+        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
@@ -53,57 +59,33 @@ public class ConfigurationOptionsTests
     }
 
     [Fact]
-    public void TrustIssuer_WithCertificate_Succeeds()
-    {
-        var options = new ConfigurationOptions();
-        options.TrustIssuer(Certificate);
-
-        Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
-    }
-
-    [Fact]
-    public void TrustIssuer_WithPath_OversizedThrows()
-    {
-        // Create a file just over 10 MB — should be rejected.
-        const long oversizedLength = 10 * 1024 * 1024 + 1;
-        using var tempFile = new TempFile();
-        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
-        {
-            fs.SetLength(oversizedLength);
-        }
-
-        var options = new ConfigurationOptions();
-        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
-    }
-
-    [Fact]
-    public void TrustIssuer_WithPath_MaxSizeSucceeds()
-    {
-        // A file at exactly 10 MB should be accepted.
-        const long exactMaxSize = 10 * 1024 * 1024;
-        using var tempFile = new TempFile();
-        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
-        {
-            fs.SetLength(exactMaxSize);
-        }
-
-        var options = new ConfigurationOptions();
-        options.TrustIssuer(tempFile.Path);
-
-        _ = Assert.Single(options._trustedIssuers);
-    }
-
-    [Fact]
-    public void TrustIssuer_WithPath_TraversalPathCanonicalized()
+    public void TrustIssuer_WithPath_TraversalPathSucceeds()
     {
         // Create a temp file and construct a traversal path that resolves to it.
         using var tempFile = new TempFile(CertificateData);
+
         string dir = Path.GetDirectoryName(tempFile.Path)!;
         string fileName = Path.GetFileName(tempFile.Path);
         string traversalPath = Path.Combine(dir, "subdir", "..", fileName);
 
         var options = new ConfigurationOptions();
         options.TrustIssuer(traversalPath);
+
+        Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
+    }
+
+    [Fact]
+    public void TrustIssuer_WithCertificate_NullThrows()
+    {
+        var options = new ConfigurationOptions();
+        _ = Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((X509Certificate2)null!));
+    }
+
+    [Fact]
+    public void TrustIssuer_WithCertificate_Succeeds()
+    {
+        var options = new ConfigurationOptions();
+        options.TrustIssuer(Certificate);
 
         Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
     }

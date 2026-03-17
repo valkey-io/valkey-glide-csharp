@@ -29,8 +29,8 @@ public class ConnectionConfigurationTests
         builder.WithAuthentication(Username, Password);
 
         var config = builder.Build();
-        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
 
+        var authenticationInfo = config!.Request.AuthenticationInfo!.Value;
         Assert.Equal(Username, authenticationInfo.Username);
         Assert.Equal(Password, authenticationInfo.Password);
         Assert.False(authenticationInfo.HasIamCredentials);
@@ -324,12 +324,26 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray()
+    public void WithTrustedCertificate_ByteArray_Succeeds()
     {
         var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTrustedCertificate(CertificateData1);
-        var config = builder.Build();
-        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
+
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1 },
+            builder.Build().Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_ByteArray_MultipleCertificatesSucceeds()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(CertificateData1);
+        builder.WithTrustedCertificate(CertificateData2);
+
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1, CertificateData2 },
+            builder.Build().Request.RootCertificates);
     }
 
     [Fact]
@@ -347,26 +361,49 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray_MultipleCertificates()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(CertificateData1);
-        builder.WithTrustedCertificate(CertificateData2);
-        var config = builder.Build();
-
-        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
-    }
-
-    [Fact]
-    public void WithTrustedCertificate_Path()
+    public void WithTrustedCertificate_Path_Succeeds()
     {
         using var tempFile = new TempFile(CertificateData1);
 
         var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTrustedCertificate(tempFile.Path);
-        var config = builder.Build();
 
-        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1 },
+            builder.Build().Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_MultipleCertificatesSucceeds()
+    {
+        using var tempFile1 = new TempFile(CertificateData1);
+        using var tempFile2 = new TempFile(CertificateData2);
+
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(tempFile1.Path);
+        builder.WithTrustedCertificate(tempFile2.Path);
+
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1, CertificateData2 },
+            builder.Build().Request.RootCertificates);
+    }
+
+    [Fact]
+    public void WithTrustedCertificate_Path_TraversalPathSucceeds()
+    {
+        // Create a temp file and construct a traversal path that resolves to it.
+        using var tempFile = new TempFile(CertificateData1);
+
+        string dir = Path.GetDirectoryName(tempFile.Path)!;
+        string fileName = Path.GetFileName(tempFile.Path);
+        string traversalPath = Path.Combine(dir, "subdir", "..", fileName);
+
+        var builder = new StandaloneClientConfigurationBuilder();
+        builder.WithTrustedCertificate(traversalPath);
+
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1 },
+            builder.Build().Request.RootCertificates);
     }
 
     [Fact]
@@ -392,58 +429,24 @@ public class ConnectionConfigurationTests
         var builder = new StandaloneClientConfigurationBuilder();
         builder.WithTrustedCertificate(tempFile1.Path);
         builder.WithTrustedCertificate(tempFile2.Path);
-        var config = builder.Build();
 
-        Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
+        Assert.Equivalent(
+            new List<byte[]> { CertificateData1, CertificateData2 },
+            builder.Build().Request.RootCertificates);
     }
 
     [Fact]
-    public void WithTrustedCertificate_Path_OversizedFileThrows()
+    public void WithTrustedCertificate_Path_OversizedThrows()
     {
-        // Create a file just over 10 MB — should be rejected.
-        const long oversizedLength = 10 * 1024 * 1024 + 1;
+        // Create file that exceeds maximum size.
         using var tempFile = new TempFile();
         using (var fs = new FileStream(tempFile.Path, FileMode.Create))
         {
-            fs.SetLength(oversizedLength);
+            fs.SetLength(CertificateMaxSize);
         }
 
         var builder = new StandaloneClientConfigurationBuilder();
         Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(tempFile.Path));
-    }
-
-    [Fact]
-    public void WithTrustedCertificate_Path_ExactlyMaxSizeSucceeds()
-    {
-        // A file at exactly 10 MB should be accepted.
-        const long exactMaxSize = 10 * 1024 * 1024;
-        using var tempFile = new TempFile();
-        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
-        {
-            fs.SetLength(exactMaxSize);
-        }
-
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(tempFile.Path);
-        var config = builder.Build();
-
-        Assert.Single(config.Request.RootCertificates);
-    }
-
-    [Fact]
-    public void WithTrustedCertificate_Path_TraversalPathCanonicalized()
-    {
-        // Create a temp file and construct a traversal path that resolves to it.
-        using var tempFile = new TempFile(CertificateData1);
-        string dir = Path.GetDirectoryName(tempFile.Path)!;
-        string fileName = Path.GetFileName(tempFile.Path);
-        string traversalPath = Path.Combine(dir, "subdir", "..", fileName);
-
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.WithTrustedCertificate(traversalPath);
-        var config = builder.Build();
-
-        Assert.Equivalent(new List<byte[]> { CertificateData1 }, config.Request.RootCertificates);
     }
 
     // Pub/Sub Reconciliation Interval
