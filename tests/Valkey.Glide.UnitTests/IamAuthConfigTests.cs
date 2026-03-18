@@ -4,58 +4,85 @@ namespace Valkey.Glide.UnitTests;
 
 public class IamAuthConfigTests
 {
-    private const string ClusterName = "testClusterName";
-    private const string Region = "testRegion";
+    #region Constants & Data
+
+    private static readonly string ClusterName = "testClusterName";
+    private static readonly string Region = "testRegion";
+    private static readonly uint RefreshInterval = 600u;
+
+    public static TheoryData<uint> ValidRefreshIntervals =>
+        [IamAuthConfig.MinRefreshIntervalSeconds,
+         (IamAuthConfig.MinRefreshIntervalSeconds + IamAuthConfig.MaxRefreshIntervalSeconds)/ 2,
+        IamAuthConfig.MaxRefreshIntervalSeconds];
+
+    public static TheoryData<uint> InvalidRefreshIntervals =>
+        [uint.MinValue,
+        IamAuthConfig.MinRefreshIntervalSeconds - 1,
+        IamAuthConfig.MaxRefreshIntervalSeconds + 1,
+        uint.MaxValue];
+
+    #endregion
+    #region Tests
 
     [Fact]
-    public void NullRefreshInterval_Succeeds()
+    public void Constructor_WithRequiredArgs()
     {
-        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, null);
+        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
+
+        Assert.Equal(ClusterName, config.ClusterName);
+        Assert.Equal(ServiceType.ElastiCache, config.ServiceType);
+        Assert.Equal(Region, config.Region);
         Assert.Null(config.RefreshIntervalSeconds);
     }
 
     [Fact]
-    public void BoundaryRefreshInterval_Succeeds()
+    public void Constructor_WithAllArgs()
     {
-        var configMin = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 10);
-        Assert.Equal(10u, configMin.RefreshIntervalSeconds);
+        var config = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, RefreshInterval);
 
-        var configMax = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 3600);
-        Assert.Equal(3600u, configMax.RefreshIntervalSeconds);
+        Assert.Equal(ClusterName, config.ClusterName);
+        Assert.Equal(ServiceType.MemoryDB, config.ServiceType);
+        Assert.Equal(Region, config.Region);
+        Assert.Equal(RefreshInterval, config.RefreshIntervalSeconds);
     }
 
     [Fact]
-    public void NullClusterName_Throws()
-    {
-        _ = Assert.Throws<ArgumentNullException>(
+    public void Constructor_NullClusterName_Throws()
+        => _ = Assert.Throws<ArgumentNullException>(
             () => new IamAuthConfig(null!, ServiceType.ElastiCache, Region));
-    }
 
     [Fact]
-    public void NullRegion_Throws()
-    {
-        _ = Assert.Throws<ArgumentNullException>(
+    public void Constructor_NullRegion_Throws()
+        => _ = Assert.Throws<ArgumentNullException>(
             () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, null!));
+
+    [Theory]
+    [MemberData(nameof(ValidRefreshIntervals))]
+    public void Constructor_ValidRefreshInterval_Succeeds(uint interval)
+    {
+        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, interval);
+        Assert.Equal(interval, config.RefreshIntervalSeconds);
     }
 
+    [Theory]
+    [MemberData(nameof(InvalidRefreshIntervals))]
+    public void Constructor_InvalidRefreshInterval_Throws(uint interval)
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(
+            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, interval));
+
     [Fact]
-    public void ToString_RedactsSensitiveFields()
+    public void ToString_ContainsServiceType()
     {
-        var config = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
+        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
         string result = config.ToString();
 
-        Assert.Contains("ServiceType", result);
-        Assert.DoesNotContain("my-cluster", result);
-        Assert.DoesNotContain("us-east-1", result);
+        // Verify that string representation contains the service type
+        // but not the cluster name, region, or refresh interval.
+        Assert.Contains(ServiceType.ElastiCache.ToString(), result);
+        Assert.DoesNotContain(ClusterName, result);
+        Assert.DoesNotContain(Region, result);
+        Assert.DoesNotContain(RefreshInterval.ToString(), result);
     }
 
-    [Fact]
-    public void RefreshInterval_BelowMinimum_Throws()
-        => _ = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 1));
-
-    [Fact]
-    public void RefreshInterval_AboveMaximum_Throws()
-        => _ = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 86400));
+    #endregion
 }
