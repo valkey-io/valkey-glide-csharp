@@ -6,14 +6,14 @@ public class ServerCredentialsTests
 {
     #region Constants
 
-    private static readonly string Username = "TEST_USERNAME";
-    private static readonly string Password = "TEST_PASSWORD";
+    private static readonly string Username = "USERNAME";
+    private static readonly string Password = "PASSWORD";
 
     private static readonly IamAuthConfig IamAuthConfig = new(
-        clusterName: "TEST_CLUSTER_NAME",
+        clusterName: "CLUSTER_NAME",
         serviceType: ServiceType.ElastiCache,
-        region: "TEST_REGION",
-        refreshIntervalSeconds: 600u);
+        region: "REGION",
+        refreshIntervalSeconds: IamAuthConfig.MinRefreshIntervalSeconds + 1);
 
     #endregion
     #region Tests

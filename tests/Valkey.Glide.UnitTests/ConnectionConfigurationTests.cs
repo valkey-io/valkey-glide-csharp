@@ -8,12 +8,14 @@ namespace Valkey.Glide.UnitTests;
 
 public class ConnectionConfigurationTests
 {
+    #region Constants
+
     // Authentication constants.
-    private const string Username = "testUsername";
-    private const string Password = "testPassword";
-    private const string ClusterName = "testClusterName";
-    private const string Region = "testRegion";
-    private const uint RefreshIntervalSeconds = 600;
+    private static readonly string Username = "USERNAME";
+    private static readonly string Password = "PASSWORD";
+    private static readonly string ClusterName = "CLUSTER_NAME";
+    private static readonly string Region = "REGION";
+    private static readonly uint RefreshIntervalSeconds = IamAuthConfig.MinRefreshIntervalSeconds + 1;
 
     // Certificate data constants.
     private static readonly byte[] CertificateData1 = [0x30, 0x82, 0x01, 0x00];
@@ -25,8 +27,8 @@ public class ConnectionConfigurationTests
     private static readonly uint ExponentBase = 2u;
     private static readonly uint JitterPercent = 10u;
 
-    // Authentication & Credentials
-    // ----------------------------
+    #endregion
+    #region Authentication & Credentials Tests
 
     [Fact]
     public void WithAuthentication_UsernamePassword()
@@ -79,7 +81,7 @@ public class ConnectionConfigurationTests
         Assert.Equal(Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
-        Assert.Equal(600u, iamCredentials.RefreshIntervalSeconds);
+        Assert.Equal(1800u, iamCredentials.RefreshIntervalSeconds);
 
         _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
         _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
@@ -182,8 +184,8 @@ public class ConnectionConfigurationTests
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
     }
 
-    // Refresh Topology Configuration
-    // ------------------------------
+    #endregion
+    #region Refresh Topology Configuration Tests
 
     [Fact]
     public void RefreshTopologyFromInitialNodes_Default()
@@ -211,8 +213,8 @@ public class ConnectionConfigurationTests
         Assert.False(config.Request.RefreshTopologyFromInitialNodes);
     }
 
-    // TLS Configuration
-    // -----------------
+    #endregion
+    #region TLS Configuration Tests
 
     [Fact]
     public void UseTls()
@@ -405,8 +407,8 @@ public class ConnectionConfigurationTests
         Assert.Equivalent(new List<byte[]> { CertificateData1, CertificateData2 }, config.Request.RootCertificates);
     }
 
-    // Pub/Sub Reconciliation Interval
-    // -------------------------------
+    #endregion
+    #region Pub/Sub Reconciliation Interval Tests
 
     [Fact]
     public void PubSubReconciliationInterval_Default()
@@ -439,8 +441,8 @@ public class ConnectionConfigurationTests
         _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
     }
 
-    // Connection Retry Strategy
-    // -------------------------
+    #endregion
+    #region Connection Retry Strategy Tests
 
     [Fact]
     public void WithConnectionRetryStrategy_Standalone_NotSpecified()
@@ -560,4 +562,5 @@ public class ConnectionConfigurationTests
         Assert.Equal(JitterPercent, strategy.JitterPercent);
     }
 
+    #endregion
 }

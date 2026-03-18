@@ -4,15 +4,18 @@ namespace Valkey.Glide.UnitTests;
 
 public class IamAuthConfigTests
 {
-    #region Constants & Data
+    #region Constants
 
-    private static readonly string ClusterName = "testClusterName";
-    private static readonly string Region = "testRegion";
-    private static readonly uint RefreshInterval = 600u;
+    private static readonly string ClusterName = "CLUSTER_NAME";
+    private static readonly string Region = "REGION";
+    private static readonly uint RefreshInterval = IamAuthConfig.MinRefreshIntervalSeconds + 1;
+
+    #endregion
+    #region Data
 
     public static TheoryData<uint> ValidRefreshIntervals =>
         [IamAuthConfig.MinRefreshIntervalSeconds,
-         (IamAuthConfig.MinRefreshIntervalSeconds + IamAuthConfig.MaxRefreshIntervalSeconds)/ 2,
+         RefreshInterval,
         IamAuthConfig.MaxRefreshIntervalSeconds];
 
     public static TheoryData<uint> InvalidRefreshIntervals =>

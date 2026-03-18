@@ -22,12 +22,12 @@ public class IamAuthConfig(
     /// <summary>
     /// Minimum refresh interval in seconds.
     /// </summary>
-    public static readonly uint MinRefreshIntervalSeconds = 10;
+    public static readonly uint MinRefreshIntervalSeconds = 15 * 60; // 15 minutes
 
     /// <summary>
     /// Maximum refresh interval in seconds.
     /// </summary>
-    public static readonly uint MaxRefreshIntervalSeconds = 3600;
+    public static readonly uint MaxRefreshIntervalSeconds = 12 * 60 * 60; // 12 hours
 
     #endregion
     #region Public Properties
@@ -48,7 +48,7 @@ public class IamAuthConfig(
     public string Region { get; set; } = region ?? throw new ArgumentNullException(nameof(region));
 
     /// <summary>
-    /// Optional refresh interval in seconds. Must be between 10 and 3600 if specified.
+    /// Optional refresh interval in seconds. Must be between 900 and 43200 if specified.
     /// </summary>
     public uint? RefreshIntervalSeconds
     {
