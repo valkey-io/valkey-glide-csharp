@@ -68,7 +68,9 @@ public sealed class OpenTelemetryConfig
         public Builder WithFlushInterval(TimeSpan flushInterval)
         {
             if (flushInterval <= TimeSpan.Zero)
+            {
                 throw new ArgumentException("Flush interval must be positive", nameof(flushInterval));
+            }
 
             _flushInterval = flushInterval;
             return this;
@@ -81,7 +83,9 @@ public sealed class OpenTelemetryConfig
         public OpenTelemetryConfig Build()
         {
             if (_traces == null && _metrics == null)
+            {
                 throw new InvalidOperationException("At least one of traces or metrics must be configured");
+            }
 
             return new OpenTelemetryConfig(_traces, _metrics, _flushInterval);
         }
@@ -153,7 +157,7 @@ public sealed class TracesConfig
         {
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                throw new ArgumentException("Endpoint cannot be null or empty", nameof(endpoint));
+                throw new ArgumentException("Endpoint cannot be null, empty, or whitespace only", nameof(endpoint));
             }
 
             if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))
@@ -228,7 +232,7 @@ public sealed class MetricsConfig
         {
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                throw new ArgumentException("Endpoint cannot be null or empty", nameof(endpoint));
+                throw new ArgumentException("Endpoint cannot be null, empty, or whitespace only", nameof(endpoint));
             }
 
             if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))

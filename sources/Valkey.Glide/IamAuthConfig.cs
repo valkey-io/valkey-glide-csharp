@@ -69,20 +69,20 @@ public class IamAuthConfig(
     /// <summary>
     /// Validates the specified refresh inverval.
     /// </summary>
-    /// <param name="value">The refresh interval in seconds.</param>
+    /// <param name="refreshIntervalSeconds">The refresh interval to validate.</param>
     /// <returns>The validated refresh interval</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is less than
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="refreshIntervalSeconds"/> is less than
     /// <see cref="MinRefreshIntervalSeconds"/> or greater than <see cref="MaxRefreshIntervalSeconds"/>.
     /// </exception>
-    private static uint? ValidateRefreshInterval(uint? value)
+    private static uint? ValidateRefreshInterval(uint? refreshIntervalSeconds)
     {
-        if (value.HasValue && (value.Value < MinRefreshIntervalSeconds || value.Value > MaxRefreshIntervalSeconds))
+        if (refreshIntervalSeconds.HasValue && (refreshIntervalSeconds.Value < MinRefreshIntervalSeconds || refreshIntervalSeconds.Value > MaxRefreshIntervalSeconds))
         {
             var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
-            throw new ArgumentOutOfRangeException(nameof(value), value, msg);
+            throw new ArgumentOutOfRangeException(nameof(refreshIntervalSeconds), refreshIntervalSeconds, msg);
         }
 
-        return value;
+        return refreshIntervalSeconds;
     }
 
     #endregion
