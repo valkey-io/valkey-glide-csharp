@@ -4,7 +4,12 @@ namespace Valkey.Glide.UnitTests;
 
 public class MetricsConfigTests
 {
+    #region Constants
+
     private static readonly string Endpoint = "http://localhost:4321";
+
+    #endregion
+    #region Tests
 
     [Fact]
     public void WithEndpoint_WithInvalidEndpoint_ThrowsArgumentException()
@@ -40,4 +45,6 @@ public class MetricsConfigTests
         _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint("://missing-scheme"));
         _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint("just some text"));
     }
+
+    #endregion
 }

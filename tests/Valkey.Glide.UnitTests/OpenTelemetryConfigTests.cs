@@ -4,8 +4,13 @@ namespace Valkey.Glide.UnitTests;
 
 public class OpenTelemetryConfigTests
 {
+    #region Constants
+
     private static readonly string Endpoint = "http://localhost:4321";
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMinutes(1);
+
+    #endregion
+    #region Tests
 
     [Fact]
     public void WithFlushInterval_WithInvalidInterval_ThrowsArgumentException()
@@ -58,4 +63,6 @@ public class OpenTelemetryConfigTests
         Assert.NotNull(config.Metrics);
         Assert.Equal(FlushInterval, config.FlushInterval);
     }
+
+    #endregion
 }
