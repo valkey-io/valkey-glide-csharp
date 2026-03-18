@@ -22,12 +22,12 @@ public class IamAuthConfig(
     /// <summary>
     /// Minimum refresh interval in seconds.
     /// </summary>
-    public static readonly uint MinRefreshIntervalSeconds = 15 * 60; // 15 minutes
+    public const uint MinRefreshIntervalSeconds = 15 * 60; // 15 minutes
 
     /// <summary>
     /// Maximum refresh interval in seconds.
     /// </summary>
-    public static readonly uint MaxRefreshIntervalSeconds = 12 * 60 * 60; // 12 hours
+    public const uint MaxRefreshIntervalSeconds = 12 * 60 * 60; // 12 hours
 
     #endregion
     #region Public Properties
