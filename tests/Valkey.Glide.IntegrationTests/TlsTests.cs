@@ -4,8 +4,10 @@ using System.Text;
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.TestUtils.Client;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -128,6 +130,21 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
             => await GlideClusterClient.CreateClient(configBuilder.Build()));
     }
 
+    [Theory]
+    [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
+    public async Task Cluster_WithIpAddress_Succeeds(string address)
+    {
+        var server = fixture.TlsClusterServer;
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ClusterClientConfigurationBuilder()
+            .WithAddress(address, port)
+            .WithTls()
+            .WithTrustedCertificate(server.CertificateData!);
+
+        using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
+    }
+
     #endregion
     #region Standalone Tests
 
@@ -226,6 +243,21 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
 
         _ = await Assert.ThrowsAsync<ConnectionException>(async ()
             => await GlideClient.CreateClient(configBuilder.Build()));
+    }
+
+    [Theory]
+    [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
+    public async Task Standalone_WithIpAddress_Succeeds(string address)
+    {
+        var server = fixture.TlsStandaloneServer;
+        var port = server.Addresses.First().Port;
+        var configBuilder = new StandaloneClientConfigurationBuilder()
+            .WithAddress(address, port)
+            .WithTls()
+            .WithTrustedCertificate(server.CertificateData!);
+
+        using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
     }
 
     #endregion
