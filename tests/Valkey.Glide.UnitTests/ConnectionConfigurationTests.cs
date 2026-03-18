@@ -610,15 +610,11 @@ public class ConnectionConfigurationTests
 
     [Fact]
     public void IamAuthConfig_RefreshInterval_BelowMinimum_Throws()
-    {
-        _ = Assert.Throws<ArgumentOutOfRangeException>(
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(
             () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 1));
-    }
 
     [Fact]
     public void IamAuthConfig_RefreshInterval_AboveMaximum_Throws()
-    {
-        _ = Assert.Throws<ArgumentOutOfRangeException>(
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(
             () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 86400));
-    }
 }
