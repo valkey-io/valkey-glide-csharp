@@ -8,13 +8,29 @@ namespace Valkey.Glide;
 /// <param name="clusterName">The name of the cluster.</param>
 /// <param name="serviceType">The AWS service type.</param>
 /// <param name="region">The AWS region where the cluster is located.</param>
-/// <param name="refreshIntervalSeconds">Optional refresh interval in seconds (must be between 10 and 3600 if specified).</param>
-public class IamAuthConfig(string clusterName, ServiceType serviceType, string region, uint? refreshIntervalSeconds = null)
+/// <param name="refreshIntervalSeconds">Optional refresh interval in seconds.
+/// Must be between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> if specified.
+/// </param>
+public class IamAuthConfig(
+    string clusterName,
+    ServiceType serviceType,
+    string region,
+    uint? refreshIntervalSeconds = null)
 {
-    private const uint MinRefreshIntervalSeconds = 10;
-    private const uint MaxRefreshIntervalSeconds = 3600;
+    #region Constants
 
-    private uint? _refreshIntervalSeconds = ValidateRefreshInterval(refreshIntervalSeconds);
+    /// <summary>
+    /// Minimum refresh interval in seconds.
+    /// </summary>
+    public static readonly uint MinRefreshIntervalSeconds = 10;
+
+    /// <summary>
+    /// Maximum refresh interval in seconds.
+    /// </summary>
+    public static readonly uint MaxRefreshIntervalSeconds = 3600;
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// The name of the cluster.
@@ -36,25 +52,38 @@ public class IamAuthConfig(string clusterName, ServiceType serviceType, string r
     /// </summary>
     public uint? RefreshIntervalSeconds
     {
-        get => _refreshIntervalSeconds;
-        set => _refreshIntervalSeconds = ValidateRefreshInterval(value);
-    }
+        get;
+        set => field = ValidateRefreshInterval(value);
+    } = ValidateRefreshInterval(refreshIntervalSeconds);
 
-    /// <summary>
-    /// Returns a safe string representation that omits sensitive fields (cluster name, region).
-    /// </summary>
+    #endregion
+    #region Public Methods
+
     public override string ToString() =>
+        // Omit sensitive information from string respresentation.
         $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
 
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Validates the specified refresh inverval.
+    /// </summary>
+    /// <param name="value">The refresh interval in seconds.</param>
+    /// <returns>The validated refresh interval</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is less than
+    /// <see cref="MinRefreshIntervalSeconds"/> or greater than <see cref="MaxRefreshIntervalSeconds"/>.
+    /// </exception>
     private static uint? ValidateRefreshInterval(uint? value)
     {
         if (value.HasValue && (value.Value < MinRefreshIntervalSeconds || value.Value > MaxRefreshIntervalSeconds))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.");
+            var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
+            throw new ArgumentOutOfRangeException(nameof(value), value, msg);
         }
+
         return value;
     }
+
+    #endregion
 }
