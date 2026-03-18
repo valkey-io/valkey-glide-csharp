@@ -559,4 +559,66 @@ public class ConnectionConfigurationTests
         Assert.Equal(ExponentBase, strategy.ExponentBase);
         Assert.Equal(JitterPercent, strategy.JitterPercent);
     }
+
+    // IamAuthConfig — Preservation
+    // -----------------------------
+
+    [Fact]
+    public void IamAuthConfig_NullRefreshInterval_Succeeds()
+    {
+        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, null);
+        Assert.Null(config.RefreshIntervalSeconds);
+    }
+
+    [Fact]
+    public void IamAuthConfig_BoundaryRefreshInterval_Succeeds()
+    {
+        var configMin = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 10);
+        Assert.Equal(10u, configMin.RefreshIntervalSeconds);
+
+        var configMax = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 3600);
+        Assert.Equal(3600u, configMax.RefreshIntervalSeconds);
+    }
+
+    [Fact]
+    public void IamAuthConfig_NullClusterName_Throws()
+    {
+        _ = Assert.Throws<ArgumentNullException>(
+            () => new IamAuthConfig(null!, ServiceType.ElastiCache, Region));
+    }
+
+    [Fact]
+    public void IamAuthConfig_NullRegion_Throws()
+    {
+        _ = Assert.Throws<ArgumentNullException>(
+            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, null!));
+    }
+
+    // IamAuthConfig — Bug Condition Exploration
+    // ------------------------------------------
+
+    [Fact]
+    public void IamAuthConfig_ToString_RedactsSensitiveFields()
+    {
+        var config = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
+        string result = config.ToString();
+
+        Assert.Contains("ServiceType", result);
+        Assert.DoesNotContain("my-cluster", result);
+        Assert.DoesNotContain("us-east-1", result);
+    }
+
+    [Fact]
+    public void IamAuthConfig_RefreshInterval_BelowMinimum_Throws()
+    {
+        _ = Assert.Throws<ArgumentOutOfRangeException>(
+            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 1));
+    }
+
+    [Fact]
+    public void IamAuthConfig_RefreshInterval_AboveMaximum_Throws()
+    {
+        _ = Assert.Throws<ArgumentOutOfRangeException>(
+            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, 86400));
+    }
 }

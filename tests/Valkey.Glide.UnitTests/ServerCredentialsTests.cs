@@ -70,4 +70,28 @@ public class ServerCredentialsTests
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamConfig));
         Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
     }
+
+    [Fact]
+    public void ToString_MasksPassword_PasswordAuth()
+    {
+        var credentials = new ServerCredentials(Username, Password);
+        string result = credentials.ToString();
+
+        Assert.Contains("Password = *****", result);
+        Assert.DoesNotContain(Password, result);
+        Assert.Contains("IsIamAuth = False", result);
+        Assert.Contains($"Username = {Username}", result);
+    }
+
+    [Fact]
+    public void ToString_MasksPassword_IamAuth()
+    {
+        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
+        var credentials = new ServerCredentials(Username, iamConfig);
+        string result = credentials.ToString();
+
+        Assert.Contains("Password = *****", result);
+        Assert.Contains("IsIamAuth = True", result);
+        Assert.Contains($"Username = {Username}", result);
+    }
 }

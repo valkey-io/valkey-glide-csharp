@@ -111,6 +111,15 @@ public class TracesConfigTests
         Assert.Equal(Endpoint, config.Endpoint);
         Assert.Equal(SamplePercentage, config.SamplePercentage);
     }
+
+    [Fact]
+    public void WithEndpoint_WithInvalidUri_ThrowsArgumentException()
+    {
+        var builder = TracesConfig.CreateBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("not-a-url"));
+        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("://missing-scheme"));
+        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("just some text"));
+    }
 }
 
 public class MetricsConfigTests
@@ -141,5 +150,14 @@ public class MetricsConfigTests
             .Build();
 
         Assert.Equal(Endpoint, config.Endpoint);
+    }
+
+    [Fact]
+    public void WithEndpoint_WithInvalidUri_ThrowsArgumentException()
+    {
+        var builder = MetricsConfig.CreateBuilder();
+        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("not-a-url"));
+        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("://missing-scheme"));
+        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("just some text"));
     }
 }
