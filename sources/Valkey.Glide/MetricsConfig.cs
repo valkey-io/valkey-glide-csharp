@@ -15,15 +15,12 @@ public sealed class MetricsConfig
     public string Endpoint { get; }
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
     private MetricsConfig(string endpoint)
     {
         Endpoint = endpoint;
     }
-
-    #endregion
-    #region Public Methods
 
     /// <summary>
     /// Creates a new MetricsConfig builder.

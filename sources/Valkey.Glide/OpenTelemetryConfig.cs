@@ -25,7 +25,7 @@ public sealed class OpenTelemetryConfig
     public TimeSpan? FlushInterval { get; }
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
     private OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, TimeSpan? flushInterval)
     {

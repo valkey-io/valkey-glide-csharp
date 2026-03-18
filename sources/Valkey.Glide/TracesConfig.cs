@@ -27,7 +27,7 @@ public sealed class TracesConfig
     public uint SamplePercentage { get; private set; }
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
     private TracesConfig(string endpoint, uint samplePercentage)
     {
@@ -35,13 +35,13 @@ public sealed class TracesConfig
         SamplePercentage = samplePercentage;
     }
 
-    #endregion
-    #region Public Methods
-
     /// <summary>
     /// Creates a new TracesConfig builder.
     /// </summary>
     public static Builder CreateBuilder() => new();
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Sets the sample percentage.

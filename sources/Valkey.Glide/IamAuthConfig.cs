@@ -48,7 +48,8 @@ public class IamAuthConfig(
     public string Region { get; set; } = region ?? throw new ArgumentNullException(nameof(region));
 
     /// <summary>
-    /// Optional refresh interval in seconds. Must be between 900 and 43200 if specified.
+    /// Optional refresh interval in seconds.
+    /// Must be between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> inclusive if specified.
     /// </summary>
     public uint? RefreshIntervalSeconds
     {
@@ -71,8 +72,8 @@ public class IamAuthConfig(
     /// </summary>
     /// <param name="refreshIntervalSeconds">The refresh interval to validate.</param>
     /// <returns>The validated refresh interval</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="refreshIntervalSeconds"/> is less than
-    /// <see cref="MinRefreshIntervalSeconds"/> or greater than <see cref="MaxRefreshIntervalSeconds"/>.
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="refreshIntervalSeconds"/> is
+    /// not between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> inclusive.
     /// </exception>
     private static uint? ValidateRefreshInterval(uint? refreshIntervalSeconds)
     {
