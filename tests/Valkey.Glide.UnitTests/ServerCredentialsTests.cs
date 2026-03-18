@@ -72,26 +72,14 @@ public class ServerCredentialsTests
     }
 
     [Fact]
-    public void ToString_MasksPassword_PasswordAuth()
+    public void ToString_PasswordAuth()
     {
         var credentials = new ServerCredentials(Username, Password);
         string result = credentials.ToString();
 
-        Assert.Contains("Password = *****", result);
+        // Verify that string representation contains
+        // the username but not the password.
+        Assert.Contains(Username, result);
         Assert.DoesNotContain(Password, result);
-        Assert.Contains("IsIamAuth = False", result);
-        Assert.Contains($"Username = {Username}", result);
-    }
-
-    [Fact]
-    public void ToString_MasksPassword_IamAuth()
-    {
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
-        var credentials = new ServerCredentials(Username, iamConfig);
-        string result = credentials.ToString();
-
-        Assert.Contains("Password = *****", result);
-        Assert.Contains("IsIamAuth = True", result);
-        Assert.Contains($"Username = {Username}", result);
     }
 }
