@@ -76,7 +76,7 @@ public class ServerCredentials
     public bool IsIamAuth() => IamConfig != null;
 
     public override string ToString() =>
-        // Omit sensitive information from string respresentation.
+        // Override default implementation to hide sensitive information.
         $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
 
     #endregion
