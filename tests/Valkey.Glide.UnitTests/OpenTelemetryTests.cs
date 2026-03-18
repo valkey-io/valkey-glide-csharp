@@ -10,7 +10,7 @@ public class OpenTelemetryTests : IDisposable
     private const uint SamplePercentageLow = 10u;
     private const uint SamplePercentageHigh = 90u;
     private const uint SamplePercentageMax = 100u;
-    private const string Endpoint = "ENDPOINT";
+    private const string Endpoint = "http://localhost:4317";
 
     public OpenTelemetryTests()
     {

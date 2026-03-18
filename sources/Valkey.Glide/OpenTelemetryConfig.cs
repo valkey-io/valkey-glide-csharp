@@ -148,12 +148,17 @@ public sealed class TracesConfig
         /// <summary>
         /// Sets the endpoint for traces export.
         /// </summary>
-        /// <exception cref="ArgumentException">Thrown if endpoint is null or empty.</exception>
+        /// <exception cref="ArgumentException">Thrown if endpoint is null, empty, or not a valid absolute URI.</exception>
         public Builder WithEndpoint(string endpoint)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
             {
                 throw new ArgumentException("Endpoint cannot be null or empty", nameof(endpoint));
+            }
+
+            if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))
+            {
+                throw new ArgumentException("Endpoint must be a valid absolute URI", nameof(endpoint));
             }
 
             _endpoint = endpoint;
@@ -218,12 +223,17 @@ public sealed class MetricsConfig
         /// <summary>
         /// Sets the endpoint for metrics export.
         /// </summary>
-        /// <exception cref="ArgumentException">Thrown if endpoint is null or empty.</exception>
+        /// <exception cref="ArgumentException">Thrown if endpoint is null, empty, or not a valid absolute URI.</exception>
         public Builder WithEndpoint(string endpoint)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
             {
                 throw new ArgumentException("Endpoint cannot be null or empty", nameof(endpoint));
+            }
+
+            if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))
+            {
+                throw new ArgumentException("Endpoint must be a valid absolute URI", nameof(endpoint));
             }
 
             _endpoint = endpoint;

@@ -66,4 +66,10 @@ public class ServerCredentials
     /// Returns true if this instance is configured for IAM authentication.
     /// </summary>
     public bool IsIamAuth() => IamConfig != null;
+
+    /// <summary>
+    /// Returns a safe string representation that masks the password.
+    /// </summary>
+    public override string ToString() =>
+        $"ServerCredentials {{ Username = {Username}, Password = *****, IsIamAuth = {IsIamAuth()} }}";
 }
