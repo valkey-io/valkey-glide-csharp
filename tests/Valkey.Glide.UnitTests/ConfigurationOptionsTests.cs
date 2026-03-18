@@ -8,8 +8,8 @@ namespace Valkey.Glide.UnitTests;
 
 public class ConfigurationOptionsTests
 {
-    static readonly X509Certificate2 Certificate = CreateTestCertificate();
-    static readonly byte[] CertificateData = Certificate.Export(X509ContentType.Cert);
+    private static readonly X509Certificate2 Certificate = CreateTestCertificate();
+    private static readonly byte[] CertificateData = Certificate.Export(X509ContentType.Cert);
 
     [Fact]
     public void TrustIssuer_WithPath_NullThrows()
@@ -22,23 +22,29 @@ public class ConfigurationOptionsTests
     public void TrustIssuer_WithPath_NonExistentThrows()
     {
         var options = new ConfigurationOptions();
-        Assert.Throws<FileNotFoundException>(() => options.TrustIssuer("nonexistent.crt"));
+        _ = Assert.Throws<FileNotFoundException>(() => options.TrustIssuer("nonexistent.crt"));
     }
 
     [Fact]
     public void TrustIssuer_WithPath_EmptyThrows()
     {
         using var tempFile = new TempFile();
-
         var options = new ConfigurationOptions();
-        Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
+        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
-    public void TrustIssuer_WithCertificate_NullThrows()
+    public void TrustIssuer_WithPath_OversizedThrows()
     {
+        // Create file that exceeds maximum size.
+        using var tempFile = new TempFile();
+        using (var fs = new FileStream(tempFile.Path, FileMode.Create))
+        {
+            fs.SetLength(ConnectionConfiguration.CertificateMaxSize + 1);
+        }
+
         var options = new ConfigurationOptions();
-        Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((X509Certificate2)null!));
+        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
@@ -50,6 +56,29 @@ public class ConfigurationOptionsTests
         options.TrustIssuer(tempFile.Path);
 
         Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
+    }
+
+    [Fact]
+    public void TrustIssuer_WithPath_TraversalPathSucceeds()
+    {
+        // Create a temp file and construct a traversal path that resolves to it.
+        using var tempFile = new TempFile(CertificateData);
+
+        string dir = Path.GetDirectoryName(tempFile.Path)!;
+        string fileName = Path.GetFileName(tempFile.Path);
+        string traversalPath = Path.Combine(dir, "subdir", "..", fileName);
+
+        var options = new ConfigurationOptions();
+        options.TrustIssuer(traversalPath);
+
+        Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
+    }
+
+    [Fact]
+    public void TrustIssuer_WithCertificate_NullThrows()
+    {
+        var options = new ConfigurationOptions();
+        _ = Assert.Throws<ArgumentNullException>(() => options.TrustIssuer((X509Certificate2)null!));
     }
 
     [Fact]

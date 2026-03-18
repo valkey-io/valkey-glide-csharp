@@ -8,207 +8,238 @@ using static Valkey.Glide.TestUtils.Data;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
+/// Fixture class to manage server lifecycle for pub/sub introspection tests.
+/// </summary>
+public class PubSubIntrospectionFixture : IAsyncLifetime
+{
+    // Empty and populated servers.
+    private StandaloneServer? _emptyStandaloneServer;
+    private ClusterServer? _emptyClusterServer;
+    private StandaloneServer? _standaloneServer;
+    private ClusterServer? _clusterServer;
+
+    // Empty and populated clients.
+    public GlideClient? EmptyStandaloneClient;
+    public GlideClusterClient? EmptyClusterClient;
+    public GlideClient? StandaloneClient;
+    public GlideClusterClient? ClusterClient;
+
+    // Pub/sub channels for clients.
+    public readonly string Channel = BuildChannel();
+    public readonly string Pattern = BuildPattern();
+    public readonly string ShardedChannel = BuildChannel();
+
+    public async ValueTask InitializeAsync()
+    {
+        // Build servers.
+        _emptyStandaloneServer = new StandaloneServer();
+        _emptyClusterServer = new ClusterServer();
+        _standaloneServer = new StandaloneServer();
+        _clusterServer = new ClusterServer();
+
+        // Build clients.
+        EmptyStandaloneClient = await _emptyStandaloneServer.CreateStandaloneClientAsync();
+        EmptyClusterClient = await _emptyClusterServer.CreateClusterClientAsync();
+        StandaloneClient = await _standaloneServer.CreateStandaloneClientAsync();
+        ClusterClient = await _clusterServer.CreateClusterClientAsync();
+
+        // Subscribe clients.
+        foreach (BaseClient client in new BaseClient[] { StandaloneClient, ClusterClient })
+        {
+            await client.SubscribeAsync(Channel);
+            await client.PSubscribeAsync(Pattern);
+        }
+
+        if (IsShardedSupported())
+        {
+            await ClusterClient.SSubscribeAsync(ShardedChannel);
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        // Dispose clients.
+        BaseClient[] clients = [EmptyStandaloneClient!, EmptyClusterClient!, StandaloneClient!, ClusterClient!];
+        foreach (BaseClient client in clients)
+        {
+            client.Dispose();
+        }
+
+        // Dispose servers.
+        Server[] servers = [_emptyStandaloneServer!, _emptyClusterServer!, _standaloneServer!, _clusterServer!];
+        foreach (Server server in servers)
+        {
+            server.Dispose();
+        }
+
+        return new ValueTask();
+    }
+}
+
+/// <summary>
 /// Integration tests for pub/sub introspection commands.
 /// </summary>
 [Collection(typeof(PubSubIntrospectionTests))]
 [CollectionDefinition(DisableParallelization = true)]
-public class PubSubIntrospectionTests()
+public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : IClassFixture<PubSubIntrospectionFixture>
 {
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task PubSubChannelsAsync_ReturnsEmpty(bool isCluster)
+    public async Task PubSubChannelsAsync_ReturnsEmpty(bool isCluster)
     {
-        using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClientAsync();
-
-        // Verify no active channels.
-        Assert.Empty(await subscriber.PubSubChannelsAsync());
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        Assert.Empty(await client.PubSubChannelsAsync());
     }
 
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
+    public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
     {
-        var message = BuildMessage(PubSubChannelMode.Exact);
-        using var subscriber = await BuildSubscriber(isCluster, message);
-
-        // Verify channel is active.
-        Assert.Contains(message.Channel, await subscriber.PubSubChannelsAsync());
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        Assert.Empty(await client.PubSubChannelsAsync());
     }
 
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
+    public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
     {
-        var message = BuildMessage(PubSubChannelMode.Exact);
-        using var subscriber = await BuildSubscriber(isCluster, message);
+        // Create matching pattern by replacing 'channel' with wildcard.
+        string channel = fixture.Channel;
+        string pattern = channel.Replace("channel", "*");
+
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Contains(channel, await client.PubSubChannelsAsync(pattern));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
+    {
+        string channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+
+        Assert.Equivalent(
+            new Dictionary<string, long> { { channel, 0L } },
+            await client.PubSubNumSubAsync([channel]));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
+    {
+        string channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+
+        Assert.Equivalent(
+            new Dictionary<string, long> { { channel, 1L } },
+            await client.PubSubNumSubAsync([channel]));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        Assert.Equal(0L, await client.PubSubNumPatAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Equal(1L, await client.PubSubNumPatAsync());
+    }
+
+    [Fact]
+    public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsEmpty()
+    {
+        SkipUnlessShardedSupported();
+
+        GlideClusterClient client = fixture.EmptyClusterClient!;
+        Assert.Empty(await client.PubSubShardChannelsAsync());
+    }
+
+    [Fact]
+    public async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
+    {
+        SkipUnlessShardedSupported();
+
+        GlideClusterClient client = fixture.ClusterClient!;
+        Assert.Contains(fixture.ShardedChannel, await client.PubSubShardChannelsAsync());
+    }
+
+    [Fact]
+    public async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
+    {
+        SkipUnlessShardedSupported();
 
         // Create matching pattern by replacing 'channel' with wildcard.
-        var pattern = message.Channel.Replace("channel", "*");
+        string shardChannel = fixture.ShardedChannel;
+        string pattern = shardChannel.Replace("channel", "*");
 
-        // Verify that channel matching pattern is returned.
-        Assert.Contains(message.Channel, await subscriber.PubSubChannelsAsync(pattern));
+        GlideClusterClient client = fixture.ClusterClient!;
+        Assert.Equivalent(new[] { shardChannel }, await client.PubSubShardChannelsAsync(pattern));
+    }
+
+    [Fact]
+    public async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
+    {
+        SkipUnlessShardedSupported();
+
+        string channel = fixture.ShardedChannel;
+        GlideClusterClient client = fixture.EmptyClusterClient!;
+
+        Assert.Equivalent(
+            new Dictionary<string, long> { { channel, 0L } },
+            await client.PubSubShardNumSubAsync([channel]));
+    }
+
+    [Fact]
+    public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardedChannelCounts()
+    {
+        SkipUnlessShardedSupported();
+
+        string shardChannel = fixture.ShardedChannel;
+        GlideClusterClient client = fixture.ClusterClient!;
+
+        Assert.Equivalent(
+            new Dictionary<string, long> { { shardChannel, 1L } },
+            await client.PubSubShardNumSubAsync([shardChannel]));
     }
 
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
+    public async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
     {
-        var channel = BuildChannel();
-        using var subscriber = await BuildSubscriber(isCluster);
-
-        // Verify no subscribers to channel.
-        var expected = new Dictionary<string, long> { { channel, 0L } };
-        var actual = await subscriber.PubSubNumSubAsync([.. expected.Keys]);
-        Assert.Equivalent(expected, actual);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
-    {
-        var message1 = BuildMessage();
-        var message2 = BuildMessage();
-
-        using var subscriber = await BuildSubscriber(isCluster, [message1, message2]);
-
-        // Verify subscription counts for both channels.
-        var expected = new Dictionary<string, long> { { message1.Channel, 1L }, { message2.Channel, 1L } };
-        var actual = await subscriber.PubSubNumSubAsync([.. expected.Keys]);
-        Assert.Equivalent(expected, actual);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
-    {
-        using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClientAsync();
-
-        // Verify no active pattern subscriptions.
-        Assert.Equal(0L, await subscriber.PubSubNumPatAsync());
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
-    {
-        using var server = BuildServer(isCluster);
-        using var subscriber = await server.CreateClientAsync();
-
-        // Subscribe to patterns and wait to ensure subscriptions complete.
-        string[] patterns = ["pattern1*", "pattern2*"];
-        await subscriber.PSubscribeLazyAsync(patterns);
-        await Task.Delay(RetryInterval);
-
-        // Verify active pattern subscriptions.
-        Assert.Equal(2L, await subscriber.PubSubNumPatAsync());
-    }
-
-    [Fact]
-    public static async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsEmpty()
-    {
-        SkipUnlessShardedSupported();
-
-        using var server = new ClusterServer();
-        using var subscriber = await server.CreateClusterClientAsync();
-
-        // Verify no active channels.
-        Assert.Empty(await subscriber.PubSubShardChannelsAsync());
-    }
-
-    [Fact]
-    public static async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
-    {
-        SkipUnlessShardedSupported();
-
-        var message = BuildMessage(PubSubChannelMode.Sharded);
-        using var subscriber = await BuildClusterSubscriber(message);
-
-        // Verify that sharded channel is active.
-        Assert.Contains(message.Channel, await subscriber.PubSubShardChannelsAsync());
-    }
-
-    [Fact]
-    public static async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
-    {
-        SkipUnlessShardedSupported();
-
-        var message = BuildMessage(PubSubChannelMode.Sharded);
-        using var subscriber = await BuildClusterSubscriber(message);
-
-        // Verify that sharded channel is active.
-        Assert.Equivalent(new[] { message.Channel }, await subscriber.PubSubShardChannelsAsync(message.Channel));
-    }
-
-    [Fact]
-    public static async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
-    {
-        SkipUnlessShardedSupported();
-
-        var channel = BuildChannel();
-        using var client = TestConfiguration.DefaultClusterClient();
-
-        // Verify no subscribers to sharded channel.
-        var expected = new Dictionary<string, long> { { channel, 0L } };
-        var actual = await client.PubSubShardNumSubAsync([.. expected.Keys]);
-        Assert.Equivalent(expected, actual);
-    }
-
-    [Fact]
-    public static async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardedChannelCounts()
-    {
-        SkipUnlessShardedSupported();
-
-        var message1 = BuildMessage(PubSubChannelMode.Sharded);
-        var message2 = BuildMessage(PubSubChannelMode.Sharded);
-
-        var messages = new[] { message1, message2 };
-        using var subscriber = await BuildClusterSubscriber(messages);
-
-        // Verify subscription counts for both sharded channels.
-        var expected = new Dictionary<string, long> { { message1.Channel, 1L }, { message2.Channel, 1L } };
-        var actual = await subscriber.PubSubShardNumSubAsync([message1.Channel, message2.Channel]);
-        Assert.Equivalent(expected, actual);
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
-    {
-        using var subscriber = await BuildSubscriber(isCluster, []);
-        var state = await subscriber.GetSubscriptionsAsync();
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        PubSubState state = await client.GetSubscriptionsAsync();
 
         // Verify subscriptions.
-        foreach (var subscriptions in new[] { state.Desired, state.Actual })
+        foreach (IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>>? subscriptions in new[] { state.Desired, state.Actual })
         {
-            foreach (var mode in Enum.GetValues<PubSubChannelMode>())
+            foreach (PubSubChannelMode mode in Enum.GetValues<PubSubChannelMode>())
+            {
                 Assert.Empty(subscriptions[mode]);
+            }
         }
     }
 
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public static async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
+    public async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
     {
-        // Build messages
-        var messages = new List<PubSubMessage>()
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        PubSubState state = await client.GetSubscriptionsAsync();
+
+        Dictionary<PubSubChannelMode, HashSet<string>> expected = new()
         {
-            BuildMessage(PubSubChannelMode.Exact),
-            BuildMessage(PubSubChannelMode.Pattern),
+            [PubSubChannelMode.Exact] = [fixture.Channel],
+            [PubSubChannelMode.Pattern] = [fixture.Pattern],
+            [PubSubChannelMode.Sharded] = IsShardedSupported(isCluster) ? [fixture.ShardedChannel] : []
         };
 
-        if (IsShardedSupported(isCluster))
-            messages.Add(BuildMessage(PubSubChannelMode.Sharded));
-
-        using var subscriber = await BuildSubscriber(isCluster, messages);
-        await AssertSubscribedAsync(subscriber, messages);
-
-        // Verify subscriptions.
-        var state = await subscriber.GetSubscriptionsAsync();
-
-        var targets = BuildSubscriptions(messages);
-        Assert.Equivalent(targets, state.Desired);
-        Assert.Equivalent(targets, state.Actual);
+        Assert.Equivalent(expected, state.Desired);
+        Assert.Equivalent(expected, state.Actual);
     }
 }

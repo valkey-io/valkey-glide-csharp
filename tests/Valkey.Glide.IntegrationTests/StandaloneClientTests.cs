@@ -55,7 +55,7 @@ public class StandaloneClientTests(TestConfiguration config)
         await using var client2 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithTls(false).Build());
         await using var client3 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithConnectionTimeout(TimeSpan.FromSeconds(2)).Build());
         await using var client4 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithRequestTimeout(TimeSpan.FromSeconds(2)).Build());
-        await using var client5 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithDataBaseId(4).Build());
+        await using var client5 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithDatabaseId(4).Build());
         await using var client6 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithConnectionRetryStrategy(1, 2, 3).Build());
         await using var client7 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithAuthentication("default", "").Build());
         await using var client8 = await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2).Build());

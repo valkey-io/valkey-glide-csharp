@@ -10,6 +10,11 @@ namespace Valkey.Glide;
 
 public abstract class ConnectionConfiguration
 {
+    /// <summary>
+    /// Maximum root certificate size for TLS connections.
+    /// </summary>
+    public static readonly long CertificateMaxSize = 10 * 1024 * 1024; // 10 MB
+
     #region Structs and Enums definitions
 
     internal record ConnectionConfig
@@ -30,6 +35,7 @@ public abstract class ConnectionConfiguration
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
         public readonly List<byte[]> RootCertificates = [];
         public TimeSpan? PubSubReconciliationInterval;
+        public bool ReadOnly;
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(
@@ -48,7 +54,8 @@ public abstract class ConnectionConfiguration
                 RefreshTopologyFromInitialNodes,
                 PubSubSubscriptions,
                 RootCertificates,
-                (uint?)PubSubReconciliationInterval?.TotalMilliseconds
+                (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
+                ReadOnly
             );
     }
 
@@ -408,7 +415,9 @@ public abstract class ConnectionConfiguration
                 if (value)
                 {
                     if (Config.TlsMode == TlsMode.NoTls)
+                    {
                         Config.TlsMode = TlsMode.SecureTls;
+                    }
                 }
                 else
                 {
@@ -440,7 +449,17 @@ public abstract class ConnectionConfiguration
             set
             {
                 if (Config.TlsMode == TlsMode.NoTls)
+                {
                     throw new ArgumentException("Cannot configure insecure TLS when TLS is disabled.");
+                }
+
+                if (value)
+                {
+                    var msg = "SECURITY WARNING: Insecure TLS mode enabled. "
+                        + "Certificate verification is disabled. "
+                        + "This is strongly discouraged in production environments.";
+                    Logger.Log(Level.Warn, GetType().Name, msg);
+                }
 
                 Config.TlsMode =
                     value
@@ -468,15 +487,31 @@ public abstract class ConnectionConfiguration
         /// <param name="certificatePath">Trusted certificate file path</param>
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
-        /// <exception cref="ArgumentException">If the certificate file is empty</exception>
+        /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/></exception>
         public T WithTrustedCertificate(string certificatePath)
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
 
-            if (!File.Exists(certificatePath))
-                throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+            // Normalize path and check file length within try/catch block to
+            // avoid race condition where file is deleted before being read.
+            try
+            {
+                var fullPath = Path.GetFullPath(certificatePath);
 
-            return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
+                var fileLength = new FileInfo(fullPath).Length;
+                if (fileLength > CertificateMaxSize)
+                {
+                    throw new ArgumentException($"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes", nameof(fullPath));
+                }
+
+                var certificateData = File.ReadAllBytes(fullPath);
+                return WithTrustedCertificate(certificateData);
+            }
+
+            catch (FileNotFoundException)
+            {
+                throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+            }
         }
 
         /// <summary>
@@ -484,14 +519,22 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
-        /// <exception cref="ArgumentException">If the certificate data is null or empty</exception>
+        /// <exception cref="ArgumentException">If the certificate data is null, empty, or exceeds <see cref="CertificateMaxSize"/></exception>
         public T WithTrustedCertificate(byte[] certificateData)
         {
             if (certificateData == null)
-                throw new ArgumentException("Certificate data cannot be null", nameof(certificateData));
-
+            {
+                throw new ArgumentNullException(nameof(certificateData), "Certificate data cannot be null");
+            }
             else if (certificateData.Length == 0)
+            {
                 throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
+            }
+            else if (certificateData.Length > CertificateMaxSize)
+            {
+                var msg = $"Certificate data exceeds maximum allowed size of {CertificateMaxSize} bytes: {certificateData.Length} bytes";
+                throw new ArgumentException(msg, nameof(certificateData));
+            }
 
             TrustedCertificates.Add(certificateData);
             return (T)this;
@@ -573,7 +616,7 @@ public abstract class ConnectionConfiguration
             IamCredentials? iamCredentials = null;
             if (credentials.IamConfig != null)
             {
-                var serviceType = credentials.IamConfig.ServiceType switch
+                FFI.ServiceType serviceType = credentials.IamConfig.ServiceType switch
                 {
                     ServiceType.ElastiCache => FFI.ServiceType.ElastiCache,
                     ServiceType.MemoryDB => FFI.ServiceType.MemoryDB,
@@ -605,9 +648,7 @@ public abstract class ConnectionConfiguration
         /// <param name="password">The password for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string? username, string password)
-        {
-            return WithCredentials(new ServerCredentials(username, password));
-        }
+            => WithCredentials(new ServerCredentials(username, password));
 
         /// <summary>
         /// Configure server credentials for password-based authentication with username "default".
@@ -615,9 +656,7 @@ public abstract class ConnectionConfiguration
         /// <param name="password">The password for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string password)
-        {
-            return WithCredentials(new ServerCredentials(password));
-        }
+            => WithCredentials(new ServerCredentials(password));
 
         /// <summary>
         /// Configure server credentials for IAM authentication.
@@ -626,9 +665,7 @@ public abstract class ConnectionConfiguration
         /// <param name="iamConfig">The IAM authentication configuration.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string username, IamAuthConfig iamConfig)
-        {
-            return WithCredentials(new ServerCredentials(username, iamConfig));
-        }
+            => WithCredentials(new ServerCredentials(username, iamConfig));
 
         #endregion
         #region Protocol
@@ -706,7 +743,7 @@ public abstract class ConnectionConfiguration
             set => Config.DatabaseId = value;
         }
         /// <inheritdoc cref="DataBaseId" />
-        public T WithDataBaseId(uint dataBaseId)
+        public T WithDatabaseId(uint dataBaseId)
         {
             DataBaseId = dataBaseId;
             return (T)this;
@@ -744,7 +781,9 @@ public abstract class ConnectionConfiguration
             set
             {
                 if (value <= TimeSpan.Zero)
+                {
                     throw new ArgumentException("PubSubReconciliationInterval must be positive", nameof(value));
+                }
 
                 Config.PubSubReconciliationInterval = value;
             }
@@ -796,8 +835,7 @@ public abstract class ConnectionConfiguration
     }
 
     /// <summary>
-    /// Represents the configuration settings for a Cluster GLIDE client.<br />
-    /// Notes: Currently, the reconnection strategy in cluster mode is not configurable, and exponential backoff with fixed values is used.
+    /// Represents the configuration settings for a Cluster GLIDE client.
     /// </summary>
     public class ClusterClientConfigurationBuilder : ClientConfigurationBuilder<ClusterClientConfigurationBuilder>
     {

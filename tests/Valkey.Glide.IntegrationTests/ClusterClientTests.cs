@@ -517,7 +517,7 @@ public class ClusterClientTests(TestConfiguration config)
         );
 
         var config = TestConfiguration.DefaultClusterClientConfig()
-            .WithDataBaseId(1)
+            .WithDatabaseId(1)
             .Build();
 
         await using var client = await GlideClusterClient.CreateClient(config);
