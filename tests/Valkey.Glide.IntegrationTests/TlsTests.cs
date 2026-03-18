@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Security.Cryptography;
 using System.Text;
 
 using Valkey.Glide.TestUtils;
@@ -34,7 +33,6 @@ public class TlsFixture : IDisposable
 /// </summary>
 public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
 {
-
     #region Cluster Tests
 
     [Fact]
@@ -286,4 +284,6 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
 
         return certificateData;
     }
+
+    #endregion
 }
