@@ -8,6 +8,8 @@ namespace Valkey.Glide;
 /// </summary>
 public class ServerCredentials
 {
+    #region Public Properties
+
     /// <summary>
     /// The username that will be used for authenticating connections to the servers.
     /// If not supplied, "default" will be used.
@@ -25,6 +27,9 @@ public class ServerCredentials
     /// Required for IAM authentication, must be null for password-based authentication.
     /// </summary>
     public IamAuthConfig? IamConfig { get; set; }
+
+    #endregion
+    #region Constructors
 
     /// <summary>
     /// Creates server credentials for password-based authentication.
@@ -62,14 +67,17 @@ public class ServerCredentials
         Password = null;
     }
 
+    #endregion
+    #region Public Methods
+
     /// <summary>
     /// Returns true if this instance is configured for IAM authentication.
     /// </summary>
     public bool IsIamAuth() => IamConfig != null;
 
-    /// <summary>
-    /// Returns a safe string representation that masks the password.
-    /// </summary>
     public override string ToString() =>
-        $"ServerCredentials {{ Username = {Username}, Password = *****, IsIamAuth = {IsIamAuth()} }}";
+        // Omit sensitive information from string respresentation.
+        $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
+
+    #endregion
 }

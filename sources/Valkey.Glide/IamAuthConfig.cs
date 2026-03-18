@@ -60,7 +60,7 @@ public class IamAuthConfig(
     #region Public Methods
 
     public override string ToString() =>
-        // Omit sensitive information from string respresentation.
+        // Override default implementation to hide sensitive information.
         $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
 
     #endregion
