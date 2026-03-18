@@ -5,17 +5,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration for IAM authentication with AWS services.
 /// </summary>
-/// <param name="clusterName">The name of the cluster.</param>
-/// <param name="serviceType">The AWS service type.</param>
-/// <param name="region">The AWS region where the cluster is located.</param>
-/// <param name="refreshIntervalSeconds">Optional refresh interval in seconds.
-/// Must be between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> if specified.
-/// </param>
-public class IamAuthConfig(
-    string clusterName,
-    ServiceType serviceType,
-    string region,
-    uint? refreshIntervalSeconds = null)
+public class IamAuthConfig
 {
     #region Constants
 
@@ -35,17 +25,17 @@ public class IamAuthConfig(
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string ClusterName { get; set; } = clusterName ?? throw new ArgumentNullException(nameof(clusterName));
+    public string ClusterName { get; }
 
     /// <summary>
     /// The AWS service type.
     /// </summary>
-    public ServiceType ServiceType { get; set; } = serviceType;
+    public ServiceType ServiceType { get; }
 
     /// <summary>
     /// The AWS region where the cluster is located.
     /// </summary>
-    public string Region { get; set; } = region ?? throw new ArgumentNullException(nameof(region));
+    public string Region { get; }
 
     /// <summary>
     /// Optional refresh interval in seconds.
@@ -54,8 +44,42 @@ public class IamAuthConfig(
     public uint? RefreshIntervalSeconds
     {
         get;
-        set => field = ValidateRefreshInterval(value);
-    } = ValidateRefreshInterval(refreshIntervalSeconds);
+        private init
+        {
+            if (value.HasValue && (value.Value < MinRefreshIntervalSeconds || value.Value > MaxRefreshIntervalSeconds))
+            {
+                var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
+                throw new ArgumentOutOfRangeException(nameof(RefreshIntervalSeconds), value, msg);
+            }
+
+            field = value;
+        }
+    }
+
+    #endregion
+    #region Constructors
+
+    /// <summary>
+    /// Creates a new <see cref="IamAuthConfig"/> instance.
+    /// </summary>
+    /// <param name="clusterName"><inheritdoc cref="ClusterName" path="/summary" /></param>
+    /// <param name="serviceType"><inheritdoc cref="ServiceType" path="/summary" /></param>
+    /// <param name="region"><inheritdoc cref="Region" path="/summary" /></param>
+    /// <param name="refreshIntervalSeconds"><inheritdoc cref="RefreshIntervalSeconds" path="/summary" /></param>
+    public IamAuthConfig(
+        string clusterName,
+        ServiceType serviceType,
+        string region,
+        uint? refreshIntervalSeconds = null)
+    {
+        ArgumentNullException.ThrowIfNull(clusterName, nameof(clusterName));
+        ArgumentNullException.ThrowIfNull(region, nameof(region));
+
+        ClusterName = clusterName;
+        ServiceType = serviceType;
+        Region = region;
+        RefreshIntervalSeconds = refreshIntervalSeconds;
+    }
 
     #endregion
     #region Public Methods
@@ -63,28 +87,6 @@ public class IamAuthConfig(
     public override string ToString() =>
         // Override default implementation to hide sensitive information.
         $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
-
-    #endregion
-    #region Private Methods
-
-    /// <summary>
-    /// Validates the specified refresh interval.
-    /// </summary>
-    /// <param name="refreshIntervalSeconds">The refresh interval to validate.</param>
-    /// <returns>The validated refresh interval</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="refreshIntervalSeconds"/> is
-    /// not between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> inclusive.
-    /// </exception>
-    private static uint? ValidateRefreshInterval(uint? refreshIntervalSeconds)
-    {
-        if (refreshIntervalSeconds.HasValue && (refreshIntervalSeconds.Value < MinRefreshIntervalSeconds || refreshIntervalSeconds.Value > MaxRefreshIntervalSeconds))
-        {
-            var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
-            throw new ArgumentOutOfRangeException(nameof(refreshIntervalSeconds), refreshIntervalSeconds, msg);
-        }
-
-        return refreshIntervalSeconds;
-    }
 
     #endregion
 }
