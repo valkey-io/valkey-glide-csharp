@@ -81,7 +81,7 @@ public class ConnectionConfigurationTests
         Assert.Equal(Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
-        Assert.Equal(1800u, iamCredentials.RefreshIntervalSeconds);
+        Assert.Equal(RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
 
         _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!, iamConfig));
         _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (IamAuthConfig)null!));
