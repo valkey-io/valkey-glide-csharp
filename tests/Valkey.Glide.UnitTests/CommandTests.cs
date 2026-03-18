@@ -454,10 +454,10 @@ public class CommandTests
             () => Assert.Equal("everything info", Request.Info([InfoOptions.Section.EVERYTHING]).Converter("everything info")),
 
             // Ping Command Converters
-            () => Assert.IsType<TimeSpan>(Request.Ping().Converter("PONG")),
-            () => Assert.IsType<TimeSpan>(Request.Ping("Hello").Converter("Hello")),
-            () => Assert.True(Request.Ping().Converter("PONG") > TimeSpan.Zero),
-            () => Assert.True(Request.Ping("test").Converter("test") >= TimeSpan.Zero),
+            () => Assert.IsType<ValkeyValue>(Request.Ping().Converter(new GlideString("PONG"))),
+            () => Assert.IsType<ValkeyValue>(Request.Ping("Hello").Converter(new GlideString("Hello"))),
+            () => Assert.Equal<ValkeyValue>("PONG", Request.Ping().Converter(new GlideString("PONG"))),
+            () => Assert.Equal<ValkeyValue>("test", Request.Ping("test").Converter(new GlideString("test"))),
             () => Assert.Equal<ValkeyValue>("message", Request.Echo("message").Converter("message")),
 
             () => Assert.Equal(ValkeyValue.Null, Request.ClientGetName().Converter(null!)),

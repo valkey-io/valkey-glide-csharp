@@ -1232,11 +1232,11 @@ internal partial class BatchTestUtils
         List<TestInfo> testData = [];
 
         _ = batch.Ping();
-        testData.Add(new(TimeSpan.Zero, "Ping()", true));
+        testData.Add(new(new ValkeyValue("PONG"), "Ping()"));
 
         ValkeyValue pingMessage = "Hello Valkey!";
         _ = batch.Ping(pingMessage);
-        testData.Add(new(TimeSpan.Zero, "Ping(message)", true));
+        testData.Add(new(pingMessage, "Ping(message)"));
 
         ValkeyValue echoMessage = "Echo test message";
         _ = batch.Echo(echoMessage);

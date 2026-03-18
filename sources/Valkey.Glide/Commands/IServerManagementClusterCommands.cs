@@ -19,7 +19,7 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string response = await client.InfoAsync();
+    /// var response = await client.InfoAsync();
     /// response.Split().First(l => l.Contains("total_net_input_bytes"))
     /// </code>
     /// </example>
@@ -36,7 +36,7 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string response = await client.InfoAsync([ Section.STATS ]);
+    /// var response = await client.InfoAsync([ Section.STATS ]);
     /// response.Split().First(l => l.Contains("total_net_input_bytes"))
     /// </code>
     /// </example>
@@ -118,72 +118,72 @@ public interface IServerManagementClusterCommands
     Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Ping the server and measure the round-trip time.<br />
+    /// Ping the server.<br />
     /// The command will be routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan latency = await client.PingAsync();
+    /// var response = await client.PingAsync();
+    /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync();
 
     /// <summary>
-    /// Ping the server with a message and measure the round-trip time.<br />
+    /// Ping the server with a message.<br />
     /// The command will be routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
     /// <param name="message">The message to send with the ping</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan latency = await client.PingAsync("test message");
+    /// var response = await client.PingAsync("Hello World");
+    /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync(ValkeyValue message);
 
     /// <summary>
-    /// Ping the server and measure the round-trip time.
+    /// Ping the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan response = await client.PingAsync(Route.AllPrimaries);
+    /// var response = await client.PingAsync(Route.AllPrimaries);
+    /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync(Route route);
 
     /// <summary>
-    /// Ping the server with a message and measure the round-trip time.
+    /// Ping the server with a message.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
     /// <param name="message">The message to send with the ping</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan response = await client.PingAsync("Hello World", Route.AllPrimaries);
+    /// var response = await client.PingAsync("Hello World", Route.AllPrimaries);
+    /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync(ValkeyValue message, Route route);
 
     /// <summary>
     /// Gets the values of configuration parameters.<br />
@@ -561,8 +561,6 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(Route route, CommandFlags flags = CommandFlags.None);
-    Task<TimeSpan> PingAsync(ValkeyValue message, Route route);
-
     /// <summary>
     /// Changes the currently selected database.
     /// </summary>
@@ -573,8 +571,8 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.SelectAsync(1);
-    /// Console.WriteLine(result); // Output: "OK"
+    /// var response = await client.SelectAsync(1);
+    /// Console.WriteLine(response); // Output: "OK"
     /// </code>
     /// </example>
     /// </remarks>

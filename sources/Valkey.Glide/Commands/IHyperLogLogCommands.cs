@@ -17,14 +17,14 @@ public interface IHyperLogLogCommands
     /// <param name="element">The element to add to the HyperLogLog.</param>
     /// <param name="flags">The command flags. Currently flags are ignored.</param>
     /// <returns>
-    /// <see langword="true"/> if at least one HyperLogLog internal register was altered, 
+    /// <see langword="true"/> if at least one HyperLogLog internal register was altered,
     /// <see langword="false"/> otherwise.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.HyperLogLogAddAsync("my_hll", "element1");
-    /// Console.WriteLine(result); // Output: True (if this is a new element)
+    /// var response = await client.HyperLogLogAddAsync("my_hll", "element1");
+    /// Console.WriteLine(response); // Output: True (if this is a new element)
     /// </code>
     /// </example>
     /// </remarks>
@@ -38,14 +38,14 @@ public interface IHyperLogLogCommands
     /// <param name="elements">The elements to add to the HyperLogLog.</param>
     /// <param name="flags">The command flags. Currently flags are ignored.</param>
     /// <returns>
-    /// <see langword="true"/> if at least one HyperLogLog internal register was altered, 
+    /// <see langword="true"/> if at least one HyperLogLog internal register was altered,
     /// <see langword="false"/> otherwise.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.HyperLogLogAddAsync("my_hll", ["element1", "element2", "element3"]);
-    /// Console.WriteLine(result); // Output: True (if at least one element is new)
+    /// var response = await client.HyperLogLogAddAsync("my_hll", ["element1", "element2", "element3"]);
+    /// Console.WriteLine(response); // Output: True (if at least one element is new)
     /// </code>
     /// </example>
     /// </remarks>
