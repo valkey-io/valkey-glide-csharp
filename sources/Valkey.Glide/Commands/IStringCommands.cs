@@ -124,7 +124,7 @@ public interface IStringCommands
     /// <code>
     /// await client.StringSetAsync("key", "Hello World");
     /// var response = await client.StringGetRangeAsync("key", 0, 4);
-    /// Console.WriteLine(response); // Output: "Hello World"
+    /// Console.WriteLine(response); // Output: "Hello"
     /// </code>
     /// </example>
     /// </remarks>
