@@ -5,6 +5,7 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.TestUtils.Client;
+using static Valkey.Glide.TestUtils.Constants;
 using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -22,17 +23,19 @@ namespace Valkey.Glide.IntegrationTests;
 /// <item><c>::1 valkey.glide.test.no_tls.com</c></item>
 /// </list>
 /// <para>
-/// See <see cref="Valkey.Glide.TestUtils.Server"/> for more details.
+/// See <see cref="Server"/> for more details.
 /// </para>
 /// </summary>
 public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
 {
+    #region Tests
+
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task ConnectWithValidHostname_Succeeds(bool useCluster)
     {
         SkipIfDnsTestsNotEnabled();
-        await using var client = await BuildClient(useCluster, useTls: false, Server.HostnameNoTls);
+        await using var client = await BuildClient(useCluster, useTls: false, HostnameNoTls);
         await AssertConnected(client);
     }
 
@@ -41,8 +44,8 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     public async Task ConnectWithInvalidHostname_Fails(bool useCluster)
     {
         SkipIfDnsTestsNotEnabled();
-        await Assert.ThrowsAsync<ConnectionException>(async ()
-        => await BuildClient(useCluster, useTls: false, "nonexistent.invalid"));
+        _ = await Assert.ThrowsAsync<ConnectionException>(async ()
+            => await BuildClient(useCluster, useTls: false, "NONEXISTENT.INVALID"));
     }
 
     [Theory]
@@ -50,7 +53,7 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     public async Task Tls_WithHostnameInCertificate_Succeeds(bool useCluster)
     {
         SkipIfDnsTestsNotEnabled();
-        await using var client = await BuildClient(useCluster, useTls: true, Server.HostnameTls);
+        await using var client = await BuildClient(useCluster, useTls: true, HostnameTls);
         await AssertConnected(client);
     }
 
@@ -59,23 +62,20 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     public async Task Tls_WithHostnameNotInCertificate_Fails(bool useCluster)
     {
         SkipIfDnsTestsNotEnabled();
-        await Assert.ThrowsAsync<ConnectionException>(async ()
-        => await BuildClient(useCluster, useTls: true, Server.HostnameNoTls));
+        _ = await Assert.ThrowsAsync<ConnectionException>(async ()
+            => await BuildClient(useCluster, useTls: true, HostnameNoTls));
     }
 
-    // Helper Methods
-    // --------------
+    #endregion
+    #region Helpers
 
     /// <summary>
     /// Skips the current test if DNS tests are not enabled.
     /// </summary>
     private static void SkipIfDnsTestsNotEnabled()
-    {
-        const string envVar = "VALKEY_GLIDE_DNS_TESTS_ENABLED";
-        Assert.SkipWhen(
-            string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envVar)),
-            $"DNS tests are disabled. Set the environment variable {envVar} to enable them.");
-    }
+        => Assert.SkipWhen(
+            string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VALKEY_GLIDE_DNS_TESTS_ENABLED")),
+            $"DNS tests are disabled. Set the environment variable 'VALKEY_GLIDE_DNS_TESTS_ENABLED' to enable them.");
 
     /// <summary>
     /// Builds and returns a client configured with the specified parameters.
@@ -87,13 +87,13 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
             var server = useTls ? fixture.TlsClusterServer : fixture.ClusterServer;
             var port = server.Addresses.First().Port;
 
-            var builder = new ClusterClientConfigurationBuilder();
-            builder.WithAddress(host, port);
+            var builder = new ClusterClientConfigurationBuilder()
+                .WithAddress(host, port);
 
             if (useTls)
             {
-                builder.WithTls();
-                builder.WithTrustedCertificate(server.CertificateData!);
+                _ = builder.WithTls();
+                _ = builder.WithTrustedCertificate(server.CertificateData!);
             }
 
             return await GlideClusterClient.CreateClient(builder.Build());
@@ -104,18 +104,20 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
             var server = useTls ? fixture.TlsStandaloneServer : fixture.StandaloneServer;
             var port = server.Addresses.First().Port;
 
-            var builder = new StandaloneClientConfigurationBuilder();
-            builder.WithAddress(host, port);
+            var builder = new StandaloneClientConfigurationBuilder()
+                .WithAddress(host, port);
 
             if (useTls)
             {
-                builder.WithTls();
-                builder.WithTrustedCertificate(server.CertificateData!);
+                _ = builder.WithTls();
+                _ = builder.WithTrustedCertificate(server.CertificateData!);
             }
 
             return await GlideClient.CreateClient(builder.Build());
         }
     }
+
+    #endregion
 }
 
 /// <summary>

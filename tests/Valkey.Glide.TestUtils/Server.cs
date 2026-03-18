@@ -11,12 +11,6 @@ public abstract class Server : IDisposable
 {
     #region Constants
 
-    // Supported server host names and addresses.
-    public static readonly string HostnameTls = "valkey.glide.test.tls.com";
-    public static readonly string HostnameNoTls = "valkey.glide.test.no_tls.com";
-    public static readonly string Ipv4Address = "127.0.0.1";
-    public static readonly string Ipv6Address = "::1";
-
     // Timeout for client connection and reconnection attempts.
     // Use a longer timeout to allows for slower connections in CI environments.
     protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(10);

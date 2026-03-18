@@ -15,5 +15,7 @@ public static class Data
     /// <summary>
     /// Server IP addresses to test.
     /// </summary>
-    public static TheoryData<string> IpAddresses => [Server.Ipv4Address, Server.Ipv6Address];
+    public static TheoryData<string> IpAddresses => [
+        Constants.Ipv4Address,
+        Constants.Ipv6Address];
 }
