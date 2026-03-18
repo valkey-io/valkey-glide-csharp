@@ -20,8 +20,8 @@ public interface IStringCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.StringSetAsync("key", "value");
-    /// Console.WriteLine(result); // Output: true
+    /// var response = await client.StringSetAsync("key", "value");
+    /// Console.WriteLine(response); // Output: true
     /// </code>
     /// </example>
     /// </remarks>
@@ -49,8 +49,8 @@ public interface IStringCommands
     ///     new("key1", "value1"),
     ///     new("key2", "value2")
     /// ];
-    /// bool result = await client.StringSetAsync(values);
-    /// Console.WriteLine(result); // Output: true (if neither key existed)
+    /// var response = await client.StringSetAsync(values);
+    /// Console.WriteLine(response); // Output: true (if neither key existed)
     /// </code>
     /// </example>
     /// </remarks>
@@ -105,7 +105,7 @@ public interface IStringCommands
     Task<ValkeyValue[]> StringGetAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns the substring of the string value stored at key, determined by the offsets 
+    /// Returns the substring of the string value stored at key, determined by the offsets
     /// start and end (both are inclusive).
     /// Negative offsets can be used in order to provide an offset starting from the end of the string. So `-1` means the last
     /// character, `-2` the penultimate and so forth.
@@ -123,15 +123,15 @@ public interface IStringCommands
     /// <example>
     /// <code>
     /// await client.StringSetAsync("key", "Hello World");
-    /// ValkeyValue result = await client.StringGetRangeAsync("key", 0, 4);
-    /// Console.WriteLine(result.ToString()); // Output: "Hello"
+    /// var response = await client.StringGetRangeAsync("key", 0, 4);
+    /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Overwrites part of the string stored at key, starting at the specified offset, 
+    /// Overwrites part of the string stored at key, starting at the specified offset,
     /// for the entire length of value.
     /// If the offset is larger than the current length of the string at key, the string is padded with zero bytes to make
     /// offset fit.
@@ -149,7 +149,7 @@ public interface IStringCommands
     /// await client.StringSetAsync("key", "Hello World");
     /// ValkeyValue newLength = await client.StringSetRangeAsync("key", 6, "Valkey");
     /// Console.WriteLine(newLength); // Output: 12
-    /// 
+    ///
     /// ValkeyValue value = await client.StringGetAsync("key");
     /// Console.WriteLine(value.ToString()); // Output: "Hello Valkey"
     /// </code>
@@ -195,7 +195,7 @@ public interface IStringCommands
     /// await client.StringSetAsync("key", "Hello");
     /// long newLength = await client.StringAppendAsync("key", " World");
     /// Console.WriteLine(newLength); // Output: 11
-    /// 
+    ///
     /// ValkeyValue value = await client.StringGetAsync("key");
     /// Console.WriteLine(value.ToString()); // Output: "Hello World"
     /// </code>
@@ -318,11 +318,14 @@ public interface IStringCommands
     /// <example>
     /// <code>
     /// await client.StringSetAsync("key", "value");
-    /// ValkeyValue result = await client.StringGetDeleteAsync("key");
-    /// Console.WriteLine(result.ToString()); // Output: "value"
-    /// 
-    /// ValkeyValue result2 = await client.StringGetAsync("key");
-    /// Console.WriteLine(result2.IsNull); // Output: true (key was deleted)
+    /// var response = await client.StringGetDeleteAsync("key");
+    /// Console.WriteLine(response); // Output: "value"
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var response = await client.StringGetAsync("nonexistent");
+    /// Console.WriteLine(response.IsNull); // Output: true (key does not exist)
     /// </code>
     /// </example>
     /// </remarks>
@@ -342,8 +345,8 @@ public interface IStringCommands
     /// <example>
     /// <code>
     /// await client.StringSetAsync("key", "value");
-    /// ValkeyValue result = await client.StringGetSetExpiryAsync("key", TimeSpan.FromSeconds(10));
-    /// Console.WriteLine(result.ToString()); // Output: "value"
+    /// var response = await client.StringGetSetExpiryAsync("key", TimeSpan.FromSeconds(10));
+    /// Console.WriteLine(response); // Output: "value"
     /// </code>
     /// </example>
     /// </remarks>
@@ -363,8 +366,8 @@ public interface IStringCommands
     /// <example>
     /// <code>
     /// await client.StringSetAsync("key", "value");
-    /// ValkeyValue result = await client.StringGetSetExpiryAsync("key", DateTime.UtcNow.AddMinutes(5));
-    /// Console.WriteLine(result.ToString()); // Output: "value"
+    /// var response = await client.StringGetSetExpiryAsync("key", DateTime.UtcNow.AddMinutes(5));
+    /// Console.WriteLine(response); // Output: "value"
     /// </code>
     /// </example>
     /// </remarks>
@@ -388,8 +391,8 @@ public interface IStringCommands
     /// <code>
     /// await client.StringSetAsync("key1", "abcdef");
     /// await client.StringSetAsync("key2", "acef");
-    /// string? result = await client.StringLongestCommonSubsequenceAsync("key1", "key2");
-    /// Console.WriteLine(result); // Output: "acef"
+    /// var response = await client.StringLongestCommonSubsequenceAsync("key1", "key2");
+    /// Console.WriteLine(response); // Output: "acef"
     /// </code>
     /// </example>
     /// </remarks>

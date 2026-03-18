@@ -70,7 +70,7 @@ public interface IServerManagementCommands
     /// <example>
     /// <code>
     /// var response = await client.PingAsync();
-    /// Console.WriteLine(result); // Output: "PONG"
+    /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
@@ -86,7 +86,7 @@ public interface IServerManagementCommands
     /// <example>
     /// <code>
     /// var response = await client.PingAsync("test message");
-    /// Console.WriteLine(result); // Output: "test message"
+    /// Console.WriteLine(response); // Output: "test message"
     /// </code>
     /// </example>
     /// </remarks>
@@ -263,8 +263,8 @@ public interface IServerManagementCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.SelectAsync(1);
-    /// Console.WriteLine(result); // Output: "OK"
+    /// var response = await client.SelectAsync(1);
+    /// Console.WriteLine(response); // Output: "OK"
     /// </code>
     /// </example>
     /// </remarks>

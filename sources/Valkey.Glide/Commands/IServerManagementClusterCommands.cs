@@ -19,7 +19,7 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string response = await client.InfoAsync();
+    /// var response = await client.InfoAsync();
     /// response.Split().First(l => l.Contains("total_net_input_bytes"))
     /// </code>
     /// </example>
@@ -36,7 +36,7 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string response = await client.InfoAsync([ Section.STATS ]);
+    /// var response = await client.InfoAsync([ Section.STATS ]);
     /// response.Split().First(l => l.Contains("total_net_input_bytes"))
     /// </code>
     /// </example>
@@ -571,8 +571,8 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.SelectAsync(1);
-    /// Console.WriteLine(result); // Output: "OK"
+    /// var response = await client.SelectAsync(1);
+    /// Console.WriteLine(response); // Output: "OK"
     /// </code>
     /// </example>
     /// </remarks>

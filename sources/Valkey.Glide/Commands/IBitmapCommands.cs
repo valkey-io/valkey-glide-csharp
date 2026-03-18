@@ -150,13 +150,13 @@ public interface IBitmapCommands
     ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), 0),
     ///     new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), 0, 66) // ASCII 'B'
     /// };
-    /// long[] results = await client.StringBitFieldAsync("mykey", subCommands);
-    /// Console.WriteLine(results[0]); // Output: 65 (ASCII 'A')
-    /// Console.WriteLine(results[1]); // Output: 65 (old value)
+    /// var response = await client.StringBitFieldAsync("mykey", subCommands);
+    /// Console.WriteLine(response[0]); // Output: 65 (ASCII 'A')
+    /// Console.WriteLine(response[1]); // Output: 65 (old value)
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> StringBitFieldAsync(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldSubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
+    Task<long[]> StringBitFieldAsync(ValkeyKey key, Options.BitFieldOptions.IBitFieldSubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads the array of bits representing the string stored at key based on the specified GET subcommands.
@@ -174,10 +174,10 @@ public interface IBitmapCommands
     /// var subCommands = new IBitFieldReadOnlySubCommand[] {
     ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), 0)
     /// };
-    /// long[] results = await client.StringBitFieldReadOnlyAsync("mykey", subCommands);
-    /// Console.WriteLine(results[0]); // Output: 65 (ASCII 'A')
+    /// var response = await client.StringBitFieldReadOnlyAsync("mykey", subCommands);
+    /// Console.WriteLine(response[0]); // Output: 65 (ASCII 'A')
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
+    Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, Options.BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
 }
