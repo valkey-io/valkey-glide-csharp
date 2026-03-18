@@ -68,7 +68,7 @@ public class IamAuthConfig(
     #region Private Methods
 
     /// <summary>
-    /// Validates the specified refresh inverval.
+    /// Validates the specified refresh interval.
     /// </summary>
     /// <param name="refreshIntervalSeconds">The refresh interval to validate.</param>
     /// <returns>The validated refresh interval</returns>
