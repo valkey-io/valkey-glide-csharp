@@ -7,6 +7,8 @@ namespace Valkey.Glide;
 /// </summary>
 public sealed class OpenTelemetryConfig
 {
+    #region Public Properties
+
     /// <summary>
     /// Configuration for traces export.
     /// </summary>
@@ -22,6 +24,9 @@ public sealed class OpenTelemetryConfig
     /// </summary>
     public TimeSpan? FlushInterval { get; }
 
+    #endregion
+    #region Constructors
+
     private OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, TimeSpan? flushInterval)
     {
         Traces = traces;
@@ -29,10 +34,15 @@ public sealed class OpenTelemetryConfig
         FlushInterval = flushInterval;
     }
 
+    #endregion
+    #region Public Methods
+
     /// <summary>
     /// Creates a new OpenTelemetryConfig builder.
     /// </summary>
     public static Builder CreateBuilder() => new();
+
+    #endregion
 
     /// <summary>
     /// Builder for OpenTelemetryConfig.
@@ -68,9 +78,7 @@ public sealed class OpenTelemetryConfig
         public Builder WithFlushInterval(TimeSpan flushInterval)
         {
             if (flushInterval <= TimeSpan.Zero)
-            {
                 throw new ArgumentException("Flush interval must be positive", nameof(flushInterval));
-            }
 
             _flushInterval = flushInterval;
             return this;
@@ -83,9 +91,7 @@ public sealed class OpenTelemetryConfig
         public OpenTelemetryConfig Build()
         {
             if (_traces == null && _metrics == null)
-            {
                 throw new InvalidOperationException("At least one of traces or metrics must be configured");
-            }
 
             return new OpenTelemetryConfig(_traces, _metrics, _flushInterval);
         }
@@ -97,8 +103,13 @@ public sealed class OpenTelemetryConfig
 /// </summary>
 public sealed class TracesConfig
 {
+    #region Constants
+
     internal const uint DefaultSamplePercentage = 1u; // Exposed internally for testing.
     private const uint MaxSamplePercentage = 100u;
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// The endpoint for traces export.
@@ -111,11 +122,22 @@ public sealed class TracesConfig
     /// </summary>
     public uint SamplePercentage { get; private set; }
 
+    #endregion
+    #region Constructors
+
     private TracesConfig(string endpoint, uint samplePercentage)
     {
         Endpoint = endpoint;
         SamplePercentage = samplePercentage;
     }
+
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Creates a new TracesConfig builder.
+    /// </summary>
+    public static Builder CreateBuilder() => new();
 
     /// <summary>
     /// Sets the sample percentage.
@@ -128,18 +150,16 @@ public sealed class TracesConfig
         SamplePercentage = percentage;
     }
 
+    #endregion
+    #region Private Methods
+
     private static void ValidateSamplePercentage(uint percentage)
     {
         if (percentage > MaxSamplePercentage)
-        {
             throw new ArgumentException($"Sample percentage cannot be greater than {MaxSamplePercentage}", nameof(percentage));
-        }
     }
 
-    /// <summary>
-    /// Creates a new TracesConfig builder.
-    /// </summary>
-    public static Builder CreateBuilder() => new();
+    #endregion
 
     /// <summary>
     /// Builder for TracesConfig.
@@ -156,14 +176,10 @@ public sealed class TracesConfig
         public Builder WithEndpoint(string endpoint)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
-            {
                 throw new ArgumentException("Endpoint cannot be null, empty, or whitespace only", nameof(endpoint));
-            }
 
             if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))
-            {
                 throw new ArgumentException("Endpoint must be a valid absolute URI", nameof(endpoint));
-            }
 
             _endpoint = endpoint;
             return this;
@@ -176,7 +192,6 @@ public sealed class TracesConfig
         public Builder WithSamplePercentage(uint samplePercentage)
         {
             ValidateSamplePercentage(samplePercentage);
-
             _samplePercentage = samplePercentage;
             return this;
         }
@@ -188,9 +203,7 @@ public sealed class TracesConfig
         public TracesConfig Build()
         {
             if (_endpoint == null)
-            {
                 throw new InvalidOperationException("Endpoint must be specified");
-            }
 
             return new TracesConfig(_endpoint, _samplePercentage);
         }
@@ -202,20 +215,30 @@ public sealed class TracesConfig
 /// </summary>
 public sealed class MetricsConfig
 {
+    #region Public Properties
+
     /// <summary>
     /// The endpoint for metrics export.
     /// </summary>
     public string Endpoint { get; }
+
+    #endregion
+    #region Constructors
 
     private MetricsConfig(string endpoint)
     {
         Endpoint = endpoint;
     }
 
+    #endregion
+    #region Public Methods
+
     /// <summary>
     /// Creates a new MetricsConfig builder.
     /// </summary>
     public static Builder CreateBuilder() => new();
+
+    #endregion
 
     /// <summary>
     /// Builder for MetricsConfig.
@@ -231,14 +254,10 @@ public sealed class MetricsConfig
         public Builder WithEndpoint(string endpoint)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
-            {
                 throw new ArgumentException("Endpoint cannot be null, empty, or whitespace only", nameof(endpoint));
-            }
 
             if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))
-            {
                 throw new ArgumentException("Endpoint must be a valid absolute URI", nameof(endpoint));
-            }
 
             _endpoint = endpoint;
             return this;
@@ -251,9 +270,7 @@ public sealed class MetricsConfig
         public MetricsConfig Build()
         {
             if (_endpoint == null)
-            {
                 throw new InvalidOperationException("Endpoint must be specified");
-            }
 
             return new MetricsConfig(_endpoint);
         }
