@@ -143,8 +143,8 @@ public interface IServerManagementClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.PingAsync("test message");
-    /// Console.WriteLine(response); // Output: "test message"
+    /// var response = await client.PingAsync("Hello World");
+    /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
@@ -179,7 +179,7 @@ public interface IServerManagementClusterCommands
     /// <example>
     /// <code>
     /// var response = await client.PingAsync("Hello World", Route.AllPrimaries);
-    /// Console.WriteLine(response); // Output: "test message"
+    /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
