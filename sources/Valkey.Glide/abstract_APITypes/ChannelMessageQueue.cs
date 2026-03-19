@@ -100,7 +100,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     internal void Write(in ValkeyChannel channel, in ValkeyValue value)
     {
         var writer = _queue.Writer;
-        _ = writer.TryWrite(new ChannelMessage(this, channel, value));
+        writer.TryWrite(new ChannelMessage(this, channel, value));
     }
 
     /// <summary>
@@ -144,7 +144,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     public void OnMessage(Action<ChannelMessage> handler)
     {
         AssertOnMessage(handler);
-        _ = ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageSyncImpl(), this);
+        ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageSyncImpl(), this);
     }
 
     private async Task OnMessageSyncImpl()
@@ -186,7 +186,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     public void OnMessage(Func<ChannelMessage, Task> handler)
     {
         AssertOnMessage(handler);
-        _ = ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
+        ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
     }
 
     internal static void Remove(ref ChannelMessageQueue? head, ChannelMessageQueue queue)
@@ -288,7 +288,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         while (current != null)
         {
             current._parent = null;
-            _ = current._queue.Writer.TryComplete();
+            current._queue.Writer.TryComplete();
             current = Volatile.Read(ref current._next);
         }
     }
@@ -314,7 +314,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             await parent.UnsubscribeAsync(this);
         }
 
-        _ = _queue.Writer.TryComplete();
+        _queue.Writer.TryComplete();
     }
 
     /// <inheritdoc/>
