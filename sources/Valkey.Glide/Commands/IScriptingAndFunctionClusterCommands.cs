@@ -92,9 +92,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ScriptFlushAsync(
-    ///     FlushMode.Async,
-    ///     Route.AllPrimaries);
+    /// await client.ScriptFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -406,9 +404,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionRestoreAsync(
-    ///     backup,
-    ///     Route.AllPrimaries);
+    /// await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>

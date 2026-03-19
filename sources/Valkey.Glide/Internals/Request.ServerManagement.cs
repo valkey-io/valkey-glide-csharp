@@ -128,6 +128,7 @@ internal partial class Request
 
     public static Cmd<GlideString, string> LolwutAsync()
         => new(RequestType.Lolwut, [], false, gs => gs.ToString());
+
     public static Cmd<string, object?> Select(long index)
         => new(RequestType.Select, [index.ToString().ToGlideString()], false, _ => ValkeyValue.Null);
 }
