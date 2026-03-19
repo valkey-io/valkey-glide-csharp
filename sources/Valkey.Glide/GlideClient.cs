@@ -157,10 +157,10 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         return await Command(Request.ClientId());
     }
 
-    public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
+    public async Task SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Select(index));
+        await Command(Request.Select(index));
     }
 
     public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
