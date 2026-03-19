@@ -207,7 +207,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Switching to a valid database causes issue to tests running in parallel. So instead, we test
         // that using an invalid value to ensure different values can still be sent through.
-        await Assert.ThrowsAsync<RequestException>(async () => await client.SelectAsync(-1));
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.SelectAsync(-1));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
