@@ -151,7 +151,7 @@ internal partial class Request
             args.AddRange(restoreOptions.ToArgs());
         }
 
-        return Void(RequestType.Restore, [.. args]);
+        return Ok(RequestType.Restore, [.. args]);
     }
 
     public static Cmd<string, ValkeyValue> KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null)
@@ -175,7 +175,7 @@ internal partial class Request
             args.AddRange(restoreOptions.ToArgs());
         }
 
-        return Void(RequestType.Restore, [.. args]);
+        return Ok(RequestType.Restore, [.. args]);
     }
 
     public static Cmd<long, bool> KeyTouchAsync(ValkeyKey key)

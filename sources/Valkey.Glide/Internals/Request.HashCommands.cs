@@ -36,7 +36,7 @@ internal partial class Request
             args.Add(entry.Name.ToGlideString());
             args.Add(entry.Value.ToGlideString());
         }
-        return Void(RequestType.HMSet, [.. args]);
+        return Ok(RequestType.HMSet, [.. args]);
     }
 
     public static Cmd<object, bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when)

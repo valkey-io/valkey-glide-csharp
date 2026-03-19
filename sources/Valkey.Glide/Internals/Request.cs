@@ -38,13 +38,12 @@ internal partial class Request
         => new(request, args, false, response => response == "OK");
 
     /// <summary>
-    /// Create a Cmd for commands that return a simple "OK" status with no meaningful data.
-    /// Returns <see cref="ValkeyValue.Ok"/> for batch result arrays; non-batch callers discard the value.
+    /// Create a Cmd which returns "OK" when it completes.
     /// </summary>
     /// <param name="request">The request type</param>
     /// <param name="args">The command arguments</param>
-    /// <returns>A command that always returns <see cref="ValkeyValue.Ok"/></returns>
-    private static Cmd<string, ValkeyValue> Void(RequestType request, GlideString[] args)
+    /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
+    private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[] args)
         => new(request, args, false, _ => ValkeyValue.Ok);
 
     /// <summary>

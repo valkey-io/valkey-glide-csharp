@@ -53,13 +53,13 @@ internal partial class Request
     /// Creates a command to flush all scripts from the cache.
     /// </summary>
     public static Cmd<string, ValkeyValue> ScriptFlushAsync()
-        => Void(RequestType.ScriptFlush, []);
+        => Ok(RequestType.ScriptFlush, []);
 
     /// <summary>
     /// Creates a command to flush all scripts from the cache with specified mode.
     /// </summary>
     public static Cmd<string, ValkeyValue> ScriptFlushAsync(FlushMode mode)
-        => Void(RequestType.ScriptFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
+        => Ok(RequestType.ScriptFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
 
     /// <summary>
     /// Creates a command to get the source code of a cached script.
@@ -71,7 +71,7 @@ internal partial class Request
     /// Creates a command to kill a currently executing script.
     /// </summary>
     public static Cmd<string, ValkeyValue> ScriptKillAsync()
-        => Void(RequestType.ScriptKill, []);
+        => Ok(RequestType.ScriptKill, []);
 
     // ===== Function Execution =====
 
@@ -126,13 +126,13 @@ internal partial class Request
     /// Creates a command to flush all functions.
     /// </summary>
     public static Cmd<string, ValkeyValue> FunctionFlushAsync()
-        => Void(RequestType.FunctionFlush, []);
+        => Ok(RequestType.FunctionFlush, []);
 
     /// <summary>
     /// Creates a command to flush all functions with specified mode.
     /// </summary>
     public static Cmd<string, ValkeyValue> FunctionFlushAsync(FlushMode mode)
-        => Void(RequestType.FunctionFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
+        => Ok(RequestType.FunctionFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
 
     // ===== Function Inspection =====
 
@@ -167,13 +167,13 @@ internal partial class Request
     /// Creates a command to delete a function library.
     /// </summary>
     public static Cmd<string, ValkeyValue> FunctionDeleteAsync(string libraryName)
-        => Void(RequestType.FunctionDelete, [libraryName]);
+        => Ok(RequestType.FunctionDelete, [libraryName]);
 
     /// <summary>
     /// Creates a command to kill a currently executing function.
     /// </summary>
     public static Cmd<string, ValkeyValue> FunctionKillAsync()
-        => Void(RequestType.FunctionKill, []);
+        => Ok(RequestType.FunctionKill, []);
 
     /// <summary>
     /// Creates a command to dump all functions to a binary payload.
@@ -199,7 +199,7 @@ internal partial class Request
             });
         }
 
-        return Void(RequestType.FunctionRestore, [.. cmdArgs]);
+        return Ok(RequestType.FunctionRestore, [.. cmdArgs]);
     }
 
     // ===== Helper Methods =====

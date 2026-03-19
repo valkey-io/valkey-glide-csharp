@@ -17,5 +17,5 @@ internal partial class Request
         => Simple<long>(RequestType.ClientId, []);
 
     public static Cmd<string, ValkeyValue> ClientSetName(string connectionName)
-        => Void(RequestType.ClientSetName, [connectionName.ToGlideString()]);
+        => Ok(RequestType.ClientSetName, [connectionName.ToGlideString()]);
 }
