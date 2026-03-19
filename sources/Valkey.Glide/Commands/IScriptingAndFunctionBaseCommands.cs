@@ -78,15 +78,15 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>"OK" if the operation succeeded.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.ScriptFlushAsync();
+    /// await client.ScriptFlushAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> ScriptFlushAsync(
+    Task ScriptFlushAsync(
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -96,15 +96,15 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>"OK" if the operation succeeded.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.ScriptFlushAsync(FlushMode.Async);
+    /// await client.ScriptFlushAsync(FlushMode.Async);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> ScriptFlushAsync(
+    Task ScriptFlushAsync(
         FlushMode mode,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
@@ -133,16 +133,16 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>"OK" if the script was killed.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if no script is running or if the script has written data.</exception>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.ScriptKillAsync();
+    /// await client.ScriptKillAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> ScriptKillAsync(
+    Task ScriptKillAsync(
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -265,15 +265,15 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>"OK" if the operation succeeded.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.FunctionFlushAsync();
+    /// await client.FunctionFlushAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> FunctionFlushAsync(
+    Task FunctionFlushAsync(
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -283,15 +283,15 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>"OK" if the operation succeeded.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.FunctionFlushAsync(FlushMode.Async);
+    /// await client.FunctionFlushAsync(FlushMode.Async);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> FunctionFlushAsync(
+    Task FunctionFlushAsync(
         FlushMode mode,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);

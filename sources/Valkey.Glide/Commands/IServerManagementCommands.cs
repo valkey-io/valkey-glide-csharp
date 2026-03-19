@@ -259,14 +259,13 @@ public interface IServerManagementCommands
     /// <seealso href="https://valkey.io/commands/select"/>
     /// <param name="index">The index of the database to select.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
-    /// <returns>A simple "OK" response.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.SelectAsync(1);
-    /// Console.WriteLine(response); // Output: "OK"
+    /// await client.SelectAsync(1);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
+    Task SelectAsync(long index, CommandFlags flags = CommandFlags.None);
 }
