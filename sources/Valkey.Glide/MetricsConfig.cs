@@ -45,7 +45,7 @@ public sealed class MetricsConfig
             if (string.IsNullOrWhiteSpace(endpoint))
                 throw new ArgumentException("Endpoint cannot be null, empty, or whitespace only", nameof(endpoint));
 
-            if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))
+            if (!Uri.TryCreate(endpoint, UriKind.Absolute, out _))
                 throw new ArgumentException("Endpoint must be a valid absolute URI", nameof(endpoint));
 
             _endpoint = endpoint;

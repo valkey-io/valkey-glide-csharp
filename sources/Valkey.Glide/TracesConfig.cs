@@ -67,7 +67,7 @@ public sealed class TracesConfig
                 throw new ArgumentException("Endpoint cannot be null, empty, or whitespace only", nameof(endpoint));
             }
 
-            if (!Uri.IsWellFormedUriString(endpoint, UriKind.Absolute))
+            if (!Uri.TryCreate(endpoint, UriKind.Absolute, out _))
             {
                 throw new ArgumentException("Endpoint must be a valid absolute URI", nameof(endpoint));
             }
