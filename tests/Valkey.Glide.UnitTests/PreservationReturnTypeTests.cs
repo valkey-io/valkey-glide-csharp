@@ -3,7 +3,6 @@
 using System.Reflection;
 
 using Valkey.Glide.Commands;
-using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.UnitTests;
 
@@ -33,10 +32,9 @@ public class PreservationReturnTypeTests
     /// </summary>
     private static void AssertAllOverloadsReturn<TInterface>(string methodName, Type expectedReturnType)
     {
-        MethodInfo[] methods = typeof(TInterface)
+        MethodInfo[] methods = [.. typeof(TInterface)
             .GetMethods()
-            .Where(m => m.Name == methodName)
-            .ToArray();
+            .Where(m => m.Name == methodName)];
 
         Assert.NotEmpty(methods);
 
@@ -158,11 +156,19 @@ public class PreservationReturnTypeTests
         Assert.Equal(typeof(Cmd<string, object?>), returnType);
     }
 
-    [Theory]
-    [MemberData(nameof(HyperLogLogMergeOverloads))]
-    public void Preservation_RequestHyperLogLogMergeAsync_ReturnsCmdStringObjectNullable(MethodInfo method)
+    [Fact]
+    public void Preservation_RequestHyperLogLogMergeAsync_ReturnsCmdStringObjectNullable()
     {
-        Assert.Equal(typeof(Cmd<string, object?>), method.ReturnType);
+        MethodInfo[] methods = [.. typeof(Request)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(m => m.Name == nameof(Request.HyperLogLogMergeAsync))];
+
+        Assert.NotEmpty(methods);
+
+        foreach (MethodInfo method in methods)
+        {
+            Assert.Equal(typeof(Cmd<string, object?>), method.ReturnType);
+        }
     }
 
     [Fact]
@@ -179,32 +185,6 @@ public class PreservationReturnTypeTests
         Type returnType = GetRequestBuilderReturnType(nameof(Request.ClientSetName));
 
         Assert.Equal(typeof(Cmd<string, object?>), returnType);
-    }
-
-    #endregion
-
-    #region Data
-
-    /// <summary>
-    /// All overloads of HyperLogLogMergeAsync on <see cref="Request"/> for theory-based testing.
-    /// </summary>
-    public static TheoryData<MethodInfo> HyperLogLogMergeOverloads
-    {
-        get
-        {
-            var data = new TheoryData<MethodInfo>();
-            MethodInfo[] methods = typeof(Request)
-                .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(m => m.Name == nameof(Request.HyperLogLogMergeAsync))
-                .ToArray();
-
-            foreach (MethodInfo method in methods)
-            {
-                data.Add(method);
-            }
-
-            return data;
-        }
     }
 
     #endregion

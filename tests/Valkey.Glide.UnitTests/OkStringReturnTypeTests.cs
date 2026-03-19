@@ -33,10 +33,9 @@ public class OkStringReturnTypeTests
     /// </summary>
     private static void AssertAllOverloadsReturnTask<TInterface>(string methodName)
     {
-        MethodInfo[] methods = typeof(TInterface)
+        MethodInfo[] methods = [.. typeof(TInterface)
             .GetMethods()
-            .Where(m => m.Name == methodName)
-            .ToArray();
+            .Where(m => m.Name == methodName)];
 
         Assert.NotEmpty(methods);
 
