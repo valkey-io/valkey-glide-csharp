@@ -463,7 +463,7 @@ public class CommandTests
             () => Assert.Equal(ValkeyValue.Null, Request.ClientGetName().Converter(null!)),
             () => Assert.Equal("test-connection", Request.ClientGetName().Converter(new GlideString("test-connection"))),
             () => Assert.Equal(12345L, Request.ClientId().Converter(12345L)),
-            () => Assert.Equal(ValkeyValue.Null, Request.Select(0).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.Select(0).Converter("OK")),
 
             () => Assert.True(Request.SetAddAsync("key", "member").Converter(1L)),
             () => Assert.False(Request.SetAddAsync("key", "member").Converter(0L)),
@@ -509,8 +509,8 @@ public class CommandTests
             () => Assert.False(Request.KeyPersistAsync("key").Converter(false)),
             () => Assert.NotNull(Request.KeyDumpAsync("key").Converter("dumpdata")),
             () => Assert.Null(Request.KeyDumpAsync("key").Converter(null!)),
-            () => Assert.Equal(ValkeyValue.Null, Request.KeyRestoreAsync("key", []).Converter("OK")),
-            () => Assert.Equal(ValkeyValue.Null, Request.KeyRestoreDateTimeAsync("key", []).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.KeyRestoreAsync("key", []).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.KeyRestoreDateTimeAsync("key", []).Converter("OK")),
             () => Assert.True(Request.KeyTouchAsync("key").Converter(1L)),
             () => Assert.False(Request.KeyTouchAsync("key").Converter(0L)),
             () => Assert.Equal(2L, Request.KeyTouchAsync(["key1", "key2"]).Converter(2L)),
@@ -574,7 +574,7 @@ public class CommandTests
             () => Assert.Equal(2L, Request.ListRemoveAsync("a", "value", 0).Converter(2L)),
             () => Assert.Equal(1L, Request.ListRemoveAsync("a", "value", 1).Converter(1L)),
             () => Assert.Equal(0L, Request.ListRemoveAsync("a", "nonexistent", 0).Converter(0L)),
-            () => Assert.Equal("OK", Request.ListTrimAsync("a", 0, 10).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ListTrimAsync("a", 0, 10).Converter("OK")),
             () => Assert.Equal(["one", "two", "three"], Request.ListRangeAsync("a", 0, -1).Converter([(gs)"one", (gs)"two", (gs)"three"])),
             () => Assert.IsType<ValkeyValue[]>(Request.ListRangeAsync("a", 0, -1).Converter([(gs)"one", (gs)"two", (gs)"three"])),
             () => Assert.Equal([], Request.ListRangeAsync("nonexistent", 0, -1).Converter([])),
@@ -582,7 +582,7 @@ public class CommandTests
             // Hash Commands
             () => Assert.Equal<GlideString>("value", Request.HashGetAsync("key", "field").Converter("value")),
             () => Assert.Equal(ValkeyValue.Null, Request.HashGetAsync("key", "field").Converter(null!)),
-            () => Assert.Equal(ValkeyValue.Null, Request.HashSetAsync("key", [new HashEntry("field", "value")]).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.HashSetAsync("key", [new HashEntry("field", "value")]).Converter("OK")),
             () => Assert.True(Request.HashDeleteAsync("key", "field").Converter(1L)),
             () => Assert.False(Request.HashDeleteAsync("key", "field").Converter(0L)),
             () => Assert.Equal(2L, Request.HashDeleteAsync("key", ["field1", "field2"]).Converter(2L)),
@@ -638,8 +638,8 @@ public class CommandTests
             () => Assert.Equal(42L, Request.HyperLogLogLengthAsync("key").Converter(42L)),
             () => Assert.Equal(0L, Request.HyperLogLogLengthAsync("key").Converter(0L)),
             () => Assert.Equal(100L, Request.HyperLogLogLengthAsync(["key1", "key2"]).Converter(100L)),
-            () => Assert.Equal(ValkeyValue.Null, Request.HyperLogLogMergeAsync("dest", "src1", "src2").Converter("OK")),
-            () => Assert.Equal(ValkeyValue.Null, Request.HyperLogLogMergeAsync("dest", ["src1", "src2"]).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.HyperLogLogMergeAsync("dest", "src1", "src2").Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.HyperLogLogMergeAsync("dest", ["src1", "src2"]).Converter("OK")),
 
             // Transaction Commands
             () => Assert.Equal(["WATCH", "key1"], Request.Watch(["key1"]).GetArgs()),
