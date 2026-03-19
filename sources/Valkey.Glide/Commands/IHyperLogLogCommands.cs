@@ -97,7 +97,6 @@ public interface IHyperLogLogCommands
     /// <param name="first">The key of the first source HyperLogLog.</param>
     /// <param name="second">The key of the second source HyperLogLog.</param>
     /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -114,7 +113,6 @@ public interface IHyperLogLogCommands
     /// <param name="destination">The key of the destination HyperLogLog.</param>
     /// <param name="sourceKeys">The keys of the source HyperLogLogs.</param>
     /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>

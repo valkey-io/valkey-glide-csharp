@@ -48,6 +48,5 @@ public interface ITransactionBaseCommands
     /// </example>
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/watch/"/>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
 }

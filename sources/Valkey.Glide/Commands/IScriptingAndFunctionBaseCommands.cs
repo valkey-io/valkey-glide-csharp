@@ -78,7 +78,6 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -96,7 +95,6 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -133,7 +131,6 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if no script is running or if the script has written data.</exception>
     /// <remarks>
     /// <example>
@@ -265,7 +262,6 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -283,7 +279,6 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>

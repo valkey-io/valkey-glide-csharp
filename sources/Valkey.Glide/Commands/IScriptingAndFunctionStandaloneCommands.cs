@@ -53,7 +53,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// <param name="libraryName">The name of the library to delete.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if the library does not exist.</exception>
     /// <remarks>
     /// <example>
@@ -72,7 +71,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </summary>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if no function is running or if the function has written data.</exception>
     /// <remarks>
     /// <example>
@@ -110,7 +108,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// <param name="payload">The binary payload from FunctionDump.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails (e.g., library conflict with APPEND policy).</exception>
     /// <remarks>
     /// <example>
@@ -131,7 +128,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// <param name="policy">The restore policy (APPEND, FLUSH, or REPLACE).</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails.</exception>
     /// <remarks>
     /// <example>

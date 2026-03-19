@@ -316,14 +316,11 @@ public interface IListCommands
     /// <param name="start">The starting point of the range.</param>
     /// <param name="stop">The end of the range.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
-    /// <returns>
-    /// A task that completes when the operation succeeds.
+    /// <remarks>
     ///	If <paramref name="start" /> exceeds the end of the list, or if <paramref name="start" /> is greater than <paramref name="stop" />, the list is emptied
     ///	and the key is removed.
     ///	If <paramref name="stop" /> exceeds the actual end of the list, it will be treated like the last element of the list.
     ///	If <paramref name="key" /> does not exist, the command will return without changes to the database.
-    /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListTrimAsync(key, start, stop);
@@ -503,7 +500,6 @@ public interface IListCommands
     /// <param name="index">The index of the element in the list to set.</param>
     /// <param name="value">The new value.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// An error is returned for out of range indexes.
     /// <example>

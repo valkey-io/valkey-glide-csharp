@@ -69,7 +69,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -89,7 +88,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -111,7 +109,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to target.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -259,7 +256,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to delete from.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -281,7 +277,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -301,7 +296,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -323,7 +317,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to target.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -413,7 +406,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -437,7 +429,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>

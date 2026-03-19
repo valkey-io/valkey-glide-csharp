@@ -329,7 +329,6 @@ public interface IGenericBaseCommands
     /// <param name="expiry">The expiry to set as a duration. Default value is set to persist.</param>
     /// <param name="restoreOptions">Set restore options with replace and absolute TTL modifiers, object idletime and frequency.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -351,7 +350,6 @@ public interface IGenericBaseCommands
     /// <param name="expiry">The expiry to set as a date and time. Default value is set to persist.</param>
     /// <param name="restoreOptions">Set restore options with replace and absolute TTL modifiers, object idletime and frequency.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>

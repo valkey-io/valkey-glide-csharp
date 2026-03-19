@@ -113,7 +113,6 @@ public interface IServerManagementCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -130,7 +129,6 @@ public interface IServerManagementCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -148,7 +146,6 @@ public interface IServerManagementCommands
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -179,7 +176,6 @@ public interface IServerManagementCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/"/>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -195,7 +191,6 @@ public interface IServerManagementCommands
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
     /// <param name="database">The database ID.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -259,7 +254,6 @@ public interface IServerManagementCommands
     /// <seealso href="https://valkey.io/commands/select"/>
     /// <param name="index">The index of the database to select.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
-    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
