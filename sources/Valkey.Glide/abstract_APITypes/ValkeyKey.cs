@@ -354,7 +354,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         {
             if (b is string s)
             {
-                Encoding.UTF8.GetBytes(s, 0, s.Length, result, aLen);
+                _ = Encoding.UTF8.GetBytes(s, 0, s.Length, result, aLen);
             }
             else
             {
