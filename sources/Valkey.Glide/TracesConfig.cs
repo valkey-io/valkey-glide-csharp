@@ -27,6 +27,9 @@ public sealed class TracesConfig
     public uint SamplePercentage
     {
         get;
+
+        // Sample percentage should only be
+        // modified by <see cref="OpenTelemetry"/>
         internal set
         {
             ValidateSamplePercentage(value);
@@ -79,7 +82,7 @@ public sealed class TracesConfig
         /// <summary>
         /// Sets the sample percentage.
         /// </summary>
-        /// <inheritdoc cref="SamplePercentage" path="/exception" />
+        /// <exception cref="ArgumentException">Thrown if <paramref name="samplePercentage"/> is greater than 100.</exception>
         public Builder WithSamplePercentage(uint samplePercentage)
         {
             ValidateSamplePercentage(samplePercentage);
@@ -104,13 +107,13 @@ public sealed class TracesConfig
     /// <summary>
     /// Validates the specified sample percentage.
     /// </summary>
-    /// <param name="percentage"></param>
-    /// <exception cref="ArgumentException">Throws an exception if the percentage is greater than 100.</exception>
-    private static void ValidateSamplePercentage(uint percentage)
+    /// <param name="samplePercentage">The sample percentage to validate.</param>
+    /// <inheritdoc cref="Builder.WithSamplePercentage" path="/exception" />
+    private static void ValidateSamplePercentage(uint samplePercentage)
     {
-        if (percentage > MaxSamplePercentage)
+        if (samplePercentage > MaxSamplePercentage)
         {
-            throw new ArgumentException($"Sample percentage cannot be greater than {MaxSamplePercentage}", nameof(percentage));
+            throw new ArgumentException($"Sample percentage cannot be greater than {MaxSamplePercentage}", nameof(samplePercentage));
         }
     }
 

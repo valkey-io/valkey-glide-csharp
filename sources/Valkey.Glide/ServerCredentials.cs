@@ -79,11 +79,14 @@ public class ServerCredentials
     /// <summary>
     /// Returns true if this instance is configured for IAM authentication.
     /// </summary>
-    public bool IsIamAuth() => IamConfig != null;
+    public bool IsIamAuth()
+        => IamConfig != null;
 
-    public override string ToString() =>
-        // Override default implementation to hide sensitive information.
-        $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
+    /// <summary>
+    /// Returns a string representation with sensitive data omitted.
+    /// </summary>
+    public override string ToString()
+        => $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
 
     #endregion
 }
