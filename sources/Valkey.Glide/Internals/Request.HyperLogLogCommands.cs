@@ -55,8 +55,8 @@ internal partial class Request
     /// <param name="first">The key of the first source HyperLogLog.</param>
     /// <param name="second">The key of the second source HyperLogLog.</param>
     /// <returns>A command that merges the HyperLogLogs.</returns>
-    public static Cmd<string, string> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second)
-        => OK(RequestType.PfMerge, [destination.ToGlideString(), first.ToGlideString(), second.ToGlideString()]);
+    public static Cmd<string, object?> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second)
+        => new(RequestType.PfMerge, [destination.ToGlideString(), first.ToGlideString(), second.ToGlideString()], false, _ => ValkeyValue.Null);
 
     /// <summary>
     /// Creates a command to merge multiple HyperLogLog data structures.
@@ -64,7 +64,7 @@ internal partial class Request
     /// <param name="destination">The key of the destination HyperLogLog.</param>
     /// <param name="sourceKeys">The keys of the source HyperLogLogs.</param>
     /// <returns>A command that merges the HyperLogLogs.</returns>
-    public static Cmd<string, string> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys)
+    public static Cmd<string, object?> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys)
     {
         GlideString[] args = new GlideString[sourceKeys.Length + 1];
         args[0] = destination.ToGlideString();
@@ -72,6 +72,6 @@ internal partial class Request
         {
             args[i + 1] = sourceKeys[i].ToGlideString();
         }
-        return OK(RequestType.PfMerge, args);
+        return new Cmd<string, object?>(RequestType.PfMerge, args, false, _ => ValkeyValue.Null);
     }
 }

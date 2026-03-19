@@ -52,14 +52,14 @@ internal partial class Request
     /// <summary>
     /// Creates a command to flush all scripts from the cache.
     /// </summary>
-    public static Cmd<string, string> ScriptFlushAsync()
-        => OK(RequestType.ScriptFlush, []);
+    public static Cmd<string, object?> ScriptFlushAsync()
+        => new(RequestType.ScriptFlush, [], false, _ => ValkeyValue.Null);
 
     /// <summary>
     /// Creates a command to flush all scripts from the cache with specified mode.
     /// </summary>
-    public static Cmd<string, string> ScriptFlushAsync(FlushMode mode)
-        => OK(RequestType.ScriptFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
+    public static Cmd<string, object?> ScriptFlushAsync(FlushMode mode)
+        => new(RequestType.ScriptFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"], false, _ => ValkeyValue.Null);
 
     /// <summary>
     /// Creates a command to get the source code of a cached script.
@@ -70,8 +70,8 @@ internal partial class Request
     /// <summary>
     /// Creates a command to kill a currently executing script.
     /// </summary>
-    public static Cmd<string, string> ScriptKillAsync()
-        => OK(RequestType.ScriptKill, []);
+    public static Cmd<string, object?> ScriptKillAsync()
+        => new(RequestType.ScriptKill, [], false, _ => ValkeyValue.Null);
 
     // ===== Function Execution =====
 
@@ -125,14 +125,14 @@ internal partial class Request
     /// <summary>
     /// Creates a command to flush all functions.
     /// </summary>
-    public static Cmd<string, string> FunctionFlushAsync()
-        => OK(RequestType.FunctionFlush, []);
+    public static Cmd<string, object?> FunctionFlushAsync()
+        => new(RequestType.FunctionFlush, [], false, _ => ValkeyValue.Null);
 
     /// <summary>
     /// Creates a command to flush all functions with specified mode.
     /// </summary>
-    public static Cmd<string, string> FunctionFlushAsync(FlushMode mode)
-        => OK(RequestType.FunctionFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
+    public static Cmd<string, object?> FunctionFlushAsync(FlushMode mode)
+        => new(RequestType.FunctionFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"], false, _ => ValkeyValue.Null);
 
     // ===== Function Inspection =====
 
@@ -166,14 +166,14 @@ internal partial class Request
     /// <summary>
     /// Creates a command to delete a function library.
     /// </summary>
-    public static Cmd<string, string> FunctionDeleteAsync(string libraryName)
-        => OK(RequestType.FunctionDelete, [libraryName]);
+    public static Cmd<string, object?> FunctionDeleteAsync(string libraryName)
+        => new(RequestType.FunctionDelete, [libraryName], false, _ => ValkeyValue.Null);
 
     /// <summary>
     /// Creates a command to kill a currently executing function.
     /// </summary>
-    public static Cmd<string, string> FunctionKillAsync()
-        => OK(RequestType.FunctionKill, []);
+    public static Cmd<string, object?> FunctionKillAsync()
+        => new(RequestType.FunctionKill, [], false, _ => ValkeyValue.Null);
 
     /// <summary>
     /// Creates a command to dump all functions to a binary payload.
@@ -184,7 +184,7 @@ internal partial class Request
     /// <summary>
     /// Creates a command to restore functions from a binary payload.
     /// </summary>
-    public static Cmd<string, string> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
+    public static Cmd<string, object?> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
     {
         List<GlideString> cmdArgs = [payload];
 
@@ -199,7 +199,7 @@ internal partial class Request
             });
         }
 
-        return OK(RequestType.FunctionRestore, [.. cmdArgs]);
+        return new Cmd<string, object?>(RequestType.FunctionRestore, [.. cmdArgs], false, _ => ValkeyValue.Null);
     }
 
     // ===== Helper Methods =====

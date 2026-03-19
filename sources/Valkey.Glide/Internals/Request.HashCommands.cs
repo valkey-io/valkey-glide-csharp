@@ -28,7 +28,7 @@ internal partial class Request
         return DictionaryToHashEntries(RequestType.HGetAll, args);
     }
 
-    public static Cmd<string, string> HashSetAsync(ValkeyKey key, HashEntry[] hashFields)
+    public static Cmd<string, object?> HashSetAsync(ValkeyKey key, HashEntry[] hashFields)
     {
         List<GlideString> args = [key.ToGlideString()];
         foreach (HashEntry entry in hashFields)
@@ -36,7 +36,7 @@ internal partial class Request
             args.Add(entry.Name.ToGlideString());
             args.Add(entry.Value.ToGlideString());
         }
-        return OK(RequestType.HMSet, [.. args]);
+        return new Cmd<string, object?>(RequestType.HMSet, [.. args], false, _ => ValkeyValue.Null);
     }
 
     public static Cmd<object, bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when)
