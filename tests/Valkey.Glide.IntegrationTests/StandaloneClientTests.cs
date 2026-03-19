@@ -151,8 +151,8 @@ public class StandaloneClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_NoMessage(GlideClient client)
     {
-        TimeSpan result = await client.PingAsync();
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync();
+        Assert.Equal("PONG", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -160,8 +160,8 @@ public class StandaloneClientTests(TestConfiguration config)
     public async Task TestPing_WithMessage(GlideClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
-        TimeSpan result = await client.PingAsync(message);
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync(message);
+        Assert.Equal(message, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

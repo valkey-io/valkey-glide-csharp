@@ -8,62 +8,85 @@ namespace Valkey.Glide;
 /// </summary>
 public class ServerCredentials
 {
-    /// <summary>
-    /// The username that will be used for authenticating connections to the servers.
-    /// If not supplied, "default" will be used.
-    /// </summary>
-    public string? Username { get; set; }
+    #region Public Properties
 
     /// <summary>
-    /// The password that will be used for authenticating connections to the servers.
-    /// Required for password-based authentication, must be null for IAM authentication.
+    /// The username to use for authenticating connections.
+    /// If not specified, "default" will be used.
     /// </summary>
-    public string? Password { get; set; }
+    public string? Username { get; }
 
     /// <summary>
-    /// IAM authentication configuration.
-    /// Required for IAM authentication, must be null for password-based authentication.
+    /// The password to use for authenticating connections.
+    /// Required for password-based authentication, must be <c>null</c> for IAM authentication.
     /// </summary>
-    public IamAuthConfig? IamConfig { get; set; }
+    public string? Password { get; }
+
+    /// <summary>
+    /// IAM authentication configuration to use for authenticating connections.
+    /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
+    /// </summary>
+    public IamAuthConfig? IamConfig { get; }
+
+    #endregion
+    #region Constructors
 
     /// <summary>
     /// Creates server credentials for password-based authentication.
     /// </summary>
-    /// <param name="username">The username for authentication. If null, "default" will be used.</param>
-    /// <param name="password">The password for authentication.</param>
+    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
+    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
     public ServerCredentials(string? username, string password)
     {
+        ArgumentNullException.ThrowIfNull(password, nameof(password));
+
         Username = username;
-        Password = password ?? throw new ArgumentNullException(nameof(password));
+        Password = password;
         IamConfig = null;
     }
 
     /// <summary>
     /// Creates server credentials for password-based authentication.
-    /// Username "default" will be used.
     /// </summary>
-    /// <param name="password">The password for authentication.</param>
+    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
     public ServerCredentials(string password)
     {
+        ArgumentNullException.ThrowIfNull(password, nameof(password));
+
         Username = null;
-        Password = password ?? throw new ArgumentNullException(nameof(password));
+        Password = password;
         IamConfig = null;
     }
 
     /// <summary>
     /// Creates server credentials for IAM authentication.
     /// </summary>
-    /// <param name="username">The username for authentication.</param>
-    /// <param name="iamConfig">The IAM authentication configuration.</param>
+    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
+    /// <param name="iamConfig"><inheritdoc cref="IamConfig" path="/summary" /></param>
     public ServerCredentials(string username, IamAuthConfig iamConfig)
     {
-        Username = username ?? throw new ArgumentNullException(nameof(username));
-        IamConfig = iamConfig ?? throw new ArgumentNullException(nameof(iamConfig));
+        ArgumentNullException.ThrowIfNull(username, nameof(username));
+        ArgumentNullException.ThrowIfNull(iamConfig, nameof(iamConfig));
+
+        Username = username;
         Password = null;
+        IamConfig = iamConfig;
     }
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Returns true if this instance is configured for IAM authentication.
     /// </summary>
-    public bool IsIamAuth() => IamConfig != null;
+    public bool IsIamAuth()
+        => IamConfig != null;
+
+    /// <summary>
+    /// Returns a string representation with sensitive data omitted.
+    /// </summary>
+    public override string ToString()
+        => $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
+
+    #endregion
 }

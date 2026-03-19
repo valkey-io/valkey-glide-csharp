@@ -18,7 +18,7 @@ public static class Client
     /// <param name="client">The client to test.</param>
     public static async Task AssertConnected(BaseClient client)
     {
-        Task<TimeSpan> assertTask;
+        Task<ValkeyValue> assertTask;
         if (client is GlideClient standaloneClient)
         {
             assertTask = standaloneClient.PingAsync();
@@ -33,7 +33,8 @@ public static class Client
             return;
         }
 
-        Assert.True(await assertTask.WaitAsync(AssertTimeSpan) > TimeSpan.Zero);
+        ValkeyValue response = await assertTask.WaitAsync(AssertTimeSpan);
+        Assert.Equal("PONG", response.ToString());
     }
 
     /// <summary>

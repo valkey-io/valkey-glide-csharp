@@ -4,22 +4,27 @@ namespace Valkey.Glide.UnitTests;
 
 public class OpenTelemetryConfigTests
 {
+    #region Constants
+
     private static readonly string Endpoint = "http://localhost:4321";
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMinutes(1);
+
+    #endregion
+    #region Tests
 
     [Fact]
     public void WithFlushInterval_WithInvalidInterval_ThrowsArgumentException()
     {
         var builder = OpenTelemetryConfig.CreateBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithFlushInterval(TimeSpan.FromSeconds(-1)));
-        Assert.Throws<ArgumentException>(() => builder.WithFlushInterval(TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithFlushInterval(TimeSpan.FromSeconds(-1)));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithFlushInterval(TimeSpan.Zero));
     }
 
     [Fact]
     public void Build_WithoutTracesOrMetrics_ThrowsInvalidOperationException()
     {
         var builder = OpenTelemetryConfig.CreateBuilder();
-        Assert.Throws<InvalidOperationException>(() => builder.Build());
+        _ = Assert.Throws<InvalidOperationException>(builder.Build);
     }
 
     [Fact]
@@ -58,88 +63,6 @@ public class OpenTelemetryConfigTests
         Assert.NotNull(config.Metrics);
         Assert.Equal(FlushInterval, config.FlushInterval);
     }
-}
 
-public class TracesConfigTests
-{
-    private static readonly uint SamplePercentage = 50;
-    private static readonly string Endpoint = "http://localhost:4321";
-
-    [Fact]
-    public void WithEndpoint_WithInvalidEndpoint_ThrowsArgumentException()
-    {
-        var builder = TracesConfig.CreateBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithEndpoint(null!));
-        Assert.Throws<ArgumentException>(() => builder.WithEndpoint(""));
-        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("\t"));
-    }
-
-    [Fact]
-    public void WithSamplePercentage_WithInvalidPercentage_ThrowsArgumentException()
-    {
-        var builder = TracesConfig.CreateBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithSamplePercentage(101));
-    }
-
-    [Fact]
-    public void Build_WithoutEndpoint_ThrowsInvalidOperationException()
-    {
-        var builder = TracesConfig.CreateBuilder();
-        Assert.Throws<InvalidOperationException>(() => builder.Build());
-    }
-
-    [Fact]
-    public void Build_WithSamplePercentage_Succeeds()
-    {
-        var config = TracesConfig.CreateBuilder()
-            .WithEndpoint(Endpoint)
-            .Build();
-
-        Assert.Equal(Endpoint, config.Endpoint);
-        Assert.Equal(TracesConfig.DefaultSamplePercentage, config.SamplePercentage);
-    }
-
-    [Fact]
-    public void Build_WithoutSamplePercentage_Succeeds()
-    {
-        // Arrange & Act
-        var config = TracesConfig.CreateBuilder()
-            .WithEndpoint(Endpoint)
-            .WithSamplePercentage(SamplePercentage)
-            .Build();
-
-        Assert.Equal(Endpoint, config.Endpoint);
-        Assert.Equal(SamplePercentage, config.SamplePercentage);
-    }
-}
-
-public class MetricsConfigTests
-{
-    private static readonly string Endpoint = "http://localhost:4321";
-
-    [Fact]
-    public void WithEndpoint_WithInvalidEndpoint_ThrowsArgumentException()
-    {
-        var builder = MetricsConfig.CreateBuilder();
-        Assert.Throws<ArgumentException>(() => builder.WithEndpoint(null!));
-        Assert.Throws<ArgumentException>(() => builder.WithEndpoint(""));
-        Assert.Throws<ArgumentException>(() => builder.WithEndpoint("\t"));
-    }
-
-    [Fact]
-    public void Build_WithoutEndpoint_ThrowsInvalidOperationException()
-    {
-        var builder = MetricsConfig.CreateBuilder();
-        Assert.Throws<InvalidOperationException>(() => builder.Build());
-    }
-
-    [Fact]
-    public void Build_WithEndpoint_Succeeds()
-    {
-        var config = MetricsConfig.CreateBuilder()
-            .WithEndpoint(Endpoint)
-            .Build();
-
-        Assert.Equal(Endpoint, config.Endpoint);
-    }
+    #endregion
 }

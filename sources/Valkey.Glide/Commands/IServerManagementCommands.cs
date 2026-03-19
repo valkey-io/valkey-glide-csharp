@@ -62,35 +62,35 @@ public interface IServerManagementCommands
     Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Ping the server and measure the round-trip time.
+    /// Ping the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan latency = await client.PingAsync();
+    /// var response = await client.PingAsync();
+    /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync();
 
     /// <summary>
-    /// Ping the server with a message and measure the round-trip time.
+    /// Ping the server with a message.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
     /// <param name="message">The message to send with the ping</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan latency = await client.PingAsync("test message");
+    /// var response = await client.PingAsync("Hello World");
+    /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync(ValkeyValue message);
 
     /// <summary>
     /// Gets the values of configuration parameters.
@@ -263,8 +263,8 @@ public interface IServerManagementCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.SelectAsync(1);
-    /// Console.WriteLine(result); // Output: "OK"
+    /// var response = await client.SelectAsync(1);
+    /// Console.WriteLine(response); // Output: "OK"
     /// </code>
     /// </example>
     /// </remarks>

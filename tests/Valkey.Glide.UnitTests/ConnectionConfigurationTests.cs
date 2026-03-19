@@ -8,14 +8,15 @@ namespace Valkey.Glide.UnitTests;
 
 public class ConnectionConfigurationTests
 {
-    // Authentication constants.
-    private static readonly string Username = "testUsername";
-    private static readonly string Password = "testPassword";
+    #region Constants
 
-    // IAM authentication constants.
-    private static readonly string ClusterName = "testClusterName";
-    private static readonly string Region = "testRegion";
-    private static readonly uint RefreshIntervalSeconds = 600;
+    // Authentication constants.
+    private static readonly string Username = "USERNAME";
+    private static readonly string Password = "PASSWORD";
+
+    private static readonly string ClusterName = "CLUSTER_NAME";
+    private static readonly string Region = "REGION";
+    private static readonly uint RefreshIntervalSeconds = IamAuthConfig.MinRefreshIntervalSeconds + 1;
 
     private static readonly IamAuthConfig IamAuthConfig = new(
         ClusterName,
@@ -34,8 +35,8 @@ public class ConnectionConfigurationTests
     private static readonly uint ExponentBase = 2u;
     private static readonly uint JitterPercent = 10u;
 
-    // Authentication & Credentials
-    // ----------------------------
+    #endregion
+    #region Authentication & Credentials Tests
 
     [Fact]
     public void WithAuthentication_UsernamePassword_Succeeds()
@@ -87,11 +88,11 @@ public class ConnectionConfigurationTests
         Assert.True(authenticationInfo.HasIamCredentials);
 
         var iamCredentials = authenticationInfo.IamCredentials!;
-        Assert.Equal(ClusterName, iamCredentials.ClusterName);
-        Assert.Equal(Region, iamCredentials.Region);
+        Assert.Equal(IamAuthConfig.ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(IamAuthConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
-        Assert.Equal(600u, iamCredentials.RefreshIntervalSeconds);
+        Assert.Equal(IamAuthConfig.RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
     }
 
     [Fact]
@@ -111,8 +112,12 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithAuthentication_MultipleCalls_LastWins()
     {
-        // Use IamAuthConfig with different service type and no specified refresh interval.
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region);
+        // Use IamAuthConfig with different service type and no refresh interval.
+        var iamConfig = new IamAuthConfig(
+            clusterName: "CLUSTER",
+            serviceType: ServiceType.MemoryDB,
+            region: "REGION",
+            refreshIntervalSeconds: null);
 
         // Password-based authentication last.
         var builder = new StandaloneClientConfigurationBuilder()
@@ -135,8 +140,8 @@ public class ConnectionConfigurationTests
         Assert.True(authenticationInfo2.HasIamCredentials);
 
         var iamCredentials = authenticationInfo2.IamCredentials!;
-        Assert.Equal(ClusterName, iamCredentials.ClusterName);
-        Assert.Equal(Region, iamCredentials.Region);
+        Assert.Equal(iamConfig.ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(iamConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
     }
@@ -153,10 +158,10 @@ public class ConnectionConfigurationTests
         Assert.True(authenticationInfo.HasIamCredentials);
 
         var iamCredentials = authenticationInfo.IamCredentials!;
-        Assert.Equal(ClusterName, iamCredentials.ClusterName);
-        Assert.Equal(Region, iamCredentials.Region);
+        Assert.Equal(IamAuthConfig.ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(IamAuthConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
-        Assert.Equal(RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
+        Assert.Equal(IamAuthConfig.RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
     }
 
     [Fact]
@@ -169,8 +174,12 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithCredentials_MultipleCalls_LastWins()
     {
-        // Use IamAuthConfig with different service type and no specified refresh interval.
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region);
+        // Use IamAuthConfig with different service type and no refresh interval.
+        var iamConfig = new IamAuthConfig(
+            clusterName: "CLUSTER",
+            serviceType: ServiceType.MemoryDB,
+            region: "REGION",
+            refreshIntervalSeconds: null);
 
         var iamServerCredentials = new ServerCredentials(Username, iamConfig);
         var passwordServerCredentials = new ServerCredentials(Username, Password);
@@ -196,14 +205,14 @@ public class ConnectionConfigurationTests
         Assert.True(authenticationInfo2.HasIamCredentials);
 
         var iamCredentials = authenticationInfo2.IamCredentials!;
-        Assert.Equal(ClusterName, iamCredentials.ClusterName);
-        Assert.Equal(Region, iamCredentials.Region);
+        Assert.Equal(iamConfig.ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(iamConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
         Assert.False(iamCredentials.HasRefreshIntervalSeconds);
     }
 
-    // Refresh Topology Configuration
-    // ------------------------------
+    #endregion
+    #region Refresh Topology Configuration Tests
 
     [Fact]
     public void RefreshTopologyFromInitialNodes_Default()
@@ -228,8 +237,8 @@ public class ConnectionConfigurationTests
         Assert.False(builder.Build().Request.RefreshTopologyFromInitialNodes);
     }
 
-    // TLS Configuration
-    // -----------------
+    #endregion
+    #region TLS Configuration Tests
 
     [Fact]
     public void UseTls()
@@ -479,8 +488,8 @@ public class ConnectionConfigurationTests
         _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(tempFile.Path));
     }
 
-    // Pub/Sub Reconciliation Interval
-    // -------------------------------
+    #endregion
+    #region Pub/Sub Reconciliation Interval Tests
 
     [Fact]
     public void PubSubReconciliationInterval_Default()
@@ -515,8 +524,8 @@ public class ConnectionConfigurationTests
         _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
     }
 
-    // Connection Retry Strategy
-    // -------------------------
+    #endregion
+    #region Connection Retry Strategy Tests
 
     [Fact]
     public void WithConnectionRetryStrategy_Standalone_NotSpecified()
@@ -635,4 +644,6 @@ public class ConnectionConfigurationTests
         Assert.Equal(ExponentBase, strategy.ExponentBase);
         Assert.Equal(JitterPercent, strategy.JitterPercent);
     }
+
+    #endregion
 }
