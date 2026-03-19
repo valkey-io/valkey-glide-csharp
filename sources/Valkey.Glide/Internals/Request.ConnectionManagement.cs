@@ -16,6 +16,6 @@ internal partial class Request
     public static Cmd<long, long> ClientId()
         => Simple<long>(RequestType.ClientId, []);
 
-    public static Cmd<string, object?> ClientSetName(string connectionName)
-        => new(RequestType.ClientSetName, [connectionName.ToGlideString()], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> ClientSetName(string connectionName)
+        => Void(RequestType.ClientSetName, [connectionName.ToGlideString()]);
 }

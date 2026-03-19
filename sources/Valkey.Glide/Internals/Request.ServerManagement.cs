@@ -81,16 +81,16 @@ internal partial class Request
         });
     }
 
-    public static Cmd<string, object?> ConfigResetStatisticsAsync()
-        => new(RequestType.ConfigResetStat, [], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> ConfigResetStatisticsAsync()
+        => Void(RequestType.ConfigResetStat, []);
 
-    public static Cmd<string, object?> ConfigRewriteAsync()
-        => new(RequestType.ConfigRewrite, [], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> ConfigRewriteAsync()
+        => Void(RequestType.ConfigRewrite, []);
 
-    public static Cmd<string, object?> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
+    public static Cmd<string, ValkeyValue> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
         GlideString[] args = [setting.ToGlideString(), value.ToGlideString()];
-        return new(RequestType.ConfigSet, args, false, _ => ValkeyValue.Null);
+        return Void(RequestType.ConfigSet, args);
     }
 
     public static Cmd<long, long> DatabaseSizeAsync(int database = -1)
@@ -100,15 +100,15 @@ internal partial class Request
             ? throw new ArgumentException("DBSIZE command does not support database selection. Use SELECT command first.")
             : new(RequestType.DBSize, [], false, l => l);
 
-    public static Cmd<string, object?> FlushAllDatabasesAsync()
-        => new(RequestType.FlushAll, [], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
+        => Void(RequestType.FlushAll, []);
 
-    public static Cmd<string, object?> FlushDatabaseAsync(int database = -1)
+    public static Cmd<string, ValkeyValue> FlushDatabaseAsync(int database = -1)
         // FLUSHDB doesn't take database parameter - it operates on current database
         // Database selection should be handled at connection level
         => database != -1
             ? throw new ArgumentException("FLUSHDB command does not support database selection. Use SELECT command first.")
-            : new(RequestType.FlushDB, [], false, _ => ValkeyValue.Null);
+            : Void(RequestType.FlushDB, []);
 
     public static Cmd<long, DateTime> LastSaveAsync()
         => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));
@@ -129,6 +129,6 @@ internal partial class Request
     public static Cmd<GlideString, string> LolwutAsync()
         => new(RequestType.Lolwut, [], false, gs => gs.ToString());
 
-    public static Cmd<string, object?> Select(long index)
-        => new(RequestType.Select, [index.ToString().ToGlideString()], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> Select(long index)
+        => Void(RequestType.Select, [index.ToString().ToGlideString()]);
 }
