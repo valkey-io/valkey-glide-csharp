@@ -203,8 +203,7 @@ public class StandaloneClientTests(TestConfiguration config)
     public async Task TestSelect(GlideClient client)
     {
         // Test selecting database 0 (default)
-        string result = await client.SelectAsync(0);
-        Assert.Equal("OK", result);
+        await client.SelectAsync(0);
 
         // Switching to a valid database causes issue to tests running in parallel. So instead, we test
         // that using an invalid value to ensure different values can still be sent through.
@@ -222,8 +221,7 @@ public class StandaloneClientTests(TestConfiguration config)
         ValkeyValue clientName = await client.ClientGetNameAsync(CommandFlags.None);
         Assert.Equal(ValkeyValue.Null, clientName);
 
-        string selectResult = await client.SelectAsync(0, CommandFlags.None);
-        Assert.Equal("OK", selectResult);
+        await client.SelectAsync(0, CommandFlags.None);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

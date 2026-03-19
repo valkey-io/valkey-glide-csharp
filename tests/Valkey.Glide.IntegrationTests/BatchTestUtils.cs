@@ -1257,7 +1257,7 @@ internal partial class BatchTestUtils
         if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
         {
             _ = batch.SelectAsync(0); // Select database 0 (default)
-            testData.Add(new("OK", "SelectAsync(0)"));
+            testData.Add(new(null, "SelectAsync(0)"));
         }
 
         return testData;

@@ -150,35 +150,35 @@ public class PreservationReturnTypeTests
     #region Preservation — Request Builder Return Types for Internal Cleanup Targets
 
     [Fact]
-    public void Preservation_RequestHashSetAsync_ReturnsCmdStringString()
+    public void Preservation_RequestHashSetAsync_ReturnsCmdStringObjectNullable()
     {
         // HashSetAsync(ValkeyKey, HashEntry[]) — the HMSet builder
         Type returnType = GetRequestBuilderReturnType(nameof(Request.HashSetAsync));
 
-        Assert.Equal(typeof(Cmd<string, string>), returnType);
+        Assert.Equal(typeof(Cmd<string, object?>), returnType);
     }
 
     [Theory]
     [MemberData(nameof(HyperLogLogMergeOverloads))]
-    public void Preservation_RequestHyperLogLogMergeAsync_ReturnsCmdStringString(MethodInfo method)
+    public void Preservation_RequestHyperLogLogMergeAsync_ReturnsCmdStringObjectNullable(MethodInfo method)
     {
-        Assert.Equal(typeof(Cmd<string, string>), method.ReturnType);
+        Assert.Equal(typeof(Cmd<string, object?>), method.ReturnType);
     }
 
     [Fact]
-    public void Preservation_RequestKeyRestoreAsync_ReturnsCmdStringString()
+    public void Preservation_RequestKeyRestoreAsync_ReturnsCmdStringObjectNullable()
     {
         Type returnType = GetRequestBuilderReturnType(nameof(Request.KeyRestoreAsync));
 
-        Assert.Equal(typeof(Cmd<string, string>), returnType);
+        Assert.Equal(typeof(Cmd<string, object?>), returnType);
     }
 
     [Fact]
-    public void Preservation_RequestClientSetName_ReturnsCmdStringString()
+    public void Preservation_RequestClientSetName_ReturnsCmdStringObjectNullable()
     {
         Type returnType = GetRequestBuilderReturnType(nameof(Request.ClientSetName));
 
-        Assert.Equal(typeof(Cmd<string, string>), returnType);
+        Assert.Equal(typeof(Cmd<string, object?>), returnType);
     }
 
     #endregion

@@ -506,8 +506,7 @@ public class ClusterClientTests(TestConfiguration config)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "SELECT for Cluster Client is supported since 9.0.0"
         );
-        string result = await client.SelectAsync(0);
-        Assert.Equal("OK", result);
+        await client.SelectAsync(0);
     }
 
     [Fact]

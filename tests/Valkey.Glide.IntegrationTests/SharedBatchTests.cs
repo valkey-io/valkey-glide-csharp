@@ -81,8 +81,8 @@ public class SharedBatchTests
 
         Assert.Multiple(
             () => Assert.Equal(1L, (long)res[0]!),
-            () => Assert.Equal("OK", res[1]),
-            () => Assert.Equal("OK", res[2])
+            () => Assert.Null(res[1]),
+            () => Assert.Null(res[2])
         );
 
     }
