@@ -235,7 +235,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ScriptFlushAsync());
+        _ = await Command(Request.ScriptFlushAsync());
     }
 
     /// <inheritdoc/>
@@ -245,7 +245,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ScriptFlushAsync(mode));
+        _ = await Command(Request.ScriptFlushAsync(mode));
     }
 
     /// <inheritdoc/>
@@ -272,7 +272,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ScriptKillAsync());
+        _ = await Command(Request.ScriptKillAsync());
     }
 
     // ===== Function Execution =====
@@ -340,7 +340,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionFlushAsync());
+        _ = await Command(Request.FunctionFlushAsync());
     }
 
     /// <inheritdoc/>
@@ -350,7 +350,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionFlushAsync(mode));
+        _ = await Command(Request.FunctionFlushAsync(mode));
     }
 
     // ===== StackExchange.Redis Compatibility Methods =====

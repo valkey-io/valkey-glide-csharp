@@ -50,7 +50,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ScriptFlushAsync(), route);
+        _ = await Command(Request.ScriptFlushAsync(), route);
     }
 
     /// <inheritdoc/>
@@ -61,7 +61,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ScriptFlushAsync(mode), route);
+        _ = await Command(Request.ScriptFlushAsync(mode), route);
     }
 
     /// <inheritdoc/>
@@ -71,7 +71,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ScriptKillAsync(), route);
+        _ = await Command(Request.ScriptKillAsync(), route);
     }
 
     // ===== Function Execution with Routing =====
@@ -144,7 +144,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionDeleteAsync(libraryName), route);
+        _ = await Command(Request.FunctionDeleteAsync(libraryName), route);
     }
 
     /// <inheritdoc/>
@@ -154,7 +154,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionFlushAsync(), route);
+        _ = await Command(Request.FunctionFlushAsync(), route);
     }
 
     /// <inheritdoc/>
@@ -165,7 +165,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionFlushAsync(mode), route);
+        _ = await Command(Request.FunctionFlushAsync(mode), route);
     }
 
     /// <inheritdoc/>
@@ -175,7 +175,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionKillAsync(), route);
+        _ = await Command(Request.FunctionKillAsync(), route);
     }
 
     // ===== Function Inspection with Routing =====
@@ -221,7 +221,7 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionRestoreAsync(payload, null), route);
+        _ = await Command(Request.FunctionRestoreAsync(payload, null), route);
     }
 
     /// <inheritdoc/>
@@ -233,6 +233,6 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionRestoreAsync(payload, policy), route);
+        _ = await Command(Request.FunctionRestoreAsync(payload, policy), route);
     }
 }
