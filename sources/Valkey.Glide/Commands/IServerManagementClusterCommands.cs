@@ -231,7 +231,7 @@ public interface IServerManagementClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -248,7 +248,7 @@ public interface IServerManagementClusterCommands
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -266,7 +266,7 @@ public interface IServerManagementClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -285,7 +285,7 @@ public interface IServerManagementClusterCommands
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -304,7 +304,7 @@ public interface IServerManagementClusterCommands
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -324,7 +324,7 @@ public interface IServerManagementClusterCommands
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -380,7 +380,7 @@ public interface IServerManagementClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/"/>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -397,7 +397,7 @@ public interface IServerManagementClusterCommands
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -414,7 +414,7 @@ public interface IServerManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
     /// <param name="database">The database to check. GLIDE does not support this.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -432,7 +432,7 @@ public interface IServerManagementClusterCommands
     /// command to the nodes defined by <c>route</c>.</param>
     /// <param name="database">The database to check. GLIDE does not support this.</param>
     /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>

@@ -16,6 +16,7 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// </summary>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
@@ -34,6 +35,7 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);

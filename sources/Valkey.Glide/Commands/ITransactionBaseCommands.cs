@@ -29,13 +29,13 @@ public interface ITransactionBaseCommands
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
-    /// 
+    ///
     /// // Execute transaction
     /// var batch = new Batch(true)
     ///     .StringSetAsync("sampleKey", "foobar");
     /// object[] transactionResult = await client.Exec(batch, false);
     /// // transactionResult is not null if transaction executed successfully
-    /// 
+    ///
     /// // Watch key again
     /// await client.WatchAsync(["sampleKey"]);
     /// var batch2 = new Batch(true)
@@ -48,5 +48,6 @@ public interface ITransactionBaseCommands
     /// </example>
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/watch/"/>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
 }

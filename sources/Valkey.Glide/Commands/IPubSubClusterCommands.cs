@@ -40,6 +40,7 @@ public interface IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     abstract Task SSubscribeAsync(string shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
@@ -50,6 +51,7 @@ public interface IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     abstract Task SSubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>
@@ -61,6 +63,7 @@ public interface IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
     /// <param name="shardedChannel">The sharded channel to subscribe to.</param>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -80,6 +83,7 @@ public interface IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
     /// <param name="shardedChannels">A collection of sharded channels to subscribe to.</param>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -101,6 +105,7 @@ public interface IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     abstract Task SUnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
@@ -111,6 +116,7 @@ public interface IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     abstract Task SUnsubscribeAsync(string shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
@@ -121,6 +127,7 @@ public interface IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     abstract Task SUnsubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>
@@ -139,6 +146,7 @@ public interface IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     abstract Task SUnsubscribeLazyAsync();
 
     /// <summary>
@@ -149,6 +157,7 @@ public interface IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
     /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -169,6 +178,7 @@ public interface IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
     /// <param name="shardedChannels">A collection of sharded channels to unsubscribe from.</param>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>

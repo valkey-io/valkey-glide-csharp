@@ -72,6 +72,7 @@ public interface IHashCommands
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashFields">The entries to set in the hash.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <returns>A task that completes when the operation succeeds.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -85,7 +86,7 @@ public interface IHashCommands
     /// Sets <paramref name="hashField"/> in the hash stored at <paramref name="key"/> to <paramref name="value"/>.
     /// If <paramref name="key"/> does not exist, a new key holding a hash is created.
     /// If <paramref name="hashField"/> already exists in the hash, it is overwritten.
-    /// 
+    ///
     /// Sets <paramref name="hashField"/> in the hash stored at <paramref name="key"/> to <paramref name="value"/>, only if <paramref name="hashField"/> does not yet exist.
     /// If <paramref name="key"/> does not exist, a new key holding a hash is created.
     /// If <paramref name="hashField"/> already exists, this operation has no effect.
@@ -551,7 +552,7 @@ public interface IHashCommands
     Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Sets expiration time for hash fields, using an absolute Unix timestamp in milliseconds. 
+    /// Sets expiration time for hash fields, using an absolute Unix timestamp in milliseconds.
     /// HPEXPIREAT has the same effect and semantic as HEXPIREAT, but the Unix time
     /// at which the field will expire is specified in milliseconds instead of seconds.
     /// </summary>
