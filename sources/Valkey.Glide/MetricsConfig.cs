@@ -43,10 +43,14 @@ public sealed class MetricsConfig
         public Builder WithEndpoint(string endpoint)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
+            {
                 throw new ArgumentException("Endpoint cannot be null, empty, or whitespace only", nameof(endpoint));
+            }
 
             if (!Uri.TryCreate(endpoint, UriKind.Absolute, out _))
+            {
                 throw new ArgumentException("Endpoint must be a valid absolute URI", nameof(endpoint));
+            }
 
             _endpoint = endpoint;
             return this;

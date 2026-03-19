@@ -4,21 +4,48 @@ namespace Valkey.Glide.UnitTests;
 
 public class TracesConfigTests
 {
-    #region Constants
+    #region Data
 
-    private static readonly uint SamplePercentage = 50;
-    private static readonly string Endpoint = "http://localhost:4321";
+    // TODO #215: Move to TestUtils.Data folder.
+    public static TheoryData<string> ValidEndpoints =>
+        [
+            "http://localhost:4321",                    // HTTP endpoint
+            "https://otel-collector.example.com:4318",  // HTTPS endpoint
+            "file:///tmp/traces.txt",                   // Unix-style file URI
+            @"file://C:\Users\runner\traces.txt",       // Windows-style file URI
+        ];
+
+    // TODO #215: Move to TestUtils.Data folder.
+    public static TheoryData<string> InvalidEndpoints =>
+        [
+            (string)null!,        // null
+            "",                   // empty
+            "\t",                 // whitespace only
+            "not-a-url",          // no scheme
+            "://missing-scheme",  // malformed scheme
+            "just some text",     // plain text
+        ];
 
     #endregion
     #region Tests
 
-    [Fact]
-    public void WithEndpoint_WithInvalidEndpoint_ThrowsArgumentException()
+    [Theory]
+    [MemberData(nameof(InvalidEndpoints))]
+    public void WithEndpoint_WithInvalidEndpoint_ThrowsArgumentException(string endpoint)
     {
         var builder = TracesConfig.CreateBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint(null!));
-        _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint(""));
-        _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint("\t"));
+        _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint(endpoint));
+    }
+
+    [Theory]
+    [MemberData(nameof(ValidEndpoints))]
+    public void WithEndpoint_WithValidEndpoint_Succeeds(string endpoint)
+    {
+        var config = TracesConfig.CreateBuilder()
+            .WithEndpoint(endpoint)
+            .Build();
+
+        Assert.Equal(endpoint, config.Endpoint);
     }
 
     [Fact]
@@ -36,36 +63,30 @@ public class TracesConfigTests
     }
 
     [Fact]
-    public void Build_WithSamplePercentage_Succeeds()
+    public void Build_WithoutSamplePercentage_Succeeds()
     {
+        var endpoint = ValidEndpoints.First();
         var config = TracesConfig.CreateBuilder()
-            .WithEndpoint(Endpoint)
+            .WithEndpoint(endpoint)
             .Build();
 
-        Assert.Equal(Endpoint, config.Endpoint);
+        Assert.Equal(endpoint, config.Endpoint);
         Assert.Equal(TracesConfig.DefaultSamplePercentage, config.SamplePercentage);
     }
 
     [Fact]
-    public void Build_WithoutSamplePercentage_Succeeds()
+    public void Build_WithSamplePercentage_Succeeds()
     {
-        // Arrange & Act
+        var endpoint = ValidEndpoints.First();
+        var samplePercentage = 50u;
+
         var config = TracesConfig.CreateBuilder()
-            .WithEndpoint(Endpoint)
-            .WithSamplePercentage(SamplePercentage)
+            .WithEndpoint(endpoint)
+            .WithSamplePercentage(samplePercentage)
             .Build();
 
-        Assert.Equal(Endpoint, config.Endpoint);
-        Assert.Equal(SamplePercentage, config.SamplePercentage);
-    }
-
-    [Fact]
-    public void WithEndpoint_WithInvalidUri_ThrowsArgumentException()
-    {
-        var builder = TracesConfig.CreateBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint("not-a-url"));
-        _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint("://missing-scheme"));
-        _ = Assert.Throws<ArgumentException>(() => builder.WithEndpoint("just some text"));
+        Assert.Equal(endpoint, config.Endpoint);
+        Assert.Equal(samplePercentage, config.SamplePercentage);
     }
 
     #endregion
