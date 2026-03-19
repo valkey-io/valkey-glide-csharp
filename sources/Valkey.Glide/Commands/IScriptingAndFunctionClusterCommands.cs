@@ -28,7 +28,8 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     ///     foreach (var (node, value) in result.MultiValue)
     ///     {
     ///         Console.WriteLine($"{node}: {value}");
-    ///         ///     }
+    ///     }
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
@@ -229,7 +230,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="libraryCode">The Lua code defining the function library.</param>
     /// <param name="replace">Whether to replace an existing library with the same name.</param>
     /// <param name="route">The routing configuration specifying which nodes to load on.</param>
-    ///    /// <param name="flags">Tho use for this operation.</param>
+    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing library names from nodes.</returns>
     /// <remarks>
@@ -259,9 +260,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionDeleteAsync(
-    ///     "mylib",
-    ///     Route.AllPrimaries);
+    /// await client.FunctionDeleteAsync("mylib", Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -299,9 +298,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionFlushAsync(
-    ///     FlushMode.Async,
-    ///     Route.AllPrimaries);
+    /// await client.FunctionFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -340,9 +337,9 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing library information from nodes.</returns>
     /// <remarks>
-    ///  /// <example>
+    /// <example>
     /// <code>
-    ///alue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync(
+    /// ClusterValue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync(
     ///     null,
     ///     Route.AllPrimaries);
     /// </code>
