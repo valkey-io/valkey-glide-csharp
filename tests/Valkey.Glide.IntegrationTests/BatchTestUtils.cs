@@ -447,14 +447,14 @@ internal partial class BatchTestUtils
 
         // ConfigSet and ConfigGet combination
         _ = batch.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lru");
-        testData.Add(new(ValkeyValue.Null, "ConfigSetAsync(maxmemory-policy, allkeys-lru)", true));
+        testData.Add(new(ValkeyValue.Ok, "ConfigSetAsync(maxmemory-policy, allkeys-lru)", true));
 
         _ = batch.ConfigGetAsync("maxmemory-policy");
         testData.Add(new(Array.Empty<KeyValuePair<string, string>>(), "ConfigGetAsync(maxmemory-policy)", true));
 
         // ConfigResetStatistics
         _ = batch.ConfigResetStatisticsAsync();
-        testData.Add(new(ValkeyValue.Null, "ConfigResetStatisticsAsync()", true));
+        testData.Add(new(ValkeyValue.Ok, "ConfigResetStatisticsAsync()", true));
 
         // DatabaseSize
         _ = batch.DatabaseSizeAsync();
@@ -1061,7 +1061,7 @@ internal partial class BatchTestUtils
         testData.Add(new(6L, "ListRightPush(trimKey, [a, b, c, d, e, f])"));
 
         _ = batch.ListTrim(trimKey, 1, 4);
-        testData.Add(new("OK", "ListTrim(trimKey, 1, 4) - keep middle elements", true));
+        testData.Add(new(ValkeyValue.Ok, "ListTrim(trimKey, 1, 4) - keep middle elements", true));
 
         _ = batch.ListLength(trimKey);
         testData.Add(new(4L, "ListLength(trimKey) after trim"));
@@ -1075,7 +1075,7 @@ internal partial class BatchTestUtils
         testData.Add(new(5L, "ListRightPush(trimKey2, [1, 2, 3, 4, 5])"));
 
         _ = batch.ListTrim(trimKey2, -3, -1);
-        testData.Add(new("OK", "ListTrim(trimKey2, -3, -1) - keep last 3", true));
+        testData.Add(new(ValkeyValue.Ok, "ListTrim(trimKey2, -3, -1) - keep last 3", true));
 
         _ = batch.ListLength(trimKey2);
         testData.Add(new(3L, "ListLength(trimKey2) after negative trim"));
@@ -1188,7 +1188,7 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "ListRightPush(setKey, [set0, set1, set2])"));
 
         _ = batch.ListSetByIndex(setKey, 1, "newvalue");
-        testData.Add(new("OK", "ListSetByIndex(setKey, 1, newvalue)", true));
+        testData.Add(new(ValkeyValue.Ok, "ListSetByIndex(setKey, 1, newvalue)", true));
 
         _ = batch.ListGetByIndex(setKey, 1);
         testData.Add(new(new ValkeyValue("newvalue"), "ListGetByIndex(setKey, 1) after set"));
@@ -1257,7 +1257,7 @@ internal partial class BatchTestUtils
         if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
         {
             _ = batch.SelectAsync(0); // Select database 0 (default)
-            testData.Add(new("OK", "SelectAsync(0)"));
+            testData.Add(new(ValkeyValue.Ok, "SelectAsync(0)"));
         }
 
         return testData;
@@ -1382,7 +1382,7 @@ internal partial class BatchTestUtils
             new HashEntry("multi2", "value2")
         ];
         _ = batch.HashSet(key2, multiEntries);
-        testData.Add(new("OK", "HashSet(key2, multiEntries)"));
+        testData.Add(new(ValkeyValue.Ok, "HashSet(key2, multiEntries)"));
 
         _ = batch.HashGet(key2, ["multi1", "multi2"]);
         testData.Add(new(new ValkeyValue[] { "value1", "value2" }, "HashGet(key2, [multi1, multi2])"));

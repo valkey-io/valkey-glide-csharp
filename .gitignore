@@ -148,7 +148,7 @@ $RECYCLE.BIN/
 # IDE generated files
 .vs
 .vscode
-.kiro/
+.kiro
 .amazonq/
 
 _NCrunch*

@@ -31,22 +31,22 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
     // ===== Function Management =====
 
     /// <inheritdoc/>
-    public async Task<string> FunctionDeleteAsync(
+    public async Task FunctionDeleteAsync(
         string libraryName,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionDeleteAsync(libraryName));
+        await Command(Request.FunctionDeleteAsync(libraryName));
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionKillAsync(
+    public async Task FunctionKillAsync(
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionKillAsync());
+        await Command(Request.FunctionKillAsync());
     }
 
     // ===== Function Persistence =====
@@ -61,23 +61,23 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionRestoreAsync(
+    public async Task FunctionRestoreAsync(
         byte[] payload,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionRestoreAsync(payload, null));
+        await Command(Request.FunctionRestoreAsync(payload, null));
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionRestoreAsync(
+    public async Task FunctionRestoreAsync(
         byte[] payload,
         FunctionRestorePolicy policy,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionRestoreAsync(payload, policy));
+        await Command(Request.FunctionRestoreAsync(payload, policy));
     }
 }

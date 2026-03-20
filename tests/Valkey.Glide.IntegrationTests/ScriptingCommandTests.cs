@@ -124,8 +124,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.True(existsBefore[0]);
 
         // Flush with SYNC mode
-        string result = await client.ScriptFlushAsync(FlushMode.Sync);
-        Assert.Equal("OK", result);
+        await client.ScriptFlushAsync(FlushMode.Sync);
 
         // Verify it no longer exists
         bool[] existsAfter = await client.ScriptExistsAsync([script.Hash]);
@@ -141,8 +140,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         _ = await client.ScriptInvokeAsync(script);
 
         // Flush with ASYNC mode
-        string result = await client.ScriptFlushAsync(FlushMode.Async);
-        Assert.Equal("OK", result);
+        await client.ScriptFlushAsync(FlushMode.Async);
 
         // Wait a bit for async flush to complete
         await Task.Delay(100);
@@ -161,8 +159,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         _ = await client.ScriptInvokeAsync(script);
 
         // Flush with default mode (SYNC)
-        string result = await client.ScriptFlushAsync();
-        Assert.Equal("OK", result);
+        await client.ScriptFlushAsync();
 
         // Verify it no longer exists
         bool[] existsAfter = await client.ScriptExistsAsync([script.Hash]);
@@ -648,17 +645,14 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.Equal("test", resultBefore.ToString());
 
         // Flush all functions (use routing for cluster clients)
-        string flushResult;
         if (client is GlideClusterClient clusterClient4)
         {
-            ClusterValue<string> flushResultValue = await clusterClient4.FunctionFlushAsync(Route.AllPrimaries);
-            flushResult = flushResultValue.HasSingleData ? flushResultValue.SingleValue : flushResultValue.MultiValue.Values.First();
+            await clusterClient4.FunctionFlushAsync(Route.AllPrimaries);
         }
         else
         {
-            flushResult = await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync();
         }
-        Assert.Equal("OK", flushResult);
 
         // Verify function no longer exists (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient5)
@@ -692,8 +686,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         _ = await client.FunctionLoadAsync(libraryCode);
 
         // Flush with SYNC mode
-        string result = await client.FunctionFlushAsync(FlushMode.Sync);
-        Assert.Equal("OK", result);
+        await client.FunctionFlushAsync(FlushMode.Sync);
 
         // Verify function no longer exists
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
@@ -719,8 +712,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         _ = await client.FunctionLoadAsync(libraryCode);
 
         // Flush with ASYNC mode
-        string result = await client.FunctionFlushAsync(FlushMode.Async);
-        Assert.Equal("OK", result);
+        await client.FunctionFlushAsync(FlushMode.Async);
 
         // Wait a bit for async flush to complete
         await Task.Delay(100);
@@ -1081,8 +1073,7 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
         _ = Assert.Single(libraries);
 
         // Delete the library
-        string result = await client.FunctionDeleteAsync("deletelib");
-        Assert.Equal("OK", result);
+        await client.FunctionDeleteAsync("deletelib");
 
         // Verify it no longer exists
         libraries = await client.FunctionListAsync(new FunctionListQuery().ForLibrary("deletelib"));
@@ -1148,9 +1139,8 @@ redis.register_function('restorefunc1', function(keys, args) return 'result1' en
         byte[] backup = await client.FunctionDumpAsync();
 
         // Flush and restore with APPEND (default)
-        _ = await client.FunctionFlushAsync();
-        string result = await client.FunctionRestoreAsync(backup);
-        Assert.Equal("OK", result);
+        await client.FunctionFlushAsync();
+        await client.FunctionRestoreAsync(backup);
 
         // Verify library was restored
         var libraries = await client.FunctionListAsync(new FunctionListQuery().ForLibrary("restorelib1"));
@@ -1178,8 +1168,7 @@ redis.register_function('flushfunc2', function(keys, args) return 'result2' end)
         _ = await client.FunctionLoadAsync(lib2Code);
 
         // Restore with FLUSH policy
-        string result = await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Flush);
-        Assert.Equal("OK", result);
+        await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Flush);
 
         // Verify only lib1 exists
         var libraries = await client.FunctionListAsync();
@@ -1208,8 +1197,7 @@ redis.register_function('replacefunc', function(keys, args) return 'version2' en
         _ = await client.FunctionLoadAsync(lib2Code, replace: true);
 
         // Restore with REPLACE policy
-        string result = await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
-        Assert.Equal("OK", result);
+        await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
 
         // Verify the function was replaced (should return version1)
         ValkeyResult funcResult = await client.FCallAsync("replacefunc");
@@ -1407,17 +1395,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.Equal("test", callResult.SingleValue.ToString());
 
         // Delete function from all primaries
-        ClusterValue<string> deleteResult = await client.FunctionDeleteAsync(libName, Route.AllPrimaries);
-
-        // Verify delete succeeded (may be single or multi-value depending on cluster configuration)
-        if (deleteResult.HasMultiData)
-        {
-            Assert.All(deleteResult.MultiValue.Values, r => Assert.Equal("OK", r));
-        }
-        else
-        {
-            Assert.Equal("OK", deleteResult.SingleValue);
-        }
+        await client.FunctionDeleteAsync(libName, Route.AllPrimaries);
 
         // Verify function no longer exists
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
@@ -1565,17 +1543,7 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
         _ = await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Restore functions to all primaries
-        ClusterValue<string> restoreResult = await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
-
-        // Verify restore succeeded (may be single or multi-value depending on cluster configuration)
-        if (restoreResult.HasMultiData)
-        {
-            Assert.All(restoreResult.MultiValue.Values, r => Assert.Equal("OK", r));
-        }
-        else
-        {
-            Assert.Equal("OK", restoreResult.SingleValue);
-        }
+        await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
 
         // Verify function is restored by calling it
         ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);
@@ -1610,20 +1578,10 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         _ = await client.FunctionLoadAsync(libraryCode2, true, Route.AllPrimaries);
 
         // Restore with REPLACE policy
-        ClusterValue<string> restoreResult = await client.FunctionRestoreAsync(
+        await client.FunctionRestoreAsync(
             backup,
             FunctionRestorePolicy.Replace,
             Route.AllPrimaries);
-
-        // Verify restore succeeded (may be single or multi-value depending on cluster configuration)
-        if (restoreResult.HasMultiData)
-        {
-            Assert.All(restoreResult.MultiValue.Values, r => Assert.Equal("OK", r));
-        }
-        else
-        {
-            Assert.Equal("OK", restoreResult.SingleValue);
-        }
 
         // Verify original version is restored
         ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);

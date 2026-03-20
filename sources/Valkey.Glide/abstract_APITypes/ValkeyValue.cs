@@ -111,6 +111,11 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     public static ValkeyValue Null { get; } = new ValkeyValue(0, default, null);
 
     /// <summary>
+    /// Represents a successful status response (<c>"OK"</c>).
+    /// </summary>
+    public static ValkeyValue Ok { get; } = new ValkeyValue("OK");
+
+    /// <summary>
     /// Indicates whether the **underlying** value is a primitive integer (signed or unsigned); this is **not**
     /// the same as whether the value can be *treated* as an integer - see <seealso cref="TryParse(out int)"/>
     /// and <seealso cref="TryParse(out long)"/>, which is usually the more appropriate test.

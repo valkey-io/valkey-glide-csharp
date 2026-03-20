@@ -105,22 +105,22 @@ public class ScanTests(TestConfiguration config)
     public async Task TestScanAsync_InvalidCursorId()
     {
         await using var standaloneClient = TestConfiguration.DefaultStandaloneClient();
-        _ = await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(() => standaloneClient.ScanAsync("invalid"));
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => standaloneClient.ScanAsync("invalid"));
 
         await using var clusterClient = TestConfiguration.DefaultClusterClient();
-        _ = await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(() => clusterClient.ScanAsync(new ClusterScanCursor("invalid")));
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => clusterClient.ScanAsync(new ClusterScanCursor("invalid")));
     }
 
     private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ScanOptions? options = null)
     {
         var allKeys = new List<ValkeyKey>();
 
-        if (client is GlideClient)
+        if (client is GlideClient standaloneClient)
         {
             string cursor = "0";
             do
             {
-                (cursor, var keys) = await ((GlideClient)client).ScanAsync(cursor, options);
+                (cursor, var keys) = await standaloneClient.ScanAsync(cursor, options);
                 allKeys.AddRange(keys);
             } while (cursor != "0");
         }
