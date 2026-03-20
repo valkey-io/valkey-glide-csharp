@@ -409,7 +409,7 @@ public interface ISortedSetCommands
     /// <summary>
     /// Blocks the connection until it pops and returns up to <paramref name="count"/> entries from the first non-empty sorted set.
     /// The given keys are checked in the order they are provided.
-    /// This is the blocking variant of <see cref="SortedSetPopAsync(ValkeyKey[], long, Order, CommandFlags)"/>.
+    /// This is the blocking variant of <see cref="SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order, CommandFlags)"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzmpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
@@ -603,7 +603,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SortedSetIntersectionLengthAsync(ValkeyKey[] keys, long limit = 0, CommandFlags flags = CommandFlags.None);
+    Task<long> SortedSetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the number of elements in the sorted set at key with a value between min and max.
@@ -685,7 +685,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<SortedSetPopResult> SortedSetPopAsync(ValkeyKey[] keys, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None);
+    Task<SortedSetPopResult> SortedSetPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns a random member from the sorted set stored at key.
@@ -923,5 +923,5 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<double?[]> SortedSetScoresAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None);
+    Task<double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None);
 }
