@@ -14,10 +14,10 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.KeyDeleteAsync(key));
     }
 
-    public async Task<long> KeyDeleteAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyDeleteAsync(keys));
+        return await Command(Request.KeyDeleteAsync(keys.ToArray()));
     }
 
     public async Task<bool> KeyUnlinkAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -26,10 +26,10 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.KeyUnlinkAsync(key));
     }
 
-    public async Task<long> KeyUnlinkAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyUnlinkAsync(keys));
+        return await Command(Request.KeyUnlinkAsync(keys.ToArray()));
     }
 
     public async Task<bool> KeyExistsAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -38,10 +38,10 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.KeyExistsAsync(key));
     }
 
-    public async Task<long> KeyExistsAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyExistsAsync(keys));
+        return await Command(Request.KeyExistsAsync(keys.ToArray()));
     }
 
     public async Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None)
@@ -116,10 +116,10 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.KeyTouchAsync(key));
     }
 
-    public async Task<long> KeyTouchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task<long> KeyTouchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyTouchAsync(keys));
+        return await Command(Request.KeyTouchAsync(keys.ToArray()));
     }
 
     public async Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -175,16 +175,16 @@ public abstract partial class BaseClient : IGenericBaseCommands
         return await Command(Request.KeyRandomAsync());
     }
 
-    public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortAsync(key, skip, take, order, sortType, by, get, await GetServerVersionAsync()));
+        return await Command(Request.SortAsync(key, skip, take, order, sortType, by, get?.ToArray(), await GetServerVersionAsync()));
     }
 
-    public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None)
+    public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get));
+        return await Command(Request.SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get?.ToArray()));
     }
 
     public async Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags = CommandFlags.None)

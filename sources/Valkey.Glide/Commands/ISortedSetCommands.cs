@@ -39,13 +39,13 @@ public interface ISortedSetCommands
     /// </remarks>
     Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, SortedSetEntry[], SortedSetWhen, CommandFlags)" />
+    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen, CommandFlags)" />
     [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-    Task<long> SortedSetAddAsync(ValkeyKey key, SortedSetEntry[] values, CommandFlags flags);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags);
 
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, SortedSetEntry[], SortedSetWhen, CommandFlags)" />
+    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen, CommandFlags)" />
     [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-    Task<long> SortedSetAddAsync(ValkeyKey key, SortedSetEntry[] values, When when, CommandFlags flags = CommandFlags.None);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Adds members with their scores to the sorted set stored at key.
@@ -53,7 +53,7 @@ public interface ISortedSetCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zadd"/>
     /// <param name="key">The key of the sorted set.</param>
-    /// <param name="values">An array of <see cref="SortedSetEntry"/> objects representing the members and their scores to add.</param>
+    /// <param name="values">A collection of <see cref="SortedSetEntry"/> objects representing the members and their scores to add.</param>
     /// <param name="when">Indicates when this operation should be performed.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of elements added to the sorted set, not including elements already existing for which the score was updated.</returns>
@@ -69,7 +69,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SortedSetAddAsync(ValkeyKey key, SortedSetEntry[] values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes the specified member from the sorted set stored at key.
@@ -95,7 +95,7 @@ public interface ISortedSetCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrem"/>
     /// <param name="key">The key of the sorted set.</param>
-    /// <param name="members">An array of members to remove from the sorted set.</param>
+    /// <param name="members">A collection of members to remove from the sorted set.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of members that were removed from the sorted set, not including non existing members.</returns>
     /// <remarks>
@@ -105,7 +105,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None);
+    Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the sorted set cardinality (number of elements) of the sorted set stored at key.
@@ -123,7 +123,7 @@ public interface ISortedSetCommands
     /// <code>
     /// // Get total cardinality
     /// long totalCount = await client.SortedSetLengthAsync(key);
-    /// 
+    ///
     /// // Count elements in score range
     /// long rangeCount = await client.SortedSetLengthAsync(key, 1.0, 10.0);
     /// </code>
@@ -261,7 +261,7 @@ public interface ISortedSetCommands
     /// <summary>
     /// Returns the specified range of elements in the sorted set stored at key with their scores by their score.
     /// By default the elements are considered to be ordered from the lowest to the highest score.
-    /// Start and stop are used to specify the min and max range for score values 
+    /// Start and stop are used to specify the min and max range for score values
     /// To get the elements without their scores, <see cref="SortedSetRangeByScoreAsync" />.
     /// </summary>.
     /// <seealso href="https://valkey.io/commands/zrange"/>
@@ -428,7 +428,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None);
+    Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Computes a set operation for multiple sorted sets (optionally using per-set weights),
@@ -460,7 +460,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Computes a set operation for multiple sorted sets (optionally using per-set weights),
@@ -492,7 +492,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
+    Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Computes a set operation over two sorted sets, and stores the result in destination, optionally performing
@@ -564,7 +564,7 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
+    Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Increments the score of member in the sorted set stored at key by increment.

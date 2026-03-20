@@ -19,16 +19,16 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetAddAsync(key, member, score, when));
     }
 
-    public async Task<long> SortedSetAddAsync(ValkeyKey key, SortedSetEntry[] values, CommandFlags flags)
+    public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags)
         => await SortedSetAddAsync(key, values, SortedSetWhen.Always, flags);
 
-    public async Task<long> SortedSetAddAsync(ValkeyKey key, SortedSetEntry[] values, When when, CommandFlags flags = CommandFlags.None)
+    public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags = CommandFlags.None)
         => await SortedSetAddAsync(key, values, SortedSetWhenExtensions.Parse(when), flags);
 
-    public async Task<long> SortedSetAddAsync(ValkeyKey key, SortedSetEntry[] values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None)
+    public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetAddAsync(key, values, when));
+        return await Command(Request.SortedSetAddAsync(key, values.ToArray(), when));
     }
 
     public async Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None)
@@ -37,10 +37,10 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetRemoveAsync(key, member));
     }
 
-    public async Task<long> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None)
+    public async Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetRemoveAsync(key, members));
+        return await Command(Request.SortedSetRemoveAsync(key, members.ToArray()));
     }
 
     public async Task<long> SortedSetLengthAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
@@ -109,16 +109,16 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetRangeByValueAsync(key, min, max, exclude, order, skip, take));
     }
 
-    public async Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineAsync(operation, keys, weights, aggregate));
+        return await Command(Request.SortedSetCombineAsync(operation, keys.ToArray(), weights, aggregate));
     }
 
-    public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+    public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineWithScoresAsync(operation, keys, weights, aggregate));
+        return await Command(Request.SortedSetCombineWithScoresAsync(operation, keys.ToArray(), weights, aggregate));
     }
 
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
@@ -127,10 +127,10 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, first, second, aggregate));
     }
 
-    public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey[] keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+    public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, keys, weights, aggregate));
+        return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, keys.ToArray(), weights, aggregate));
     }
 
     public async Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags = CommandFlags.None)
@@ -176,10 +176,10 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetBlockingPopAsync(key, count, order, timeout));
     }
 
-    public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None)
+    public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetBlockingPopAsync(keys, count, order, timeout));
+        return await Command(Request.SortedSetBlockingPopAsync(keys.ToArray(), count, order, timeout));
     }
 
     public async Task<SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)

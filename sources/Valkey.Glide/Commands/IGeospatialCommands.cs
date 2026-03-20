@@ -69,7 +69,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Adds the specified geospatial item to the specified key with options.
@@ -91,7 +91,7 @@ public interface IGeospatialCommands
     /// <param name="options">The options for the GEOADD command.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of elements added or changed, depending on options.</returns>
-    Task<long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the distance between two members in the geospatial index represented by the sorted set.
@@ -144,7 +144,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string?[]> GeoHashAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None);
+    Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the longitude and latitude for a single member in the geospatial index represented by the sorted set.
@@ -178,7 +178,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None);
+    Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape.

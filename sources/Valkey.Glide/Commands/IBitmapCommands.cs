@@ -132,7 +132,7 @@ public interface IBitmapCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads or modifies the array of bits representing the string stored at key based on the specified subcommands.
@@ -156,7 +156,7 @@ public interface IBitmapCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> StringBitFieldAsync(ValkeyKey key, Options.BitFieldOptions.IBitFieldSubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
+    Task<long[]> StringBitFieldAsync(ValkeyKey key, IEnumerable<Options.BitFieldOptions.IBitFieldSubCommand> subCommands, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads the array of bits representing the string stored at key based on the specified GET subcommands.
@@ -179,5 +179,5 @@ public interface IBitmapCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, Options.BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands, CommandFlags flags = CommandFlags.None);
+    Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<Options.BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands, CommandFlags flags = CommandFlags.None);
 }
