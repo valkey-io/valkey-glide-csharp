@@ -289,6 +289,29 @@ You can combine this with test filter as well:
 cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true dotnet test --logger "console;verbosity=detailed" --filter "FullyQualifiedName~GetReturnsNull"
 ```
 
+### DNS Tests
+
+To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
+
+1. Add the following entries to your hosts file:
+   - Linux/macOS: `/etc/hosts`
+   - Windows: `C:\Windows\System32\drivers\etc\hosts`
+
+   ```text
+   127.0.0.1 valkey.glide.test.tls.com
+   127.0.0.1 valkey.glide.test.no_tls.com
+   ::1 valkey.glide.test.tls.com
+   ::1 valkey.glide.test.no_tls.com
+   ```
+
+2. Set the environment variable:
+
+   ```bash
+   export VALKEY_GLIDE_DNS_TESTS_ENABLED=1
+   ```
+
+If the environment variable is not set, DNS tests will be skipped.
+
 ## Benchmark
 
 1. Ensure that you have installed `valkey-server` and `valkey-cli` on your host. You can find the valkey installation guide above.
