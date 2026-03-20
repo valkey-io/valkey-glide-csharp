@@ -163,7 +163,9 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         return await Command(Request.Select(index));
     }
 
+#pragma warning disable IDE0060 // Unused 'database' parameter needed for StackExchange.Redis compatibility
     public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+#pragma warning restore IDE0060
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
