@@ -77,10 +77,11 @@ public class StringCommandTests(TestConfiguration config)
         string value1 = Guid.NewGuid().ToString();
         string value2 = Guid.NewGuid().ToString();
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs = [
-            new(key1, value1),
-            new(key2, value2)
-        ];
+        Dictionary<ValkeyKey, ValkeyValue> keyValuePairs = new()
+        {
+            [key1] = value1,
+            [key2] = value2
+        };
 
         bool result = await client.StringSetAsync(keyValuePairs);
         Assert.True(result);
@@ -101,10 +102,11 @@ public class StringCommandTests(TestConfiguration config)
         string unicodeValue1 = "שלום hello 汉字";
         string unicodeValue2 = "مرحبا world 🌍";
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values = [
-            new(key1, unicodeValue1),
-            new(key2, unicodeValue2)
-        ];
+        Dictionary<ValkeyKey, ValkeyValue> values = new()
+        {
+            [key1] = unicodeValue1,
+            [key2] = unicodeValue2
+        };
 
         bool result = await client.StringSetAsync(values);
         Assert.True(result);
@@ -124,10 +126,11 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values = [
-            new(key1, ""),
-            new(key2, "non-empty")
-        ];
+        Dictionary<ValkeyKey, ValkeyValue> values = new()
+        {
+            [key1] = "",
+            [key2] = "non-empty"
+        };
 
         bool result = await client.StringSetAsync(values);
         Assert.True(result);
@@ -156,10 +159,11 @@ public class StringCommandTests(TestConfiguration config)
         await client.StringSetAsync(key2, initialValue2);
 
         // Overwrite with StringSetAsync
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values = [
-            new(key1, newValue1),
-            new(key2, newValue2)
-        ];
+        Dictionary<ValkeyKey, ValkeyValue> values = new()
+        {
+            [key1] = newValue1,
+            [key2] = newValue2
+        };
 
         bool result = await client.StringSetAsync(values);
         Assert.True(result);
@@ -575,10 +579,11 @@ public class StringCommandTests(TestConfiguration config)
         string value1 = Guid.NewGuid().ToString();
         string value2 = Guid.NewGuid().ToString();
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs = [
-            new(key1, value1),
-            new(key2, value2)
-        ];
+        Dictionary<ValkeyKey, ValkeyValue> keyValuePairs = new()
+        {
+            [key1] = value1,
+            [key2] = value2
+        };
 
         // First call should succeed since keys don't exist
         bool result = await client.StringSetAsync(keyValuePairs, When.NotExists);
@@ -607,10 +612,11 @@ public class StringCommandTests(TestConfiguration config)
         // Set one key first
         await client.StringSetAsync(key1, value1);
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs = [
-            new(key1, newValue1),
-            new(key2, newValue2)
-        ];
+        Dictionary<ValkeyKey, ValkeyValue> keyValuePairs = new()
+        {
+            [key1] = newValue1,
+            [key2] = newValue2
+        };
 
         // Should fail since key1 already exists
         bool result = await client.StringSetAsync(keyValuePairs, When.NotExists);

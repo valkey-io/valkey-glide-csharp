@@ -209,7 +209,7 @@ internal partial class Request
                 item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)], allowConverterToHandleNull: true);
     }
 
-    public static Cmd<long, long> HashSetExAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> fieldValueMap, HashSetExOptions options)
+    public static Cmd<long, long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -248,16 +248,13 @@ internal partial class Request
             }
         }
 
-        // Materialize field-value pairs to count them
-        var pairs = fieldValueMap as ICollection<KeyValuePair<ValkeyValue, ValkeyValue>> ?? [.. fieldValueMap];
-
         // Add FIELDS keyword and field count
         args.Add(Constants.FieldsKeyword);
-        args.Add(pairs.Count.ToGlideString());
+        args.Add(fieldValueMap.Count.ToGlideString());
 
 #pragma warning disable IDE0008 // Use explicit type
         // Add field-value pairs
-        foreach (var kvp in pairs)
+        foreach (var kvp in fieldValueMap)
         {
             args.Add(kvp.Key.ToGlideString());
             args.Add(kvp.Value.ToGlideString());

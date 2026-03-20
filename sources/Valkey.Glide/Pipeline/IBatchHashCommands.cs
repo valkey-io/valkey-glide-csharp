@@ -89,9 +89,9 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashGetExAsync(ValkeyKey, IEnumerable{ValkeyValue}, HashGetExOptions, CommandFlags)" /></returns>
     IBatch HashGetEx(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options);
 
-    /// <inheritdoc cref="IHashCommands.HashSetExAsync(ValkeyKey, IEnumerable{KeyValuePair{ValkeyValue, ValkeyValue}}, HashSetExOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashSetExAsync(ValkeyKey, IEnumerable{KeyValuePair{ValkeyValue, ValkeyValue}}, HashSetExOptions, CommandFlags)" /></returns>
-    IBatch HashSetEx(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> fieldValueMap, HashSetExOptions options);
+    /// <inheritdoc cref="IHashCommands.HashSetExAsync(ValkeyKey, IDictionary{ValkeyValue, ValkeyValue}, HashSetExOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashSetExAsync(ValkeyKey, IDictionary{ValkeyValue, ValkeyValue}, HashSetExOptions, CommandFlags)" /></returns>
+    IBatch HashSetEx(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options);
 
     /// <inheritdoc cref="IHashCommands.HashPersistAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IHashCommands.HashPersistAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" /></returns>

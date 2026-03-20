@@ -96,8 +96,6 @@ public class CollectionTypeSignatureTests
 
         // IStringCommands — ValkeyKey
         { typeof(IStringCommands), "StringGetAsync", "keys", typeof(ValkeyKey) },
-        // IStringCommands — KeyValuePair<ValkeyKey, ValkeyValue>
-        { typeof(IStringCommands), "StringSetAsync", "values", typeof(KeyValuePair<ValkeyKey, ValkeyValue>) },
 
         // IStreamCommands — StreamPosition
         { typeof(IStreamCommands), "StreamReadAsync", "streamPositions", typeof(StreamPosition) },
@@ -111,12 +109,22 @@ public class CollectionTypeSignatureTests
 
     /// <summary>
     /// Dataset for methods whose collection parameter is
-    /// <c>IEnumerable&lt;KeyValuePair&lt;ValkeyValue, ValkeyValue&gt;&gt;</c>
+    /// <c>IDictionary&lt;ValkeyValue, ValkeyValue&gt;</c>
     /// (formerly <c>Dictionary&lt;ValkeyValue, ValkeyValue&gt;</c>).
     /// </summary>
-    public static TheoryData<Type, string, string> DictionaryParameterData => new()
+    public static TheoryData<Type, string, string> DictionaryValkeyValueParameterData => new()
     {
         { typeof(IHashCommands), "HashSetExAsync", "fieldValueMap" },
+    };
+
+    /// <summary>
+    /// Dataset for methods whose collection parameter is
+    /// <c>IDictionary&lt;ValkeyKey, ValkeyValue&gt;</c>
+    /// (formerly <c>KeyValuePair&lt;ValkeyKey, ValkeyValue&gt;[]</c>).
+    /// </summary>
+    public static TheoryData<Type, string, string> DictionaryValkeyKeyParameterData => new()
+    {
+        { typeof(IStringCommands), "StringSetAsync", "values" },
     };
 
     #endregion
@@ -162,11 +170,11 @@ public class CollectionTypeSignatureTests
 
     /// <summary>
     /// Validates: Requirement 1.45 (HashSetExAsync)
-    /// The dictionary parameter must be <c>IEnumerable&lt;KeyValuePair&lt;ValkeyValue, ValkeyValue&gt;&gt;</c>.
+    /// The dictionary parameter must be <c>IDictionary&lt;ValkeyValue, ValkeyValue&gt;</c>.
     /// </summary>
     [Theory]
-    [MemberData(nameof(DictionaryParameterData))]
-    public void DictionaryParameter_ShouldBeIEnumerableKeyValuePair(
+    [MemberData(nameof(DictionaryValkeyValueParameterData))]
+    public void DictionaryParameter_ShouldBeIDictionaryValkeyValue(
         Type interfaceType, string methodName, string parameterName)
     {
         MethodInfo[] methods = interfaceType.GetMethods()
@@ -182,12 +190,47 @@ public class CollectionTypeSignatureTests
             ParameterInfo param = method.GetParameters().First(p => p.Name == parameterName);
             Type paramType = param.ParameterType;
 
-            Type expectedType = typeof(IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>>);
+            Type expectedType = typeof(IDictionary<ValkeyValue, ValkeyValue>);
 
             Assert.True(
                 paramType.IsGenericType &&
-                paramType.GetGenericTypeDefinition() == typeof(IEnumerable<>) &&
-                paramType.GetGenericArguments()[0] == typeof(KeyValuePair<ValkeyValue, ValkeyValue>),
+                paramType.GetGenericTypeDefinition() == typeof(IDictionary<,>) &&
+                paramType.GetGenericArguments()[0] == typeof(ValkeyValue) &&
+                paramType.GetGenericArguments()[1] == typeof(ValkeyValue),
+                $"{interfaceType.Name}.{methodName} parameter '{parameterName}' " +
+                $"should be {expectedType.Name} but is {paramType.Name}");
+        }
+    }
+
+    /// <summary>
+    /// Validates: Requirement 1.46 (StringSetAsync)
+    /// The dictionary parameter must be <c>IDictionary&lt;ValkeyKey, ValkeyValue&gt;</c>.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(DictionaryValkeyKeyParameterData))]
+    public void DictionaryParameter_ShouldBeIDictionaryValkeyKey(
+        Type interfaceType, string methodName, string parameterName)
+    {
+        MethodInfo[] methods = interfaceType.GetMethods()
+            .Where(m => m.Name == methodName &&
+                        m.GetParameters().Any(p => p.Name == parameterName))
+            .ToArray();
+
+        Assert.True(methods.Length > 0,
+            $"No method '{methodName}' with parameter '{parameterName}' found on {interfaceType.Name}");
+
+        foreach (MethodInfo method in methods)
+        {
+            ParameterInfo param = method.GetParameters().First(p => p.Name == parameterName);
+            Type paramType = param.ParameterType;
+
+            Type expectedType = typeof(IDictionary<ValkeyKey, ValkeyValue>);
+
+            Assert.True(
+                paramType.IsGenericType &&
+                paramType.GetGenericTypeDefinition() == typeof(IDictionary<,>) &&
+                paramType.GetGenericArguments()[0] == typeof(ValkeyKey) &&
+                paramType.GetGenericArguments()[1] == typeof(ValkeyValue),
                 $"{interfaceType.Name}.{methodName} parameter '{parameterName}' " +
                 $"should be {expectedType.Name} but is {paramType.Name}");
         }

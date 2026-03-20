@@ -158,7 +158,7 @@ public abstract partial class BaseClient : IHashCommands
         return await Command(Request.HashGetExAsync(key, [.. fields], options));
     }
 
-    public async Task<long> HashSetExAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None)
+    public async Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.HashSetExAsync(key, fieldValueMap, options));

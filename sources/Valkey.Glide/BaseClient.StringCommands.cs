@@ -26,7 +26,7 @@ public abstract partial class BaseClient : IStringCommands
     }
 
 #pragma warning disable IDE0072 // Add missing cases
-    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> StringSetAsync(IDictionary<ValkeyKey, ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         KeyValuePair<ValkeyKey, ValkeyValue>[] valuesArray = [.. values];

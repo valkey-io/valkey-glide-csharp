@@ -419,7 +419,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashSetExAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes the expiration time for each specified field, turning the field from volatile (a field

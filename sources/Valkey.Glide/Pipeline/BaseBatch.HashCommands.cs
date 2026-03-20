@@ -73,8 +73,8 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashGetEx(ValkeyKey, IEnumerable{ValkeyValue}, HashGetExOptions)" />
     public T HashGetEx(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options) => AddCmd(HashGetExAsync(key, [.. fields], options));
 
-    /// <inheritdoc cref="IBatchHashCommands.HashSetEx(ValkeyKey, IEnumerable{KeyValuePair{ValkeyValue, ValkeyValue}}, HashSetExOptions)" />
-    public T HashSetEx(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> fieldValueMap, HashSetExOptions options) => AddCmd(HashSetExAsync(key, fieldValueMap, options));
+    /// <inheritdoc cref="IBatchHashCommands.HashSetEx(ValkeyKey, IDictionary{ValkeyValue, ValkeyValue}, HashSetExOptions)" />
+    public T HashSetEx(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options) => AddCmd(HashSetExAsync(key, fieldValueMap, options));
 
     /// <inheritdoc cref="IBatchHashCommands.HashPersist(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashPersistAsync(key, [.. fields]));
@@ -126,7 +126,7 @@ public abstract partial class BaseBatch<T>
 
     // Hash Field Expire Commands explicit interface implementations
     IBatch IBatchHashCommands.HashGetEx(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options) => HashGetEx(key, fields, options);
-    IBatch IBatchHashCommands.HashSetEx(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> fieldValueMap, HashSetExOptions options) => HashSetEx(key, fieldValueMap, options);
+    IBatch IBatchHashCommands.HashSetEx(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options) => HashSetEx(key, fieldValueMap, options);
     IBatch IBatchHashCommands.HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashPersist(key, fields);
     IBatch IBatchHashCommands.HashExpire(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashExpire(key, seconds, fields, options);
     IBatch IBatchHashCommands.HashPExpire(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashPExpire(key, milliseconds, fields, options);
