@@ -18,7 +18,7 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
-    /// bool result = await client.UnwatchAsync();
+    /// await client.UnwatchAsync();
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/unwatch/"/>

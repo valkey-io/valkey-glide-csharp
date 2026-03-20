@@ -230,22 +230,22 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     }
 
     /// <inheritdoc/>
-    public async Task<string> ScriptFlushAsync(
+    public async Task ScriptFlushAsync(
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptFlushAsync());
+        _ = await Command(Request.ScriptFlushAsync());
     }
 
     /// <inheritdoc/>
-    public async Task<string> ScriptFlushAsync(
+    public async Task ScriptFlushAsync(
         FlushMode mode,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptFlushAsync(mode));
+        _ = await Command(Request.ScriptFlushAsync(mode));
     }
 
     /// <inheritdoc/>
@@ -267,12 +267,12 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     }
 
     /// <inheritdoc/>
-    public async Task<string> ScriptKillAsync(
+    public async Task ScriptKillAsync(
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptKillAsync());
+        _ = await Command(Request.ScriptKillAsync());
     }
 
     // ===== Function Execution =====
@@ -335,22 +335,22 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionFlushAsync(
+    public async Task FunctionFlushAsync(
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionFlushAsync());
+        _ = await Command(Request.FunctionFlushAsync());
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionFlushAsync(
+    public async Task FunctionFlushAsync(
         FlushMode mode,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionFlushAsync(mode));
+        _ = await Command(Request.FunctionFlushAsync(mode));
     }
 
     // ===== StackExchange.Redis Compatibility Methods =====

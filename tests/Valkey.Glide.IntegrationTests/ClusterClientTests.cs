@@ -505,8 +505,13 @@ public class ClusterClientTests(TestConfiguration config)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "SELECT for Cluster Client is supported since 9.0.0"
         );
-        string result = await client.SelectAsync(0);
-        Assert.Equal("OK", result);
+
+        // Test selecting database 0 (default)
+        await client.SelectAsync(0);
+
+        // Switching to a valid database causes issue to tests running in parallel. So instead, we test
+        // that using an invalid value to ensure different values can still be sent through.
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.SelectAsync(-1));
     }
 
     [Fact]

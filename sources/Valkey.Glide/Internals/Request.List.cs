@@ -58,8 +58,8 @@ internal partial class Request
     public static Cmd<long, long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0)
         => Simple<long>(RequestType.LRem, [key, count.ToGlideString(), value]);
 
-    public static Cmd<string, string> ListTrimAsync(ValkeyKey key, long start, long stop)
-        => Simple<string>(RequestType.LTrim, [key, start.ToGlideString(), stop.ToGlideString()]);
+    public static Cmd<string, ValkeyValue> ListTrimAsync(ValkeyKey key, long start, long stop)
+        => Ok(RequestType.LTrim, [key, start.ToGlideString(), stop.ToGlideString()]);
 
     public static Cmd<object[], ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1)
         => new(RequestType.LRange, [key, start.ToGlideString(), stop.ToGlideString()], false, array =>
@@ -114,8 +114,8 @@ internal partial class Request
         return new(RequestType.LPos, [.. args], false, array => [.. array.Cast<long>()]);
     }
 
-    public static Cmd<string, string> ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value)
-        => Simple<string>(RequestType.LSet, [key, index.ToGlideString(), value]);
+    public static Cmd<string, ValkeyValue> ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value)
+        => Ok(RequestType.LSet, [key, index.ToGlideString(), value]);
 
     public static Cmd<object[], ValkeyValue[]?> ListBlockingLeftPopAsync(ValkeyKey[] keys, TimeSpan timeout)
         => new(RequestType.BLPop, [.. keys.ToGlideStrings(), timeout.TotalSeconds.ToGlideString()], true, array =>
