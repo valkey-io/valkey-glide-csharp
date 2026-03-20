@@ -16,7 +16,7 @@ public abstract partial class BaseClient : IHyperLogLogCommands
     public async Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HyperLogLogAddAsync(key, elements.ToArray()));
+        return await Command(Request.HyperLogLogAddAsync(key, [.. elements]));
     }
 
     public async Task<long> HyperLogLogLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -28,7 +28,7 @@ public abstract partial class BaseClient : IHyperLogLogCommands
     public async Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HyperLogLogLengthAsync(keys.ToArray()));
+        return await Command(Request.HyperLogLogLengthAsync([.. keys]));
     }
 
     public async Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
@@ -40,6 +40,6 @@ public abstract partial class BaseClient : IHyperLogLogCommands
     public async Task HyperLogLogMergeAsync(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.HyperLogLogMergeAsync(destination, sourceKeys.ToArray()));
+        await Command(Request.HyperLogLogMergeAsync(destination, [.. sourceKeys]));
     }
 }

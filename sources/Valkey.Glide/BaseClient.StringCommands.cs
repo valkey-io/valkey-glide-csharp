@@ -22,14 +22,14 @@ public abstract partial class BaseClient : IStringCommands
     public async Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StringGetMultiple(keys.ToArray()));
+        return await Command(Request.StringGetMultiple([.. keys]));
     }
 
 #pragma warning disable IDE0072 // Add missing cases
     public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var valuesArray = values.ToArray();
+        KeyValuePair<ValkeyKey, ValkeyValue>[] valuesArray = [.. values];
         return when switch
         {
             When.Always => await Command(Request.StringSetMultiple(valuesArray)),

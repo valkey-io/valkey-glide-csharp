@@ -12,8 +12,8 @@ internal interface IBatch : IBatchSetCommands, IBatchStringCommands, IBatchListC
     // inherit all docs except `remarks` section which stores en example (not relevant for batch)
     // and returns section, because we customize it.
 
-    /// <inheritdoc cref="IGenericCommands.CustomCommand(GlideString[])" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGenericCommands.CustomCommand(GlideString[])" /></returns>
+    /// <inheritdoc cref="IGenericCommands.CustomCommand(IEnumerable{GlideString})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGenericCommands.CustomCommand(IEnumerable{GlideString})" /></returns>
     IBatch CustomCommand(GlideString[] args);
 
     /// <inheritdoc cref="IServerManagementCommands.InfoAsync()" path="/summary" />

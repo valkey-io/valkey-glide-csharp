@@ -66,7 +66,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         => await Batch(batch, raiseOnError, options);
 
     public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
-        => await Command(Request.CustomCommand(args.ToArray()));
+        => await Command(Request.CustomCommand([.. args]));
 
     public async Task<string> InfoAsync() => await InfoAsync([]);
 

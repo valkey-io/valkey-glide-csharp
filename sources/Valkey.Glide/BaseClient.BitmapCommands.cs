@@ -47,7 +47,7 @@ public abstract partial class BaseClient : IBitmapCommands
     public async Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.BitOperationAsync(operation, destination, keys.ToArray()));
+        return await Command(Request.BitOperationAsync(operation, destination, [.. keys]));
     }
 
     /// <inheritdoc/>
@@ -55,7 +55,7 @@ public abstract partial class BaseClient : IBitmapCommands
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        var subCommandsArray = subCommands.ToArray();
+        BitFieldOptions.IBitFieldSubCommand[] subCommandsArray = [.. subCommands];
 
         // Check if all subcommands are read-only (GET operations)
         bool allReadOnly = subCommandsArray.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
@@ -63,7 +63,7 @@ public abstract partial class BaseClient : IBitmapCommands
         if (allReadOnly)
         {
             // Convert to read-only subcommands and use BITFIELD_RO
-            var readOnlyCommands = subCommandsArray.Cast<BitFieldOptions.IBitFieldReadOnlySubCommand>().ToArray();
+            BitFieldOptions.IBitFieldReadOnlySubCommand[] readOnlyCommands = [.. subCommandsArray.Cast<BitFieldOptions.IBitFieldReadOnlySubCommand>()];
             return await Command(Request.BitFieldReadOnlyAsync(key, readOnlyCommands));
         }
 
@@ -74,6 +74,6 @@ public abstract partial class BaseClient : IBitmapCommands
     public async Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.BitFieldReadOnlyAsync(key, subCommands.ToArray()));
+        return await Command(Request.BitFieldReadOnlyAsync(key, [.. subCommands]));
     }
 }

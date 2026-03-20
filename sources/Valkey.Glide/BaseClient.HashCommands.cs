@@ -17,7 +17,7 @@ public abstract partial class BaseClient : IHashCommands
     public async Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashGetAsync(key, hashFields.ToArray()));
+        return await Command(Request.HashGetAsync(key, [.. hashFields]));
     }
 
     public async Task<HashEntry[]> HashGetAllAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -29,7 +29,7 @@ public abstract partial class BaseClient : IHashCommands
     public async Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.HashSetAsync(key, hashFields.ToArray()));
+        await Command(Request.HashSetAsync(key, [.. hashFields]));
     }
 
     public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None)
@@ -47,7 +47,7 @@ public abstract partial class BaseClient : IHashCommands
     public async Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashDeleteAsync(key, hashFields.ToArray()));
+        return await Command(Request.HashDeleteAsync(key, [.. hashFields]));
     }
 
     public async Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None)
@@ -155,7 +155,7 @@ public abstract partial class BaseClient : IHashCommands
     public async Task<ValkeyValue[]?> HashGetExAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashGetExAsync(key, fields.ToArray(), options));
+        return await Command(Request.HashGetExAsync(key, [.. fields], options));
     }
 
     public async Task<long> HashSetExAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None)
@@ -167,54 +167,54 @@ public abstract partial class BaseClient : IHashCommands
     public async Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashPersistAsync(key, fields.ToArray()));
+        return await Command(Request.HashPersistAsync(key, [.. fields]));
     }
 
     public async Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashExpireAsync(key, seconds, fields.ToArray(), options));
+        return await Command(Request.HashExpireAsync(key, seconds, [.. fields], options));
     }
 
     public async Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashPExpireAsync(key, milliseconds, fields.ToArray(), options));
+        return await Command(Request.HashPExpireAsync(key, milliseconds, [.. fields], options));
     }
 
     public async Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashExpireAtAsync(key, unixSeconds, fields.ToArray(), options));
+        return await Command(Request.HashExpireAtAsync(key, unixSeconds, [.. fields], options));
     }
 
     public async Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashPExpireAtAsync(key, unixMilliseconds, fields.ToArray(), options));
+        return await Command(Request.HashPExpireAtAsync(key, unixMilliseconds, [.. fields], options));
     }
 
     public async Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashExpireTimeAsync(key, fields.ToArray()));
+        return await Command(Request.HashExpireTimeAsync(key, [.. fields]));
     }
 
     public async Task<long[]> HashPExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashPExpireTimeAsync(key, fields.ToArray()));
+        return await Command(Request.HashPExpireTimeAsync(key, [.. fields]));
     }
 
     public async Task<long[]> HashTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashTtlAsync(key, fields.ToArray()));
+        return await Command(Request.HashTtlAsync(key, [.. fields]));
     }
 
     public async Task<long[]> HashPTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HashPTtlAsync(key, fields.ToArray()));
+        return await Command(Request.HashPTtlAsync(key, [.. fields]));
     }
 }

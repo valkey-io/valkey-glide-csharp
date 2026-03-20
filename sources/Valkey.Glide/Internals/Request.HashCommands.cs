@@ -249,7 +249,7 @@ internal partial class Request
         }
 
         // Materialize field-value pairs to count them
-        var pairs = fieldValueMap as ICollection<KeyValuePair<ValkeyValue, ValkeyValue>> ?? fieldValueMap.ToArray();
+        var pairs = fieldValueMap as ICollection<KeyValuePair<ValkeyValue, ValkeyValue>> ?? [.. fieldValueMap];
 
         // Add FIELDS keyword and field count
         args.Add(Constants.FieldsKeyword);

@@ -14,16 +14,16 @@ internal interface IBatchGeospatialCommands
     /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry, CommandFlags)" /></returns>
     IBatch GeoAdd(ValkeyKey key, GeoEntry value);
 
-    /// <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry[], CommandFlags)" /></returns>
+    /// <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, CommandFlags)" /></returns>
     IBatch GeoAdd(ValkeyKey key, GeoEntry[] values);
 
     /// <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions, CommandFlags)" /></returns>
     IBatch GeoAdd(ValkeyKey key, GeoEntry value, GeoAddOptions options);
 
-    /// <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry[], GeoAddOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, GeoEntry[], GeoAddOptions, CommandFlags)" /></returns>
+    /// <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, GeoAddOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, GeoAddOptions, CommandFlags)" /></returns>
     IBatch GeoAdd(ValkeyKey key, GeoEntry[] values, GeoAddOptions options);
 
     /// <inheritdoc cref="IGeospatialCommands.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -34,16 +34,16 @@ internal interface IBatchGeospatialCommands
     /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoHashAsync(ValkeyKey, ValkeyValue, CommandFlags)" /></returns>
     IBatch GeoHash(ValkeyKey key, ValkeyValue member);
 
-    /// <inheritdoc cref="IGeospatialCommands.GeoHashAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoHashAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
+    /// <inheritdoc cref="IGeospatialCommands.GeoHashAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoHashAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" /></returns>
     IBatch GeoHash(ValkeyKey key, ValkeyValue[] members);
 
     /// <inheritdoc cref="IGeospatialCommands.GeoPositionAsync(ValkeyKey, ValkeyValue, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoPositionAsync(ValkeyKey, ValkeyValue, CommandFlags)" /></returns>
     IBatch GeoPosition(ValkeyKey key, ValkeyValue member);
 
-    /// <inheritdoc cref="IGeospatialCommands.GeoPositionAsync(ValkeyKey, ValkeyValue[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoPositionAsync(ValkeyKey, ValkeyValue[], CommandFlags)" /></returns>
+    /// <inheritdoc cref="IGeospatialCommands.GeoPositionAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGeospatialCommands.GeoPositionAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" /></returns>
     IBatch GeoPosition(ValkeyKey key, ValkeyValue[] members);
 
     /// <inheritdoc cref="IGeospatialCommands.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, GeoRadiusOptions, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />

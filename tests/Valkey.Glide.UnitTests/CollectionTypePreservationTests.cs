@@ -3,7 +3,6 @@
 using System.Reflection;
 
 using Valkey.Glide.Commands;
-using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.UnitTests;
 
@@ -221,7 +220,7 @@ public class CollectionTypePreservationTests
         var method = FindMethodWithParameter(interfaceType, methodName, parameterName);
         Assert.NotNull(method);
 
-        Assert.Equal(expectedReturnType, method!.ReturnType);
+        Assert.Equal(expectedReturnType, method.ReturnType);
     }
 
     /// <summary>
@@ -236,7 +235,7 @@ public class CollectionTypePreservationTests
         var method = FindMethodWithParameter(interfaceType, methodName, parameterName);
         Assert.NotNull(method);
 
-        var parameter = method!.GetParameters().First(p => p.Name == parameterName);
+        var parameter = method.GetParameters().First(p => p.Name == parameterName);
         Assert.Equal(typeof(IEnumerable<string>), parameter.ParameterType);
     }
 

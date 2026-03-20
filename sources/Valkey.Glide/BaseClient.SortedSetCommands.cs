@@ -28,7 +28,7 @@ public abstract partial class BaseClient : ISortedSetCommands
     public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetAddAsync(key, values.ToArray(), when));
+        return await Command(Request.SortedSetAddAsync(key, [.. values], when));
     }
 
     public async Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None)
@@ -40,7 +40,7 @@ public abstract partial class BaseClient : ISortedSetCommands
     public async Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetRemoveAsync(key, members.ToArray()));
+        return await Command(Request.SortedSetRemoveAsync(key, [.. members]));
     }
 
     public async Task<long> SortedSetLengthAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
@@ -112,13 +112,13 @@ public abstract partial class BaseClient : ISortedSetCommands
     public async Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineAsync(operation, keys.ToArray(), weights, aggregate));
+        return await Command(Request.SortedSetCombineAsync(operation, [.. keys], weights, aggregate));
     }
 
     public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineWithScoresAsync(operation, keys.ToArray(), weights, aggregate));
+        return await Command(Request.SortedSetCombineWithScoresAsync(operation, [.. keys], weights, aggregate));
     }
 
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
@@ -130,7 +130,7 @@ public abstract partial class BaseClient : ISortedSetCommands
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, keys.ToArray(), weights, aggregate));
+        return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, [.. keys], weights, aggregate));
     }
 
     public async Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags = CommandFlags.None)
@@ -179,7 +179,7 @@ public abstract partial class BaseClient : ISortedSetCommands
     public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetBlockingPopAsync(keys.ToArray(), count, order, timeout));
+        return await Command(Request.SortedSetBlockingPopAsync([.. keys], count, order, timeout));
     }
 
     public async Task<SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)

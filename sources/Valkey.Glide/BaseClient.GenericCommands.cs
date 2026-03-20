@@ -17,7 +17,7 @@ public abstract partial class BaseClient : IGenericBaseCommands
     public async Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyDeleteAsync(keys.ToArray()));
+        return await Command(Request.KeyDeleteAsync([.. keys]));
     }
 
     public async Task<bool> KeyUnlinkAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -29,7 +29,7 @@ public abstract partial class BaseClient : IGenericBaseCommands
     public async Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyUnlinkAsync(keys.ToArray()));
+        return await Command(Request.KeyUnlinkAsync([.. keys]));
     }
 
     public async Task<bool> KeyExistsAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -41,7 +41,7 @@ public abstract partial class BaseClient : IGenericBaseCommands
     public async Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyExistsAsync(keys.ToArray()));
+        return await Command(Request.KeyExistsAsync([.. keys]));
     }
 
     public async Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None)
@@ -119,7 +119,7 @@ public abstract partial class BaseClient : IGenericBaseCommands
     public async Task<long> KeyTouchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.KeyTouchAsync(keys.ToArray()));
+        return await Command(Request.KeyTouchAsync([.. keys]));
     }
 
     public async Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)

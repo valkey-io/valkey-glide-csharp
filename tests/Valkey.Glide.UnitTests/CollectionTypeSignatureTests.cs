@@ -117,7 +117,7 @@ public class CollectionTypeSignatureTests
         var method = FindMethodWithParameter(interfaceType, methodName, parameterName);
         Assert.NotNull(method);
 
-        var parameter = method!.GetParameters().First(p => p.Name == parameterName);
+        var parameter = method.GetParameters().First(p => p.Name == parameterName);
         var paramType = parameter.ParameterType;
 
         var expectedType = typeof(IEnumerable<>).MakeGenericType(expectedGenericType);
@@ -141,7 +141,7 @@ public class CollectionTypeSignatureTests
         var method = FindMethodWithParameter(interfaceType, methodName, parameterName);
         Assert.NotNull(method);
 
-        var parameter = method!.GetParameters().First(p => p.Name == parameterName);
+        var parameter = method.GetParameters().First(p => p.Name == parameterName);
         var paramType = parameter.ParameterType;
 
         // For nullable parameters (like SortAsync's "get"), unwrap the nullable wrapper

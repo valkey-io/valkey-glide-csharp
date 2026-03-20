@@ -10,13 +10,13 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StringGetAsync(ValkeyKey key) => AddCmd(Request.StringGet(key));
 
     /// <inheritdoc cref="IBatchStringCommands.StringGet(IEnumerable{ValkeyKey})" />
-    public T StringGetAsync(IEnumerable<ValkeyKey> keys) => AddCmd(Request.StringGetMultiple(keys.ToArray()));
+    public T StringGetAsync(IEnumerable<ValkeyKey> keys) => AddCmd(Request.StringGetMultiple([.. keys]));
 
     /// <inheritdoc cref="IBatchStringCommands.StringSet(ValkeyKey, ValkeyValue)" />
     public T StringSetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.StringSet(key, value));
 
     /// <inheritdoc cref="IBatchStringCommands.StringSet(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" />
-    public T StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => AddCmd(Request.StringSetMultiple(values.ToArray()));
+    public T StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => AddCmd(Request.StringSetMultiple([.. values]));
 
     /// <inheritdoc cref="IBatchStringCommands.StringGetRange(ValkeyKey, long, long)" />
     public T StringGetRangeAsync(ValkeyKey key, long start, long end) => AddCmd(Request.StringGetRange(key, start, end));

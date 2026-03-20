@@ -16,7 +16,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetAddAsync(key, values.ToArray()));
+        return await Command(Request.SetAddAsync(key, [.. values]));
     }
 
     public async Task<bool> SetRemoveAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
@@ -28,7 +28,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetRemoveAsync(key, values.ToArray()));
+        return await Command(Request.SetRemoveAsync(key, [.. values]));
     }
 
     public async Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -46,7 +46,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<long> SetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetIntersectionLengthAsync(keys.ToArray(), limit));
+        return await Command(Request.SetIntersectionLengthAsync([.. keys], limit));
     }
 
     public async Task<ValkeyValue> SetPopAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -67,7 +67,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<ValkeyValue[]> SetUnionAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetUnionAsync(keys.ToArray()));
+        return await Command(Request.SetUnionAsync([.. keys]));
     }
 
     public async Task<ValkeyValue[]> SetIntersectAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
@@ -76,7 +76,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<ValkeyValue[]> SetIntersectAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetIntersectAsync(keys.ToArray()));
+        return await Command(Request.SetIntersectAsync([.. keys]));
     }
 
     public async Task<ValkeyValue[]> SetDifferenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
@@ -85,7 +85,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<ValkeyValue[]> SetDifferenceAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetDifferenceAsync(keys.ToArray()));
+        return await Command(Request.SetDifferenceAsync([.. keys]));
     }
 
     public async Task<long> SetUnionStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
@@ -94,7 +94,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetUnionStoreAsync(destination, keys.ToArray()));
+        return await Command(Request.SetUnionStoreAsync(destination, [.. keys]));
     }
 
     public async Task<long> SetIntersectStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
@@ -103,7 +103,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<long> SetIntersectStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetIntersectStoreAsync(destination, keys.ToArray()));
+        return await Command(Request.SetIntersectStoreAsync(destination, [.. keys]));
     }
 
     public async Task<long> SetDifferenceStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
@@ -112,7 +112,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<long> SetDifferenceStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetDifferenceStoreAsync(destination, keys.ToArray()));
+        return await Command(Request.SetDifferenceStoreAsync(destination, [.. keys]));
     }
 
     public async Task<bool> SetContainsAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
@@ -124,7 +124,7 @@ public abstract partial class BaseClient : ISetCommands
     public async Task<bool[]> SetContainsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SetContainsAsync(key, values.ToArray()));
+        return await Command(Request.SetContainsAsync(key, [.. values]));
     }
 
     public async Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
