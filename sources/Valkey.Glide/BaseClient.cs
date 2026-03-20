@@ -60,7 +60,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         IntPtr response = await message;
         try
         {
-            HandleResponse(response);
+            _ = HandleResponse(response);
         }
         finally
         {
@@ -95,7 +95,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             IntPtr response = await message;
             try
             {
-                HandleResponse(response);
+                _ = HandleResponse(response);
             }
             finally
             {
@@ -121,7 +121,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         IntPtr response = await message;
         try
         {
-            HandleResponse(response);
+            _ = HandleResponse(response);
         }
         finally
         {
