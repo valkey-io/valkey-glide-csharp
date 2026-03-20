@@ -127,7 +127,7 @@ public interface IBitmapCommands
     /// await client.StringSetAsync("key1", "A");
     /// await client.StringSetAsync("key2", "B");
     /// await client.StringSetAsync("key3", "C");
-    /// long size = await client.StringBitOperationAsync(Bitwise.Or, "result", new ValkeyKey[] { "key1", "key2", "key3" });
+    /// long size = await client.StringBitOperationAsync(Bitwise.Or, "result", ["key1", "key2", "key3"]);
     /// Console.WriteLine(size); // Output: 1 (size of result)
     /// </code>
     /// </example>

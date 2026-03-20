@@ -60,11 +60,11 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var entries = new SortedSetEntry[]
-    /// {
+    /// SortedSetEntry[] entries =
+    /// [
     ///     new SortedSetEntry("member1", 10.5),
     ///     new SortedSetEntry("member2", 8.2)
-    /// };
+    /// ];
     /// long result = await client.SortedSetAddAsync(key, entries);
     /// </code>
     /// </example>
@@ -424,7 +424,7 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// SortedSetPopResult result = await client.SortedSetBlockingPopAsync(new[] { key1, key2, key3 }, 2, Order.Ascending, 5.0);
+    /// SortedSetPopResult result = await client.SortedSetBlockingPopAsync([key1, key2, key3], 2, Order.Ascending, 5.0);
     /// </code>
     /// </example>
     /// </remarks>
@@ -456,7 +456,7 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] result = await client.SortedSetCombineAsync(SetOperation.Difference, new[] { key1, key2 });
+    /// ValkeyValue[] result = await client.SortedSetCombineAsync(SetOperation.Difference, [key1, key2]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -488,7 +488,7 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// SortedSetEntry[] result = await client.SortedSetCombineWithScoresAsync(SetOperation.Difference, new[] { key1, key2 });
+    /// SortedSetEntry[] result = await client.SortedSetCombineWithScoresAsync(SetOperation.Difference, [key1, key2]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -560,7 +560,7 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.SortedSetCombineAndStoreAsync(SetOperation.Difference, destKey, new[] { key1, key2, key3 });
+    /// long result = await client.SortedSetCombineAndStoreAsync(SetOperation.Difference, destKey, [key1, key2, key3]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -599,7 +599,7 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long intersectionCount = await client.SortedSetIntersectionLengthAsync(new[] { key1, key2, key3 });
+    /// long intersectionCount = await client.SortedSetIntersectionLengthAsync([key1, key2, key3]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -681,7 +681,7 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// SortedSetPopResult result = await client.SortedSetPopAsync(new[] { key1, key2, key3 }, 2);
+    /// SortedSetPopResult result = await client.SortedSetPopAsync([key1, key2, key3], 2);
     /// </code>
     /// </example>
     /// </remarks>
@@ -919,7 +919,7 @@ public interface ISortedSetCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// double?[] scores = await client.SortedSetScoresAsync(key, new[] { "member1", "member2", "member3" });
+    /// double?[] scores = await client.SortedSetScoresAsync(key, ["member1", "member2", "member3"]);
     /// </code>
     /// </example>
     /// </remarks>

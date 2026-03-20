@@ -38,7 +38,7 @@ public interface IStringCommands
     /// call will return the first encountered error, even though some requests may have succeeded
     /// while others did not. If this behavior impacts your application logic, consider splitting
     /// the request into sub-requests per slot to ensure atomicity.</note>
-    /// <param name="values">An array of key-value pairs to set.</param>
+    /// <param name="values">A collection of key-value pairs to set.</param>
     /// <param name="when">The condition to specify. If specified to Not-Exists, sets multiple keys to values only if the key does not exist. Defaults to Always.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if all the keys were set, <see langword="false"/> if no key was set (at least one key already existed).</returns>
@@ -95,7 +95,7 @@ public interface IStringCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] values = await client.StringGetAsync(new ValkeyKey[] { "key1", "key2", "key3" });
+    /// ValkeyValue[] values = await client.StringGetAsync(["key1", "key2", "key3"]);
     /// Console.WriteLine(values[0].ToString()); // Output: value of key1 or null
     /// Console.WriteLine(values[1].ToString()); // Output: value of key2 or null
     /// Console.WriteLine(values[2].ToString()); // Output: value of key3 or null

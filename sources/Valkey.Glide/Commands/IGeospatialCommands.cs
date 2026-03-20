@@ -140,7 +140,7 @@ public interface IGeospatialCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// string?[] hashes = await client.GeoHashAsync("mygeo", new ValkeyValue[] { "Palermo", "Catania" });
+    /// string?[] hashes = await client.GeoHashAsync("mygeo", ["Palermo", "Catania"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -174,7 +174,7 @@ public interface IGeospatialCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// GeoPosition?[] positions = await client.GeoPositionAsync("mygeo", new ValkeyValue[] { "Palermo", "Catania" });
+    /// GeoPosition?[] positions = await client.GeoPositionAsync("mygeo", ["Palermo", "Catania"]);
     /// </code>
     /// </example>
     /// </remarks>

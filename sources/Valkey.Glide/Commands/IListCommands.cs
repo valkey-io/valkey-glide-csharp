@@ -52,7 +52,7 @@ public interface IListCommands
     /// from the provided <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop"/>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
@@ -243,7 +243,7 @@ public interface IListCommands
     /// from the provided <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop"/>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
@@ -542,7 +542,7 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[]? result = await client.ListBlockingLeftPopAsync(new ValkeyKey[] { "list1", "list2" }, TimeSpan.FromSeconds(5));
+    /// ValkeyValue[]? result = await client.ListBlockingLeftPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
@@ -567,7 +567,7 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[]? result = await client.ListBlockingRightPopAsync(new ValkeyKey[] { "list1", "list2" }, TimeSpan.FromSeconds(5));
+    /// ValkeyValue[]? result = await client.ListBlockingRightPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
@@ -608,7 +608,7 @@ public interface IListCommands
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <note>BLMPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <note>Since Valkey 7.0.0.</note>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
     /// <param name="timeout">The maximum time to wait for a blocking operation to complete. A value of TimeSpan.Zero will block indefinitely.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
@@ -619,7 +619,7 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ListPopResult result = await client.ListBlockingPopAsync(new ValkeyKey[] { "list1", "list2" }, ListSide.Left, TimeSpan.FromSeconds(5));
+    /// ListPopResult result = await client.ListBlockingPopAsync(["list1", "list2"], ListSide.Left, TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
@@ -633,7 +633,7 @@ public interface IListCommands
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <note>BLMPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <note>Since Valkey 7.0.0.</note>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <param name="timeout">The maximum time to wait for a blocking operation to complete. A value of TimeSpan.Zero will block indefinitely.</param>
@@ -645,7 +645,7 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ListPopResult result = await client.ListBlockingPopAsync(new ValkeyKey[] { "list1", "list2" }, ListSide.Left, 3, TimeSpan.FromSeconds(5));
+    /// ListPopResult result = await client.ListBlockingPopAsync(["list1", "list2"], ListSide.Left, 3, TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>

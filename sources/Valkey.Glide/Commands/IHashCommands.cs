@@ -41,7 +41,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] values = await client.HashGetAsync(key, new ValkeyValue[] { field1, field2 });
+    /// ValkeyValue[] values = await client.HashGetAsync(key, [field1, field2]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -75,7 +75,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.HashSetAsync(key, new HashEntry[] { new HashEntry(field1, value1), new HashEntry(field2, value2) });
+    /// await client.HashSetAsync(key, [new HashEntry(field1, value1), new HashEntry(field2, value2)]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -135,7 +135,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long removedCount = await client.HashDeleteAsync(key, new ValkeyValue[] { field1, field2 });
+    /// long removedCount = await client.HashDeleteAsync(key, [field1, field2]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -392,7 +392,7 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60));
-    /// ValkeyValue[] values = await client.HashGetExAsync(key, new ValkeyValue[] { field1, field2 }, options);
+    /// ValkeyValue[] values = await client.HashGetExAsync(key, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
@@ -444,7 +444,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] results = await client.HashPersistAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] results = await client.HashPersistAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -479,7 +479,7 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashExpireAsync(key, 60, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashExpireAsync(key, 60, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
@@ -511,7 +511,7 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashPExpireAsync(key, 5000, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashPExpireAsync(key, 5000, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
@@ -544,7 +544,7 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashExpireAtAsync(key, 1672531200, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashExpireAtAsync(key, 1672531200, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
@@ -561,7 +561,7 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="unixMilliseconds">The expiration time to set for the fields, as a Unix timestamp in milliseconds.</param>
-    /// <param name="fields">An array of hash field names for which to set the expiration.</param>
+    /// <param name="fields">A collection of hash field names for which to set the expiration.</param>
     /// <param name="options">Optional conditions and configurations for the expiration.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
@@ -578,7 +578,7 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashPExpireAtAsync(key, 1672531200000, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashPExpireAtAsync(key, 1672531200000, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
@@ -605,7 +605,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] timestamps = await client.HashExpireTimeAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] timestamps = await client.HashExpireTimeAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -632,7 +632,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] timestamps = await client.HashPExpireTimeAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] timestamps = await client.HashPExpireTimeAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -659,7 +659,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] ttls = await client.HashTtlAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] ttls = await client.HashTtlAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -686,7 +686,7 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] ttls = await client.HashPTtlAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] ttls = await client.HashPTtlAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
