@@ -12,22 +12,19 @@ namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
 /// DNS resolution tests.
-/// <para>
-/// To run these tests, you need to add the following mappings to your hosts
-/// file then set the environment variable <c>VALKEY_GLIDE_DNS_TESTS_ENABLED</c>:
-/// </para>
-/// <list type="bullet">
-/// <item><c>127.0.0.1 valkey.glide.test.tls.com</c></item>
-/// <item><c>127.0.0.1 valkey.glide.test.no_tls.com</c></item>
-/// <item><c>::1 valkey.glide.test.tls.com</c></item>
-/// <item><c>::1 valkey.glide.test.no_tls.com</c></item>
-/// </list>
-/// <para>
-/// See <see cref="Server"/> for more details.
-/// </para>
+/// See <see href="../../DEVELOPER.md#dns-tests">DEVELOPER.md</see> for setup instructions.
 /// </summary>
 public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
 {
+    #region Constants
+
+    /// <summary>
+    /// Environment variable for enabling DNS tests.
+    /// See <see href="../../DEVELOPER.md#dns-tests">DEVELOPER.md</see> for more details.
+    /// </summary>
+    private const string DnsEnabledEnvVar = "VALKEY_GLIDE_DNS_TESTS_ENABLED";
+
+    #endregion
     #region Tests
 
     [Theory]
@@ -70,12 +67,18 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     #region Helpers
 
     /// <summary>
+    /// Returns true if DNS tests are enabled.
+    /// </summary>
+    public static bool IsDnsTestsEnabled()
+        => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(DnsEnabledEnvVar));
+
+    /// <summary>
     /// Skips the current test if DNS tests are not enabled.
     /// </summary>
     private static void SkipIfDnsTestsNotEnabled()
         => Assert.SkipWhen(
-            string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VALKEY_GLIDE_DNS_TESTS_ENABLED")),
-            $"DNS tests are disabled. Set the environment variable 'VALKEY_GLIDE_DNS_TESTS_ENABLED' to enable them.");
+            !IsDnsTestsEnabled(),
+            $"DNS tests are disabled. See DEVELOPER.md for setup instructions.");
 
     /// <summary>
     /// Builds and returns a client configured with the specified parameters.
@@ -84,7 +87,7 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     {
         if (useCluster)
         {
-            var server = useTls ? fixture.TlsClusterServer : fixture.ClusterServer;
+            var server = useTls ? fixture.TlsClusterServer! : fixture.ClusterServer!;
             var port = server.Addresses.First().Port;
 
             var builder = new ClusterClientConfigurationBuilder()
@@ -101,7 +104,7 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
 
         else
         {
-            var server = useTls ? fixture.TlsStandaloneServer : fixture.StandaloneServer;
+            var server = useTls ? fixture.TlsStandaloneServer! : fixture.StandaloneServer!;
             var port = server.Addresses.First().Port;
 
             var builder = new StandaloneClientConfigurationBuilder()
@@ -125,17 +128,29 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
 /// </summary>
 public class DnsTestsFixture : IDisposable
 {
-    public ClusterServer ClusterServer = new(useTls: false);
-    public StandaloneServer StandaloneServer = new(useTls: false);
-    public ClusterServer TlsClusterServer = new(useTls: true);
-    public StandaloneServer TlsStandaloneServer = new(useTls: true);
+    public ClusterServer? ClusterServer { get; }
+    public StandaloneServer? StandaloneServer { get; }
+    public ClusterServer? TlsClusterServer { get; }
+    public StandaloneServer? TlsStandaloneServer { get; }
+
+    public DnsTestsFixture()
+    {
+        // Only start the servers if DNS tests are enabled.
+        if (DnsTests.IsDnsTestsEnabled())
+        {
+            ClusterServer = new(useTls: false);
+            StandaloneServer = new(useTls: false);
+            TlsClusterServer = new(useTls: true);
+            TlsStandaloneServer = new(useTls: true);
+        }
+    }
 
     public void Dispose()
     {
-        ClusterServer.Dispose();
-        StandaloneServer.Dispose();
-        TlsClusterServer.Dispose();
-        TlsStandaloneServer.Dispose();
+        ClusterServer?.Dispose();
+        StandaloneServer?.Dispose();
+        TlsClusterServer?.Dispose();
+        TlsStandaloneServer?.Dispose();
     }
 }
 
