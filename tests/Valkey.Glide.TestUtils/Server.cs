@@ -13,51 +13,88 @@ public abstract class Server : IDisposable
 
     /// <summary>
     /// Timeout for client connection and reconnection attempts.
-    /// Use a longer timeout to allows for slower connections in CI environments.
+    /// Use a longer timeout to allow for slower connections in CI environments.
     /// </summary>
-    protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Custom command arguments to kill all normal clients.
+    /// </summary>
+    protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
 
     #endregion
-    #region PrivateFields
+    #region Fields
 
     /// <summary>
     /// Name of the server.
     /// </summary>
     private readonly string _name = $"Server_{Guid.NewGuid():N}";
 
-    #endregion
-    #region ProtectedFields
-
     /// <summary>
     /// Indicates whether the server has been stopped.
+    /// See <see cref="Dispose" />.
     /// </summary>
     private bool _disposed = false;
-
-    /// <summary>
-    /// Indicates whether the server uses TLS.
-    /// </summary>
-    protected bool _useTls;
 
     /// <summary>
     /// Password for the server.
     /// </summary>
     protected string? _password;
 
+    #endregion
+    #region Public Properties
+
     /// <summary>
     /// Addresses of the server instances.
     /// </summary>
-    protected IList<Address> _addresses;
+    public IList<Address> Addresses { get; init; }
+
+    /// <summary>
+    /// Indicates whether the server uses TLS.
+    /// </summary>
+    public bool UseTls { get; init; }
+
+    /// <summary>
+    /// Certificate data path for the server.
+    /// </summary>
+    public string? CertificatePath { get; private set; }
+
+    /// <summary>
+    /// Certificate data for the server.
+    /// </summary>
+    public byte[]? CertificateData { get; private set; }
 
     #endregion
+    #region Constructors
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Server"/> class.
+    /// </summary>
+    /// <param name="useClusterMode">Whether to start in cluster mode.</param>
+    /// <param name="useTls">Whether to enable TLS.</param>
     protected Server(bool useClusterMode, bool useTls)
     {
-        _useTls = useTls;
-        _addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: _useTls);
+        UseTls = useTls;
+        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls);
+
+        if (UseTls)
+        {
+            CertificatePath = ServerManager.ServerCertificatePath;
+            CertificateData = File.ReadAllBytes(CertificatePath);
+        }
     }
 
+    /// <summary>
+    /// Finalizer.
+    /// </summary>
     ~Server() => Dispose();
 
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Stops the server.
+    /// </summary>
     public void Dispose()
     {
         if (_disposed)
@@ -71,7 +108,7 @@ public abstract class Server : IDisposable
     }
 
     /// <summary>
-    /// Builds and returns a client for this Valkey server.
+    /// Builds and returns a client for this server.
     /// </summary>
     public abstract Task<BaseClient> CreateClientAsync();
 
@@ -89,7 +126,9 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Kill all normal clients on the server.
     /// </summary>
-    public abstract Task KillClientAsync();
+    public abstract Task KillClientsAsync();
+
+    #endregion
 }
 
 /// <summary>
@@ -97,23 +136,30 @@ public abstract class Server : IDisposable
 /// </summary>
 public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: true, useTls: useTls)
 {
+    #region Public Methods
+
     /// <summary>
-    /// Builds and returns a cluster client configuration builder for this Valkey server.
+    /// Builds and returns a cluster client configuration builder for this server.
     /// </summary>
     public ClusterClientConfigurationBuilder CreateConfigBuilder()
     {
         ClusterClientConfigurationBuilder configBuilder = new()
         {
-            UseTls = _useTls,
+            UseTls = UseTls,
             ConnectionTimeout = ConnectionTimeout
         };
+
+        if (UseTls)
+        {
+            _ = configBuilder.WithTrustedCertificate(CertificateData!);
+        }
 
         if (_password is not null)
         {
             _ = configBuilder.WithAuthentication(_password);
         }
 
-        foreach ((string host, ushort port) in _addresses)
+        foreach ((string host, ushort port) in Addresses)
         {
             _ = configBuilder.WithAddress(host, port);
         }
@@ -121,12 +167,11 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
         return configBuilder;
     }
 
-    /// <inheritdoc/>
     public override async Task<BaseClient> CreateClientAsync()
         => await CreateClusterClientAsync();
 
     /// <summary>
-    /// Builds and returns a cluster client for this Valkey server.
+    /// Builds and returns a cluster client for this server.
     /// </summary>
     public async Task<GlideClusterClient> CreateClusterClientAsync()
         => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
@@ -145,11 +190,13 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
         _password = null;
     }
 
-    public override async Task KillClientAsync()
+    public override async Task KillClientsAsync()
     {
         using GlideClusterClient client = await CreateClusterClientAsync();
-        _ = await client.CustomCommand(["CLIENT", "KILL", "TYPE", "NORMAL"]);
+        _ = await client.CustomCommand(KillClientArgs);
     }
+
+    #endregion
 }
 
 /// <summary>
@@ -157,23 +204,30 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
 /// </summary>
 public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMode: false, useTls: useTls)
 {
+    #region Public Methods
+
     /// <summary>
-    /// Builds and returns a standalone client configuration builder for this Valkey server.
+    /// Builds and returns a standalone client configuration builder for this server.
     /// </summary>
     public StandaloneClientConfigurationBuilder CreateConfigBuilder()
     {
         StandaloneClientConfigurationBuilder configBuilder = new()
         {
-            UseTls = _useTls,
+            UseTls = UseTls,
             ConnectionTimeout = ConnectionTimeout
         };
+
+        if (UseTls)
+        {
+            _ = configBuilder.WithTrustedCertificate(CertificateData!);
+        }
 
         if (_password is not null)
         {
             _ = configBuilder.WithAuthentication(_password);
         }
 
-        foreach ((string host, ushort port) in _addresses)
+        foreach ((string host, ushort port) in Addresses)
         {
             _ = configBuilder.WithAddress(host, port);
         }
@@ -181,12 +235,11 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
         return configBuilder;
     }
 
-    /// <inheritdoc/>
     public override async Task<BaseClient> CreateClientAsync()
         => await CreateStandaloneClientAsync();
 
     /// <summary>
-    /// Builds and returns a standalone client for this Valkey server.
+    /// Builds and returns a standalone client for this server.
     /// </summary>
     public async Task<GlideClient> CreateStandaloneClientAsync()
         => await GlideClient.CreateClient(CreateConfigBuilder().Build());
@@ -205,9 +258,11 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
         _password = null;
     }
 
-    public override async Task KillClientAsync()
+    public override async Task KillClientsAsync()
     {
         using GlideClient client = await CreateStandaloneClientAsync();
-        _ = await client.CustomCommand(["CLIENT", "KILL", "TYPE", "NORMAL"]);
+        _ = await client.CustomCommand(KillClientArgs);
     }
+
+    #endregion
 }

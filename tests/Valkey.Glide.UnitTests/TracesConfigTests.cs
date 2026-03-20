@@ -1,36 +1,15 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.UnitTests;
 
 public class TracesConfigTests
 {
-    #region Data
-
-    // TODO #215: Move to TestUtils.Data folder.
-    public static TheoryData<string> ValidEndpoints =>
-        [
-            "http://localhost:4321",                    // HTTP endpoint
-            "https://otel-collector.example.com:4318",  // HTTPS endpoint
-            "file:///tmp/traces.txt",                   // Unix-style file URI
-            @"file://C:\Users\runner\traces.txt",       // Windows-style file URI
-        ];
-
-    // TODO #215: Move to TestUtils.Data folder.
-    public static TheoryData<string> InvalidEndpoints =>
-        [
-            (string)null!,        // null
-            "",                   // empty
-            "\t",                 // whitespace only
-            "not-a-url",          // no scheme
-            "://missing-scheme",  // malformed scheme
-            "just some text",     // plain text
-        ];
-
-    #endregion
     #region Tests
 
     [Theory]
-    [MemberData(nameof(InvalidEndpoints))]
+    [MemberData(nameof(Data.InvalidEndpoints), MemberType = typeof(Data))]
     public void WithEndpoint_WithInvalidEndpoint_ThrowsArgumentException(string endpoint)
     {
         var builder = TracesConfig.CreateBuilder();
@@ -38,7 +17,7 @@ public class TracesConfigTests
     }
 
     [Theory]
-    [MemberData(nameof(ValidEndpoints))]
+    [MemberData(nameof(Data.ValidEndpoints), MemberType = typeof(Data))]
     public void WithEndpoint_WithValidEndpoint_Succeeds(string endpoint)
     {
         var config = TracesConfig.CreateBuilder()
@@ -65,7 +44,7 @@ public class TracesConfigTests
     [Fact]
     public void Build_WithoutSamplePercentage_Succeeds()
     {
-        var endpoint = ValidEndpoints.First();
+        var endpoint = Data.ValidEndpoints.First();
         var config = TracesConfig.CreateBuilder()
             .WithEndpoint(endpoint)
             .Build();
@@ -77,7 +56,7 @@ public class TracesConfigTests
     [Fact]
     public void Build_WithSamplePercentage_Succeeds()
     {
-        var endpoint = ValidEndpoints.First();
+        var endpoint = Data.ValidEndpoints.First();
         var samplePercentage = 50u;
 
         var config = TracesConfig.CreateBuilder()
