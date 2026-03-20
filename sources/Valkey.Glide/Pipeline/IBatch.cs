@@ -14,7 +14,7 @@ internal interface IBatch : IBatchSetCommands, IBatchStringCommands, IBatchListC
 
     /// <inheritdoc cref="IGenericCommands.CustomCommand(IEnumerable{GlideString})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericCommands.CustomCommand(IEnumerable{GlideString})" /></returns>
-    IBatch CustomCommand(GlideString[] args);
+    IBatch CustomCommand(IEnumerable<GlideString> args);
 
     /// <inheritdoc cref="IServerManagementCommands.InfoAsync()" path="/summary" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync()" /></returns>

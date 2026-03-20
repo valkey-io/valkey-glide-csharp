@@ -17,7 +17,7 @@ internal interface IBatchHyperLogLogCommands
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogAddAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/summary" />
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogAddAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/param" />
     /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogAddAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" /></returns>
-    IBatch HyperLogLogAdd(ValkeyKey key, ValkeyValue[] elements);
+    IBatch HyperLogLogAdd(ValkeyKey key, IEnumerable<ValkeyValue> elements);
 
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey, CommandFlags)" path="/summary" />
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey, CommandFlags)" path="/param" />
@@ -27,7 +27,7 @@ internal interface IBatchHyperLogLogCommands
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/summary" />
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/param" />
     /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch HyperLogLogLength(ValkeyKey[] keys);
+    IBatch HyperLogLogLength(IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/summary" />
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/param" />
@@ -37,5 +37,5 @@ internal interface IBatchHyperLogLogCommands
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" path="/summary" />
     /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" path="/param" />
     /// <returns>Command Response - <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch HyperLogLogMerge(ValkeyKey destination, ValkeyKey[] sourceKeys);
+    IBatch HyperLogLogMerge(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys);
 }

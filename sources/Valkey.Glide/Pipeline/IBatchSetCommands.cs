@@ -12,7 +12,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetAddAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetAddAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" /></returns>
-    IBatch SetAdd(ValkeyKey key, ValkeyValue[] values);
+    IBatch SetAdd(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <inheritdoc cref="ISetCommands.SetRemoveAsync(ValkeyKey, ValkeyValue, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetRemoveAsync(ValkeyKey, ValkeyValue, CommandFlags)" /></returns>
@@ -20,7 +20,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" /></returns>
-    IBatch SetRemove(ValkeyKey key, ValkeyValue[] values);
+    IBatch SetRemove(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <inheritdoc cref="ISetCommands.SetMembersAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetMembersAsync(ValkeyKey, CommandFlags)" /></returns>
@@ -32,7 +32,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long, CommandFlags)" /></returns>
-    IBatch SetIntersectionLength(ValkeyKey[] keys, long limit = 0);
+    IBatch SetIntersectionLength(IEnumerable<ValkeyKey> keys, long limit = 0);
 
     /// <inheritdoc cref="ISetCommands.SetPopAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetPopAsync(ValkeyKey, CommandFlags)" /></returns>
@@ -48,7 +48,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetUnionAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetUnionAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch SetUnion(ValkeyKey[] keys);
+    IBatch SetUnion(IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="ISetCommands.SetIntersectAsync(ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetIntersectAsync(ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
@@ -56,7 +56,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetIntersectAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetIntersectAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch SetIntersect(ValkeyKey[] keys);
+    IBatch SetIntersect(IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="ISetCommands.SetDifferenceAsync(ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetDifferenceAsync(ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
@@ -64,7 +64,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetDifferenceAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetDifferenceAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch SetDifference(ValkeyKey[] keys);
+    IBatch SetDifference(IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="ISetCommands.SetUnionStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetUnionStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
@@ -72,7 +72,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch SetUnionStore(ValkeyKey destination, ValkeyKey[] keys);
+    IBatch SetUnionStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="ISetCommands.SetIntersectStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetIntersectStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
@@ -80,7 +80,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetIntersectStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetIntersectStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch SetIntersectStore(ValkeyKey destination, ValkeyKey[] keys);
+    IBatch SetIntersectStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="ISetCommands.SetDifferenceStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetDifferenceStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
@@ -88,7 +88,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetDifferenceStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetDifferenceStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch SetDifferenceStore(ValkeyKey destination, ValkeyKey[] keys);
+    IBatch SetDifferenceStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="ISetCommands.SetContainsAsync(ValkeyKey, ValkeyValue, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetContainsAsync(ValkeyKey, ValkeyValue, CommandFlags)" /></returns>
@@ -96,7 +96,7 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetCommands.SetContainsAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetContainsAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" /></returns>
-    IBatch SetContains(ValkeyKey key, ValkeyValue[] values);
+    IBatch SetContains(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <inheritdoc cref="ISetCommands.SetRandomMemberAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetCommands.SetRandomMemberAsync(ValkeyKey, CommandFlags)" /></returns>
