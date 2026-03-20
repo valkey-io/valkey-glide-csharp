@@ -1,36 +1,15 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.UnitTests;
 
 public class MetricsConfigTests
 {
-    #region Data
-
-    // TODO #215: Move to TestUtils.Data folder.
-    public static TheoryData<string> ValidEndpoints =>
-        [
-            "http://localhost:4321",                    // HTTP endpoint
-            "https://otel-collector.example.com:4318",  // HTTPS endpoint
-            "file:///tmp/metrics.txt",                  // Unix-style file URI
-            @"file://C:\Users\runner\metrics.txt",      // Windows-style file URI
-        ];
-
-    // TODO #215: Move to TestUtils.Data folder.
-    public static TheoryData<string> InvalidEndpoints =>
-        [
-            (string)null!,        // null
-            "",                   // empty
-            "\t",                 // whitespace only
-            "not-a-url",          // no scheme
-            "://missing-scheme",  // malformed scheme
-            "just some text",     // plain text
-        ];
-
-    #endregion
     #region Tests
 
     [Theory]
-    [MemberData(nameof(InvalidEndpoints))]
+    [MemberData(nameof(Data.InvalidEndpoints), MemberType = typeof(Data))]
     public void WithEndpoint_WithInvalidEndpoint_ThrowsArgumentException(string endpoint)
     {
         var builder = MetricsConfig.CreateBuilder();
@@ -38,7 +17,7 @@ public class MetricsConfigTests
     }
 
     [Theory]
-    [MemberData(nameof(ValidEndpoints))]
+    [MemberData(nameof(Data.ValidEndpoints), MemberType = typeof(Data))]
     public void WithEndpoint_WithValidEndpoint_Succeeds(string endpoint)
     {
         var config = MetricsConfig.CreateBuilder()
