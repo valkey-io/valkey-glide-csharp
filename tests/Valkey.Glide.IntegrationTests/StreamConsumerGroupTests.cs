@@ -15,7 +15,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add an entry first
-        await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field1", "value1");
 
         // Create consumer group
         bool created = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
@@ -29,7 +29,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Try to create group on non-existent stream without MKSTREAM - should error
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages, createStream: false));
     }
 
@@ -40,8 +40,8 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Create stream and group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Try to create same group again - should error with BUSYGROUP
         var exception = await Assert.ThrowsAsync<RequestException>(async () =>
@@ -56,7 +56,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        _ = await client.StringSetAsync(key, "not_a_stream");
 
         // Try to create group on string key - should error
         var exception = await Assert.ThrowsAsync<RequestException>(async () =>
@@ -86,8 +86,8 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Delete the group
         bool deleted = await client.StreamDeleteConsumerGroupAsync(key, "mygroup");
@@ -101,10 +101,10 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        _ = await client.StringSetAsync(key, "not_a_stream");
 
         // Try to delete group on string key - should error
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamDeleteConsumerGroupAsync(key, "mygroup"));
     }
 
@@ -115,11 +115,11 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries
-        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field1", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field2", "value2");
 
         // Create group starting from beginning
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Set position to second entry
         bool result = await client.StreamConsumerGroupSetPositionAsync(key, "mygroup", id2);
@@ -133,11 +133,11 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
 
         // Create group
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Set position to end ($)
         bool result = await client.StreamConsumerGroupSetPositionAsync(key, "mygroup", StreamConstants.NewMessages);
@@ -151,8 +151,8 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Create consumer
         bool created = await client.StreamCreateConsumerAsync(key, "mygroup", "consumer1");
@@ -160,7 +160,7 @@ public class StreamConsumerGroupTests
 
         // Verify consumer exists
         StreamConsumerInfo[] consumers = await client.StreamConsumerInfoAsync(key, "mygroup");
-        Assert.Single(consumers);
+        _ = Assert.Single(consumers);
         Assert.Equal("consumer1", consumers[0].Name);
     }
 
@@ -171,11 +171,11 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Create consumer first time
-        await client.StreamCreateConsumerAsync(key, "mygroup", "consumer1");
+        _ = await client.StreamCreateConsumerAsync(key, "mygroup", "consumer1");
 
         // Create same consumer again - should return false
         bool created = await client.StreamCreateConsumerAsync(key, "mygroup", "consumer1");
@@ -189,8 +189,8 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Delete non-existent consumer - should return 0
         long pendingCount = await client.StreamDeleteConsumerAsync(key, "mygroup", "nonexistent");
@@ -204,9 +204,9 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Read new messages with >
         StreamEntry[] entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
@@ -222,10 +222,10 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamAddAsync(key, "field3", "value3");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamAddAsync(key, "field3", "value3");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Read only 2 messages
         StreamEntry[] entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages, count: 2);
@@ -241,10 +241,10 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry but don't create group
-        await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field1", "value1");
 
         // Try to read from non-existent group - should error with NOGROUP
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamReadGroupAsync(key, "nonexistent", "consumer1", StreamConstants.UndeliveredMessages));
     }
 
@@ -255,10 +255,10 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        _ = await client.StringSetAsync(key, "not_a_stream");
 
         // Try to read from string key - should error
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages));
     }
 
@@ -270,20 +270,20 @@ public class StreamConsumerGroupTests
         string key2 = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries to both streams
-        await client.StreamAddAsync(key1, "field1", "value1");
-        await client.StreamAddAsync(key2, "field2", "value2");
+        _ = await client.StreamAddAsync(key1, "field1", "value1");
+        _ = await client.StreamAddAsync(key2, "field2", "value2");
 
         // Create groups
-        await client.StreamCreateConsumerGroupAsync(key1, "mygroup", StreamConstants.AllMessages);
-        await client.StreamCreateConsumerGroupAsync(key2, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key1, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key2, "mygroup", StreamConstants.AllMessages);
 
         // Read from both streams
         StreamPosition[] positions = [new StreamPosition(key1, StreamConstants.UndeliveredMessages), new StreamPosition(key2, StreamConstants.UndeliveredMessages)];
         ValkeyStream[] streams = await client.StreamReadGroupAsync(positions, "mygroup", "consumer1");
 
         Assert.Equal(2, streams.Length);
-        Assert.Single(streams[0].Entries);
-        Assert.Single(streams[1].Entries);
+        _ = Assert.Single(streams[0].Entries);
+        _ = Assert.Single(streams[1].Entries);
         Assert.Equal("value1", streams[0].Entries[0].Values[0].Value.ToString());
         Assert.Equal("value2", streams[1].Entries[0].Values[0].Value.ToString());
     }
@@ -297,10 +297,10 @@ public class StreamConsumerGroupTests
         // Add entries and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Read messages
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Acknowledge both messages
         long ackCount = await client.StreamAcknowledgeAsync(key, "mygroup", [id1, id2]);
@@ -314,8 +314,8 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Try to acknowledge non-existent message
         long ackCount = await client.StreamAcknowledgeAsync(key, "mygroup", ["9999999999999-0"]);
@@ -330,8 +330,8 @@ public class StreamConsumerGroupTests
 
         // Add entry and create group
         ValkeyValue id = await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Try to acknowledge with wrong group name - returns 0
         long ackCount = await client.StreamAcknowledgeAsync(key, "wronggroup", [id]);
@@ -345,17 +345,17 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Read messages without acknowledging
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Get pending summary
         StreamPendingInfo info = await client.StreamPendingAsync(key, "mygroup");
         Assert.Equal(2, info.PendingMessageCount);
-        Assert.Single(info.Consumers);
+        _ = Assert.Single(info.Consumers);
         Assert.Equal("consumer1", info.Consumers[0].Name.ToString());
         Assert.Equal(2, info.Consumers[0].PendingMessageCount);
     }
@@ -368,11 +368,11 @@ public class StreamConsumerGroupTests
 
         // Add entries and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Read messages without acknowledging
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Get detailed pending messages
         StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1");
@@ -389,10 +389,10 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry but don't create group
-        await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field1", "value1");
 
         // Try to get pending from non-existent group - should error
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamPendingAsync(key, "nonexistent"));
     }
 
@@ -403,10 +403,10 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        _ = await client.StringSetAsync(key, "not_a_stream");
 
         // Try to get pending from string key - should error
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamPendingAsync(key, "mygroup"));
     }
 
@@ -417,11 +417,11 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entry and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Read message
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Query with high minIdleTime - should return empty
         StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", minIdleTimeInMs: 999999);
@@ -436,14 +436,14 @@ public class StreamConsumerGroupTests
 
         // Add entries and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads message
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims the message
         StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1]);
-        Assert.Single(claimed);
+        _ = Assert.Single(claimed);
         Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
         Assert.Equal("value1", claimed[0].Values[0].Value.ToString());
     }
@@ -458,7 +458,7 @@ public class StreamConsumerGroupTests
         ValkeyValue id = await client.StreamAddAsync(key, "field1", "value1");
 
         // Try to claim from non-existent group - should error
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamClaimAsync(key, "nonexistent", "consumer1", 0, [id]));
     }
 
@@ -469,10 +469,10 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        _ = await client.StringSetAsync(key, "not_a_stream");
 
         // Try to claim from string key - should error
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.StreamClaimAsync(key, "mygroup", "consumer1", 0, ["1-0"]));
     }
 
@@ -485,10 +485,10 @@ public class StreamConsumerGroupTests
         // Add entries and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads messages
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims the messages (IDs only)
         ValkeyValue[] claimedIds = await client.StreamClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, [id1, id2]);
@@ -504,12 +504,12 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads messages
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 auto-claims pending messages
         StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", 0, StreamConstants.MinimumId);
@@ -525,12 +525,12 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads messages
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 auto-claims pending messages (IDs only)
         StreamAutoClaimIdsOnlyResult result = await client.StreamAutoClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, StreamConstants.MinimumId);
@@ -545,13 +545,13 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamAddAsync(key, "field3", "value3");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamAddAsync(key, "field3", "value3");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads messages
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 auto-claims only 2 messages
         StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", 0, StreamConstants.MinimumId, count: 2);
@@ -565,9 +565,9 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create groups
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "group1", StreamConstants.AllMessages);
-        await client.StreamCreateConsumerGroupAsync(key, "group2", StreamConstants.NewMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "group1", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "group2", StreamConstants.NewMessages);
 
         // Get group info
         StreamGroupInfo[] groups = await client.StreamGroupInfoAsync(key);
@@ -583,13 +583,13 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamAddAsync(key, "field2", "value2");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Multiple consumers read messages
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages, count: 1);
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer2", StreamConstants.UndeliveredMessages, count: 1);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages, count: 1);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer2", StreamConstants.UndeliveredMessages, count: 1);
 
         // Get consumer info
         StreamConsumerInfo[] consumers = await client.StreamConsumerInfoAsync(key, "mygroup");
@@ -608,14 +608,14 @@ public class StreamConsumerGroupTests
 
         // Add entry and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads message
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims with IDLE parameter
         StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1], idleTimeInMs: 5000);
-        Assert.Single(claimed);
+        _ = Assert.Single(claimed);
         Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
     }
 
@@ -627,18 +627,18 @@ public class StreamConsumerGroupTests
 
         // Add entry and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads message
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims with RETRYCOUNT parameter
         StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1], retryCount: 10);
-        Assert.Single(claimed);
+        _ = Assert.Single(claimed);
 
         // Verify retry count was set
         StreamPendingMessageInfo[] pending = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer2");
-        Assert.Single(pending);
+        _ = Assert.Single(pending);
         Assert.Equal(10, pending[0].DeliveryCount);
     }
 
@@ -650,11 +650,11 @@ public class StreamConsumerGroupTests
 
         // Add entry and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Claim message without reading it first (using FORCE)
         StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer1", 0, [id1], force: true);
-        Assert.Single(claimed);
+        _ = Assert.Single(claimed);
         Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
     }
 
@@ -666,14 +666,14 @@ public class StreamConsumerGroupTests
 
         // Add entry and create group
         ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Consumer1 reads message
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims with optional parameters
         ValkeyValue[] claimedIds = await client.StreamClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, [id1], idleTimeInMs: 1000, retryCount: 5);
-        Assert.Single(claimedIds);
+        _ = Assert.Single(claimedIds);
         Assert.Equal(id1.ToString(), claimedIds[0].ToString());
     }
 
@@ -686,13 +686,13 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries
-        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
+        _ = await client.StreamAddAsync(key, "field", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
         ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
 
         // Create group and read all messages
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
-        await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // No more new messages
         StreamEntry[] entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
@@ -704,7 +704,7 @@ public class StreamConsumerGroupTests
 
         // Should now be able to read id3
         entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
-        Assert.Single(entries);
+        _ = Assert.Single(entries);
         Assert.Equal(id3.ToString(), entries[0].Id.ToString());
 
         StreamGroupInfo[] groups = await client.StreamGroupInfoAsync(key);

@@ -110,7 +110,7 @@ public class SharedBatchTests
             await ((GlideClient)client).WatchAsync(keys);
         }
 
-        await client.StringSetAsync(key2, helloString);
+        _ = await client.StringSetAsync(key2, helloString);
 
         object?[]? execResult;
         if (isCluster)
@@ -174,7 +174,7 @@ public class SharedBatchTests
         {
             await ((GlideClient)client).WatchAsync(keys);
         }
-        await client.StringSetAsync(key2, helloString);
+        _ = await client.StringSetAsync(key2, helloString);
         if (isCluster)
         {
             await ((GlideClusterClient)client).UnwatchAsync();

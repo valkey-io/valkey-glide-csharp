@@ -10,7 +10,7 @@ internal partial class BatchTestUtils
         string prefix = "{streamKey}-";
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
-        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}2-{Guid.NewGuid()}";
         string groupName = "mygroup";
         string consumer1 = "consumer1";
         string consumer2 = "consumer2";

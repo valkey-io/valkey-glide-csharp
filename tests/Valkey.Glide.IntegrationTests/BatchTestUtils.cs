@@ -753,8 +753,8 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue[] { "apple", "banana" }, "SortedSetRangeByValue(key2, 'a', 'c', order: Ascending)"));
 
         // Test new sorted set commands
-        string key3 = $"{atomicPrefix}3-{Guid.NewGuid()}";
-        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}3-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         // Test SortedSetIncrement
         _ = batch.SortedSetIncrement(key1, "testMember1", 5.0);
@@ -1448,8 +1448,8 @@ internal partial class BatchTestUtils
         string prefix = "{geoKey}-";
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
-        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
-        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         // Test GeoAdd
         _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"));
@@ -1510,8 +1510,8 @@ internal partial class BatchTestUtils
         string prefix = "{bitmapKey}-";
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
-        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
-        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         // Test StringSetBit and StringGetBit
         _ = batch.StringSetBit(key1, 7, true);

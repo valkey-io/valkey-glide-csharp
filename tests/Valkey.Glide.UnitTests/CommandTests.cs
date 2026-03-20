@@ -7,9 +7,7 @@ namespace Valkey.Glide.UnitTests;
 public class CommandTests
 {
     [Fact]
-    public void ValidateCommandArgs()
-    {
-        Assert.Multiple(
+    public void ValidateCommandArgs() => Assert.Multiple(
             () => Assert.Equal(["get", "a"], Request.CustomCommand(["get", "a"]).GetArgs()),
             () => Assert.Equal(["ping", "pong", "pang"], Request.CustomCommand(["ping", "pong", "pang"]).GetArgs()),
             () => Assert.Equal(["get"], Request.CustomCommand(["get"]).GetArgs()),
@@ -363,12 +361,9 @@ public class CommandTests
             () => Assert.Equal(["HTTL", "key", "FIELDS", "2", "field1", "field2"], Request.HashTtlAsync("key", ["field1", "field2"]).GetArgs()),
             () => Assert.Equal(["HPTTL", "key", "FIELDS", "2", "field1", "field2"], Request.HashPTtlAsync("key", ["field1", "field2"]).GetArgs())
         );
-    }
 
     [Fact]
-    public void ValidateCommandConverters()
-    {
-        Assert.Multiple(
+    public void ValidateCommandConverters() => Assert.Multiple(
             () => Assert.Equal(1, Request.CustomCommand([]).Converter(1)),
             () => Assert.Equal(.1, Request.CustomCommand([]).Converter(.1)),
             () => Assert.Null(Request.CustomCommand([]).Converter(null)),
@@ -664,7 +659,6 @@ public class CommandTests
             () => Assert.Equal([65L, 0L, 100L], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 100)]).Converter([65L, null!, 100L])),
             () => Assert.Equal([65L, 4L], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(0))]).Converter([65L, 4L]))
         );
-    }
 
     [Fact]
     public void BitField_AutoOptimization_UsesCorrectRequestType()
@@ -820,9 +814,9 @@ public class CommandTests
                 Assert.Equal(3, result.Length);
                 foreach (HashEntry entry in result)
                 {
-                    Assert.IsType<HashEntry>(entry);
-                    Assert.IsType<ValkeyValue>(entry.Name);
-                    Assert.IsType<ValkeyValue>(entry.Value);
+                    _ = Assert.IsType<HashEntry>(entry);
+                    _ = Assert.IsType<ValkeyValue>(entry.Name);
+                    _ = Assert.IsType<ValkeyValue>(entry.Value);
                 }
                 Assert.Equal("field1", result[0].Name);
                 Assert.Equal("value1", result[0].Value);
@@ -833,7 +827,7 @@ public class CommandTests
             {
                 ValkeyValue[] result = Request.HashValuesAsync("key").Converter(testObjectArray);
                 Assert.Equal(3, result.Length);
-                foreach (ValkeyValue item in result) Assert.IsType<ValkeyValue>(item);
+                foreach (ValkeyValue item in result) _ = Assert.IsType<ValkeyValue>(item);
             },
 
             // Test HashRandomFieldAsync
@@ -848,7 +842,7 @@ public class CommandTests
             {
                 ValkeyValue[] result = Request.HashRandomFieldsAsync("key", 3).Converter(testObjectArray);
                 Assert.Equal(3, result.Length);
-                foreach (ValkeyValue item in result) Assert.IsType<ValkeyValue>(item);
+                foreach (ValkeyValue item in result) _ = Assert.IsType<ValkeyValue>(item);
             },
 
             // Test HashRandomFieldsWithValuesAsync
@@ -858,9 +852,9 @@ public class CommandTests
                 Assert.Equal(3, result.Length);
                 foreach (HashEntry entry in result)
                 {
-                    Assert.IsType<HashEntry>(entry);
-                    Assert.IsType<ValkeyValue>(entry.Name);
-                    Assert.IsType<ValkeyValue>(entry.Value);
+                    _ = Assert.IsType<HashEntry>(entry);
+                    _ = Assert.IsType<ValkeyValue>(entry.Name);
+                    _ = Assert.IsType<ValkeyValue>(entry.Value);
                 }
             }
         );
