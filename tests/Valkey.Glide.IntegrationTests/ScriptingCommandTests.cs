@@ -40,7 +40,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptInvokeAsync_NOSCRIPTFallback_AutomaticallyUsesEVAL(BaseClient client)
     {
         // Flush scripts to ensure NOSCRIPT error
-        _ = await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync();
 
         // This should trigger NOSCRIPT and automatically fallback to EVAL
         using var script = new Script("return 'fallback test'");
@@ -80,7 +80,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptExistsAsync_NonCachedScript_ReturnsFalse(BaseClient client)
     {
         // Flush scripts first
-        _ = await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync();
 
         // Create a script but don't execute it
         using var script = new Script("return 'not cached'");
@@ -96,7 +96,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptExistsAsync_MultipleScripts_ReturnsCorrectStatus(BaseClient client)
     {
         // Flush scripts first
-        _ = await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync();
 
         using var script1 = new Script("return 'script1'");
         using var script2 = new Script("return 'script2'");
@@ -191,7 +191,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "SCRIPT SHOW is supported since Valkey 8.0.0");
 
         // Flush scripts first
-        _ = await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync();
 
         // Create a script but don't execute it
         using var script = new Script("return 'not cached'");
@@ -334,7 +334,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "testlib_load";
@@ -358,11 +358,11 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from fu
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            _ = await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
         }
         else
         {
-            _ = await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync();
         }
 
         // Use hardcoded unique library name per test
@@ -418,7 +418,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "conflictlib";
@@ -457,11 +457,11 @@ this is not valid lua code";
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            _ = await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
         }
         else
         {
-            _ = await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync();
         }
 
         // Use hardcoded unique library name per test
@@ -503,7 +503,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello, World!
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "paramlib";
@@ -530,7 +530,7 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Try to call non-existent function
         string funcName = "nonexistent";
@@ -546,7 +546,7 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "readonlylib";
@@ -575,7 +575,7 @@ redis.register_function{{
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "readonlyparamlib";
@@ -608,11 +608,11 @@ redis.register_function{{
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            _ = await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
         }
         else
         {
-            _ = await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync();
         }
 
         // Use hardcoded unique library name per test
@@ -674,7 +674,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "flushsynclib";
@@ -700,7 +700,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "flushasynclib";
@@ -729,7 +729,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "errorlib";
@@ -754,7 +754,7 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Set up test data
         string key = Guid.NewGuid().ToString();
@@ -786,7 +786,7 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "setlib";
@@ -821,11 +821,11 @@ end)";
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            _ = await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
         }
         else
         {
-            _ = await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync();
         }
 
         // Use hardcoded unique library name per test
@@ -868,11 +868,11 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            _ = await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
         }
         else
         {
-            _ = await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync();
         }
 
         // Use hardcoded unique library name per test
@@ -921,7 +921,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
         Assert.SkipWhen(client is GlideClusterClient, "Nil handling with cluster routing needs investigation");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Use hardcoded unique library name per test
         string libName = "nillib";
@@ -947,7 +947,7 @@ redis.register_function('{funcName}', function(keys, args) return nil end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load multiple libraries
         string lib1Code = @"#!lua name=testlib1
@@ -974,7 +974,7 @@ redis.register_function('func2', function(keys, args) return 'result2' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load multiple libraries
         string lib1Code = @"#!lua name=filterlib1
@@ -1001,7 +1001,7 @@ redis.register_function('func2', function(keys, args) return 'result2' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load a library
         string libCode = @"#!lua name=codelib
@@ -1026,7 +1026,7 @@ redis.register_function('codefunc', function(keys, args) return 'result' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load a library
         string libCode = @"#!lua name=statslib
@@ -1061,7 +1061,7 @@ redis.register_function('statsfunc', function(keys, args) return 'result' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load a library
         string libCode = @"#!lua name=deletelib
@@ -1109,7 +1109,7 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load a library
         string libCode = @"#!lua name=dumplib
@@ -1130,7 +1130,7 @@ redis.register_function('dumpfunc', function(keys, args) return 'result' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load and dump a library
         string libCode = @"#!lua name=restorelib1
@@ -1154,7 +1154,7 @@ redis.register_function('restorefunc1', function(keys, args) return 'result1' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load two libraries
         string lib1Code = @"#!lua name=flushlib1
@@ -1183,7 +1183,7 @@ redis.register_function('flushfunc2', function(keys, args) return 'result2' end)
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load a library
         string lib1Code = @"#!lua name=replacelib
@@ -1211,7 +1211,7 @@ redis.register_function('replacefunc', function(keys, args) return 'version2' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync();
 
         // Load a library
         string libCode = @"#!lua name=conflictlib
@@ -1233,7 +1233,7 @@ redis.register_function('conflictfunc', function(keys, args) return 'result' end
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_allprimaries_lib";
@@ -1277,7 +1277,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first (must use AllPrimaries since replicas are read-only)
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_allnodes_lib";
@@ -1324,7 +1324,7 @@ redis.register_function{{
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_random_lib";
@@ -1350,7 +1350,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Random node r
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_load_lib";
@@ -1379,7 +1379,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Loaded' end)"
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_delete_lib";
@@ -1409,7 +1409,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_list_lib";
@@ -1448,7 +1448,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_stats_lib";
@@ -1497,7 +1497,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_dump_lib";
@@ -1524,7 +1524,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_restore_lib";
@@ -1540,7 +1540,7 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
         byte[] backup = dumpResult.SingleValue;
 
         // Flush all functions
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Restore functions to all primaries
         await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
@@ -1557,7 +1557,7 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_replace_lib";
@@ -1595,7 +1595,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        _ = await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_multinode_lib";

@@ -160,7 +160,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Select(index));
+        _ = await Command(Request.Select(index));
     }
 
 #pragma warning disable IDE0060 // Unused 'database' parameter needed for StackExchange.Redis compatibility

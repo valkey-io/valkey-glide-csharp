@@ -287,7 +287,7 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public async Task SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Select(index), Route.Random);
+        _ = await Command(Request.Select(index), Route.Random);
     }
 
     public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
