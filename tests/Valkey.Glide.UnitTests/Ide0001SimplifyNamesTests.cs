@@ -9,7 +9,7 @@ namespace Valkey.Glide.UnitTests;
 /// </summary>
 public class Ide0001SimplifyNamesTests
 {
-    private static readonly string _repoRoot = GetRepoRoot();
+    private static readonly string RepoRoot = GetRepoRoot();
 
     private static string GetRepoRoot()
     {
@@ -21,7 +21,7 @@ public class Ide0001SimplifyNamesTests
 
     private static int CountOccurrences(string filePath, string pattern)
     {
-        string fullPath = Path.Combine(_repoRoot, filePath);
+        string fullPath = Path.Combine(RepoRoot, filePath);
         if (!File.Exists(fullPath))
             throw new FileNotFoundException($"File not found: {fullPath}");
         return File.ReadAllLines(fullPath).Count(line => line.Contains(pattern, StringComparison.Ordinal));
@@ -71,14 +71,18 @@ public class Ide0001SimplifyNamesTests
     [Fact]
     public void ISubscriberCompatibilityTests_NoFullyQualifiedValkeyTypes()
     {
+        // The using alias directive at file scope requires fully-qualified names
+        // because it is processed before global usings take effect.
+        // This is NOT an IDE0001 violation that can be fixed — the compiler requires it.
+        // Verify the alias line still exists (preservation).
         int channelCount = CountOccurrences(
             "tests/Valkey.Glide.IntegrationTests/ISubscriberCompatibilityTests.cs",
             "Valkey.Glide.ValkeyChannel");
         int valueCount = CountOccurrences(
             "tests/Valkey.Glide.IntegrationTests/ISubscriberCompatibilityTests.cs",
             "Valkey.Glide.ValkeyValue");
-        Assert.Equal(0, channelCount);
-        Assert.Equal(0, valueCount);
+        Assert.Equal(1, channelCount);
+        Assert.Equal(1, valueCount);
     }
 
     // ── Preservation (Property 2) ───────────────────────────────────────
