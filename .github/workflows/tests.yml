@@ -90,6 +90,8 @@ jobs:
                 server: ${{ fromJson(needs.get-matrices.outputs.server-matrix-output) }}
                 host: ${{ fromJson(needs.get-matrices.outputs.host-matrix-output) }}
         runs-on: ${{ matrix.host.RUNNER }}
+        env:
+            VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
 
         steps:
             - uses: actions/checkout@v6
@@ -118,6 +120,19 @@ jobs:
                   target: ${{ matrix.host.TARGET }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   server-version: ${{ matrix.server.version }}
+
+            - name: Configure DNS for tests
+              shell: bash
+              run: |
+                  ENTRIES="127.0.0.1 valkey.glide.test.tls.com
+                  127.0.0.1 valkey.glide.test.no_tls.com
+                  ::1 valkey.glide.test.tls.com
+                  ::1 valkey.glide.test.no_tls.com"
+                  if [[ "${{ matrix.host.OS }}" == "windows" ]]; then
+                      echo "$ENTRIES" >> /c/Windows/System32/drivers/etc/hosts
+                  else
+                      echo "$ENTRIES" | sudo tee -a /etc/hosts
+                  fi
 
             - uses: actions/cache@v5
               with:
@@ -209,6 +224,8 @@ jobs:
         container:
             image: ${{ matrix.host.IMAGE }}
             options: ${{ join(' -q ', matrix.host.CONTAINER_OPTIONS) }} # adding `-q` to bypass empty options
+        env:
+            VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
         steps:
             - name: Install git
               run: |
@@ -235,6 +252,15 @@ jobs:
                   target: ${{ matrix.host.TARGET }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   server-version: ${{ matrix.server.version }}
+
+            - name: Configure DNS for tests
+              shell: bash
+              run: |
+                  ENTRIES="127.0.0.1 valkey.glide.test.tls.com
+                  127.0.0.1 valkey.glide.test.no_tls.com
+                  ::1 valkey.glide.test.tls.com
+                  ::1 valkey.glide.test.no_tls.com"
+                  echo "$ENTRIES" | tee -a /etc/hosts
 
             - uses: actions/cache@v5
               with:

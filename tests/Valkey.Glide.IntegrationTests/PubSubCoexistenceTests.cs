@@ -1,6 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -29,7 +32,7 @@ public class PubSubCoexistenceTests
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task CustomPublishCommand_WithPubSub_WorksCorrectly(bool isCluster)
     {
         var message = BuildMessage();

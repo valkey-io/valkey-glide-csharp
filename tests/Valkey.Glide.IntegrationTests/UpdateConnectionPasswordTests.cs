@@ -25,7 +25,7 @@ public class UpdateConnectionPasswordTests()
 
         // Update password, kill clients, and verify reconnection.
         await server.SetPasswordAsync(Password);
-        await server.KillClientAsync();
+        await server.KillClientsAsync();
         await AssertReconnected(client);
 
         // Clear password and verify connection.
@@ -34,7 +34,7 @@ public class UpdateConnectionPasswordTests()
 
         // Clear password, kill clients, and verify reconnection.
         await server.ClearPasswordAsync();
-        await server.KillClientAsync();
+        await server.KillClientsAsync();
         await AssertReconnected(client);
     }
 
@@ -53,7 +53,7 @@ public class UpdateConnectionPasswordTests()
 
         // Clear passwords, kill clients, and verify reconnection.
         await server.ClearPasswordAsync();
-        await server.KillClientAsync();
+        await server.KillClientsAsync();
         await AssertConnected(client);
     }
 

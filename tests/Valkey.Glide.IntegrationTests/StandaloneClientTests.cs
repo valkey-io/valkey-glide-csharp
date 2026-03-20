@@ -6,6 +6,7 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.TestUtils.Client;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -92,8 +93,8 @@ public class StandaloneClientTests(TestConfiguration config)
         );
 
         string key3 = Guid.NewGuid().ToString();
-        await client.CustomCommand(["xadd", key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
-        await client.CustomCommand(["xadd", key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
+        _ = await client.CustomCommand(["xadd", key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
+        _ = await client.CustomCommand(["xadd", key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
         _ = Assert.IsType<Dictionary<gs, object?>>((await client.CustomCommand(["xread", "streams", key3, "stream", "0-1", "0-2"]))!);
         _ = Assert.IsType<Dictionary<gs, object?>>((await client.CustomCommand(["xinfo", "stream", key3, "full"]))!);
     }
@@ -120,10 +121,10 @@ public class StandaloneClientTests(TestConfiguration config)
         Assert.Equal([true, true, false], db.Execute("smismember", [key2, "a", "b", "d"]).AsBooleanArray()!);
 
         string key3 = Guid.NewGuid().ToString();
-        await db.ExecuteAsync("xadd", [key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
-        await db.ExecuteAsync("xadd", [key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
-        await db.ExecuteAsync("xread", ["streams", key3, "stream", "0-1", "0-2"]);
-        await db.ExecuteAsync("xinfo", ["stream", key3, "full"]);
+        _ = await db.ExecuteAsync("xadd", [key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
+        _ = await db.ExecuteAsync("xadd", [key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
+        _ = await db.ExecuteAsync("xread", ["streams", key3, "stream", "0-1", "0-2"]);
+        _ = await db.ExecuteAsync("xinfo", ["stream", key3, "full"]);
     }
 
     [Fact]
@@ -208,7 +209,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Switching to a valid database causes issue to tests running in parallel. So instead, we test
         // that using an invalid value to ensure different values can still be sent through.
-        await Assert.ThrowsAsync<RequestException>(async () => await client.SelectAsync(-1));
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.SelectAsync(-1));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -233,7 +234,7 @@ public class StandaloneClientTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
 
-        await client.StringSetAsync(key, "val");
+        _ = await client.StringSetAsync(key, "val");
         Assert.True(await client.KeyCopyAsync(key, key2, 1));
         Assert.True(await client.KeyMoveAsync(key, 2));
     }
@@ -256,7 +257,7 @@ public class StandaloneClientTests(TestConfiguration config)
         _ = batch.StringSet(sourceKey, value);
         _ = batch.StringSet(moveKey, value);
 
-        Batch batch2 = new Batch(isAtomic);
+        Batch batch2 = new(isAtomic);
 
         // Test KeyCopy with database parameter
         _ = batch2.KeyCopy(sourceKey, destKey, 1, false);
@@ -286,7 +287,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Test getting specific configuration
         var maxMemoryConfig = await client.ConfigGetAsync("maxmemory-policy");
-        Assert.Single(maxMemoryConfig);
+        _ = Assert.Single(maxMemoryConfig);
         Assert.Equal("maxmemory-policy", maxMemoryConfig[0].Key);
         Assert.NotEmpty(maxMemoryConfig[0].Value);
 
@@ -360,7 +361,7 @@ public class StandaloneClientTests(TestConfiguration config)
         }
 
         // Test invalid parameters (like Go test TestConfigSetAndGet_invalidArgs)
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.ConfigSetAsync((ValkeyValue)"invalid-config-param", (ValkeyValue)"value"));
     }
 
@@ -383,7 +384,7 @@ public class StandaloneClientTests(TestConfiguration config)
         catch (Exception ex)
         {
             // The test environment may not have a config file, verify error matches
-            ex.Message.Contains("The server is running without a config file");
+            _ = ex.Message.Contains("The server is running without a config file");
         }
     }
 
@@ -400,7 +401,7 @@ public class StandaloneClientTests(TestConfiguration config)
             Assert.True(initialSize >= 0);
 
             // Add a key
-            await client.StringSetAsync(key, "test-value");
+            _ = await client.StringSetAsync(key, "test-value");
 
             // Size should increase
             long newSize = await client.DatabaseSizeAsync();
@@ -413,13 +414,13 @@ public class StandaloneClientTests(TestConfiguration config)
             }
             catch (Exception ex)
             {
-                Assert.IsType<ArgumentException>(ex);
+                _ = Assert.IsType<ArgumentException>(ex);
             }
 
         }
         finally
         {
-            await client.KeyDeleteAsync(key);
+            _ = await client.KeyDeleteAsync(key);
         }
     }
 
@@ -489,7 +490,7 @@ public class StandaloneClientTests(TestConfiguration config)
         Assert.Equal(initialCount, connectCount);
 
         // First command establishes connection.
-        await lazyClient.PingAsync();
+        _ = await lazyClient.PingAsync();
 
         var commandCount = await GetConnectionCount(referenceClient);
         Assert.True(connectCount < commandCount);
@@ -512,5 +513,18 @@ public class StandaloneClientTests(TestConfiguration config)
 
         var connectCount = await GetConnectionCount(referenceClient);
         Assert.True(initialCount < connectCount);
+    }
+
+    [Theory]
+    [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
+    public async Task Connect_WithIpAddress_Succeeds(string address)
+    {
+        using var server = new StandaloneServer(useTls: false);
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
+            .WithAddress(address, port);
+
+        await using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await AssertConnected(client);
     }
 }

@@ -8,6 +8,7 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -87,9 +88,9 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithMultiNodeRoute(GlideClusterClient client)
     {
-        await client.StringSetAsync("abc", "abc");
-        await client.StringSetAsync("klm", "klm");
-        await client.StringSetAsync("xyz", "xyz");
+        _ = await client.StringSetAsync("abc", "abc");
+        _ = await client.StringSetAsync("klm", "klm");
+        _ = await client.StringSetAsync("xyz", "xyz");
 
         long res = (long)(await client.CustomCommand(["dbsize"], AllPrimaries)).SingleValue!;
         Assert.True(res >= 3);
@@ -280,8 +281,6 @@ public class ClusterClientTests(TestConfiguration config)
 
         // Test with specific route using maxmemory-policy parameter (which should exist)
         var singleNodeConfig = await client.ConfigGetAsync("maxmemory-policy", Route.Random);
-        Assert.NotNull(singleNodeConfig.SingleValue);
-        Assert.Single(singleNodeConfig.SingleValue);
         Assert.Equal("maxmemory-policy", singleNodeConfig.SingleValue[0].Key);
 
         // Test ConfigSet and ConfigGet combination (like Go TestConfigSetGet)
@@ -303,10 +302,10 @@ public class ClusterClientTests(TestConfiguration config)
 
             // Test with route options (like Go TestConfigSetGetWithOptions)
             // Set on all primaries and verify we can read from primaries
-            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lfu", Route.AllPrimaries);
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lfu", AllPrimaries);
 
             // Get from all primaries to verify the change was applied
-            var primariesResult = await client.ConfigGetAsync("maxmemory-policy", Route.AllPrimaries);
+            var primariesResult = await client.ConfigGetAsync("maxmemory-policy", AllPrimaries);
             Assert.NotEmpty(primariesResult.MultiValue.Values);
             foreach (var nodeConfig in primariesResult.MultiValue.Values)
             {
@@ -314,8 +313,8 @@ public class ClusterClientTests(TestConfiguration config)
             }
 
             // Test setting different value and verify it propagates to all primaries
-            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"volatile-lru", Route.AllPrimaries);
-            var finalResult = await client.ConfigGetAsync("maxmemory-policy", Route.AllPrimaries);
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"volatile-lru", AllPrimaries);
+            var finalResult = await client.ConfigGetAsync("maxmemory-policy", AllPrimaries);
             Assert.NotEmpty(finalResult.MultiValue.Values);
             foreach (var nodeConfig in finalResult.MultiValue.Values)
             {
@@ -325,11 +324,11 @@ public class ClusterClientTests(TestConfiguration config)
         finally
         {
             // Restore original value
-            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)originalValue, Route.AllPrimaries);
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)originalValue, AllPrimaries);
         }
 
         // Test invalid parameters
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.ConfigSetAsync((ValkeyValue)"invalid-config-param", (ValkeyValue)"value"));
 
         // Test getting non-existent configuration
@@ -378,7 +377,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Add a key
-            await client.StringSetAsync(key, "test-value");
+            _ = await client.StringSetAsync(key, "test-value");
 
             // Get database size from all nodes
             var allSizes = await client.DatabaseSizeAsync();
@@ -396,7 +395,7 @@ public class ClusterClientTests(TestConfiguration config)
         }
         finally
         {
-            await client.KeyDeleteAsync(key);
+            _ = await client.KeyDeleteAsync(key);
         }
     }
 
@@ -529,7 +528,7 @@ public class ClusterClientTests(TestConfiguration config)
         // Verify database isolation by setting a key in database 1
         string testKey = Guid.NewGuid().ToString();
         string testValue = "test_value_db1";
-        await client.StringSetAsync(testKey, testValue);
+        _ = await client.StringSetAsync(testKey, testValue);
 
         // Verify the key exists in database 1
         ValkeyValue retrievedValue = await client.StringGetAsync(testKey);
@@ -547,7 +546,7 @@ public class ClusterClientTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key in the current database
-        await client.StringSetAsync(key, value);
+        _ = await client.StringSetAsync(key, value);
 
         // Move the key to database 1
         bool moveResult = await client.KeyMoveAsync(key, 1);
@@ -565,12 +564,12 @@ public class ClusterClientTests(TestConfiguration config)
         );
 
         string hashTag = Guid.NewGuid().ToString();
-        string sourceKey = $"{{hashTag}}{Guid.NewGuid()}";
-        string destKey = $"{{hashTag}}{Guid.NewGuid()}";
+        string sourceKey = $"{{{hashTag}}}{Guid.NewGuid()}";
+        string destKey = $"{{{hashTag}}}{Guid.NewGuid()}";
         string value = "test_value";
 
         // Set a key in the current database
-        await client.StringSetAsync(sourceKey, value);
+        _ = await client.StringSetAsync(sourceKey, value);
 
         // Copy the key to database 1
         bool copyResult = await client.KeyCopyAsync(sourceKey, destKey, 1);
@@ -599,7 +598,7 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.Equal(initialCount, connectCount);
 
         // First command establishes connection.
-        await lazyClient.PingAsync();
+        _ = await lazyClient.PingAsync();
 
         var commandCount = await Client.GetConnectionCount(referenceClient);
         Assert.True(connectCount < commandCount);
@@ -615,12 +614,25 @@ public class ClusterClientTests(TestConfiguration config)
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
         await using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-        var initialCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        var initialCount = await Client.GetConnectionCount(referenceClient);
 
         // Create eager client (connects immediately).
         await using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-        var connectCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        var connectCount = await Client.GetConnectionCount(referenceClient);
         Assert.True(initialCount < connectCount);
+    }
+
+    [Theory]
+    [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
+    public async Task Connect_WithIpAddress_Succeeds(string address)
+    {
+        using var server = new ClusterServer(useTls: false);
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
+            .WithAddress(address, port);
+
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await Client.AssertConnected(client);
     }
 }

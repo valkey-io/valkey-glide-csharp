@@ -1,6 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -36,7 +39,7 @@ public class PubSubQueueTests
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task Queue_WithHighVolume_HandlesAllMessages(bool isCluster)
     {
         var channel = BuildChannel();
