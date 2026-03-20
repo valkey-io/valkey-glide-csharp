@@ -20,7 +20,7 @@ internal partial class Request
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
-        return new(RequestType.EvalSha, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
+        return new(RequestType.EvalSha, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ internal partial class Request
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
-        return new(RequestType.Eval, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
+        return new(RequestType.Eval, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
     // ===== Script Management =====
@@ -87,7 +87,7 @@ internal partial class Request
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
-        return new(RequestType.FCall, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
+        return new(RequestType.FCall, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ internal partial class Request
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
-        return new(RequestType.FCallReadOnly, [.. cmdArgs], true, o => ValkeyResult.Create(o), allowConverterToHandleNull: true);
+        return new(RequestType.FCallReadOnly, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
     // ===== Function Management =====
@@ -503,7 +503,6 @@ internal partial class Request
 
     private static void ParseEngineData(string engineName, object value, Dictionary<string, EngineStats> engines)
     {
-        string? language = null;
         long functionCount = 0;
         long libraryCount = 0;
 
@@ -527,7 +526,7 @@ internal partial class Request
             }
         }
 
-        language = engineName; // Engine name is the language
+        string? language = engineName;
         engines[engineName] = new EngineStats(language, functionCount, libraryCount);
     }
 
