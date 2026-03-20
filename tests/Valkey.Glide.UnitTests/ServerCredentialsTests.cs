@@ -4,11 +4,19 @@ namespace Valkey.Glide.UnitTests;
 
 public class ServerCredentialsTests
 {
-    // Test constants
-    private const string Username = "testUsername";
-    private const string Password = "testPassword";
-    private const string ClusterName = "testClusterName";
-    private const string Region = "testRegion";
+    #region Constants
+
+    private static readonly string Username = "USERNAME";
+    private static readonly string Password = "PASSWORD";
+
+    private static readonly IamAuthConfig IamAuthConfig = new(
+        clusterName: "CLUSTER_NAME",
+        serviceType: ServiceType.ElastiCache,
+        region: "REGION",
+        refreshIntervalSeconds: IamAuthConfig.MinRefreshIntervalSeconds + 1);
+
+    #endregion
+    #region Tests
 
     [Fact]
     public void ServerCredentials_UsernamePassword()
@@ -35,39 +43,52 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_UsernameIamAuthConfig()
     {
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
-        var credentials = new ServerCredentials(Username, iamConfig);
+        var credentials = new ServerCredentials(Username, IamAuthConfig);
 
         Assert.Equal(Username, credentials.Username);
         Assert.Null(credentials.Password);
-        Assert.Equal(ClusterName, credentials.IamConfig!.ClusterName);
-        Assert.Equal(ServiceType.ElastiCache, credentials.IamConfig!.ServiceType);
-        Assert.Equal(Region, credentials.IamConfig!.Region);
-        Assert.Null(credentials.IamConfig!.RefreshIntervalSeconds);
         Assert.True(credentials.IsIamAuth());
-    }
-
-    [Fact]
-    public void ServerCredentials_UsernameIamAuthConfigWithCustomRefresh()
-    {
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, 600);
-        var credentials = new ServerCredentials("iamUser", iamConfig);
-
-        Assert.Equal(ServiceType.MemoryDB, credentials.IamConfig!.ServiceType);
-        Assert.Equal(600u, credentials.IamConfig!.RefreshIntervalSeconds);
-        Assert.True(credentials.IsIamAuth());
+        Assert.Equal(IamAuthConfig, credentials.IamConfig);
     }
 
     [Fact]
     public void ServerCredentials_ThrowsArgumentNullException()
     {
         // Password-based authentication.
-        Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!));
-        Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
 
         // IAM authentication.
-        var iamConfig = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
-        Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamConfig));
-        Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, IamAuthConfig));
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
     }
+
+    [Fact]
+    public void ToString_PasswordAuth_OmitsSensitiveInfo()
+    {
+        var credentials = new ServerCredentials(Username, Password);
+        string result = credentials.ToString();
+
+        // Verify that string representation contains the username
+        // but omits sensitive information (password).
+        Assert.Contains(Username, result);
+        Assert.DoesNotContain(Password, result);
+    }
+
+    [Fact]
+    public void ToString_UsernameIamAuthConfig_OmitsSensitiveInfo()
+    {
+        var credentials = new ServerCredentials(Username, IamAuthConfig);
+        string result = credentials.ToString();
+
+        // Verify that string representation contains the username
+        // but omits sensitive information (cluster name, region, and refresh interval).
+        // See also <see cref="IamAuthConfigTests.ToString_OmitsSensitiveInfo"/>.
+        Assert.Contains(Username, result);
+        Assert.DoesNotContain(IamAuthConfig.ClusterName, result);
+        Assert.DoesNotContain(IamAuthConfig.Region, result);
+        Assert.DoesNotContain(IamAuthConfig.RefreshIntervalSeconds!.Value.ToString(), result);
+    }
+
+    #endregion
 }

@@ -97,7 +97,7 @@ public static class OpenTelemetry
                 throw new InvalidOperationException("OpenTelemetry traces not initialized");
             }
 
-            s_config.Traces.SetSamplePercentage(percentage);
+            s_config.Traces.SamplePercentage = percentage;
         }
     }
 
@@ -113,7 +113,7 @@ public static class OpenTelemetry
         }
 
         var percentage = GetSamplePercentage();
-        return (Random.Shared.Next(100)) < percentage;
+        return Random.Shared.Next(100) < percentage;
     }
 
     /// <summary>
