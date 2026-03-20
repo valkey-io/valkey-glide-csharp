@@ -11,70 +11,90 @@ public abstract class Server : IDisposable
 {
     #region Constants
 
-    // Timeout for client connection and reconnection attempts.
-    // Use a longer timeout to allows for slower connections in CI environments.
+    /// <summary>
+    /// Timeout for client connection and reconnection attempts.
+    /// Use a longer timeout to allow for slower connections in CI environments.
+    /// </summary>
     protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(10);
 
-    // Custom command arguments to kill all normal clients.
+    /// <summary>
+    /// Custom command arguments to kill all normal clients.
+    /// </summary>
     protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
 
     #endregion
-    #region PrivateFields
+    #region Fields
 
     /// <summary>
     /// Name of the server.
     /// </summary>
     private readonly string _name = $"Server_{Guid.NewGuid():N}";
 
-    #endregion
-    #region ProtectedFields
-
     /// <summary>
-    /// Addresses of the server instances.
+    /// Indicates whether the server has been stopped.
+    /// See <see cref="Dispose" />.
     /// </summary>
-    public IList<Address> Addresses { get; private set; }
-
-    /// <summary>
-    /// Indicates whether the server uses TLS.
-    /// </summary>
-    protected bool _useTls = false;
+    private bool _disposed = false;
 
     /// <summary>
     /// Password for the server.
     /// </summary>
     protected string? _password;
 
+    #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// Addresses of the server instances.
+    /// </summary>
+    public IList<Address> Addresses { get; init; }
+
+    /// <summary>
+    /// Indicates whether the server uses TLS.
+    /// </summary>
+    public bool UseTls { get; init; }
+
     /// <summary>
     /// Certificate data path for the server.
     /// </summary>
-    public string? CertificatePath { get; private set; } = null;
+    public string? CertificatePath { get; private set; }
 
     /// <summary>
     /// Certificate data for the server.
     /// </summary>
-    public byte[]? CertificateData { get; private set; } = null;
-
-    /// <summary>
-    /// Indicates whether the server has been stopped.
-    /// </summary>
-    private bool _disposed = false;
+    public byte[]? CertificateData { get; private set; }
 
     #endregion
+    #region Constructors
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Server"/> class.
+    /// </summary>
+    /// <param name="useClusterMode">Whether to start in cluster mode.</param>
+    /// <param name="useTls">Whether to enable TLS.</param>
     protected Server(bool useClusterMode, bool useTls)
     {
-        _useTls = useTls;
-        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: _useTls);
+        UseTls = useTls;
+        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls);
 
-        if (_useTls)
+        if (UseTls)
         {
             CertificatePath = ServerManager.ServerCertificatePath;
             CertificateData = File.ReadAllBytes(CertificatePath);
         }
     }
 
+    /// <summary>
+    /// Finalizer.
+    /// </summary>
     ~Server() => Dispose();
 
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Stops the server.
+    /// </summary>
     public void Dispose()
     {
         if (_disposed)
@@ -106,7 +126,9 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Kill all normal clients on the server.
     /// </summary>
-    public abstract Task KillClientAsync();
+    public abstract Task KillClientsAsync();
+
+    #endregion
 }
 
 /// <summary>
@@ -114,6 +136,8 @@ public abstract class Server : IDisposable
 /// </summary>
 public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: true, useTls: useTls)
 {
+    #region Public Methods
+
     /// <summary>
     /// Builds and returns a cluster client configuration builder for this server.
     /// </summary>
@@ -121,9 +145,14 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     {
         ClusterClientConfigurationBuilder configBuilder = new()
         {
-            UseTls = useTls,
+            UseTls = UseTls,
             ConnectionTimeout = ConnectionTimeout
         };
+
+        if (UseTls)
+        {
+            _ = configBuilder.WithTrustedCertificate(CertificateData!);
+        }
 
         if (_password is not null)
         {
@@ -138,7 +167,6 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
         return configBuilder;
     }
 
-    /// <inheritdoc/>
     public override async Task<BaseClient> CreateClientAsync()
         => await CreateClusterClientAsync();
 
@@ -162,11 +190,13 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
         _password = null;
     }
 
-    public override async Task KillClientAsync()
+    public override async Task KillClientsAsync()
     {
         using GlideClusterClient client = await CreateClusterClientAsync();
         _ = await client.CustomCommand(KillClientArgs);
     }
+
+    #endregion
 }
 
 /// <summary>
@@ -174,6 +204,8 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
 /// </summary>
 public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMode: false, useTls: useTls)
 {
+    #region Public Methods
+
     /// <summary>
     /// Builds and returns a standalone client configuration builder for this server.
     /// </summary>
@@ -181,9 +213,14 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     {
         StandaloneClientConfigurationBuilder configBuilder = new()
         {
-            UseTls = useTls,
+            UseTls = UseTls,
             ConnectionTimeout = ConnectionTimeout
         };
+
+        if (UseTls)
+        {
+            _ = configBuilder.WithTrustedCertificate(CertificateData!);
+        }
 
         if (_password is not null)
         {
@@ -198,7 +235,6 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
         return configBuilder;
     }
 
-    /// <inheritdoc/>
     public override async Task<BaseClient> CreateClientAsync()
         => await CreateStandaloneClientAsync();
 
@@ -222,9 +258,11 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
         _password = null;
     }
 
-    public override async Task KillClientAsync()
+    public override async Task KillClientsAsync()
     {
         using GlideClient client = await CreateStandaloneClientAsync();
         _ = await client.CustomCommand(KillClientArgs);
     }
+
+    #endregion
 }
