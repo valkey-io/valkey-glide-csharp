@@ -15,7 +15,7 @@ public abstract class Server : IDisposable
     /// Timeout for client connection and reconnection attempts.
     /// Use a longer timeout to allow for slower connections in CI environments.
     /// </summary>
-    protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Custom command arguments to kill all normal clients.
