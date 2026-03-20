@@ -52,7 +52,8 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     private async Task<ValkeyResult> ScriptInvokeInternalAsync(
         string hash,
         string[]? keys,
-        string[]? args)
+        string[]? args,
+        Route? route = null)
     {
         // Convert hash to C string
         IntPtr hashPtr = Marshal.StringToHGlobalAnsi(hash);
@@ -73,9 +74,9 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             // Prepare args
             ulong argsCount = PrepareStringArrayForFFI(args, out argPtrs, out argsPtr, out argsLenPtr);
 
-            // Prepare route (null for now)
-            IntPtr routePtr = IntPtr.Zero;
-            ulong routeLen = 0;
+            // Prepare route
+            using FFI.Route? ffiRoute = route?.ToFfi();
+            IntPtr routePtr = ffiRoute?.ToPtr() ?? IntPtr.Zero;
 
             // Call FFI
             Message message = MessageContainer.GetMessageForCall();
@@ -90,7 +91,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
                 argsPtr,
                 argsLenPtr,
                 routePtr,
-                routeLen);
+                routePtr != IntPtr.Zero ? 1UL : 0UL);
 
             // Wait for response
             IntPtr response = await message;

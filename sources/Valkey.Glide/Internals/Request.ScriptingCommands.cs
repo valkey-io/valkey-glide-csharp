@@ -526,8 +526,7 @@ internal partial class Request
             }
         }
 
-        string? language = engineName;
-        engines[engineName] = new EngineStats(language, functionCount, libraryCount);
+        engines[engineName] = new EngineStats(engineName, functionCount, libraryCount);
     }
 
     private static void ProcessEngineField(string engineKey, object engineValue, ref long functionCount, ref long libraryCount)
