@@ -34,7 +34,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     ///     <b>TLS</b>: If <see cref="ClientConfigurationBuilder{T}.UseTls" /> is set to <see langword="true" />, the client will establish a secure connection using <c>TLS</c>.
     ///   </item>
     ///   <item>
-    ///     <b>Reconnection Strategy</b>: The <see cref="RetryStrategy" /> settings define how the client will attempt to reconnect in case of disconnections.
+    ///     <b>Reconnection Strategy</b>: The <see cref="BackoffStrategy" /> settings define how the client will attempt to reconnect in case of disconnections.
     ///   </item>
     /// </list>
     /// <example>
@@ -48,7 +48,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     ///     .WithDataBaseId(1)
     ///     .WithAuthentication("user1", "passwordA")
     ///     .WithTls()
-    ///     .WithConnectionRetryStrategy(5, 100, 2)
+    ///     .WithReconnectStrategy(5, 100, 2)
     ///     .Build();
     /// await using GlideClient client = await GlideClient.CreateClient(config);
     /// </code>

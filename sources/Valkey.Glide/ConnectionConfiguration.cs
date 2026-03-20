@@ -25,7 +25,7 @@ public abstract class ConnectionConfiguration
         public TimeSpan? RequestTimeout;
         public TimeSpan? ConnectionTimeout;
         public ReadFrom? ReadFrom;
-        public RetryStrategy? RetryStrategy;
+        public BackoffStrategy? ReconnectStrategy;
         public AuthenticationInfo? AuthenticationInfo;
         public uint DatabaseId;
         public Protocol? Protocol;
@@ -45,7 +45,7 @@ public abstract class ConnectionConfiguration
                 (uint?)RequestTimeout?.TotalMilliseconds,
                 (uint?)ConnectionTimeout?.TotalMilliseconds,
                 ReadFrom,
-                RetryStrategy,
+                ReconnectStrategy,
                 AuthenticationInfo,
                 DatabaseId,
                 Protocol,
@@ -72,7 +72,7 @@ public abstract class ConnectionConfiguration
     /// <param name="exponentBase"><inheritdoc cref="ExponentBase" path="/summary" /></param>
     /// <param name="jitterPercent"><inheritdoc cref="JitterPercent" path="/summary" /></param>
     [StructLayout(LayoutKind.Sequential)]
-    public struct RetryStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
+    public struct BackoffStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
     {
         /// <summary>
         /// Number of retry attempts that the client should perform when disconnected from the server,
@@ -202,7 +202,7 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Configuration for a standalone client. <br />
     /// Use <see cref="StandaloneClientConfigurationBuilder" /> or
-    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, RetryStrategy?, string?, string?, uint?, Protocol?, string?, bool)" /> to create an instance.
+    /// <see cref="StandaloneClientConfiguration(List{ValueTuple{string?, ushort?}}, bool?, TimeSpan?, TimeSpan?, ReadFrom?, BackoffStrategy?, string?, string?, uint?, Protocol?, string?, bool)" /> to create an instance.
     /// </summary>
     public sealed class StandaloneClientConfiguration : BaseClientConfiguration
     {
@@ -216,7 +216,7 @@ public abstract class ConnectionConfiguration
         /// <param name="requestTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.RequestTimeout" path="/summary" /></param>
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
-        /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
+        /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ReconnectStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
@@ -229,7 +229,7 @@ public abstract class ConnectionConfiguration
             TimeSpan? requestTimeout = null,
             TimeSpan? connectionTimeout = null,
             ReadFrom? readFrom = null,
-            RetryStrategy? retryStrategy = null,
+            BackoffStrategy? retryStrategy = null,
             string? username = null,
             string? password = null,
             uint? databaseId = null,
@@ -244,7 +244,7 @@ public abstract class ConnectionConfiguration
             _ = requestTimeout.HasValue ? builder.RequestTimeout = requestTimeout.Value : new();
             _ = connectionTimeout.HasValue ? builder.ConnectionTimeout = connectionTimeout.Value : new();
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
-            _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
+            _ = retryStrategy.HasValue ? builder.ReconnectStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
@@ -269,7 +269,7 @@ public abstract class ConnectionConfiguration
         /// <param name="requestTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.RequestTimeout" path="/summary" /></param>
         /// <param name="connectionTimeout"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionTimeout" path="/summary" /></param>
         /// <param name="readFrom"><inheritdoc cref="ClientConfigurationBuilder{T}.ReadFrom" path="/summary" /></param>
-        /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
+        /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ReconnectStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
         /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
@@ -282,7 +282,7 @@ public abstract class ConnectionConfiguration
             TimeSpan? requestTimeout = null,
             TimeSpan? connectionTimeout = null,
             ReadFrom? readFrom = null,
-            RetryStrategy? retryStrategy = null,
+            BackoffStrategy? retryStrategy = null,
             string? username = null,
             string? password = null,
             uint? databaseId = null,
@@ -297,7 +297,7 @@ public abstract class ConnectionConfiguration
             _ = requestTimeout.HasValue ? builder.RequestTimeout = requestTimeout.Value : new();
             _ = connectionTimeout.HasValue ? builder.ConnectionTimeout = connectionTimeout.Value : new();
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
-            _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
+            _ = retryStrategy.HasValue ? builder.ReconnectStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
             _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
@@ -707,28 +707,28 @@ public abstract class ConnectionConfiguration
         }
 
         #endregion
-        #region Connection Retry Strategy
+        #region Reconnect Strategy
 
         /// <summary>
         /// Strategy used to determine how and when to reconnect, in case of connection failures.<br />
-        /// See also <seealso cref="RetryStrategy" />
+        /// See also <seealso cref="BackoffStrategy" />
         /// </summary>
-        public RetryStrategy ConnectionRetryStrategy
+        public BackoffStrategy ReconnectStrategy
         {
-            set => Config.RetryStrategy = value;
+            set => Config.ReconnectStrategy = value;
         }
 
-        /// <inheritdoc cref="ConnectionRetryStrategy" />
-        public T WithConnectionRetryStrategy(RetryStrategy connectionRetryStrategy)
+        /// <inheritdoc cref="ReconnectStrategy" />
+        public T WithReconnectStrategy(BackoffStrategy connectionRetryStrategy)
         {
-            ConnectionRetryStrategy = connectionRetryStrategy;
+            ReconnectStrategy = connectionRetryStrategy;
             return (T)this;
         }
 
-        /// <inheritdoc cref="ConnectionRetryStrategy" />
-        /// <inheritdoc cref="RetryStrategy(uint, uint, uint, uint?)" />
-        public T WithConnectionRetryStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
-            => WithConnectionRetryStrategy(new RetryStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
+        /// <inheritdoc cref="ReconnectStrategy" />
+        /// <inheritdoc cref="BackoffStrategy(uint, uint, uint, uint?)" />
+        public T WithReconnectStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
+            => WithReconnectStrategy(new BackoffStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
 
         #endregion
         #region DataBase ID

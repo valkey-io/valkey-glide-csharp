@@ -207,7 +207,7 @@ internal partial class FFI
             uint? requestTimeout,
             uint? connectionTimeout,
             ReadFrom? readFrom,
-            RetryStrategy? retryStrategy,
+            BackoffStrategy? reconnectStrategy,
             AuthenticationInfo? authenticationInfo,
             uint databaseId,
             ConnectionConfiguration.Protocol? protocol,
@@ -232,8 +232,8 @@ internal partial class FFI
                 ConnectionTimeout = connectionTimeout ?? default,
                 HasReadFrom = readFrom.HasValue,
                 ReadFrom = readFrom ?? default,
-                HasConnectionRetryStrategy = retryStrategy.HasValue,
-                ConnectionRetryStrategy = retryStrategy ?? default,
+                HasReconnectStrategy = reconnectStrategy.HasValue,
+                ReconnectStrategy = reconnectStrategy ?? default,
                 HasAuthenticationInfo = authenticationInfo.HasValue,
                 AuthenticationInfo = authenticationInfo ?? default,
                 DatabaseId = databaseId,
@@ -1091,8 +1091,8 @@ internal partial class FFI
         public ReadFrom ReadFrom;
 
         [MarshalAs(UnmanagedType.U1)]
-        public bool HasConnectionRetryStrategy;
-        public RetryStrategy ConnectionRetryStrategy;
+        public bool HasReconnectStrategy;
+        public BackoffStrategy ReconnectStrategy;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasAuthenticationInfo;

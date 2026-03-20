@@ -62,8 +62,8 @@ pub struct ConnectionConfig {
     pub connection_timeout: u32,
     pub has_read_from: bool,
     pub read_from: ReadFrom,
-    pub has_connection_retry_strategy: bool,
-    pub connection_retry_strategy: ConnectionRetryStrategy,
+    pub has_reconnect_strategy: bool,
+    pub reconnect_strategy: ConnectionRetryStrategy,
     pub has_authentication_info: bool,
     pub authentication_info: AuthenticationInfo,
     pub database_id: u32,
@@ -240,8 +240,8 @@ pub(crate) unsafe fn create_connection_request(
             .has_connection_timeout
             .then_some(config.connection_timeout),
         connection_retry_strategy: config
-            .has_connection_retry_strategy
-            .then_some(config.connection_retry_strategy),
+            .has_reconnect_strategy
+            .then_some(config.reconnect_strategy),
         lazy_connect: config.lazy_connect,
         refresh_topology_from_initial_nodes: config.refresh_topology_from_initial_nodes,
         pubsub_subscriptions: Some(unsafe { convert_pubsub_config(&config.pubsub_config) }),
@@ -252,7 +252,8 @@ pub(crate) unsafe fn create_connection_request(
                 config.root_certs_len,
             )
         },
-        pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
+        pubsub_reconciliation_interval_ms: config
+            .has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
         read_only: config.read_only,
 

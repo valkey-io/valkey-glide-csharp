@@ -91,7 +91,7 @@ public sealed class ConfigurationOptions : ICloneable
     #region Private fields
     private bool? _ssl;
     private Proxy? _proxy;
-    private RetryStrategy? _reconnectRetryPolicy;
+    private BackoffStrategy? _reconnectRetryPolicy;
     #endregion
 
     #region Internal fields
@@ -238,7 +238,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// The retry policy to be used for connection reconnects.
     /// </summary>
-    public RetryStrategy? ReconnectRetryPolicy
+    public BackoffStrategy? ReconnectRetryPolicy
     {
         get => _reconnectRetryPolicy;
         set => _reconnectRetryPolicy = value;

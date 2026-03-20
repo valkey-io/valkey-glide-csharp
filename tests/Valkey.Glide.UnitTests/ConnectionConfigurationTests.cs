@@ -528,19 +528,19 @@ public class ConnectionConfigurationTests
     #region Connection Retry Strategy Tests
 
     [Fact]
-    public void WithConnectionRetryStrategy_Standalone_NotSpecified()
+    public void WithReconnectStrategy_Standalone_NotSpecified()
     {
         var config = new StandaloneClientConfigurationBuilder().Build();
-        Assert.Null(config.Request.RetryStrategy);
+        Assert.Null(config.Request.ReconnectStrategy);
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Standalone_RetryStrategy_NoJitter()
+    public void WithReconnectStrategy_Standalone_BackoffStrategy_NoJitter()
     {
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase));
+            .WithReconnectStrategy(new BackoffStrategy(NumberOfRetries, Factor, ExponentBase));
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -548,12 +548,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Standalone_RetryStrategy_WithJitter()
+    public void WithReconnectStrategy_Standalone_BackoffStrategy_WithJitter()
     {
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
+            .WithReconnectStrategy(new BackoffStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -561,12 +561,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Standalone_UintParams_NoJitter()
+    public void WithReconnectStrategy_Standalone_UintParams_NoJitter()
     {
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase);
+            .WithReconnectStrategy(NumberOfRetries, Factor, ExponentBase);
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -574,12 +574,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Standalone_UintParams_WithJitter()
+    public void WithReconnectStrategy_Standalone_UintParams_WithJitter()
     {
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
+            .WithReconnectStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -587,19 +587,19 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Cluster_NotSpecified()
+    public void WithReconnectStrategy_Cluster_NotSpecified()
     {
         var config = new ClusterClientConfigurationBuilder().Build();
-        Assert.Null(config.Request.RetryStrategy);
+        Assert.Null(config.Request.ReconnectStrategy);
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Cluster_RetryStrategy_NoJitter()
+    public void WithReconnectStrategy_Cluster_BackoffStrategy_NoJitter()
     {
         var builder = new ClusterClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase));
+            .WithReconnectStrategy(new BackoffStrategy(NumberOfRetries, Factor, ExponentBase));
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -607,12 +607,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Cluster_RetryStrategy_WithJitter()
+    public void WithReconnectStrategy_Cluster_BackoffStrategy_WithJitter()
     {
         var builder = new ClusterClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(new RetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
+            .WithReconnectStrategy(new BackoffStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent));
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -620,12 +620,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Cluster_UintParams_NoJitter()
+    public void WithReconnectStrategy_Cluster_UintParams_NoJitter()
     {
         var builder = new ClusterClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase);
+            .WithReconnectStrategy(NumberOfRetries, Factor, ExponentBase);
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
@@ -633,12 +633,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithConnectionRetryStrategy_Cluster_UintParams_WithJitter()
+    public void WithReconnectStrategy_Cluster_UintParams_WithJitter()
     {
         var builder = new ClusterClientConfigurationBuilder()
-            .WithConnectionRetryStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
+            .WithReconnectStrategy(NumberOfRetries, Factor, ExponentBase, JitterPercent);
 
-        var strategy = builder.Build().Request.RetryStrategy!.Value;
+        var strategy = builder.Build().Request.ReconnectStrategy!.Value;
         Assert.Equal(NumberOfRetries, strategy.NumberOfRetries);
         Assert.Equal(Factor, strategy.Factor);
         Assert.Equal(ExponentBase, strategy.ExponentBase);
