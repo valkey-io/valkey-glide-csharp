@@ -95,8 +95,8 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
     {
-        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
-        Assert.Empty(await client.PubSubChannelsAsync());
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Equivalent(new[] { fixture.Channel }, await client.PubSubChannelsAsync());
     }
 
     [Theory]
@@ -108,7 +108,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         string pattern = channel.Replace("channel", "*");
 
         BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-        Assert.Contains(channel, await client.PubSubChannelsAsync(pattern));
+        Assert.Equivalent(new[] { channel }, await client.PubSubChannelsAsync(pattern));
     }
 
     [Theory]
@@ -166,7 +166,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         SkipUnlessShardedSupported();
 
         GlideClusterClient client = fixture.ClusterClient!;
-        Assert.Contains(fixture.ShardedChannel, await client.PubSubShardChannelsAsync());
+        Assert.Equivalent(new[] { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync());
     }
 
     [Fact]
