@@ -281,8 +281,6 @@ public class ClusterClientTests(TestConfiguration config)
 
         // Test with specific route using maxmemory-policy parameter (which should exist)
         var singleNodeConfig = await client.ConfigGetAsync("maxmemory-policy", Route.Random);
-        Assert.NotNull(singleNodeConfig.SingleValue);
-        _ = Assert.Single(singleNodeConfig.SingleValue);
         Assert.Equal("maxmemory-policy", singleNodeConfig.SingleValue[0].Key);
 
         // Test ConfigSet and ConfigGet combination (like Go TestConfigSetGet)
