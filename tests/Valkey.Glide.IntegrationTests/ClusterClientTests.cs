@@ -565,8 +565,9 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"
         );
 
-        string sourceKey = $"{{hashTag}}{Guid.NewGuid()}";
-        string destKey = $"{{hashTag}}{Guid.NewGuid()}";
+        string hashTag = Guid.NewGuid().ToString();
+        string sourceKey = $"{{{hashTag}}}{Guid.NewGuid()}";
+        string destKey = $"{{{hashTag}}}{Guid.NewGuid()}";
         string value = "test_value";
 
         // Set a key in the current database
