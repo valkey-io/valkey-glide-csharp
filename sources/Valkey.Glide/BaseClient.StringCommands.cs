@@ -25,19 +25,17 @@ public abstract partial class BaseClient : IStringCommands
         return await Command(Request.StringGetMultiple([.. keys]));
     }
 
-#pragma warning disable IDE0072 // Add missing cases
     public async Task<bool> StringSetAsync(IDictionary<ValkeyKey, ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        KeyValuePair<ValkeyKey, ValkeyValue>[] valuesArray = [.. values];
         return when switch
         {
-            When.Always => await Command(Request.StringSetMultiple(valuesArray)),
-            When.NotExists => await Command(Request.StringSetMultipleNX(valuesArray)),
+            When.Always => await Command(Request.StringSetMultiple([.. values])),
+            When.Exists => throw new NotImplementedException($"{when} is not supported for StringSetAsync."),
+            When.NotExists => await Command(Request.StringSetMultipleNX([.. values])),
             _ => throw new ArgumentOutOfRangeException(nameof(when), $"{when} is not supported for StringSetAsync.")
         };
     }
-#pragma warning restore IDE0072 // Add missing cases
 
     public async Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None)
     {
