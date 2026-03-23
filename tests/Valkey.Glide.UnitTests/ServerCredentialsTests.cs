@@ -9,12 +9,6 @@ public class ServerCredentialsTests
     private static readonly string Username = "USERNAME";
     private static readonly string Password = "PASSWORD";
 
-    private static readonly IamAuthConfig IamAuthConfig = new(
-        clusterName: "CLUSTER_NAME",
-        serviceType: ServiceType.ElastiCache,
-        region: "REGION",
-        refreshIntervalSeconds: IamAuthConfig.MinRefreshIntervalSeconds + 1);
-
     #endregion
     #region Tests
 
@@ -43,12 +37,13 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_UsernameIamAuthConfig()
     {
-        var credentials = new ServerCredentials(Username, IamAuthConfig);
+        using var iamAuthConfig = BuildIamAuthConfig();
+        var credentials = new ServerCredentials(Username, iamAuthConfig);
 
         Assert.Equal(Username, credentials.Username);
         Assert.Null(credentials.Password);
         Assert.True(credentials.IsIamAuth());
-        Assert.Equal(IamAuthConfig, credentials.IamConfig);
+        Assert.Equal(iamAuthConfig, credentials.IamConfig);
     }
 
     [Fact]
@@ -59,7 +54,7 @@ public class ServerCredentialsTests
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
 
         // IAM authentication.
-        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, IamAuthConfig));
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, BuildIamAuthConfig()));
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
     }
 
@@ -78,17 +73,62 @@ public class ServerCredentialsTests
     [Fact]
     public void ToString_UsernameIamAuthConfig_OmitsSensitiveInfo()
     {
-        var credentials = new ServerCredentials(Username, IamAuthConfig);
+        using var iamAuthConfig = BuildIamAuthConfig();
+        var credentials = new ServerCredentials(Username, iamAuthConfig);
         string result = credentials.ToString();
 
         // Verify that string representation contains the username
         // but omits sensitive information (cluster name, region, and refresh interval).
         // See also <see cref="IamAuthConfigTests.ToString_OmitsSensitiveInfo"/>.
         Assert.Contains(Username, result);
-        Assert.DoesNotContain(IamAuthConfig.ClusterName, result);
-        Assert.DoesNotContain(IamAuthConfig.Region, result);
-        Assert.DoesNotContain(IamAuthConfig.RefreshIntervalSeconds!.Value.ToString(), result);
+        Assert.DoesNotContain(iamAuthConfig.ClusterName, result);
+        Assert.DoesNotContain(iamAuthConfig.Region, result);
+        Assert.DoesNotContain(iamAuthConfig.RefreshIntervalSeconds!.Value.ToString(), result);
     }
+
+    [Fact]
+    public void Dispose_PasswordAuth_ClearsSensitiveData()
+    {
+        var credentials = new ServerCredentials(Username, Password);
+
+        credentials.Dispose();
+
+        Assert.Null(credentials.Username);
+        Assert.Null(credentials.Password);
+        Assert.Null(credentials.IamConfig);
+    }
+
+    [Fact]
+    public void Dispose_IamAuth_ClearsSensitiveData()
+    {
+        using var iamAuthConfig = BuildIamAuthConfig();
+        var credentials = new ServerCredentials(Username, iamAuthConfig);
+
+        credentials.Dispose();
+
+        Assert.Null(credentials.Username);
+        Assert.Null(credentials.Password);
+        Assert.Null(credentials.IamConfig);
+
+        // Verify the owned IAM auth config was also disposed.
+        Assert.Empty(iamAuthConfig.ClusterName);
+        Assert.Empty(iamAuthConfig.Region);
+        Assert.Null(iamAuthConfig.RefreshIntervalSeconds);
+    }
+
+    #endregion
+    #region Helpers
+
+    /// <summary>
+    /// Builds and returns a new IAM authentication configuration for testing.
+    /// </summary>
+    /// <returns></returns>
+    private static IamAuthConfig BuildIamAuthConfig()
+        => new(
+            clusterName: "CLUSTER_NAME",
+            serviceType: ServiceType.ElastiCache,
+            region: "REGION",
+            refreshIntervalSeconds: IamAuthConfig.MinRefreshIntervalSeconds + 1);
 
     #endregion
 }

@@ -87,5 +87,17 @@ public class IamAuthConfigTests
         Assert.DoesNotContain(RefreshInterval.ToString(), result);
     }
 
+    [Fact]
+    public void Dispose_ClearsSensitiveData()
+    {
+        var config = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, RefreshInterval);
+
+        config.Dispose();
+
+        Assert.Empty(config.ClusterName);
+        Assert.Empty(config.Region);
+        Assert.Null(config.RefreshIntervalSeconds);
+    }
+
     #endregion
 }
