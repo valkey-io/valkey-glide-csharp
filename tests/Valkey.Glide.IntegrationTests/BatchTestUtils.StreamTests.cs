@@ -6,14 +6,15 @@ internal partial class BatchTestUtils
 {
     public static List<TestInfo> CreateStreamTest(Pipeline.IBatch batch, bool isAtomic)
     {
-        List<TestInfo> testData = [];
         string prefix = "{streamKey}-";
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
-        _ = $"{atomicPrefix}2-{Guid.NewGuid()}";
+
         string groupName = "mygroup";
         string consumer1 = "consumer1";
         string consumer2 = "consumer2";
+
+        List<TestInfo> testData = [];
 
         // Test StreamAdd
         _ = batch.StreamAdd(key1, "field1", "value1");

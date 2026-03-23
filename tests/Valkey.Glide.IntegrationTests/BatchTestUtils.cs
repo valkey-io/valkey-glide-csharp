@@ -752,10 +752,6 @@ internal partial class BatchTestUtils
         _ = batch.SortedSetRangeByValue(key2, "a", "c", order: Order.Ascending);
         testData.Add(new(new ValkeyValue[] { "apple", "banana" }, "SortedSetRangeByValue(key2, 'a', 'c', order: Ascending)"));
 
-        // Test new sorted set commands
-        _ = $"{atomicPrefix}3-{Guid.NewGuid()}";
-        _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
-
         // Test SortedSetIncrement
         _ = batch.SortedSetIncrement(key1, "testMember1", 5.0);
         testData.Add(new(6.0, "SortedSetIncrement(key1, testMember1, 5.0)"));
@@ -768,7 +764,7 @@ internal partial class BatchTestUtils
         // Setup data for combine operations
         _ = batch.SortedSetAdd(combineKey1, [
             new SortedSetEntry("testMember1", 6.0), // After increment
-            new SortedSetEntry("testMember2", 2.0),
+        new SortedSetEntry("testMember2", 2.0),
             new SortedSetEntry("testMember3", 3.0)
         ]);
         testData.Add(new(3L, "SortedSetAdd(combineKey1, test data for combine)"));
