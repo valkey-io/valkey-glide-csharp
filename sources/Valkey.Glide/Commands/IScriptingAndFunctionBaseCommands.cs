@@ -211,8 +211,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// Executes a loaded function in read-only mode with keys and arguments.
     /// </summary>
     /// <param name="function">The name of the function to execute.</param>
-    /// <param name="keys">The keys to pass to the function (KEYS array).</param>
-    /// <param name="args">The arguments to pass to the function (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the function.</param>
+    /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the function execution.</returns>
@@ -297,8 +297,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// Evaluates a Lua script on the server (StackExchange.Redis compatibility).
     /// </summary>
     /// <param name="script">The Lua script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
-    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the script.</param>
+    /// <param name="values">The values to pass to the script.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <remarks>
@@ -315,8 +315,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// Evaluates a pre-loaded Lua script on the server using its SHA1 hash (StackExchange.Redis compatibility).
     /// </summary>
     /// <param name="hash">The SHA1 hash of the script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
-    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the script.</param>
+    /// <param name="values">The values to pass to the script.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <remarks>
@@ -338,8 +338,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <remarks>
     /// This method extracts parameter values from the provided object and passes them to the script.
-    /// Parameters of type ValkeyKey are treated as keys (KEYS array), while other types are treated
-    /// as arguments (ARGV array).
+    /// Parameters of type ValkeyKey are treated as keys, while other types are treated
+    /// as arguments.
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null,
         CommandFlags flags = CommandFlags.None);
