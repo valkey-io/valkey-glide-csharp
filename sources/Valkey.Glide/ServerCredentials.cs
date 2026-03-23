@@ -6,27 +6,32 @@ namespace Valkey.Glide;
 /// Represents the credentials for connecting to a server.
 /// Supports both password-based and IAM authentication modes, which are mutually exclusive.
 /// </summary>
-public class ServerCredentials
+public class ServerCredentials : IDisposable
 {
+    #region Fields
+
+    private bool _disposed;
+
+    #endregion
     #region Public Properties
 
     /// <summary>
     /// The username to use for authenticating connections.
     /// If not specified, "default" will be used.
     /// </summary>
-    public string? Username { get; }
+    public string? Username { get; private set; }
 
     /// <summary>
     /// The password to use for authenticating connections.
     /// Required for password-based authentication, must be <c>null</c> for IAM authentication.
     /// </summary>
-    public string? Password { get; }
+    public string? Password { get; private set; }
 
     /// <summary>
     /// IAM authentication configuration to use for authenticating connections.
     /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
     /// </summary>
-    public IamAuthConfig? IamConfig { get; }
+    public IamAuthConfig? IamConfig { get; private set; }
 
     #endregion
     #region Constructors
@@ -86,7 +91,26 @@ public class ServerCredentials
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
+        // Omit sensitive data.
         => $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            // Clear sensitive data.
+            Username = null;
+            Password = null;
+
+            IamConfig?.Dispose();
+            IamConfig = null;
+
+            _disposed = true;
+        }
+
+        GC.SuppressFinalize(this);
+    }
 
     #endregion
 }

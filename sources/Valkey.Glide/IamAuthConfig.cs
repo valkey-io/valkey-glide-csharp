@@ -5,8 +5,13 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration for IAM authentication with AWS services.
 /// </summary>
-public class IamAuthConfig
+public class IamAuthConfig : IDisposable
 {
+    #region Fields
+
+    private bool _disposed;
+
+    #endregion
     #region Constants
 
     /// <summary>
@@ -25,7 +30,7 @@ public class IamAuthConfig
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string ClusterName { get; }
+    public string ClusterName { get; private set; }
 
     /// <summary>
     /// The AWS service type.
@@ -35,26 +40,13 @@ public class IamAuthConfig
     /// <summary>
     /// The AWS region where the cluster is located.
     /// </summary>
-    public string Region { get; }
+    public string Region { get; private set; }
 
     /// <summary>
     /// Optional refresh interval in seconds.
     /// Must be between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> inclusive if specified.
     /// </summary>
-    public uint? RefreshIntervalSeconds
-    {
-        get;
-        private init
-        {
-            if (value.HasValue && (value.Value < MinRefreshIntervalSeconds || value.Value > MaxRefreshIntervalSeconds))
-            {
-                var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
-                throw new ArgumentOutOfRangeException(nameof(RefreshIntervalSeconds), value, msg);
-            }
-
-            field = value;
-        }
-    }
+    public uint? RefreshIntervalSeconds { get; private set; }
 
     #endregion
     #region Constructors
@@ -75,6 +67,13 @@ public class IamAuthConfig
         ArgumentNullException.ThrowIfNull(clusterName, nameof(clusterName));
         ArgumentNullException.ThrowIfNull(region, nameof(region));
 
+        if (refreshIntervalSeconds.HasValue &&
+            (refreshIntervalSeconds.Value < MinRefreshIntervalSeconds || refreshIntervalSeconds.Value > MaxRefreshIntervalSeconds))
+        {
+            var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
+            throw new ArgumentOutOfRangeException(nameof(refreshIntervalSeconds), refreshIntervalSeconds, msg);
+        }
+
         ClusterName = clusterName;
         ServiceType = serviceType;
         Region = region;
@@ -88,7 +87,24 @@ public class IamAuthConfig
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
+        // Omit sensitive data.
         => $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            // Clear sensitive data.
+            ClusterName = string.Empty;
+            Region = string.Empty;
+            RefreshIntervalSeconds = null;
+
+            _disposed = true;
+        }
+
+        GC.SuppressFinalize(this);
+    }
 
     #endregion
 }
