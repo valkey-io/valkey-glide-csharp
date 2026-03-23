@@ -15,7 +15,7 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_UsernamePassword()
     {
-        var credentials = new ServerCredentials(Username, Password);
+        using var credentials = new ServerCredentials(Username, Password);
 
         Assert.Equal(Username, credentials.Username);
         Assert.Equal(Password, credentials.Password);
@@ -26,7 +26,7 @@ public class ServerCredentialsTests
     [Fact]
     public void ServerCredentials_PasswordOnly()
     {
-        var credentials = new ServerCredentials(Password);
+        using var credentials = new ServerCredentials(Password);
 
         Assert.Null(credentials.Username);
         Assert.Equal(Password, credentials.Password);
@@ -38,7 +38,7 @@ public class ServerCredentialsTests
     public void ServerCredentials_UsernameIamAuthConfig()
     {
         using var iamAuthConfig = BuildIamAuthConfig();
-        var credentials = new ServerCredentials(Username, iamAuthConfig);
+        using var credentials = new ServerCredentials(Username, iamAuthConfig);
 
         Assert.Equal(Username, credentials.Username);
         Assert.Null(credentials.Password);
@@ -61,7 +61,7 @@ public class ServerCredentialsTests
     [Fact]
     public void ToString_PasswordAuth_OmitsSensitiveInfo()
     {
-        var credentials = new ServerCredentials(Username, Password);
+        using var credentials = new ServerCredentials(Username, Password);
         string result = credentials.ToString();
 
         // Verify that string representation contains the username
@@ -74,7 +74,7 @@ public class ServerCredentialsTests
     public void ToString_UsernameIamAuthConfig_OmitsSensitiveInfo()
     {
         using var iamAuthConfig = BuildIamAuthConfig();
-        var credentials = new ServerCredentials(Username, iamAuthConfig);
+        using var credentials = new ServerCredentials(Username, iamAuthConfig);
         string result = credentials.ToString();
 
         // Verify that string representation contains the username
