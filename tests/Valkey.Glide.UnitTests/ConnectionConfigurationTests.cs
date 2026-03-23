@@ -14,10 +14,6 @@ public class ConnectionConfigurationTests
     private static readonly string Username = "USERNAME";
     private static readonly string Password = "PASSWORD";
 
-    private static readonly string ClusterName = "CLUSTER_NAME";
-    private static readonly string Region = "REGION";
-    private static readonly uint RefreshIntervalSeconds = IamAuthConfig.MinRefreshIntervalSeconds + 1;
-
     // Certificate data constants.
     private static readonly byte[] CertificateData1 = [0x30, 0x82, 0x01, 0x00];
     private static readonly byte[] CertificateData2 = [0x30, 0x82, 0x02, 0x00];
@@ -647,13 +643,15 @@ public class ConnectionConfigurationTests
 
     /// <summary>
     /// Builds and returns a new IAM authentication configuration for testing.
+    /// If required parameters are not specified, default values are used.
     /// </summary>
-    private static IamAuthConfig BuildIamAuthConfig()
-        => new(
-            ClusterName,
-            ServiceType.ElastiCache,
-            Region,
-            RefreshIntervalSeconds);
+    private static IamAuthConfig BuildIamAuthConfig(
+        string clusterName = "CLUSTER_NAME",
+        ServiceType serviceType = ServiceType.ElastiCache,
+        string region = "REGION",
+        uint? refreshIntervalSeconds = null
+    )
+        => new(clusterName, serviceType, region, refreshIntervalSeconds);
 
     #endregion
 }
