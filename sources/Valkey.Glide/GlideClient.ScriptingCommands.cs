@@ -37,7 +37,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionDeleteAsync(libraryName));
+        _ = await Command(Request.FunctionDeleteAsync(libraryName));
     }
 
     /// <inheritdoc/>
@@ -46,7 +46,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionKillAsync());
+        _ = await Command(Request.FunctionKillAsync());
     }
 
     // ===== Function Persistence =====
@@ -67,7 +67,7 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionRestoreAsync(payload, null));
+        _ = await Command(Request.FunctionRestoreAsync(payload, null));
     }
 
     /// <inheritdoc/>
@@ -78,6 +78,6 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FunctionRestoreAsync(payload, policy));
+        _ = await Command(Request.FunctionRestoreAsync(payload, policy));
     }
 }

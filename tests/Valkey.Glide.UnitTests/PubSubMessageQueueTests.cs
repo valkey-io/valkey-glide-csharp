@@ -56,7 +56,7 @@ public class PubSubMessageQueueTests
         using var queue = new PubSubMessageQueue();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => queue.EnqueueMessage(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => queue.EnqueueMessage(null!));
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class PubSubMessageQueueTests
         cts.CancelAfter(50);
 
         // Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(() => getMessageTask);
+        _ = await Assert.ThrowsAsync<OperationCanceledException>(() => getMessageTask);
     }
 
     [Fact]
@@ -214,7 +214,7 @@ public class PubSubMessageQueueTests
         }
 
         // Assert
-        Assert.Single(messages);
+        _ = Assert.Single(messages);
         Assert.Equal("message1", messages[0].Message);
     }
 
@@ -226,7 +226,7 @@ public class PubSubMessageQueueTests
         queue.Dispose();
 
         // Act & Assert
-        Assert.Throws<ObjectDisposedException>(() => queue.TryGetMessage(out _));
+        _ = Assert.Throws<ObjectDisposedException>(() => queue.TryGetMessage(out _));
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class PubSubMessageQueueTests
         queue.Dispose();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => queue.GetMessageAsync());
+        _ = await Assert.ThrowsAsync<ObjectDisposedException>(() => queue.GetMessageAsync());
     }
 
     [Fact]
@@ -249,7 +249,7 @@ public class PubSubMessageQueueTests
         queue.Dispose();
 
         // Act & Assert
-        Assert.Throws<ObjectDisposedException>(() => queue.EnqueueMessage(testMessage));
+        _ = Assert.Throws<ObjectDisposedException>(() => queue.EnqueueMessage(testMessage));
     }
 
     [Fact]
@@ -269,7 +269,7 @@ public class PubSubMessageQueueTests
         }
 
         // Assert
-        Assert.Single(messages);
+        _ = Assert.Single(messages);
         Assert.Equal("message1", messages[0].Message);
     }
 

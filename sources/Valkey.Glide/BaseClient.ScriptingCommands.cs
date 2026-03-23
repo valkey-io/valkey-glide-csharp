@@ -25,7 +25,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         }
 
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ScriptInvokeInternalAsync(script.Hash, null, null, null);
+        return await ScriptInvokeInternalAsync(script.Hash, null, null);
     }
 
     /// <inheritdoc/>
@@ -46,14 +46,14 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         }
 
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ScriptInvokeInternalAsync(script.Hash, options.Keys, options.Args, null);
+        return await ScriptInvokeInternalAsync(script.Hash, options.Keys, options.Args);
     }
 
     private async Task<ValkeyResult> ScriptInvokeInternalAsync(
         string hash,
         string[]? keys,
         string[]? args,
-        Route? route)
+        Route? route = null)
     {
         // Convert hash to C string
         IntPtr hashPtr = Marshal.StringToHGlobalAnsi(hash);
@@ -74,9 +74,9 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             // Prepare args
             ulong argsCount = PrepareStringArrayForFFI(args, out argPtrs, out argsPtr, out argsLenPtr);
 
-            // Prepare route (null for now)
-            IntPtr routePtr = IntPtr.Zero;
-            ulong routeLen = 0;
+            // Prepare route
+            using FFI.Route? ffiRoute = route?.ToFfi();
+            IntPtr routePtr = ffiRoute?.ToPtr() ?? IntPtr.Zero;
 
             // Call FFI
             Message message = MessageContainer.GetMessageForCall();
@@ -91,13 +91,13 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
                 argsPtr,
                 argsLenPtr,
                 routePtr,
-                routeLen);
+                routePtr != IntPtr.Zero ? 1UL : 0UL);
 
             // Wait for response
             IntPtr response = await message;
             try
             {
-                return ResponseConverters.HandleServerValue<object?, ValkeyResult>(HandleResponse(response), true, o => ValkeyResult.Create(o), true);
+                return ResponseConverters.HandleServerValue<object?, ValkeyResult>(HandleResponse(response), true, ValkeyResult.Create, true);
             }
             finally
             {
@@ -370,7 +370,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
 
         // Use ScriptInvokeInternalAsync for automatic EVALSHA→EVAL optimization
-        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
     }
 
     /// <inheritdoc/>
@@ -387,7 +387,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
 
         // Use ScriptInvokeInternalAsync (will use EVALSHA directly, no fallback since we don't have source)
-        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings);
     }
 
     /// <inheritdoc/>
@@ -416,7 +416,7 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         // Create a Script object from the executable script and use ScriptInvoke
         // This will automatically load the script if needed (EVALSHA with fallback to EVAL)
         using Script scriptObj = new(executableScript);
-        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
     }
 
     /// <inheritdoc/>
@@ -443,36 +443,24 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
 
         // Use ScriptInvokeInternalAsync with the hash from LoadedLuaScript
         // The script was already loaded on the server, so EVALSHA will work
-        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings);
     }
 
     // ===== Synchronous Wrappers =====
 
     /// <inheritdoc/>
     public ValkeyResult ScriptEvaluate(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(script, keys, values, flags).GetAwaiter().GetResult();
-    }
+        CommandFlags flags = CommandFlags.None) => ScriptEvaluateAsync(script, keys, values, flags).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
     public ValkeyResult ScriptEvaluate(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(hash, keys, values, flags).GetAwaiter().GetResult();
-    }
+        CommandFlags flags = CommandFlags.None) => ScriptEvaluateAsync(hash, keys, values, flags).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
     public ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
-    }
+        CommandFlags flags = CommandFlags.None) => ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
     public ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
-    }
+        CommandFlags flags = CommandFlags.None) => ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
 }

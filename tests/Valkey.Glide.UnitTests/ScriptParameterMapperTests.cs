@@ -169,9 +169,9 @@ public class ScriptParameterMapperTests
         var (keys, args) = extractor(paramObj, null);
 
         // Assert
-        Assert.Single(keys);
+        _ = Assert.Single(keys);
         Assert.Equal("mykey", (string?)keys[0]);
-        Assert.Single(args);
+        _ = Assert.Single(args);
         Assert.Equal(42L, (long)args[0]);
     }
 
@@ -194,7 +194,7 @@ public class ScriptParameterMapperTests
         var (keys, _) = extractor(paramObj, prefix);
 
         // Assert
-        Assert.Single(keys);
+        _ = Assert.Single(keys);
         Assert.Equal("prefix:mykey", (string?)keys[0]);
     }
 
