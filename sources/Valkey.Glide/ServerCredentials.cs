@@ -19,13 +19,21 @@ public sealed class ServerCredentials : IDisposable
     /// The username to use for authenticating connections.
     /// If not specified, "default" will be used.
     /// </summary>
-    public string? Username { get; private set; }
+    public string? Username
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     /// <summary>
     /// IAM authentication configuration to use for authenticating connections.
     /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
     /// </summary>
-    public IamAuthConfig? IamConfig { get; private set; }
+    public IamAuthConfig? IamConfig
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     #endregion
     #region Internal Properties
@@ -34,7 +42,11 @@ public sealed class ServerCredentials : IDisposable
     /// The password to use for authenticating connections.
     /// Required for password-based authentication, must be <c>null</c> for IAM authentication.
     /// </summary>
-    internal string? Password { get; private set; }
+    internal string? Password
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     #endregion
     #region Constructors
@@ -88,21 +100,27 @@ public sealed class ServerCredentials : IDisposable
     /// Returns true if this instance is configured for IAM authentication.
     /// </summary>
     public bool IsIamAuth()
-        => IamConfig != null;
+    {
+        ThrowIfDisposed();
+        return IamConfig != null;
+    }
 
     /// <summary>
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
-        // Omit sensitive data.
-        => $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
+    {
+        ThrowIfDisposed();
+        return $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
+    }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Clears sensitive data.
+    /// </summary>
     public void Dispose()
     {
         if (!_disposed)
         {
-            // Clear sensitive data.
             Username = null;
             Password = null;
             IamConfig = null;
@@ -112,6 +130,15 @@ public sealed class ServerCredentials : IDisposable
 
         GC.SuppressFinalize(this);
     }
+
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Throws <see cref="ObjectDisposedException"/> if the object is disposed.
+    /// </summary>
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(_disposed, this);
 
     #endregion
 }

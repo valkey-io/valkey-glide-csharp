@@ -54,7 +54,8 @@ public class ServerCredentialsTests
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
 
         // IAM authentication.
-        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, BuildIamAuthConfig()));
+        using var iamAuthConfig = BuildIamAuthConfig();
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamAuthConfig));
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
     }
 
@@ -73,7 +74,8 @@ public class ServerCredentialsTests
     [Fact]
     public void ToString_UsernameIamAuthConfig_OmitsSensitiveInfo()
     {
-        using var iamAuthConfig = BuildIamAuthConfig();
+        var refreshInterval = IamAuthConfig.MinRefreshIntervalSeconds;
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: refreshInterval);
         using var credentials = new ServerCredentials(Username, iamAuthConfig);
         string result = credentials.ToString();
 
@@ -87,28 +89,32 @@ public class ServerCredentialsTests
     }
 
     [Fact]
-    public void Dispose_PasswordAuth_ClearsSensitiveData()
+    public void Dispose_PasswordAuth_AllPublicMembers_ThrowObjectDisposedException()
     {
         var credentials = new ServerCredentials(Username, Password);
 
         credentials.Dispose();
 
-        Assert.Null(credentials.Username);
-        Assert.Null(credentials.Password);
-        Assert.Null(credentials.IamConfig);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.Username);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.Password);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamConfig);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IsIamAuth());
+        _ = Assert.Throws<ObjectDisposedException>(() => _ = credentials.ToString());
     }
 
     [Fact]
-    public void Dispose_IamAuth_ClearsSensitiveData()
+    public void Dispose_IamAuth_AllPublicMembers_ThrowObjectDisposedException()
     {
         using var iamAuthConfig = BuildIamAuthConfig();
         var credentials = new ServerCredentials(Username, iamAuthConfig);
 
         credentials.Dispose();
 
-        Assert.Null(credentials.Username);
-        Assert.Null(credentials.Password);
-        Assert.Null(credentials.IamConfig);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.Username);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.Password);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamConfig);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IsIamAuth());
+        _ = Assert.Throws<ObjectDisposedException>(() => _ = credentials.ToString());
     }
 
     #endregion
@@ -116,14 +122,15 @@ public class ServerCredentialsTests
 
     /// <summary>
     /// Builds and returns a new IAM authentication configuration for testing.
+    /// If required parameters are not specified, default values are used.
     /// </summary>
-    /// <returns></returns>
-    private static IamAuthConfig BuildIamAuthConfig()
-        => new(
-            clusterName: "CLUSTER_NAME",
-            serviceType: ServiceType.ElastiCache,
-            region: "REGION",
-            refreshIntervalSeconds: IamAuthConfig.MinRefreshIntervalSeconds + 1);
+    private static IamAuthConfig BuildIamAuthConfig(
+        string clusterName = "CLUSTER_NAME",
+        ServiceType serviceType = ServiceType.ElastiCache,
+        string region = "REGION",
+        uint? refreshIntervalSeconds = null
+    )
+        => new(clusterName, serviceType, region, refreshIntervalSeconds);
 
     #endregion
 }

@@ -66,9 +66,29 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithAuthentication_UsernameIamAuthConfig_Succeeds()
+    public void WithAuthentication_UsernameIamAuthConfig_WithoutRefreshInterval_Succeeds()
     {
-        using var iamAuthConfig = BuildIamAuthConfig();
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: null);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithAuthentication(Username, iamAuthConfig);
+
+        var authenticationInfo = builder.Build().Request.AuthenticationInfo!.Value;
+        Assert.Equal(Username, authenticationInfo.Username);
+        Assert.Null(authenticationInfo.Password);
+        Assert.True(authenticationInfo.HasIamCredentials);
+
+        var iamCredentials = authenticationInfo.IamCredentials!;
+        Assert.Equal(iamAuthConfig.ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(iamAuthConfig.Region, iamCredentials.Region);
+        Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
+        Assert.False(iamCredentials.HasRefreshIntervalSeconds);
+    }
+
+    [Fact]
+    public void WithAuthentication_UsernameIamAuthConfig_WithRefreshInterval_Succeeds()
+    {
+        var refreshInterval = IamAuthConfig.MinRefreshIntervalSeconds;
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: refreshInterval);
         var builder = new StandaloneClientConfigurationBuilder()
             .WithAuthentication(Username, iamAuthConfig);
 
@@ -82,7 +102,7 @@ public class ConnectionConfigurationTests
         Assert.Equal(iamAuthConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
-        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
+        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, refreshInterval);
     }
 
     [Fact]
@@ -103,12 +123,8 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithAuthentication_MultipleCalls_LastWins()
     {
-        // Use IamAuthConfig with different service type and no refresh interval.
-        using var iamConfig = new IamAuthConfig(
-            clusterName: "CLUSTER",
-            serviceType: ServiceType.MemoryDB,
-            region: "REGION",
-            refreshIntervalSeconds: null);
+        // Use IamAuthConfig with different service type.
+        using var iamConfig = BuildIamAuthConfig(serviceType: ServiceType.MemoryDB);
 
         // Password-based authentication last.
         var builder = new StandaloneClientConfigurationBuilder()
@@ -129,18 +145,13 @@ public class ConnectionConfigurationTests
         Assert.Equal(Username, authenticationInfo2.Username);
         Assert.Null(authenticationInfo2.Password);
         Assert.True(authenticationInfo2.HasIamCredentials);
-
-        var iamCredentials = authenticationInfo2.IamCredentials!;
-        Assert.Equal(iamConfig.ClusterName, iamCredentials.ClusterName);
-        Assert.Equal(iamConfig.Region, iamCredentials.Region);
-        Assert.Equal(FFI.ServiceType.MemoryDB, iamCredentials.ServiceType);
-        Assert.False(iamCredentials.HasRefreshIntervalSeconds);
+        Assert.Equal(FFI.ServiceType.MemoryDB, authenticationInfo2.IamCredentials!.ServiceType);
     }
 
     [Fact]
-    public void WithCredentials_Succeeds()
+    public void WithCredentials_WithoutRefreshInterval_Succeeds()
     {
-        using var iamAuthConfig = BuildIamAuthConfig();
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: null);
         using var serverCredentials = new ServerCredentials(Username, iamAuthConfig);
         var builder = new StandaloneClientConfigurationBuilder()
             .WithCredentials(serverCredentials);
@@ -154,7 +165,29 @@ public class ConnectionConfigurationTests
         Assert.Equal(iamAuthConfig.ClusterName, iamCredentials.ClusterName);
         Assert.Equal(iamAuthConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
-        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, iamCredentials.RefreshIntervalSeconds);
+        Assert.False(iamCredentials.HasRefreshIntervalSeconds);
+    }
+
+    [Fact]
+    public void WithCredentials_Succeeds()
+    {
+        var refreshInterval = IamAuthConfig.MinRefreshIntervalSeconds;
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: refreshInterval);
+        using var serverCredentials = new ServerCredentials(Username, iamAuthConfig);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithCredentials(serverCredentials);
+
+        var authenticationInfo = builder.Build().Request.AuthenticationInfo!.Value;
+        Assert.Equal(Username, authenticationInfo.Username);
+        Assert.Null(authenticationInfo.Password);
+        Assert.True(authenticationInfo.HasIamCredentials);
+
+        var iamCredentials = authenticationInfo.IamCredentials!;
+        Assert.Equal(iamAuthConfig.ClusterName, iamCredentials.ClusterName);
+        Assert.Equal(iamAuthConfig.Region, iamCredentials.Region);
+        Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
+        Assert.True(iamCredentials.HasRefreshIntervalSeconds);
+        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, refreshInterval);
     }
 
     [Fact]
