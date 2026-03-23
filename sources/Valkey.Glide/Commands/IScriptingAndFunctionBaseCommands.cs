@@ -168,8 +168,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// Executes a loaded function with keys and arguments.
     /// </summary>
     /// <param name="function">The name of the function to execute.</param>
-    /// <param name="keys">The keys to pass to the function (KEYS array).</param>
-    /// <param name="args">The arguments to pass to the function (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the function.</param>
+    /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the function execution.</returns>
