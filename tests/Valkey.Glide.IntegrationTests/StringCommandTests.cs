@@ -41,8 +41,8 @@ public class StringCommandTests(TestConfiguration config)
         string value2 = Guid.NewGuid().ToString();
 
         // Set key1 and key2, leave key3 unset
-        await client.StringSetAsync(key1, value1);
-        await client.StringSetAsync(key2, value2);
+        _ = await client.StringSetAsync(key1, value1);
+        _ = await client.StringSetAsync(key2, value2);
 
         ValkeyKey[] keys = [key1, key2, key3];
         ValkeyValue[] values = await client.StringGetAsync(keys);
@@ -152,8 +152,8 @@ public class StringCommandTests(TestConfiguration config)
         string newValue2 = "new2";
 
         // Set initial values
-        await client.StringSetAsync(key1, initialValue1);
-        await client.StringSetAsync(key2, initialValue2);
+        _ = await client.StringSetAsync(key1, initialValue1);
+        _ = await client.StringSetAsync(key2, initialValue2);
 
         // Overwrite with StringSetAsync
         KeyValuePair<ValkeyKey, ValkeyValue>[] values = [
@@ -180,7 +180,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string value = "Hello World";
 
-        await client.StringSetAsync(key, value);
+        _ = await client.StringSetAsync(key, value);
         long length = await client.StringLengthAsync(key);
         Assert.Equal(value.Length, length);
     }
@@ -201,7 +201,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string value = "Hello World";
 
-        await client.StringSetAsync(key, value);
+        _ = await client.StringSetAsync(key, value);
         ValkeyValue result = await client.StringGetRangeAsync(key, 0, 4);
         Assert.Equal("Hello", result.ToString());
     }
@@ -222,7 +222,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string initialValue = "Hello World";
 
-        await client.StringSetAsync(key, initialValue);
+        _ = await client.StringSetAsync(key, initialValue);
         ValkeyValue newLength = await client.StringSetRangeAsync(key, 6, "Valkey");
         Assert.Equal(12, (long)newLength);
 
@@ -251,7 +251,7 @@ public class StringCommandTests(TestConfiguration config)
         string appendValue = " World";
 
         // Set initial value
-        await client.StringSetAsync(key, initialValue);
+        _ = await client.StringSetAsync(key, initialValue);
 
         // Append to the key
         long newLength = await client.StringAppendAsync(key, appendValue);
@@ -291,7 +291,7 @@ public class StringCommandTests(TestConfiguration config)
         string appendValue = "";
 
         // Set initial value
-        await client.StringSetAsync(key, initialValue);
+        _ = await client.StringSetAsync(key, initialValue);
 
         // Append empty string
         long newLength = await client.StringAppendAsync(key, appendValue);
@@ -313,10 +313,10 @@ public class StringCommandTests(TestConfiguration config)
         string appendValue = " 世界";
 
         // Set initial value
-        await client.StringSetAsync(key, initialValue);
+        _ = await client.StringSetAsync(key, initialValue);
 
         // Append Unicode string
-        await client.StringAppendAsync(key, appendValue);
+        _ = await client.StringAppendAsync(key, appendValue);
 
         // Verify the value was appended correctly
         ValkeyValue value = await client.StringGetAsync(key);
@@ -352,7 +352,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10");
+        _ = await client.StringSetAsync(key, "10");
 
         // Decrement by 1
         long result = await client.StringDecrementAsync(key);
@@ -385,7 +385,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10");
+        _ = await client.StringSetAsync(key, "10");
 
         // Decrement by 5
         long result = await client.StringDecrementAsync(key, 5);
@@ -418,7 +418,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10");
+        _ = await client.StringSetAsync(key, "10");
 
         // Decrement by -5 (effectively incrementing by 5)
         long result = await client.StringDecrementAsync(key, -5);
@@ -436,7 +436,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10");
+        _ = await client.StringSetAsync(key, "10");
 
         // Increment by 1
         long result = await client.StringIncrementAsync(key);
@@ -469,7 +469,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10");
+        _ = await client.StringSetAsync(key, "10");
 
         // Increment by 5
         long result = await client.StringIncrementAsync(key, 5);
@@ -502,7 +502,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10");
+        _ = await client.StringSetAsync(key, "10");
 
         // Increment by -5 (effectively decrementing by 5)
         long result = await client.StringIncrementAsync(key, -5);
@@ -520,7 +520,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10.5");
+        _ = await client.StringSetAsync(key, "10.5");
 
         // Increment by 0.5
         double result = await client.StringIncrementAsync(key, 0.5);
@@ -553,7 +553,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value
-        await client.StringSetAsync(key, "10.5");
+        _ = await client.StringSetAsync(key, "10.5");
 
         // Increment by -0.5 (effectively decrementing by 0.5)
         double result = await client.StringIncrementAsync(key, -0.5);
@@ -600,12 +600,11 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
         string value1 = Guid.NewGuid().ToString();
-        string value2 = Guid.NewGuid().ToString();
         string newValue1 = Guid.NewGuid().ToString();
         string newValue2 = Guid.NewGuid().ToString();
 
         // Set one key first
-        await client.StringSetAsync(key1, value1);
+        _ = await client.StringSetAsync(key1, value1);
 
         KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs = [
             new(key1, newValue1),
@@ -631,7 +630,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
 
-        await client.StringSetAsync(key, value);
+        _ = await client.StringSetAsync(key, value);
 
         ValkeyValue result = await client.StringGetDeleteAsync(key);
         Assert.Equal(value, result.ToString());
@@ -658,7 +657,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
 
-        await client.StringSetAsync(key, value);
+        _ = await client.StringSetAsync(key, value);
 
         ValkeyValue result = await client.StringGetSetExpiryAsync(key, TimeSpan.FromSeconds(10));
         Assert.Equal(value, result.ToString());
@@ -685,7 +684,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
 
-        await client.StringSetAsync(key, value);
+        _ = await client.StringSetAsync(key, value);
 
         ValkeyValue result = await client.StringGetSetExpiryAsync(key, null);
         Assert.Equal(value, result.ToString());
@@ -698,7 +697,7 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
 
-        await client.StringSetAsync(key, value);
+        _ = await client.StringSetAsync(key, value);
 
         DateTime expiry = DateTime.UtcNow.AddMinutes(5);
         ValkeyValue result = await client.StringGetSetExpiryAsync(key, expiry);
@@ -720,8 +719,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
 
-        await client.StringSetAsync(key1, "abcdef");
-        await client.StringSetAsync(key2, "acef");
+        _ = await client.StringSetAsync(key1, "abcdef");
+        _ = await client.StringSetAsync(key2, "acef");
 
         string? result = await client.StringLongestCommonSubsequenceAsync(key1, key2);
         Assert.Equal("acef", result);
@@ -738,8 +737,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
 
-        await client.StringSetAsync(key1, "abc");
-        await client.StringSetAsync(key2, "xyz");
+        _ = await client.StringSetAsync(key1, "abc");
+        _ = await client.StringSetAsync(key2, "xyz");
 
         string? result = await client.StringLongestCommonSubsequenceAsync(key1, key2);
         Assert.Equal("", result);
@@ -771,8 +770,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
 
-        await client.StringSetAsync(key1, "abcdef");
-        await client.StringSetAsync(key2, "acef");
+        _ = await client.StringSetAsync(key1, "abcdef");
+        _ = await client.StringSetAsync(key2, "acef");
 
         long result = await client.StringLongestCommonSubsequenceLengthAsync(key1, key2);
         Assert.Equal(4, result);
@@ -789,8 +788,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
 
-        await client.StringSetAsync(key1, "abc");
-        await client.StringSetAsync(key2, "xyz");
+        _ = await client.StringSetAsync(key1, "abc");
+        _ = await client.StringSetAsync(key2, "xyz");
 
         long result = await client.StringLongestCommonSubsequenceLengthAsync(key1, key2);
         Assert.Equal(0, result);
@@ -807,8 +806,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
 
-        await client.StringSetAsync(key1, "abcd1234");
-        await client.StringSetAsync(key2, "bcdef1234");
+        _ = await client.StringSetAsync(key1, "abcd1234");
+        _ = await client.StringSetAsync(key2, "bcdef1234");
 
         LCSMatchResult result = await client.StringLongestCommonSubsequenceWithMatchesAsync(key1, key2);
 
@@ -828,8 +827,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
 
-        await client.StringSetAsync(key1, "abcd1234");
-        await client.StringSetAsync(key2, "bcdef1234");
+        _ = await client.StringSetAsync(key1, "abcd1234");
+        _ = await client.StringSetAsync(key2, "bcdef1234");
 
         LCSMatchResult result = await client.StringLongestCommonSubsequenceWithMatchesAsync(key1, key2, 4);
 
@@ -848,8 +847,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = $"{{{baseKey}}}:key1";
         string key2 = $"{{{baseKey}}}:key2";
 
-        await client.StringSetAsync(key1, "abc");
-        await client.StringSetAsync(key2, "xyz");
+        _ = await client.StringSetAsync(key1, "abc");
+        _ = await client.StringSetAsync(key2, "xyz");
 
         LCSMatchResult result = await client.StringLongestCommonSubsequenceWithMatchesAsync(key1, key2);
 
@@ -873,8 +872,8 @@ public class StringCommandTests(TestConfiguration config)
         // "abcdef" and "aXcYeF"
         // Expected LCS: "ace" (note: 'f' != 'F' due to case sensitivity)
         // Expected matches: "e" at (4,4), "c" at (2,2), "a" at (0,0) - all length 1
-        await client.StringSetAsync(key1, "abcdef");
-        await client.StringSetAsync(key2, "aXcYeF");
+        _ = await client.StringSetAsync(key1, "abcdef");
+        _ = await client.StringSetAsync(key2, "aXcYeF");
 
         LCSMatchResult result = await client.StringLongestCommonSubsequenceWithMatchesAsync(key1, key2);
 
@@ -918,8 +917,8 @@ public class StringCommandTests(TestConfiguration config)
         // "abcdefghijk" and "aXXdefXXijk"
         // Expected LCS: "adefijk" with length 7
         // Expected matches: "ijk" at (8,8) length=3, "def" at (3,3) length=3, "a" at (0,0) length=1
-        await client.StringSetAsync(key1, "abcdefghijk");
-        await client.StringSetAsync(key2, "aXXdefXXijk");
+        _ = await client.StringSetAsync(key1, "abcdefghijk");
+        _ = await client.StringSetAsync(key2, "aXXdefXXijk");
 
         // Test without minLength filter - should get all 3 matches
         LCSMatchResult resultAll = await client.StringLongestCommonSubsequenceWithMatchesAsync(key1, key2, 0);
@@ -972,8 +971,8 @@ public class StringCommandTests(TestConfiguration config)
         string key2 = $"{{{baseKey}}}:key2";
 
         // Set strings where common subsequences appear at different positions
-        await client.StringSetAsync(key1, "xyzabcdef");  // "abc" at index 3-5
-        await client.StringSetAsync(key2, "abcxyzdef");  // "abc" at index 0-2, "def" at index 6-8
+        _ = await client.StringSetAsync(key1, "xyzabcdef");  // "abc" at index 3-5
+        _ = await client.StringSetAsync(key2, "abcxyzdef");  // "abc" at index 0-2, "def" at index 6-8
 
         LCSMatchResult result = await client.StringLongestCommonSubsequenceWithMatchesAsync(key1, key2);
 

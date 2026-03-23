@@ -85,9 +85,9 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         Assert.Equal(0, count);
 
         // Add elements and check count
-        await client.HyperLogLogAddAsync(key, "element1");
-        await client.HyperLogLogAddAsync(key, "element2");
-        await client.HyperLogLogAddAsync(key, "element3");
+        _ = await client.HyperLogLogAddAsync(key, "element1");
+        _ = await client.HyperLogLogAddAsync(key, "element2");
+        _ = await client.HyperLogLogAddAsync(key, "element3");
 
         count = await client.HyperLogLogLengthAsync(key);
         Assert.True(count > 0); // Should be approximately 3, but HLL is probabilistic
@@ -105,9 +105,9 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         string key3 = prefix + Guid.NewGuid().ToString();
 
         // Add different elements to different HLLs
-        await client.HyperLogLogAddAsync(key1, ["a", "b", "c"]);
-        await client.HyperLogLogAddAsync(key2, ["c", "d", "e"]);
-        await client.HyperLogLogAddAsync(key3, ["f", "g", "h"]);
+        _ = await client.HyperLogLogAddAsync(key1, ["a", "b", "c"]);
+        _ = await client.HyperLogLogAddAsync(key2, ["c", "d", "e"]);
+        _ = await client.HyperLogLogAddAsync(key3, ["f", "g", "h"]);
 
         // Count union of all HLLs
         long unionCount = await client.HyperLogLogLengthAsync([key1, key2, key3]);
@@ -149,8 +149,8 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         string destination = prefix + Guid.NewGuid().ToString();
 
         // Add different elements to source HLLs
-        await client.HyperLogLogAddAsync(source1, ["a", "b", "c"]);
-        await client.HyperLogLogAddAsync(source2, ["c", "d", "e"]);
+        _ = await client.HyperLogLogAddAsync(source1, ["a", "b", "c"]);
+        _ = await client.HyperLogLogAddAsync(source2, ["c", "d", "e"]);
 
         // Merge into destination
         await client.HyperLogLogMergeAsync(destination, source1, source2);
@@ -176,9 +176,9 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         string destination = prefix + Guid.NewGuid().ToString();
 
         // Add different elements to source HLLs
-        await client.HyperLogLogAddAsync(source1, ["a", "b"]);
-        await client.HyperLogLogAddAsync(source2, ["c", "d"]);
-        await client.HyperLogLogAddAsync(source3, ["e", "f"]);
+        _ = await client.HyperLogLogAddAsync(source1, ["a", "b"]);
+        _ = await client.HyperLogLogAddAsync(source2, ["c", "d"]);
+        _ = await client.HyperLogLogAddAsync(source3, ["e", "f"]);
 
         // Merge all sources into destination
         await client.HyperLogLogMergeAsync(destination, [source1, source2, source3]);
@@ -200,7 +200,7 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         string destination = prefix + Guid.NewGuid().ToString();
 
         // Add elements to only one source
-        await client.HyperLogLogAddAsync(source1, ["a", "b", "c"]);
+        _ = await client.HyperLogLogAddAsync(source1, ["a", "b", "c"]);
         // emptySource remains empty
 
         // Merge with empty source

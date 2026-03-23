@@ -14,7 +14,7 @@ public class FlushDatabaseTests(TestConfiguration config)
     public async Task FlushDatabaseAsync_ClearsDatabase(GlideClient client)
     {
         string key = $"flush-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        _ = await client.StringSetAsync(key, "test-value");
         Assert.True(await client.KeyExistsAsync(key));
 
         // Flush database
@@ -35,7 +35,7 @@ public class FlushDatabaseTests(TestConfiguration config)
         string key = $"flushall-test-{Guid.NewGuid()}";
 
         // Add a key
-        await client.StringSetAsync(key, "test-value");
+        _ = await client.StringSetAsync(key, "test-value");
         Assert.True(await client.KeyExistsAsync(key));
 
         // Flush all databases
@@ -56,7 +56,7 @@ public class FlushDatabaseTests(TestConfiguration config)
         string key = $"flushall-cluster-test-{Guid.NewGuid()}";
 
         // Add a key
-        await client.StringSetAsync(key, "test-value");
+        _ = await client.StringSetAsync(key, "test-value");
         Assert.True(await client.KeyExistsAsync(key));
 
         // Flush all databases on cluster

@@ -34,12 +34,12 @@ public abstract partial class BaseClient : IHyperLogLogCommands
     public async Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.HyperLogLogMergeAsync(destination, first, second));
+        _ = await Command(Request.HyperLogLogMergeAsync(destination, first, second));
     }
 
     public async Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.HyperLogLogMergeAsync(destination, sourceKeys));
+        _ = await Command(Request.HyperLogLogMergeAsync(destination, sourceKeys));
     }
 }
