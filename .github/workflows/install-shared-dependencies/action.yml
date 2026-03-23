@@ -78,13 +78,27 @@ runs:
           with:
               target: ${{ inputs.target }}
 
-        - name: Install server
+        # Always build from source first. This provides valkey-server and
+        # valkey-cli on the host for TLS tests (cluster_manager.py), benchmarks,
+        # and — on the Docker path — the CLI needed to form the cluster.
+        - name: Install server from source
           if: "${{ inputs.server-version }}"
           uses: ./.github/workflows/install-server
           with:
               os: ${{ inputs.os }}
               target: ${{ inputs.target }}
               server-version: ${{ inputs.server-version }}
+
+        # For valkey 9.0 on ubuntu, also start Docker containers with the
+        # valkey-bundle image (includes modules: Search, JSON, Bloom, LDAP) on
+        # dedicated ports. Regular tests use the source-built server; module
+        # tests connect to these Docker containers via modules-standalone-endpoint
+        # and modules-cluster-endpoints env vars.
+        - name: Start module servers via Docker (valkey 9.0, ubuntu)
+          if: "${{ inputs.server-version == '9.0' && inputs.os == 'ubuntu' }}"
+          uses: ./.github/workflows/start-valkey-docker
+          with:
+              engine-version: ${{ inputs.server-version }}
 
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
