@@ -109,11 +109,6 @@ public class ServerCredentialsTests
         Assert.Null(credentials.Username);
         Assert.Null(credentials.Password);
         Assert.Null(credentials.IamConfig);
-
-        // Verify the owned IAM auth config was also disposed.
-        Assert.Empty(iamAuthConfig.ClusterName);
-        Assert.Empty(iamAuthConfig.Region);
-        Assert.Null(iamAuthConfig.RefreshIntervalSeconds);
     }
 
     #endregion

@@ -105,8 +105,6 @@ public class ServerCredentials : IDisposable
             // Clear sensitive data.
             Username = null;
             Password = null;
-
-            IamConfig?.Dispose();
             IamConfig = null;
 
             _disposed = true;
