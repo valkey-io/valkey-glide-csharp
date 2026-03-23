@@ -58,17 +58,20 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRangeByValue(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long)" />
     public T SortedSetRangeByValue(ValkeyKey key, ValkeyValue min = default, ValkeyValue max = default, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1) => AddCmd(SortedSetRangeByValueAsync(key, min, max, exclude, order, skip, take));
 
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombine(SetOperation, IEnumerable{ValkeyKey}, double[], Aggregate)" />
-    public T SortedSetCombine(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineAsync(operation, [.. keys], weights, aggregate));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombine(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" />
+    public T SortedSetCombine(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum)
+        => AddCmd(SortedSetCombineAsync(operation, [.. keys], weights?.ToArray(), aggregate));
 
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineWithScores(SetOperation, IEnumerable{ValkeyKey}, double[], Aggregate)" />
-    public T SortedSetCombineWithScores(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineWithScoresAsync(operation, [.. keys], weights, aggregate));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineWithScores(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" />
+    public T SortedSetCombineWithScores(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum)
+        => AddCmd(SortedSetCombineWithScoresAsync(operation, [.. keys], weights?.ToArray(), aggregate));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate)" />
     public T SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineAndStoreAsync(operation, destination, first, second, aggregate));
 
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, double[], Aggregate)" />
-    public T SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum) => AddCmd(SortedSetCombineAndStoreAsync(operation, destination, [.. keys], weights, aggregate));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" />
+    public T SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum)
+        => AddCmd(SortedSetCombineAndStoreAsync(operation, destination, [.. keys], weights?.ToArray(), aggregate));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetIncrement(ValkeyKey, ValkeyValue, double)" />
     public T SortedSetIncrement(ValkeyKey key, ValkeyValue member, double value) => AddCmd(SortedSetIncrementAsync(key, member, value));
@@ -153,10 +156,10 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetRangeByScoreWithScores(ValkeyKey key, double start, double stop, Exclude exclude, Order order, long skip, long take) => SortedSetRangeByScoreWithScores(key, start, stop, exclude, order, skip, take);
     IBatch IBatchSortedSetCommands.SortedSetRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, long skip, long take) => SortedSetRangeByValue(key, min, max, exclude, skip, take);
     IBatch IBatchSortedSetCommands.SortedSetRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, Order order, long skip, long take) => SortedSetRangeByValue(key, min, max, exclude, order, skip, take);
-    IBatch IBatchSortedSetCommands.SortedSetCombine(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights, Aggregate aggregate) => SortedSetCombine(operation, keys, weights, aggregate);
-    IBatch IBatchSortedSetCommands.SortedSetCombineWithScores(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights, Aggregate aggregate) => SortedSetCombineWithScores(operation, keys, weights, aggregate);
+    IBatch IBatchSortedSetCommands.SortedSetCombine(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights, Aggregate aggregate) => SortedSetCombine(operation, keys, weights, aggregate);
+    IBatch IBatchSortedSetCommands.SortedSetCombineWithScores(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights, Aggregate aggregate) => SortedSetCombineWithScores(operation, keys, weights, aggregate);
     IBatch IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate) => SortedSetCombineAndStore(operation, destination, first, second, aggregate);
-    IBatch IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, double[]? weights, Aggregate aggregate) => SortedSetCombineAndStore(operation, destination, keys, weights, aggregate);
+    IBatch IBatchSortedSetCommands.SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights, Aggregate aggregate) => SortedSetCombineAndStore(operation, destination, keys, weights, aggregate);
     IBatch IBatchSortedSetCommands.SortedSetIncrement(ValkeyKey key, ValkeyValue member, double value) => SortedSetIncrement(key, member, value);
     IBatch IBatchSortedSetCommands.SortedSetIntersectionLength(IEnumerable<ValkeyKey> keys, long limit) => SortedSetIntersectionLength(keys, limit);
     IBatch IBatchSortedSetCommands.SortedSetLengthByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude) => SortedSetLengthByValue(key, min, max, exclude);

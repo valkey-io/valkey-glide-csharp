@@ -69,7 +69,7 @@ public interface IScriptingAndFunctionBaseCommands
     /// </example>
     /// </remarks>
     Task<bool[]> ScriptExistsAsync(
-        string[] sha1Hashes,
+        IEnumerable<string> sha1Hashes,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -182,8 +182,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// </remarks>
     Task<ValkeyResult> FCallAsync(
         string function,
-        string[] keys,
-        string[] args,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -226,8 +226,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// </remarks>
     Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
-        string[] keys,
-        string[] args,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -305,7 +305,10 @@ public interface IScriptingAndFunctionBaseCommands
     /// This method uses EVAL to execute the script. For better performance with repeated executions,
     /// consider using LuaScript.Prepare() or pre-loading scripts with IServer.ScriptLoadAsync().
     /// </remarks>
-    Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    Task<ValkeyResult> ScriptEvaluateAsync(
+        string script,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -320,7 +323,10 @@ public interface IScriptingAndFunctionBaseCommands
     /// This method uses EVALSHA to execute the script by its hash. If the script is not cached on the server,
     /// a NOSCRIPT error will be thrown. Use IServer.ScriptLoadAsync() to pre-load scripts.
     /// </remarks>
-    Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    Task<ValkeyResult> ScriptEvaluateAsync(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None);
 
     /// <summary>

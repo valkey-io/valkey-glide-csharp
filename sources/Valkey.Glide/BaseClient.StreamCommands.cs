@@ -13,7 +13,13 @@ public partial class BaseClient : IStreamCommands
         return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, null, false, flags);
     }
 
-    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags)
+    public async Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        IEnumerable<NameValueEntry> streamPairs,
+        ValkeyValue? messageId,
+         int? maxLength,
+         bool useApproximateMaxLength,
+         CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, null, false, flags);
@@ -33,7 +39,15 @@ public partial class BaseClient : IStreamCommands
             noMakeStream));
     }
 
-    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, bool noMakeStream = false, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        IEnumerable<NameValueEntry> streamPairs,
+        ValkeyValue? messageId = null,
+        long? maxLength = null,
+        bool useApproximateMaxLength = false,
+        long? limit = null,
+        bool noMakeStream = false,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamAddAsync(
@@ -42,7 +56,7 @@ public partial class BaseClient : IStreamCommands
             maxLength,
             default,
             useApproximateMaxLength,
-            streamPairs,
+            [.. streamPairs],
             limit,
             noMakeStream));
     }
@@ -260,7 +274,17 @@ public partial class BaseClient : IStreamCommands
         throw new NotSupportedException("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.");
     }
 
-    public Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateTrimming, long? limit, bool noMakeStream, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        IEnumerable<NameValueEntry> streamPairs,
+        ValkeyValue? messageId,
+        long? maxLength,
+        bool useApproximateTrimming,
+        long? limit,
+        bool noMakeStream,
+        ValkeyValue? minId,
+        object mode,
+        CommandFlags flags = CommandFlags.None)
     {
         throw new NotSupportedException("This method is not implemented. Use StreamAddAsync without the mode parameter instead.");
     }

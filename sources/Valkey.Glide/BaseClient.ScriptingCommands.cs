@@ -221,12 +221,12 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
 
     /// <inheritdoc/>
     public async Task<bool[]> ScriptExistsAsync(
-        string[] sha1Hashes,
+        IEnumerable<string> sha1Hashes,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptExistsAsync(sha1Hashes));
+        return await Command(Request.ScriptExistsAsync([.. sha1Hashes]));
     }
 
     /// <inheritdoc/>
@@ -290,13 +290,13 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     /// <inheritdoc/>
     public async Task<ValkeyResult> FCallAsync(
         string function,
-        string[] keys,
-        string[] args,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FCallAsync(function, keys, args));
+        return await Command(Request.FCallAsync(function, [.. keys], [.. args]));
     }
 
     /// <inheritdoc/>
@@ -312,13 +312,13 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     /// <inheritdoc/>
     public async Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
-        string[] keys,
-        string[] args,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FCallReadOnlyAsync(function, keys, args));
+        return await Command(Request.FCallReadOnlyAsync(function, [.. keys], [.. args]));
     }
 
     // ===== Function Management =====
@@ -356,7 +356,9 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     // ===== StackExchange.Redis Compatibility Methods =====
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    public async Task<ValkeyResult> ScriptEvaluateAsync(
+        string script, IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -374,7 +376,10 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    public async Task<ValkeyResult> ScriptEvaluateAsync(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -449,14 +454,20 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     // ===== Synchronous Wrappers =====
 
     /// <inheritdoc/>
-    public ValkeyResult ScriptEvaluate(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    public ValkeyResult ScriptEvaluate(
+        string script,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None)
     {
         return ScriptEvaluateAsync(script, keys, values, flags).GetAwaiter().GetResult();
     }
 
     /// <inheritdoc/>
-    public ValkeyResult ScriptEvaluate(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    public ValkeyResult ScriptEvaluate(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None)
     {
         return ScriptEvaluateAsync(hash, keys, values, flags).GetAwaiter().GetResult();

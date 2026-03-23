@@ -109,16 +109,24 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetRangeByValueAsync(key, min, max, exclude, order, skip, take));
     }
 
-    public async Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SortedSetCombineAsync(
+        SetOperation operation,
+        IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null,
+        Aggregate aggregate = Aggregate.Sum,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineAsync(operation, [.. keys], weights, aggregate));
+        return await Command(Request.SortedSetCombineAsync(operation, [.. keys], weights?.ToArray(), aggregate));
     }
 
-    public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+    public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(
+        SetOperation operation,
+        IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null,
+        Aggregate aggregate = Aggregate.Sum,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineWithScoresAsync(operation, [.. keys], weights, aggregate));
+        return await Command(Request.SortedSetCombineWithScoresAsync(operation, [.. keys], weights?.ToArray(), aggregate));
     }
 
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
@@ -127,10 +135,16 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, first, second, aggregate));
     }
 
-    public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+    public async Task<long> SortedSetCombineAndStoreAsync(
+        SetOperation operation,
+        ValkeyKey destination,
+        IEnumerable<ValkeyKey> keys,
+        IEnumerable<double>? weights = null,
+        Aggregate aggregate = Aggregate.Sum,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, [.. keys], weights, aggregate));
+        return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, [.. keys], weights?.ToArray(), aggregate));
     }
 
     public async Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags = CommandFlags.None)

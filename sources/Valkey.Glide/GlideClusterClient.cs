@@ -78,13 +78,13 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
 
     public async Task<Dictionary<string, string>> InfoAsync() => await InfoAsync([]);
 
-    public async Task<Dictionary<string, string>> InfoAsync(InfoOptions.Section[] sections)
-        => await Command(Request.Info(sections).ToMultiNodeValue());
+    public async Task<Dictionary<string, string>> InfoAsync(IEnumerable<InfoOptions.Section> sections)
+        => await Command(Request.Info([.. sections]).ToMultiNodeValue());
 
     public async Task<ClusterValue<string>> InfoAsync(Route route) => await InfoAsync([], route);
 
-    public async Task<ClusterValue<string>> InfoAsync(InfoOptions.Section[] sections, Route route)
-        => await Command(Request.Info(sections).ToClusterValue(route is SingleNodeRoute), route);
+    public async Task<ClusterValue<string>> InfoAsync(IEnumerable<InfoOptions.Section> sections, Route route)
+        => await Command(Request.Info([.. sections]).ToClusterValue(route is SingleNodeRoute), route);
 
     public async Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
     {
@@ -290,7 +290,7 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         await Command(Request.Select(index), Route.Random);
     }
 
-    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         await Command(Request.Watch(keys));

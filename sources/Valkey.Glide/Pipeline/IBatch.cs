@@ -20,8 +20,8 @@ internal interface IBatch : IBatchSetCommands, IBatchStringCommands, IBatchListC
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync()" /></returns>
     IBatch Info();
 
-    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(Section[])" path="/summary" />
-    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(Section[])" path="/param" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync(Section[])" /></returns>
-    IBatch Info(Section[] sections);
+    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(IEnumerable{Section})" path="/summary" />
+    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(IEnumerable{Section})" path="/param" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync(IEnumerable{Section})" /></returns>
+    IBatch Info(IEnumerable<Section> sections);
 }

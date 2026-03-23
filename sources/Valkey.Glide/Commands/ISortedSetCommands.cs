@@ -460,7 +460,12 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> SortedSetCombineAsync(
+        SetOperation operation,
+        IEnumerable<ValkeyKey> keys,
+        IEnumerable<double>? weights = null,
+        Aggregate aggregate = Aggregate.Sum,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Computes a set operation for multiple sorted sets (optionally using per-set weights),
@@ -492,7 +497,12 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
+    Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(
+        SetOperation operation,
+        IEnumerable<ValkeyKey> keys,
+        IEnumerable<double>? weights = null,
+        Aggregate aggregate = Aggregate.Sum,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Computes a set operation over two sorted sets, and stores the result in destination, optionally performing
@@ -564,7 +574,13 @@ public interface ISortedSetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, double[]? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None);
+    Task<long> SortedSetCombineAndStoreAsync(
+        SetOperation operation,
+        ValkeyKey destination,
+        IEnumerable<ValkeyKey> keys,
+        IEnumerable<double>? weights = null,
+        Aggregate aggregate = Aggregate.Sum,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Increments the score of member in the sorted set stored at key by increment.

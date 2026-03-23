@@ -34,7 +34,13 @@ public interface IStreamCommands
     /// <param name="useApproximateMaxLength">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The ID of the added entry.</returns>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        IEnumerable<NameValueEntry> streamPairs,
+        ValkeyValue? messageId,
+        int? maxLength,
+        bool useApproximateMaxLength,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Appends a new entry to a stream with a single field-value pair.
@@ -65,7 +71,15 @@ public interface IStreamCommands
     /// <param name="noMakeStream">If true, the stream will not be created if it doesn't exist. Returns null if stream doesn't exist.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</returns>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, bool noMakeStream = false, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        IEnumerable<NameValueEntry> streamPairs,
+        ValkeyValue? messageId = null,
+        long? maxLength = null,
+        bool useApproximateMaxLength = false,
+        long? limit = null,
+        bool noMakeStream = false,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads entries from a single stream starting from a given position.
@@ -470,7 +484,7 @@ public interface IStreamCommands
     /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
     /// </summary>
     [Obsolete("This method is not implemented. Use StreamAddAsync without the mode parameter instead.", error: true)]
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit, bool noMakeStream, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit, bool noMakeStream, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
