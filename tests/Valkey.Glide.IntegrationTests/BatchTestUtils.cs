@@ -765,7 +765,7 @@ internal partial class BatchTestUtils
         // Setup data for combine operations
         _ = batch.SortedSetAdd(combineKey1, [
             new SortedSetEntry("testMember1", 6.0), // After increment
-        new SortedSetEntry("testMember2", 2.0),
+            new SortedSetEntry("testMember2", 2.0),
             new SortedSetEntry("testMember3", 3.0)
         ]);
         testData.Add(new(3L, "SortedSetAdd(combineKey1, test data for combine)"));
