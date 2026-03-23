@@ -21,11 +21,11 @@ internal partial class Request
         {
             foreach (var a in field.ToArgs()) args.Add(a);
         }
-        return OK(RequestType.FtCreate, [.. args]);
+        return Simple<string>(RequestType.FtCreate, [.. args]);
     }
 
     public static Cmd<string, string> FtDropIndex(string indexName)
-        => OK(RequestType.FtDropIndex, [(GlideString)indexName]);
+        => Simple<string>(RequestType.FtDropIndex, [(GlideString)indexName]);
 
     public static Cmd<object[], ISet<string>> FtList()
         => new(RequestType.FtList, [], false, arr => arr.Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet());
@@ -63,13 +63,13 @@ internal partial class Request
     }
 
     public static Cmd<string, string> FtAliasAdd(string alias, string indexName)
-        => OK(RequestType.FtAliasAdd, [(GlideString)alias, (GlideString)indexName]);
+        => Simple<string>(RequestType.FtAliasAdd, [(GlideString)alias, (GlideString)indexName]);
 
     public static Cmd<string, string> FtAliasDel(string alias)
-        => OK(RequestType.FtAliasDel, [(GlideString)alias]);
+        => Simple<string>(RequestType.FtAliasDel, [(GlideString)alias]);
 
     public static Cmd<string, string> FtAliasUpdate(string alias, string indexName)
-        => OK(RequestType.FtAliasUpdate, [(GlideString)alias, (GlideString)indexName]);
+        => Simple<string>(RequestType.FtAliasUpdate, [(GlideString)alias, (GlideString)indexName]);
 
     public static Cmd<Dictionary<GlideString, object>, Dictionary<string, string>> FtAliasList()
         => new(RequestType.FtAliasList, [], false, dict =>
@@ -128,7 +128,7 @@ internal partial class Request
             {
                 results.Add(new FtAggregateRow(map.ToDictionary(
                     kvp => kvp.Key.ToString(),
-                    kvp => ConvertFtValue(kvp.Value))));
+                    kvp => ConvertFtValue(kvp.Value)!)));
             }
         }
         return [.. results];

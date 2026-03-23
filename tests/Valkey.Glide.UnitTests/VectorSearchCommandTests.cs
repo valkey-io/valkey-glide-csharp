@@ -293,15 +293,15 @@ public class VectorSearchCommandTests
     public void ValidateFtCreateOptionsValidation()
     {
         // WithOffsets and NoOffsets are mutually exclusive
-        Assert.Throws<ArgumentException>(() =>
+        _ = Assert.Throws<ArgumentException>(() =>
             new FtCreateOptions { WithOffsets = true, NoOffsets = true }.ToArgs());
 
         // NoStopWords and StopWords are mutually exclusive
-        Assert.Throws<ArgumentException>(() =>
+        _ = Assert.Throws<ArgumentException>(() =>
             new FtCreateOptions { NoStopWords = true, StopWords = ["the"] }.ToArgs());
 
         // WithSuffixTrie and NoSuffixTrie are mutually exclusive
-        Assert.Throws<ArgumentException>(() =>
+        _ = Assert.Throws<ArgumentException>(() =>
             new TextField("f") { WithSuffixTrie = true, NoSuffixTrie = true }.ToArgs());
     }
 
@@ -309,11 +309,11 @@ public class VectorSearchCommandTests
     public void ValidateFtSearchOptionsValidation()
     {
         // WithSortKeys requires SortBy
-        Assert.Throws<ArgumentException>(() =>
+        _ = Assert.Throws<ArgumentException>(() =>
             new FtSearchOptions { WithSortKeys = true }.ToArgs());
 
         // SortByOrder requires SortBy
-        Assert.Throws<ArgumentException>(() =>
+        _ = Assert.Throws<ArgumentException>(() =>
             new FtSearchOptions { SortByOrder = FtSearchSortOrder.ASC }.ToArgs());
     }
 
@@ -321,7 +321,7 @@ public class VectorSearchCommandTests
     public void ValidateFtAggregateOptionsValidation()
     {
         // LoadAll and LoadFields are mutually exclusive
-        Assert.Throws<ArgumentException>(() =>
+        _ = Assert.Throws<ArgumentException>(() =>
             new FtAggregateOptions { LoadAll = true, LoadFields = ["@f1"] }.ToArgs());
     }
 }
