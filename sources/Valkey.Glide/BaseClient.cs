@@ -158,7 +158,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         using FFI.ConnectionConfig request = config.Request.ToFfi();
 
-        // Log warnining if using insecure TLS.
+        // Log warning if using insecure TLS.
         if (config.Request.TlsMode == TlsMode.InsecureTls)
         {
             var msg = "SECURITY WARNING: Insecure TLS connection established. "
