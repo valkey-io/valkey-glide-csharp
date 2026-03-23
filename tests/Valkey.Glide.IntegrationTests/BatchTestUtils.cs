@@ -189,12 +189,12 @@ internal partial class BatchTestUtils
         string multiKey2 = $"{atomicPrefix}multi2-{Guid.NewGuid()}";
         string multiKey3 = $"{atomicPrefix}multi3-{Guid.NewGuid()}";
 
-        Dictionary<ValkeyKey, ValkeyValue> multiKeyValues = new()
-        {
-            [multiKey1] = "value1",
-            [multiKey2] = "value2",
-            [multiKey3] = "value3"
-        };
+        KeyValuePair<ValkeyKey, ValkeyValue>[] multiKeyValues =
+        [
+            new(multiKey1, "value1"),
+            new(multiKey2, "value2"),
+            new(multiKey3, "value3")
+        ];
 
         _ = batch.StringSet(multiKeyValues);
         testData.Add(new(true, "StringSet(multiKeyValues)"));

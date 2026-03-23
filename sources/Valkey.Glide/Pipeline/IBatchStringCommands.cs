@@ -19,9 +19,9 @@ internal interface IBatchStringCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringSetAsync(ValkeyKey, ValkeyValue, CommandFlags)" /></returns>
     IBatch StringSet(ValkeyKey key, ValkeyValue value);
 
-    /// <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IDictionary{ValkeyKey, ValkeyValue}, When, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IDictionary{ValkeyKey, ValkeyValue}, When, CommandFlags)" /></returns>
-    IBatch StringSet(IDictionary<ValkeyKey, ValkeyValue> values);
+    /// <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When, CommandFlags)" /></returns>
+    IBatch StringSet(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 
     /// <inheritdoc cref="Commands.IStringCommands.StringGetRangeAsync(ValkeyKey, long, long, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringGetRangeAsync(ValkeyKey, long, long, CommandFlags)" /></returns>

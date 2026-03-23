@@ -25,7 +25,7 @@ public abstract partial class BaseClient : IStringCommands
         return await Command(Request.StringGetMultiple([.. keys]));
     }
 
-    public async Task<bool> StringSetAsync(IDictionary<ValkeyKey, ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return when switch

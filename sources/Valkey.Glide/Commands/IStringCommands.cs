@@ -54,7 +54,7 @@ public interface IStringCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> StringSetAsync(IDictionary<ValkeyKey, ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None);
+    Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Get the value of key. If the key does not exist the special value <see langword="null" /> is returned.
