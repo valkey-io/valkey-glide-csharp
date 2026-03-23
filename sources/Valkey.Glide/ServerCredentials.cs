@@ -28,7 +28,7 @@ public class ServerCredentials : IDisposable
     public IamAuthConfig? IamConfig { get; private set; }
 
     #endregion
-    #region Interal Properties
+    #region Internal Properties
 
     /// <summary>
     /// The password to use for authenticating connections.
