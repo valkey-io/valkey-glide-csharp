@@ -9,7 +9,7 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
-    public static Cmd<string, string> FtCreate(string indexName, IField[] schema, FtCreateOptions? options)
+    public static Cmd<string, string> FtCreate(string indexName, IEnumerable<IField> schema, FtCreateOptions? options)
     {
         List<GlideString> args = [indexName];
         if (options is not null)
@@ -27,8 +27,8 @@ internal partial class Request
     public static Cmd<string, string> FtDropIndex(string indexName)
         => OK(RequestType.FtDropIndex, [(GlideString)indexName]);
 
-    public static Cmd<object[], string[]> FtList()
-        => new(RequestType.FtList, [], false, arr => [.. arr.Cast<GlideString>().Select(gs => gs.ToString())]);
+    public static Cmd<object[], ISet<string>> FtList()
+        => new(RequestType.FtList, [], false, arr => arr.Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet());
 
     public static Cmd<object[], FtSearchResult> FtSearch(string indexName, string query, FtSearchOptions? options)
     {
@@ -42,7 +42,7 @@ internal partial class Request
         return new(RequestType.FtSearch, [.. args], false, data => ParseFtSearchResponse(data, withSortKeys));
     }
 
-    public static Cmd<object[], Dictionary<string, object?>[]> FtAggregate(string indexName, string query, FtAggregateOptions? options)
+    public static Cmd<object[], FtAggregateRow[]> FtAggregate(string indexName, string query, FtAggregateOptions? options)
     {
         List<GlideString> args = [indexName, query];
         if (options is not null)
@@ -52,7 +52,7 @@ internal partial class Request
         return new(RequestType.FtAggregate, [.. args], false, ParseFtAggregateResponse);
     }
 
-    public static Cmd<object, Dictionary<string, object?>> FtInfo(string indexName, FtInfoOptions? options)
+    public static Cmd<object, Dictionary<string, object>> FtInfo(string indexName, FtInfoOptions? options)
     {
         List<GlideString> args = [indexName];
         if (options is not null)
@@ -118,39 +118,39 @@ internal partial class Request
         return new FtSearchResult(count, docs);
     }
 
-    private static Dictionary<string, object?>[] ParseFtAggregateResponse(object[] data)
+    private static FtAggregateRow[] ParseFtAggregateResponse(object[] data)
     {
         // The Rust core normalizes the response: strips leading count, converts rows to maps.
-        var results = new List<Dictionary<string, object?>>();
+        var results = new List<FtAggregateRow>();
         foreach (var row in data)
         {
             if (row is Dictionary<GlideString, object> map)
             {
-                results.Add(map.ToDictionary(
+                results.Add(new FtAggregateRow(map.ToDictionary(
                     kvp => kvp.Key.ToString(),
-                    kvp => ConvertFtValue(kvp.Value)));
+                    kvp => ConvertFtValue(kvp.Value))));
             }
         }
         return [.. results];
     }
 
-    private static Dictionary<string, object?> ParseFtInfoResponse(object data)
+    private static Dictionary<string, object> ParseFtInfoResponse(object data)
     {
         // May arrive as a Map or as a flat key/value array.
         if (data is Dictionary<GlideString, object> map)
         {
             return map.ToDictionary(
                 kvp => kvp.Key.ToString(),
-                kvp => ConvertFtValue(kvp.Value));
+                kvp => ConvertFtValue(kvp.Value)!);
         }
 
         if (data is object[] arr)
         {
-            Dictionary<string, object?> result = [];
+            Dictionary<string, object> result = [];
             for (int i = 0; i + 1 < arr.Length; i += 2)
             {
                 string key = arr[i] is GlideString gs ? gs.ToString() : i.ToString();
-                result[key] = ConvertFtValue(arr[i + 1]);
+                result[key] = ConvertFtValue(arr[i + 1])!;
             }
             return result;
         }

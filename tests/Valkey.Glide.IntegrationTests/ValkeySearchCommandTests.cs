@@ -5,11 +5,11 @@ using Valkey.Glide.Commands.Options;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for FT.* (Valkey Search / VSS) commands.
+/// Integration tests for FT.* (Valkey Search) commands.
 /// Requires a Valkey or Redis server with the Search module loaded.
 /// Set standalone-endpoints or cluster-endpoints env vars to point at such a server.
 /// </summary>
-public class VssCommandTests(TestConfiguration config)
+public class ValkeySearchCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
@@ -38,9 +38,8 @@ public class VssCommandTests(TestConfiguration config)
     public async Task FtCreate_SimpleHnswVectorIndex_ReturnsOk(BaseClient client)
     {
         await SkipIfModuleNotAvailable(client);
-        string result = await client.FtCreateAsync(Guid.NewGuid().ToString(),
+        await client.FtCreateAsync(Guid.NewGuid().ToString(),
             [new VectorFieldHnsw("vec", DistanceMetric.L2, 2) { Alias = "VEC" }], null);
-        Assert.Equal("OK", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -48,10 +47,9 @@ public class VssCommandTests(TestConfiguration config)
     public async Task FtCreate_JsonFlatVectorWithPrefix_ReturnsOk(BaseClient client)
     {
         await SkipIfModuleNotAvailable(client);
-        string result = await client.FtCreateAsync(Guid.NewGuid().ToString(),
+        await client.FtCreateAsync(Guid.NewGuid().ToString(),
             [new VectorFieldFlat("$.vec", DistanceMetric.L2, 6) { Alias = "VEC" }],
             new FtCreateOptions { DataType = IndexDataType.JSON, Prefixes = ["json:"] });
-        Assert.Equal("OK", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -59,7 +57,7 @@ public class VssCommandTests(TestConfiguration config)
     public async Task FtCreate_HnswWithExtraParams_ReturnsOk(BaseClient client)
     {
         await SkipIfModuleNotAvailable(client);
-        string result = await client.FtCreateAsync(Guid.NewGuid().ToString(),
+        await client.FtCreateAsync(Guid.NewGuid().ToString(),
             [new VectorFieldHnsw("doc_embedding", DistanceMetric.COSINE, 1536)
             {
                 NumberOfEdges = 40,
@@ -67,7 +65,6 @@ public class VssCommandTests(TestConfiguration config)
                 VectorsExaminedOnRuntime = 40,
             }],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = ["docs:"] });
-        Assert.Equal("OK", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -75,10 +72,9 @@ public class VssCommandTests(TestConfiguration config)
     public async Task FtCreate_MultipleFields_ReturnsOk(BaseClient client)
     {
         await SkipIfModuleNotAvailable(client);
-        string result = await client.FtCreateAsync(Guid.NewGuid().ToString(),
+        await client.FtCreateAsync(Guid.NewGuid().ToString(),
             [new TextField("title"), new NumericField("published_at"), new TagField("category")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = ["blog:post:"] });
-        Assert.Equal("OK", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -102,12 +98,12 @@ public class VssCommandTests(TestConfiguration config)
         string idx = Guid.NewGuid().ToString();
         await client.FtCreateAsync(idx, [new VectorFieldHnsw("vec", DistanceMetric.L2, 2)], null);
 
-        string[] before = await client.FtListAsync();
+        ISet<string> before = await client.FtListAsync();
         Assert.Contains(idx, before);
 
         await client.FtDropIndexAsync(idx);
 
-        string[] after = await client.FtListAsync();
+        ISet<string> after = await client.FtListAsync();
         Assert.DoesNotContain(idx, after);
     }
 
@@ -343,7 +339,7 @@ public class VssCommandTests(TestConfiguration config)
         }
         await Task.Delay(1000);
 
-        Dictionary<string, object?>[] result = await client.FtAggregateAsync(idx, "*",
+        FtAggregateRow[] result = await client.FtAggregateAsync(idx, "*",
             new FtAggregateOptions
             {
                 LoadFields = ["__key"],
@@ -384,22 +380,22 @@ public class VssCommandTests(TestConfiguration config)
         await Task.Delay(1000);
 
         // VERBATIM
-        Dictionary<string, object?>[] r1 = await client.FtAggregateAsync(idx, "@score:[1 +inf]",
+        FtAggregateRow[] r1 = await client.FtAggregateAsync(idx, "@score:[1 +inf]",
             new FtAggregateOptions { Verbatim = true });
         Assert.Equal(2, r1.Length);
 
         // INORDER + SLOP
-        Dictionary<string, object?>[] r2 = await client.FtAggregateAsync(idx, "@score:[1 +inf]",
+        FtAggregateRow[] r2 = await client.FtAggregateAsync(idx, "@score:[1 +inf]",
             new FtAggregateOptions { InOrder = true, Slop = 1 });
         Assert.Equal(2, r2.Length);
 
         // DIALECT
-        Dictionary<string, object?>[] r3 = await client.FtAggregateAsync(idx, "@score:[1 +inf]",
+        FtAggregateRow[] r3 = await client.FtAggregateAsync(idx, "@score:[1 +inf]",
             new FtAggregateOptions { Dialect = 2 });
         Assert.Equal(2, r3.Length);
 
         // LOAD all — fields should be present
-        Dictionary<string, object?>[] r4 = await client.FtAggregateAsync(idx, "@score:[20 +inf]",
+        FtAggregateRow[] r4 = await client.FtAggregateAsync(idx, "@score:[20 +inf]",
             new FtAggregateOptions { LoadAll = true });
         Assert.Single(r4);
         Assert.Equal("hello there", r4[0]["title"]?.ToString());
@@ -422,7 +418,7 @@ public class VssCommandTests(TestConfiguration config)
             ],
             new FtCreateOptions { DataType = IndexDataType.JSON, Prefixes = ["123"] });
 
-        Dictionary<string, object?> info = await client.FtInfoAsync(idx);
+        Dictionary<string, object> info = await client.FtInfoAsync(idx);
         Assert.Equal(idx, info["index_name"]?.ToString());
 
         await client.FtDropIndexAsync(idx);
@@ -451,13 +447,13 @@ public class VssCommandTests(TestConfiguration config)
         await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000);
 
-        Dictionary<string, object?> localInfo = await client.FtInfoAsync(idx,
+        Dictionary<string, object> localInfo = await client.FtInfoAsync(idx,
             new FtInfoOptions { Scope = FtInfoScope.LOCAL });
         Assert.Equal(idx, localInfo["index_name"]?.ToString());
         Assert.NotNull(localInfo["num_docs"]);
 
         // LOCAL + ALLSHARDS + CONSISTENT
-        Dictionary<string, object?> withFlags = await client.FtInfoAsync(idx,
+        Dictionary<string, object> withFlags = await client.FtInfoAsync(idx,
             new FtInfoOptions
             {
                 Scope = FtInfoScope.LOCAL,
@@ -467,7 +463,7 @@ public class VssCommandTests(TestConfiguration config)
         Assert.Equal(idx, withFlags["index_name"]?.ToString());
 
         // LOCAL + SOMESHARDS + INCONSISTENT
-        Dictionary<string, object?> withAltFlags = await client.FtInfoAsync(idx,
+        Dictionary<string, object> withAltFlags = await client.FtInfoAsync(idx,
             new FtInfoOptions
             {
                 Scope = FtInfoScope.LOCAL,
@@ -494,8 +490,7 @@ public class VssCommandTests(TestConfiguration config)
             [new VectorFieldFlat("vec", DistanceMetric.L2, 2)], null);
 
         // AliasAdd
-        string addResult = await client.FtAliasAddAsync(alias1, idx);
-        Assert.Equal("OK", addResult);
+        await client.FtAliasAddAsync(alias1, idx);
 
         Dictionary<string, string> aliases = await client.FtAliasListAsync();
         Assert.Equal(idx, aliases[alias1]);
@@ -505,18 +500,15 @@ public class VssCommandTests(TestConfiguration config)
             client.FtAliasAddAsync(alias1, idx));
 
         // AliasUpdate creates alias2
-        string updateResult = await client.FtAliasUpdateAsync(alias2, idx);
-        Assert.Equal("OK", updateResult);
+        await client.FtAliasUpdateAsync(alias2, idx);
 
         aliases = await client.FtAliasListAsync();
         Assert.Equal(idx, aliases[alias1]);
         Assert.Equal(idx, aliases[alias2]);
 
         // AliasDel
-        string delResult = await client.FtAliasDelAsync(alias2);
-        Assert.Equal("OK", delResult);
-        delResult = await client.FtAliasDelAsync(alias1);
-        Assert.Equal("OK", delResult);
+        await client.FtAliasDelAsync(alias2);
+        await client.FtAliasDelAsync(alias1);
 
         // Delete non-existent → error
         await Assert.ThrowsAnyAsync<Exception>(() =>
@@ -539,7 +531,7 @@ public class VssCommandTests(TestConfiguration config)
         string prefix = "{" + Guid.NewGuid() + "}:";
         string idx = prefix + "index";
 
-        string result = await client.FtCreateAsync(idx,
+        await client.FtCreateAsync(idx,
             [new TextField("title")],
             new FtCreateOptions
             {
@@ -549,7 +541,6 @@ public class VssCommandTests(TestConfiguration config)
                 Language = "english",
                 SkipInitialScan = true,
             });
-        Assert.Equal("OK", result);
         await client.FtDropIndexAsync(idx);
     }
 
@@ -824,7 +815,7 @@ public class VssCommandTests(TestConfiguration config)
     public async Task FtCreate_MultiplePrefixes_ReturnsOk(BaseClient client)
     {
         await SkipIfModuleNotAvailable(client);
-        string result = await client.FtCreateAsync(Guid.NewGuid().ToString(),
+        await client.FtCreateAsync(Guid.NewGuid().ToString(),
             [
                 new TagField("author_id"),
                 new TagField("author_ids"),
@@ -836,7 +827,6 @@ public class VssCommandTests(TestConfiguration config)
                 DataType = IndexDataType.HASH,
                 Prefixes = ["author:details:", "book:details:"],
             });
-        Assert.Equal("OK", result);
     }
 
     // ── FT.CREATE error cases ─────────────────────────────────────────────────
@@ -901,7 +891,7 @@ public class VssCommandTests(TestConfiguration config)
         }
         await Task.Delay(1000);
 
-        Dictionary<string, object?>[] result = await client.FtAggregateAsync(idx, "*",
+        FtAggregateRow[] result = await client.FtAggregateAsync(idx, "*",
             new FtAggregateOptions
             {
                 LoadAll = true,
@@ -961,7 +951,7 @@ public class VssCommandTests(TestConfiguration config)
         // PRIMARY scope — works if coordinator is enabled, otherwise rejected with specific error
         try
         {
-            Dictionary<string, object?> primaryInfo = await client.FtInfoAsync(idx,
+            Dictionary<string, object> primaryInfo = await client.FtInfoAsync(idx,
                 new FtInfoOptions { Scope = FtInfoScope.PRIMARY });
             Assert.Equal(idx, primaryInfo["index_name"]?.ToString());
         }
@@ -973,7 +963,7 @@ public class VssCommandTests(TestConfiguration config)
         // CLUSTER scope — works if coordinator is enabled, otherwise rejected with specific error
         try
         {
-            Dictionary<string, object?> clusterInfo = await client.FtInfoAsync(idx,
+            Dictionary<string, object> clusterInfo = await client.FtInfoAsync(idx,
                 new FtInfoOptions { Scope = FtInfoScope.CLUSTER });
             Assert.Equal(idx, clusterInfo["index_name"]?.ToString());
         }
@@ -1091,7 +1081,7 @@ public class VssCommandTests(TestConfiguration config)
 
         await Task.Delay(1000);
 
-        Dictionary<string, object?>[] result = await client.FtAggregateAsync(idx, "*",
+        FtAggregateRow[] result = await client.FtAggregateAsync(idx, "*",
             new FtAggregateOptions
             {
                 LoadFields = ["__key"],

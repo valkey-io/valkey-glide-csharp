@@ -9,15 +9,15 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient : IVectorSearchCommands
 {
     /// <inheritdoc/>
-    public async Task<string> FtCreateAsync(string indexName, IField[] schema, FtCreateOptions? options = null)
+    public async Task FtCreateAsync(string indexName, IEnumerable<IField> schema, FtCreateOptions? options = null)
         => await Command(Request.FtCreate(indexName, schema, options));
 
     /// <inheritdoc/>
-    public async Task<string> FtDropIndexAsync(string indexName)
+    public async Task FtDropIndexAsync(string indexName)
         => await Command(Request.FtDropIndex(indexName));
 
     /// <inheritdoc/>
-    public async Task<string[]> FtListAsync()
+    public async Task<ISet<string>> FtListAsync()
         => await Command(Request.FtList());
 
     /// <inheritdoc/>
@@ -25,23 +25,23 @@ public abstract partial class BaseClient : IVectorSearchCommands
         => await Command(Request.FtSearch(indexName, query, options));
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, object?>[]> FtAggregateAsync(string indexName, string query, FtAggregateOptions? options = null)
+    public async Task<FtAggregateRow[]> FtAggregateAsync(string indexName, string query, FtAggregateOptions? options = null)
         => await Command(Request.FtAggregate(indexName, query, options));
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, object?>> FtInfoAsync(string indexName, FtInfoOptions? options = null)
+    public async Task<Dictionary<string, object>> FtInfoAsync(string indexName, FtInfoOptions? options = null)
         => await Command(Request.FtInfo(indexName, options));
 
     /// <inheritdoc/>
-    public async Task<string> FtAliasAddAsync(string alias, string indexName)
+    public async Task FtAliasAddAsync(string alias, string indexName)
         => await Command(Request.FtAliasAdd(alias, indexName));
 
     /// <inheritdoc/>
-    public async Task<string> FtAliasDelAsync(string alias)
+    public async Task FtAliasDelAsync(string alias)
         => await Command(Request.FtAliasDel(alias));
 
     /// <inheritdoc/>
-    public async Task<string> FtAliasUpdateAsync(string alias, string indexName)
+    public async Task FtAliasUpdateAsync(string alias, string indexName)
         => await Command(Request.FtAliasUpdate(alias, indexName));
 
     /// <inheritdoc/>
