@@ -65,8 +65,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
             var configBuilder = CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(configuration);
 
             var subscriptionsConfig = new ClusterPubSubSubscriptionConfig();
-            subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
-            configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
+            _ = subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
+            _ = configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
 
             config = configBuilder.Build();
         }
@@ -76,8 +76,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
             var configBuilder = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration);
 
             var subscriptionsConfig = new StandalonePubSubSubscriptionConfig();
-            subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
-            configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
+            _ = subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
+            _ = configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
 
             config = configBuilder.Build();
         }
@@ -216,7 +216,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         config.UseTls = configuration.Ssl;
         foreach (var cert in configuration._trustedIssuers)
         {
-            config.WithTrustedCertificate(cert);
+            _ = config.WithTrustedCertificate(cert);
         }
 
         _ = configuration.ConnectTimeout.HasValue ? config.ConnectionTimeout = TimeSpan.FromMilliseconds(configuration.ConnectTimeout.Value) : new();
@@ -360,7 +360,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            _subscriptions.Remove(channel, out var sub);
+            _ = _subscriptions.Remove(channel, out var sub);
             sub?.Dispose();
         }
     }

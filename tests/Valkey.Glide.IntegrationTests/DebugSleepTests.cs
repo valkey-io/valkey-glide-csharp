@@ -18,7 +18,7 @@ public class DebugSleepTests
     public async Task ErrorIfTimedOut()
     {
         await using GlideClient client = TestConfiguration.LowTimeoutStandaloneClient();
-        await Assert.ThrowsAsync<TimeoutException>(() =>
+        _ = await Assert.ThrowsAsync<TimeoutException>(() =>
             client.CustomCommand(["debug", "sleep", "0.5"])
         );
     }
@@ -38,7 +38,7 @@ public class DebugSleepTests
         BaseBatchOptions options = isCluster ? new ClusterBatchOptions(timeout: 100) : new BatchOptions(timeout: 100);
 
         // Expect a timeout exception on short timeout
-        await Assert.ThrowsAsync<TimeoutException>(() => isCluster
+        _ = await Assert.ThrowsAsync<TimeoutException>(() => isCluster
                 ? ((GlideClusterClient)client).Exec((ClusterBatch)batch, true, (ClusterBatchOptions)options)
                 : ((GlideClient)client).Exec((Batch)batch, true, (BatchOptions)options));
 
