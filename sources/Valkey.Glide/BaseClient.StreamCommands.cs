@@ -7,10 +7,17 @@ namespace Valkey.Glide;
 
 public partial class BaseClient : IStreamCommands
 {
-    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags)
+    public async Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        ValkeyValue streamField,
+        ValkeyValue streamValue,
+        ValkeyValue? messageId,
+        int? maxLength,
+        bool useApproximateMaxLength,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, null, false, flags);
+        return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, null, false);
     }
 
     public async Task<ValkeyValue> StreamAddAsync(
@@ -19,13 +26,22 @@ public partial class BaseClient : IStreamCommands
         ValkeyValue? messageId,
          int? maxLength,
          bool useApproximateMaxLength,
-         CommandFlags flags)
+         CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, null, false, flags);
+        return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, null, false);
     }
 
-    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, bool noMakeStream = false, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        ValkeyValue streamField,
+        ValkeyValue streamValue,
+        ValkeyValue? messageId = null,
+        long? maxLength = null,
+        bool useApproximateMaxLength = false,
+        long? limit = null,
+        bool noMakeStream = false,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.StreamAddAsync(
