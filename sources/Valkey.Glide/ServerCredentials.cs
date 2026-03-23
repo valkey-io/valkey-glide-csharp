@@ -22,16 +22,19 @@ public class ServerCredentials : IDisposable
     public string? Username { get; private set; }
 
     /// <summary>
-    /// The password to use for authenticating connections.
-    /// Required for password-based authentication, must be <c>null</c> for IAM authentication.
-    /// </summary>
-    public string? Password { get; private set; }
-
-    /// <summary>
     /// IAM authentication configuration to use for authenticating connections.
     /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
     /// </summary>
     public IamAuthConfig? IamConfig { get; private set; }
+
+    #endregion
+    #region Interal Properties
+
+    /// <summary>
+    /// The password to use for authenticating connections.
+    /// Required for password-based authentication, must be <c>null</c> for IAM authentication.
+    /// </summary>
+    internal string? Password { get; private set; }
 
     #endregion
     #region Constructors
