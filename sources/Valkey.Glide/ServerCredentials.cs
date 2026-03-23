@@ -6,7 +6,7 @@ namespace Valkey.Glide;
 /// Represents the credentials for connecting to a server.
 /// Supports both password-based and IAM authentication modes, which are mutually exclusive.
 /// </summary>
-public class ServerCredentials : IDisposable
+public sealed class ServerCredentials : IDisposable
 {
     #region Fields
 
