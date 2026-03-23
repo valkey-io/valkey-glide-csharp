@@ -30,23 +30,38 @@ public sealed class IamAuthConfig : IDisposable
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string ClusterName { get; private set; }
+    public string ClusterName
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     /// <summary>
     /// The AWS service type.
     /// </summary>
-    public ServiceType ServiceType { get; }
+    public ServiceType ServiceType
+    {
+        get { ThrowIfDisposed(); return field; }
+    }
 
     /// <summary>
     /// The AWS region where the cluster is located.
     /// </summary>
-    public string Region { get; private set; }
+    public string Region
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     /// <summary>
     /// Optional refresh interval in seconds.
     /// Must be between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> inclusive if specified.
     /// </summary>
-    public uint? RefreshIntervalSeconds { get; private set; }
+    public uint? RefreshIntervalSeconds
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     #endregion
     #region Constructors
@@ -87,15 +102,18 @@ public sealed class IamAuthConfig : IDisposable
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
-        // Omit sensitive data.
-        => $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
+    {
+        ThrowIfDisposed();
+        return $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
+    }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Clears sensitive data.
+    /// </summary>
     public void Dispose()
     {
         if (!_disposed)
         {
-            // Clear sensitive data.
             ClusterName = string.Empty;
             Region = string.Empty;
             RefreshIntervalSeconds = null;
@@ -105,6 +123,15 @@ public sealed class IamAuthConfig : IDisposable
 
         GC.SuppressFinalize(this);
     }
+
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Throws <see cref="ObjectDisposedException"/> if the object is disposed.
+    /// </summary>
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(_disposed, this);
 
     #endregion
 }
