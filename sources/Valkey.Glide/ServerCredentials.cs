@@ -28,6 +28,7 @@ public sealed class ServerCredentials : IDisposable
     /// <summary>
     /// IAM authentication configuration to use for authenticating connections.
     /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
+    /// It is not owned by the <see cref="ServerCredentials"/> instance - the caller is responsible for disposing it.
     /// </summary>
     public IamAuthConfig? IamConfig
     {
