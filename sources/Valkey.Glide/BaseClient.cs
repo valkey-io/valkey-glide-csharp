@@ -163,7 +163,8 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         {
             var msg = "SECURITY WARNING: Insecure TLS connection established. "
                 + "Certificate verification is disabled. "
-                + "This is strongly discouraged in production environments.";
+                + "This is strongly discouraged in production environments."
+                + "See https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode for more details.";
             Logger.Log(Level.Warn, typeof(T).Name, msg);
         }
 

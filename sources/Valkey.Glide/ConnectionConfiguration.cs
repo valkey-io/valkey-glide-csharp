@@ -439,6 +439,7 @@ public abstract class ConnectionConfiguration
         /// <br />
         /// <b>SECURITY WARNING</b>: Insecure mode is only for development and testing environments.
         /// <b>It is strongly discouraged in production environments</b> as it introduces security risks such as man-in-the-middle attacks.
+        /// See <seealso href="https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode">Insecure TLS Mode</seealso> for more details.
         /// <br />
         /// Requires <see cref="UseTls"/> to be enabled, otherwise throws <see cref="ArgumentException"/>.
         /// </summary>
@@ -457,7 +458,8 @@ public abstract class ConnectionConfiguration
                 {
                     var msg = "SECURITY WARNING: Insecure TLS mode enabled. "
                         + "Certificate verification is disabled. "
-                        + "This is strongly discouraged in production environments.";
+                        + "This is strongly discouraged in production environments."
+                        + "See https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode for more details.";
                     Logger.Log(Level.Warn, GetType().Name, msg);
                 }
 
