@@ -639,7 +639,7 @@ public abstract class ConnectionConfiguration
             Config.AuthenticationInfo = new AuthenticationInfo
             (
                 credentials.Username,
-                credentials.Password,
+                credentials.Password != null ? new string(credentials.Password) : null,
                 iamCredentials
             );
 

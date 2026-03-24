@@ -42,7 +42,7 @@ public sealed class ServerCredentials : IDisposable
     /// The password to use for authenticating connections.
     /// Required for password-based authentication, must be <c>null</c> for IAM authentication.
     /// </summary>
-    internal string? Password
+    internal char[]? Password
     {
         get { ThrowIfDisposed(); return field; }
         private set;
@@ -61,7 +61,7 @@ public sealed class ServerCredentials : IDisposable
         ArgumentNullException.ThrowIfNull(password, nameof(password));
 
         Username = username;
-        Password = password;
+        Password = password.ToCharArray();
         IamConfig = null;
     }
 
@@ -74,7 +74,7 @@ public sealed class ServerCredentials : IDisposable
         ArgumentNullException.ThrowIfNull(password, nameof(password));
 
         Username = null;
-        Password = password;
+        Password = password.ToCharArray();
         IamConfig = null;
     }
 
@@ -122,7 +122,13 @@ public sealed class ServerCredentials : IDisposable
         if (!_disposed)
         {
             Username = null;
-            Password = null;
+
+            if (Password != null)
+            {
+                Array.Clear(Password);
+                Password = null;
+            }
+
             IamConfig = null;
 
             _disposed = true;
