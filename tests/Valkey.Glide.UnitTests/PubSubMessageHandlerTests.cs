@@ -15,7 +15,7 @@ public class PubSubMessageHandlerTests
         using PubSubMessageHandler handler = new PubSubMessageHandler(callback, context);
 
         // Assert - GetQueue should throw when callback is configured
-        Assert.Throws<InvalidOperationException>(() => handler.GetQueue());
+        _ = Assert.Throws<InvalidOperationException>(() => handler.GetQueue());
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class PubSubMessageHandlerTests
         using PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => handler.HandleMessage(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => handler.HandleMessage(null!));
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class PubSubMessageHandlerTests
         PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act & Assert
-        Assert.Throws<ObjectDisposedException>(() => handler.HandleMessage(message));
+        _ = Assert.Throws<ObjectDisposedException>(() => handler.HandleMessage(message));
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class PubSubMessageHandlerTests
         handler.Dispose();
 
         // Act & Assert
-        Assert.Throws<ObjectDisposedException>(() => handler.GetQueue());
+        _ = Assert.Throws<ObjectDisposedException>(() => handler.GetQueue());
     }
 
     [Fact]
@@ -266,7 +266,7 @@ public class PubSubMessageHandlerTests
         MessageCallback callback = new MessageCallback((msg, ctx) =>
         {
             callbackStarted.Set();
-            disposeStarted.Wait(TimeSpan.FromSeconds(5)); // Wait for dispose to start
+            _ = disposeStarted.Wait(TimeSpan.FromSeconds(5)); // Wait for dispose to start
             Thread.Sleep(100); // Simulate some work
             callbackCompleted = true;
         });
@@ -276,7 +276,7 @@ public class PubSubMessageHandlerTests
 
         // Act
         Task handleTask = Task.Run(() => handler.HandleMessage(message));
-        callbackStarted.Wait(TimeSpan.FromSeconds(5));
+        _ = callbackStarted.Wait(TimeSpan.FromSeconds(5));
 
         Task disposeTask = Task.Run(() =>
         {

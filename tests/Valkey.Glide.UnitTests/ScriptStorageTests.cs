@@ -29,7 +29,7 @@ public class ScriptStorageTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
         {
-            FFI.StoreScript(null!);
+            _ = FFI.StoreScript(null!);
         });
 
         Assert.Equal("script", exception.ParamName);
@@ -41,7 +41,7 @@ public class ScriptStorageTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
         {
-            FFI.StoreScript(string.Empty);
+            _ = FFI.StoreScript(string.Empty);
         });
 
         Assert.Equal("script", exception.ParamName);

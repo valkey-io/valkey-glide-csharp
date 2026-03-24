@@ -68,7 +68,7 @@ public class ClusterScriptOptionsTests
         var route = Route.Random;
 
         // Act
-        options.WithRoute(route);
+        _ = options.WithRoute(route);
 
         // Assert
         Assert.Same(route, options.Route);
@@ -82,7 +82,7 @@ public class ClusterScriptOptionsTests
         var route = Route.AllNodes;
 
         // Act
-        options.WithRoute(route);
+        _ = options.WithRoute(route);
 
         // Assert
         Assert.Same(route, options.Route);
@@ -96,7 +96,7 @@ public class ClusterScriptOptionsTests
         var route = new Route.SlotIdRoute(1234, Route.SlotType.Primary);
 
         // Act
-        options.WithRoute(route);
+        _ = options.WithRoute(route);
 
         // Assert
         Assert.Same(route, options.Route);
@@ -110,7 +110,7 @@ public class ClusterScriptOptionsTests
         var route = new Route.SlotKeyRoute("mykey", Route.SlotType.Replica);
 
         // Act
-        options.WithRoute(route);
+        _ = options.WithRoute(route);
 
         // Assert
         Assert.Same(route, options.Route);
@@ -124,7 +124,7 @@ public class ClusterScriptOptionsTests
         var route = new Route.ByAddressRoute("localhost", 6379);
 
         // Act
-        options.WithRoute(route);
+        _ = options.WithRoute(route);
 
         // Assert
         Assert.Same(route, options.Route);
@@ -154,7 +154,7 @@ public class ClusterScriptOptionsTests
         var options = new ClusterScriptOptions();
 
         // Act
-        options.WithArgs([]);
+        _ = options.WithArgs([]);
 
         // Assert
         Assert.NotNull(options.Args);
@@ -169,7 +169,7 @@ public class ClusterScriptOptionsTests
             .WithArgs("arg1", "arg2");
 
         // Act
-        options.WithArgs("arg3", "arg4");
+        _ = options.WithArgs("arg3", "arg4");
 
         // Assert
         Assert.NotNull(options.Args);
@@ -186,7 +186,7 @@ public class ClusterScriptOptionsTests
             .WithRoute(route1);
 
         // Act
-        options.WithRoute(route2);
+        _ = options.WithRoute(route2);
 
         // Assert
         Assert.Same(route2, options.Route);

@@ -55,7 +55,7 @@ public class FunctionDataModelTests
         FunctionInfo[] functions = [new FunctionInfo("func1", null, [])];
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LibraryInfo(null!, engine, functions));
+        _ = Assert.Throws<ArgumentNullException>(() => new LibraryInfo(null!, engine, functions));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class FunctionDataModelTests
         FunctionInfo[] functions = [new FunctionInfo("func1", null, [])];
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LibraryInfo(name, null!, functions));
+        _ = Assert.Throws<ArgumentNullException>(() => new LibraryInfo(name, null!, functions));
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class FunctionDataModelTests
         string engine = "LUA";
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LibraryInfo(name, engine, null!));
+        _ = Assert.Throws<ArgumentNullException>(() => new LibraryInfo(name, engine, null!));
     }
 
     #endregion

@@ -65,13 +65,13 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options)
         => await Batch(batch, raiseOnError, options);
 
-    public async Task<object?> CustomCommand(GlideString[] args)
-        => await Command(Request.CustomCommand(args));
+    public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
+        => await Command(Request.CustomCommand([.. args]));
 
     public async Task<string> InfoAsync() => await InfoAsync([]);
 
-    public async Task<string> InfoAsync(InfoOptions.Section[] sections)
-        => await Command(Request.Info(sections));
+    public async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
+        => await Command(Request.Info([.. sections]));
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
@@ -94,19 +94,19 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigResetStatisticsAsync());
+        _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigRewriteAsync());
+        _ = await Command(Request.ConfigRewriteAsync());
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigSetAsync(setting, value));
+        _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -118,13 +118,13 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FlushAllDatabasesAsync());
+        _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FlushDatabaseAsync(database));
+        _ = await Command(Request.FlushDatabaseAsync(database));
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
@@ -160,10 +160,12 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Select(index));
+        _ = await Command(Request.Select(index));
     }
 
+#pragma warning disable IDE0060 // Unused 'database' parameter needed for StackExchange.Redis compatibility
     public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+#pragma warning restore IDE0060
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
@@ -196,16 +198,16 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
-    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Watch(keys));
+        _ = await Command(Request.Watch(keys));
     }
 
     public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unwatch());
+        _ = await Command(Request.Unwatch());
     }
 
     protected override async Task<Version> GetServerVersionAsync()

@@ -11,9 +11,9 @@ internal class Database : GlideClient, IDatabase
 {
     public new async Task<string> InfoAsync() => await InfoAsync([]);
 
-    public new async Task<string> InfoAsync(InfoOptions.Section[] sections)
+    public new async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
         => IsCluster
-            ? await Command(Request.Info(sections), Route.Random)
+            ? await Command(Request.Info([.. sections]), Route.Random)
             : await base.InfoAsync(sections);
 
     public IBatch CreateBatch(object? asyncState = null)

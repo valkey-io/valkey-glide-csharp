@@ -128,7 +128,7 @@ public class ConnectionMultiplexerReadFromMappingTests
 
         // Assert - Verify ReadFrom flows through to ConnectionConfig
         ConnectionConfig connectionConfig = standaloneConfig.ToRequest();
-        Assert.NotNull(connectionConfig.ReadFrom);
+        _ = Assert.NotNull(connectionConfig.ReadFrom);
         Assert.Equal(ReadFromStrategy.AzAffinity, connectionConfig.ReadFrom.Value.Strategy);
         Assert.Equal("ap-south-1", connectionConfig.ReadFrom.Value.Az);
     }
@@ -153,7 +153,7 @@ public class ConnectionMultiplexerReadFromMappingTests
 
         // The fact that ToFfi() doesn't throw and the connectionConfig has the correct ReadFrom
         // indicates that the mapping is working correctly
-        Assert.NotNull(connectionConfig.ReadFrom);
+        _ = Assert.NotNull(connectionConfig.ReadFrom);
         Assert.Equal(ReadFromStrategy.PreferReplica, connectionConfig.ReadFrom.Value.Strategy);
         Assert.Null(connectionConfig.ReadFrom.Value.Az);
     }
@@ -210,7 +210,7 @@ public class ConnectionMultiplexerReadFromMappingTests
 
         // Verify other configuration is also correctly mapped (basic checks)
         Assert.Equal(FFI.TlsMode.SecureTls, standaloneConfig.Request.TlsMode);
-        Assert.NotNull(standaloneConfig.Request.AuthenticationInfo);
+        _ = Assert.NotNull(standaloneConfig.Request.AuthenticationInfo);
         Assert.Equal("TestClient", standaloneConfig.Request.ClientName);
     }
 
@@ -230,7 +230,7 @@ public class ConnectionMultiplexerReadFromMappingTests
         // Assert - Standalone
         Assert.NotNull(standaloneConfig);
         ConnectionConfig standaloneConnectionConfig = standaloneConfig.ToRequest();
-        Assert.NotNull(standaloneConnectionConfig.ReadFrom);
+        _ = Assert.NotNull(standaloneConnectionConfig.ReadFrom);
         Assert.Equal(ReadFromStrategy.AzAffinity, standaloneConnectionConfig.ReadFrom.Value.Strategy);
         Assert.Equal(testAz, standaloneConnectionConfig.ReadFrom.Value.Az);
 
@@ -243,7 +243,7 @@ public class ConnectionMultiplexerReadFromMappingTests
         // Assert - Cluster
         Assert.NotNull(clusterConfig);
         ConnectionConfig clusterConnectionConfig = clusterConfig.ToRequest();
-        Assert.NotNull(clusterConnectionConfig.ReadFrom);
+        _ = Assert.NotNull(clusterConnectionConfig.ReadFrom);
         Assert.Equal(ReadFromStrategy.AzAffinity, clusterConnectionConfig.ReadFrom.Value.Strategy);
         Assert.Equal(testAz, clusterConnectionConfig.ReadFrom.Value.Az);
     }
