@@ -9,6 +9,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// OpenTelemetry integration for Valkey GLIDE.
 /// OpenTelemetry can only be initialized once per process.
+/// See <see href="https://glide.valkey.io/how-to/monitoring/open-telemetry/">OpenTelemetry documentation</see> for more details.
 /// </summary>
 public static class OpenTelemetry
 {
