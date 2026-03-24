@@ -49,7 +49,7 @@ public class PubSubConfigurationTests
         var builder = new StandaloneClientConfigurationBuilder();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => builder.WithPubSubSubscriptions(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithPubSubSubscriptions(null!));
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public class PubSubConfigurationTests
         var builder = new ClusterClientConfigurationBuilder();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => builder.WithPubSubSubscriptions(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => builder.WithPubSubSubscriptions(null!));
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public class PubSubConfigurationTests
         var builder = new StandaloneClientConfigurationBuilder();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => { new StandalonePubSubSubscriptionConfig().WithChannel(""); });
+        _ = Assert.Throws<ArgumentException>(() => { _ = new StandalonePubSubSubscriptionConfig().WithChannel(""); });
     }
 
     [Fact]
@@ -236,7 +236,7 @@ public class PubSubConfigurationTests
         var builder = new ClusterClientConfigurationBuilder();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => { new ClusterPubSubSubscriptionConfig().WithShardedChannel(""); });
+        _ = Assert.Throws<ArgumentException>(() => { _ = new ClusterPubSubSubscriptionConfig().WithShardedChannel(""); });
     }
 
     #endregion

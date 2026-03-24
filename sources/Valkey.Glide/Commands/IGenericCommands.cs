@@ -30,7 +30,7 @@ public interface IGenericCommands
     /// </remarks>
     /// <param name="args">A list including the command name and arguments for the custom command.</param>
     /// <returns>The returning value depends on the executed command.</returns>
-    Task<object?> CustomCommand(GlideString[] args);
+    Task<object?> CustomCommand(IEnumerable<GlideString> args);
 
     /// <summary>
     /// Executes a batch by processing the queued commands.

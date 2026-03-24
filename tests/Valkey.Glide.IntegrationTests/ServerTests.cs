@@ -114,12 +114,12 @@ public class ServerTests(TestConfiguration config)
 
             // Test GetConnectionId from ConnectionMultiplexer (matching SER pattern)
             long? connectionId = await conn.GetConnectionIdAsync(server.EndPoint, ConnectionType.Interactive);
-            Assert.NotNull(connectionId);
+            _ = Assert.NotNull(connectionId);
             Assert.Equal(clientId, connectionId.Value);
 
             // Test synchronous version
             long? syncConnectionId = conn.GetConnectionId(server.EndPoint, ConnectionType.Interactive);
-            Assert.NotNull(syncConnectionId);
+            _ = Assert.NotNull(syncConnectionId);
             Assert.Equal(clientId, syncConnectionId.Value);
         }
     }

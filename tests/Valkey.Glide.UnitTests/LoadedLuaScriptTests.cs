@@ -31,7 +31,7 @@ public class LoadedLuaScriptTests
         string loadedScript = "return 1";
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(null!, hash, loadedScript));
+        _ = Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(null!, hash, loadedScript));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class LoadedLuaScriptTests
         string loadedScript = script.ExecutableScript;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(script, null!, loadedScript));
+        _ = Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(script, null!, loadedScript));
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class LoadedLuaScriptTests
         LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => loaded.Evaluate(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => loaded.Evaluate(null!));
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class LoadedLuaScriptTests
         LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => loaded.EvaluateAsync(null!));
+        _ = await Assert.ThrowsAsync<ArgumentNullException>(() => loaded.EvaluateAsync(null!));
     }
 
     [Fact]

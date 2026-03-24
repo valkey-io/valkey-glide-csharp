@@ -70,21 +70,21 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
             ? throw new RequestException("Retry strategy is not supported for atomic batches (transactions).")
             : await Batch(batch, raiseOnError, options);
 
-    public async Task<ClusterValue<object?>> CustomCommand(GlideString[] args)
-        => await Command(Request.CustomCommand(args, resp => ResponseConverters.HandleCustomCommandClusterValue(resp)));
+    public async Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args)
+        => await Command(Request.CustomCommand([.. args], resp => ResponseConverters.HandleCustomCommandClusterValue(resp)));
 
-    public async Task<ClusterValue<object?>> CustomCommand(GlideString[] args, Route route)
-        => await Command(Request.CustomCommand(args, resp => ResponseConverters.HandleCustomCommandClusterValue(resp, route)), route);
+    public async Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args, Route route)
+        => await Command(Request.CustomCommand([.. args], resp => ResponseConverters.HandleCustomCommandClusterValue(resp, route)), route);
 
     public async Task<Dictionary<string, string>> InfoAsync() => await InfoAsync([]);
 
-    public async Task<Dictionary<string, string>> InfoAsync(InfoOptions.Section[] sections)
-        => await Command(Request.Info(sections).ToMultiNodeValue());
+    public async Task<Dictionary<string, string>> InfoAsync(IEnumerable<InfoOptions.Section> sections)
+        => await Command(Request.Info([.. sections]).ToMultiNodeValue());
 
     public async Task<ClusterValue<string>> InfoAsync(Route route) => await InfoAsync([], route);
 
-    public async Task<ClusterValue<string>> InfoAsync(InfoOptions.Section[] sections, Route route)
-        => await Command(Request.Info(sections).ToClusterValue(route is SingleNodeRoute), route);
+    public async Task<ClusterValue<string>> InfoAsync(IEnumerable<InfoOptions.Section> sections, Route route)
+        => await Command(Request.Info([.. sections]).ToClusterValue(route is SingleNodeRoute), route);
 
     public async Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
     {
@@ -125,37 +125,37 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
+        _ = await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
     }
 
     public async Task ConfigResetStatisticsAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigResetStatisticsAsync(), route);
+        _ = await Command(Request.ConfigResetStatisticsAsync(), route);
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigRewriteAsync(), Route.Random);
+        _ = await Command(Request.ConfigRewriteAsync(), Route.Random);
     }
 
     public async Task ConfigRewriteAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigRewriteAsync(), route);
+        _ = await Command(Request.ConfigRewriteAsync(), route);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
+        _ = await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigSetAsync(setting, value), route);
+        _ = await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
     public async Task<Dictionary<string, long>> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
@@ -183,27 +183,27 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
+        _ = await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
     }
 
     public async Task FlushAllDatabasesAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FlushAllDatabasesAsync(), route);
+        _ = await Command(Request.FlushAllDatabasesAsync(), route);
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        await Command(Request.FlushDatabaseAsync(database), AllPrimaries);
+        _ = await Command(Request.FlushDatabaseAsync(database), AllPrimaries);
     }
 
     public async Task FlushDatabaseAsync(Route route, int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        await Command(Request.FlushDatabaseAsync(database), route);
+        _ = await Command(Request.FlushDatabaseAsync(database), route);
     }
 
     public async Task<Dictionary<string, DateTime>> LastSaveAsync(CommandFlags flags = CommandFlags.None)
@@ -287,25 +287,25 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public async Task SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Select(index), Route.Random);
+        _ = await Command(Request.Select(index), Route.Random);
     }
 
-    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Watch(keys));
+        _ = await Command(Request.Watch(keys));
     }
 
     public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unwatch(), AllPrimaries);
+        _ = await Command(Request.Unwatch(), AllPrimaries);
     }
 
     public async Task UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unwatch(), route);
+        _ = await Command(Request.Unwatch(), route);
     }
 
     protected override async Task<Version> GetServerVersionAsync()

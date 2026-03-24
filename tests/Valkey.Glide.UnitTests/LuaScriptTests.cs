@@ -99,7 +99,7 @@ public class LuaScriptTests
     {
         // Arrange
         string script = "return redis.call('GET', @key)";
-        LuaScript.Prepare(script);
+        _ = LuaScript.Prepare(script);
         int countBefore = LuaScript.GetCachedScriptCount();
 
         // Act
@@ -120,9 +120,9 @@ public class LuaScriptTests
         string script2 = "return redis.call('SET', @key, @value)";
 
         // Act
-        LuaScript.Prepare(script1);
+        _ = LuaScript.Prepare(script1);
         int countAfterFirst = LuaScript.GetCachedScriptCount();
-        LuaScript.Prepare(script2);
+        _ = LuaScript.Prepare(script2);
         int countAfterSecond = LuaScript.GetCachedScriptCount();
 
         // Assert
@@ -138,7 +138,7 @@ public class LuaScriptTests
         string script = "return redis.call('GET', @key)";
 
         // Act
-        LuaScript.Prepare(script);
+        _ = LuaScript.Prepare(script);
         // Don't keep a strong reference
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -180,9 +180,9 @@ public class LuaScriptTests
         (ValkeyKey[] keys, ValkeyValue[] args) = luaScript.ExtractParametersInternal(parameters, null);
 
         // Assert
-        Assert.Single(keys);
+        _ = Assert.Single(keys);
         Assert.Equal("mykey", (string?)keys[0]);
-        Assert.Single(args);
+        _ = Assert.Single(args);
         Assert.Equal("myvalue", (string?)args[0]);
     }
 
@@ -224,10 +224,10 @@ public class LuaScriptTests
         ValkeyKey prefix = new("prefix:");
 
         // Act
-        (ValkeyKey[] keys, ValkeyValue[] args) = luaScript.ExtractParametersInternal(parameters, prefix);
+        (ValkeyKey[] keys, _) = luaScript.ExtractParametersInternal(parameters, prefix);
 
         // Assert
-        Assert.Single(keys);
+        _ = Assert.Single(keys);
         Assert.Equal("prefix:mykey", (string?)keys[0]);
     }
 
@@ -269,9 +269,9 @@ public class LuaScriptTests
         (ValkeyKey[] keys, ValkeyValue[] args) = luaScript.ExtractParametersInternal(parameters, null);
 
         // Assert
-        Assert.Single(keys);
+        _ = Assert.Single(keys);
         Assert.Equal("counter", (string?)keys[0]);
-        Assert.Single(args);
+        _ = Assert.Single(args);
         Assert.Equal(42, (int)args[0]);
     }
 
@@ -288,7 +288,7 @@ public class LuaScriptTests
 
         // Assert
         Assert.Empty(keys);
-        Assert.Single(args);
+        _ = Assert.Single(args);
         Assert.True((bool)args[0]);
     }
 
@@ -306,7 +306,7 @@ public class LuaScriptTests
 
         // Assert
         Assert.Empty(keys);
-        Assert.Single(args);
+        _ = Assert.Single(args);
         Assert.Equal(data, (byte[]?)args[0]);
     }
 
@@ -345,7 +345,7 @@ public class LuaScriptTests
         LuaScript luaScript = LuaScript.Prepare(script);
 
         // Assert
-        Assert.Single(luaScript.Arguments);
+        _ = Assert.Single(luaScript.Arguments);
         Assert.Equal("my_key_name", luaScript.Arguments[0]);
     }
 
