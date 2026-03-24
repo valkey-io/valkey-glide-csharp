@@ -437,8 +437,8 @@ public abstract class ConnectionConfiguration
         /// Configure whether to bypass certificate verification when using
         /// Transport Layer Security (TLS) to connect to the server.
         /// <br />
-        /// Typically used in development or testing environments. <b>Strongly discouraged in production</b>,
-        /// as it introduces security risks such as man-in-the-middle attacks.
+        /// <b>SECURITY WARNING</b>: Insecure mode is only for development and testing environments.
+        /// <b>It is strongly discouraged in production environments</b> as it introduces security risks such as man-in-the-middle attacks.
         /// <br />
         /// Requires <see cref="UseTls"/> to be enabled, otherwise throws <see cref="ArgumentException"/>.
         /// </summary>
