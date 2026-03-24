@@ -219,7 +219,7 @@ public abstract class ConnectionConfiguration
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
-        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DatabaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
@@ -246,7 +246,7 @@ public abstract class ConnectionConfiguration
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
-            _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
+            _ = databaseId.HasValue ? builder.DatabaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
             builder.LazyConnect = lazyConnect;
@@ -272,7 +272,7 @@ public abstract class ConnectionConfiguration
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
-        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DatabaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
@@ -299,7 +299,7 @@ public abstract class ConnectionConfiguration
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
-            _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
+            _ = databaseId.HasValue ? builder.DatabaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
             builder.LazyConnect = lazyConnect;
@@ -555,6 +555,7 @@ public abstract class ConnectionConfiguration
             get => Config.RequestTimeout ?? TimeSpan.FromMilliseconds(250);
             set => Config.RequestTimeout = value;
         }
+
         /// <inheritdoc cref="RequestTimeout" />
         public T WithRequestTimeout(TimeSpan requestTimeout)
         {
@@ -576,6 +577,7 @@ public abstract class ConnectionConfiguration
             get => Config.ConnectionTimeout ?? TimeSpan.FromMilliseconds(250);
             set => Config.ConnectionTimeout = value;
         }
+
         /// <inheritdoc cref="ConnectionTimeout" />
         public T WithConnectionTimeout(TimeSpan connectionTimeout)
         {
@@ -593,6 +595,7 @@ public abstract class ConnectionConfiguration
         {
             set => Config.ReadFrom = value;
         }
+
         /// <inheritdoc cref="ReadFrom" />
         public T WithReadFrom(ReadFrom readFrom)
         {
@@ -731,21 +734,22 @@ public abstract class ConnectionConfiguration
             => WithConnectionRetryStrategy(new RetryStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
 
         #endregion
-        #region DataBase ID
+        #region Database ID
 
         /// <summary>
         /// Index of the logical database to connect to. Must be non-negative and within the range
         /// supported by the server configuration. If not specified, defaults to database 0.
         /// For cluster mode, requires Valkey 9.0+ with cluster-databases configuration enabled.
         /// </summary>
-        public uint DataBaseId
+        public uint DatabaseId
         {
             set => Config.DatabaseId = value;
         }
-        /// <inheritdoc cref="DataBaseId" />
+
+        /// <inheritdoc cref="DatabaseId" />
         public T WithDatabaseId(uint dataBaseId)
         {
-            DataBaseId = dataBaseId;
+            DatabaseId = dataBaseId;
             return (T)this;
         }
 

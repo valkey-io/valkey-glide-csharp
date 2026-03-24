@@ -234,7 +234,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         }
         if (config is StandaloneClientConfigurationBuilder standalone)
         {
-            _ = configuration.DefaultDatabase.HasValue ? standalone.DataBaseId = (uint)configuration.DefaultDatabase.Value : 0;
+            _ = configuration.DefaultDatabase.HasValue ? standalone.DatabaseId = (uint)configuration.DefaultDatabase.Value : 0;
         }
         _ = configuration.ReconnectRetryPolicy.HasValue ? config.ConnectionRetryStrategy = configuration.ReconnectRetryPolicy.Value : new();
         _ = configuration.ReadFrom.HasValue ? config.ReadFrom = configuration.ReadFrom.Value : new();
