@@ -39,7 +39,7 @@ public interface IGenericClusterCommands
     /// </remarks>
     /// <param name="args">A list includes the command name and arguments for the custom command.</param>
     /// <returns>The returning value depends on the executed command.</returns>
-    Task<ClusterValue<object?>> CustomCommand(GlideString[] args);
+    Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args);
 
     /// <summary>
     /// Executes a single command, without checking inputs. Every part of the command, including subcommands,
@@ -68,7 +68,7 @@ public interface IGenericClusterCommands
     /// <param name="args">A list including the command name and arguments for the custom command.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the command to the nodes defined by <c>route</c>.</param>
     /// <returns>The returning value depends on the executed command.</returns>
-    Task<ClusterValue<object?>> CustomCommand(GlideString[] args, Route route);
+    Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args, Route route);
 
     /// <summary>
     /// Executes a batch by processing the queued commands.

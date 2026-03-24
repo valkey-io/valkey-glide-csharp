@@ -56,7 +56,7 @@ public abstract class BasePubSubSubscriptionConfig
         if (!Subscriptions.ContainsKey(mode))
             Subscriptions[mode] = new HashSet<string>();
 
-        Subscriptions[mode].Add(channelOrPattern);
+        _ = Subscriptions[mode].Add(channelOrPattern);
 
         return this;
     }

@@ -13,10 +13,10 @@ public abstract partial class BaseClient : IHyperLogLogCommands
         return await Command(Request.HyperLogLogAddAsync(key, element));
     }
 
-    public async Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue[] elements, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HyperLogLogAddAsync(key, elements));
+        return await Command(Request.HyperLogLogAddAsync(key, [.. elements]));
     }
 
     public async Task<long> HyperLogLogLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
@@ -25,21 +25,21 @@ public abstract partial class BaseClient : IHyperLogLogCommands
         return await Command(Request.HyperLogLogLengthAsync(key));
     }
 
-    public async Task<long> HyperLogLogLengthAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.HyperLogLogLengthAsync(keys));
+        return await Command(Request.HyperLogLogLengthAsync([.. keys]));
     }
 
     public async Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.HyperLogLogMergeAsync(destination, first, second));
+        _ = await Command(Request.HyperLogLogMergeAsync(destination, first, second));
     }
 
-    public async Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys, CommandFlags flags = CommandFlags.None)
+    public async Task HyperLogLogMergeAsync(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.HyperLogLogMergeAsync(destination, sourceKeys));
+        _ = await Command(Request.HyperLogLogMergeAsync(destination, [.. sourceKeys]));
     }
 }

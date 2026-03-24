@@ -40,7 +40,10 @@ public interface IDatabase : IDatabaseAsync
     /// <param name="values">The values to pass to the script (ARGV array).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The result of the script execution.</returns>
-    ValkeyResult ScriptEvaluate(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    ValkeyResult ScriptEvaluate(
+        string script,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -51,7 +54,10 @@ public interface IDatabase : IDatabaseAsync
     /// <param name="values">The values to pass to the script (ARGV array).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The result of the script execution.</returns>
-    ValkeyResult ScriptEvaluate(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    ValkeyResult ScriptEvaluate(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None);
 
     /// <summary>

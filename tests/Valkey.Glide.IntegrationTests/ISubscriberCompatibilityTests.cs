@@ -45,14 +45,14 @@ public class ISubscriberCompatibilityTests
         await subscriber.SubscribeAsync(literal, handler);
 
         // Publish to channel and verify receipt.
-        await publisher.PublishAsync(literal, Message1);
+        _ = await publisher.PublishAsync(literal, Message1);
         await AssertHandlerReceives(received, [(literal, Message1)]);
 
         // Unsubscribe handler.
         await subscriber.UnsubscribeAsync(literal, handler);
 
         // Publish and verify no messages received.
-        await publisher.PublishAsync(literal, Message2);
+        _ = await publisher.PublishAsync(literal, Message2);
         await AssertHandlerReceives(received, []);
     }
 
@@ -68,14 +68,14 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(literal);
 
         // Publish to channel and verify receipt.
-        await publisher.PublishAsync(literal, Message1);
+        _ = await publisher.PublishAsync(literal, Message1);
         await AssertQueueReceives(queue, [(literal, Message1)]);
 
         // Unsubscribe queue.
         await queue.UnsubscribeAsync();
 
         // Publish and verify no messages received.
-        await publisher.PublishAsync(literal, Message2);
+        _ = await publisher.PublishAsync(literal, Message2);
         await AssertQueueReceives(queue, []);
     }
 
@@ -94,14 +94,14 @@ public class ISubscriberCompatibilityTests
         await subscriber.SubscribeAsync(pattern, handler);
 
         // Publish to matching channel and verify receipt.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(pattern, Message1)]);
 
         // Unsubscribe handler.
         await subscriber.UnsubscribeAsync(pattern, handler);
 
         // Publish and verify no messages received.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
     }
 
@@ -118,14 +118,14 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(pattern);
 
         // Publish to matching channel and verify receipt.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue, [(pattern, Message1)]);
 
         // Unsubscribe queue.
         await queue.UnsubscribeAsync();
 
         // Publish and verify no messages received.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertQueueReceives(queue, []);
     }
 
@@ -147,14 +147,14 @@ public class ISubscriberCompatibilityTests
         await subscriber.SubscribeAsync(channel, handler);
 
         // Publish to channel and verify receipt.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
 
         // Unsubscribe handler.
         await subscriber.UnsubscribeAsync(channel, handler);
 
         // Publish and verify no messages received.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
     }
 
@@ -174,14 +174,14 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(channel);
 
         // Publish to channel and verify receipt.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
         // Unsubscribe queue.
         await queue.UnsubscribeAsync();
 
         // Publish and verify no messages received.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertQueueReceives(queue, []);
     }
 
@@ -203,7 +203,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.SubscribeAsync(channel, handler2);
 
         // Publish to channel and verify both handlers receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received1, [(channel, Message1)]);
         await AssertHandlerReceives(received2, [(channel, Message1)]);
 
@@ -211,7 +211,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAsync(channel, handler1);
 
         // Publish and verify only second handler receives.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received1, []);
         await AssertHandlerReceives(received2, [(channel, Message2)]);
 
@@ -219,7 +219,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAsync(channel, handler2);
 
         // Publish and verify no handlers receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received1, []);
         await AssertHandlerReceives(received2, []);
     }
@@ -237,7 +237,7 @@ public class ISubscriberCompatibilityTests
         var queue2 = await subscriber.SubscribeAsync(channel);
 
         // Publish to channel and verify both queues receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue1, [(channel, Message1)]);
         await AssertQueueReceives(queue2, [(channel, Message1)]);
 
@@ -245,7 +245,7 @@ public class ISubscriberCompatibilityTests
         await queue1.UnsubscribeAsync();
 
         // Publish and verify only second queue receives.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertQueueReceives(queue1, []);
         await AssertQueueReceives(queue2, [(channel, Message2)]);
 
@@ -253,7 +253,7 @@ public class ISubscriberCompatibilityTests
         await queue2.UnsubscribeAsync();
 
         // Publish and verify no queues receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue1, []);
         await AssertQueueReceives(queue2, []);
     }
@@ -273,7 +273,7 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(channel);
 
         // Publish to channel and verify both receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
@@ -281,7 +281,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAsync(channel, handler);
 
         // Publish and verify only queue receives.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, [(channel, Message2)]);
 
@@ -289,7 +289,7 @@ public class ISubscriberCompatibilityTests
         await queue.UnsubscribeAsync();
 
         // Publish and verify neither receives.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
@@ -309,7 +309,7 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(channel);
 
         // Publish to channel and verify both receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
@@ -317,7 +317,7 @@ public class ISubscriberCompatibilityTests
         await queue.UnsubscribeAsync();
 
         // Publish and verify only handler receives.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, [(channel, Message2)]);
         await AssertQueueReceives(queue, []);
 
@@ -325,7 +325,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAsync(channel, handler);
 
         // Publish and verify neither receives.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
@@ -345,7 +345,7 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(channel);
 
         // Publish to channel and verify both receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
@@ -353,7 +353,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAsync(channel);
 
         // Publish and verify neither receives.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
@@ -374,7 +374,7 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(pattern);
 
         // Publish to matching channel and verify both receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(pattern, Message1)]);
         await AssertQueueReceives(queue, [(pattern, Message1)]);
 
@@ -382,7 +382,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAsync(pattern);
 
         // Publish and verify neither receives.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
@@ -406,7 +406,7 @@ public class ISubscriberCompatibilityTests
         var queue = await subscriber.SubscribeAsync(channel);
 
         // Publish to channel and verify both receive.
-        await publisher.PublishAsync(channel, Message1);
+        _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
@@ -414,7 +414,7 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAsync(channel);
 
         // Publish and verify neither receives.
-        await publisher.PublishAsync(channel, Message2);
+        _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
@@ -456,17 +456,17 @@ public class ISubscriberCompatibilityTests
         }
 
         // Publish to channels and verify all receive.
-        await publisher.PublishAsync(literalChannel, Message1);
+        _ = await publisher.PublishAsync(literalChannel, Message1);
         await AssertHandlerReceives(literalReceived, [(literalChannel, Message1)]);
         await AssertQueueReceives(literalQueue, [(literalChannel, Message1)]);
 
-        await publisher.PublishAsync(patternChannel, Message1);
+        _ = await publisher.PublishAsync(patternChannel, Message1);
         await AssertHandlerReceives(patternReceived, [(pattern, Message1)]);
         await AssertQueueReceives(patternQueue, [(pattern, Message1)]);
 
         if (isSharded)
         {
-            await publisher.PublishAsync(shardedChannel, Message1);
+            _ = await publisher.PublishAsync(shardedChannel, Message1);
             await AssertHandlerReceives(shardedReceived, [(shardedChannel, Message1)]);
             await AssertQueueReceives(shardedQueue!, [(shardedChannel, Message1)]);
         }
@@ -475,17 +475,17 @@ public class ISubscriberCompatibilityTests
         await subscriber.UnsubscribeAllAsync();
 
         // Publish and verify none receive.
-        await publisher.PublishAsync(literalChannel, Message2);
+        _ = await publisher.PublishAsync(literalChannel, Message2);
         await AssertHandlerReceives(literalReceived, []);
         await AssertQueueReceives(literalQueue, []);
 
-        await publisher.PublishAsync(patternChannel, Message2);
+        _ = await publisher.PublishAsync(patternChannel, Message2);
         await AssertHandlerReceives(patternReceived, []);
         await AssertQueueReceives(patternQueue, []);
 
         if (isSharded)
         {
-            await publisher.PublishAsync(shardedChannel, Message2);
+            _ = await publisher.PublishAsync(shardedChannel, Message2);
             await AssertHandlerReceives(shardedReceived, []);
             await AssertQueueReceives(shardedQueue!, []);
         }

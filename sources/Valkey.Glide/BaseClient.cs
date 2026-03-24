@@ -60,7 +60,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         IntPtr response = await message;
         try
         {
-            HandleResponse(response);
+            _ = HandleResponse(response);
         }
         finally
         {
@@ -95,7 +95,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             IntPtr response = await message;
             try
             {
-                HandleResponse(response);
+                _ = HandleResponse(response);
             }
             finally
             {
@@ -121,7 +121,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         IntPtr response = await message;
         try
         {
-            HandleResponse(response);
+            _ = HandleResponse(response);
         }
         finally
         {
@@ -157,6 +157,16 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         nint pubsubCallbackPointer = Marshal.GetFunctionPointerForDelegate(client._pubsubCallbackDelegate);
 
         using FFI.ConnectionConfig request = config.Request.ToFfi();
+
+        // Log warnining if using insecure TLS.
+        if (config.Request.TlsMode == TlsMode.InsecureTls)
+        {
+            var msg = "SECURITY WARNING: Insecure TLS connection established. "
+                + "Certificate verification is disabled. "
+                + "This is strongly discouraged in production environments.";
+            Logger.Log(Level.Warn, typeof(T).Name, msg);
+        }
+
         Message message = client.MessageContainer.GetMessageForCall();
         CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer, pubsubCallbackPointer);
         client.ClientPointer = await message; // This will throw an error thru failure callback if any

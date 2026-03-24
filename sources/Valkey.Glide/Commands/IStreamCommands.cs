@@ -34,7 +34,13 @@ public interface IStreamCommands
     /// <param name="useApproximateMaxLength">If true, uses approximate trimming (~) for better performance.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The ID of the added entry.</returns>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        IEnumerable<NameValueEntry> streamPairs,
+        ValkeyValue? messageId,
+        int? maxLength,
+        bool useApproximateMaxLength,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Appends a new entry to a stream with a single field-value pair.
@@ -65,7 +71,15 @@ public interface IStreamCommands
     /// <param name="noMakeStream">If true, the stream will not be created if it doesn't exist. Returns null if stream doesn't exist.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The ID of the added entry, or null if noMakeStream is true and the stream doesn't exist.</returns>
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, bool noMakeStream = false, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(
+        ValkeyKey key,
+        IEnumerable<NameValueEntry> streamPairs,
+        ValkeyValue? messageId = null,
+        long? maxLength = null,
+        bool useApproximateMaxLength = false,
+        long? limit = null,
+        bool noMakeStream = false,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads entries from a single stream starting from a given position.
@@ -82,11 +96,11 @@ public interface IStreamCommands
     /// Reads entries from multiple streams starting from given positions.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xread"/>
-    /// <param name="streamPositions">Array of stream keys and their starting positions.</param>
+    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
     /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of streams with their entries, or an empty array if no entries are available.</returns>
-    Task<ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, int? countPerStream = null, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, int? countPerStream = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the entries in a stream within a specified range of IDs.
@@ -200,26 +214,26 @@ public interface IStreamCommands
     /// Reads entries from multiple streams for a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xreadgroup"/>
-    /// <param name="streamPositions">Array of stream keys and their starting positions.</param>
+    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="consumerName">The consumer name.</param>
     /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of streams with their entries.</returns>
-    Task<ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Reads entries from multiple streams for a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xreadgroup"/>
-    /// <param name="streamPositions">Array of stream keys and their starting positions.</param>
+    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="consumerName">The consumer name.</param>
     /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
     /// <param name="noAck">If true, messages are not added to the pending entries list.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of streams with their entries.</returns>
-    Task<ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Acknowledges a message in a consumer group.
@@ -238,10 +252,10 @@ public interface IStreamCommands
     /// <seealso href="https://valkey.io/commands/xack"/>
     /// <param name="key">The key of the stream.</param>
     /// <param name="groupName">The consumer group name.</param>
-    /// <param name="messageIds">Array of message IDs to acknowledge.</param>
+    /// <param name="messageIds">A collection of message IDs to acknowledge.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of messages acknowledged.</returns>
-    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns pending messages summary for a consumer group.
@@ -290,10 +304,10 @@ public interface IStreamCommands
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
-    /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of claimed stream entries.</returns>
-    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Claims pending messages for a consumer.
@@ -303,14 +317,14 @@ public interface IStreamCommands
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
-    /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <param name="idleTimeInMs">Set the idle time (last delivery time) of the message.</param>
     /// <param name="timeUnixMs">Set the idle time to a specific Unix time in milliseconds.</param>
     /// <param name="retryCount">Set the retry counter to the specified value.</param>
     /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of claimed stream entries.</returns>
-    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
+    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Claims pending messages for a consumer, returning only IDs.
@@ -320,10 +334,10 @@ public interface IStreamCommands
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
-    /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of claimed message IDs.</returns>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Claims pending messages for a consumer, returning only IDs.
@@ -333,14 +347,14 @@ public interface IStreamCommands
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
-    /// <param name="messageIds">Array of message IDs to claim.</param>
+    /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <param name="idleTimeInMs">Set the idle time (last delivery time) of the message.</param>
     /// <param name="timeUnixMs">Set the idle time to a specific Unix time in milliseconds.</param>
     /// <param name="retryCount">Set the retry counter to the specified value.</param>
     /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of claimed message IDs.</returns>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue[] messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Automatically claims pending messages.
@@ -384,10 +398,10 @@ public interface IStreamCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xdel"/>
     /// <param name="key">The key of the stream.</param>
-    /// <param name="messageIds">Array of message IDs to delete.</param>
+    /// <param name="messageIds">A collection of message IDs to delete.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of messages deleted.</returns>
-    Task<long> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Trims the stream to a specified size.
@@ -458,19 +472,19 @@ public interface IStreamCommands
     /// This method is not implemented. Valkey does not support acknowledging and deleting messages in a single operation.
     /// </summary>
     [Obsolete("This method is not implemented. Use StreamAcknowledgeAsync followed by StreamDeleteAsync instead.", error: true)]
-    Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue[] messageIds, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
     /// </summary>
     [Obsolete("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.", error: true)]
-    Task<long> StreamDeleteAsync(ValkeyKey key, ValkeyValue[] messageIds, object mode, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, object mode, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
     /// </summary>
     [Obsolete("This method is not implemented. Use StreamAddAsync without the mode parameter instead.", error: true)]
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit, bool noMakeStream, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit, bool noMakeStream, ValkeyValue? minId, object mode, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.

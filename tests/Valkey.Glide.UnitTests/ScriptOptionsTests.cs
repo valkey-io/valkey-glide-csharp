@@ -97,7 +97,7 @@ public class ScriptOptionsTests
         var options = new ScriptOptions();
 
         // Act
-        options.WithKeys([]);
+        _ = options.WithKeys([]);
 
         // Assert
         Assert.NotNull(options.Keys);
@@ -111,7 +111,7 @@ public class ScriptOptionsTests
         var options = new ScriptOptions();
 
         // Act
-        options.WithArgs([]);
+        _ = options.WithArgs([]);
 
         // Assert
         Assert.NotNull(options.Args);
@@ -126,7 +126,7 @@ public class ScriptOptionsTests
             .WithKeys("key1", "key2");
 
         // Act
-        options.WithKeys("key3", "key4");
+        _ = options.WithKeys("key3", "key4");
 
         // Assert
         Assert.NotNull(options.Keys);
@@ -141,7 +141,7 @@ public class ScriptOptionsTests
             .WithArgs("arg1", "arg2");
 
         // Act
-        options.WithArgs("arg3", "arg4");
+        _ = options.WithArgs("arg3", "arg4");
 
         // Assert
         Assert.NotNull(options.Args);

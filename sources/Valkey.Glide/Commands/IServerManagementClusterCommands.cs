@@ -41,9 +41,9 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    /// <inheritdoc cref="InfoAsync(Section[], Route)" path="/param" />
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param" />
     /// <returns>A <see langword="string" /> containing the information for the sections requested per cluster node.</returns>
-    Task<Dictionary<string, string>> InfoAsync(Section[] sections);
+    Task<Dictionary<string, string>> InfoAsync(IEnumerable<Section> sections);
 
     /// <summary>
     /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.<br />
@@ -60,9 +60,9 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    /// <inheritdoc cref="InfoAsync(Section[], Route)" path="/param" />
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param" />
     /// <returns>
-    /// <inheritdoc cref="InfoAsync(Section[], Route)" />
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" />
     /// </returns>
     Task<ClusterValue<string>> InfoAsync(Route route);
 
@@ -92,7 +92,7 @@ public interface IServerManagementClusterCommands
     /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
     /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
-    Task<ClusterValue<string>> InfoAsync(Section[] sections, Route route);
+    Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
 
     /// <summary>
     /// Echo the given message back from the server.

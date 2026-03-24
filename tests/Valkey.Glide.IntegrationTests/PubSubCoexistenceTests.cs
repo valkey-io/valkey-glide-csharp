@@ -44,9 +44,9 @@ public class PubSubCoexistenceTests
         var args = new GlideString[] { "PUBLISH", message.Channel, message.Message };
 
         if (isCluster)
-            await ((GlideClusterClient)publisher).CustomCommand(args);
+            _ = await ((GlideClusterClient)publisher).CustomCommand(args);
         else
-            await ((GlideClient)publisher).CustomCommand(args);
+            _ = await ((GlideClient)publisher).CustomCommand(args);
 
         await AssertReceivedAsync(subscriber, [message]);
     }
@@ -62,7 +62,7 @@ public class PubSubCoexistenceTests
         using var publisher = BuildPublisher(isCluster: true);
 
         // Publish to sharded channel with custom command and verify receipt.
-        await ((GlideClusterClient)publisher).CustomCommand(["SPUBLISH", message.Channel, message.Message]);
+        _ = await ((GlideClusterClient)publisher).CustomCommand(["SPUBLISH", message.Channel, message.Message]);
         await AssertReceivedAsync(subscriber, message);
     }
 }
