@@ -70,21 +70,21 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
             ? throw new RequestException("Retry strategy is not supported for atomic batches (transactions).")
             : await Batch(batch, raiseOnError, options);
 
-    public async Task<ClusterValue<object?>> CustomCommand(GlideString[] args)
-        => await Command(Request.CustomCommand(args, resp => ResponseConverters.HandleCustomCommandClusterValue(resp)));
+    public async Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args)
+        => await Command(Request.CustomCommand([.. args], resp => ResponseConverters.HandleCustomCommandClusterValue(resp)));
 
-    public async Task<ClusterValue<object?>> CustomCommand(GlideString[] args, Route route)
-        => await Command(Request.CustomCommand(args, resp => ResponseConverters.HandleCustomCommandClusterValue(resp, route)), route);
+    public async Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args, Route route)
+        => await Command(Request.CustomCommand([.. args], resp => ResponseConverters.HandleCustomCommandClusterValue(resp, route)), route);
 
     public async Task<Dictionary<string, string>> InfoAsync() => await InfoAsync([]);
 
-    public async Task<Dictionary<string, string>> InfoAsync(InfoOptions.Section[] sections)
-        => await Command(Request.Info(sections).ToMultiNodeValue());
+    public async Task<Dictionary<string, string>> InfoAsync(IEnumerable<InfoOptions.Section> sections)
+        => await Command(Request.Info([.. sections]).ToMultiNodeValue());
 
     public async Task<ClusterValue<string>> InfoAsync(Route route) => await InfoAsync([], route);
 
-    public async Task<ClusterValue<string>> InfoAsync(InfoOptions.Section[] sections, Route route)
-        => await Command(Request.Info(sections).ToClusterValue(route is SingleNodeRoute), route);
+    public async Task<ClusterValue<string>> InfoAsync(IEnumerable<InfoOptions.Section> sections, Route route)
+        => await Command(Request.Info([.. sections]).ToClusterValue(route is SingleNodeRoute), route);
 
     public async Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None)
     {
@@ -290,7 +290,7 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         _ = await Command(Request.Select(index), Route.Random);
     }
 
-    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Watch(keys));

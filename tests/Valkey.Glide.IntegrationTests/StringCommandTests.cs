@@ -77,7 +77,8 @@ public class StringCommandTests(TestConfiguration config)
         string value1 = Guid.NewGuid().ToString();
         string value2 = Guid.NewGuid().ToString();
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs =
+        [
             new(key1, value1),
             new(key2, value2)
         ];
@@ -101,7 +102,8 @@ public class StringCommandTests(TestConfiguration config)
         string unicodeValue1 = "שלום hello 汉字";
         string unicodeValue2 = "مرحبا world 🌍";
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
+        [
             new(key1, unicodeValue1),
             new(key2, unicodeValue2)
         ];
@@ -124,7 +126,8 @@ public class StringCommandTests(TestConfiguration config)
         string key1 = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
+        [
             new(key1, ""),
             new(key2, "non-empty")
         ];
@@ -156,7 +159,8 @@ public class StringCommandTests(TestConfiguration config)
         _ = await client.StringSetAsync(key2, initialValue2);
 
         // Overwrite with StringSetAsync
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
+        [
             new(key1, newValue1),
             new(key2, newValue2)
         ];
@@ -575,7 +579,8 @@ public class StringCommandTests(TestConfiguration config)
         string value1 = Guid.NewGuid().ToString();
         string value2 = Guid.NewGuid().ToString();
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs =
+        [
             new(key1, value1),
             new(key2, value2)
         ];
@@ -606,7 +611,8 @@ public class StringCommandTests(TestConfiguration config)
         // Set one key first
         _ = await client.StringSetAsync(key1, value1);
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs =
+        [
             new(key1, newValue1),
             new(key2, newValue2)
         ];

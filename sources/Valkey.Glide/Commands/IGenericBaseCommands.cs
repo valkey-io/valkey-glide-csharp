@@ -47,7 +47,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> KeyDeleteAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unlinks (removes) the specified key from the database. A key is ignored if it does not exist.
@@ -68,7 +68,7 @@ public interface IGenericBaseCommands
 
     /// <summary>
     /// Unlinks (removes) the specified key from the database. A key is ignored if it does not exist.
-    /// This command is similar to <seealso cref="KeyDeleteAsync(ValkeyKey[], CommandFlags)"/>, however, this command does not block the server.
+    /// This command is similar to <seealso cref="KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>, however, this command does not block the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unlink"/>
     /// <note>When in cluster mode, if keys in keys map to different hash slots, the command
@@ -87,7 +87,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> KeyUnlinkAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns if key exists.
@@ -125,7 +125,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> KeyExistsAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Set a timeout on key. After the timeout has expired, the key will automatically be deleted.<br/>
@@ -395,7 +395,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> KeyTouchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> KeyTouchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the absolute time at which the given key will expire.
@@ -576,7 +576,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged by at least numreplicas replicas.

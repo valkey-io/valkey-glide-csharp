@@ -41,11 +41,11 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] values = await client.HashGetAsync(key, new ValkeyValue[] { field1, field2 });
+    /// ValkeyValue[] values = await client.HashGetAsync(key, [field1, field2]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, ValkeyValue[] hashFields, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns all fields and values of the hash stored at key.
@@ -75,11 +75,11 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.HashSetAsync(key, new HashEntry[] { new HashEntry(field1, value1), new HashEntry(field2, value2) });
+    /// await client.HashSetAsync(key, [new HashEntry(field1, value1), new HashEntry(field2, value2)]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task HashSetAsync(ValkeyKey key, HashEntry[] hashFields, CommandFlags flags = CommandFlags.None);
+    Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets <paramref name="hashField"/> in the hash stored at <paramref name="key"/> to <paramref name="value"/>.
@@ -135,11 +135,11 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long removedCount = await client.HashDeleteAsync(key, new ValkeyValue[] { field1, field2 });
+    /// long removedCount = await client.HashDeleteAsync(key, [field1, field2]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashDeleteAsync(ValkeyKey key, ValkeyValue[] hashFields, CommandFlags flags = CommandFlags.None);
+    Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns if field is an existing field in the hash stored at key.
@@ -392,11 +392,11 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60));
-    /// ValkeyValue[] values = await client.HashGetExAsync(key, new ValkeyValue[] { field1, field2 }, options);
+    /// ValkeyValue[] values = await client.HashGetExAsync(key, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]?> HashGetExAsync(ValkeyKey key, ValkeyValue[] fields, HashGetExOptions options, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]?> HashGetExAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets the specified fields to their respective values in the hash stored at <paramref name="key"/>
@@ -419,7 +419,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashSetExAsync(ValkeyKey key, Dictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes the expiration time for each specified field, turning the field from volatile (a field
@@ -444,11 +444,11 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] results = await client.HashPersistAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] results = await client.HashPersistAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets expiration time for hash fields. HEXPIRE sets the expiration time in seconds for the
@@ -479,11 +479,11 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashExpireAsync(key, 60, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashExpireAsync(key, 60, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets expiration time for hash fields, in milliseconds. Creates the hash if it doesn't exist. If
@@ -511,11 +511,11 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashPExpireAsync(key, 5000, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashPExpireAsync(key, 5000, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets expiration time for hash fields, in seconds, using an absolute Unix timestamp. Creates the
@@ -544,11 +544,11 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashExpireAtAsync(key, 1672531200, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashExpireAtAsync(key, 1672531200, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets expiration time for hash fields, using an absolute Unix timestamp in milliseconds.
@@ -561,7 +561,7 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="unixMilliseconds">The expiration time to set for the fields, as a Unix timestamp in milliseconds.</param>
-    /// <param name="fields">An array of hash field names for which to set the expiration.</param>
+    /// <param name="fields">A collection of hash field names for which to set the expiration.</param>
     /// <param name="options">Optional conditions and configurations for the expiration.</param>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
@@ -578,11 +578,11 @@ public interface IHashCommands
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashPExpireAtAsync(key, 1672531200000, new ValkeyValue[] { field1, field2 }, options);
+    /// long[] results = await client.HashPExpireAtAsync(key, 1672531200000, [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, ValkeyValue[] fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the absolute Unix timestamp (in seconds) at which the given hash fields will expire.
@@ -605,11 +605,11 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] timestamps = await client.HashExpireTimeAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] timestamps = await client.HashExpireTimeAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the absolute Unix timestamp (in milliseconds) at which the given hash fields will expire.
@@ -632,11 +632,11 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] timestamps = await client.HashPExpireTimeAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] timestamps = await client.HashPExpireTimeAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the remaining time to live of hash fields that have a timeout, in seconds.
@@ -659,11 +659,11 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] ttls = await client.HashTtlAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] ttls = await client.HashTtlAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashTtlAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the remaining time to live of hash fields that have a timeout, in milliseconds.
@@ -686,9 +686,9 @@ public interface IHashCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] ttls = await client.HashPTtlAsync(key, new ValkeyValue[] { field1, field2, field3 });
+    /// long[] ttls = await client.HashPTtlAsync(key, [field1, field2, field3]);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPTtlAsync(ValkeyKey key, ValkeyValue[] fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
 }

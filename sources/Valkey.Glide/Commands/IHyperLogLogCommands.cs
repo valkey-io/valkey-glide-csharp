@@ -49,7 +49,7 @@ public interface IHyperLogLogCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue[] elements, CommandFlags flags = CommandFlags.None);
+    Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the approximated cardinality computed by the HyperLogLog data structure stored at the specified key.
@@ -87,7 +87,7 @@ public interface IHyperLogLogCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HyperLogLogLengthAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Merges multiple HyperLogLog values into a unique value that will approximate the cardinality of the union of the observed Sets of the source HyperLogLog structures.
@@ -120,5 +120,5 @@ public interface IHyperLogLogCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys, CommandFlags flags = CommandFlags.None);
+    Task HyperLogLogMergeAsync(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys, CommandFlags flags = CommandFlags.None);
 }

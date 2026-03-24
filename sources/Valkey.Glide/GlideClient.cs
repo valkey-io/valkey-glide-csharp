@@ -65,13 +65,13 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options)
         => await Batch(batch, raiseOnError, options);
 
-    public async Task<object?> CustomCommand(GlideString[] args)
-        => await Command(Request.CustomCommand(args));
+    public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
+        => await Command(Request.CustomCommand([.. args]));
 
     public async Task<string> InfoAsync() => await InfoAsync([]);
 
-    public async Task<string> InfoAsync(InfoOptions.Section[] sections)
-        => await Command(Request.Info(sections));
+    public async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
+        => await Command(Request.Info([.. sections]));
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
@@ -198,7 +198,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
-    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Watch(keys));

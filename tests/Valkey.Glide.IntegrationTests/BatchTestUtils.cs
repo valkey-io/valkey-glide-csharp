@@ -189,7 +189,8 @@ internal partial class BatchTestUtils
         string multiKey2 = $"{atomicPrefix}multi2-{Guid.NewGuid()}";
         string multiKey3 = $"{atomicPrefix}multi3-{Guid.NewGuid()}";
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] multiKeyValues = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] multiKeyValues =
+        [
             new(multiKey1, "value1"),
             new(multiKey2, "value2"),
             new(multiKey3, "value3")
@@ -764,7 +765,7 @@ internal partial class BatchTestUtils
         // Setup data for combine operations
         _ = batch.SortedSetAdd(combineKey1, [
             new SortedSetEntry("testMember1", 6.0), // After increment
-        new SortedSetEntry("testMember2", 2.0),
+            new SortedSetEntry("testMember2", 2.0),
             new SortedSetEntry("testMember3", 3.0)
         ]);
         testData.Add(new(3L, "SortedSetAdd(combineKey1, test data for combine)"));
