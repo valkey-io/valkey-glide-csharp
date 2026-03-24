@@ -18,7 +18,7 @@ public class ServerCredentialsTests
         using var credentials = new ServerCredentials(Username, Password);
 
         Assert.Equal(Username, credentials.Username);
-        Assert.Equal(Password, credentials.Password);
+        Assert.Equal(Password, credentials.Password!);
         Assert.Null(credentials.IamAuthConfig);
         Assert.False(credentials.IsIamAuth());
     }
@@ -29,7 +29,7 @@ public class ServerCredentialsTests
         using var credentials = new ServerCredentials(Password);
 
         Assert.Null(credentials.Username);
-        Assert.Equal(Password, credentials.Password);
+        Assert.Equal(Password, credentials.Password!);
         Assert.Null(credentials.IamAuthConfig);
         Assert.False(credentials.IsIamAuth());
     }
