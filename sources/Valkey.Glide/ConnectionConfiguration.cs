@@ -619,20 +619,20 @@ public abstract class ConnectionConfiguration
             ArgumentNullException.ThrowIfNull(credentials);
 
             IamCredentials? iamCredentials = null;
-            if (credentials.IamConfig != null)
+            if (credentials.IamAuthConfig != null)
             {
-                FFI.ServiceType serviceType = credentials.IamConfig.ServiceType switch
+                FFI.ServiceType serviceType = credentials.IamAuthConfig.ServiceType switch
                 {
                     ServiceType.ElastiCache => FFI.ServiceType.ElastiCache,
                     ServiceType.MemoryDB => FFI.ServiceType.MemoryDB,
-                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamConfig.ServiceType))
+                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamAuthConfig.ServiceType))
                 };
 
                 iamCredentials = new IamCredentials(
-                    credentials.IamConfig.ClusterName,
-                    credentials.IamConfig.Region,
+                    credentials.IamAuthConfig.ClusterName,
+                    credentials.IamAuthConfig.Region,
                     serviceType,
-                    credentials.IamConfig.RefreshIntervalSeconds
+                    credentials.IamAuthConfig.RefreshIntervalSeconds
                 );
             }
 

@@ -30,7 +30,7 @@ public sealed class ServerCredentials : IDisposable
     /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
     /// It is not owned by the <see cref="ServerCredentials"/> instance - the caller is responsible for disposing it.
     /// </summary>
-    public IamAuthConfig? IamConfig
+    public IamAuthConfig? IamAuthConfig
     {
         get { ThrowIfDisposed(); return field; }
         private set;
@@ -63,7 +63,7 @@ public sealed class ServerCredentials : IDisposable
 
         Username = username;
         Password = password.ToCharArray();
-        IamConfig = null;
+        IamAuthConfig = null;
     }
 
     /// <summary>
@@ -76,14 +76,14 @@ public sealed class ServerCredentials : IDisposable
 
         Username = null;
         Password = password.ToCharArray();
-        IamConfig = null;
+        IamAuthConfig = null;
     }
 
     /// <summary>
     /// Creates server credentials for IAM authentication.
     /// </summary>
     /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
-    /// <param name="iamConfig"><inheritdoc cref="IamConfig" path="/summary" /></param>
+    /// <param name="iamConfig"><inheritdoc cref="IamAuthConfig" path="/summary" /></param>
     public ServerCredentials(string username, IamAuthConfig iamConfig)
     {
         ArgumentNullException.ThrowIfNull(username, nameof(username));
@@ -91,7 +91,7 @@ public sealed class ServerCredentials : IDisposable
 
         Username = username;
         Password = null;
-        IamConfig = iamConfig;
+        IamAuthConfig = iamConfig;
     }
 
     #endregion
@@ -103,7 +103,7 @@ public sealed class ServerCredentials : IDisposable
     public bool IsIamAuth()
     {
         ThrowIfDisposed();
-        return IamConfig != null;
+        return IamAuthConfig != null;
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public sealed class ServerCredentials : IDisposable
                 Password = null;
             }
 
-            IamConfig = null;
+            IamAuthConfig = null;
 
             _disposed = true;
         }

@@ -19,7 +19,7 @@ public class ServerCredentialsTests
 
         Assert.Equal(Username, credentials.Username);
         Assert.Equal(Password, credentials.Password);
-        Assert.Null(credentials.IamConfig);
+        Assert.Null(credentials.IamAuthConfig);
         Assert.False(credentials.IsIamAuth());
     }
 
@@ -30,7 +30,7 @@ public class ServerCredentialsTests
 
         Assert.Null(credentials.Username);
         Assert.Equal(Password, credentials.Password);
-        Assert.Null(credentials.IamConfig);
+        Assert.Null(credentials.IamAuthConfig);
         Assert.False(credentials.IsIamAuth());
     }
 
@@ -43,7 +43,7 @@ public class ServerCredentialsTests
         Assert.Equal(Username, credentials.Username);
         Assert.Null(credentials.Password);
         Assert.True(credentials.IsIamAuth());
-        Assert.Equal(iamAuthConfig, credentials.IamConfig);
+        Assert.Equal(iamAuthConfig, credentials.IamAuthConfig);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class ServerCredentialsTests
 
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.Username);
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.Password);
-        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamConfig);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamAuthConfig);
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.IsIamAuth());
         _ = Assert.Throws<ObjectDisposedException>(() => _ = credentials.ToString());
     }
@@ -112,7 +112,7 @@ public class ServerCredentialsTests
 
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.Username);
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.Password);
-        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamConfig);
+        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamAuthConfig);
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.IsIamAuth());
         _ = Assert.Throws<ObjectDisposedException>(() => _ = credentials.ToString());
     }
