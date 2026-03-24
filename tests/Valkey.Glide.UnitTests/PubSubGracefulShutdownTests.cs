@@ -29,7 +29,7 @@ public class PubSubGracefulShutdownTests
     public void PubSubPerformanceConfig_InvalidShutdownTimeout_ThrowsException()
     {
         PubSubPerformanceConfig config = new() { ShutdownTimeout = TimeSpan.FromSeconds(-1) };
-        Assert.Throws<ArgumentOutOfRangeException>(() => config.Validate());
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.Validate());
     }
 
     [Fact]

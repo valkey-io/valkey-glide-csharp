@@ -24,7 +24,7 @@ public class PubSubPerformanceTests
             .WithChannel("perf-test")
             .WithCallback((msg, ctx) =>
             {
-                Interlocked.Increment(ref messagesReceived);
+                _ = Interlocked.Increment(ref messagesReceived);
             }, null);
 
         // Act - Simulate high-volume message processing
@@ -60,7 +60,7 @@ public class PubSubPerformanceTests
             .WithChannel("gc-test")
             .WithCallback((msg, ctx) =>
             {
-                Interlocked.Increment(ref messagesReceived);
+                _ = Interlocked.Increment(ref messagesReceived);
             }, null);
 
         // Force GC before test
@@ -124,7 +124,7 @@ public class PubSubPerformanceTests
             .WithChannel("concurrent-test")
             .WithCallback((msg, ctx) =>
             {
-                Interlocked.Increment(ref messagesReceived);
+                _ = Interlocked.Increment(ref messagesReceived);
             }, null);
 
         // Act - Simulate concurrent message arrival from multiple threads
@@ -170,7 +170,7 @@ public class PubSubPerformanceTests
             .WithChannel("burst-test")
             .WithCallback((msg, ctx) =>
             {
-                Interlocked.Increment(ref messagesReceived);
+                _ = Interlocked.Increment(ref messagesReceived);
             }, null);
 
         // Act - Simulate burst traffic patterns
@@ -222,7 +222,7 @@ public class PubSubPerformanceTests
             .WithChannel("long-running-test")
             .WithCallback((msg, ctx) =>
             {
-                Interlocked.Increment(ref messagesReceived);
+                _ = Interlocked.Increment(ref messagesReceived);
             }, null);
 
         // Warm-up phase (1 second)

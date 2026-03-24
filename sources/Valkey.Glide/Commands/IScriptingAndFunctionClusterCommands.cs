@@ -59,7 +59,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </example>
     /// </remarks>
     Task<ClusterValue<bool[]>> ScriptExistsAsync(
-        string[] sha1Hashes,
+        IEnumerable<string> sha1Hashes,
         Route route,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
@@ -166,7 +166,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallAsync(
         string function,
-        string[] args,
+        IEnumerable<string> args,
         Route route,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
@@ -215,7 +215,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallReadOnlyAsync(
         string function,
-        string[] args,
+        IEnumerable<string> args,
         Route route,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);

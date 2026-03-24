@@ -9,8 +9,8 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide;
 
-// (Add braces to if statement) | (Convert to conditional expression) | (Naming rule: missing '_') | (Expression value is never used)
-#pragma warning disable IDE0011, IDE0046, IDE1006, IDE0058
+// (Add braces to if statement) | (Convert to conditional expression) | (Naming rule: missing '_')
+#pragma warning disable IDE0011, IDE0046, IDE1006
 
 /// <summary>
 /// The options relevant to a set of server connections.
@@ -449,8 +449,8 @@ public sealed class ConfigurationOptions : ICloneable
         string s = Format.ToString(value);
         if (!string.IsNullOrWhiteSpace(s))
         {
-            if (sb.Length != 0) sb.Append(',');
-            sb.Append(s);
+            if (sb.Length != 0) _ = sb.Append(',');
+            _ = sb.Append(s);
         }
     }
 
@@ -459,12 +459,12 @@ public sealed class ConfigurationOptions : ICloneable
         string? s = value?.ToString();
         if (!string.IsNullOrWhiteSpace(s))
         {
-            if (sb.Length != 0) sb.Append(',');
+            if (sb.Length != 0) _ = sb.Append(',');
             if (!string.IsNullOrEmpty(prefix))
             {
-                sb.Append(prefix).Append('=');
+                _ = sb.Append(prefix).Append('=');
             }
-            sb.Append(s);
+            _ = sb.Append(s);
         }
     }
 
@@ -658,4 +658,4 @@ public sealed class ConfigurationOptions : ICloneable
         return false;
     }
 }
-#pragma warning restore IDE0011, IDE0046, IDE1006, IDE0058
+#pragma warning restore IDE0011, IDE0046, IDE1006

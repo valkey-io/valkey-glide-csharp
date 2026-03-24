@@ -31,8 +31,8 @@ public interface IServerManagementCommands
     /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(Section[])" path="/remarks" />
-    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(Section[])" path="/param" />
+    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(IEnumerable{Section})" path="/remarks" />
+    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(IEnumerable{Section})" path="/param" />
     /// <returns>
     /// <inheritdoc cref="InfoAsync()" />
     /// </returns>
@@ -43,7 +43,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> InfoAsync(Section[] sections);
+    Task<string> InfoAsync(IEnumerable<Section> sections);
 
     /// <summary>
     /// Echo the given message back from the server.

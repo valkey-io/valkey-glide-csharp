@@ -90,7 +90,7 @@ public class ScriptTests
 
         // Assert
         // After disposal, accessing Hash should throw ObjectDisposedException
-        Assert.Throws<ObjectDisposedException>(() => script.Hash);
+        _ = Assert.Throws<ObjectDisposedException>(() => script.Hash);
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class ScriptTests
 
         // Assert
         // After the using block, accessing Hash should throw
-        Assert.Throws<ObjectDisposedException>(() => script.Hash);
+        _ = Assert.Throws<ObjectDisposedException>(() => script.Hash);
     }
 
     [Fact]

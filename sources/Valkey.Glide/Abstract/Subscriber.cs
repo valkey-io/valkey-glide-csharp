@@ -150,7 +150,7 @@ internal sealed class Subscriber : ISubscriber
         {
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
         }
     }
 
@@ -209,7 +209,7 @@ internal sealed class Subscriber : ISubscriber
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
@@ -235,7 +235,7 @@ internal sealed class Subscriber : ISubscriber
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {

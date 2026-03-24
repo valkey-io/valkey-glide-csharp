@@ -19,24 +19,23 @@ public abstract partial class BaseClient : IStringCommands
         return await Command(Request.StringGet(key));
     }
 
-    public async Task<ValkeyValue[]> StringGetAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StringGetMultiple(keys));
+        return await Command(Request.StringGetMultiple([.. keys]));
     }
 
-#pragma warning disable IDE0072 // Add missing cases
-    public async Task<bool> StringSetAsync(KeyValuePair<ValkeyKey, ValkeyValue>[] values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return when switch
         {
-            When.Always => await Command(Request.StringSetMultiple(values)),
-            When.NotExists => await Command(Request.StringSetMultipleNX(values)),
+            When.Always => await Command(Request.StringSetMultiple([.. values])),
+            When.Exists => throw new NotImplementedException($"{when} is not supported for StringSetAsync."),
+            When.NotExists => await Command(Request.StringSetMultipleNX([.. values])),
             _ => throw new ArgumentOutOfRangeException(nameof(when), $"{when} is not supported for StringSetAsync.")
         };
     }
-#pragma warning restore IDE0072 // Add missing cases
 
     public async Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None)
     {

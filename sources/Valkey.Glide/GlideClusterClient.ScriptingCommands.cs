@@ -34,13 +34,13 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
 
     /// <inheritdoc/>
     public async Task<ClusterValue<bool[]>> ScriptExistsAsync(
-        string[] sha1Hashes,
+        IEnumerable<string> sha1Hashes,
         Route route,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptExistsAsync(sha1Hashes).ToClusterValue(route), route);
+        return await Command(Request.ScriptExistsAsync([.. sha1Hashes]).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -90,13 +90,13 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
     /// <inheritdoc/>
     public async Task<ClusterValue<ValkeyResult>> FCallAsync(
         string function,
-        string[] args,
+        IEnumerable<string> args,
         Route route,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FCallAsync(function, null, args).ToClusterValue(route), route);
+        return await Command(Request.FCallAsync(function, null, [.. args]).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -113,13 +113,13 @@ public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCom
     /// <inheritdoc/>
     public async Task<ClusterValue<ValkeyResult>> FCallReadOnlyAsync(
         string function,
-        string[] args,
+        IEnumerable<string> args,
         Route route,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FCallReadOnlyAsync(function, null, args).ToClusterValue(route), route);
+        return await Command(Request.FCallReadOnlyAsync(function, null, [.. args]).ToClusterValue(route), route);
     }
 
     // ===== Function Management with Routing =====

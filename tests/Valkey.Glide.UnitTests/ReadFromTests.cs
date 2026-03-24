@@ -23,7 +23,7 @@ public class ReadFromTests
         ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
 
         // Assert
-        Assert.NotNull(options.ReadFrom);
+        _ = Assert.NotNull(options.ReadFrom);
         Assert.Equal(expectedStrategy, options.ReadFrom.Value.Strategy);
         Assert.Equal(expectedAz, options.ReadFrom.Value.Az);
     }
@@ -127,13 +127,13 @@ public class ReadFromTests
         ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
 
         // Assert
-        Assert.NotNull(options.ReadFrom);
+        _ = Assert.NotNull(options.ReadFrom);
         Assert.Equal(ReadFromStrategy.AzAffinity, options.ReadFrom.Value.Strategy);
         Assert.Equal("us-east-1", options.ReadFrom.Value.Az);
         Assert.True(options.Ssl);
         Assert.Equal("testuser", options.User);
         Assert.Equal("testpass", options.Password);
-        Assert.Single(options.EndPoints);
+        _ = Assert.Single(options.EndPoints);
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class ReadFromTests
         ConfigurationOptions cloned = original.Clone();
 
         // Assert
-        Assert.NotNull(cloned.ReadFrom);
+        _ = Assert.NotNull(cloned.ReadFrom);
         Assert.Equal(original.ReadFrom!.Value.Strategy, cloned.ReadFrom!.Value.Strategy);
         Assert.Equal(original.ReadFrom.Value.Az, cloned.ReadFrom.Value.Az);
     }
@@ -560,12 +560,12 @@ public class ReadFromTests
         cloned.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-west-2");
 
         // Assert - Original should remain unchanged
-        Assert.NotNull(original.ReadFrom);
+        _ = Assert.NotNull(original.ReadFrom);
         Assert.Equal(ReadFromStrategy.Primary, original.ReadFrom.Value.Strategy);
         Assert.Null(original.ReadFrom.Value.Az);
 
         // Assert - Cloned should have new value
-        Assert.NotNull(cloned.ReadFrom);
+        _ = Assert.NotNull(cloned.ReadFrom);
         Assert.Equal(ReadFromStrategy.AzAffinity, cloned.ReadFrom.Value.Strategy);
         Assert.Equal("us-west-2", cloned.ReadFrom.Value.Az);
     }
@@ -587,7 +587,7 @@ public class ReadFromTests
         ConfigurationOptions cloned = original.Clone();
 
         // Assert ReadFrom configuration
-        Assert.NotNull(cloned.ReadFrom);
+        _ = Assert.NotNull(cloned.ReadFrom);
         Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, cloned.ReadFrom.Value.Strategy);
         Assert.Equal("ap-south-1", cloned.ReadFrom.Value.Az);
 
@@ -704,7 +704,7 @@ public class ReadFromTests
 
         // Parse the original configuration to verify ReadFrom was set correctly
         ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
-        Assert.NotNull(parsedConfig.ReadFrom);
+        _ = Assert.NotNull(parsedConfig.ReadFrom);
         Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
         return Task.CompletedTask;
     }

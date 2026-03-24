@@ -42,9 +42,9 @@ public class PubSubReconnectionTests
         try
         {
             if (client is GlideClusterClient clusterClient)
-                await clusterClient.CustomCommand(ClientKillArgs);
+                _ = await clusterClient.CustomCommand(ClientKillArgs);
             else if (client is GlideClient standaloneClient)
-                await standaloneClient.CustomCommand(ClientKillArgs);
+                _ = await standaloneClient.CustomCommand(ClientKillArgs);
         }
         catch
         {

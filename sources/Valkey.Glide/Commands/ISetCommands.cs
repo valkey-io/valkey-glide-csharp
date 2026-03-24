@@ -43,7 +43,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SetAddAsync(ValkeyKey key, ValkeyValue[] values, CommandFlags flags = CommandFlags.None);
+    Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes specified members from the set stored at key.
@@ -79,7 +79,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SetRemoveAsync(ValkeyKey key, ValkeyValue[] values, CommandFlags flags = CommandFlags.None);
+    Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Retrieves all the members of the set value stored at key.
@@ -134,7 +134,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SetIntersectionLengthAsync(ValkeyKey[] keys, long limit = 0, CommandFlags flags = CommandFlags.None);
+    Task<long> SetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes and returns one random member from the set stored at key.
@@ -206,7 +206,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> SetUnionAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> SetUnionAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the members of the set resulting from the intersection of all the given sets.
@@ -241,7 +241,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> SetIntersectAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> SetIntersectAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the members of the set resulting from the difference between the first set and all the successive sets.
@@ -276,7 +276,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> SetDifferenceAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> SetDifferenceAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Stores the members of the set resulting from the union of all the given sets into destination.
@@ -315,7 +315,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SetUnionStoreAsync(ValkeyKey destination, ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Stores the members of the set resulting from the intersection of all the given sets into destination.
@@ -354,7 +354,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SetIntersectStoreAsync(ValkeyKey destination, ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> SetIntersectStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Stores the members of the set resulting from the difference between the first set and all the successive sets into destination.
@@ -393,7 +393,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> SetDifferenceStoreAsync(ValkeyKey destination, ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task<long> SetDifferenceStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns whether value is a member of the set stored at key.
@@ -427,7 +427,7 @@ public interface ISetCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool[]> SetContainsAsync(ValkeyKey key, ValkeyValue[] values, CommandFlags flags = CommandFlags.None);
+    Task<bool[]> SetContainsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns a random element from the set value stored at key.

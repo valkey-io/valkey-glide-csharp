@@ -77,7 +77,7 @@ public class PubSubCallbackTests
                     if (invocation == 1)
                         throw new InvalidOperationException("Test exception in callback");
 
-                    Interlocked.Increment(ref succeededCount);
+                    _ = Interlocked.Increment(ref succeededCount);
 
                     if (invocation >= 3)
                         completed.Set();
@@ -91,7 +91,7 @@ public class PubSubCallbackTests
         await PublishAsync(publisher, message);
 
         // Verify that all messages received despite exception.
-        completed.Wait(MaxDuration);
+        _ = completed.Wait(MaxDuration);
         Assert.Equal(3, receivedCount);
         Assert.Equal(2, succeededCount);
     }
@@ -124,7 +124,7 @@ public class PubSubCallbackTests
 
         // Publish all messages and verify they are received in order.
         await PublishAsync(publisher, messages);
-        completed.Wait(MaxDuration);
+        _ = completed.Wait(MaxDuration);
         Assert.Equivalent(messages, receivedMessages);
     }
 }

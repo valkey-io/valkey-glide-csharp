@@ -48,5 +48,5 @@ public interface ITransactionBaseCommands
     /// </example>
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/watch/"/>
-    Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 }

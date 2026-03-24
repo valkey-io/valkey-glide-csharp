@@ -27,15 +27,15 @@ internal interface IBatchBitmapCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
     IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second);
 
-    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey[], CommandFlags)" /></returns>
-    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey[] keys);
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
+    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldSubCommand[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldSubCommand[], CommandFlags)" /></returns>
-    IBatch StringBitField(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldSubCommand[] subCommands);
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldSubCommand}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldSubCommand}, CommandFlags)" /></returns>
+    IBatch StringBitField(ValkeyKey key, IEnumerable<Commands.Options.BitFieldOptions.IBitFieldSubCommand> subCommands);
 
-    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldReadOnlyAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[], CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldReadOnlyAsync(ValkeyKey, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[], CommandFlags)" /></returns>
-    IBatch StringBitFieldReadOnly(ValkeyKey key, Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands);
+    /// <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldReadOnlyAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapCommands.StringBitFieldReadOnlyAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand}, CommandFlags)" /></returns>
+    IBatch StringBitFieldReadOnly(ValkeyKey key, IEnumerable<Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands);
 }
