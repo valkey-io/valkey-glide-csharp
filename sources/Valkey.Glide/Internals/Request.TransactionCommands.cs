@@ -11,7 +11,7 @@ internal partial class Request
     /// </summary>
     /// <param name="keys">The keys to watch.</param>
     /// <returns>A command that watches the specified keys.</returns>
-    public static Cmd<string, string> Watch(ValkeyKey[] keys)
+    public static Cmd<string, string> Watch(IEnumerable<ValkeyKey> keys)
     {
         GlideString[] args = [.. keys.Select(k => (GlideString)k)];
         return new(RequestType.Watch, args, false, response => response);

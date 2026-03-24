@@ -1,9 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-
-using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.TestUtils;
 
@@ -13,15 +10,15 @@ namespace Valkey.Glide.TestUtils;
 public static class ServerManager
 {
     // File and directory paths.
-    private static readonly string scriptsDirectoryPath;
-    private static readonly string scriptFilePath;
-    private static readonly string certificateFilePath;
-    private static readonly string serverDirectoryPath;
+    private static readonly string ScriptsDirectoryPath;
+    private static readonly string ScriptFilePath;
+    private static readonly string CertificateFilePath;
+    private static readonly string ServerDirectoryPath;
 
-    private static readonly string wslFileName = "wsl";
-    private static readonly string pythonFileName = "python3";
+    private static readonly string WslFileName = "wsl";
+    private static readonly string PythonFileName = "python3";
 
-    private static readonly int replicaCount = 3;
+    private static readonly int ReplicaCount = 3;
 
     static ServerManager()
     {
@@ -32,7 +29,7 @@ public static class ServerManager
         string directory = Directory.GetCurrentDirectory();
         while (!Directory.EnumerateFiles(directory, "Valkey.Glide.sln").Any())
         {
-            directory = Path.GetDirectoryName(directory);
+            directory = Path.GetDirectoryName(directory)!;
             if (directory == null)
             {
                 throw new FileNotFoundException("Can't detect the project directory");
@@ -42,9 +39,9 @@ public static class ServerManager
         // [B] Determine script and certificates paths
         // -------------------------------------------
 
-        scriptsDirectoryPath = Path.Combine(directory, "valkey-glide", "utils");
-        scriptFilePath = Path.Combine(scriptsDirectoryPath, "cluster_manager.py");
-        certificateFilePath = Path.Combine(scriptsDirectoryPath, "tls_crts", "ca.crt");
+        ScriptsDirectoryPath = Path.Combine(directory, "valkey-glide", "utils");
+        ScriptFilePath = Path.Combine(ScriptsDirectoryPath, "cluster_manager.py");
+        CertificateFilePath = Path.Combine(ScriptsDirectoryPath, "tls_crts", "ca.crt");
 
         // [C] Determine server directory path
         // -----------------------------------
@@ -54,19 +51,19 @@ public static class ServerManager
         // Use a unique directory to avoid conflicts with other test runs.
         if (OperatingSystem.IsWindows())
         {
-            serverDirectoryPath = $"~/valkey_glide_test_{Guid.NewGuid():N}";
+            ServerDirectoryPath = $"~/valkey_glide_test_{Guid.NewGuid():N}";
         }
         else
         {
-            serverDirectoryPath = Path.Combine(scriptsDirectoryPath, "clusters");
+            ServerDirectoryPath = Path.Combine(ScriptsDirectoryPath, "clusters");
         }
     }
 
     /// <summary>
     /// Gets the path for the server certificate file.
-    /// See <valkey-glide/utils/cluster_manager.py> for details.
+    /// See valkey-glide/utils/cluster_manager.py for details.
     /// </summary>
-    public static string ServerCertificatePath => certificateFilePath;
+    public static string ServerCertificatePath => CertificateFilePath;
 
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
@@ -75,15 +72,15 @@ public static class ServerManager
     public static IList<Address> StartServer(string name, bool useClusterMode = false, bool useTls = false)
     {
         // Build command arguments.
-        List<string> args = new();
+        List<string> args = [];
 
         if (useTls)
             args.Add("--tls");
 
         args.Add("start");
         args.AddRange(["--prefix", name]);
-        args.AddRange(["-r", replicaCount.ToString()]);
-        args.AddRange(["--folder-path", serverDirectoryPath]);
+        args.AddRange(["-r", ReplicaCount.ToString()]);
+        args.AddRange(["--folder-path", ServerDirectoryPath]);
 
         if (useClusterMode)
             args.Add("--cluster-mode");
@@ -109,13 +106,13 @@ public static class ServerManager
 
         args.Add("stop");
         args.AddRange(["--prefix", name]);
-        args.AddRange(["--folder-path", serverDirectoryPath]);
+        args.AddRange(["--folder-path", ServerDirectoryPath]);
 
         if (keepLogs)
             args.Add("--keep-folder");
 
         string stopCommand = string.Join(" ", args);
-        RunClusterManager(stopCommand);
+        _ = RunClusterManager(stopCommand);
     }
 
     /// <summary>
@@ -132,17 +129,17 @@ public static class ServerManager
         {
             // #184: Must use full WSL paths for script.
             // Otherwise, paths created by the script will not resolve correctly.
-            info.FileName = wslFileName;
-            info.Arguments = $"{pythonFileName} {ToWslPath(scriptFilePath)} {scriptCmd}";
+            info.FileName = WslFileName;
+            info.Arguments = $"{PythonFileName} {ToWslPath(ScriptFilePath)} {scriptCmd}";
         }
 
         // Non-Windows systems can run the script directly from the scripts directory.
         // > python3 "cluster_manager.py" <scriptCmd>
         else
         {
-            info.FileName = pythonFileName;
-            info.Arguments = $"{scriptFilePath} {scriptCmd}";
-            info.WorkingDirectory = scriptsDirectoryPath;
+            info.FileName = PythonFileName;
+            info.Arguments = $"{ScriptFilePath} {scriptCmd}";
+            info.WorkingDirectory = ScriptsDirectoryPath;
         }
 
         return RunProcess(info);
@@ -150,13 +147,13 @@ public static class ServerManager
 
     /// <summary>
     /// Converts a Windows path to a WSL path and returns the result.
-    /// See <https://github.com/laurent22/wslpath> for more details.
+    /// See https://github.com/laurent22/wslpath for more details.
     /// </summary>
     private static string ToWslPath(string windowsPath)
     {
         ProcessStartInfo info = new()
         {
-            FileName = wslFileName,
+            FileName = WslFileName,
             Arguments = $"wslpath '{windowsPath}'",
         };
 
@@ -174,7 +171,7 @@ public static class ServerManager
         info.RedirectStandardOutput = true;
         info.RedirectStandardError = true;
 
-        using Process script = Process.Start(info);
+        using Process? script = Process.Start(info);
         if (script == null)
         {
             throw new ApplicationException($"Failed to start process: {info.FileName} {info.Arguments}");

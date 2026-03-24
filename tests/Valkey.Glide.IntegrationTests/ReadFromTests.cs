@@ -48,7 +48,7 @@ public class ReadFromTests(TestConfiguration config)
 
         // Parse the original configuration to verify ReadFrom was set correctly
         ConfigurationOptions parsedConfig = ConfigurationOptions.Parse(connectionString);
-        Assert.NotNull(parsedConfig.ReadFrom);
+        _ = Assert.NotNull(parsedConfig.ReadFrom);
         Assert.Equal(expectedStrategy, parsedConfig.ReadFrom.Value.Strategy);
         Assert.Equal(expectedAz, parsedConfig.ReadFrom.Value.Az);
 
@@ -57,12 +57,12 @@ public class ReadFromTests(TestConfiguration config)
         Assert.NotNull(database);
 
         // Test a basic operation to ensure the connection works with ReadFrom configuration
-        await database.PingAsync();
+        _ = await database.PingAsync();
 
         // Test data operations to verify the ReadFrom configuration is active
         string testKey = Guid.NewGuid().ToString();
         string testValue = useStandalone ? "standalone-end-to-end-test" : "cluster-end-to-end-test";
-        await database.StringSetAsync(testKey, testValue);
+        _ = await database.StringSetAsync(testKey, testValue);
         string? retrievedValue = await database.StringGetAsync(testKey);
         Assert.Equal(testValue, retrievedValue);
     }
@@ -88,17 +88,17 @@ public class ReadFromTests(TestConfiguration config)
 
             // Test a basic operation to ensure the connection works without ReadFrom configuration
             IDatabase database = connectionMultiplexer.GetDatabase();
-            await database.PingAsync();
+            _ = await database.PingAsync();
 
             // Test data operations to verify default behavior works
             string testKey = Guid.NewGuid().ToString();
             string testValue = "connection-string-default-behavior-test";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
             // Cleanup
-            await database.KeyDeleteAsync(testKey);
+            _ = await database.KeyDeleteAsync(testKey);
         }
 
         else
@@ -120,17 +120,17 @@ public class ReadFromTests(TestConfiguration config)
 
             // Test a basic operation to ensure the connection works without ReadFrom configuration
             IDatabase database = connectionMultiplexer.GetDatabase();
-            await database.PingAsync();
+            _ = await database.PingAsync();
 
             // Test data operations to verify default behavior works
             string testKey = Guid.NewGuid().ToString();
             string testValue = "config-options-null-readfrom-test";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
             // Cleanup
-            await database.KeyDeleteAsync(testKey);
+            _ = await database.KeyDeleteAsync(testKey);
         }
     }
 
@@ -149,7 +149,7 @@ public class ReadFromTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act & Assert: Test invalid assignment through property setter
-        Assert.Throws<ArgumentException>(() => configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary, "invalid-az-for-primary"));
+        _ = Assert.Throws<ArgumentException>(() => configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary, "invalid-az-for-primary"));
 
         // Test that the configuration remains in a valid state after failed assignment
         configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
@@ -158,7 +158,7 @@ public class ReadFromTests(TestConfiguration config)
 
         // Test basic functionality
         IDatabase database = connectionMultiplexer.GetDatabase();
-        await database.PingAsync();
+        _ = await database.PingAsync();
     }
 
     [Fact]
@@ -185,17 +185,17 @@ public class ReadFromTests(TestConfiguration config)
         Assert.NotNull(connectionMultiplexer);
 
         // Verify cloned configuration preserved the original ReadFrom settings
-        Assert.NotNull(clonedConfig.ReadFrom);
+        _ = Assert.NotNull(clonedConfig.ReadFrom);
         Assert.Equal(ReadFromStrategy.AzAffinity, clonedConfig.ReadFrom.Value.Strategy);
         Assert.Equal("us-east-1a", clonedConfig.ReadFrom.Value.Az);
 
         // Verify original configuration was modified independently
-        Assert.NotNull(originalConfig.ReadFrom);
+        _ = Assert.NotNull(originalConfig.ReadFrom);
         Assert.Equal(ReadFromStrategy.Primary, originalConfig.ReadFrom.Value.Strategy);
 
         // Test basic functionality
         IDatabase database = connectionMultiplexer.GetDatabase();
-        await database.PingAsync();
+        _ = await database.PingAsync();
     }
 
     #endregion
@@ -230,17 +230,17 @@ public class ReadFromTests(TestConfiguration config)
 
             // Verify full functionality
             IDatabase database = connectionMultiplexer.GetDatabase();
-            await database.PingAsync();
+            _ = await database.PingAsync();
 
             // Test basic operations to ensure legacy behavior works
             string testKey = "legacy-config-test-key";
             string testValue = "legacy-config-test-value";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
             // Cleanup
-            await database.KeyDeleteAsync(testKey);
+            _ = await database.KeyDeleteAsync(testKey);
         }
 
         else
@@ -260,17 +260,17 @@ public class ReadFromTests(TestConfiguration config)
 
             // Verify full functionality
             IDatabase database = connectionMultiplexer.GetDatabase();
-            await database.PingAsync();
+            _ = await database.PingAsync();
 
             // Test basic operations to ensure legacy behavior works
             string testKey = "legacy-connection-string-test-key";
             string testValue = "legacy-connection-string-test-value";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
             // Cleanup
-            await database.KeyDeleteAsync(testKey);
+            _ = await database.KeyDeleteAsync(testKey);
         }
     }
 

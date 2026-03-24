@@ -65,7 +65,7 @@ internal sealed class Subscription : IDisposable
         if (handlers != null)
         {
             // Queue handler invocation to thread pool to avoid blocking message processing
-            System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+            _ = System.Threading.ThreadPool.QueueUserWorkItem(_ =>
             {
                 foreach (var handler in handlers.GetInvocationList().Cast<Action<ValkeyChannel, ValkeyValue>>())
                 {
