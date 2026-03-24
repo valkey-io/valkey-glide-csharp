@@ -69,7 +69,7 @@ public interface IScriptingAndFunctionBaseCommands
     /// </example>
     /// </remarks>
     Task<bool[]> ScriptExistsAsync(
-        string[] sha1Hashes,
+        IEnumerable<string> sha1Hashes,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -168,8 +168,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// Executes a loaded function with keys and arguments.
     /// </summary>
     /// <param name="function">The name of the function to execute.</param>
-    /// <param name="keys">The keys to pass to the function (KEYS array).</param>
-    /// <param name="args">The arguments to pass to the function (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the function.</param>
+    /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the function execution.</returns>
@@ -182,8 +182,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// </remarks>
     Task<ValkeyResult> FCallAsync(
         string function,
-        string[] keys,
-        string[] args,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -211,8 +211,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// Executes a loaded function in read-only mode with keys and arguments.
     /// </summary>
     /// <param name="function">The name of the function to execute.</param>
-    /// <param name="keys">The keys to pass to the function (KEYS array).</param>
-    /// <param name="args">The arguments to pass to the function (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the function.</param>
+    /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the function execution.</returns>
@@ -226,8 +226,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// </remarks>
     Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
-        string[] keys,
-        string[] args,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
@@ -297,30 +297,36 @@ public interface IScriptingAndFunctionBaseCommands
     /// Evaluates a Lua script on the server (StackExchange.Redis compatibility).
     /// </summary>
     /// <param name="script">The Lua script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
-    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the script.</param>
+    /// <param name="values">The values to pass to the script.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <remarks>
     /// This method uses EVAL to execute the script. For better performance with repeated executions,
     /// consider using LuaScript.Prepare() or pre-loading scripts with IServer.ScriptLoadAsync().
     /// </remarks>
-    Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    Task<ValkeyResult> ScriptEvaluateAsync(
+        string script,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Evaluates a pre-loaded Lua script on the server using its SHA1 hash (StackExchange.Redis compatibility).
     /// </summary>
     /// <param name="hash">The SHA1 hash of the script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
-    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="keys">The keys to pass to the script.</param>
+    /// <param name="values">The values to pass to the script.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <remarks>
     /// This method uses EVALSHA to execute the script by its hash. If the script is not cached on the server,
     /// a NOSCRIPT error will be thrown. Use IServer.ScriptLoadAsync() to pre-load scripts.
     /// </remarks>
-    Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
+    Task<ValkeyResult> ScriptEvaluateAsync(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null,
         CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -332,8 +338,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <remarks>
     /// This method extracts parameter values from the provided object and passes them to the script.
-    /// Parameters of type ValkeyKey are treated as keys (KEYS array), while other types are treated
-    /// as arguments (ARGV array).
+    /// Parameters of type ValkeyKey are treated as keys, while other types are treated
+    /// as arguments.
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null,
         CommandFlags flags = CommandFlags.None);

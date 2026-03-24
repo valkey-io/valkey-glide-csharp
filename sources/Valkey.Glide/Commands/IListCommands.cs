@@ -52,7 +52,7 @@ public interface IListCommands
     /// from the provided <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop"/>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
@@ -66,7 +66,7 @@ public interface IListCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ListPopResult> ListLeftPopAsync(ValkeyKey[] keys, long count, CommandFlags flags = CommandFlags.None);
+    Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Inserts the specified value at the head of the list stored at <paramref name="key" />.
@@ -113,7 +113,7 @@ public interface IListCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue[] values, When when = When.Always, CommandFlags flags = CommandFlags.None);
+    Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Inserts all the specified values at the head of the list stored at <paramref name="key" />. Elements are inserted one
@@ -132,7 +132,7 @@ public interface IListCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue[] values, CommandFlags flags);
+    Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
 
     /// <summary>
     /// Inserts the specified value at the tail of the list stored at <paramref name="key" />.
@@ -179,7 +179,7 @@ public interface IListCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue[] values, When when = When.Always, CommandFlags flags = CommandFlags.None);
+    Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Inserts all the specified values at the tail of the list stored at key.
@@ -198,7 +198,7 @@ public interface IListCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue[] values, CommandFlags flags);
+    Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
 
     /// <summary>
     /// Removes and returns the last elements of the list stored at <paramref name="key" />.
@@ -243,7 +243,7 @@ public interface IListCommands
     /// from the provided <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop"/>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
@@ -257,7 +257,7 @@ public interface IListCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ListPopResult> ListRightPopAsync(ValkeyKey[] keys, long count, CommandFlags flags = CommandFlags.None);
+    Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the length of the list stored at <paramref name="key" />.
@@ -538,11 +538,11 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[]? result = await client.ListBlockingLeftPopAsync(new ValkeyKey[] { "list1", "list2" }, TimeSpan.FromSeconds(5));
+    /// ValkeyValue[]? result = await client.ListBlockingLeftPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]?> ListBlockingLeftPopAsync(ValkeyKey[] keys, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]?> ListBlockingLeftPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Pops an element from the tail of the first list that is non-empty, with the given <paramref name="keys"/> being checked in the order that
@@ -563,11 +563,11 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[]? result = await client.ListBlockingRightPopAsync(new ValkeyKey[] { "list1", "list2" }, TimeSpan.FromSeconds(5));
+    /// ValkeyValue[]? result = await client.ListBlockingRightPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]?> ListBlockingRightPopAsync(ValkeyKey[] keys, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Blocks the connection until it atomically moves an element from the <paramref name="source"/> list to the <paramref name="destination"/> list.
@@ -598,13 +598,13 @@ public interface IListCommands
 
     /// <summary>
     /// Blocks the connection until it pops one element from the first non-empty list from the provided <paramref name="keys"/>.
-    /// <see cref="ListBlockingPopAsync(ValkeyKey[], ListSide, TimeSpan, CommandFlags)"/> is the blocking variant of <see cref="ListLeftPopAsync(ValkeyKey[], long, CommandFlags)"/>.
+    /// <see cref="ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan, CommandFlags)"/> is the blocking variant of <see cref="ListLeftPopAsync(IEnumerable{ValkeyKey}, long, CommandFlags)"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <note>BLMPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <note>Since Valkey 7.0.0.</note>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
     /// <param name="timeout">The maximum time to wait for a blocking operation to complete. A value of TimeSpan.Zero will block indefinitely.</param>
     /// <param name="flags">Command flags are not supported by GLIDE.</param>
@@ -615,21 +615,21 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ListPopResult result = await client.ListBlockingPopAsync(new ValkeyKey[] { "list1", "list2" }, ListSide.Left, TimeSpan.FromSeconds(5));
+    /// ListPopResult result = await client.ListBlockingPopAsync(["list1", "list2"], ListSide.Left, TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
+    Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Blocks the connection until it pops up to <paramref name="count"/> elements from the first non-empty list from the provided <paramref name="keys"/>.
-    /// <see cref="ListBlockingPopAsync(ValkeyKey[], ListSide, long, TimeSpan, CommandFlags)"/> is the blocking variant of <see cref="ListLeftPopAsync(ValkeyKey[], long, CommandFlags)"/>.
+    /// <see cref="ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan, CommandFlags)"/> is the blocking variant of <see cref="ListLeftPopAsync(IEnumerable{ValkeyKey}, long, CommandFlags)"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <note>BLMPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <note>Since Valkey 7.0.0.</note>
-    /// <param name="keys">An array of keys to lists.</param>
+    /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <param name="timeout">The maximum time to wait for a blocking operation to complete. A value of TimeSpan.Zero will block indefinitely.</param>
@@ -641,9 +641,9 @@ public interface IListCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ListPopResult result = await client.ListBlockingPopAsync(new ValkeyKey[] { "list1", "list2" }, ListSide.Left, 3, TimeSpan.FromSeconds(5));
+    /// ListPopResult result = await client.ListBlockingPopAsync(["list1", "list2"], ListSide.Left, 3, TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, long count, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
+    Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout, CommandFlags flags = CommandFlags.None);
 }

@@ -117,6 +117,10 @@ public sealed class LuaScript
     /// <summary>
     /// Evaluates the script on the specified database synchronously.
     /// </summary>
+    /// <remarks>
+    /// This method extracts parameter values from the provided object and passes them to the script.
+    /// Parameters of type <see cref="ValkeyKey" /> are treated as keys, while other types are treated as arguments.
+    /// </remarks>
     /// <param name="db">The database to execute the script on.</param>
     /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
     /// <param name="withKeyPrefix">Optional key prefix to apply to all keys.</param>
@@ -124,11 +128,6 @@ public sealed class LuaScript
     /// <returns>The result of the script execution.</returns>
     /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
     /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
-    /// <remarks>
-    /// This method extracts parameter values from the provided object and passes them to the script.
-    /// Parameters of type ValkeyKey are treated as keys (KEYS array), while other types are treated
-    /// as arguments (ARGV array).
-    /// </remarks>
     /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
@@ -154,6 +153,10 @@ public sealed class LuaScript
     /// <summary>
     /// Asynchronously evaluates the script on the specified database.
     /// </summary>
+    /// <remarks>
+    /// This method extracts parameter values from the provided object and passes them to the script.
+    /// Parameters of type <see cref="ValkeyKey" /> are treated as keys, while other types are treated as arguments.
+    /// </remarks>
     /// <param name="db">The database to execute the script on.</param>
     /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
     /// <param name="withKeyPrefix">Optional key prefix to apply to all keys.</param>
@@ -161,11 +164,6 @@ public sealed class LuaScript
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
     /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
-    /// <remarks>
-    /// This method extracts parameter values from the provided object and passes them to the script.
-    /// Parameters of type ValkeyKey are treated as keys (KEYS array), while other types are treated
-    /// as arguments (ARGV array).
-    /// </remarks>
     /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");

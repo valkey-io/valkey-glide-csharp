@@ -21,10 +21,10 @@ public abstract partial class BaseClient : IGeospatialCommands
     }
 
     /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, CommandFlags flags = CommandFlags.None)
+    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.GeoAddAsync(key, values));
+        return await Command(Request.GeoAddAsync(key, [.. values]));
     }
 
     /// <inheritdoc/>
@@ -35,10 +35,10 @@ public abstract partial class BaseClient : IGeospatialCommands
     }
 
     /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions options, CommandFlags flags = CommandFlags.None)
+    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.GeoAddAsync(key, values, options));
+        return await Command(Request.GeoAddAsync(key, [.. values], options));
     }
 
     /// <inheritdoc/>
@@ -56,10 +56,10 @@ public abstract partial class BaseClient : IGeospatialCommands
     }
 
     /// <inheritdoc/>
-    public async Task<string?[]> GeoHashAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None)
+    public async Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.GeoHashAsync(key, members));
+        return await Command(Request.GeoHashAsync(key, [.. members]));
     }
 
     /// <inheritdoc/>
@@ -70,10 +70,10 @@ public abstract partial class BaseClient : IGeospatialCommands
     }
 
     /// <inheritdoc/>
-    public async Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members, CommandFlags flags = CommandFlags.None)
+    public async Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.GeoPositionAsync(key, members));
+        return await Command(Request.GeoPositionAsync(key, [.. members]));
     }
 
     /// <inheritdoc/>
