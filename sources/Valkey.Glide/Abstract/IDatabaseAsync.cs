@@ -1267,4 +1267,43 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands, CommandFlags flags);
 
     #endregion
+
+    #region HyperLogLog Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogAddAsync(ValkeyKey, ValkeyValue)" />
+    /// <param name="key">The key of the HyperLogLog.</param>
+    /// <param name="element">The element to add to the HyperLogLog.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element, CommandFlags flags);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogAddAsync(ValkeyKey, IEnumerable{ValkeyValue})" />
+    /// <param name="key">The key of the HyperLogLog.</param>
+    /// <param name="elements">The elements to add to the HyperLogLog.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements, CommandFlags flags);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(ValkeyKey)" />
+    /// <param name="key">The key of the HyperLogLog.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> HyperLogLogLengthAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogLengthAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys of the HyperLogLogs.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey, ValkeyKey)" />
+    /// <param name="destination">The key of the destination HyperLogLog.</param>
+    /// <param name="first">The key of the first source HyperLogLog.</param>
+    /// <param name="second">The key of the second source HyperLogLog.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="IHyperLogLogCommands.HyperLogLogMergeAsync(ValkeyKey, IEnumerable{ValkeyKey})" />
+    /// <param name="destination">The key of the destination HyperLogLog.</param>
+    /// <param name="sourceKeys">The keys of the source HyperLogLogs.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task HyperLogLogMergeAsync(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys, CommandFlags flags);
+
+    #endregion
 }
