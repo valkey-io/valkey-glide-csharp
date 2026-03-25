@@ -1206,4 +1206,65 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags);
 
     #endregion
+
+    #region Bitmap Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="IBitmapCommands.StringGetBitAsync(ValkeyKey, long)" />
+    /// <param name="key">The key of the string.</param>
+    /// <param name="offset">The offset in the string to get the bit at.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> StringGetBitAsync(ValkeyKey key, long offset, CommandFlags flags);
+
+    /// <inheritdoc cref="IBitmapCommands.StringSetBitAsync(ValkeyKey, long, bool)" />
+    /// <param name="key">The key of the string.</param>
+    /// <param name="offset">The offset in the string to set the bit at.</param>
+    /// <param name="value">The bit value to set (true for 1, false for 0).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> StringSetBitAsync(ValkeyKey key, long offset, bool value, CommandFlags flags);
+
+    /// <inheritdoc cref="IBitmapCommands.StringBitCountAsync(ValkeyKey, long, long, StringIndexType)" />
+    /// <param name="key">The key of the string.</param>
+    /// <param name="start">The start offset.</param>
+    /// <param name="end">The end offset.</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> StringBitCountAsync(ValkeyKey key, long start, long end, StringIndexType indexType, CommandFlags flags);
+
+    /// <inheritdoc cref="IBitmapCommands.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType)" />
+    /// <param name="key">The key of the string.</param>
+    /// <param name="bit">The bit value to search for (true for 1, false for 0).</param>
+    /// <param name="start">The start offset.</param>
+    /// <param name="end">The end offset.</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> StringBitPositionAsync(ValkeyKey key, bool bit, long start, long end, StringIndexType indexType, CommandFlags flags);
+
+    /// <inheritdoc cref="IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey)" />
+    /// <param name="operation">The bitwise operation to perform.</param>
+    /// <param name="destination">The key to store the result.</param>
+    /// <param name="first">The first source key.</param>
+    /// <param name="second">The second source key.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="IBitmapCommands.StringBitOperationAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})" />
+    /// <param name="operation">The bitwise operation to perform.</param>
+    /// <param name="destination">The key to store the result.</param>
+    /// <param name="keys">The source keys.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="IBitmapCommands.StringBitFieldAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldSubCommand})" />
+    /// <param name="key">The key of the string.</param>
+    /// <param name="subCommands">The subcommands to execute (GET, SET, INCRBY).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long[]> StringBitFieldAsync(ValkeyKey key, IEnumerable<Commands.Options.BitFieldOptions.IBitFieldSubCommand> subCommands, CommandFlags flags);
+
+    /// <inheritdoc cref="IBitmapCommands.StringBitFieldReadOnlyAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand})" />
+    /// <param name="key">The key of the string.</param>
+    /// <param name="subCommands">The GET subcommands to execute.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long[]> StringBitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands, CommandFlags flags);
+
+    #endregion
 }
