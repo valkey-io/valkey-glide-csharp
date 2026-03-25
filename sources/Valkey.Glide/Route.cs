@@ -52,8 +52,10 @@ public abstract class Route
 
     /// <inheritdoc cref="RandomRoute"/>
     public static readonly RandomRoute Random = new();
+
     /// <inheritdoc cref="AllNodesRoute"/>
     public static readonly AllNodesRoute AllNodes = new();
+
     /// <inheritdoc cref="AllPrimariesRoute"/>
     public static readonly AllPrimariesRoute AllPrimaries = new();
 

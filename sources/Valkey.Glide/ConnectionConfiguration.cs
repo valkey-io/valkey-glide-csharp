@@ -80,16 +80,20 @@ public abstract class ConnectionConfiguration
         /// time between retries will remain constant until a reconnect attempt is successful.
         /// </summary>
         public uint NumberOfRetries = numberOfRetries;
+
         /// <summary>
         /// The multiplier that will be applied to the waiting time between each retry.
         /// </summary>
         public uint Factor = factor;
+
         /// <summary>
         /// The exponent base configured for the strategy.
         /// </summary>
         public uint ExponentBase = exponentBase;
+
         [MarshalAs(UnmanagedType.U1)]
         internal bool HasJitterPercent = jitterPercent is not null;
+
         /// <summary>
         /// The Jitter precent configured for the strategy.
         /// </summary>

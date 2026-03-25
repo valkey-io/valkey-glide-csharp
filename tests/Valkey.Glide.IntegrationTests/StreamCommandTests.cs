@@ -13,6 +13,7 @@ public class StreamCommandTests
         Assert.False(messageId.IsNull);
         Assert.Contains("-", messageId.ToString());
     }
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAddAsync_SingleFieldValue(BaseClient client)

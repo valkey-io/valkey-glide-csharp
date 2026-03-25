@@ -94,6 +94,7 @@ public abstract partial class BaseBatch<T>
 
     /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, int, bool)" />
     public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false) => AddCmd(KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
+
     /// <inheritdoc cref="IBatchGenericCommands.KeyRandom()" />
     public T KeyRandom() => AddCmd(KeyRandomAsync());
 
