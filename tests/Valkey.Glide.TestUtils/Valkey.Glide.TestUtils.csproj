@@ -37,7 +37,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.v3" Version="3.2.1" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
     <ProjectReference Include="..\..\sources\Valkey.Glide\Valkey.Glide.csproj" />
   </ItemGroup>
 
