@@ -15,6 +15,9 @@ using static Valkey.Glide.Pipeline.Options;
 
 namespace Valkey.Glide;
 
+/// <summary>
+/// Abstract Valkey GLIDE client base class.
+/// </summary>
 public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 {
     #region public methods
@@ -148,6 +151,15 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     #endregion public methods
 
     #region protected methods
+
+    /// <summary>
+    /// Creates and initializes a new client instance with the specified configuration.
+    /// </summary>
+    /// <typeparam name="T">The type of client to create.</typeparam>
+    /// <param name="config">The client configuration settings.</param>
+    /// <param name="ctor">A factory function that creates a new instance of the client.</param>
+    /// <returns>The initialized client instance.</returns>
+    /// <exception cref="ConnectionException">Thrown when the client fails to connect to the server.</exception>
     protected static async Task<T> CreateClient<T>(BaseClientConfiguration config, Func<T> ctor) where T : BaseClient
     {
         T client = ctor();
@@ -182,6 +194,9 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         return client;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BaseClient"/> class.
+    /// </summary>
     protected BaseClient()
     {
         _successCallbackDelegate = SuccessCallback;
@@ -190,6 +205,12 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
         MessageContainer = new(this);
     }
 
+    /// <summary>
+    /// Delegate for handling responses from the native client.
+    /// </summary>
+    /// <typeparam name="T">The type of the response value.</typeparam>
+    /// <param name="response">A pointer to the native response data.</param>
+    /// <returns>The converted response value.</returns>
     protected internal delegate T ResponseHandler<T>(IntPtr response);
 
     /// <typeparam name="R">Type received from server.</typeparam>
@@ -284,15 +305,29 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         // All memory allocated is auto-freed by `using` operator
     }
+
+    /// <summary>
+    /// Parses the server version from an INFO command response string.
+    /// </summary>
+    /// <param name="response">The INFO command response containing version information.</param>
+    /// <returns>The parsed server version, or <c>null</c> if the version could not be extracted.</returns>
     protected Version? ParseServerVersion(string response)
     {
         var versionMatch = System.Text.RegularExpressions.Regex.Match(response, @"(?:valkey_version|redis_version):([\d\.]+)");
         return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
     }
-    #endregion protected methods
 
+    #endregion protected methods
     #region protected fields
-    protected Version? _serverVersion; // cached server version
+
+    /// <summary>
+    /// Cached server version retrieved from the connected server.
+    /// </summary>
+    protected Version? _serverVersion;
+
+    /// <summary>
+    /// The default server version assumed when the actual version cannot be determined.
+    /// </summary>
     protected static readonly Version DefaultServerVersion = new(8, 0, 0);
     #endregion protected fields
 
@@ -414,10 +449,17 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             throw new ArgumentOutOfRangeException(nameof(pushKind), $"Unsupported PushKind: {pushKind}");
     }
 
+    /// <summary>
+    /// Closes the connection to the client.
+    /// </summary>
     ~BaseClient() => Dispose();
 
     internal void SetInfo(string info) => _clientInfo = info;
 
+    /// <summary>
+    /// Gets the server version from the connected server.
+    /// </summary>
+    /// <returns>The server version.</returns>
     protected abstract Task<Version> GetServerVersionAsync();
 
     /// <summary>
