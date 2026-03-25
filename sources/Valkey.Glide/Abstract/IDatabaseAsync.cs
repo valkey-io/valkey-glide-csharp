@@ -537,4 +537,170 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout, CommandFlags flags);
 
     #endregion
+
+    #region Set Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="ISetCommands.SetAddAsync(ValkeyKey, ValkeyValue)" />
+    /// <param name="key">The key where members will be added to its set.</param>
+    /// <param name="value">The value to add to the set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SetAddAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetAddAsync(ValkeyKey, IEnumerable{ValkeyValue})" />
+    /// <param name="key">The key where members will be added to its set.</param>
+    /// <param name="values">The values to add to the set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetRemoveAsync(ValkeyKey, ValkeyValue)" />
+    /// <param name="key">The key from which members will be removed.</param>
+    /// <param name="value">The value to remove.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SetRemoveAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})" />
+    /// <param name="key">The key from which members will be removed.</param>
+    /// <param name="values">The values to remove.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetMembersAsync(ValkeyKey)" />
+    /// <param name="key">The key from which to retrieve the set members.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetLengthAsync(ValkeyKey)" />
+    /// <param name="key">The key from which to retrieve the number of set members.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetLengthAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)" />
+    /// <param name="keys">The keys of the sets to intersect.</param>
+    /// <param name="limit">The limit for the intersection cardinality value.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetPopAsync(ValkeyKey)" />
+    /// <param name="key">The key of the set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> SetPopAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetPopAsync(ValkeyKey, long)" />
+    /// <param name="key">The key of the set.</param>
+    /// <param name="count">The number of members to return.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetUnionAsync(ValkeyKey, ValkeyKey)" />
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetUnionAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetUnionAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys of the sets to operate on.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetUnionAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetIntersectAsync(ValkeyKey, ValkeyKey)" />
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetIntersectAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetIntersectAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys of the sets to operate on.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetIntersectAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetDifferenceAsync(ValkeyKey, ValkeyKey)" />
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetDifferenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetDifferenceAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys of the sets to operate on.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetDifferenceAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetUnionStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey)" />
+    /// <param name="destination">The key of the destination set.</param>
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetUnionStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" />
+    /// <param name="destination">The key of the destination set.</param>
+    /// <param name="keys">The keys of the sets to operate on.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetIntersectStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey)" />
+    /// <param name="destination">The key of the destination set.</param>
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetIntersectStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetIntersectStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" />
+    /// <param name="destination">The key of the destination set.</param>
+    /// <param name="keys">The keys of the sets to operate on.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetIntersectStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetDifferenceStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey)" />
+    /// <param name="destination">The key of the destination set.</param>
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetDifferenceStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetDifferenceStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" />
+    /// <param name="destination">The key of the destination set.</param>
+    /// <param name="keys">The keys of the sets to operate on.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SetDifferenceStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetContainsAsync(ValkeyKey, ValkeyValue)" />
+    /// <param name="key">The key of the set.</param>
+    /// <param name="value">The member to check for existence in the set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SetContainsAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetContainsAsync(ValkeyKey, IEnumerable{ValkeyValue})" />
+    /// <param name="key">The key of the set.</param>
+    /// <param name="values">The members to check.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool[]> SetContainsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetRandomMemberAsync(ValkeyKey)" />
+    /// <param name="key">The key from which to retrieve the set member.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetRandomMembersAsync(ValkeyKey, long)" />
+    /// <param name="key">The key from which to retrieve the set members.</param>
+    /// <param name="count">The number of members to return.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetMoveAsync(ValkeyKey, ValkeyKey, ValkeyValue)" />
+    /// <param name="source">The key of the set to remove the element from.</param>
+    /// <param name="destination">The key of the set to add the element to.</param>
+    /// <param name="value">The set element to move.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="ISetCommands.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" />
+    /// <param name="key">The key of the set.</param>
+    /// <param name="pattern">The pattern to match.</param>
+    /// <param name="pageSize">The page size to iterate by.</param>
+    /// <param name="cursor">The cursor position to start at.</param>
+    /// <param name="pageOffset">The page offset to start at.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags);
+
+    #endregion
 }
