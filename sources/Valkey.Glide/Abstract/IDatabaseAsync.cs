@@ -1021,4 +1021,189 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags);
 
     #endregion
+
+    #region Generic Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyDeleteAsync(ValkeyKey)" />
+    /// <param name="key">The key to delete.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyDeleteAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyDeleteAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys to delete.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyUnlinkAsync(ValkeyKey)" />
+    /// <param name="key">The key to unlink.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyUnlinkAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyUnlinkAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys to unlink.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExistsAsync(ValkeyKey)" />
+    /// <param name="key">The key to check.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyExistsAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExistsAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys to check.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?)" />
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">Duration for the key to expire.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen)" />
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">Duration for the key to expire.</param>
+    /// <param name="when">The option to set expiry.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?)" />
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">The timestamp for expiry.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen)" />
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">The timestamp for expiry.</param>
+    /// <param name="when">In Valkey 7+, the option to set expiry.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyTimeToLiveAsync(ValkeyKey)" />
+    /// <param name="key">The key to return its timeout.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyTypeAsync(ValkeyKey)" />
+    /// <param name="key">The key to check its data type.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyType> KeyTypeAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRenameAsync(ValkeyKey, ValkeyKey)" />
+    /// <param name="key">The key to rename.</param>
+    /// <param name="newKey">The new name of the key.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRenameNXAsync(ValkeyKey, ValkeyKey)" />
+    /// <param name="key">The key to rename.</param>
+    /// <param name="newKey">The new name of the key.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyRenameNXAsync(ValkeyKey key, ValkeyKey newKey, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyPersistAsync(ValkeyKey)" />
+    /// <param name="key">The key to remove the existing timeout on.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyPersistAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyDumpAsync(ValkeyKey)" />
+    /// <param name="key">The key to serialize.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<byte[]?> KeyDumpAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" />
+    /// <param name="key">The key to create.</param>
+    /// <param name="value">The serialized value to deserialize and assign to key.</param>
+    /// <param name="expiry">The expiry to set as a duration.</param>
+    /// <param name="restoreOptions">Set restore options with replace and absolute TTL modifiers, object idletime and frequency.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry, RestoreOptions? restoreOptions, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" />
+    /// <param name="key">The key to create.</param>
+    /// <param name="value">The serialized value to deserialize and assign to key.</param>
+    /// <param name="expiry">The expiry to set as a date and time.</param>
+    /// <param name="restoreOptions">Set restore options with replace and absolute TTL modifiers, object idletime and frequency.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry, RestoreOptions? restoreOptions, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyTouchAsync(ValkeyKey)" />
+    /// <param name="key">The key to update last access time.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyTouchAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyTouchAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys to update last access time.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> KeyTouchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyExpireTimeAsync(ValkeyKey)" />
+    /// <param name="key">The key to determine the expiration value of.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyEncodingAsync(ValkeyKey)" />
+    /// <param name="key">The key to determine the encoding of.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<string?> KeyEncodingAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyFrequencyAsync(ValkeyKey)" />
+    /// <param name="key">The key to determine the frequency of.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long?> KeyFrequencyAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyIdleTimeAsync(ValkeyKey)" />
+    /// <param name="key">The key to determine the idle time of.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRefCountAsync(ValkeyKey)" />
+    /// <param name="key">The key to determine the reference count of.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long?> KeyRefCountAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, bool)" />
+    /// <param name="sourceKey">The key to the source value.</param>
+    /// <param name="destinationKey">The key where the value should be copied to.</param>
+    /// <param name="replace">Whether to overwrite an existing values at destinationKey.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyMoveAsync(ValkeyKey, int)" />
+    /// <param name="key">The key to move.</param>
+    /// <param name="database">The database to move the key to.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool)" />
+    /// <param name="sourceKey">The key to the source value.</param>
+    /// <param name="destinationKey">The key where the value should be copied to.</param>
+    /// <param name="destinationDatabase">The database ID to store destinationKey in.</param>
+    /// <param name="replace">Whether to overwrite an existing values at destinationKey.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.KeyRandomAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<string?> KeyRandomAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?)" />
+    /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
+    /// <param name="skip">The number of elements to skip.</param>
+    /// <param name="take">The number of elements to take. -1 means take all.</param>
+    /// <param name="order">The sort order.</param>
+    /// <param name="sortType">The sort type.</param>
+    /// <param name="by">The pattern to sort by external keys.</param>
+    /// <param name="get">The patterns to retrieve external keys' values.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get, CommandFlags flags);
+
+    /// <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, long)" />
+    /// <param name="numreplicas">The number of replicas to wait for.</param>
+    /// <param name="timeout">The timeout in milliseconds.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags);
+
+    #endregion
 }
