@@ -52,7 +52,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// Manually refresh the IAM authentication token.
     /// This method is only available when the client is configured with IAM authentication.
     /// </summary>
-    /// <returns>A task that completes when the refresh attempt finishes.</returns>
+    /// <seealso href="https://glide.valkey.io/how-to/security/iam-integration"/>
     public async Task RefreshIamTokenAsync()
     {
         Message message = MessageContainer.GetMessageForCall();
@@ -74,7 +74,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// <param name="password">The new password to update the connection with</param>
     /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after updating password</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="password"/> is <c>null</c> or empty.</exception>
-    /// <returns>A task that completes when the password is updated</returns>
+    /// <seealso href="https://glide.valkey.io/how-to/security/dynamic-authentication"/>
     public async Task UpdateConnectionPasswordAsync(string password, bool immediateAuth = false)
     {
         if (password == null)
@@ -112,7 +112,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// Clear the password from the current connection.
     /// </summary>
     /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after clearing password</param>
-    /// <returns>A task that completes when the password is cleared</returns>
+    /// <seealso href="https://glide.valkey.io/how-to/security/dynamic-authentication"/>
     public async Task ClearConnectionPasswordAsync(bool immediateAuth = false)
     {
         Message message = MessageContainer.GetMessageForCall();
@@ -158,12 +158,13 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
         using FFI.ConnectionConfig request = config.Request.ToFfi();
 
-        // Log warnining if using insecure TLS.
+        // Log warning if using insecure TLS.
         if (config.Request.TlsMode == TlsMode.InsecureTls)
         {
             var msg = "SECURITY WARNING: Insecure TLS connection established. "
                 + "Certificate verification is disabled. "
-                + "This is strongly discouraged in production environments.";
+                + "This is strongly discouraged in production environments."
+                + "See https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode for more details.";
             Logger.Log(Level.Warn, typeof(T).Name, msg);
         }
 

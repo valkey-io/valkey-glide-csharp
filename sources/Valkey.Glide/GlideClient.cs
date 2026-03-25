@@ -45,7 +45,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     /// var config = new StandaloneClientConfigurationBuilder()
     ///     .WithAddress("primary.example.com", 6379)
     ///     .WithAddress("replica1.example.com", 6379)
-    ///     .WithDataBaseId(1)
+    ///     .WithDatabaseId(1)
     ///     .WithAuthentication("user1", "passwordA")
     ///     .WithTls()
     ///     .WithConnectionRetryStrategy(5, 100, 2)

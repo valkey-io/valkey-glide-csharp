@@ -219,7 +219,7 @@ public abstract class ConnectionConfiguration
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
-        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DatabaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
@@ -246,7 +246,7 @@ public abstract class ConnectionConfiguration
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
-            _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
+            _ = databaseId.HasValue ? builder.DatabaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
             builder.LazyConnect = lazyConnect;
@@ -272,7 +272,7 @@ public abstract class ConnectionConfiguration
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
-        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DatabaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
@@ -299,7 +299,7 @@ public abstract class ConnectionConfiguration
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
-            _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
+            _ = databaseId.HasValue ? builder.DatabaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
             builder.LazyConnect = lazyConnect;
@@ -404,9 +404,12 @@ public abstract class ConnectionConfiguration
         #region TLS
 
         /// <summary>
-        /// Configure whether to use Transport Layer Security (TLS) when connecting to the server.<br />
+        /// Configure whether to use Transport Layer Security (TLS) when connecting to the server.
+        /// <br />
         /// Must match the TLS connection of the server or cluster.
         /// </summary>
+        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
         public bool UseTls
         {
             get => Config.TlsMode is TlsMode.SecureTls or TlsMode.InsecureTls;
@@ -437,12 +440,13 @@ public abstract class ConnectionConfiguration
         /// Configure whether to bypass certificate verification when using
         /// Transport Layer Security (TLS) to connect to the server.
         /// <br />
-        /// Typically used in development or testing environments. <b>Strongly discouraged in production</b>,
-        /// as it introduces security risks such as man-in-the-middle attacks.
+        /// <b>SECURITY WARNING</b>: Insecure mode is only for development and testing environments.
+        /// <b>It is strongly discouraged in production environments</b> as it introduces security risks such as man-in-the-middle attacks.
         /// <br />
         /// Requires <see cref="UseTls"/> to be enabled, otherwise throws <see cref="ArgumentException"/>.
         /// </summary>
         /// <exception cref="ArgumentException">If <see cref="UseTls"/> is not enabled.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode" />
         public bool UseInsecureTls
         {
             get => Config.TlsMode == TlsMode.InsecureTls;
@@ -457,7 +461,8 @@ public abstract class ConnectionConfiguration
                 {
                     var msg = "SECURITY WARNING: Insecure TLS mode enabled. "
                         + "Certificate verification is disabled. "
-                        + "This is strongly discouraged in production environments.";
+                        + "This is strongly discouraged in production environments."
+                        + "See https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode for more details.";
                     Logger.Log(Level.Warn, GetType().Name, msg);
                 }
 
@@ -488,6 +493,8 @@ public abstract class ConnectionConfiguration
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
         /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/></exception>
+        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
         public T WithTrustedCertificate(string certificatePath)
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
@@ -520,6 +527,8 @@ public abstract class ConnectionConfiguration
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="ArgumentException">If the certificate data is null, empty, or exceeds <see cref="CertificateMaxSize"/></exception>
+        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
         public T WithTrustedCertificate(byte[] certificateData)
         {
             if (certificateData == null)
@@ -555,6 +564,7 @@ public abstract class ConnectionConfiguration
             get => Config.RequestTimeout ?? TimeSpan.FromMilliseconds(250);
             set => Config.RequestTimeout = value;
         }
+
         /// <inheritdoc cref="RequestTimeout" />
         public T WithRequestTimeout(TimeSpan requestTimeout)
         {
@@ -576,6 +586,7 @@ public abstract class ConnectionConfiguration
             get => Config.ConnectionTimeout ?? TimeSpan.FromMilliseconds(250);
             set => Config.ConnectionTimeout = value;
         }
+
         /// <inheritdoc cref="ConnectionTimeout" />
         public T WithConnectionTimeout(TimeSpan connectionTimeout)
         {
@@ -593,6 +604,7 @@ public abstract class ConnectionConfiguration
         {
             set => Config.ReadFrom = value;
         }
+
         /// <inheritdoc cref="ReadFrom" />
         public T WithReadFrom(ReadFrom readFrom)
         {
@@ -614,27 +626,27 @@ public abstract class ConnectionConfiguration
             ArgumentNullException.ThrowIfNull(credentials);
 
             IamCredentials? iamCredentials = null;
-            if (credentials.IamConfig != null)
+            if (credentials.IamAuthConfig != null)
             {
-                FFI.ServiceType serviceType = credentials.IamConfig.ServiceType switch
+                FFI.ServiceType serviceType = credentials.IamAuthConfig.ServiceType switch
                 {
                     ServiceType.ElastiCache => FFI.ServiceType.ElastiCache,
                     ServiceType.MemoryDB => FFI.ServiceType.MemoryDB,
-                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamConfig.ServiceType))
+                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamAuthConfig.ServiceType))
                 };
 
                 iamCredentials = new IamCredentials(
-                    credentials.IamConfig.ClusterName,
-                    credentials.IamConfig.Region,
+                    credentials.IamAuthConfig.ClusterName,
+                    credentials.IamAuthConfig.Region,
                     serviceType,
-                    credentials.IamConfig.RefreshIntervalSeconds
+                    credentials.IamAuthConfig.RefreshIntervalSeconds
                 );
             }
 
             Config.AuthenticationInfo = new AuthenticationInfo
             (
                 credentials.Username,
-                credentials.Password,
+                credentials.Password != null ? new string(credentials.Password) : null,
                 iamCredentials
             );
 
@@ -731,21 +743,22 @@ public abstract class ConnectionConfiguration
             => WithConnectionRetryStrategy(new RetryStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
 
         #endregion
-        #region DataBase ID
+        #region Database ID
 
         /// <summary>
         /// Index of the logical database to connect to. Must be non-negative and within the range
         /// supported by the server configuration. If not specified, defaults to database 0.
         /// For cluster mode, requires Valkey 9.0+ with cluster-databases configuration enabled.
         /// </summary>
-        public uint DataBaseId
+        public uint DatabaseId
         {
             set => Config.DatabaseId = value;
         }
-        /// <inheritdoc cref="DataBaseId" />
+
+        /// <inheritdoc cref="DatabaseId" />
         public T WithDatabaseId(uint dataBaseId)
         {
-            DataBaseId = dataBaseId;
+            DatabaseId = dataBaseId;
             return (T)this;
         }
 

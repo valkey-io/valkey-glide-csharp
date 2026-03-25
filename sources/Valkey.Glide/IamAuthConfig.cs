@@ -5,8 +5,14 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration for IAM authentication with AWS services.
 /// </summary>
-public class IamAuthConfig
+/// <seealso href="https://glide.valkey.io/how-to/security/iam-integration"/>
+public sealed class IamAuthConfig : IDisposable
 {
+    #region Fields
+
+    private bool _disposed;
+
+    #endregion
     #region Constants
 
     /// <summary>
@@ -25,17 +31,28 @@ public class IamAuthConfig
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string ClusterName { get; }
+    public string ClusterName
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     /// <summary>
     /// The AWS service type.
     /// </summary>
-    public ServiceType ServiceType { get; }
+    public ServiceType ServiceType
+    {
+        get { ThrowIfDisposed(); return field; }
+    }
 
     /// <summary>
     /// The AWS region where the cluster is located.
     /// </summary>
-    public string Region { get; }
+    public string Region
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     /// <summary>
     /// Optional refresh interval in seconds.
@@ -43,17 +60,8 @@ public class IamAuthConfig
     /// </summary>
     public uint? RefreshIntervalSeconds
     {
-        get;
-        private init
-        {
-            if (value.HasValue && (value.Value < MinRefreshIntervalSeconds || value.Value > MaxRefreshIntervalSeconds))
-            {
-                var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
-                throw new ArgumentOutOfRangeException(nameof(RefreshIntervalSeconds), value, msg);
-            }
-
-            field = value;
-        }
+        get { ThrowIfDisposed(); return field; }
+        private set;
     }
 
     #endregion
@@ -75,6 +83,13 @@ public class IamAuthConfig
         ArgumentNullException.ThrowIfNull(clusterName, nameof(clusterName));
         ArgumentNullException.ThrowIfNull(region, nameof(region));
 
+        if (refreshIntervalSeconds.HasValue &&
+            (refreshIntervalSeconds.Value < MinRefreshIntervalSeconds || refreshIntervalSeconds.Value > MaxRefreshIntervalSeconds))
+        {
+            var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
+            throw new ArgumentOutOfRangeException(nameof(refreshIntervalSeconds), refreshIntervalSeconds, msg);
+        }
+
         ClusterName = clusterName;
         ServiceType = serviceType;
         Region = region;
@@ -88,7 +103,36 @@ public class IamAuthConfig
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
-        => $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
+    {
+        ThrowIfDisposed();
+        return $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
+    }
+
+    /// <summary>
+    /// Clears sensitive data.
+    /// </summary>
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            ClusterName = string.Empty;
+            Region = string.Empty;
+            RefreshIntervalSeconds = null;
+
+            _disposed = true;
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Throws <see cref="ObjectDisposedException"/> if the object is disposed.
+    /// </summary>
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(_disposed, this);
 
     #endregion
 }

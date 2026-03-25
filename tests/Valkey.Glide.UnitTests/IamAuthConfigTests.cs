@@ -30,7 +30,7 @@ public class IamAuthConfigTests
     [Fact]
     public void Constructor_WithRequiredArgs()
     {
-        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
+        using var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
 
         Assert.Equal(ClusterName, config.ClusterName);
         Assert.Equal(ServiceType.ElastiCache, config.ServiceType);
@@ -41,7 +41,7 @@ public class IamAuthConfigTests
     [Fact]
     public void Constructor_WithAllArgs()
     {
-        var config = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, RefreshInterval);
+        using var config = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, RefreshInterval);
 
         Assert.Equal(ClusterName, config.ClusterName);
         Assert.Equal(ServiceType.MemoryDB, config.ServiceType);
@@ -63,7 +63,7 @@ public class IamAuthConfigTests
     [MemberData(nameof(ValidRefreshIntervals))]
     public void Constructor_ValidRefreshInterval_Succeeds(uint interval)
     {
-        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, interval);
+        using var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, interval);
         Assert.Equal(interval, config.RefreshIntervalSeconds);
     }
 
@@ -76,7 +76,7 @@ public class IamAuthConfigTests
     [Fact]
     public void ToString_ContainsServiceType()
     {
-        var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
+        using var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
         string result = config.ToString();
 
         // Verify that string representation contains the service type
@@ -85,6 +85,20 @@ public class IamAuthConfigTests
         Assert.DoesNotContain(ClusterName, result);
         Assert.DoesNotContain(Region, result);
         Assert.DoesNotContain(RefreshInterval.ToString(), result);
+    }
+
+    [Fact]
+    public void Dispose_AllPublicMembers_ThrowObjectDisposedException()
+    {
+        var config = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, RefreshInterval);
+
+        config.Dispose();
+
+        _ = Assert.Throws<ObjectDisposedException>(() => config.ClusterName);
+        _ = Assert.Throws<ObjectDisposedException>(() => config.ServiceType);
+        _ = Assert.Throws<ObjectDisposedException>(() => config.Region);
+        _ = Assert.Throws<ObjectDisposedException>(() => config.RefreshIntervalSeconds);
+        _ = Assert.Throws<ObjectDisposedException>(() => _ = config.ToString());
     }
 
     #endregion
