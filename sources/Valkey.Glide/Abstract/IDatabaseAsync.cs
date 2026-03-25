@@ -703,4 +703,322 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags);
 
     #endregion
+
+    #region Sorted Set Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to add to the sorted set.</param>
+    /// <param name="score">The score of the member.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, When)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to add to the sorted set.</param>
+    /// <param name="score">The score of the member.</param>
+    /// <param name="when">Indicates when this operation should be performed.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, When when, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to add to the sorted set.</param>
+    /// <param name="score">The score of the member.</param>
+    /// <param name="when">Indicates when this operation should be performed.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry})" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="values">A collection of members and their scores to add.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, When)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="values">A collection of members and their scores to add.</param>
+    /// <param name="when">Indicates when this operation should be performed.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="values">A collection of members and their scores to add.</param>
+    /// <param name="when">Indicates when this operation should be performed.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRemoveAsync(ValkeyKey, ValkeyValue)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to remove from the sorted set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="members">A collection of members to remove from the sorted set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetLengthAsync(ValkeyKey, double, double, Exclude)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="min">The min score to filter by.</param>
+    /// <param name="max">The max score to filter by.</param>
+    /// <param name="exclude">Whether to exclude min and max from the range check.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetLengthAsync(ValkeyKey key, double min, double max, Exclude exclude, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetCardAsync(ValkeyKey)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetCardAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetCountAsync(ValkeyKey, double, double, Exclude)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="min">The minimum score to count from.</param>
+    /// <param name="max">The maximum score to count up to.</param>
+    /// <param name="exclude">Whether to exclude min and max from the range check.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetCountAsync(ValkeyKey key, double min, double max, Exclude exclude, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="start">The start index to get.</param>
+    /// <param name="stop">The stop index to get.</param>
+    /// <param name="order">The order to sort by.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SortedSetRangeByRankAsync(ValkeyKey key, long start, long stop, Order order, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRangeByRankWithScoresAsync(ValkeyKey, long, long, Order)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="start">The start index to get.</param>
+    /// <param name="stop">The stop index to get.</param>
+    /// <param name="order">The order to sort by.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry[]> SortedSetRangeByRankWithScoresAsync(ValkeyKey key, long start, long stop, Order order, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="start">The minimum score to filter by.</param>
+    /// <param name="stop">The maximum score to filter by.</param>
+    /// <param name="exclude">Which of start and stop to exclude.</param>
+    /// <param name="order">The order to sort by.</param>
+    /// <param name="skip">How many items to skip.</param>
+    /// <param name="take">How many items to take.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SortedSetRangeByScoreAsync(ValkeyKey key, double start, double stop, Exclude exclude, Order order, long skip, long take, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRangeByScoreWithScoresAsync(ValkeyKey, double, double, Exclude, Order, long, long)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="start">The minimum score to filter by.</param>
+    /// <param name="stop">The maximum score to filter by.</param>
+    /// <param name="exclude">Which of start and stop to exclude.</param>
+    /// <param name="order">The order to sort by.</param>
+    /// <param name="skip">How many items to skip.</param>
+    /// <param name="take">How many items to take.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry[]> SortedSetRangeByScoreWithScoresAsync(ValkeyKey key, double start, double stop, Exclude exclude, Order order, long skip, long take, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="min">The min value to filter by.</param>
+    /// <param name="max">The max value to filter by.</param>
+    /// <param name="exclude">Which of min and max to exclude.</param>
+    /// <param name="skip">How many items to skip.</param>
+    /// <param name="take">How many items to take.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SortedSetRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, long skip, long take, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="min">The min value to filter by.</param>
+    /// <param name="max">The max value to filter by.</param>
+    /// <param name="exclude">Which of min and max to exclude.</param>
+    /// <param name="order">The order to sort by.</param>
+    /// <param name="skip">How many items to skip.</param>
+    /// <param name="take">How many items to take.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SortedSetRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, Order order, long skip, long take, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, double)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="order">The order to sort by when popping items out of the set.</param>
+    /// <param name="timeout">The timeout in seconds.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, double timeout, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="count">The number of elements to return.</param>
+    /// <param name="order">The order to sort by when popping items out of the set.</param>
+    /// <param name="timeout">The timeout in seconds.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, double timeout, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double)" />
+    /// <param name="keys">The keys of the sorted sets.</param>
+    /// <param name="count">The maximum number of records to pop out of the sorted set.</param>
+    /// <param name="order">The order to sort by when popping items out of the set.</param>
+    /// <param name="timeout">The timeout in seconds.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate)" />
+    /// <param name="operation">The operation to perform.</param>
+    /// <param name="keys">The keys of the sorted sets.</param>
+    /// <param name="weights">The optional weights per set that correspond to keys.</param>
+    /// <param name="aggregate">The aggregation method.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights, Aggregate aggregate, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetCombineWithScoresAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate)" />
+    /// <param name="operation">The operation to perform.</param>
+    /// <param name="keys">The keys of the sorted sets.</param>
+    /// <param name="weights">The optional weights per set that correspond to keys.</param>
+    /// <param name="aggregate">The aggregation method.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights, Aggregate aggregate, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate)" />
+    /// <param name="operation">The operation to perform.</param>
+    /// <param name="destination">The key to store the results in.</param>
+    /// <param name="first">The key of the first sorted set.</param>
+    /// <param name="second">The key of the second sorted set.</param>
+    /// <param name="aggregate">The aggregation method.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate)" />
+    /// <param name="operation">The operation to perform.</param>
+    /// <param name="destination">The key to store the results in.</param>
+    /// <param name="keys">The keys of the sorted sets.</param>
+    /// <param name="weights">The optional weights per set that correspond to keys.</param>
+    /// <param name="aggregate">The aggregation method.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights, Aggregate aggregate, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">A member of the sorted set.</param>
+    /// <param name="value">The score increment.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)" />
+    /// <param name="keys">The keys of the sorted sets.</param>
+    /// <param name="limit">If the intersection cardinality reaches limit partway through the computation, the algorithm will exit and yield limit as the cardinality.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetLengthByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="min">The min value to filter by.</param>
+    /// <param name="max">The max value to filter by.</param>
+    /// <param name="exclude">Whether to exclude min and max from the range check.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetLengthByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetPopAsync(ValkeyKey, Order)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="order">The order to sort by when popping items out of the set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetPopAsync(ValkeyKey, long, Order)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="count">The number of members to remove.</param>
+    /// <param name="order">The order to sort by when popping items out of the set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry[]> SortedSetPopAsync(ValkeyKey key, long count, Order order, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order)" />
+    /// <param name="keys">The keys to check.</param>
+    /// <param name="count">The maximum number of records to pop out of the sorted set.</param>
+    /// <param name="order">The order to sort by when popping items out of the set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetPopResult> SortedSetPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRandomMemberAsync(ValkeyKey)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRandomMembersAsync(ValkeyKey, long)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="count">The number of members to return.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRandomMembersWithScoresAsync(ValkeyKey, long)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="count">The number of members to return.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?)" />
+    /// <param name="sourceKey">The sorted set to take the range from.</param>
+    /// <param name="destinationKey">Where the resulting set will be stored.</param>
+    /// <param name="start">The starting point in the sorted set.</param>
+    /// <param name="stop">The stopping point in the range of the sorted set.</param>
+    /// <param name="sortedSetOrder">The ordering criteria to use for the range.</param>
+    /// <param name="exclude">Whether to exclude start and stop from the range check.</param>
+    /// <param name="order">The direction to consider the start and stop in.</param>
+    /// <param name="skip">The number of elements into the sorted set to skip.</param>
+    /// <param name="take">The maximum number of elements to pull into the new set.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetRangeAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue start, ValkeyValue stop, SortedSetOrder sortedSetOrder, Exclude exclude, Order order, long skip, long? take, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRankAsync(ValkeyKey, ValkeyValue, Order)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to get the rank of.</param>
+    /// <param name="order">The order to sort by.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRemoveRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="min">The minimum lexicographical value.</param>
+    /// <param name="max">The maximum lexicographical value.</param>
+    /// <param name="exclude">Which of min and max to exclude.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetRemoveRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRemoveRangeByRankAsync(ValkeyKey, long, long)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="start">The start rank.</param>
+    /// <param name="stop">The stop rank.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetRemoveRangeByRankAsync(ValkeyKey key, long start, long stop, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="start">The minimum score to remove.</param>
+    /// <param name="stop">The maximum score to remove.</param>
+    /// <param name="exclude">Which of min and max to exclude.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> SortedSetRemoveRangeByScoreAsync(ValkeyKey key, double start, double stop, Exclude exclude, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="pattern">The pattern to match.</param>
+    /// <param name="pageSize">The page size to iterate by.</param>
+    /// <param name="cursor">The cursor position to start at.</param>
+    /// <param name="pageOffset">The page offset to start at.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetScoreAsync(ValkeyKey, ValkeyValue)" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member whose score is to be retrieved.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags);
+
+    /// <inheritdoc cref="ISortedSetCommands.SortedSetScoresAsync(ValkeyKey, IEnumerable{ValkeyValue})" />
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="members">The members to get the scores for.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags);
+
+    #endregion
 }
