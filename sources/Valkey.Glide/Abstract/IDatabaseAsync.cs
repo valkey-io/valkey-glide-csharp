@@ -345,4 +345,196 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<long[]> HashPTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags);
 
     #endregion
+
+    #region List Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="IListCommands.ListLeftPopAsync(ValkeyKey)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListLeftPopAsync(ValkeyKey, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="count">The count of the elements to pop from the list.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListLeftPopAsync(IEnumerable{ValkeyKey}, long)" />
+    /// <param name="keys">A collection of keys to lists.</param>
+    /// <param name="count">The maximum number of elements to pop.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="value">The value to add to the head of the list.</param>
+    /// <param name="when">Use When.Exists for LPUSHX behavior (only push if key exists).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The elements to insert at the head of the list stored at key.</param>
+    /// <param name="when">Use When.Exists for LPUSHX behavior (only push if key exists).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The elements to insert at the head of the list stored at key.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRightPopAsync(ValkeyKey)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> ListRightPopAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRightPopAsync(ValkeyKey, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="count">The count of the elements to pop from the list.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRightPopAsync(IEnumerable{ValkeyKey}, long)" />
+    /// <param name="keys">A collection of keys to lists.</param>
+    /// <param name="count">The maximum number of elements to pop.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRightPushAsync(ValkeyKey, ValkeyValue, When)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="value">The value to add to the tail of the list.</param>
+    /// <param name="when">Use When.Exists for RPUSHX behavior (only push if key exists).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The elements to insert at the tail of the list stored at key.</param>
+    /// <param name="when">Use When.Exists for RPUSHX behavior (only push if key exists).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The elements to insert at the tail of the list stored at key.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListLengthAsync(ValkeyKey)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListLengthAsync(ValkeyKey key, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRemoveAsync(ValkeyKey, ValkeyValue, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="value">The value to remove from the list.</param>
+    /// <param name="count">The count of the occurrences of elements equal to value to remove.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListTrimAsync(ValkeyKey, long, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="start">The starting point of the range.</param>
+    /// <param name="stop">The end of the range.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ListTrimAsync(ValkeyKey key, long start, long stop, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListRangeAsync(ValkeyKey, long, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="start">The starting point of the range.</param>
+    /// <param name="stop">The end of the range.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start, long stop, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListGetByIndexAsync(ValkeyKey, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="index">The index of the element in the list to retrieve.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListInsertAfterAsync(ValkeyKey, ValkeyValue, ValkeyValue)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="pivot">The reference point in the list.</param>
+    /// <param name="value">The new element to insert.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListInsertBeforeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="pivot">The reference point in the list.</param>
+    /// <param name="value">The new element to insert.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide)" />
+    /// <param name="sourceKey">The key of the source list.</param>
+    /// <param name="destinationKey">The key of the destination list.</param>
+    /// <param name="sourceSide">The side of the source list to pop from (Left = head, Right = tail).</param>
+    /// <param name="destinationSide">The side of the destination list to push to (Left = head, Right = tail).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListPositionAsync(ValkeyKey, ValkeyValue, long, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="element">The element to search for.</param>
+    /// <param name="rank">The rank of the match to return (1-based). Negative values indicate searching from the end.</param>
+    /// <param name="maxLength">Limit the search to this many elements. 0 means no limit.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank, long maxLength, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListPositionsAsync(ValkeyKey, ValkeyValue, long, long, long)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="element">The element to search for.</param>
+    /// <param name="count">The maximum number of matches to return.</param>
+    /// <param name="rank">The rank of the first match to return (1-based). Negative values indicate searching from the end.</param>
+    /// <param name="maxLength">Limit the search to this many elements. 0 means no limit.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank, long maxLength, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)" />
+    /// <param name="key">The key of the list.</param>
+    /// <param name="index">The index of the element in the list to set.</param>
+    /// <param name="value">The new value.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" />
+    /// <param name="keys">The keys of the lists to pop from.</param>
+    /// <param name="timeout">The maximum time to wait for a blocking operation to complete.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]?> ListBlockingLeftPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" />
+    /// <param name="keys">The keys of the lists to pop from.</param>
+    /// <param name="timeout">The maximum time to wait for a blocking operation to complete.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan)" />
+    /// <param name="source">The key of the source list.</param>
+    /// <param name="destination">The key of the destination list.</param>
+    /// <param name="sourceSide">The side of the source list to pop from (Left = head, Right = tail).</param>
+    /// <param name="destinationSide">The side of the destination list to push to (Left = head, Right = tail).</param>
+    /// <param name="timeout">The maximum time to wait for a blocking operation to complete.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan)" />
+    /// <param name="keys">A collection of keys to lists.</param>
+    /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
+    /// <param name="timeout">The maximum time to wait for a blocking operation to complete.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout, CommandFlags flags);
+
+    /// <inheritdoc cref="IListCommands.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan)" />
+    /// <param name="keys">A collection of keys to lists.</param>
+    /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
+    /// <param name="count">The maximum number of elements to pop.</param>
+    /// <param name="timeout">The maximum time to wait for a blocking operation to complete.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout, CommandFlags flags);
+
+    #endregion
 }
