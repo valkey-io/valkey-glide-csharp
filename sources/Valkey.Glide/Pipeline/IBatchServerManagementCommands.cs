@@ -22,9 +22,9 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(ValkeyValue, ValkeyValue)" /></returns>
     IBatch ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
-    /// <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync(int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync(int)" /></returns>
-    IBatch DatabaseSizeAsync(int database = -1);
+    /// <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync()" /></returns>
+    IBatch DatabaseSizeAsync();
 
     /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()" /></returns>

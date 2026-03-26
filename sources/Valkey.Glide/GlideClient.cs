@@ -104,9 +104,9 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
-    public async Task<long> DatabaseSizeAsync(int database = -1)
+    public async Task<long> DatabaseSizeAsync()
     {
-        return await Command(Request.DatabaseSizeAsync(database));
+        return await Command(Request.DatabaseSizeAsync());
     }
 
     public async Task FlushAllDatabasesAsync()

@@ -137,7 +137,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.DatabaseSizeAsync(database), MakeRoute());
+        return await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)

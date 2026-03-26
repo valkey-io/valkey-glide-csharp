@@ -61,16 +61,6 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route, CommandFlags flags);
 
-    /// <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync(int)"/>
-    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="IServerManagementClusterCommands.DatabaseSizeAsync(Route, int)"/>
-    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database, CommandFlags flags);
-
     /// <inheritdoc cref="IServerManagementCommands.LastSaveAsync()"/>
     /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>

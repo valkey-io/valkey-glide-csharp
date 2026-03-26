@@ -154,8 +154,7 @@ public interface IServerManagementCommands
     /// Returns the number of keys in the currently-selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
-    /// <param name="database">The database ID.</param>
-    /// <returns>The number of keys in the currently selected database.</returns>
+    /// <returns>The number of keys in the currently-selected database.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -163,7 +162,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> DatabaseSizeAsync(int database = -1);
+    Task<long> DatabaseSizeAsync();
 
     /// <summary>
     /// Deletes all the keys of all the existing databases.

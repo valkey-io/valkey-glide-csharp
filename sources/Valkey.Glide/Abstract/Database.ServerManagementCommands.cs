@@ -79,20 +79,6 @@ internal partial class Database
         _ = await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.DatabaseSizeAsync(int, CommandFlags)"/>
-    public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await DatabaseSizeAsync(database);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.DatabaseSizeAsync(Route, int, CommandFlags)"/>
-    public async Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.DatabaseSizeAsync(database).ToClusterValue(route is SingleNodeRoute), route);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.LastSaveAsync(CommandFlags)"/>
     public async Task<DateTime> LastSaveAsync(CommandFlags flags)
     {

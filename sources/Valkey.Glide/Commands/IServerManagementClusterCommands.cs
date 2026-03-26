@@ -320,42 +320,33 @@ public interface IServerManagementClusterCommands
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route);
 
     /// <summary>
-    /// Returns the number of keys in the currently-selected database.<br />
-    /// The command will be routed to all primary nodes.
+    /// Returns the number of keys in the currently-selected database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <returns>The number of keys in the database per cluster node.</returns>
+    /// <returns>The number of keys in the database across all primary nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, long&gt; sizes = await client.DatabaseSizeAsync();
+    /// long totalKeys = await client.DatabaseSizeAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, long>> DatabaseSizeAsync(int database = -1);
+    Task<long> DatabaseSizeAsync();
 
     /// <summary>
-    /// Returns the number of keys in the currently-selected database.
+    /// Returns the number of keys in the currently-selected database across all routed nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing the number of keys in the database.<br />
-    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, long&gt;</c> with each address as the key and its corresponding
-    /// database size. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
-    /// </returns>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>The number of keys in the database across all routed nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;long&gt; size = await client.DatabaseSizeAsync(Route.AllPrimaries);
+    /// long totalKeys = await client.DatabaseSizeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database = -1);
+    Task<long> DatabaseSizeAsync(Route route);
 
     /// <summary>
     /// Deletes all the keys of all the existing databases.

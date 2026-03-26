@@ -148,24 +148,12 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         _ = await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
-    public async Task<Dictionary<string, long>> DatabaseSizeAsync(int database = -1)
-    {
-        Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        ClusterValue<long> result = await Command(Request.DatabaseSizeAsync(database).ToClusterValue(false), AllPrimaries);
-        if (result.HasMultiData)
-        {
-            return result.MultiValue;
-        }
+    public async Task<long> DatabaseSizeAsync() => await DatabaseSizeAsync(AllPrimaries);
 
-        // If we got a single value, create a dictionary with a single entry
-        // This can happen when the server aggregates results or there's only one primary node
-        return new Dictionary<string, long> { ["aggregated"] = result.SingleValue };
-    }
-
-    public async Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database = -1)
+    public async Task<long> DatabaseSizeAsync(Route route)
     {
-        Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        return await Command(Request.DatabaseSizeAsync(database).ToClusterValue(route is SingleNodeRoute), route);
+        ClusterValue<long> result = await Command(Request.DatabaseSizeAsync().ToClusterValue(false), route);
+        return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
     }
 
     public async Task FlushAllDatabasesAsync()
