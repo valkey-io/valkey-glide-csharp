@@ -26,7 +26,8 @@ public interface ITransaction : IBatch
     /// <summary>
     /// Execute the batch operation, sending all queued commands to the server.
     /// </summary>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>
     /// <see langword="true" /> if a transaction was applied or
     /// <see langword="false" /> if a transaction failed due to a <c>WATCH</c> command.
@@ -36,7 +37,8 @@ public interface ITransaction : IBatch
     /// <summary>
     /// Execute the batch operation, sending all queued commands to the server.
     /// </summary>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>
     /// <see langword="true" /> if a transaction was applied or
     /// <see langword="false" /> if a transaction failed due to a <c>WATCH</c> command.
