@@ -1534,4 +1534,100 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<ClusterValue<long>> ClientIdAsync(Route route, CommandFlags flags);
 
     #endregion
+
+    #region Server Management Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="IServerManagementCommands.EchoAsync(ValkeyValue)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.EchoAsync(ValkeyValue, Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.ConfigGetAsync(ValkeyValue)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.ConfigGetAsync(ValkeyValue)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.ConfigResetStatisticsAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigResetStatisticsAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.ConfigResetStatisticsAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigResetStatisticsAsync(Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.ConfigRewriteAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigRewriteAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.ConfigRewriteAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigRewriteAsync(Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(ValkeyValue, ValkeyValue)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.ConfigSetAsync(ValkeyValue, ValkeyValue, Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync(int)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> DatabaseSizeAsync(int database, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.DatabaseSizeAsync(Route, int)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task FlushAllDatabasesAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.FlushAllDatabasesAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task FlushAllDatabasesAsync(Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(int)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task FlushDatabaseAsync(int database, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.FlushDatabaseAsync(Route, int)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task FlushDatabaseAsync(Route route, int database, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.LastSaveAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<DateTime> LastSaveAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.LastSaveAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<DateTime>> LastSaveAsync(Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.TimeAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<DateTime> TimeAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.TimeAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<DateTime>> TimeAsync(Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<string> LolwutAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementClusterCommands.LolwutAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<string>> LolwutAsync(Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IServerManagementCommands.SelectAsync(long)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task SelectAsync(long index, CommandFlags flags);
+
+    #endregion
 }

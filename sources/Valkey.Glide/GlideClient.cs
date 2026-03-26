@@ -73,9 +73,8 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
         => await Command(Request.Info([.. sections]));
 
-    public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue> EchoAsync(ValkeyValue message)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Echo(message));
     }
 
@@ -85,63 +84,53 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public async Task<ValkeyValue> PingAsync(ValkeyValue message)
         => await Command(Request.Ping(message));
 
-    public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
+    public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ConfigGetAsync(pattern));
     }
 
-    public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
+    public async Task ConfigResetStatisticsAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
-    public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
+    public async Task ConfigRewriteAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigRewriteAsync());
     }
 
-    public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+    public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
-    public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    public async Task<long> DatabaseSizeAsync(int database = -1)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.DatabaseSizeAsync(database));
     }
 
-    public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
+    public async Task FlushAllDatabasesAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
-    public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    public async Task FlushDatabaseAsync(int database = -1)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushDatabaseAsync(database));
     }
 
-    public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
+    public async Task<DateTime> LastSaveAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LastSaveAsync());
     }
 
-    public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
+    public async Task<DateTime> TimeAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.TimeAsync());
     }
 
-    public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
+    public async Task<string> LolwutAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LolwutAsync());
     }
 
@@ -155,9 +144,8 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         return await Command(Request.ClientId());
     }
 
-    public async Task SelectAsync(long index, CommandFlags flags = CommandFlags.None)
+    public async Task SelectAsync(long index)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Select(index));
     }
 
