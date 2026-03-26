@@ -4,8 +4,6 @@ using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-/// <inheritdoc cref="IDatabaseAsync" />
-/// <seealso cref="ITransactionBaseCommands" />
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.WatchAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
