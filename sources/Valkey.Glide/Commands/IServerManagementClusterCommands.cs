@@ -320,7 +320,7 @@ public interface IServerManagementClusterCommands
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route);
 
     /// <summary>
-    /// Returns the number of keys in the currently-selected database across all primary nodes.
+    /// Returns the number of keys in the database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
     /// <returns>The number of keys in the database across all primary nodes.</returns>
@@ -334,7 +334,7 @@ public interface IServerManagementClusterCommands
     Task<long> DatabaseSizeAsync();
 
     /// <summary>
-    /// Returns the number of keys in the currently-selected database across all routed nodes.
+    /// Returns the number of keys in the database across all routed nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
     /// <param name="route">Specifies the routing configuration for the command.</param>
@@ -349,7 +349,7 @@ public interface IServerManagementClusterCommands
     Task<long> DatabaseSizeAsync(Route route);
 
     /// <summary>
-    /// Deletes all the keys of all the existing databases.
+    /// Deletes all the keys in the database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/"/>
     /// <remarks>
@@ -360,6 +360,20 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task FlushAllDatabasesAsync();
+
+    /// <summary>
+    /// Deletes all the keys in the database across all routed nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushdb/"/>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushDatabaseAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushDatabaseAsync(Route route);
 
     /// <summary>
     /// Return the time of the last DB save executed with success.

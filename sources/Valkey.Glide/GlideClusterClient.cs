@@ -148,7 +148,8 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         _ = await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
-    public async Task<long> DatabaseSizeAsync() => await DatabaseSizeAsync(AllPrimaries);
+    public async Task<long> DatabaseSizeAsync()
+        => await DatabaseSizeAsync(AllPrimaries);
 
     public async Task<long> DatabaseSizeAsync(Route route)
     {
@@ -157,9 +158,10 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     }
 
     public async Task FlushAllDatabasesAsync()
-    {
-        _ = await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
-    }
+        => await FlushDatabaseAsync(AllPrimaries);
+
+    public async Task FlushDatabaseAsync(Route route)
+        => _ = await Command(Request.FlushDatabaseAsync(), route);
 
     public async Task<Dictionary<string, DateTime>> LastSaveAsync()
     {
