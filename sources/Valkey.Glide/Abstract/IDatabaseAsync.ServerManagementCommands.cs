@@ -53,7 +53,7 @@ public partial interface IDatabaseAsync
 
     /// <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync(int)"/>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    Task<long> DatabaseSizeAsync(int database, CommandFlags flags);
+    Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IServerManagementClusterCommands.DatabaseSizeAsync(Route, int)"/>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
@@ -69,7 +69,7 @@ public partial interface IDatabaseAsync
 
     /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(int)"/>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    Task FlushDatabaseAsync(int database, CommandFlags flags);
+    Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IServerManagementClusterCommands.FlushDatabaseAsync(Route, int)"/>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>

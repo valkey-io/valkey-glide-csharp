@@ -80,7 +80,7 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.DatabaseSizeAsync(int, CommandFlags)"/>
-    public async Task<long> DatabaseSizeAsync(int database, CommandFlags flags)
+    public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await DatabaseSizeAsync(database);
@@ -108,7 +108,7 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.FlushDatabaseAsync(int, CommandFlags)"/>
-    public async Task FlushDatabaseAsync(int database, CommandFlags flags)
+    public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         await FlushDatabaseAsync(database);
