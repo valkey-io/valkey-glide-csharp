@@ -8,6 +8,7 @@ namespace Valkey.Glide;
 /// Server management commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
 /// </summary>
 /// <seealso cref="IServerManagementCommands" />
+/// <seealso cref="IServerManagementClusterCommands" />
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IServerManagementCommands.EchoAsync(ValkeyValue)"/>

@@ -8,6 +8,8 @@ namespace Valkey.Glide;
 /// Transaction commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
 /// </summary>
 /// <seealso cref="ITransactionBaseCommands" />
+/// <seealso cref="ITransactionCommands" />
+/// <seealso cref="ITransactionClusterCommands" />
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>

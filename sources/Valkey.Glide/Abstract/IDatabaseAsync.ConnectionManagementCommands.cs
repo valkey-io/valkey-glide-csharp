@@ -8,6 +8,7 @@ namespace Valkey.Glide;
 /// Connection management commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
 /// </summary>
 /// <seealso cref="IConnectionManagementCommands" />
+/// <seealso cref="IConnectionManagementClusterCommands" />
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IConnectionManagementCommands.ClientGetNameAsync()"/>
