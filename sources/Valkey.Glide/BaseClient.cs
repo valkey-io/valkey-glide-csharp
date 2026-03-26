@@ -634,8 +634,10 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void SuccessAction(ulong index, IntPtr ptr);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void FailureAction(ulong index, IntPtr strPtr, RequestErrorType err);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void PubSubAction(
         uint pushKind,

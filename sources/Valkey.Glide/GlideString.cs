@@ -176,6 +176,7 @@ public sealed class GlideString : IComparable<GlideString>
 
     /// <inheritdoc cref="GlideString(byte[])" />
     public static GlideString Of(byte[] bytes) => new(bytes);
+
     /// <inheritdoc cref="GlideString(string)" />
     public static GlideString Of(string @string) => new(@string);
 
@@ -184,6 +185,7 @@ public sealed class GlideString : IComparable<GlideString>
     /// </summary>
     /// <returns>A <see langword="byte[]" /> of that <see cref="GlideString" />.</returns>
     public ReadOnlySpan<byte> GetBytes() => Bytes;
+
     /// <summary>
     /// Get a length of a <see langword="byte[]" /> stored in this <see cref="GlideString" />.
     /// </summary>
@@ -256,11 +258,13 @@ public sealed class GlideString : IComparable<GlideString>
 
     /// <inheritdoc cref="GetString()" />
     public static implicit operator string?(GlideString? gs) => gs?.ToString();
+
     /// <inheritdoc cref="GetBytes()" />
     public static implicit operator byte[]?(GlideString? gs) => gs?.Bytes;
 
     /// <inheritdoc cref="GlideString(string)" />
     public static implicit operator GlideString(string @string) => new(@string);
+
     /// <inheritdoc cref="GlideString(byte[])" />
     public static implicit operator GlideString(byte[] bytes) => new(bytes);
 

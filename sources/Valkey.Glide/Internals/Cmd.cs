@@ -13,6 +13,7 @@ internal interface ICmd
     /// Convert to an FFI-ready struct.
     /// </summary>
     Cmd ToFfi();
+
     /// <summary>
     /// Get untyped converted (used for batch).
     /// </summary>
