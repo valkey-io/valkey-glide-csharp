@@ -178,18 +178,6 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         _ = await Command(Request.FlushAllDatabasesAsync(), route);
     }
 
-    public async Task FlushDatabaseAsync(int database = -1)
-    {
-        Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        _ = await Command(Request.FlushDatabaseAsync(database), AllPrimaries);
-    }
-
-    public async Task FlushDatabaseAsync(Route route, int database = -1)
-    {
-        Utils.Requires<ArgumentException>(database == -1, "Different databases for this command are not supported by GLIDE");
-        _ = await Command(Request.FlushDatabaseAsync(database), route);
-    }
-
     public async Task<Dictionary<string, DateTime>> LastSaveAsync()
     {
         ClusterValue<DateTime> result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);

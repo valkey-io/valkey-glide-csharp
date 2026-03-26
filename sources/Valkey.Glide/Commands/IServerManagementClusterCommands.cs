@@ -387,37 +387,6 @@ public interface IServerManagementClusterCommands
     Task FlushAllDatabasesAsync(Route route);
 
     /// <summary>
-    /// Deletes all the keys of the currently selected database.<br />
-    /// The command will be routed to all primary nodes.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FlushDatabaseAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushDatabaseAsync(int database = -1);
-
-    /// <summary>
-    /// Deletes all the keys of the currently selected database.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FlushDatabaseAsync(Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushDatabaseAsync(Route route, int database = -1);
-
-    /// <summary>
     /// Return the time of the last DB save executed with success.
     /// A client may check if a BGSAVE command succeeded reading the LASTSAVE value, then issuing a BGSAVE command
     /// and checking at regular intervals every N seconds if LASTSAVE changed.<br />
