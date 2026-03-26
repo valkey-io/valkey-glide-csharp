@@ -18,10 +18,8 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GlideClient"/> class.
+    /// This constructor is internal; use <see cref="CreateClient"/> to create instances.
     /// </summary>
-    /// <remarks>
-    /// This constructor is internal. Use <see cref="CreateClient"/> to create a new client instance.
-    /// </remarks>
     internal GlideClient() { }
 
     // TODO add pubsub and other params to example and remarks

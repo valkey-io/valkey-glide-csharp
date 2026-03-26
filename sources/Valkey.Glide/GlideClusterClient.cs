@@ -22,6 +22,10 @@ namespace Valkey.Glide;
 /// </summary>
 public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands, ITransactionClusterCommands
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GlideClusterClient"/> class.
+    /// This constructor is private; use <see cref="CreateClient"/> to create instances.
+    /// </summary>
     private GlideClusterClient() { }
 
     // TODO add pubsub and other params to example and remarks
