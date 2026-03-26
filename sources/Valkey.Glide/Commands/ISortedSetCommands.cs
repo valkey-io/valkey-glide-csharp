@@ -217,17 +217,6 @@ public interface ISortedSetCommands
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="start">The minimum score to filter by.</param>
     /// <param name="stop">The maximum score to filter by.</param>
-    /// <summary>
-    /// Returns the specified range of elements in the sorted set stored at key by their score.
-    /// By default the elements are considered to be ordered from the lowest to the highest score.
-    /// Start and stop are used to specify the min and max range for score values.
-    /// To get the elements with their scores, <see cref="SortedSetRangeByScoreWithScoresAsync" />.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/zrange"/>
-    /// <seealso href="https://redis.io/commands/zrevrange"/>.
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="start">The minimum score to filter by.</param>
-    /// <param name="stop">The maximum score to filter by.</param>
     /// <param name="exclude">Which of start and stop to exclude (defaults to both inclusive).</param>
     /// <param name="order">The order to sort by (defaults to ascending).</param>
     /// <param name="skip">How many items to skip.</param>
@@ -502,7 +491,6 @@ public interface ISortedSetCommands
     /// <param name="first">The key of the first sorted set.</param>
     /// <param name="second">The key of the second sorted set.</param>
     /// <param name="aggregate">The aggregation method (defaults to sum).</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// The number of elements in the resulting sorted set at destination. Depending on the operation:
     /// - Intersection: Computes the intersection of sorted sets given by the specified keys and stores the result in destination. If destination already exists, it is overwritten.

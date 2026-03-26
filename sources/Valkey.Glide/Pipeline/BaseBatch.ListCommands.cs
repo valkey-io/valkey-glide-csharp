@@ -27,9 +27,6 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchListCommands.ListLeftPush(ValkeyKey, IEnumerable{ValkeyValue}, When)" />
     public T ListLeftPush(ValkeyKey key, IEnumerable<ValkeyValue> values, When when) => AddCmd(ListLeftPushAsync(key, [.. values], when));
 
-    /// <inheritdoc cref="IBatchListCommands.ListLeftPush(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" />
-    public T ListLeftPush(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags _) => AddCmd(ListLeftPushAsync(key, [.. values]));
-
     /// <inheritdoc cref="IBatchListCommands.ListRightPop(ValkeyKey)" />
     public T ListRightPop(ValkeyKey key) => AddCmd(ListRightPopAsync(key));
 
@@ -47,9 +44,6 @@ public abstract partial class BaseBatch<T>
 
     /// <inheritdoc cref="IBatchListCommands.ListRightPush(ValkeyKey, IEnumerable{ValkeyValue}, When)" />
     public T ListRightPush(ValkeyKey key, IEnumerable<ValkeyValue> values, When when) => AddCmd(ListRightPushAsync(key, [.. values], when));
-
-    /// <inheritdoc cref="IBatchListCommands.ListRightPush(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)" />
-    public T ListRightPush(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags _) => AddCmd(ListRightPushAsync(key, [.. values]));
 
     /// <inheritdoc cref="IBatchListCommands.ListLength(ValkeyKey)" />
     public T ListLength(ValkeyKey key) => AddCmd(ListLengthAsync(key));
@@ -112,14 +106,14 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchListCommands.ListLeftPush(ValkeyKey key, ValkeyValue value, When when) => ListLeftPush(key, value, when);
     IBatch IBatchListCommands.ListLeftPush(ValkeyKey key, IEnumerable<ValkeyValue> values) => ListLeftPush(key, values);
     IBatch IBatchListCommands.ListLeftPush(ValkeyKey key, IEnumerable<ValkeyValue> values, When when) => ListLeftPush(key, values, when);
-    IBatch IBatchListCommands.ListLeftPush(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags) => ListLeftPush(key, values, flags);
+
     IBatch IBatchListCommands.ListRightPop(ValkeyKey key) => ListRightPop(key);
     IBatch IBatchListCommands.ListRightPop(ValkeyKey key, long count) => ListRightPop(key, count);
     IBatch IBatchListCommands.ListRightPush(ValkeyKey key, ValkeyValue value) => ListRightPush(key, value);
     IBatch IBatchListCommands.ListRightPush(ValkeyKey key, ValkeyValue value, When when) => ListRightPush(key, value, when);
     IBatch IBatchListCommands.ListRightPush(ValkeyKey key, IEnumerable<ValkeyValue> values) => ListRightPush(key, values);
     IBatch IBatchListCommands.ListRightPush(ValkeyKey key, IEnumerable<ValkeyValue> values, When when) => ListRightPush(key, values, when);
-    IBatch IBatchListCommands.ListRightPush(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags) => ListRightPush(key, values, flags);
+
     IBatch IBatchListCommands.ListLength(ValkeyKey key) => ListLength(key);
     IBatch IBatchListCommands.ListRemove(ValkeyKey key, ValkeyValue value, long count) => ListRemove(key, value, count);
     IBatch IBatchListCommands.ListTrim(ValkeyKey key, long start, long stop) => ListTrim(key, start, stop);

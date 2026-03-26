@@ -323,7 +323,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// Returns function statistics from specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing per-node function statistics.</returns>
     /// <remarks>
@@ -348,7 +347,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// Creates a binary backup of loaded functions from specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to backup from.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing binary payloads from nodes.</returns>
     /// <remarks>
