@@ -9,6 +9,11 @@ public class ValkeyServerTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
+    #region Constants
+
+    private const CommandFlags UnsupportedCommandFlag = CommandFlags.DemandMaster;
+
+    #endregion
     #region Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -72,7 +77,7 @@ public class ValkeyServerTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task KeysAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
         => await Assert.ThrowsAsync<NotImplementedException>(
-            () => GetServer(conn).KeysAsync(flags: CommandFlags.PreferMaster).GetAsyncEnumerator(TestContext.Current.CancellationToken).MoveNextAsync().AsTask());
+            () => GetServer(conn).KeysAsync(flags: UnsupportedCommandFlag).GetAsyncEnumerator(TestContext.Current.CancellationToken).MoveNextAsync().AsTask());
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
@@ -102,7 +107,7 @@ public class ValkeyServerTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task DatabaseSizeAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
         => await Assert.ThrowsAsync<NotImplementedException>(
-            () => GetServer(conn).DatabaseSizeAsync(flags: CommandFlags.PreferMaster));
+            () => GetServer(conn).DatabaseSizeAsync(flags: UnsupportedCommandFlag));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
@@ -127,7 +132,7 @@ public class ValkeyServerTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task FlushDatabaseAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
         => await Assert.ThrowsAsync<NotImplementedException>(
-            () => GetServer(conn).FlushDatabaseAsync(flags: CommandFlags.PreferMaster));
+            () => GetServer(conn).FlushDatabaseAsync(flags: UnsupportedCommandFlag));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
@@ -152,7 +157,7 @@ public class ValkeyServerTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task FlushAllDatabasesAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
         => await Assert.ThrowsAsync<NotImplementedException>(
-            () => GetServer(conn).FlushAllDatabasesAsync(flags: CommandFlags.PreferMaster));
+            () => GetServer(conn).FlushAllDatabasesAsync(flags: UnsupportedCommandFlag));
 
     #endregion
     #region Helpers
