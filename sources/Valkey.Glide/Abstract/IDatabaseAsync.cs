@@ -26,7 +26,7 @@ public partial interface IDatabaseAsync : IConnectionManagementCommands, IGeneri
     /// </summary>
     /// <param name="command">The command to run.</param>
     /// <param name="args">The arguments to pass for the command.</param>
-    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <param name="flags">The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A dynamic representation of the command's result.</returns>
     /// <remarks>This API should be considered an advanced feature; inappropriate use can be harmful.</remarks>
