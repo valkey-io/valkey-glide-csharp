@@ -351,15 +351,15 @@ public interface IServerManagementClusterCommands
     /// <summary>
     /// Deletes all the keys in the database across all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <seealso href="https://valkey.io/commands/flushdb/"/>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FlushAllDatabasesAsync();
+    /// await client.FlushDatabaseAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task FlushAllDatabasesAsync();
+    Task FlushDatabaseAsync();
 
     /// <summary>
     /// Deletes all the keys in the database across all routed nodes.

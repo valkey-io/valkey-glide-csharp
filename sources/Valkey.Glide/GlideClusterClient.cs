@@ -157,7 +157,7 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
     }
 
-    public async Task FlushAllDatabasesAsync()
+    public async Task FlushDatabaseAsync()
         => await FlushDatabaseAsync(AllPrimaries);
 
     public async Task FlushDatabaseAsync(Route route)

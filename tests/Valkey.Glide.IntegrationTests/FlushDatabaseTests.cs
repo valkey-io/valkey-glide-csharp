@@ -51,16 +51,16 @@ public class FlushDatabaseTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases(GlideClusterClient client)
+    public async Task FlushDatabaseAsync_Cluster_ClearsDatabase(GlideClusterClient client)
     {
-        string key = $"flushall-cluster-test-{Guid.NewGuid()}";
+        string key = $"flush-cluster-test-{Guid.NewGuid()}";
 
         // Add a key
         _ = await client.StringSetAsync(key, "test-value");
         Assert.True(await client.KeyExistsAsync(key));
 
-        // Flush all databases on cluster
-        await client.FlushAllDatabasesAsync();
+        // Flush database on cluster
+        await client.FlushDatabaseAsync();
 
         // Key should be gone
         Assert.False(await client.KeyExistsAsync(key));
