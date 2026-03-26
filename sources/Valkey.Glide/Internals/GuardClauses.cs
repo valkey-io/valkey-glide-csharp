@@ -34,7 +34,7 @@ internal static class GuardClauses
     {
         if (flags != CommandFlags.None)
         {
-            throw new NotImplementedException("Command flags are not supported by GLIDE");
+            throw new NotImplementedException($"Command flag {flags} is not supported by Valkey GLIDE");
         }
     }
 
