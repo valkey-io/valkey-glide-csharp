@@ -102,7 +102,7 @@ public interface ISubscriber
     #endregion
     #region NotSupportedMethods
 
-#pragma warning disable CS1591
+#pragma warning disable CS1591 // Obsolete methods
     [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
     bool IsConnected(ValkeyChannel channel = default);
 
