@@ -530,6 +530,7 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(Route route);
+
     /// <summary>
     /// Changes the currently selected database.
     /// </summary>

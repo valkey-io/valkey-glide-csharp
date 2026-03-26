@@ -102,10 +102,12 @@ public static class BitFieldOptions
         /// Wrap around on overflow (modulo arithmetic).
         /// </summary>
         Wrap,
+
         /// <summary>
         /// Saturate at min/max values on overflow.
         /// </summary>
         Sat,
+
         /// <summary>
         /// Return null on overflow.
         /// </summary>
