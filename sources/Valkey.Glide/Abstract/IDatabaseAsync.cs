@@ -1514,4 +1514,24 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances, CommandFlags flags);
 
     #endregion
+
+    #region Connection Management Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="IConnectionManagementCommands.ClientGetNameAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IConnectionManagementClusterCommands.ClientGetNameAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route, CommandFlags flags);
+
+    /// <inheritdoc cref="IConnectionManagementCommands.ClientIdAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<long> ClientIdAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="IConnectionManagementClusterCommands.ClientIdAsync(Route)" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ClusterValue<long>> ClientIdAsync(Route route, CommandFlags flags);
+
+    #endregion
 }

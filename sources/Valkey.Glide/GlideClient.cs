@@ -145,15 +145,13 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         return await Command(Request.LolwutAsync());
     }
 
-    public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue> ClientGetNameAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientGetName());
     }
 
-    public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
+    public async Task<long> ClientIdAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientId());
     }
 
