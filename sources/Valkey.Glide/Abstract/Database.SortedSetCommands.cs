@@ -273,13 +273,10 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
+    public IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await foreach (SortedSetEntry entry in SortedSetScanAsync(key, pattern, pageSize, cursor, pageOffset))
-        {
-            yield return entry;
-        }
+        return SortedSetScanAsync(key, pattern, pageSize, cursor, pageOffset);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScoreAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>

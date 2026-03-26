@@ -189,12 +189,9 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
+    public IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await foreach (ValkeyValue value in SetScanAsync(key, pattern, pageSize, cursor, pageOffset))
-        {
-            yield return value;
-        }
+        return SetScanAsync(key, pattern, pageSize, cursor, pageOffset);
     }
 }

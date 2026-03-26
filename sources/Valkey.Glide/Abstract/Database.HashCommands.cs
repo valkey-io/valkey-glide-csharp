@@ -92,23 +92,17 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public async IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
+    public IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await foreach (HashEntry entry in HashScanAsync(key, pattern, pageSize, cursor, pageOffset))
-        {
-            yield return entry;
-        }
+        return HashScanAsync(key, pattern, pageSize, cursor, pageOffset);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public async IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
+    public IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await foreach (ValkeyValue field in HashScanNoValuesAsync(key, pattern, pageSize, cursor, pageOffset))
-        {
-            yield return field;
-        }
+        return HashScanNoValuesAsync(key, pattern, pageSize, cursor, pageOffset);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashStringLengthAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
