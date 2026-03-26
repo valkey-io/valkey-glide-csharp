@@ -24,8 +24,8 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushAllDatabasesAsync()" />
     public T FlushAllDatabasesAsync() => AddCmd(Request.FlushAllDatabasesAsync());
 
-    /// <inheritdoc cref="IBatchServerManagementCommands.FlushDatabaseAsync(int)" />
-    public T FlushDatabaseAsync(int database = -1) => AddCmd(Request.FlushDatabaseAsync(database));
+    /// <inheritdoc cref="IBatchServerManagementCommands.FlushDatabaseAsync()" />
+    public T FlushDatabaseAsync() => AddCmd(Request.FlushDatabaseAsync());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.LastSaveAsync()" />
     public T LastSaveAsync() => AddCmd(Request.LastSaveAsync());
@@ -43,7 +43,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => ConfigSetAsync(setting, value);
     IBatch IBatchServerManagementCommands.DatabaseSizeAsync() => DatabaseSizeAsync();
     IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync() => FlushAllDatabasesAsync();
-    IBatch IBatchServerManagementCommands.FlushDatabaseAsync(int database) => FlushDatabaseAsync(database);
+    IBatch IBatchServerManagementCommands.FlushDatabaseAsync() => FlushDatabaseAsync();
     IBatch IBatchServerManagementCommands.LastSaveAsync() => LastSaveAsync();
     IBatch IBatchServerManagementCommands.TimeAsync() => TimeAsync();
     IBatch IBatchServerManagementCommands.LolwutAsync() => LolwutAsync();

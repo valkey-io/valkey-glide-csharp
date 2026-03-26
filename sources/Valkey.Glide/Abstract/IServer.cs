@@ -170,11 +170,13 @@ public interface IServer
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Return the number of keys in the selected database.
+    /// Return the number of keys in the current database.
+    /// GLIDE does not support database selection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize"/>
-    /// <param name="database">The database index. If -1, uses the current database.</param>
+    /// <param name="database">The database index (currently only <c>-1</c> is supported by GLIDE).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not -1.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The number of keys in the database.</returns>
     Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
@@ -185,11 +187,13 @@ public interface IServer
     Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Delete all the keys of the selected database.
+    /// Delete all the keys of the currant database.
+    /// GLIDE does not support database selection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb"/>
-    /// <param name="database">The database index. If -1, uses the current database.</param>
+    /// <param name="database">The database index (currently only <c>-1</c> is supported by GLIDE).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not -1.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
 

@@ -114,9 +114,9 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
-    public async Task FlushDatabaseAsync(int database = -1)
+    public async Task FlushDatabaseAsync()
     {
-        _ = await Command(Request.FlushDatabaseAsync(database));
+        _ = await Command(Request.FlushDatabaseAsync());
     }
 
     public async Task<DateTime> LastSaveAsync()

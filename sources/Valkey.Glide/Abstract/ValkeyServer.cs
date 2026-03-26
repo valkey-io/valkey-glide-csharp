@@ -137,7 +137,10 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
+
+        return database != -1
+            ? throw new NotImplementedException("GLIDE does not support database selection. Use SelectAsync to change the current database first.")
+            : await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
@@ -149,7 +152,13 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
+
+        if (database != -1)
+        {
+            throw new NotImplementedException("GLIDE does not support database selection. Use SelectAsync to change the current database first.");
+        }
+
+        _ = await _conn.Command(Request.FlushDatabaseAsync(), MakeRoute());
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)

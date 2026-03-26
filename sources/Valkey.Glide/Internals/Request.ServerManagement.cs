@@ -99,12 +99,8 @@ internal partial class Request
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
         => Ok(RequestType.FlushAll, []);
 
-    public static Cmd<string, ValkeyValue> FlushDatabaseAsync(int database = -1)
-        // FLUSHDB doesn't take database parameter - it operates on current database
-        // Database selection should be handled at connection level
-        => database != -1
-            ? throw new ArgumentException("FLUSHDB command does not support database selection. Use SELECT command first.")
-            : Ok(RequestType.FlushDB, []);
+    public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
+        => Ok(RequestType.FlushDB, []);
 
     public static Cmd<long, DateTime> LastSaveAsync()
         => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));

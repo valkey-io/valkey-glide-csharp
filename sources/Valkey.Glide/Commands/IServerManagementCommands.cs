@@ -181,7 +181,6 @@ public interface IServerManagementCommands
     /// Deletes all the keys of the currently selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="database">The database ID.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -189,7 +188,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FlushDatabaseAsync(int database = -1);
+    Task FlushDatabaseAsync();
 
     /// <summary>
     /// Return the time of the last DB save executed with success.

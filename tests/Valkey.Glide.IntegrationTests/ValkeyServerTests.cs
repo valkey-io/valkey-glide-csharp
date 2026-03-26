@@ -111,6 +111,12 @@ public class ValkeyServerTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task DatabaseSizeAsync_NonDefaultDatabase_Throws(ConnectionMultiplexer conn)
+        => await Assert.ThrowsAsync<ArgumentException>(
+            () => GetServer(conn).DatabaseSizeAsync(database: 0));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task FlushDatabaseAsync_ClearsDatabase(ConnectionMultiplexer conn)
     {
         string key = $"server-flush-test-{Guid.NewGuid()}";
@@ -133,6 +139,12 @@ public class ValkeyServerTests(TestConfiguration config)
     public async Task FlushDatabaseAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
         => await Assert.ThrowsAsync<NotImplementedException>(
             () => GetServer(conn).FlushDatabaseAsync(flags: UnsupportedCommandFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_NonDefaultDatabase_Throws(ConnectionMultiplexer conn)
+        => await Assert.ThrowsAsync<ArgumentException>(
+            () => GetServer(conn).FlushDatabaseAsync(database: 0));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]

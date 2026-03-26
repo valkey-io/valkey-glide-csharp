@@ -30,9 +30,9 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()" /></returns>
     IBatch FlushAllDatabasesAsync();
 
-    /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(int)" /></returns>
-    IBatch FlushDatabaseAsync(int database = -1);
+    /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync()" /></returns>
+    IBatch FlushDatabaseAsync();
 
     /// <inheritdoc cref="IServerManagementCommands.LastSaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LastSaveAsync()" /></returns>
