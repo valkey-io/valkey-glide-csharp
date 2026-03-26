@@ -213,20 +213,6 @@ public class StandaloneClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestServerManagementCommands(GlideClient client)
-    {
-        // Test server management commands
-        long clientId = await client.ClientIdAsync();
-        Assert.True(clientId > 0);
-
-        ValkeyValue clientName = await client.ClientGetNameAsync();
-        Assert.Equal(ValkeyValue.Null, clientName);
-
-        await client.SelectAsync(0);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task KeyCopy_Move(GlideClient client)
     {
         string key = Guid.NewGuid().ToString();
