@@ -13,14 +13,17 @@ namespace Valkey.Glide;
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
 
     /// <inheritdoc cref="ITransactionCommands.UnwatchAsync()"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task UnwatchAsync(CommandFlags flags);
 
     /// <inheritdoc cref="ITransactionClusterCommands.UnwatchAsync(Route)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task UnwatchAsync(Route route, CommandFlags flags);
 }

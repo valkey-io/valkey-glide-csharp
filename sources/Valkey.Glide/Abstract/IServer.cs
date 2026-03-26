@@ -172,7 +172,8 @@ public interface IServer
     Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>

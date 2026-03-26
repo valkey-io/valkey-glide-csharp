@@ -11,7 +11,8 @@ namespace Valkey.Glide;
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyResult> ScriptEvaluateAsync(
         string script,
         IEnumerable<ValkeyKey>? keys,
@@ -19,7 +20,8 @@ public partial interface IDatabaseAsync
         CommandFlags flags);
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(byte[], IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyResult> ScriptEvaluateAsync(
         byte[] hash,
         IEnumerable<ValkeyKey>? keys,
@@ -27,10 +29,12 @@ public partial interface IDatabaseAsync
         CommandFlags flags);
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LuaScript, object?)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters, CommandFlags flags);
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LoadedLuaScript, object?)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">>The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters, CommandFlags flags);
 }
