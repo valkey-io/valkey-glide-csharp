@@ -129,7 +129,15 @@ public partial interface IDatabaseAsync
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?)"/>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get, CommandFlags flags);
+    Task<ValkeyValue[]> SortAsync(
+        ValkeyKey key,
+        long skip = 0,
+        long take = -1,
+        Order order = Order.Ascending,
+        SortType sortType = SortType.Numeric,
+        ValkeyValue by = default,
+        IEnumerable<ValkeyValue>? get = null,
+        CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, long)"/>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
