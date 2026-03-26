@@ -22,14 +22,14 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringBitCountAsync(ValkeyKey, long, long, StringIndexType, CommandFlags)"/>
-    public async Task<long> StringBitCountAsync(ValkeyKey key, long start, long end, StringIndexType indexType, CommandFlags flags)
+    public async Task<long> StringBitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await StringBitCountAsync(key, start, end, indexType);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType, CommandFlags)"/>
-    public async Task<long> StringBitPositionAsync(ValkeyKey key, bool bit, long start, long end, StringIndexType indexType, CommandFlags flags)
+    public async Task<long> StringBitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await StringBitPositionAsync(key, bit, start, end, indexType);
