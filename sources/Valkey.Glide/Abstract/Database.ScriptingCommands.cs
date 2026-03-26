@@ -1,12 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-/// <inheritdoc cref="IDatabaseAsync" path="//*[not(self::seealso)]"/>
-/// <seealso cref="IScriptingAndFunctionBaseCommands" />
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?, CommandFlags)"/>
