@@ -1630,4 +1630,42 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task SelectAsync(long index, CommandFlags flags);
 
     #endregion
+
+    #region Scripting Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?)" />
+    /// <param name="script">The Lua script to evaluate.</param>
+    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
+    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyResult> ScriptEvaluateAsync(
+        string script,
+        IEnumerable<ValkeyKey>? keys,
+        IEnumerable<ValkeyValue>? values,
+        CommandFlags flags);
+
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(byte[], IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?)" />
+    /// <param name="hash">The SHA1 hash of the script to evaluate.</param>
+    /// <param name="keys">The keys to pass to the script (KEYS array).</param>
+    /// <param name="values">The values to pass to the script (ARGV array).</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyResult> ScriptEvaluateAsync(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys,
+        IEnumerable<ValkeyValue>? values,
+        CommandFlags flags);
+
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LuaScript, object?)" />
+    /// <param name="script">The LuaScript to evaluate.</param>
+    /// <param name="parameters">An object containing parameter values.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters, CommandFlags flags);
+
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LoadedLuaScript, object?)" />
+    /// <param name="script">The LoadedLuaScript to evaluate.</param>
+    /// <param name="parameters">An object containing parameter values.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters, CommandFlags flags);
+
+    #endregion
 }
