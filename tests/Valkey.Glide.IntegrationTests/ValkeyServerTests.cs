@@ -9,6 +9,8 @@ public class ValkeyServerTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
+    #region Tests
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task KeysAsync_ReturnsMatchingKeys(ConnectionMultiplexer conn)
@@ -19,8 +21,7 @@ public class ValkeyServerTests(TestConfiguration config)
         string key3 = $"{prefix}:key3";
         string otherKey = "other:key";
 
-        var endpoint = conn.GetEndPoints(true)[0];
-        var server = conn.GetServer(endpoint);
+        var server = GetServer(conn);
         var db = conn.GetDatabase();
 
         // Set up test keys
@@ -66,4 +67,98 @@ public class ValkeyServerTests(TestConfiguration config)
         }
         Assert.Empty(keys);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task KeysAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
+        => await Assert.ThrowsAsync<NotImplementedException>(
+            () => GetServer(conn).KeysAsync(flags: CommandFlags.PreferMaster).GetAsyncEnumerator(TestContext.Current.CancellationToken).MoveNextAsync().AsTask());
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task DatabaseSizeAsync_ReturnsSize(ConnectionMultiplexer conn)
+    {
+        string key = $"server-dbsize-test-{Guid.NewGuid()}";
+        var server = GetServer(conn);
+        var db = conn.GetDatabase();
+
+        try
+        {
+            long initialSize = await server.DatabaseSizeAsync();
+            Assert.True(initialSize >= 0);
+
+            _ = await db.StringSetAsync(key, "test-value");
+
+            long newSize = await server.DatabaseSizeAsync();
+            Assert.True(newSize > initialSize);
+        }
+        finally
+        {
+            _ = await db.KeyDeleteAsync(key);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task DatabaseSizeAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
+        => await Assert.ThrowsAsync<NotImplementedException>(
+            () => GetServer(conn).DatabaseSizeAsync(flags: CommandFlags.PreferMaster));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_ClearsDatabase(ConnectionMultiplexer conn)
+    {
+        string key = $"server-flush-test-{Guid.NewGuid()}";
+        var server = GetServer(conn);
+        var db = conn.GetDatabase();
+
+        _ = await db.StringSetAsync(key, "test-value");
+        Assert.True(await db.KeyExistsAsync(key));
+
+        await server.FlushDatabaseAsync();
+
+        Assert.False(await db.KeyExistsAsync(key));
+
+        long size = await server.DatabaseSizeAsync();
+        Assert.True(size <= 1);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
+        => await Assert.ThrowsAsync<NotImplementedException>(
+            () => GetServer(conn).FlushDatabaseAsync(flags: CommandFlags.PreferMaster));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_ClearsAllDatabases(ConnectionMultiplexer conn)
+    {
+        string key = $"server-flushall-test-{Guid.NewGuid()}";
+        var server = GetServer(conn);
+        var db = conn.GetDatabase();
+
+        _ = await db.StringSetAsync(key, "test-value");
+        Assert.True(await db.KeyExistsAsync(key));
+
+        await server.FlushAllDatabasesAsync();
+
+        Assert.False(await db.KeyExistsAsync(key));
+
+        long size = await server.DatabaseSizeAsync();
+        Assert.True(size <= 1);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_CommandFlags_Throws(ConnectionMultiplexer conn)
+        => await Assert.ThrowsAsync<NotImplementedException>(
+            () => GetServer(conn).FlushAllDatabasesAsync(flags: CommandFlags.PreferMaster));
+
+    #endregion
+    #region Helpers
+
+    private static IServer GetServer(ConnectionMultiplexer conn)
+        => conn.GetServer(conn.GetEndPoints(true)[0]);
+
+    #endregion
 }
