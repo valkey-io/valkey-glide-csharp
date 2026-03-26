@@ -188,6 +188,26 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         _ = await Command(Request.Select(index));
     }
 
+    /// <summary>
+    /// Iterates over all keys in the database matching the specified pattern.
+    /// </summary>
+    /// <param name="database">The database ID. This parameter is unused but kept for StackExchange.Redis compatibility.</param>
+    /// <param name="pattern">The pattern to match keys against. Defaults to all keys.</param>
+    /// <param name="pageSize">The number of keys to return per iteration. Defaults to 250.</param>
+    /// <param name="cursor">The cursor position to start from. Defaults to 0.</param>
+    /// <param name="pageOffset">The number of keys to skip in the first page. Defaults to 0.</param>
+    /// <param name="flags">The command flags. Currently flags are ignored.</param>
+    /// <returns>An async enumerable of keys matching the pattern.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await foreach (var key in client.KeysAsync(pattern: "user:*"))
+    /// {
+    ///     Console.WriteLine(key);
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
 #pragma warning disable IDE0060 // Unused 'database' parameter needed for StackExchange.Redis compatibility
     public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
 #pragma warning restore IDE0060
