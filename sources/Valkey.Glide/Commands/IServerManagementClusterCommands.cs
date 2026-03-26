@@ -98,7 +98,7 @@ public interface IServerManagementClusterCommands
     /// Echo the given message back from the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/echo/"/>
-    /// <param name="message">The message to echo</param>
+    /// <param name="message">The message to echo.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
     /// <param name="flags">The command flags. Currently flags are ignored.</param>
