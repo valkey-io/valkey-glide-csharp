@@ -13,7 +13,6 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// Flushes all the previously watched keys for a transaction. Executing a transaction will
     /// automatically flush all previously watched keys.
     /// </summary>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
@@ -22,5 +21,5 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/unwatch/"/>
-    Task UnwatchAsync(CommandFlags flags = CommandFlags.None);
+    Task UnwatchAsync();
 }

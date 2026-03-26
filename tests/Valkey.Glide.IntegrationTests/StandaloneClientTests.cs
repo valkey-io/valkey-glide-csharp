@@ -213,16 +213,16 @@ public class StandaloneClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestServerManagementCommands_WithFlags(GlideClient client)
+    public async Task TestServerManagementCommands(GlideClient client)
     {
-        // Test server management commands with CommandFlags (should be ignored)
-        long clientId = await client.ClientIdAsync(CommandFlags.None);
+        // Test server management commands
+        long clientId = await client.ClientIdAsync();
         Assert.True(clientId > 0);
 
-        ValkeyValue clientName = await client.ClientGetNameAsync(CommandFlags.None);
+        ValkeyValue clientName = await client.ClientGetNameAsync();
         Assert.Equal(ValkeyValue.Null, clientName);
 
-        await client.SelectAsync(0, CommandFlags.None);
+        await client.SelectAsync(0);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

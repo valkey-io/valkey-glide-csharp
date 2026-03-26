@@ -1668,4 +1668,22 @@ public interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommand
     Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters, CommandFlags flags);
 
     #endregion
+
+    #region Transaction Commands with CommandFlags (SER Compatibility)
+
+    /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})" />
+    /// <param name="keys">The keys to watch.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+
+    /// <inheritdoc cref="ITransactionCommands.UnwatchAsync()" />
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task UnwatchAsync(CommandFlags flags);
+
+    /// <inheritdoc cref="ITransactionClusterCommands.UnwatchAsync(Route)" />
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    Task UnwatchAsync(Route route, CommandFlags flags);
+
+    #endregion
 }

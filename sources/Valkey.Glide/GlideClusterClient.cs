@@ -263,21 +263,18 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         _ = await Command(Request.Select(index), Route.Random);
     }
 
-    public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Watch(keys));
     }
 
-    public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
+    public async Task UnwatchAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Unwatch(), AllPrimaries);
     }
 
-    public async Task UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None)
+    public async Task UnwatchAsync(Route route)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Unwatch(), route);
     }
 
