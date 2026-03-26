@@ -246,4 +246,46 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
     }
+
+    public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        if (database != -1)
+        {
+            throw new NotImplementedException($"Database ID {database} is not supported by Valkey GLIDE");
+        }
+
+        var options = new ScanOptions();
+        if (!pattern.IsNull)
+        {
+            options.MatchPattern = pattern.ToString();
+        }
+
+        if (pageSize > 0)
+        {
+            options.Count = pageSize;
+        }
+
+        string currentCursor = cursor.ToString();
+        ValkeyKey[] keys;
+        int currentOffset = pageOffset;
+
+        do
+        {
+            (currentCursor, keys) = await _conn.Command(Request.ScanAsync(currentCursor, options));
+
+            if (currentOffset > 0)
+            {
+                keys = [.. keys.Skip(currentOffset)];
+                currentOffset = 0;
+            }
+
+            foreach (ValkeyKey key in keys)
+            {
+                yield return key;
+            }
+
+        } while (currentCursor != "0");
+    }
 }

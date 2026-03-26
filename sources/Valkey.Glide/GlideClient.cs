@@ -149,38 +149,6 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         _ = await Command(Request.Select(index));
     }
 
-#pragma warning disable IDE0060 // Unused 'database' parameter needed for StackExchange.Redis compatibility
-    public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-#pragma warning restore IDE0060
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
-        var options = new ScanOptions();
-        if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
-        if (pageSize > 0) options.Count = pageSize;
-
-        string currentCursor = cursor.ToString();
-        ValkeyKey[] keys;
-        int currentOffset = pageOffset;
-
-        do
-        {
-            (currentCursor, keys) = await ScanAsync(currentCursor, options);
-
-            if (currentOffset > 0)
-            {
-                keys = [.. keys.Skip(currentOffset)];
-                currentOffset = 0;
-            }
-
-            foreach (ValkeyKey key in keys)
-            {
-                yield return key;
-            }
-
-        } while (currentCursor != "0");
-    }
-
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 

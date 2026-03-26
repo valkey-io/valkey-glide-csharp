@@ -314,4 +314,27 @@ public interface IServer
     /// After calling this method, all scripts must be reloaded before they can be executed with EVALSHA.
     /// </remarks>
     Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None);
-} ///
+
+    /// <summary>
+    /// Returns all keys matching <paramref name="pattern"/>.
+    /// Uses <c>SCAN</c> internally for cursor-based iteration.
+    /// Note: to resume an iteration via <paramref name="cursor"/>, pass the cursor value from a previous iteration.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/scan"/>.
+    /// <param name="database">The database ID. Only the current database (<c>-1</c>) is supported by Valkey GLIDE.</param>
+    /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
+    /// <param name="pageSize">The number of keys to return per SCAN iteration.</param>
+    /// <param name="cursor">The cursor to start scanning from.</param>
+    /// <param name="pageOffset">The number of keys to skip from the first page of results.</param>
+    /// <param name="flags">The flags to use for this operation. Only <see cref="CommandFlags.None"/> is supported by Valkey GLIDE.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not the current database (<c>-1</c>).</exception>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>An async enumerable of keys matching the pattern.</returns>
+    IAsyncEnumerable<ValkeyKey> KeysAsync(
+        int database = -1,
+        ValkeyValue pattern = default,
+        int pageSize = 250,
+        long cursor = 0,
+        int pageOffset = 0,
+        CommandFlags flags = CommandFlags.None);
+}
