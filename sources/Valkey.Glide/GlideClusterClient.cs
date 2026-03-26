@@ -173,11 +173,6 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         _ = await Command(Request.FlushAllDatabasesAsync(), AllPrimaries);
     }
 
-    public async Task FlushAllDatabasesAsync(Route route)
-    {
-        _ = await Command(Request.FlushAllDatabasesAsync(), route);
-    }
-
     public async Task<Dictionary<string, DateTime>> LastSaveAsync()
     {
         ClusterValue<DateTime> result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);

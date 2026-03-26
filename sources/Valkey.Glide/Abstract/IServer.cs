@@ -2,6 +2,8 @@
 
 using System.Net;
 
+using Valkey.Glide.Commands;
+
 namespace Valkey.Glide;
 
 public interface IServer
@@ -169,11 +171,8 @@ public interface IServer
     /// <returns>The number of keys in the database.</returns>
     Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
 
-    /// <summary>
-    /// Delete all the keys of all databases on the server.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()"/>
+    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>

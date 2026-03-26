@@ -93,34 +93,6 @@ internal partial class Database
         return await Command(Request.DatabaseSizeAsync(database).ToClusterValue(route is SingleNodeRoute), route);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.FlushAllDatabasesAsync(CommandFlags)"/>
-    public async Task FlushAllDatabasesAsync(CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await FlushAllDatabasesAsync();
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.FlushAllDatabasesAsync(Route, CommandFlags)"/>
-    public async Task FlushAllDatabasesAsync(Route route, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.FlushAllDatabasesAsync(), route);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.FlushDatabaseAsync(int, CommandFlags)"/>
-    public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await FlushDatabaseAsync(database);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.FlushDatabaseAsync(Route, int, CommandFlags)"/>
-    public async Task FlushDatabaseAsync(Route route, int database, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await Command(Request.FlushDatabaseAsync(database), route);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.LastSaveAsync(CommandFlags)"/>
     public async Task<DateTime> LastSaveAsync(CommandFlags flags)
     {

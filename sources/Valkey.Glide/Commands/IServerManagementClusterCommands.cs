@@ -358,8 +358,7 @@ public interface IServerManagementClusterCommands
     Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database = -1);
 
     /// <summary>
-    /// Deletes all the keys of all the existing databases.<br />
-    /// The command will be routed to all primary nodes.
+    /// Deletes all the keys of all the existing databases.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/"/>
     /// <remarks>
@@ -370,21 +369,6 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task FlushAllDatabasesAsync();
-
-    /// <summary>
-    /// Deletes all the keys of all the existing databases.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FlushAllDatabasesAsync(Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushAllDatabasesAsync(Route route);
 
     /// <summary>
     /// Return the time of the last DB save executed with success.

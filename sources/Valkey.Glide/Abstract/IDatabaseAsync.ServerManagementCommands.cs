@@ -59,22 +59,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database, CommandFlags flags);
 
-    /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    Task FlushAllDatabasesAsync(CommandFlags flags);
-
-    /// <inheritdoc cref="IServerManagementClusterCommands.FlushAllDatabasesAsync(Route)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    Task FlushAllDatabasesAsync(Route route, CommandFlags flags);
-
-    /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(int)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="IServerManagementClusterCommands.FlushDatabaseAsync(Route, int)"/>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
-    Task FlushDatabaseAsync(Route route, int database, CommandFlags flags);
-
     /// <inheritdoc cref="IServerManagementCommands.LastSaveAsync()"/>
     /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     Task<DateTime> LastSaveAsync(CommandFlags flags);
