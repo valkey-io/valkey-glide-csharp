@@ -5,9 +5,7 @@ using Valkey.Glide.TestUtils;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Tests for <see cref="ValkeyServer" /> (IServer) methods.
-/// Uses a dedicated fixture with an isolated server to prevent flush operations
-/// from interfering with other tests.
+/// Tests for <see cref="ValkeyServer" />.
 /// </summary>
 public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<ValkeyServerFixture>
 {
@@ -164,11 +162,11 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
 }
 
 /// <summary>
-/// Fixture providing an isolated standalone server for ValkeyServer (IServer) tests.
+/// Fixture class for <see cref="ValkeyServerTests" />.
 /// </summary>
 public class ValkeyServerFixture : IDisposable
 {
-    private readonly StandaloneServer _standaloneServer = new();
+    private readonly StandaloneServer _standaloneServer;
     private readonly ConnectionMultiplexer _connection;
 
     public IServer Server { get; }
@@ -176,11 +174,14 @@ public class ValkeyServerFixture : IDisposable
 
     public ValkeyServerFixture()
     {
-        var address = _standaloneServer.Addresses.First();
+        _standaloneServer = new();
+        var (host, port) = _standaloneServer.Addresses.First();
+
         ConfigurationOptions config = new();
-        config.EndPoints.Add(address.Host, address.Port);
+        config.EndPoints.Add(host, port);
         _connection = ConnectionMultiplexer.Connect(config);
-        Server = _connection.GetServer(_connection.GetEndPoints(true)[0]);
+
+        Server = _connection.GetServer(host, port);
         Database = _connection.GetDatabase();
     }
 
