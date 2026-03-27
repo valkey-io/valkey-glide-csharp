@@ -42,10 +42,6 @@ Common commands:
   - `task coverage`, `task coverage:unit`, `task coverage:integration`
   - Reports go to `reports/`; test artifacts to `testresults/`
 
-- Benchmarking:
-  - Preferred: `task benchmark FRAMEWORK=net8.0`
-  - Raw: `cd valkey-glide/benchmarks && ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net8.0`
-
 ## Contribution Requirements
 
 ### Developer Certificate of Origin (DCO) Signoff
