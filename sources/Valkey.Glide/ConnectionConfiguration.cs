@@ -11,6 +11,8 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration classes and builders for establishing connections to Valkey servers.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/reference/connection-options/?lang=csharp" />
+/// <seealso href="https://glide.valkey.io/how-to/connections/timeouts-and-reconnect-strategy/?lang=csharp" />
 public abstract class ConnectionConfiguration
 {
     /// <summary>
@@ -423,8 +425,8 @@ public abstract class ConnectionConfiguration
         /// <br />
         /// Must match the TLS connection of the server or cluster.
         /// </summary>
-        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
-        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/" />
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/" />
         public bool UseTls
         {
             get => Config.TlsMode is TlsMode.SecureTls or TlsMode.InsecureTls;
@@ -508,8 +510,8 @@ public abstract class ConnectionConfiguration
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
         /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/></exception>
-        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
-        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/" />
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/" />
         public T WithTrustedCertificate(string certificatePath)
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
@@ -542,8 +544,8 @@ public abstract class ConnectionConfiguration
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="ArgumentException">If the certificate data is null, empty, or exceeds <see cref="CertificateMaxSize"/></exception>
-        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
-        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/" />
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/" />
         public T WithTrustedCertificate(byte[] certificateData)
         {
             if (certificateData == null)

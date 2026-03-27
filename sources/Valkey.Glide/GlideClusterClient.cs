@@ -16,10 +16,10 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
-// TODO add wiki link
 /// <summary>
 /// Client used for connection to cluster servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/client-initialization/?lang=csharp" />
 public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands, ITransactionClusterCommands
 {
     /// <summary>

@@ -16,7 +16,6 @@ public interface IGenericClusterCommands
     /// <summary>
     /// Executes a single command, without checking inputs. Every part of the command, including subcommands,
     /// should be added as a separate value in <paramref name="args" />.
-    /// See the <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#custom-command">Valkey GLIDE Wiki</see>.
     /// for details on the restrictions and limitations of the custom command API.<br />
     /// The command will be routed automatically based on the passed command's default request policy.
     /// <para />
@@ -42,12 +41,12 @@ public interface IGenericClusterCommands
     /// </remarks>
     /// <param name="args">A list includes the command name and arguments for the custom command.</param>
     /// <returns>The returning value depends on the executed command.</returns>
+    /// <seealso href="https://glide.valkey.io/concepts/client-features/custom-command/" />
     Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args);
 
     /// <summary>
     /// Executes a single command, without checking inputs. Every part of the command, including subcommands,
     /// should be added as a separate value in <paramref name="args"/>.
-    /// See the <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#custom-command">Valkey GLIDE Wiki</see>.
     /// for details on the restrictions and limitations of the custom command API.<br />
     /// The command will be routed to the nodes defined by <paramref name="route"/>.
     /// <para />
@@ -71,6 +70,7 @@ public interface IGenericClusterCommands
     /// <param name="args">A list including the command name and arguments for the custom command.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the command to the nodes defined by <c>route</c>.</param>
     /// <returns>The returning value depends on the executed command.</returns>
+    /// <seealso href="https://glide.valkey.io/concepts/client-features/custom-command/" />
     Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args, Route route);
 
     /// <summary>
@@ -281,6 +281,6 @@ public interface IGenericClusterCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
-    /// <seealso href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan">Cluster Scan</seealso>
+    /// <seealso href="https://glide.valkey.io/how-to/scan-cluster/?lang=csharp">Cluster Scan</seealso>
     Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null);
 }
