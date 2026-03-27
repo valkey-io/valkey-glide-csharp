@@ -13,8 +13,6 @@ The C# client contains the following parts:
 3. Tests for the C# client located in `tests` directory.
 4. A dedicated benchmarking tool designed to evaluate and compare the performance of Valkey GLIDE and other .NET clients. It is located in `/benchmarks`.
 
-TODO: examples, UT, design docs
-
 ## Build from Source
 
 Software Dependencies:
@@ -368,6 +366,10 @@ cargo fmt --all -- --check
 ## Test framework and Style
 
 The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code styles are defined in `.editorconfing` (see `dotnet_diagnostic.xUnit..` rules). The xUnit rules are enforced by the [xUnit analyzers](https://github.com/xunit/xunit.analyzers) referenced in the main xunit.v3 NuGet package. If you choose to use xunit.v3.core instead, you can reference xunit.analyzers explicitly. For additional info, please, refer to <https://xunit.NET> and <https://github.com/xunit/xunit>
+
+## Documentation
+
+For user-facing documentation including quick start guides, tutorials, and how-to guides, visit the official [Valkey GLIDE documentation site](https://glide.valkey.io/getting-started/quickstart/?lang=csharp).
 
 ## Community and Feedback
 
