@@ -11,8 +11,6 @@ The C# client contains the following parts:
 1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](/valkey-glide/glide-core/README.md).
 2. C# part of the client located in `sources`; it translates Rust async API into .NET async API.
 3. Tests for the C# client located in `tests` directory.
-4. A dedicated benchmarking tool designed to evaluate and compare the performance of Valkey GLIDE and other .NET clients. It is located in `/benchmarks`.
-
 TODO: examples, UT, design docs
 
 ## Build from Source
@@ -237,8 +235,6 @@ task coverage:report        # Generate HTML coverage report
 task coverage:summary       # Display coverage summary
 task clean                  # Clean test results and reports
 
-# Benchmarking
-task benchmark FRAMEWORK=net8.0  # Run performance benchmarks
 ```
 
 ## Advanced Testing Options
@@ -311,34 +307,6 @@ To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
    ```
 
 If the environment variable is not set, DNS tests will be skipped.
-
-## Benchmark
-
-1. Ensure that you have installed `valkey-server` and `valkey-cli` on your host. You can find the valkey installation guide above.
-
-2. Execute benchmarks using Task (preferred):
-
-    ```bash
-    cd csharp
-    # Run benchmarks with standardized configuration
-    task benchmark FRAMEWORK=net8.0
-    ```
-
-3. Alternative using raw commands:
-
-    ```bash
-    cd <repo root>/benchmarks/csharp
-    dotnet run --framework net8.0 --dataSize 1024 --resultsFile test.json --concurrentTasks 4 --clients all --host localhost --clientCount 4
-    ```
-
-4. Use a [helper script](../benchmarks/README.md) which runs end-to-end benchmarking workflow:
-
-    ```bash
-    cd <repo root>/benchmarks
-    ./install_and_test.sh -csharp
-    ```
-
-Run benchmarking script with `-h` flag to get list and help about all command line parameters.
 
 ## Linting
 
