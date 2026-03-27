@@ -90,7 +90,8 @@ public interface IServer
     /// This command is often used to test if a connection is still alive, or to measure latency.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The observed latency.</returns>
     /// <remarks>
     /// <example>
@@ -106,7 +107,8 @@ public interface IServer
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping"/>
     /// <param name="message">The message to send.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The observed latency.</returns>
     /// <remarks>
     /// <example>
@@ -122,7 +124,8 @@ public interface IServer
     /// </summary>
     /// <seealso href="https://valkey.io/commands/echo"/>
     /// <param name="message">The message to echo.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The provided message.</returns>
     /// <remarks>
     /// <example>
