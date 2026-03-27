@@ -20,8 +20,14 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class Route
 {
+    /// <summary>
+    /// Base class for routes that target a single node.
+    /// </summary>
     public abstract class SingleNodeRoute : Route { }
 
+    /// <summary>
+    /// Base class for routes that target multiple nodes.
+    /// </summary>
     public abstract class MultiNodeRoute : Route { }
 
     /// <summary>
@@ -83,7 +89,14 @@ public abstract class Route
     /// <param name="slotType">Defines type of the node being addressed.</param>
     public class SlotIdRoute(int slotId, SlotType slotType) : SingleNodeRoute
     {
+        /// <summary>
+        /// The slot number used for routing.
+        /// </summary>
         public readonly int SlotId = slotId;
+
+        /// <summary>
+        /// The type of node to route the request to.
+        /// </summary>
         public new readonly SlotType SlotType = slotType;
 
         internal override FFI.Route ToFfi() => new(RouteType.SlotId, slotIdInfo: (SlotId, SlotType));
@@ -97,7 +110,14 @@ public abstract class Route
     /// <param name="slotType">Defines type of the node being addressed.</param>
     public class SlotKeyRoute(string slotKey, SlotType slotType) : SingleNodeRoute
     {
+        /// <summary>
+        /// The key used to determine the slot for routing.
+        /// </summary>
         public readonly string SlotKey = slotKey;
+
+        /// <summary>
+        /// The type of node to route the request to.
+        /// </summary>
         public new readonly SlotType SlotType = slotType;
 
         internal override FFI.Route ToFfi() => new(RouteType.SlotKey, slotKeyInfo: (SlotKey, SlotType));
@@ -108,7 +128,14 @@ public abstract class Route
     /// </summary>
     public class ByAddressRoute : SingleNodeRoute
     {
+        /// <summary>
+        /// The hostname or IP address of the target node.
+        /// </summary>
         public readonly string Host;
+
+        /// <summary>
+        /// The port number of the target node.
+        /// </summary>
         public readonly int Port;
 
         /// <summary>

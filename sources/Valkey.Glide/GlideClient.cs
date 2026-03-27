@@ -59,104 +59,128 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public static async Task<GlideClient> CreateClient(StandaloneClientConfiguration config)
         => await CreateClient(config, () => new GlideClient());
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError)
         => await Batch(batch, raiseOnError);
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options)
         => await Batch(batch, raiseOnError, options);
 
+    /// <inheritdoc/>
     public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
         => await Command(Request.CustomCommand([.. args]));
 
+    /// <inheritdoc/>
     public async Task<string> InfoAsync() => await InfoAsync([]);
 
+    /// <inheritdoc/>
     public async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
         => await Command(Request.Info([.. sections]));
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message)
     {
         return await Command(Request.Echo(message));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync()
         => await Command(Request.Ping());
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync(ValkeyValue message)
         => await Command(Request.Ping(message));
 
+    /// <inheritdoc/>
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
         return await Command(Request.ConfigGetAsync(pattern));
     }
 
+    /// <inheritdoc/>
     public async Task ConfigResetStatisticsAsync()
     {
         _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
+    /// <inheritdoc/>
     public async Task ConfigRewriteAsync()
     {
         _ = await Command(Request.ConfigRewriteAsync());
     }
 
+    /// <inheritdoc/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
         _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
+    /// <inheritdoc/>
     public async Task<long> DatabaseSizeAsync()
     {
         return await Command(Request.DatabaseSizeAsync());
     }
 
+    /// <inheritdoc/>
     public async Task FlushAllDatabasesAsync()
     {
         _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
+    /// <inheritdoc/>
     public async Task FlushDatabaseAsync()
     {
         _ = await Command(Request.FlushDatabaseAsync());
     }
 
+    /// <inheritdoc/>
     public async Task<DateTime> LastSaveAsync()
     {
         return await Command(Request.LastSaveAsync());
     }
 
+    /// <inheritdoc/>
     public async Task<DateTime> TimeAsync()
     {
         return await Command(Request.TimeAsync());
     }
 
+    /// <inheritdoc/>
     public async Task<string> LolwutAsync()
     {
         return await Command(Request.LolwutAsync());
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> ClientGetNameAsync()
     {
         return await Command(Request.ClientGetName());
     }
 
+    /// <inheritdoc/>
     public async Task<long> ClientIdAsync()
     {
         return await Command(Request.ClientId());
     }
 
+    /// <inheritdoc/>
     public async Task SelectAsync(long index)
     {
         _ = await Command(Request.Select(index));
     }
 
+    /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
+    /// <inheritdoc/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
     {
         _ = await Command(Request.Watch(keys));
     }
 
+    /// <inheritdoc/>
     public async Task UnwatchAsync()
     {
         _ = await Command(Request.Unwatch());

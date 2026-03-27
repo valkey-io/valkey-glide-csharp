@@ -8,6 +8,9 @@ using static Valkey.Glide.Pipeline.Options;
 
 namespace Valkey.Glide.Commands;
 
+/// <summary>
+/// Defines generic commands for standalone Valkey operations.
+/// </summary>
 public interface IGenericCommands
 {
     /// <summary>

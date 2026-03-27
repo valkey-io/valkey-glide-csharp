@@ -2,6 +2,9 @@
 
 namespace Valkey.Glide;
 
+/// <summary>
+/// Exception types for the Valkey GLIDE client.
+/// </summary>
 public static class Errors
 {
     /// <summary>
@@ -9,10 +12,23 @@ public static class Errors
     /// </summary>
     public abstract class GlideException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GlideException"/> class.
+        /// </summary>
         public GlideException() : base() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GlideException"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public GlideException(string message) : base(message) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GlideException"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public GlideException(string message, Exception innerException) : base(message, innerException) { }
     }
 
@@ -21,10 +37,23 @@ public static class Errors
     /// </summary>
     public sealed class RequestException : GlideException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequestException"/> class.
+        /// </summary>
         public RequestException() : base() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequestException"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public RequestException(string message) : base(message) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequestException"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public RequestException(string message, Exception innerException) : base(message, innerException) { }
     }
 
@@ -34,10 +63,23 @@ public static class Errors
     /// </summary>
     public sealed class ValkeyServerException : GlideException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValkeyServerException"/> class.
+        /// </summary>
         public ValkeyServerException() : base() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValkeyServerException"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public ValkeyServerException(string message) : base(message) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValkeyServerException"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public ValkeyServerException(string message, Exception innerException) : base(message, innerException) { }
     }
 
@@ -46,10 +88,23 @@ public static class Errors
     /// </summary>
     public sealed class ExecAbortException : GlideException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExecAbortException"/> class.
+        /// </summary>
         public ExecAbortException() : base() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExecAbortException"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public ExecAbortException(string message) : base(message) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExecAbortException"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public ExecAbortException(string message, Exception innerException) : base(message, innerException) { }
     }
 
@@ -58,10 +113,23 @@ public static class Errors
     /// </summary>
     public sealed class TimeoutException : GlideException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimeoutException"/> class.
+        /// </summary>
         public TimeoutException() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimeoutException"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public TimeoutException(string message) : base(message) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimeoutException"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public TimeoutException(string message, Exception innerException) : base(message, innerException) { }
     }
 
@@ -71,10 +139,23 @@ public static class Errors
     /// </summary>
     public sealed class ConnectionException : GlideException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionException"/> class.
+        /// </summary>
         public ConnectionException() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionException"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public ConnectionException(string message) : base(message) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionException"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public ConnectionException(string message, Exception innerException) : base(message, innerException) { }
     }
 
@@ -85,10 +166,22 @@ public static class Errors
     {
         // TODO set HelpLink with link to wiki
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationError"/> class.
+        /// </summary>
         public ConfigurationError() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationError"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public ConfigurationError(string message) : base(message) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationError"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public ConfigurationError(string message, Exception innerException) : base(message, innerException) { }
     }
 

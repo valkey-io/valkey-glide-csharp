@@ -7,21 +7,27 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient : IHyperLogLogCommands
 {
+    /// <inheritdoc/>
     public async Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element)
         => await Command(Request.HyperLogLogAddAsync(key, element));
 
+    /// <inheritdoc/>
     public async Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements)
         => await Command(Request.HyperLogLogAddAsync(key, [.. elements]));
 
+    /// <inheritdoc/>
     public async Task<long> HyperLogLogLengthAsync(ValkeyKey key)
         => await Command(Request.HyperLogLogLengthAsync(key));
 
+    /// <inheritdoc/>
     public async Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys)
         => await Command(Request.HyperLogLogLengthAsync([.. keys]));
 
+    /// <inheritdoc/>
     public async Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second)
         => _ = await Command(Request.HyperLogLogMergeAsync(destination, first, second));
 
+    /// <inheritdoc/>
     public async Task HyperLogLogMergeAsync(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys)
         => _ = await Command(Request.HyperLogLogMergeAsync(destination, [.. sourceKeys]));
 }

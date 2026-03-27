@@ -62,107 +62,134 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     public static async Task<GlideClusterClient> CreateClient(ClusterClientConfiguration config)
         => await CreateClient(config, () => new GlideClusterClient());
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(ClusterBatch batch, bool raiseOnError)
         => await Batch(batch, raiseOnError);
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(ClusterBatch batch, bool raiseOnError, ClusterBatchOptions options)
         => batch.IsAtomic && options.RetryStrategy is not null
             ? throw new RequestException("Retry strategy is not supported for atomic batches (transactions).")
             : await Batch(batch, raiseOnError, options);
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args)
         => await Command(Request.CustomCommand([.. args], resp => ResponseConverters.HandleCustomCommandClusterValue(resp)));
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args, Route route)
         => await Command(Request.CustomCommand([.. args], resp => ResponseConverters.HandleCustomCommandClusterValue(resp, route)), route);
 
+    /// <inheritdoc/>
     public async Task<Dictionary<string, string>> InfoAsync() => await InfoAsync([]);
 
+    /// <inheritdoc/>
     public async Task<Dictionary<string, string>> InfoAsync(IEnumerable<InfoOptions.Section> sections)
         => await Command(Request.Info([.. sections]).ToMultiNodeValue());
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<string>> InfoAsync(Route route) => await InfoAsync([], route);
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<string>> InfoAsync(IEnumerable<InfoOptions.Section> sections, Route route)
         => await Command(Request.Info([.. sections]).ToClusterValue(route is SingleNodeRoute), route);
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route)
     {
         return await Command(Request.Echo(message).ToClusterValue(route is SingleNodeRoute), route);
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message)
     {
         return await Command(Request.Echo(message), Route.Random);
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync()
         => await Command(Request.Ping(), AllPrimaries);
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync(ValkeyValue message)
         => await Command(Request.Ping(message), AllPrimaries);
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync(Route route)
         => await Command(Request.Ping(), route);
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync(ValkeyValue message, Route route)
         => await Command(Request.Ping(message), route);
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default)
     {
         return await Command(Request.ConfigGetAsync(pattern).ToClusterValue(false), Route.AllPrimaries);
     }
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route)
     {
         return await Command(Request.ConfigGetAsync(pattern).ToClusterValue(route is SingleNodeRoute), route);
     }
 
+    /// <inheritdoc/>
     public async Task ConfigResetStatisticsAsync()
     {
         _ = await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
     }
 
+    /// <inheritdoc/>
     public async Task ConfigResetStatisticsAsync(Route route)
     {
         _ = await Command(Request.ConfigResetStatisticsAsync(), route);
     }
 
+    /// <inheritdoc/>
     public async Task ConfigRewriteAsync()
     {
         _ = await Command(Request.ConfigRewriteAsync(), Route.Random);
     }
 
+    /// <inheritdoc/>
     public async Task ConfigRewriteAsync(Route route)
     {
         _ = await Command(Request.ConfigRewriteAsync(), route);
     }
 
+    /// <inheritdoc/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
         _ = await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
     }
 
+    /// <inheritdoc/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route)
     {
         _ = await Command(Request.ConfigSetAsync(setting, value), route);
     }
 
+    /// <inheritdoc/>
     public async Task<long> DatabaseSizeAsync()
         => await DatabaseSizeAsync(AllPrimaries);
 
+    /// <inheritdoc/>
     public async Task<long> DatabaseSizeAsync(Route route)
     {
         ClusterValue<long> result = await Command(Request.DatabaseSizeAsync().ToClusterValue(false), route);
         return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
     }
 
+    /// <inheritdoc/>
     public async Task FlushDatabaseAsync()
         => await FlushDatabaseAsync(AllPrimaries);
 
+    /// <inheritdoc/>
     public async Task FlushDatabaseAsync(Route route)
         => _ = await Command(Request.FlushDatabaseAsync(), route);
 
+    /// <inheritdoc/>
     public async Task<Dictionary<string, DateTime>> LastSaveAsync()
     {
         ClusterValue<DateTime> result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);
@@ -174,11 +201,13 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         return new Dictionary<string, DateTime> { ["single_node"] = result.SingleValue };
     }
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<DateTime>> LastSaveAsync(Route route)
     {
         return await Command(Request.LastSaveAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
 
+    /// <inheritdoc/>
     public async Task<Dictionary<string, DateTime>> TimeAsync()
     {
         ClusterValue<DateTime> result = await Command(Request.TimeAsync().ToClusterValue(false), Route.Random);
@@ -190,11 +219,13 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         return new Dictionary<string, DateTime> { ["single_node"] = result.SingleValue };
     }
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<DateTime>> TimeAsync(Route route)
     {
         return await Command(Request.TimeAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
 
+    /// <inheritdoc/>
     public async Task<Dictionary<string, string>> LolwutAsync()
     {
         ClusterValue<string> result = await Command(Request.LolwutAsync().ToClusterValue(false), Route.Random);
@@ -206,46 +237,55 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
     }
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<string>> LolwutAsync(Route route)
     {
         return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> ClientGetNameAsync()
     {
         return await Command(Request.ClientGetName(), Route.Random);
     }
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route)
     {
         return await Command(Request.ClientGetNameCluster(route), route);
     }
 
+    /// <inheritdoc/>
     public async Task<long> ClientIdAsync()
     {
         return await Command(Request.ClientId(), Route.Random);
     }
 
+    /// <inheritdoc/>
     public async Task<ClusterValue<long>> ClientIdAsync(Route route)
     {
         return await Command(Request.ClientId().ToClusterValue(route is SingleNodeRoute), route);
     }
 
+    /// <inheritdoc/>
     public async Task SelectAsync(long index)
     {
         _ = await Command(Request.Select(index), Route.Random);
     }
 
+    /// <inheritdoc/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
     {
         _ = await Command(Request.Watch(keys));
     }
 
+    /// <inheritdoc/>
     public async Task UnwatchAsync()
     {
         _ = await Command(Request.Unwatch(), AllPrimaries);
     }
 
+    /// <inheritdoc/>
     public async Task UnwatchAsync(Route route)
     {
         _ = await Command(Request.Unwatch(), route);

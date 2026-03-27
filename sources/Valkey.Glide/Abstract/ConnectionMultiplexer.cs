@@ -87,22 +87,27 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return multiplexer;
     }
 
+    /// <inheritdoc/>
     public EndPoint[] GetEndPoints(bool configuredOnly)
         => configuredOnly
             ? [.. RawConfig.EndPoints]
             : [.. GetServers().Select(s => s.EndPoint)];
 
+    /// <inheritdoc/>
     public IServer GetServer(string host, int port, object? asyncState = null)
         => GetServer(Format.ParseEndPoint(host, port), asyncState);
 
+    /// <inheritdoc/>
     public IServer GetServer(string hostAndPort, object? asyncState = null)
         => Format.TryParseEndPoint(hostAndPort, out EndPoint? ep)
             ? GetServer(ep, asyncState)
             : throw new ArgumentException($"The specified host and port could not be parsed: {hostAndPort}", nameof(hostAndPort));
 
+    /// <inheritdoc/>
     public IServer GetServer(IPAddress host, int port)
         => GetServer(new IPEndPoint(host, port));
 
+    /// <inheritdoc/>
     public IServer GetServer(EndPoint endpoint, object? asyncState = null)
     {
         GuardClauses.ThrowIfAsyncState(asyncState);
@@ -119,6 +124,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     // TODO currently this returns only primary node on standalone
     // https://github.com/valkey-io/valkey-glide/issues/4293
+    /// <inheritdoc/>
     public IServer[] GetServers()
     {
         // run INFO on all nodes, but disregard the node responses, we need node addresses only
@@ -145,8 +151,10 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         }
     }
 
+    /// <inheritdoc/>
     public bool IsConnected => true;
 
+    /// <inheritdoc/>
     public bool IsConnecting => false;
 
     /// <inheritdoc/>
@@ -156,6 +164,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return new Subscriber(this, _db!);
     }
 
+    /// <inheritdoc/>
     public IDatabase GetDatabase(int db = -1, object? asyncState = null)
     {
         Utils.Requires<NotImplementedException>(db == -1, "To switch the database, please use `SELECT` command.");
@@ -163,9 +172,11 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return _db!;
     }
 
+    /// <inheritdoc/>
     public long? GetConnectionId(EndPoint endpoint, ConnectionType connectionType)
         => GetConnectionIdAsync(endpoint, connectionType).GetAwaiter().GetResult();
 
+    /// <inheritdoc/>
     public async Task<long?> GetConnectionIdAsync(EndPoint endpoint, ConnectionType connectionType)
     {
         IServer server = GetServer(endpoint);
