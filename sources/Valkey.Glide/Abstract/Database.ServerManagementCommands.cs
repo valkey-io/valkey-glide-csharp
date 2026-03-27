@@ -6,7 +6,6 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
-/// <inheritdoc cref="IDatabaseAsync" />
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.EchoAsync(ValkeyValue, CommandFlags)"/>

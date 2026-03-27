@@ -112,7 +112,7 @@ public class ValkeyServerTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task DatabaseSizeAsync_NonDefaultDatabase_Throws(ConnectionMultiplexer conn)
-        => await Assert.ThrowsAsync<ArgumentException>(
+        => await Assert.ThrowsAsync<NotImplementedException>(
             () => GetServer(conn).DatabaseSizeAsync(database: 0));
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -143,7 +143,7 @@ public class ValkeyServerTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task FlushDatabaseAsync_NonDefaultDatabase_Throws(ConnectionMultiplexer conn)
-        => await Assert.ThrowsAsync<ArgumentException>(
+        => await Assert.ThrowsAsync<NotImplementedException>(
             () => GetServer(conn).FlushDatabaseAsync(database: 0));
 
     [Theory(DisableDiscoveryEnumeration = true)]

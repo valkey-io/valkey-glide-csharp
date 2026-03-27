@@ -187,7 +187,7 @@ public interface IServer
     Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Delete all the keys of the currant database.
+    /// Delete all the keys of the current database.
     /// GLIDE does not support database selection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb"/>
