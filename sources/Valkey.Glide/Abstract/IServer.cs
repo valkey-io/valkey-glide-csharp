@@ -6,6 +6,10 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
+/// <summary>
+/// Provides configuration controls of a Valkey server.
+/// Compatible with StackExchange.Redis <c>IServer</c>.
+/// </summary>
 public interface IServer
 {
     /// <summary>

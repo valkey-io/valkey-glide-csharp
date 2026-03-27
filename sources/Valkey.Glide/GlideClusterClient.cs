@@ -291,6 +291,7 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
         _ = await Command(Request.Unwatch(), route);
     }
 
+    /// <inheritdoc/>
     protected override async Task<Version> GetServerVersionAsync()
     {
         if (_serverVersion == null)

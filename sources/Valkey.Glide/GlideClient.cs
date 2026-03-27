@@ -186,6 +186,7 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         _ = await Command(Request.Unwatch());
     }
 
+    /// <inheritdoc/>
     protected override async Task<Version> GetServerVersionAsync()
     {
         if (_serverVersion == null)
