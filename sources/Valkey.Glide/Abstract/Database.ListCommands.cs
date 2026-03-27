@@ -41,13 +41,6 @@ internal partial class Database
         return await ListLeftPushAsync(key, values, when);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListLeftPushAsync(key, values);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.ListRightPopAsync(ValkeyKey, CommandFlags)"/>
     public async Task<ValkeyValue> ListRightPopAsync(ValkeyKey key, CommandFlags flags)
     {
@@ -81,13 +74,6 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await ListRightPushAsync(key, values, when);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRightPushAsync(key, values);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListLengthAsync(ValkeyKey, CommandFlags)"/>
