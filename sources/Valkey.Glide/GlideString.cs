@@ -268,6 +268,11 @@ public sealed class GlideString : IComparable<GlideString>
     /// <inheritdoc cref="GlideString(byte[])" />
     public static implicit operator GlideString(byte[] bytes) => new(bytes);
 
+    /// <summary>
+    /// Implicitly converts a <see cref="ValkeyValue"/> to a <see cref="GlideString"/>.
+    /// </summary>
+    /// <param name="value">The <see cref="ValkeyValue"/> to convert.</param>
+    /// <returns>A new <see cref="GlideString"/> containing the value's data.</returns>
 #pragma warning disable IDE0072 // Add missing cases
     public static implicit operator GlideString(ValkeyValue value) => value.Type switch
     {
@@ -277,12 +282,18 @@ public sealed class GlideString : IComparable<GlideString>
     };
 #pragma warning restore IDE0072 // Add missing cases
 
+    /// <summary>
+    /// Implicitly converts a <see cref="ValkeyKey"/> to a <see cref="GlideString"/>.
+    /// </summary>
+    /// <param name="key">The <see cref="ValkeyKey"/> to convert.</param>
+    /// <returns>A new <see cref="GlideString"/> containing the key's bytes.</returns>
     public static implicit operator GlideString(ValkeyKey key)
     {
         byte[]? keyBytes = key;
         return keyBytes == null ? new GlideString([]) : new GlideString(keyBytes);
     }
 
+    /// <inheritdoc/>
     public int CompareTo(GlideString? other)
     {
         if (other is null)
@@ -309,6 +320,7 @@ public sealed class GlideString : IComparable<GlideString>
         return 0;
     }
 
+    /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
         if (ReferenceEquals(this, obj))
@@ -326,19 +338,61 @@ public sealed class GlideString : IComparable<GlideString>
         return this == (GlideString)obj;
     }
 
+    /// <summary>
+    /// Determines whether two <see cref="GlideString"/> instances are equal.
+    /// </summary>
+    /// <param name="left">The first <see cref="GlideString"/> to compare.</param>
+    /// <param name="right">The second <see cref="GlideString"/> to compare.</param>
+    /// <returns><see langword="true"/> if both instances have equal byte sequences; otherwise, <see langword="false"/>.</returns>
     public static bool operator ==(GlideString? left, GlideString? right) =>
         left is null ? right is null : right is not null && left.Bytes.SequenceEqual(right.Bytes);
 
+    /// <summary>
+    /// Determines whether two <see cref="GlideString"/> instances are not equal.
+    /// </summary>
+    /// <param name="left">The first <see cref="GlideString"/> to compare.</param>
+    /// <param name="right">The second <see cref="GlideString"/> to compare.</param>
+    /// <returns><see langword="true"/> if the instances are not equal; otherwise, <see langword="false"/>.</returns>
     public static bool operator !=(GlideString left, GlideString right) => !(left == right);
 
+    /// <summary>
+    /// Determines whether the left <see cref="GlideString"/> is less than the right.
+    /// </summary>
+    /// <param name="left">The first <see cref="GlideString"/> to compare.</param>
+    /// <param name="right">The second <see cref="GlideString"/> to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is less than <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
     public static bool operator <(GlideString left, GlideString right) => left.CompareTo(right) < 0;
 
+    /// <summary>
+    /// Determines whether the left <see cref="GlideString"/> is less than or equal to the right.
+    /// </summary>
+    /// <param name="left">The first <see cref="GlideString"/> to compare.</param>
+    /// <param name="right">The second <see cref="GlideString"/> to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is less than or equal to <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
     public static bool operator <=(GlideString left, GlideString right) => left.CompareTo(right) <= 0;
 
+    /// <summary>
+    /// Determines whether the left <see cref="GlideString"/> is greater than the right.
+    /// </summary>
+    /// <param name="left">The first <see cref="GlideString"/> to compare.</param>
+    /// <param name="right">The second <see cref="GlideString"/> to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is greater than <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
     public static bool operator >(GlideString left, GlideString right) => left.CompareTo(right) > 0;
 
+    /// <summary>
+    /// Determines whether the left <see cref="GlideString"/> is greater than or equal to the right.
+    /// </summary>
+    /// <param name="left">The first <see cref="GlideString"/> to compare.</param>
+    /// <param name="right">The second <see cref="GlideString"/> to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(GlideString left, GlideString right) => left.CompareTo(right) >= 0;
 
+    /// <summary>
+    /// Concatenates two <see cref="GlideString"/> instances.
+    /// </summary>
+    /// <param name="left">The first <see cref="GlideString"/>.</param>
+    /// <param name="right">The second <see cref="GlideString"/>.</param>
+    /// <returns>A new <see cref="GlideString"/> containing the concatenated bytes of both operands.</returns>
     public static GlideString operator +(GlideString left, GlideString right)
     {
         // Store strings if they're both defined
@@ -352,6 +406,7 @@ public sealed class GlideString : IComparable<GlideString>
         return new([.. left.Bytes, .. right.Bytes]);
     }
 
+    /// <inheritdoc/>
     public override int GetHashCode() => ((IStructuralEquatable)Bytes).GetHashCode(EqualityComparer<byte>.Default);
 
     internal byte[] Bytes { get; }

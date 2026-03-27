@@ -7,42 +7,51 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient : ISortedSetCommands
 {
+    /// <inheritdoc/>
     public async Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, CommandFlags flags)
         => await SortedSetAddAsync(key, member, score, SortedSetWhen.Always, flags);
 
+    /// <inheritdoc/>
     public async Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, When when, CommandFlags flags = CommandFlags.None)
         => await SortedSetAddAsync(key, member, score, SortedSetWhenExtensions.Parse(when), flags);
 
+    /// <inheritdoc/>
     public async Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetAddAsync(key, member, score, when));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags)
         => await SortedSetAddAsync(key, values, SortedSetWhen.Always, flags);
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags = CommandFlags.None)
         => await SortedSetAddAsync(key, values, SortedSetWhenExtensions.Parse(when), flags);
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetAddAsync(key, [.. values], when));
     }
 
+    /// <inheritdoc/>
     public async Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRemoveAsync(key, member));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRemoveAsync(key, [.. members]));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetLengthAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -56,45 +65,53 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await SortedSetCountAsync(key, min, max, exclude);
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetCardAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetCardAsync(key));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetCountAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetCountAsync(key, min, max, exclude));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortedSetRangeByRankAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRangeByRankAsync(key, start, stop, order));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry[]> SortedSetRangeByRankWithScoresAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRangeByRankWithScoresAsync(key, start, stop, order));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortedSetRangeByScoreAsync(ValkeyKey key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRangeByScoreAsync(key, start, stop, exclude, order, skip, take));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry[]> SortedSetRangeByScoreWithScoresAsync(ValkeyKey key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRangeByScoreWithScoresAsync(key, start, stop, exclude, order, skip, take));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortedSetRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, long skip, long take, CommandFlags flags = CommandFlags.None)
         => await SortedSetRangeByValueAsync(key, min, max, exclude, Order.Ascending, skip, take, flags);
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortedSetRangeByValueAsync(
         ValkeyKey key,
         ValkeyValue min = default,
@@ -109,6 +126,7 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetRangeByValueAsync(key, min, max, exclude, order, skip, take));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortedSetCombineAsync(
         SetOperation operation,
         IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null,
@@ -119,6 +137,7 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetCombineAsync(operation, [.. keys], weights?.ToArray(), aggregate));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(
         SetOperation operation,
         IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null,
@@ -129,12 +148,14 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetCombineWithScoresAsync(operation, [.. keys], weights?.ToArray(), aggregate));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, first, second, aggregate));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetCombineAndStoreAsync(
         SetOperation operation,
         ValkeyKey destination,
@@ -147,42 +168,49 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetCombineAndStoreAsync(operation, destination, [.. keys], weights?.ToArray(), aggregate));
     }
 
+    /// <inheritdoc/>
     public async Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetIncrementAsync(key, member, value));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetIntersectionLengthAsync([.. keys], limit));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetLengthByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetLengthByValueAsync(key, min, max, exclude));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetPopResult> SortedSetPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetPopAsync([.. keys], count, order));
     }
 
+    /// <inheritdoc/>
     public async Task<double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetScoresAsync(key, [.. members]));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, double timeout, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetBlockingPopAsync(key, order, timeout));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -190,18 +218,21 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetBlockingPopAsync(key, count, order, timeout));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetBlockingPopAsync([.. keys], count, order, timeout));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetPopAsync(key, order));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry[]> SortedSetPopAsync(ValkeyKey key, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -209,24 +240,28 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetPopAsync(key, count, order));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRandomMemberAsync(key));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRandomMembersAsync(key, count));
     }
 
+    /// <inheritdoc/>
     public async Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRandomMembersWithScoresAsync(key, count));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetRangeAndStoreAsync(
         ValkeyKey sourceKey,
         ValkeyKey destinationKey,
@@ -243,30 +278,35 @@ public abstract partial class BaseClient : ISortedSetCommands
         return await Command(Request.SortedSetRangeAndStoreAsync(sourceKey, destinationKey, start, stop, sortedSetOrder, exclude, order, skip, take));
     }
 
+    /// <inheritdoc/>
     public async Task<long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRankAsync(key, member, order));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetRemoveRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRemoveRangeByValueAsync(key, min, max, exclude));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetRemoveRangeByRankAsync(ValkeyKey key, long start, long stop, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRemoveRangeByRankAsync(key, start, stop));
     }
 
+    /// <inheritdoc/>
     public async Task<long> SortedSetRemoveRangeByScoreAsync(ValkeyKey key, double min, double max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.SortedSetRemoveRangeByScoreAsync(key, min, max, exclude));
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -289,6 +329,7 @@ public abstract partial class BaseClient : ISortedSetCommands
         } while (currentCursor != 0);
     }
 
+    /// <inheritdoc/>
     public async Task<double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

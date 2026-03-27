@@ -54,10 +54,10 @@ public sealed class PubSubMessageQueue : IDisposable
     }
 
     /// <summary>
-    /// Asynchronously wait for and retrieve a message from the queue.
+    /// Waits for and retrieves a message from the queue.
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the retrieved message.</returns>
+    /// <returns>The retrieved message.</returns>
     /// <exception cref="ObjectDisposedException">Thrown when the queue has been disposed.</exception>
     /// <exception cref="OperationCanceledException">Thrown when the operation is cancelled.</exception>
     public async Task<PubSubMessage> GetMessageAsync(CancellationToken cancellationToken = default)

@@ -2,6 +2,9 @@
 
 namespace Valkey.Glide.Commands.Options;
 
+/// <summary>
+/// Options for the INFO command, which returns information and statistics about the server.
+/// </summary>
 public class InfoOptions
 {
     /// <summary>

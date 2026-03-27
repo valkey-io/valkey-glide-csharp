@@ -16,6 +16,10 @@ namespace Valkey.Glide;
 /// </summary>
 public partial class GlideClient : BaseClient, IGenericCommands, IServerManagementCommands, IConnectionManagementCommands
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GlideClient"/> class.
+    /// This constructor is internal; use <see cref="CreateClient"/> to create instances.
+    /// </summary>
     internal GlideClient() { }
 
     // TODO add pubsub and other params to example and remarks
@@ -55,114 +59,155 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     /// </example>
     /// </remarks>
     /// <param name="config">The configuration options for the client, including server addresses, authentication credentials, TLS settings, database selection, reconnection strategy, and Pub/Sub subscriptions.</param>
-    /// <returns>A task that resolves to a connected <see cref="GlideClient" /> instance.</returns>
+    /// <returns>A connected <see cref="GlideClient" /> instance.</returns>
     public static async Task<GlideClient> CreateClient(StandaloneClientConfiguration config)
         => await CreateClient(config, () => new GlideClient());
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError)
         => await Batch(batch, raiseOnError);
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options)
         => await Batch(batch, raiseOnError, options);
 
+    /// <inheritdoc/>
     public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
         => await Command(Request.CustomCommand([.. args]));
 
+    /// <inheritdoc/>
     public async Task<string> InfoAsync() => await InfoAsync([]);
 
+    /// <inheritdoc/>
     public async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
         => await Command(Request.Info([.. sections]));
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Echo(message));
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync()
         => await Command(Request.Ping());
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> PingAsync(ValkeyValue message)
         => await Command(Request.Ping(message));
 
+    /// <inheritdoc/>
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ConfigGetAsync(pattern));
     }
 
+    /// <inheritdoc/>
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
+    /// <inheritdoc/>
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigRewriteAsync());
     }
 
+    /// <inheritdoc/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
+    /// <inheritdoc/>
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.DatabaseSizeAsync(database));
     }
 
+    /// <inheritdoc/>
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
+    /// <inheritdoc/>
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FlushDatabaseAsync(database));
     }
 
+    /// <inheritdoc/>
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LastSaveAsync());
     }
 
+    /// <inheritdoc/>
     public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.TimeAsync());
     }
 
+    /// <inheritdoc/>
     public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LolwutAsync());
     }
 
+    /// <inheritdoc/>
     public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientGetName());
     }
 
+    /// <inheritdoc/>
     public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientId());
     }
 
+    /// <inheritdoc/>
     public async Task SelectAsync(long index, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Select(index));
     }
 
+    /// <summary>
+    /// Iterates over all keys in the database matching the specified pattern.
+    /// </summary>
+    /// <param name="database">The database ID. This parameter is unused but kept for StackExchange.Redis compatibility.</param>
+    /// <param name="pattern">The pattern to match keys against. Defaults to all keys.</param>
+    /// <param name="pageSize">The number of keys to return per iteration. Defaults to 250.</param>
+    /// <param name="cursor">The cursor position to start from. Defaults to 0.</param>
+    /// <param name="pageOffset">The number of keys to skip in the first page. Defaults to 0.</param>
+    /// <param name="flags">The command flags. Currently flags are ignored.</param>
+    /// <returns>An async enumerable of keys matching the pattern.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await foreach (var key in client.KeysAsync(pattern: "user:*"))
+    /// {
+    ///     Console.WriteLine(key);
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
 #pragma warning disable IDE0060 // Unused 'database' parameter needed for StackExchange.Redis compatibility
     public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
 #pragma warning restore IDE0060
@@ -195,21 +240,25 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
         } while (currentCursor != "0");
     }
 
+    /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
+    /// <inheritdoc/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Watch(keys));
     }
 
+    /// <inheritdoc/>
     public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.Unwatch());
     }
 
+    /// <inheritdoc/>
     protected override async Task<Version> GetServerVersionAsync()
     {
         if (_serverVersion == null)

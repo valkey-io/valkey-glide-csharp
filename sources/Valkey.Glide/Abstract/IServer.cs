@@ -4,6 +4,10 @@ using System.Net;
 
 namespace Valkey.Glide;
 
+/// <summary>
+/// Provides configuration controls of a Valkey server.
+/// Compatible with StackExchange.Redis <c>IServer</c>.
+/// </summary>
 public interface IServer
 {
     /// <summary>
@@ -300,4 +304,4 @@ public interface IServer
     /// After calling this method, all scripts must be reloaded before they can be executed with EVALSHA.
     /// </remarks>
     Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None);
-} ///
+}

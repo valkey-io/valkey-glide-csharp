@@ -95,10 +95,27 @@ public interface IServerManagementClusterCommands
     Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
 
     /// <summary>
+    /// Echo the given message back from the server.<br />
+    /// The command will be routed to a random node.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/echo/"/>
+    /// <param name="message">The message to echo.</param>
+    /// <param name="flags">The command flags. Currently flags are ignored.</param>
+    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ValkeyValue response = await client.EchoAsync("Hello World");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Echo the given message back from the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/echo/"/>
-    /// <param name="message">The message to echo</param>
+    /// <param name="message">The message to echo.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
     /// <param name="flags">The command flags. Currently flags are ignored.</param>

@@ -8,6 +8,9 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide;
 
+/// <summary>
+/// Configuration classes and builders for establishing connections to Valkey servers.
+/// </summary>
 public abstract class ConnectionConfiguration
 {
     /// <summary>
@@ -106,7 +109,15 @@ public abstract class ConnectionConfiguration
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct ReadFrom
     {
+        /// <summary>
+        /// The read from strategy that determines how read operations are routed to nodes.
+        /// </summary>
         public ReadFromStrategy Strategy;
+
+        /// <summary>
+        /// The Availability Zone (AZ) identifier used with <see cref="ReadFromStrategy.AzAffinity"/>
+        /// or <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/> strategies.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
         public string? Az;
 
