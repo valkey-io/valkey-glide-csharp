@@ -1,0 +1,22 @@
+# File glob patterns to check
+include = ["**/*.md", "**/*.cs"]
+
+# Directories to exclude from scanning
+exclude_path = ["rust/target", "**/bin", "**/obj", "valkey-glide"]
+
+# URL patterns to exclude
+exclude = [
+    "^https?://localhost",
+    "^https?://127\\.0\\.0\\.1",
+    "^https?://\\[::1\\]",
+    "^https?://example\\.com",
+    "^https://github\\.com/.*/commit/",
+    "^https://api\\.github\\.com/",
+    "^mailto:",
+]
+
+# Cache settings
+cache = true
+
+# Output
+verbose = true
