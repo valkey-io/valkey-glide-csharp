@@ -1,22 +1,20 @@
 # File glob patterns to check
-include = ["**/*.md", "**/*.cs"]
-
-# Directories to exclude from scanning
-exclude_path = ["rust/target", "**/bin", "**/obj", "valkey-glide"]
-
-# URL patterns to exclude
-exclude = [
-    "^https?://localhost",
-    "^https?://127\\.0\\.0\\.1",
-    "^https?://\\[::1\\]",
-    "^https?://example\\.com",
-    "^https://github\\.com/.*/commit/",
-    "^https://api\\.github\\.com/",
-    "^mailto:",
+include = [
+    "**/*.md",
+    "sources/**/*.cs"
 ]
 
-# Cache settings
-cache = true
+# Directories to exclude from scanning
+exclude_path = [
+    "rust/target",       # Rust build directory
+    "**/bin", "**/obj",  # .NET build directories
+    "valkey-glide"       # Valkey GLIDE submodule.
+]
 
-# Output
+# Check links inside code blocks
+# Exclude loopback addresses (localhost, 127.0.0.1, [::1])
+include_verbatim = true
+exclude_loopback = true
+
+cache = true
 verbose = true
