@@ -235,6 +235,17 @@ task coverage:report        # Generate HTML coverage report
 task coverage:summary       # Display coverage summary
 task clean                  # Clean test results and reports
 
+# Linting and formatting
+task lint                   # Run all linters
+task lint:rust              # Run Rust linting
+task lint:csharp            # Run C# linting
+task lint:yaml              # Run YAML linting
+task format                 # Run all formatters
+task format:rust            # Run Rust formatting
+task format:csharp          # Run C# formatting
+task format:yaml            # Run YAML formatting
+task check-links            # Check for broken links
+
 ```
 
 ## Advanced Testing Options
@@ -312,23 +323,23 @@ If the environment variable is not set, DNS tests will be skipped.
 
 Before making a contribution, ensure that all new user APIs and non-obvious code is well documented, and run the code linters and analyzers.
 
-C# linter:
-
 ```bash
-dotnet format --verify-no-changes --verbosity diagnostic
-```
+# Run all linters (preferred)
+task lint
 
-C# code analyzer:
+# Run linters for specific languages
+task lint:rust     # Run Rust linting
+task lint:csharp   # Run C# linting
+task lint:yaml     # Run YAML linting
 
-```bash
-dotnet build --configuration Lint
-```
+# Run all formatters
+task format          # Run all formatters
+task format:rust     # Run Rust formatting
+task format:csharp   # Run C# formatting
+task format:yaml     # Run YAML formatting
 
-Rust linter:
-
-```bash
-cargo clippy --all-features --all-targets -- -D warnings
-cargo fmt --all -- --check
+# Check for broken links
+task check-links
 ```
 
 **Note**: Task commands automatically use standardized configurations for build and test operations, ensuring consistency across development environments.
