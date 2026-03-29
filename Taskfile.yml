@@ -162,12 +162,20 @@ tasks:
             - task: build
             - task: coverage
 
-    lint:
+    lint:check:
         desc: "Run all lint checks"
-        deps: [lint:rust, lint:csharp, lint:yaml, lint:links]
+        deps: [lint:check:rust, lint:check:csharp, lint:check:yaml, lint:check:links]
 
-    lint:rust:
-        desc: "Run Rust linting"
+    lint:fix:
+        desc: "Run all lint fixes"
+        cmds:
+            - task: lint:fix:rust
+            - task: lint:fix:csharp
+            - task: lint:fix:yaml
+            - task: lint:check:links
+
+    lint:check:rust:
+        desc: "Run Rust lint checks"
         dir: rust
         cmds:
             - cargo fmt --all -- --check
@@ -175,18 +183,36 @@ tasks:
             - cargo deny check --config valkey-glide/deny.toml
             - RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
 
-    lint:csharp:
-        desc: "Run C# linting"
+    lint:fix:rust:
+        desc: "Run Rust lint fixes"
+        dir: rust
+        cmds:
+            - cargo fmt --all
+
+    lint:check:csharp:
+        desc: "Run C# lint checks"
         cmds:
             - dotnet format --verify-no-changes
+            # Shutdown build server to release file locks before lint build
+            - dotnet build-server shutdown
             - dotnet build --configuration Lint --framework net8.0 -m:1
 
-    lint:yaml:
-        desc: "Run YAML linting"
+    lint:fix:csharp:
+        desc: "Fix C# lint fixes"
         cmds:
-            - npx prettier --check "**/*.yml" "**/*.yaml"
+            - dotnet format
 
-    lint:links:
+    lint:check:yaml:
+        desc: "Run YAML lint checks"
+        cmds:
+            - npx prettier --check "**/*.yml"
+
+    lint:fix:yaml:
+        desc: "Run YAML lint fixes"
+        cmds:
+            - npx prettier --write "**/*.yml"
+
+    lint:check:links:
         desc: "Run link checking"
         cmds:
             - lychee --config .lychee.toml .
