@@ -161,3 +161,32 @@ tasks:
         cmds:
             - task: build
             - task: coverage
+
+    lint:
+        desc: "Run all lint checks"
+        deps: [lint:rust, lint:csharp, lint:yaml, lint:links]
+
+    lint:rust:
+        desc: "Run Rust linting"
+        dir: rust
+        cmds:
+            - cargo fmt --all -- --check
+            - cargo clippy --all-features --all-targets -- -D warnings
+            - cargo deny check --config valkey-glide/deny.toml
+            - RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
+
+    lint:csharp:
+        desc: "Run C# linting"
+        cmds:
+            - dotnet format --verify-no-changes
+            - dotnet build --configuration Lint --framework net8.0 -m:1
+
+    lint:yaml:
+        desc: "Run YAML linting"
+        cmds:
+            - npx prettier --check "**/*.yml" "**/*.yaml"
+
+    lint:links:
+        desc: "Run link checking"
+        cmds:
+            - lychee --config .lychee.toml .
