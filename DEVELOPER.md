@@ -124,15 +124,17 @@ sudo apt-get update -y
 sudo apt install -y gcc pkg-config openssl libssl-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
+cargo install --locked cargo-deny lychee
 ```
 
 ### Additional Dependencies Installation for MacOS
 
 ```bash
 brew update
-brew install openssl coreutils
+brew install openssl coreutils lychee
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
+cargo install --locked cargo-deny
 ```
 
 ### Additional Dependencies Installation for Windows
@@ -142,6 +144,9 @@ choco install mingw pkgconfiglite openssl
 
 # Install Rust directly:
 # <https://rust-lang.org/tools/install/>
+
+# After Rust is installed:
+cargo install --locked cargo-deny lychee
 ```
 
 ### Building and Installation
