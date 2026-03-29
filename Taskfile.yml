@@ -162,20 +162,12 @@ tasks:
             - task: build
             - task: coverage
 
-    lint:check:
-        desc: "Run all lint checks"
-        deps: [lint:check:rust, lint:check:csharp, lint:check:yaml, lint:check:links]
+    lint:
+        desc: "Run all linters"
+        deps: [lint:rust, lint:csharp, lint:yaml]
 
-    lint:fix:
-        desc: "Run all lint fixes"
-        cmds:
-            - task: lint:fix:rust
-            - task: lint:fix:csharp
-            - task: lint:fix:yaml
-            - task: lint:check:links
-
-    lint:check:rust:
-        desc: "Run Rust lint checks"
+    lint:rust:
+        desc: "Run Rust linting"
         dir: rust
         cmds:
             - cargo fmt --all -- --check
@@ -183,36 +175,43 @@ tasks:
             - cargo deny check --config valkey-glide/deny.toml
             - RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
 
-    lint:fix:rust:
-        desc: "Run Rust lint fixes"
-        dir: rust
-        cmds:
-            - cargo fmt --all
-
-    lint:check:csharp:
-        desc: "Run C# lint checks"
+    lint:csharp:
+        desc: "Run C# linting"
         cmds:
             - dotnet format --verify-no-changes
             # Shutdown build server to release file locks before lint build
             - dotnet build-server shutdown
             - dotnet build --configuration Lint --framework net8.0 -m:1
 
-    lint:fix:csharp:
-        desc: "Fix C# lint fixes"
-        cmds:
-            - dotnet format
-
-    lint:check:yaml:
-        desc: "Run YAML lint checks"
+    lint:yaml:
+        desc: "Run YAML linting"
         cmds:
             - npx prettier --check "**/*.yml"
 
-    lint:fix:yaml:
-        desc: "Run YAML lint fixes"
+    format:
+        desc: "Run all formatters"
+        cmds:
+            - task: format:rust
+            - task: format:csharp
+            - task: format:yaml
+
+    format:rust:
+        desc: "Run Rust formatting"
+        dir: rust
+        cmds:
+            - cargo fmt --all
+
+    format:csharp:
+        desc: "Run C# formatting"
+        cmds:
+            - dotnet format
+
+    format:yaml:
+        desc: "Run YAML formatting"
         cmds:
             - npx prettier --write "**/*.yml"
 
-    lint:check:links:
-        desc: "Run link checking"
+    check-links:
+        desc: "Check for broken links"
         cmds:
             - lychee --config .lychee.toml .

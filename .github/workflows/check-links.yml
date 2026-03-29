@@ -1,0 +1,29 @@
+name: check-links
+
+on:
+    push:
+        branches:
+            - main
+            - release-*
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    check-links:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - uses: actions/checkout@v6
+
+            - name: Install Task
+              run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
+            - name: Install lychee
+              run: cargo install lychee
+
+            - name: Check links
+              run: task check-links
