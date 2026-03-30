@@ -172,7 +172,7 @@ tasks:
         cmds:
             - cargo fmt --all -- --check
             - cargo clippy --all-features --all-targets -- -D warnings
-            - cargo deny check --config valkey-glide/deny.toml
+            - cargo deny check
             - RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
 
     lint:csharp:
