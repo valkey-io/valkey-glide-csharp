@@ -11,11 +11,6 @@ The C# client contains the following parts:
 1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](/valkey-glide/glide-core/README.md).
 2. C# part of the client located in `sources`; it translates Rust async API into .NET async API.
 3. Tests for the C# client located in `tests` directory.
-<<<<<<< HEAD
-4. A dedicated benchmarking tool designed to evaluate and compare the performance of Valkey GLIDE and other .NET clients. It is located in `/benchmarks`.
-=======
-TODO: examples, UT, design docs
->>>>>>> 8c80e1aeac9a7fdc92da55576ddfb5f66975140b
 
 ## Build from Source
 
