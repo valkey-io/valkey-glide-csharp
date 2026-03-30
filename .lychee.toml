@@ -1,13 +1,10 @@
-# File glob patterns to check
-include = [
-    "**/*.md",
-    "sources/**/*.cs"
-]
+# File extensions to scan for links.
+extensions = ["md", "cs"]
 
-# Directories to exclude from scanning
+# Directories to exclude from scanning (values are regular expressions)
 exclude_path = [
     "rust/target",       # Rust build directory
-    "**/bin", "**/obj",  # .NET build directories
+    ".*/bin", ".*/obj",  # .NET build directories
     "valkey-glide"       # Valkey GLIDE submodule.
 ]
 
@@ -17,4 +14,4 @@ include_verbatim = true
 exclude_loopback = true
 
 cache = true
-verbose = true
+verbose = "debug"
