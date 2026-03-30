@@ -282,7 +282,7 @@ pub unsafe extern "C-unwind" fn create_client(
 ///
 /// # Memory Safety
 /// This implementation uses scoped lifetime management instead of `std::mem::forget()`.
-/// Vec<u8> instances are kept alive during callback execution and automatically cleaned up
+/// `Vec<u8>` instances are kept alive during callback execution and automatically cleaned up
 /// when the function exits, preventing memory leaks.
 unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: PubSubCallback) {
     use redis::Value;
@@ -830,12 +830,12 @@ pub unsafe extern "C" fn free_script_hash_buffer(buffer: *mut ScriptHashBuffer) 
 /// # Returns
 ///
 /// A null pointer on success, or a pointer to a C string error message on failure.
-/// The caller is responsible for freeing the error message using [`free_drop_script_error`].
+/// The caller is responsible for freeing the error message using `free_drop_script_error`.
 ///
 /// # Safety
 ///
 /// * `hash` must be a valid pointer to a UTF-8 string.
-/// * The returned error pointer (if not null) must be freed using [`free_drop_script_error`].
+/// * The returned error pointer (if not null) must be freed using `free_drop_script_error`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn drop_script(hash: *mut u8, len: usize) -> *mut c_char {
     if hash.is_null() {

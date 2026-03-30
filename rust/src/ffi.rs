@@ -101,7 +101,7 @@ pub struct PubSubConfigInfo {
     pub sharded_channel_count: u32,
 }
 
-/// Convert a C string array to a Vec of Vec<u8>
+/// Convert a C string array to a `Vec` of `Vec<u8>`
 ///
 /// # Safety
 ///
