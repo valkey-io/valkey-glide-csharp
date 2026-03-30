@@ -24,10 +24,10 @@ public static class Data
     /// </summary>
     public static TheoryData<string> ValidEndpoints =>
         [
-            "http://localhost:4321",                    // HTTP endpoint
-            "https://otel-collector.example.com:4318",  // HTTPS endpoint
-            "file:///tmp/otel-output.txt",              // Unix-style file URI
-            @"file://C:\Users\runner\otel-output.txt",  // Windows-style file URI
+            "http://localhost:4321",        // HTTP endpoint
+            "https://example.com:4318",     // HTTPS endpoint
+            "file:///tmp/output.txt",       // Unix-style file URI
+            @"file://C:\Users\output.txt",  // Windows-style file URI
         ];
 
     /// <summary>

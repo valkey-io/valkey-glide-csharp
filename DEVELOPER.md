@@ -8,7 +8,7 @@ We're excited to share that the GLIDE C# client is currently in development! How
 
 The C# client contains the following parts:
 
-1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](/valkey-glide/glide-core/README.md).
+1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](./valkey-glide/glide-core/README.md).
 2. C# part of the client located in `sources`; it translates Rust async API into .NET async API.
 3. Tests for the C# client located in `tests` directory.
 TODO: examples, UT, design docs
@@ -23,7 +23,7 @@ Software Dependencies:
 - [WSL](#wsl-installation) (for Windows only)
 - [Valkey](#valkey-installation) (for testing)
 
-Install the following packages to build [GLIDE core rust library](/valkey-glide/glide-core/README.md):
+Install the following packages to build [GLIDE core rust library](./valkey-glide/glide-core/README.md):
 
 - [ziglang and zigbuild](#ziglang-and-zigbuild-installation) (for GNU Linux only)
 - [Protoc](#protoc-installation)

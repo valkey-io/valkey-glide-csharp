@@ -1,11 +1,18 @@
 # File extensions to scan for links.
 extensions = ["md", "cs"]
 
-# Directories to exclude from scanning (values are regular expressions)
+# Directories to exclude from scanning.
 exclude_path = [
     "rust/target",       # Rust build directory
     ".*/bin", ".*/obj",  # .NET build directories
-    "valkey-glide"       # Valkey GLIDE submodule.
+    "valkey-glide",      # Valkey GLIDE submodule.
+]
+
+# Links to exclude from scanning.
+exclude = [
+    "example\\.com",  # Example URLs
+    "file://",        # File URIs
+    "%7B.*%7D"        # URL-encoded interpolation templates (e.g., {repo}, {sha})
 ]
 
 # Check links inside code blocks
