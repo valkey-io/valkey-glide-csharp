@@ -120,40 +120,43 @@ sudo cp protoc /usr/bin/
 ### Additional Dependencies Installation for Ubuntu
 
 ```bash
-# Install dependecies with apt
+# Install dependecies using apt:
 sudo apt-get update -y
 sudo apt install -y gcc pkg-config openssl libssl-dev
 
-# Install Rust
+# Install Rust using curl:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 
-# Install dependencies with cargo
+# Install dependencies using cargo:
 cargo install --locked cargo-deny lychee
 ```
 
 ### Additional Dependencies Installation for MacOS
 
 ```bash
-# Install dependencies with Homebrew
+# Install dependencies using Homebrew:
 brew update
 brew install openssl coreutils lychee
 
-# Install Rust
+# Install Rust using curl:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
+
+# Install dependencies using cargo:
 cargo install --locked cargo-deny
 ```
 
 ### Additional Dependencies Installation for Windows
 
 ```bash
+# Install dependencies using choco:
 choco install mingw pkgconfiglite openssl
 
 # Install Rust directly:
 # <https://rust-lang.org/tools/install/>
 
-# After Rust is installed:
+# Install dependencies using cargo:
 cargo install --locked cargo-deny lychee
 ```
 
