@@ -370,7 +370,7 @@ public class ClusterClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task DatabaseSizeAsync_ReturnsSizePerNode(GlideClusterClient client)
+    public async Task DatabaseSizeAsync_ReturnsTotalSize(GlideClusterClient client)
     {
         string key = $"cluster-dbsize-test-{Guid.NewGuid()}";
 
@@ -379,19 +379,13 @@ public class ClusterClientTests(TestConfiguration config)
             // Add a key
             _ = await client.StringSetAsync(key, "test-value");
 
-            // Get database size from all nodes
-            var allSizes = await client.DatabaseSizeAsync();
-            Assert.NotEmpty(allSizes);
-
-            // Each node should have a size >= 0
-            foreach (var size in allSizes.Values)
-            {
-                Assert.True(size >= 0);
-            }
+            // Get aggregated database size from all primary nodes
+            long totalSize = await client.DatabaseSizeAsync();
+            Assert.True(totalSize > 0);
 
             // Test with specific route
-            var singleNodeSize = await client.DatabaseSizeAsync(Route.Random);
-            Assert.True(singleNodeSize.SingleValue >= 0);
+            long singleNodeSize = await client.DatabaseSizeAsync(Route.Random);
+            Assert.True(singleNodeSize >= 0);
         }
         finally
         {

@@ -15,7 +15,6 @@ public interface ITransactionBaseCommands
     /// transaction. Keys that do not exist are watched as if they were empty.
     /// </summary>
     /// <param name="keys">The keys to watch.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <remarks>
     /// <para>
@@ -48,5 +47,5 @@ public interface ITransactionBaseCommands
     /// </example>
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/watch/"/>
-    Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
+    Task WatchAsync(IEnumerable<ValkeyKey> keys);
 }

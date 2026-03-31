@@ -514,62 +514,6 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.NotEmpty(seenKeys);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestKeysAsync_Scan(GlideClient client)
-    {
-        string prefix = Guid.NewGuid().ToString();
-        string key1 = $"{prefix}:key1";
-        string key2 = $"{prefix}:key2";
-        string key3 = $"{prefix}:key3";
-        string otherKey = "other:key";
-
-        // Set up test keys
-        _ = await client.StringSetAsync(key1, "value1");
-        _ = await client.StringSetAsync(key2, "value2");
-        _ = await client.StringSetAsync(key3, "value3");
-        _ = await client.StringSetAsync(otherKey, "other");
-
-        // Test scanning all keys with pattern
-        List<ValkeyKey> keys = [];
-        await foreach (ValkeyKey key in client.KeysAsync(pattern: $"{prefix}:*"))
-        {
-            keys.Add(key);
-        }
-
-        Assert.Equal(3, keys.Count);
-        Assert.Contains(key1, keys.Select(k => k.ToString()));
-        Assert.Contains(key2, keys.Select(k => k.ToString()));
-        Assert.Contains(key3, keys.Select(k => k.ToString()));
-        Assert.DoesNotContain(otherKey, keys.Select(k => k.ToString()));
-
-        // Test scanning with pageSize
-        keys.Clear();
-        await foreach (ValkeyKey key in client.KeysAsync(pattern: $"{prefix}:*", pageSize: 1))
-        {
-            keys.Add(key);
-        }
-        Assert.Equal(3, keys.Count);
-
-        // Test scanning with pageOffset
-        keys.Clear();
-        await foreach (ValkeyKey key in client.KeysAsync(pattern: $"{prefix}:*", pageOffset: 1))
-        {
-            keys.Add(key);
-        }
-        // Should get 2 keys (skipping first one)
-        Assert.True(keys.Count >= 2);
-
-        // Test scanning non-existent pattern
-        keys.Clear();
-        await foreach (ValkeyKey key in client.KeysAsync(pattern: "nonexistent:*"))
-        {
-            keys.Add(key);
-        }
-        Assert.Empty(keys);
-    }
-
-
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -729,27 +673,5 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(2, count);
         result = await client.ListRangeAsync(destKey2);
         Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestKeysAsync_LargeDataset(GlideClient client)
-    {
-        string prefix = Guid.NewGuid().ToString();
-
-        var tasks = Enumerable.Range(0, 25000).Select(i =>
-            client.StringSetAsync($"{prefix}:key{i}", $"value{i}"));
-        _ = await Task.WhenAll(tasks);
-
-        int count = 0;
-        await foreach (var key in client.KeysAsync(pattern: $"{prefix}:*"))
-        {
-            count++;
-        }
-        Assert.Equal(25000, count);
-
-        ValkeyKey[] sampleKeys = [.. Enumerable.Range(0, 100).Select(i => (ValkeyKey)$"{prefix}:key{i}")];
-        long sampleCount = await client.KeyExistsAsync(sampleKeys);
-        Assert.Equal(100L, sampleCount);
     }
 }

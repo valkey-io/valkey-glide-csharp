@@ -93,22 +93,14 @@ internal partial class Request
         return Ok(RequestType.ConfigSet, args);
     }
 
-    public static Cmd<long, long> DatabaseSizeAsync(int database = -1)
-        // DBSIZE doesn't take database parameter - it operates on current database
-        // Database selection should be handled at connection level
-        => database != -1
-            ? throw new ArgumentException("DBSIZE command does not support database selection. Use SELECT command first.")
-            : new(RequestType.DBSize, [], false, l => l);
+    public static Cmd<long, long> DatabaseSizeAsync()
+        => new(RequestType.DBSize, [], false, l => l);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
         => Ok(RequestType.FlushAll, []);
 
-    public static Cmd<string, ValkeyValue> FlushDatabaseAsync(int database = -1)
-        // FLUSHDB doesn't take database parameter - it operates on current database
-        // Database selection should be handled at connection level
-        => database != -1
-            ? throw new ArgumentException("FLUSHDB command does not support database selection. Use SELECT command first.")
-            : Ok(RequestType.FlushDB, []);
+    public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
+        => Ok(RequestType.FlushDB, []);
 
     public static Cmd<long, DateTime> LastSaveAsync()
         => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));
