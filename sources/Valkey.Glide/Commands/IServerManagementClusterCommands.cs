@@ -95,30 +95,12 @@ public interface IServerManagementClusterCommands
     Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
 
     /// <summary>
-    /// Echo the given message back from the server.<br />
-    /// The command will be routed to a random node.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/echo/"/>
-    /// <param name="message">The message to echo.</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ValkeyValue response = await client.EchoAsync("Hello World");
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
     /// Echo the given message back from the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/echo/"/>
-    /// <param name="message">The message to echo.</param>
+    /// <param name="message">The message to echo</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the echoed message as a <see cref="ValkeyValue"/>.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -132,7 +114,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route);
 
     /// <summary>
     /// Ping the server.<br />
@@ -208,7 +190,6 @@ public interface IServerManagementClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-get/"/>
     /// <param name="pattern">The pattern of config values to get.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>All matching configuration parameters per cluster node.</returns>
     /// <remarks>
     /// <example>
@@ -217,7 +198,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default);
 
     /// <summary>
     /// Gets the values of configuration parameters.
@@ -226,7 +207,6 @@ public interface IServerManagementClusterCommands
     /// <param name="pattern">The pattern of config values to get.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing all matching configuration parameters.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -240,14 +220,13 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route);
 
     /// <summary>
     /// Resets the statistics reported by the server using the INFO and LATENCY HISTOGRAM.<br />
     /// The command will be routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -255,7 +234,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None);
+    Task ConfigResetStatisticsAsync();
 
     /// <summary>
     /// Resets the statistics reported by the server using the INFO and LATENCY HISTOGRAM.
@@ -263,7 +242,6 @@ public interface IServerManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -271,7 +249,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigResetStatisticsAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task ConfigResetStatisticsAsync(Route route);
 
     /// <summary>
     /// The CONFIG REWRITE command rewrites the valkey.conf file the server was started with,
@@ -280,7 +258,6 @@ public interface IServerManagementClusterCommands
     /// The command will be routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -288,7 +265,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None);
+    Task ConfigRewriteAsync();
 
     /// <summary>
     /// The CONFIG REWRITE command rewrites the valkey.conf file the server was started with,
@@ -298,7 +275,6 @@ public interface IServerManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -306,7 +282,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigRewriteAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task ConfigRewriteAsync(Route route);
 
     /// <summary>
     /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
@@ -316,7 +292,6 @@ public interface IServerManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/config-set/"/>
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -324,7 +299,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
     /// <summary>
     /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
@@ -335,7 +310,6 @@ public interface IServerManagementClusterCommands
     /// <param name="value">The new setting value.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -343,86 +317,41 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route, CommandFlags flags = CommandFlags.None);
+    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route);
 
     /// <summary>
-    /// Returns the number of keys in the currently-selected database.<br />
-    /// The command will be routed to all primary nodes.
+    /// Returns the number of keys in the database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>The number of keys in the database per cluster node.</returns>
+    /// <returns>The number of keys in the database across all primary nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, long&gt; sizes = await client.DatabaseSizeAsync();
+    /// long totalKeys = await client.DatabaseSizeAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, long>> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+    Task<long> DatabaseSizeAsync();
 
     /// <summary>
-    /// Returns the number of keys in the currently-selected database.
+    /// Returns the number of keys in the database across all routed nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing the number of keys in the database.<br />
-    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, long&gt;</c> with each address as the key and its corresponding
-    /// database size. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
-    /// </returns>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>The number of keys in the database across all routed nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;long&gt; size = await client.DatabaseSizeAsync(Route.AllPrimaries);
+    /// long totalKeys = await client.DatabaseSizeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<long>> DatabaseSizeAsync(Route route, int database = -1, CommandFlags flags = CommandFlags.None);
+    Task<long> DatabaseSizeAsync(Route route);
 
     /// <summary>
-    /// Deletes all the keys of all the existing databases.<br />
-    /// The command will be routed to all primary nodes.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FlushAllDatabasesAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// Deletes all the keys of all the existing databases.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FlushAllDatabasesAsync(Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushAllDatabasesAsync(Route route, CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// Deletes all the keys of the currently selected database.<br />
-    /// The command will be routed to all primary nodes.
+    /// Deletes all the keys in the database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -430,16 +359,13 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+    Task FlushDatabaseAsync();
 
     /// <summary>
-    /// Deletes all the keys of the currently selected database.
+    /// Deletes all the keys in the database across all routed nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="database">The database to check. GLIDE does not support this.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -447,7 +373,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FlushDatabaseAsync(Route route, int database = -1, CommandFlags flags = CommandFlags.None);
+    Task FlushDatabaseAsync(Route route);
 
     /// <summary>
     /// Return the time of the last DB save executed with success.
@@ -456,7 +382,6 @@ public interface IServerManagementClusterCommands
     /// The command is routed to a random node by default, which is safe for read-only commands.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lastsave/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>UNIX TIME of the last DB save executed with success per cluster node.</returns>
     /// <remarks>
     /// <example>
@@ -465,7 +390,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, DateTime>> LastSaveAsync(CommandFlags flags = CommandFlags.None);
+    Task<Dictionary<string, DateTime>> LastSaveAsync();
 
     /// <summary>
     /// Return the time of the last DB save executed with success.
@@ -475,7 +400,6 @@ public interface IServerManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/lastsave/"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing UNIX TIME of the last DB save executed with success.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -489,7 +413,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<DateTime>> LastSaveAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<DateTime>> LastSaveAsync(Route route);
 
     /// <summary>
     /// The TIME command returns the current server time in UTC format.
@@ -497,7 +421,6 @@ public interface IServerManagementClusterCommands
     /// The command will be routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/time/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>The server's current time per cluster node.</returns>
     /// <remarks>
     /// <example>
@@ -506,7 +429,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, DateTime>> TimeAsync(CommandFlags flags = CommandFlags.None);
+    Task<Dictionary<string, DateTime>> TimeAsync();
 
     /// <summary>
     /// The TIME command returns the current server time in UTC format.
@@ -515,7 +438,6 @@ public interface IServerManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/time/"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the server's current time.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -529,14 +451,13 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<DateTime>> TimeAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<DateTime>> TimeAsync(Route route);
 
     /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.<br />
     /// The command will be routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>A string containing the Valkey version and generative art per cluster node.</returns>
     /// <remarks>
     /// <example>
@@ -545,7 +466,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, string>> LolwutAsync(CommandFlags flags = CommandFlags.None);
+    Task<Dictionary<string, string>> LolwutAsync();
 
     /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.
@@ -553,7 +474,6 @@ public interface IServerManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/lolwut/"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the Valkey version and generative art.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -567,14 +487,13 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> LolwutAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<string>> LolwutAsync(Route route);
 
     /// <summary>
     /// Changes the currently selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/select"/>
     /// <param name="index">The index of the database to select.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -582,5 +501,5 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task SelectAsync(long index, CommandFlags flags = CommandFlags.None);
+    Task SelectAsync(long index);
 }

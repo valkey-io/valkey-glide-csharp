@@ -213,20 +213,6 @@ public class StandaloneClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestServerManagementCommands_WithFlags(GlideClient client)
-    {
-        // Test server management commands with CommandFlags (should be ignored)
-        long clientId = await client.ClientIdAsync(CommandFlags.None);
-        Assert.True(clientId > 0);
-
-        ValkeyValue clientName = await client.ClientGetNameAsync(CommandFlags.None);
-        Assert.Equal(ValkeyValue.Null, clientName);
-
-        await client.SelectAsync(0, CommandFlags.None);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task KeyCopy_Move(GlideClient client)
     {
         string key = Guid.NewGuid().ToString();
@@ -404,25 +390,12 @@ public class StandaloneClientTests(TestConfiguration config)
             // Size should increase
             long newSize = await client.DatabaseSizeAsync();
             Assert.True(newSize >= initialSize);
-
-            // Test with explicit database (not supported)
-            try
-            {
-                long dbSize = await client.DatabaseSizeAsync(0);
-            }
-            catch (Exception ex)
-            {
-                _ = Assert.IsType<ArgumentException>(ex);
-            }
-
         }
         finally
         {
             _ = await client.KeyDeleteAsync(key);
         }
     }
-
-
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]

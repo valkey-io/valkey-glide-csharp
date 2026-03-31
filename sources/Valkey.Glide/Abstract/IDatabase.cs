@@ -39,6 +39,7 @@ public interface IDatabase : IDatabaseAsync
     /// <param name="keys">The keys to pass to the script (KEYS array).</param>
     /// <param name="values">The values to pass to the script (ARGV array).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The result of the script execution.</returns>
     ValkeyResult ScriptEvaluate(
         string script,
@@ -53,6 +54,7 @@ public interface IDatabase : IDatabaseAsync
     /// <param name="keys">The keys to pass to the script (KEYS array).</param>
     /// <param name="values">The values to pass to the script (ARGV array).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The result of the script execution.</returns>
     ValkeyResult ScriptEvaluate(
         byte[] hash,
@@ -66,6 +68,7 @@ public interface IDatabase : IDatabaseAsync
     /// <param name="script">The LuaScript to evaluate.</param>
     /// <param name="parameters">An object containing parameter values.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The result of the script execution.</returns>
     ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null,
         CommandFlags flags = CommandFlags.None);
@@ -76,6 +79,7 @@ public interface IDatabase : IDatabaseAsync
     /// <param name="script">The LoadedLuaScript to evaluate.</param>
     /// <param name="parameters">An object containing parameter values.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The result of the script execution.</returns>
     ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null,
         CommandFlags flags = CommandFlags.None);

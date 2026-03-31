@@ -17,7 +17,8 @@ public interface ISubscriber
     /// </summary>
     /// <param name="channel">The channel to publish to.</param>
     /// <param name="message">The message to publish.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>
     /// The number of clients that received the message *on the destination server*,
     /// note that this doesn't mean much in a cluster as clients can get the message through other nodes.
@@ -30,7 +31,8 @@ public interface ISubscriber
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
     /// <param name="handler">The handler to invoke when a message is received on <paramref name="channel"/>.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <remarks>
     /// See
     /// <seealso href="https://valkey.io/commands/subscribe"/>,
@@ -43,7 +45,8 @@ public interface ISubscriber
     /// Subscribe to perform some operation when a message to the preferred/active node is broadcast, as a queue that guarantees ordered handling.
     /// </summary>
     /// <param name="channel">The Valkey channel to subscribe to.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A channel that represents this source.</returns>
     /// <remarks>
     /// See
@@ -60,7 +63,8 @@ public interface ISubscriber
     /// </summary>
     /// <param name="channel">The channel that was subscribed to.</param>
     /// <param name="handler">The handler to no longer invoke when a message is received on <paramref name="channel"/>.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <remarks>
     /// See
     /// <seealso href="https://valkey.io/commands/unsubscribe"/>,
@@ -72,7 +76,8 @@ public interface ISubscriber
     /// <summary>
     /// Unsubscribe all subscriptions on this instance.
     /// </summary>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <remarks>
     /// See
     /// <seealso href="https://valkey.io/commands/unsubscribe"/>,

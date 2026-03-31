@@ -18,7 +18,6 @@ public interface IGeospatialCommands
     /// <param name="longitude">The longitude coordinate according to WGS84.</param>
     /// <param name="latitude">The latitude coordinate according to WGS84.</param>
     /// <param name="member">The name of the member to add.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if the member was added. <see langword="false"/> if the member was already a member of the sorted set and the score was updated.</returns>
     /// <remarks>
     /// <example>
@@ -27,7 +26,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags = CommandFlags.None);
+    Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member);
 
     /// <summary>
     /// Adds the specified geospatial item to the specified key.
@@ -36,7 +35,6 @@ public interface IGeospatialCommands
     /// <seealso href="https://valkey.io/commands/geoadd"/>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="value">The geospatial item to add.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if the member was added. <see langword="false"/> if the member was already a member of the sorted set and the score was updated.</returns>
     /// <remarks>
     /// <example>
@@ -46,7 +44,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags = CommandFlags.None);
+    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value);
 
     /// <summary>
     /// Adds the specified geospatial items to the specified key.
@@ -55,7 +53,6 @@ public interface IGeospatialCommands
     /// <seealso href="https://valkey.io/commands/geoadd"/>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="values">The geospatial items to add.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of elements added to the sorted set, not including elements already existing for which the score was updated.</returns>
     /// <remarks>
     /// <example>
@@ -69,7 +66,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values);
 
     /// <summary>
     /// Adds the specified geospatial item to the specified key with options.
@@ -78,9 +75,8 @@ public interface IGeospatialCommands
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="value">The geospatial item to add.</param>
     /// <param name="options">The options for the GEOADD command.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if the element was added or changed, <see langword="false"/> otherwise.</returns>
-    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
+    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options);
 
     /// <summary>
     /// Adds the specified geospatial items to the specified key with options.
@@ -89,9 +85,8 @@ public interface IGeospatialCommands
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="values">The geospatial items to add.</param>
     /// <param name="options">The options for the GEOADD command.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of elements added or changed, depending on options.</returns>
-    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options);
 
     /// <summary>
     /// Returns the distance between two members in the geospatial index represented by the sorted set.
@@ -101,7 +96,6 @@ public interface IGeospatialCommands
     /// <param name="member1">The first member.</param>
     /// <param name="member2">The second member.</param>
     /// <param name="unit">The unit of distance (defaults to meters).</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The distance between the two members in the specified unit. Returns <see langword="null"/> if one or both members are missing.</returns>
     /// <remarks>
     /// <example>
@@ -110,7 +104,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters, CommandFlags flags = CommandFlags.None);
+    Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters);
 
     /// <summary>
     /// Returns the geohash string for a single member in the geospatial index represented by the sorted set.
@@ -118,7 +112,6 @@ public interface IGeospatialCommands
     /// <seealso href="https://valkey.io/commands/geohash"/>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="member">The member to get the geohash for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The geohash string for the member. Returns <see langword="null"/> if the member is missing.</returns>
     /// <remarks>
     /// <example>
@@ -127,7 +120,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None);
+    Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member);
 
     /// <summary>
     /// Returns the geohash strings for multiple members in the geospatial index represented by the sorted set.
@@ -135,7 +128,6 @@ public interface IGeospatialCommands
     /// <seealso href="https://valkey.io/commands/geohash"/>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="members">The members to get the geohashes for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of geohash strings for the members. Returns <see langword="null"/> for missing members.</returns>
     /// <remarks>
     /// <example>
@@ -144,7 +136,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None);
+    Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
     /// <summary>
     /// Returns the longitude and latitude for a single member in the geospatial index represented by the sorted set.
@@ -152,7 +144,6 @@ public interface IGeospatialCommands
     /// <seealso href="https://valkey.io/commands/geopos"/>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="member">The member to get the position for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The longitude and latitude for the member. Returns <see langword="null"/> if the member is missing.</returns>
     /// <remarks>
     /// <example>
@@ -161,7 +152,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags = CommandFlags.None);
+    Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member);
 
     /// <summary>
     /// Returns the longitude and latitude for multiple members in the geospatial index represented by the sorted set.
@@ -169,7 +160,6 @@ public interface IGeospatialCommands
     /// <seealso href="https://valkey.io/commands/geopos"/>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="members">The members to get the positions for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of longitude and latitude for the members. Returns <see langword="null"/> for missing members.</returns>
     /// <remarks>
     /// <example>
@@ -178,7 +168,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags = CommandFlags.None);
+    Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
     /// <summary>
     /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape.
@@ -192,7 +182,6 @@ public interface IGeospatialCommands
     /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
     /// <param name="order">The order in which to return results. Null for default ordering.</param>
     /// <param name="options">The options for the search result format.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of results within the specified area.</returns>
     /// <remarks>
     /// <example>
@@ -202,7 +191,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
+    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default);
 
     /// <summary>
     /// Returns the members of a geospatial index which are within the borders of the area specified by a given shape, centred on the specified position.
@@ -215,7 +204,6 @@ public interface IGeospatialCommands
     /// <param name="demandClosest">When true, returns the closest results. When false, allows any results.</param>
     /// <param name="order">The order in which to return results. Null for default ordering.</param>
     /// <param name="options">The options for the search result format.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of results within the specified area.</returns>
     /// <remarks>
     /// <example>
@@ -226,7 +214,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
+    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default);
 
 
     /// <summary>
@@ -241,7 +229,6 @@ public interface IGeospatialCommands
     /// <param name="demandClosest">When true, stores the closest results. When false, allows any results.</param>
     /// <param name="order">The order in which to store results. Null for default ordering.</param>
     /// <param name="storeDistances">When true, stores distances as scores. When false, stores geohash values as scores.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of elements stored in the destination key.</returns>
     /// <remarks>
     /// <example>
@@ -251,7 +238,7 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false);
 
     /// <summary>
     /// Searches for members in a geospatial index and stores the results in a destination key.
@@ -265,7 +252,6 @@ public interface IGeospatialCommands
     /// <param name="demandClosest">When true, stores the closest results. When false, allows any results.</param>
     /// <param name="order">The order in which to store results. Null for default ordering.</param>
     /// <param name="storeDistances">When true, stores distances as scores. When false, stores geohash values as scores.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of elements stored in the destination key.</returns>
     /// <remarks>
     /// <example>
@@ -276,5 +262,5 @@ public interface IGeospatialCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false);
 }
