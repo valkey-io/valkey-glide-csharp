@@ -7,7 +7,7 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide;
 
-internal class Database : GlideClient, IDatabase
+internal partial class Database : GlideClient, IDatabase
 {
     public new async Task<string> InfoAsync() => await InfoAsync([]);
 

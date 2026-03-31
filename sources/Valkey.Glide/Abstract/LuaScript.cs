@@ -125,6 +125,7 @@ public sealed class LuaScript
     /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
     /// <param name="withKeyPrefix">Optional key prefix to apply to all keys.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The result of the script execution.</returns>
     /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
     /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
@@ -161,6 +162,7 @@ public sealed class LuaScript
     /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
     /// <param name="withKeyPrefix">Optional key prefix to apply to all keys.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
     /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
     /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
@@ -231,6 +233,7 @@ public sealed class LuaScript
     /// </summary>
     /// <param name="server">The server to load the script on.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A LoadedLuaScript instance that can be used to execute the script via EVALSHA.</returns>
     /// <exception cref="ArgumentNullException">Thrown when server is null.</exception>
     /// <remarks>
@@ -266,6 +269,7 @@ public sealed class LuaScript
     /// </summary>
     /// <param name="server">The server to load the script on.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing a LoadedLuaScript instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when server is null.</exception>
     /// <remarks>

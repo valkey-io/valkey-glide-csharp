@@ -17,7 +17,6 @@ public interface IHashCommands
     /// <seealso href="https://valkey.io/commands/hget"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field in the hash to get.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The value associated with field, or <see cref="ValkeyValue.Null"/> when field is not present in the hash or key does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -26,7 +25,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
     /// Returns the values associated with the specified fields in the hash stored at key.
@@ -36,7 +35,6 @@ public interface IHashCommands
     /// <seealso href="https://valkey.io/commands/hmget"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashFields">The fields in the hash to get.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>List of values associated with the given fields, in the same order as they are requested.</returns>
     /// <remarks>
     /// <example>
@@ -45,14 +43,13 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
     /// Returns all fields and values of the hash stored at key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetall"/>
     /// <param name="key">The key of the hash to get all entries from.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>List of fields and their values stored in the hash, or an empty list when key does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -61,7 +58,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<HashEntry[]> HashGetAllAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+    Task<HashEntry[]> HashGetAllAsync(ValkeyKey key);
 
     /// <summary>
     /// Sets the specified fields to their respective values in the hash stored at key.
@@ -71,7 +68,6 @@ public interface IHashCommands
     /// <seealso href="https://valkey.io/commands/hmset"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashFields">The entries to set in the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -79,7 +75,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, CommandFlags flags = CommandFlags.None);
+    Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields);
 
     /// <summary>
     /// Sets <paramref name="hashField"/> in the hash stored at <paramref name="key"/> to <paramref name="value"/>.
@@ -96,7 +92,6 @@ public interface IHashCommands
     /// <param name="hashField">The field to set in the hash.</param>
     /// <param name="value">The value to set.</param>
     /// <param name="when">Which conditions under which to set the field value (defaults to always).</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if <paramref name="hashField"/> is a new field in the hash and <paramref name="value"/> was set, <see langword="false"/> if <paramref name="hashField"/> already exists in the hash and no operation was performed.</returns>
     /// <remarks>
     /// <example>
@@ -105,7 +100,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None);
+    Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always);
 
     /// <summary>
     /// Removes the specified field from the hash stored at key.
@@ -113,7 +108,6 @@ public interface IHashCommands
     /// <seealso href="https://valkey.io/commands/hdel"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to remove from the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if the field was removed, <see langword="false"/> if the field was not found or the key does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -122,7 +116,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None);
+    Task<bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
     /// Removes the specified fields from the hash stored at key.
@@ -130,7 +124,6 @@ public interface IHashCommands
     /// <seealso href="https://valkey.io/commands/hdel"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashFields">The fields to remove from the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of fields that were removed from the hash, not including specified but non-existing fields.</returns>
     /// <remarks>
     /// <example>
@@ -139,7 +132,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
+    Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
     /// Returns if field is an existing field in the hash stored at key.
@@ -147,7 +140,6 @@ public interface IHashCommands
     /// <seealso href="https://valkey.io/commands/hexists"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to check in the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="true"/> if the hash contains the field, <see langword="false"/> if the hash does not contain the field or key does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -156,7 +148,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None);
+    Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
     /// Increments the number stored at <paramref name="hashField"/> in the hash stored at <paramref name="key"/> by increment.
@@ -167,7 +159,6 @@ public interface IHashCommands
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field in the hash stored at <paramref name="key"/> to increment its value.</param>
     /// <param name="value">The amount to increment.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The value of <paramref name="hashField"/> in the hash stored at <paramref name="key"/> after the increment.</returns>
     /// <remarks>
     /// <example>
@@ -176,7 +167,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1, CommandFlags flags = CommandFlags.None);
+    Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1);
 
     /// <summary>
     /// Increments the string representing a floating point number stored at <paramref name="hashField"/> in the hash stored at <paramref name="key"/> by increment.
@@ -187,7 +178,6 @@ public interface IHashCommands
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field in the hash stored at <paramref name="key"/> to increment its value.</param>
     /// <param name="value">The amount to increment.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The value of <paramref name="hashField"/> in the hash stored at <paramref name="key"/> after the increment.</returns>
     /// <remarks>
     /// <example>
@@ -196,14 +186,13 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value, CommandFlags flags = CommandFlags.None);
+    Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value);
 
     /// <summary>
     /// Returns all field names in the hash stored at <paramref name="key"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hkeys"/>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array containing all the field names in the hash, or an empty array when <paramref name="key"/> does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -212,14 +201,13 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key);
 
     /// <summary>
     /// Returns the number of fields contained in the hash stored at key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hlen"/>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The number of fields in the hash, or 0 when key does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -228,7 +216,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+    Task<long> HashLengthAsync(ValkeyKey key);
 
     /// <summary>
     /// Iterates fields of Hash types and their associated values.
@@ -239,7 +227,6 @@ public interface IHashCommands
     /// <param name="pageSize">The number of elements to return in each page (defaults to 250).</param>
     /// <param name="cursor">The cursor that points to the next iteration of results.</param>
     /// <param name="pageOffset">The page offset to start at (defaults to 0).</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the HashSet.</returns>
     /// <remarks>
     /// <example>
@@ -251,7 +238,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None);
+    IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
 
     /// <summary>
     /// Iterates field names of Hash types (without values).
@@ -262,7 +249,6 @@ public interface IHashCommands
     /// <param name="pageSize">The number of elements to return in each page (defaults to 250).</param>
     /// <param name="cursor">The cursor that points to the next iteration of results.</param>
     /// <param name="pageOffset">The page offset to start at (defaults to 0).</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the HashSet.</returns>
     /// <remarks>
     /// <example>
@@ -274,7 +260,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None);
+    IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
 
     /// <summary>
     /// Returns the string length of the value associated with field in the hash stored at key.
@@ -283,7 +269,6 @@ public interface IHashCommands
     /// <seealso href="https://valkey.io/commands/hstrlen"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to get the string length of its value.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>The length of the string value associated with field, or 0 when field or key do not exist.</returns>
     /// <remarks>
     /// <example>
@@ -292,14 +277,13 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None);
+    Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
     /// Returns all values in the hash stored at key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hvals"/>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>List of values in the hash, or an empty list when key does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -308,7 +292,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> HashValuesAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> HashValuesAsync(ValkeyKey key);
 
     /// <summary>
     /// Gets a random field from the hash at key.
@@ -318,7 +302,6 @@ public interface IHashCommands
     /// Since: Valkey 6.2.0 and above.
     /// </note>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>A random hash field name or <see cref="ValkeyValue.Null"/> if the hash does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -327,7 +310,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue> HashRandomFieldAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> HashRandomFieldAsync(ValkeyKey key);
 
     /// <summary>
     /// Gets count field names from the hash at key.
@@ -338,7 +321,6 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="count">The number of fields to return.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of hash field names of size of at most count, or an empty array if the hash does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -347,7 +329,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count);
 
     /// <summary>
     /// Gets count field names and values from the hash at key.
@@ -358,7 +340,6 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="count">The number of fields to return.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>An array of hash entries of size of at most count, or an empty array if the hash does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -367,7 +348,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None);
+    Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
 
     // TODO: ALIGN HASH FIELD EXPIRE COMMANDS WITH SER AFTER SER IMPLEMENTS THEM
 
@@ -382,7 +363,6 @@ public interface IHashCommands
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields in the hash stored at <paramref name="key"/> to retrieve from the database.</param>
     /// <param name="options">Optional parameters for the command including expiry settings or persist option.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of values associated with the given fields, in the same order as they are requested.
     /// For every field that does not exist in the hash, a <see cref="ValkeyValue.Null"/> value is returned.
@@ -396,7 +376,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue[]?> HashGetExAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]?> HashGetExAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options);
 
     /// <summary>
     /// Sets the specified fields to their respective values in the hash stored at <paramref name="key"/>
@@ -409,7 +389,6 @@ public interface IHashCommands
     /// <param name="key">The key of the hash.</param>
     /// <param name="fieldValueMap">A field-value map consisting of fields and their corresponding values to be set in the hash stored at the specified key.</param>
     /// <param name="options">Optional parameters for the command including conditional changes and expiry settings.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns><see langword="1"/> if all the fields' values and expiration times were set successfully, <see langword="0"/> otherwise.</returns>
     /// <remarks>
     /// <example>
@@ -419,7 +398,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options);
 
     /// <summary>
     /// Removes the expiration time for each specified field, turning the field from volatile (a field
@@ -432,7 +411,6 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields to remove expiration from.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
@@ -448,7 +426,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
     /// Sets expiration time for hash fields. HEXPIRE sets the expiration time in seconds for the
@@ -465,7 +443,6 @@ public interface IHashCommands
     /// <param name="seconds">The expiration time in seconds.</param>
     /// <param name="fields">The fields in the hash stored at <paramref name="key"/> to set expiration for.</param>
     /// <param name="options">The expiration condition options.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of <see langword="long"/> values indicating the result of setting expiration for each field:
     /// <list type="bullet">
@@ -483,7 +460,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
     /// Sets expiration time for hash fields, in milliseconds. Creates the hash if it doesn't exist. If
@@ -497,7 +474,6 @@ public interface IHashCommands
     /// <param name="milliseconds">The expiration time to set for the fields, in milliseconds.</param>
     /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration options.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
@@ -515,7 +491,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
     /// Sets expiration time for hash fields, in seconds, using an absolute Unix timestamp. Creates the
@@ -530,7 +506,6 @@ public interface IHashCommands
     /// <param name="unixSeconds">The expiration time to set for the fields, as a Unix timestamp in seconds.</param>
     /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration options.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
@@ -548,7 +523,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
     /// Sets expiration time for hash fields, using an absolute Unix timestamp in milliseconds.
@@ -563,7 +538,6 @@ public interface IHashCommands
     /// <param name="unixMilliseconds">The expiration time to set for the fields, as a Unix timestamp in milliseconds.</param>
     /// <param name="fields">A collection of hash field names for which to set the expiration.</param>
     /// <param name="options">Optional conditions and configurations for the expiration.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of <see langword="long"/> values indicating the result for each field:
     /// <list type="bullet">
@@ -582,7 +556,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
     /// Returns the absolute Unix timestamp (in seconds) at which the given hash fields will expire.
@@ -593,7 +567,6 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields to get the expiration timestamp for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of expiration timestamps in seconds for the specified fields:
     /// <list type="bullet">
@@ -609,7 +582,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
     /// Returns the absolute Unix timestamp (in milliseconds) at which the given hash fields will expire.
@@ -620,7 +593,6 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields to get the expiration timestamp for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of expiration timestamps in milliseconds for the specified fields:
     /// <list type="bullet">
@@ -636,7 +608,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
     /// Returns the remaining time to live of hash fields that have a timeout, in seconds.
@@ -647,7 +619,6 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields to get the TTL for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
@@ -663,7 +634,7 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
     /// Returns the remaining time to live of hash fields that have a timeout, in milliseconds.
@@ -674,7 +645,6 @@ public interface IHashCommands
     /// </note>
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields to get the TTL for.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <returns>
     /// An array of TTL values in milliseconds for the specified fields:
     /// <list type="bullet">
@@ -690,5 +660,5 @@ public interface IHashCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags = CommandFlags.None);
+    Task<long[]> HashPTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 }

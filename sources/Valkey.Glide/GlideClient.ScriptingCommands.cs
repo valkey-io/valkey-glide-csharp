@@ -12,19 +12,15 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
     /// <inheritdoc/>
     public async Task<LibraryInfo[]> FunctionListAsync(
         FunctionListQuery? query = null,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionListAsync(query));
     }
 
     /// <inheritdoc/>
     public async Task<FunctionStatsResult> FunctionStatsAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionStatsAsync());
     }
 
@@ -33,19 +29,15 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
     /// <inheritdoc/>
     public async Task FunctionDeleteAsync(
         string libraryName,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FunctionDeleteAsync(libraryName));
     }
 
     /// <inheritdoc/>
     public async Task FunctionKillAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FunctionKillAsync());
     }
 
@@ -53,20 +45,16 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
 
     /// <inheritdoc/>
     public async Task<byte[]> FunctionDumpAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionDumpAsync());
     }
 
     /// <inheritdoc/>
     public async Task FunctionRestoreAsync(
         byte[] payload,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FunctionRestoreAsync(payload, null));
     }
 
@@ -74,10 +62,8 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
     public async Task FunctionRestoreAsync(
         byte[] payload,
         FunctionRestorePolicy policy,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         _ = await Command(Request.FunctionRestoreAsync(payload, policy));
     }
 }

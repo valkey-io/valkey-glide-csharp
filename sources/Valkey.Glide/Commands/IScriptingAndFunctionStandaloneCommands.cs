@@ -13,7 +13,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// Lists all loaded function libraries.
     /// </summary>
     /// <param name="query">Optional query parameters to filter results.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An array of library information.</returns>
     /// <remarks>
@@ -25,13 +24,11 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </remarks>
     Task<LibraryInfo[]> FunctionListAsync(
         FunctionListQuery? query = null,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns statistics about loaded functions.
     /// </summary>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Function statistics including engine stats and running script information.</returns>
     /// <remarks>
@@ -42,7 +39,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </example>
     /// </remarks>
     Task<FunctionStatsResult> FunctionStatsAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     // ===== Function Management =====
@@ -51,7 +47,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// Deletes a function library by name.
     /// </summary>
     /// <param name="libraryName">The name of the library to delete.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if the library does not exist.</exception>
     /// <remarks>
@@ -63,13 +58,11 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </remarks>
     Task FunctionDeleteAsync(
         string libraryName,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Terminates a currently executing function that has not written data.
     /// </summary>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if no function is running or if the function has written data.</exception>
     /// <remarks>
@@ -80,7 +73,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </example>
     /// </remarks>
     Task FunctionKillAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     // ===== Function Persistence =====
@@ -88,7 +80,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// <summary>
     /// Creates a binary backup of all loaded functions.
     /// </summary>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A binary payload containing all loaded functions.</returns>
     /// <remarks>
@@ -99,14 +90,12 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </example>
     /// </remarks>
     Task<byte[]> FunctionDumpAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Restores functions from a binary backup using default policy (APPEND).
     /// </summary>
     /// <param name="payload">The binary payload from FunctionDump.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails (e.g., library conflict with APPEND policy).</exception>
     /// <remarks>
@@ -118,7 +107,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </remarks>
     Task FunctionRestoreAsync(
         byte[] payload,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -126,7 +114,6 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     /// </summary>
     /// <param name="payload">The binary payload from FunctionDump.</param>
     /// <param name="policy">The restore policy (APPEND, FLUSH, or REPLACE).</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails.</exception>
     /// <remarks>
@@ -139,6 +126,5 @@ public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunction
     Task FunctionRestoreAsync(
         byte[] payload,
         FunctionRestorePolicy policy,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 }
