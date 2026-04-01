@@ -39,7 +39,7 @@ Looking at the existing issues is a great way to find something to contribute on
 
 ## Developer Guide
 
-- <./DEVELOPER.md>
+[C# Developer Guide](./DEVELOPER.md).
 
 ## Code of Conduct
 
@@ -49,12 +49,11 @@ For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of
 
 ## Security issue notifications
 
-See [SECURITY.md](./SECURITY.md)
-
+[Reporting a Vulnerability](./SECURITY.md)
 
 ## Licensing
 
-See the [LICENSE](LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
+See the [LICENSE](./LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
 
 ## Community Support and Feedback
 
