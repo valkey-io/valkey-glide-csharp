@@ -21,4 +21,4 @@ include_verbatim = true
 exclude_loopback = true
 
 cache = true
-verbose = "debug"
+verbose = "warn"
