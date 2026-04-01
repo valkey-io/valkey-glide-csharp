@@ -555,14 +555,14 @@ public interface IGenericBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/wait"/>
     /// <param name="numreplicas">The number of replicas to wait for.</param>
-    /// <param name="timeout">The timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout to wait.</param>
     /// <returns>The number of replicas that acknowledged the write commands.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.WaitAsync(1, 1000);
+    /// long result = await client.WaitAsync(1, TimeSpan.FromSeconds(1));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> WaitAsync(long numreplicas, long timeout);
+    Task<long> WaitAsync(long numreplicas, TimeSpan timeout);
 }

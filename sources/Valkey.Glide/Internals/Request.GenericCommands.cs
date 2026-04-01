@@ -335,6 +335,6 @@ internal partial class Request
         });
     }
 
-    public static Cmd<long, long> WaitAsync(long numreplicas, long timeout)
-        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), timeout.ToGlideString()]);
+    public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
+        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ((long)timeout.TotalMilliseconds).ToGlideString()]);
 }

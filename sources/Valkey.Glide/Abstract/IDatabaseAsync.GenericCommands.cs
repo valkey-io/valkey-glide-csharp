@@ -169,7 +169,7 @@ public partial interface IDatabaseAsync
         IEnumerable<ValkeyValue>? get = null,
         CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, long)"/>
+    /// <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, TimeSpan)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags);

@@ -221,6 +221,6 @@ internal partial class Database
     public async Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await WaitAsync(numreplicas, timeout);
+        return await WaitAsync(numreplicas, TimeSpan.FromMilliseconds(timeout));
     }
 }
