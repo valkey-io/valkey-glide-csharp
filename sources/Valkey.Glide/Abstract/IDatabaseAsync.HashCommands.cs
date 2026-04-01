@@ -121,22 +121,36 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags);
 
-    /// <inheritdoc cref="IHashCommands.HashExpireAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
+    /// <inheritdoc cref="IHashCommands.HashExpireAsync(ValkeyKey, TimeSpan, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
+    /// <param name="seconds">The expiration time in seconds.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);
 
-    /// <inheritdoc cref="IHashCommands.HashPExpireAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
+    /// <summary>
+    /// Sets expiration time for hash fields, in milliseconds.
+    /// </summary>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="milliseconds">The expiration time in milliseconds.</param>
+    /// <param name="fields">The fields to set expiration for.</param>
+    /// <param name="options">The expiration options.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);
 
-    /// <inheritdoc cref="IHashCommands.HashExpireAtAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
+    /// <inheritdoc cref="IHashCommands.HashExpireAtAsync(ValkeyKey, DateTimeOffset, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
+    /// <param name="unixSeconds">The expiration time as a Unix timestamp in seconds.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);
 
-    /// <inheritdoc cref="IHashCommands.HashPExpireAtAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
+    /// <summary>
+    /// Sets expiration time for hash fields, using an absolute Unix timestamp in milliseconds.
+    /// </summary>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="unixMilliseconds">The expiration time as a Unix timestamp in milliseconds.</param>
+    /// <param name="fields">The fields to set expiration for.</param>
+    /// <param name="options">The expiration options.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);

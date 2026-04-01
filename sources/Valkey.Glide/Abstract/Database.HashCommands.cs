@@ -165,28 +165,28 @@ internal partial class Database
     public async Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashExpireAsync(key, seconds, fields, options);
+        return await HashExpireAsync(key, TimeSpan.FromSeconds(seconds), fields, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashPExpireAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions, CommandFlags)"/>
     public async Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashPExpireAsync(key, milliseconds, fields, options);
+        return await HashExpireAsync(key, TimeSpan.FromMilliseconds(milliseconds), fields, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashExpireAtAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions, CommandFlags)"/>
     public async Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashExpireAtAsync(key, unixSeconds, fields, options);
+        return await HashExpireAtAsync(key, DateTimeOffset.FromUnixTimeSeconds(unixSeconds), fields, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashPExpireAtAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions, CommandFlags)"/>
     public async Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashPExpireAtAsync(key, unixMilliseconds, fields, options);
+        return await HashExpireAtAsync(key, DateTimeOffset.FromUnixTimeMilliseconds(unixMilliseconds), fields, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
