@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Geospatial Commands" group for standalone and cluster clients.
-/// <br/>
-/// See more on <see href="https://valkey.io/commands#geo">valkey.io</see>.
+/// Geospatial commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands#geo">Valkey – Geospatial Commands</seealso>
 public interface IGeospatialCommands
 {
     /// <summary>

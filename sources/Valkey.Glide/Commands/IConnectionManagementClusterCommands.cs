@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for connection management for cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#connection">valkey.io</see>.
+/// Connection management commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#connection">Valkey – Connection Management Commands</seealso>
 public interface IConnectionManagementClusterCommands
 {
     /// <summary>

@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "HyperLogLog" group for a standalone client.
-/// <br />
-/// See <see href="https://valkey.io/commands#hyperloglog">HyperLogLog Commands</see>.
+/// HyperLogLog commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands#hyperloglog">Valkey – HyperLogLog Commands</seealso>
 public interface IHyperLogLogCommands
 {
     /// <summary>

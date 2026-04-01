@@ -3,8 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Scripting and function commands specific to cluster clients with routing support.
+/// Scripting and function commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands#scripting">Valkey – Scripting and Function Commands</seealso>
 public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBaseCommands
 {
     // ===== Script Execution with Routing =====

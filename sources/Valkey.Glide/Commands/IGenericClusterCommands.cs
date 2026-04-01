@@ -9,8 +9,9 @@ using static Valkey.Glide.Pipeline.Options;
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Defines generic commands for cluster Valkey operations.
+/// Generic commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#generic">Valkey – Generic Commands</seealso>
 public interface IGenericClusterCommands
 {
     /// <summary>

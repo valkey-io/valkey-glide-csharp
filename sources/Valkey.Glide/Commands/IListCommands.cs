@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "List Commands" group for standalone and cluster clients.
-/// <br/>
-/// See more on <see href="https://valkey.io/commands#list">valkey.io</see>.
+/// List commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands#list">Valkey – List Commands</seealso>
 public interface IListCommands
 {
     /// <summary>

@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Transaction Commands" group for standalone and cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/?group=transactions">valkey.io</see>.
+/// Transaction commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/?group=transactions">Valkey – Transaction Commands</seealso>
 public interface ITransactionBaseCommands
 {
     /// <summary>

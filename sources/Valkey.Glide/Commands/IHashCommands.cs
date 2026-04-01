@@ -5,10 +5,9 @@ using Valkey.Glide.Commands.Options;
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Hash Commands" group for standalone and cluster clients.
-/// <br/>
-/// See more on <see href="https://valkey.io/commands#hash">valkey.io</see>.
+/// Hash commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands#hash">Valkey – Hash Commands</seealso>
 public interface IHashCommands
 {
     /// <summary>

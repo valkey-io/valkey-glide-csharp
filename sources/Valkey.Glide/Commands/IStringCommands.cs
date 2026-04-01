@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "String Commands" group for standalone and cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#string">valkey.io</see>.
+/// String commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#string">Valkey – String Commands</seealso>
 public interface IStringCommands
 {
     /// <summary>

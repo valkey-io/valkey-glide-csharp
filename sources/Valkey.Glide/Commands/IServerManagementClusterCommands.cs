@@ -5,10 +5,9 @@ using static Valkey.Glide.Commands.Options.InfoOptions;
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Server Management" group for a cluster client.
-/// <br />
-/// See <see href="https://valkey.io/commands#server">Server Management Commands</see>.
+/// Server management commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands#server">Valkey – Server Management Commands</seealso>
 public interface IServerManagementClusterCommands
 {
     /// <summary>
