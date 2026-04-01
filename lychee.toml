@@ -15,8 +15,9 @@ exclude = [
 ]
 
 # Check links inside code blocks
-# Exclude loopback addresses (localhost, 127.0.0.1, [::1])
 include_verbatim = true
+
+# Exclude loopback addresses (localhost, 127.0.0.1, [::1])
 exclude_loopback = true
 
 cache = true
