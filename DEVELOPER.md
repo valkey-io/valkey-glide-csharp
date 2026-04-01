@@ -253,13 +253,7 @@ task clean                  # Clean test results and reports
 
 # Linting and formatting
 task lint                   # Run all linters
-task lint:rust              # Run Rust linting
-task lint:csharp            # Run C# linting
-task lint:yaml              # Run YAML linting
 task format                 # Run all formatters
-task format:rust            # Run Rust formatting
-task format:csharp          # Run C# formatting
-task format:yaml            # Run YAML formatting
 task check-links            # Check for broken links
 
 ```
@@ -335,30 +329,30 @@ To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
 If the environment variable is not set, DNS tests will be skipped.
 
-## Linting
+## Linting and Formatting
 
 Before making a contribution, ensure that all new user APIs and non-obvious code is well documented, and run the code linters and analyzers.
 
 ```bash
-# Run all linters (preferred)
+# Run all linters:
 task lint
 
-# Run linters for specific languages
+# Run linters for specific languages:
 task lint:rust     # Run Rust linting
 task lint:csharp   # Run C# linting
 task lint:yaml     # Run YAML linting
 
-# Run all formatters
-task format          # Run all formatters
-task format:rust     # Run Rust formatting
-task format:csharp   # Run C# formatting
-task format:yaml     # Run YAML formatting
+# Run all formatters:
+task format
+
+# Run formatters for specific languages:
+task format:rust
+task format:csharp
+task format:yaml
 
 # Check for broken links
 task check-links
 ```
-
-**Note**: Task commands automatically use standardized configurations for build and test operations, ensuring consistency across development environments.
 
 ## Test framework and Style
 
