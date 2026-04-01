@@ -39,8 +39,8 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     /// </list>
     /// <example>
     /// <code>
-    /// using Glide;
-    /// using static Glide.ConnectionConfiguration;
+    /// using Valkey.Glide;
+    /// using static Valkey.Glide.ConnectionConfiguration;
     ///
     /// var config = new StandaloneClientConfigurationBuilder()
     ///     .WithAddress("primary.example.com", 6379)
