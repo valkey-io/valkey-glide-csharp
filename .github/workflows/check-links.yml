@@ -19,11 +19,8 @@ jobs:
         steps:
             - uses: actions/checkout@v6
 
-            - name: Install Task
-              run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
-
-            - name: Install lychee
-              run: cargo install lychee
-
             - name: Check links
-              run: task check-links
+              uses: lycheeverse/lychee-action@v2.7.0
+              with:
+                  args: --config .lychee.toml .
+                  fail: true
