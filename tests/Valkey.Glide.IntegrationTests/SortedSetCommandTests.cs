@@ -7,7 +7,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class SortedSetCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
-    private static readonly double BlockingTimeoutSecs = 2.0;
+    private static readonly TimeSpan BlockingTimeoutSecs = TimeSpan.FromSeconds(2);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]

@@ -634,25 +634,25 @@ public class HashCommandTests(TestConfiguration config)
 
         // Test HEXPIRE with no conditions
         var options = new HashFieldExpirationConditionOptions();
-        long[] results = await client.HashExpireAsync(key, 60, ["field1", "field2"], options);
+        long[] results = await client.HashExpireAsync(key, TimeSpan.FromSeconds(60), ["field1", "field2"], options);
         Assert.Equal(2, results.Length);
         Assert.Equal(1, results[0]); // Successfully set expiry
         Assert.Equal(1, results[1]); // Successfully set expiry
 
         // Test HEXPIRE with NX condition (should fail for fields with existing expiry)
         var nxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasNoExpiry);
-        results = await client.HashExpireAsync(key, 120, ["field1"], nxOptions);
+        results = await client.HashExpireAsync(key, TimeSpan.FromSeconds(120), ["field1"], nxOptions);
         _ = Assert.Single(results);
         Assert.Equal(0, results[0]); // Condition not met
 
         // Test HEXPIRE with XX condition (should succeed for fields with existing expiry)
         var xxOptions = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HasExistingExpiry);
-        results = await client.HashExpireAsync(key, 30, ["field1"], xxOptions);
+        results = await client.HashExpireAsync(key, TimeSpan.FromSeconds(30), ["field1"], xxOptions);
         _ = Assert.Single(results);
         Assert.Equal(1, results[0]); // Successfully updated expiry
 
         // Test HEXPIRE on non-existing field
-        results = await client.HashExpireAsync(key, 60, ["nonexistent"], options);
+        results = await client.HashExpireAsync(key, TimeSpan.FromSeconds(60), ["nonexistent"], options);
         _ = Assert.Single(results);
         Assert.Equal(-2, results[0]); // Field does not exist
     }
@@ -671,14 +671,14 @@ public class HashCommandTests(TestConfiguration config)
         // Set up test data
         _ = await client.HashSetAsync(key, "field1", "value1");
 
-        // Test HPEXPIRE with milliseconds
+        // Test HPEXPIRE with milliseconds (consolidated into HashExpireAsync with TimeSpan)
         var options = new HashFieldExpirationConditionOptions();
-        long[] results = await client.HashPExpireAsync(key, 5000, ["field1"], options);
+        long[] results = await client.HashExpireAsync(key, TimeSpan.FromMilliseconds(5000), ["field1"], options);
         _ = Assert.Single(results);
         Assert.Equal(1, results[0]); // Successfully set expiry
 
         // Test HPEXPIRE on non-existing field
-        results = await client.HashPExpireAsync(key, 5000, ["nonexistent"], options);
+        results = await client.HashExpireAsync(key, TimeSpan.FromMilliseconds(5000), ["nonexistent"], options);
         _ = Assert.Single(results);
         Assert.Equal(-2, results[0]); // Field does not exist
     }
@@ -697,15 +697,15 @@ public class HashCommandTests(TestConfiguration config)
         // Set up test data
         _ = await client.HashSetAsync(key, "field1", "value1");
 
-        // Test HEXPIREAT with Unix timestamp
-        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds();
+        // Test HEXPIREAT with DateTimeOffset
+        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        long[] results = await client.HashExpireAtAsync(key, futureTimestamp, ["field1"], options);
+        long[] results = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
         _ = Assert.Single(results);
         Assert.Equal(1, results[0]); // Successfully set expiry
 
         // Test HEXPIREAT on non-existing field
-        results = await client.HashExpireAtAsync(key, futureTimestamp, ["nonexistent"], options);
+        results = await client.HashExpireAtAsync(key, futureExpiry, ["nonexistent"], options);
         _ = Assert.Single(results);
         Assert.Equal(-2, results[0]); // Field does not exist
     }
@@ -724,15 +724,15 @@ public class HashCommandTests(TestConfiguration config)
         // Set up test data
         _ = await client.HashSetAsync(key, "field1", "value1");
 
-        // Test HPEXPIREAT with Unix timestamp in milliseconds
-        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds();
+        // Test HPEXPIREAT with DateTimeOffset (consolidated into HashExpireAtAsync)
+        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        long[] results = await client.HashPExpireAtAsync(key, futureTimestamp, ["field1"], options);
+        long[] results = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
         _ = Assert.Single(results);
         Assert.Equal(1, results[0]); // Successfully set expiry
 
         // Test HPEXPIREAT on non-existing field
-        results = await client.HashPExpireAtAsync(key, futureTimestamp, ["nonexistent"], options);
+        results = await client.HashExpireAtAsync(key, futureExpiry, ["nonexistent"], options);
         _ = Assert.Single(results);
         Assert.Equal(-2, results[0]); // Field does not exist
     }
@@ -753,9 +753,9 @@ public class HashCommandTests(TestConfiguration config)
         _ = await client.HashSetAsync(key, "field2", "value2"); // No expiry
 
         // Set expiry for field1
-        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds();
+        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        _ = await client.HashExpireAtAsync(key, futureTimestamp, ["field1"], options);
+        _ = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
 
         // Test HEXPIRETIME
         long[] results = await client.HashExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
@@ -781,9 +781,9 @@ public class HashCommandTests(TestConfiguration config)
         _ = await client.HashSetAsync(key, "field2", "value2"); // No expiry
 
         // Set expiry for field1
-        long futureTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds();
+        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        _ = await client.HashPExpireAtAsync(key, futureTimestamp, ["field1"], options);
+        _ = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
 
         // Test HPEXPIRETIME
         long[] results = await client.HashPExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
@@ -810,7 +810,7 @@ public class HashCommandTests(TestConfiguration config)
 
         // Set expiry for field1
         var options = new HashFieldExpirationConditionOptions();
-        _ = await client.HashExpireAsync(key, 60, ["field1"], options);
+        _ = await client.HashExpireAsync(key, TimeSpan.FromSeconds(60), ["field1"], options);
 
         // Test HTTL
         long[] results = await client.HashTtlAsync(key, ["field1", "field2", "nonexistent"]);
@@ -837,7 +837,7 @@ public class HashCommandTests(TestConfiguration config)
 
         // Set expiry for field1
         var options = new HashFieldExpirationConditionOptions();
-        _ = await client.HashPExpireAsync(key, 5000, ["field1"], options);
+        _ = await client.HashExpireAsync(key, TimeSpan.FromMilliseconds(5000), ["field1"], options);
 
         // Test HPTTL
         long[] results = await client.HashPTtlAsync(key, ["field1", "field2", "nonexistent"]);

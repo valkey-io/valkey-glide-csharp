@@ -588,10 +588,10 @@ internal partial class BatchTestUtils
         _ = batch.StringSet(prefix + "waitkey", "value");
         testData.Add(new(true, "StringSet(prefix + waitkey, value)"));
 
-        _ = batch.Wait(0, 1000);
+        _ = batch.Wait(0, TimeSpan.FromMilliseconds(1000));
         testData.Add(new(0L, "Wait(0, 1000)", true));
 
-        _ = batch.Wait(1, 0);
+        _ = batch.Wait(1, TimeSpan.Zero);
         testData.Add(new(0L, "Wait(1, 0)", true));
 
         return testData;
@@ -827,15 +827,15 @@ internal partial class BatchTestUtils
             testData.Add(new(2L, "SortedSetAdd(blockingKey, test data for blocking)"));
 
             // Test SortedSetBlockingPop (single key, single element)
-            _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, 0.1);
+            _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(new SortedSetEntry("block1", 10.0), "SortedSetBlockingPop(blockingKey, Ascending, 0.1s)"));
 
             // Test SortedSetBlockingPop (single key, multiple elements)
-            _ = batch.SortedSetBlockingPop(blockingKey, 1, Order.Descending, 0.1);
+            _ = batch.SortedSetBlockingPop(blockingKey, 1, Order.Descending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(new SortedSetEntry[] { new("block2", 20.0) }, "SortedSetBlockingPop(blockingKey, 1, Descending, 0.1s)"));
 
             // Test SortedSetBlockingPop (multi-key, multiple elements)
-            _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, 0.1);
+            _ = batch.SortedSetBlockingPop([(ValkeyKey)blockingKey], 1, Order.Descending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(SortedSetPopResult.Null, "SortedSetBlockingPop([blockingKey], 1, Descending, 0.1s) - should be null"));
         }
 
@@ -1408,11 +1408,11 @@ internal partial class BatchTestUtils
             testData.Add(new(true, "HashSetEx(expireKey, {setex_field: setex_value}, 60s)"));
 
             // Test HEXPIRE
-            _ = batch.HashExpire(expireKey, 30, ["expire_field1"], new HashFieldExpirationConditionOptions());
+            _ = batch.HashExpire(expireKey, TimeSpan.FromSeconds(30), ["expire_field1"], new HashFieldExpirationConditionOptions());
             testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, 30, [expire_field1])"));
 
-            // Test HPEXPIRE
-            _ = batch.HashPExpire(expireKey, 5000, ["expire_field2"], new HashFieldExpirationConditionOptions());
+            // Test HPEXPIRE (consolidated into HashExpire with milliseconds)
+            _ = batch.HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), ["expire_field2"], new HashFieldExpirationConditionOptions());
             testData.Add(new(new long[] { 1 }, "HashPExpire(expireKey, 5000, [expire_field2])"));
 
             // Test HTTL
