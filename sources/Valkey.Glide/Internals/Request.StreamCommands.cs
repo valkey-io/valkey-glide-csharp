@@ -442,13 +442,13 @@ internal partial class Request
         return new(RequestType.XPending, [key.ToGlideString(), groupName.ToGlideString()], false, ConvertStreamPendingInfo);
     }
 
-    public static Cmd<object[], StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue minId, ValkeyValue maxId, int count, ValkeyValue consumerName, long? minIdleTime)
+    public static Cmd<object[], StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue minId, ValkeyValue maxId, int count, ValkeyValue consumerName, TimeSpan? minIdleTime)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString()];
         if (minIdleTime.HasValue)
         {
             args.Add("IDLE".ToGlideString());
-            args.Add(minIdleTime.Value.ToGlideString());
+            args.Add(((long)minIdleTime.Value.TotalMilliseconds).ToGlideString());
         }
         args.Add(minId.ToGlideString());
         args.Add(maxId.ToGlideString());
@@ -495,32 +495,32 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force)
+    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
     {
-        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTimeInMs, timeUnixMs, retryCount, force, false, ConvertXRangeResponse);
+        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, false, ConvertXRangeResponse);
     }
 
-    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force)
+    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
     {
-        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTimeInMs, timeUnixMs, retryCount, force, true, ConvertClaimIdsOnly);
+        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, true, ConvertClaimIdsOnly);
     }
 
-    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force, bool justId, Func<TResponse, TResult> converter)
+    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force, bool justId, Func<TResponse, TResult> converter)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id.ToGlideString());
         }
-        if (idleTimeInMs.HasValue)
+        if (idleTime.HasValue)
         {
             args.Add("IDLE".ToGlideString());
-            args.Add(idleTimeInMs.Value.ToGlideString());
+            args.Add(((long)idleTime.Value.TotalMilliseconds).ToGlideString());
         }
-        if (timeUnixMs.HasValue)
+        if (timestamp.HasValue)
         {
             args.Add("TIME".ToGlideString());
-            args.Add(timeUnixMs.Value.ToGlideString());
+            args.Add(timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
         if (retryCount.HasValue)
         {
@@ -548,9 +548,9 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString(), startId.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString(), startId.ToGlideString()];
         if (count.HasValue)
         {
             args.Add("COUNT".ToGlideString());
@@ -559,9 +559,9 @@ internal partial class Request
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimResult);
     }
 
-    public static Cmd<object[], StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString(), startId.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString(), startId.ToGlideString()];
         if (count.HasValue)
         {
             args.Add("COUNT".ToGlideString());
