@@ -217,10 +217,4 @@ internal partial class Database
         return await SortAsync(key, skip, take, order, sortType, by, get);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.WaitAsync(long, long, CommandFlags)"/>
-    public async Task<long> WaitAsync(long numreplicas, long timeout, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await WaitAsync(numreplicas, TimeSpan.FromMilliseconds(timeout));
-    }
 }
