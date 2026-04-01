@@ -12,7 +12,6 @@ exclude_path = [
 exclude = [
     "example\\.com",  # Example URLs
     "file://",        # File URIs
-    "%7B.*%7D"        # URL-encoded interpolation templates (e.g., {repo}, {sha})
 ]
 
 # Check links inside code blocks
