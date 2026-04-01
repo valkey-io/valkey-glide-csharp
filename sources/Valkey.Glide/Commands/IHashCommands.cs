@@ -350,8 +350,6 @@ public interface IHashCommands
     /// </remarks>
     Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
 
-    // TODO: ALIGN HASH FIELD EXPIRE COMMANDS WITH SER AFTER SER IMPLEMENTS THEM
-
     /// <summary>
     /// Retrieves the values of specified fields from the hash stored at <paramref name="key"/> and
     /// optionally sets their expiration or removes it.
