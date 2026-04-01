@@ -11,8 +11,8 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration classes and builders for establishing connections to Valkey servers.
 /// </summary>
-/// <seealso href="https://glide.valkey.io/reference/connection-options/?lang=csharp" />
-/// <seealso href="https://glide.valkey.io/how-to/connections/timeouts-and-reconnect-strategy/?lang=csharp" />
+/// <seealso href="https://glide.valkey.io/reference/connection-options/" />
+/// <seealso href="https://glide.valkey.io/how-to/connections/timeouts-and-reconnect-strategy/" />
 public abstract class ConnectionConfiguration
 {
     /// <summary>

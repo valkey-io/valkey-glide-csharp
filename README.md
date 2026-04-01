@@ -20,10 +20,10 @@ Visit the official Valkey GLIDE [documentation site](https://glide.valkey.io).
 - [Key Features](https://glide.valkey.io/overview/#key-features)
 - [Quick Start](https://glide.valkey.io/getting-started/quickstart/?lang=csharp)
 - [Supported Engine Versions](https://glide.valkey.io/overview/#supported-engine-versions)
-- [Basic Operations](https://glide.valkey.io/getting-started/basic-operations/?lang=csharp)
-- [Client Initialization](https://glide.valkey.io/how-to/client-initialization/?lang=csharp)
-- [Installation](https://glide.valkey.io/how-to/installation/?lang=csharp)
-- [Troubleshooting](https://glide.valkey.io/troubleshooting/?lang=csharp)
+- [Basic Operations](https://glide.valkey.io/getting-started/basic-operations/)
+- [Client Initialization](https://glide.valkey.io/how-to/client-initialization/)
+- [Installation](https://glide.valkey.io/how-to/installation/)
+- [Troubleshooting](https://glide.valkey.io/troubleshooting/)
 
 ## Getting Help
 

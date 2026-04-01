@@ -5,8 +5,8 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Common scripting and function commands available in both standalone and cluster modes.
 /// </summary>
-/// <seealso href="https://glide.valkey.io/how-to/execute-custom-scripts/?lang=csharp" />
-/// <seealso href="https://glide.valkey.io/how-to/load-and-execute-functions/?lang=csharp" />
+/// <seealso href="https://glide.valkey.io/how-to/execute-custom-scripts/" />
+/// <seealso href="https://glide.valkey.io/how-to/load-and-execute-functions/" />
 public interface IScriptingAndFunctionBaseCommands
 {
     // ===== Script Execution =====
