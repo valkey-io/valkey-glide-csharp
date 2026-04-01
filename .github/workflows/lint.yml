@@ -1,0 +1,46 @@
+name: lint
+
+on:
+    push:
+        branches:
+            - main
+            - release-*
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  submodules: true
+
+            - name: Install Rust toolchain
+              uses: ./.github/workflows/install-rust
+
+            - uses: actions/cache@v5
+              with:
+                  path: rust/target
+                  key: rust-x86_64-unknown-linux-gnu
+
+            - name: Set up dotnet
+              uses: actions/setup-dotnet@v5
+              with:
+                  dotnet-version: |
+                      9
+                      8
+
+            - name: Install Task
+              run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
+            - name: Install cargo-deny
+              run: cargo install --locked cargo-deny
+
+            - name: Lint
+              run: task lint

@@ -161,3 +161,57 @@ tasks:
         cmds:
             - task: build
             - task: coverage
+
+    lint:
+        desc: "Run all linters"
+        deps: [lint:rust, lint:csharp, lint:yaml]
+
+    lint:rust:
+        desc: "Run Rust linting"
+        dir: rust
+        cmds:
+            - cargo fmt --all -- --check
+            - cargo clippy --all-features --all-targets -- -D warnings
+            - cargo deny check
+            - RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
+
+    lint:csharp:
+        desc: "Run C# linting"
+        cmds:
+            - dotnet format --verify-no-changes
+            # Shutdown build server to release file locks before lint build
+            - dotnet build-server shutdown
+            - dotnet build --configuration Lint --framework net8.0 -m:1
+
+    lint:yaml:
+        desc: "Run YAML linting"
+        cmds:
+            - npx prettier --check "**/*.yml"
+
+    format:
+        desc: "Run all formatters"
+        cmds:
+            - task: format:rust
+            - task: format:csharp
+            - task: format:yaml
+
+    format:rust:
+        desc: "Run Rust formatting"
+        dir: rust
+        cmds:
+            - cargo fmt --all
+
+    format:csharp:
+        desc: "Run C# formatting"
+        cmds:
+            - dotnet format
+
+    format:yaml:
+        desc: "Run YAML formatting"
+        cmds:
+            - npx prettier --write "**/*.yml"
+
+    check-links:
+        desc: "Check for broken links"
+        cmds:
+            - lychee --config lychee.toml .

@@ -101,7 +101,7 @@ pub struct PubSubConfigInfo {
     pub sharded_channel_count: u32,
 }
 
-/// Convert a C string array to a Vec of Vec<u8>
+/// Convert a C string array to a `Vec` of `Vec<u8>`
 ///
 /// # Safety
 ///
@@ -252,7 +252,8 @@ pub(crate) unsafe fn create_connection_request(
                 config.root_certs_len,
             )
         },
-        pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
+        pubsub_reconciliation_interval_ms: config
+            .has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
         read_only: config.read_only,
 
