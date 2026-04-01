@@ -8,7 +8,7 @@ We're excited to share that the GLIDE C# client is currently in development! How
 
 The C# client contains the following parts:
 
-1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](/valkey-glide/glide-core/README.md).
+1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](./valkey-glide/glide-core/README.md).
 2. C# part of the client located in `sources`; it translates Rust async API into .NET async API.
 3. Tests for the C# client located in `tests` directory.
 
@@ -22,7 +22,7 @@ Software Dependencies:
 - [WSL](#wsl-installation) (for Windows only)
 - [Valkey](#valkey-installation) (for testing)
 
-Install the following packages to build [GLIDE core rust library](/valkey-glide/glide-core/README.md):
+Install the following packages to build [GLIDE core rust library](./valkey-glide/glide-core/README.md):
 
 - [ziglang and zigbuild](#ziglang-and-zigbuild-installation) (for GNU Linux only)
 - [Protoc](#protoc-installation)
@@ -119,28 +119,44 @@ sudo cp protoc /usr/bin/
 ### Additional Dependencies Installation for Ubuntu
 
 ```bash
+# Install dependecies using apt:
 sudo apt-get update -y
 sudo apt install -y gcc pkg-config openssl libssl-dev
+
+# Install Rust using curl:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
+
+# Install dependencies using cargo:
+cargo install --locked cargo-deny lychee
 ```
 
 ### Additional Dependencies Installation for MacOS
 
 ```bash
+# Install dependencies using Homebrew:
 brew update
-brew install openssl coreutils
+brew install openssl coreutils lychee
+
+# Install Rust using curl:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
+
+# Install dependencies using cargo:
+cargo install --locked cargo-deny
 ```
 
 ### Additional Dependencies Installation for Windows
 
 ```bash
+# Install dependencies using choco:
 choco install mingw pkgconfiglite openssl
 
 # Install Rust directly:
 # <https://rust-lang.org/tools/install/>
+
+# Install dependencies using cargo:
+cargo install --locked cargo-deny lychee
 ```
 
 ### Building and Installation
@@ -234,6 +250,11 @@ task coverage:report        # Generate HTML coverage report
 task coverage:summary       # Display coverage summary
 task clean                  # Clean test results and reports
 
+# Linting and formatting
+task lint                   # Run all linters
+task format                 # Run all formatters
+task check-links            # Check for broken links
+
 ```
 
 ## Advanced Testing Options
@@ -307,30 +328,30 @@ To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
 If the environment variable is not set, DNS tests will be skipped.
 
-## Linting
+## Linting and Formatting
 
 Before making a contribution, ensure that all new user APIs and non-obvious code is well documented, and run the code linters and analyzers.
 
-C# linter:
-
 ```bash
-dotnet format --verify-no-changes --verbosity diagnostic
+# Run all linters:
+task lint
+
+# Run linters for specific languages:
+task lint:rust     # Run Rust linting
+task lint:csharp   # Run C# linting
+task lint:yaml     # Run YAML linting
+
+# Run all formatters:
+task format
+
+# Run formatters for specific languages:
+task format:rust
+task format:csharp
+task format:yaml
+
+# Check for broken links
+task check-links
 ```
-
-C# code analyzer:
-
-```bash
-dotnet build --configuration Lint
-```
-
-Rust linter:
-
-```bash
-cargo clippy --all-features --all-targets -- -D warnings
-cargo fmt --all -- --check
-```
-
-**Note**: Task commands automatically use standardized configurations for build and test operations, ensuring consistency across development environments.
 
 ## Test framework and Style
 
