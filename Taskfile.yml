@@ -214,4 +214,4 @@ tasks:
     check-links:
         desc: "Check for broken links"
         cmds:
-            - lychee --config .lychee.toml .
+            - lychee --config lychee.toml .
