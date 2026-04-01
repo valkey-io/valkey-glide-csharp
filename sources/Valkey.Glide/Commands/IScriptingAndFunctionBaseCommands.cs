@@ -5,7 +5,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Scripting and function commands for clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands#scripting">Valkey – Scripting and Function Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#scripting">Valkey – Scripting and Function Commands</seealso>
 public interface IScriptingAndFunctionBaseCommands
 {
     // ===== Script Execution =====

@@ -7,7 +7,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Server management commands for standalone clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands#server">Valkey – Server Management Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
 public interface IServerManagementCommands
 {
     /// <summary>

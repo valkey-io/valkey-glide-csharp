@@ -7,7 +7,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Hash commands for clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands#hash">Valkey – Hash Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#hash">Valkey – Hash Commands</seealso>
 public interface IHashCommands
 {
     /// <summary>

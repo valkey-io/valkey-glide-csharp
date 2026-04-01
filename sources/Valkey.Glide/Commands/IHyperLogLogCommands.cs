@@ -5,7 +5,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// HyperLogLog commands for clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands#hyperloglog">Valkey – HyperLogLog Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#hyperloglog">Valkey – HyperLogLog Commands</seealso>
 public interface IHyperLogLogCommands
 {
     /// <summary>

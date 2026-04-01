@@ -5,7 +5,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Stream commands for clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands#stream">Valkey – Stream Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#stream">Valkey – Stream Commands</seealso>
 public interface IStreamCommands
 {
     /// <summary>

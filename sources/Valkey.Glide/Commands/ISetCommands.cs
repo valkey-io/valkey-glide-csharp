@@ -5,7 +5,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Set commands for clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands#set">Valkey – Set Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#set">Valkey – Set Commands</seealso>
 public interface ISetCommands
 {
     /// <summary>

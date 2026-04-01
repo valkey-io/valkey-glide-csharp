@@ -5,7 +5,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Bitmap commands for clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands#bitmap">Valkey – Bitmap Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
 public interface IBitmapCommands
 {
     /// <summary>

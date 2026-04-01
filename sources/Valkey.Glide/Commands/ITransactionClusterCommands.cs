@@ -5,7 +5,7 @@ namespace Valkey.Glide.Commands;
 /// <summary>
 /// Transaction commands for cluster clients.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/?group=transactions">Valkey – Transaction Commands</seealso>
+/// <seealso href="https://valkey.io/commands/#transactions">Valkey – Transaction Commands</seealso>
 public interface ITransactionClusterCommands : ITransactionBaseCommands
 {
     /// <summary>
