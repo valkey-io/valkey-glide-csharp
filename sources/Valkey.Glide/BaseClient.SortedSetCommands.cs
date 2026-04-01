@@ -179,20 +179,20 @@ public abstract partial class BaseClient : ISortedSetCommands
     }
 
     /// <inheritdoc/>
-    public async Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, double timeout)
+    public async Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout)
     {
         return await Command(Request.SortedSetBlockingPopAsync(key, order, timeout));
     }
 
     /// <inheritdoc/>
-    public async Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, double timeout)
+    public async Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, TimeSpan timeout)
     {
         Utils.Requires<ArgumentException>(count == 1, "GLIDE does not currently support multipop BZPOPMIN or BZPOPMAX"); // TODO for the future
         return await Command(Request.SortedSetBlockingPopAsync(key, count, order, timeout));
     }
 
     /// <inheritdoc/>
-    public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout)
+    public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout)
     {
         return await Command(Request.SortedSetBlockingPopAsync([.. keys], count, order, timeout));
     }

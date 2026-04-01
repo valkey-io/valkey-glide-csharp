@@ -349,16 +349,16 @@ public interface ISortedSetCommands
     /// <note>This is a client blocking command. See <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands"/> for more details and best practices.</note>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="order">The order to sort by when popping items out of the set.</param>
-    /// <param name="timeout">The timeout in seconds. A timeout of zero can be used to block indefinitely.</param>
+    /// <param name="timeout">The timeout for the blocking operation. A timeout of zero can be used to block indefinitely.</param>
     /// <returns>A sorted set entry, or <see langword="null"/> if no element could be popped and the timeout expired.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key, Order.Ascending, 5.0);
+    /// SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key, Order.Ascending, TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, double timeout);
+    Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout);
 
     /// <summary>
     /// Blocks the connection until it pops and returns the specified number of elements from the sorted set stored at key. Can either pop the max or min element from the set.
@@ -370,16 +370,16 @@ public interface ISortedSetCommands
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="count">The number of elements to return.</param>
     /// <param name="order">The order to sort by when popping items out of the set.</param>
-    /// <param name="timeout">The timeout in seconds. A timeout of zero can be used to block indefinitely.</param>
+    /// <param name="timeout">The timeout for the blocking operation. A timeout of zero can be used to block indefinitely.</param>
     /// <returns>An array of elements, or an empty array when key does not exist or timeout expired.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// SortedSetEntry[] result = await client.SortedSetBlockingPopAsync(key, 2, Order.Ascending, 5.0);
+    /// SortedSetEntry[] result = await client.SortedSetBlockingPopAsync(key, 2, Order.Ascending, TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, double timeout);
+    Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, TimeSpan timeout);
 
     /// <summary>
     /// Blocks the connection until it pops and returns up to <paramref name="count"/> entries from the first non-empty sorted set.
@@ -393,16 +393,16 @@ public interface ISortedSetCommands
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop out of the sorted set.</param>
     /// <param name="order">The order to sort by when popping items out of the set.</param>
-    /// <param name="timeout">The timeout in seconds. A timeout of zero can be used to block indefinitely.</param>
+    /// <param name="timeout">The timeout for the blocking operation. A timeout of zero can be used to block indefinitely.</param>
     /// <returns>A contiguous collection of sorted set entries with the key they were popped from, or <see cref="SortedSetPopResult.Null"/> if no non-empty sorted sets are found or timeout expired.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// SortedSetPopResult result = await client.SortedSetBlockingPopAsync([key1, key2, key3], 2, Order.Ascending, 5.0);
+    /// SortedSetPopResult result = await client.SortedSetBlockingPopAsync([key1, key2, key3], 2, Order.Ascending, TimeSpan.FromSeconds(5));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout);
+    Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout);
 
     /// <summary>
     /// Computes a set operation for multiple sorted sets (optionally using per-set weights),

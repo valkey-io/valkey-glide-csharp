@@ -391,9 +391,9 @@ internal partial class Request
         });
     }
 
-    public static Cmd<object?, SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, double timeout)
+    public static Cmd<object?, SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout)
     {
-        List<GlideString> args = [key.ToGlideString(), timeout.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), timeout.TotalSeconds.ToGlideString()];
 
         RequestType requestType = order == Order.Ascending ? RequestType.BZPopMin : RequestType.BZPopMax;
 
@@ -414,10 +414,10 @@ internal partial class Request
 
     // Note: We keep count for the future TODO but disable the warning for now.
 #pragma warning disable IDE0060 // Remove unused parameter
-    public static Cmd<object?, SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, double timeout)
+    public static Cmd<object?, SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, TimeSpan timeout)
     {
         // FUTURE TODO: support count > 1 requests
-        List<GlideString> args = [key.ToGlideString(), timeout.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), timeout.TotalSeconds.ToGlideString()];
         RequestType requestType = order == Order.Ascending ? RequestType.BZPopMin : RequestType.BZPopMax;
 
         return new(requestType, [.. args], true, response =>
@@ -437,9 +437,9 @@ internal partial class Request
     }
 #pragma warning restore IDE0060 // Remove unused parameter
 
-    public static Cmd<object?, SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, double timeout)
+    public static Cmd<object?, SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, TimeSpan timeout)
     {
-        List<GlideString> args = [timeout.ToGlideString(), keys.Length.ToGlideString()];
+        List<GlideString> args = [timeout.TotalSeconds.ToGlideString(), keys.Length.ToGlideString()];
         args.AddRange(keys.Select(key => key.ToGlideString()));
 
         args.Add(order == Order.Ascending ? MinKeyword : MaxKeyword);

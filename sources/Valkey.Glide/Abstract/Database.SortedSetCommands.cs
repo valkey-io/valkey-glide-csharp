@@ -129,21 +129,21 @@ internal partial class Database
     public async Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, double timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetBlockingPopAsync(key, order, timeout);
+        return await SortedSetBlockingPopAsync(key, order, TimeSpan.FromSeconds(timeout));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double, CommandFlags)"/>
     public async Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, double timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetBlockingPopAsync(key, count, order, timeout);
+        return await SortedSetBlockingPopAsync(key, count, order, TimeSpan.FromSeconds(timeout));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double, CommandFlags)"/>
     public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetBlockingPopAsync(keys, count, order, timeout);
+        return await SortedSetBlockingPopAsync(keys, count, order, TimeSpan.FromSeconds(timeout));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate, CommandFlags)"/>

@@ -88,14 +88,14 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScores(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T SortedSetScores(ValkeyKey key, IEnumerable<ValkeyValue> members) => AddCmd(SortedSetScoresAsync(key, [.. members]));
 
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey, Order, double)" />
-    public T SortedSetBlockingPop(ValkeyKey key, Order order, double timeout) => AddCmd(SortedSetBlockingPopAsync(key, order, timeout));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey, Order, TimeSpan)" />
+    public T SortedSetBlockingPop(ValkeyKey key, Order order, TimeSpan timeout) => AddCmd(SortedSetBlockingPopAsync(key, order, timeout));
 
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey, long, Order, double)" />
-    public T SortedSetBlockingPop(ValkeyKey key, long count, Order order, double timeout) => AddCmd(SortedSetBlockingPopAsync(key, count, order, timeout));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey, long, Order, TimeSpan)" />
+    public T SortedSetBlockingPop(ValkeyKey key, long count, Order order, TimeSpan timeout) => AddCmd(SortedSetBlockingPopAsync(key, count, order, timeout));
 
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(IEnumerable{ValkeyKey}, long, Order, double)" />
-    public T SortedSetBlockingPop(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout) => AddCmd(SortedSetBlockingPopAsync([.. keys], count, order, timeout));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetBlockingPop(IEnumerable{ValkeyKey}, long, Order, TimeSpan)" />
+    public T SortedSetBlockingPop(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout) => AddCmd(SortedSetBlockingPopAsync([.. keys], count, order, timeout));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPop(ValkeyKey, Order)" />
     public T SortedSetPop(ValkeyKey key, Order order = Order.Ascending) => AddCmd(SortedSetPopAsync(key, order));
@@ -165,9 +165,9 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetLengthByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude) => SortedSetLengthByValue(key, min, max, exclude);
     IBatch IBatchSortedSetCommands.SortedSetPop(IEnumerable<ValkeyKey> keys, long count, Order order) => SortedSetPop(keys, count, order);
     IBatch IBatchSortedSetCommands.SortedSetScores(ValkeyKey key, IEnumerable<ValkeyValue> members) => SortedSetScores(key, members);
-    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey key, Order order, double timeout) => SortedSetBlockingPop(key, order, timeout);
-    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey key, long count, Order order, double timeout) => SortedSetBlockingPop(key, count, order, timeout);
-    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout) => SortedSetBlockingPop(keys, count, order, timeout);
+    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey key, Order order, TimeSpan timeout) => SortedSetBlockingPop(key, order, timeout);
+    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(ValkeyKey key, long count, Order order, TimeSpan timeout) => SortedSetBlockingPop(key, count, order, timeout);
+    IBatch IBatchSortedSetCommands.SortedSetBlockingPop(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout) => SortedSetBlockingPop(keys, count, order, timeout);
     IBatch IBatchSortedSetCommands.SortedSetPop(ValkeyKey key, Order order) => SortedSetPop(key, order);
     IBatch IBatchSortedSetCommands.SortedSetPop(ValkeyKey key, long count, Order order) => SortedSetPop(key, count, order);
     IBatch IBatchSortedSetCommands.SortedSetRandomMember(ValkeyKey key) => SortedSetRandomMember(key);
