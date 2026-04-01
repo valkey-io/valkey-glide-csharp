@@ -1,0 +1,24 @@
+# File extensions to scan for links.
+extensions = ["md", "cs"]
+
+# Directories to exclude from scanning.
+exclude_path = [
+    "rust/target",       # Rust build directory
+    ".*/bin", ".*/obj",  # .NET build directories
+    "valkey-glide",      # Valkey GLIDE submodule.
+]
+
+# Links to exclude from scanning.
+exclude = [
+    "example\\.com",  # Example URLs
+    "file://",        # File URIs
+]
+
+# Check links inside code blocks
+include_verbatim = true
+
+# Exclude loopback addresses (localhost, 127.0.0.1, [::1])
+exclude_loopback = true
+
+cache = true
+verbose = "warn"

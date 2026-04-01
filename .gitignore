@@ -160,5 +160,5 @@ glide-logs/
 
 testresults/
 
-# Temporary submodules (not for commit)
-StackExchange-Redis/
+# Lychee link checker cache
+.lycheecache

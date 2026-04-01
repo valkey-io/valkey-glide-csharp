@@ -1,0 +1,26 @@
+name: check-links
+
+on:
+    push:
+        branches:
+            - main
+            - release-*
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    check-links:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - uses: actions/checkout@v6
+
+            - name: Check links
+              uses: lycheeverse/lychee-action@v2.7.0
+              with:
+                  args: --config lychee.toml .
+                  fail: true
