@@ -20,7 +20,7 @@ namespace Valkey.Glide.Pipeline;
 /// <param name="isAtomic">
 /// <inheritdoc cref="BaseBatch{T}.BaseBatch(bool)" />
 /// </param>
-/// <seealso href="https://glide.valkey.io/how-to/send-batch-commands/" />
+/// <seealso href="https://glide.valkey.io/how-to/send-batch-commands/">Valkey GLIDE – Send Batch Commands</seealso>
 public sealed class ClusterBatch(bool isAtomic) : BaseBatch<ClusterBatch>(isAtomic), IBatch
 {
     // Explicit interface implementations for IBatchStreamCommands

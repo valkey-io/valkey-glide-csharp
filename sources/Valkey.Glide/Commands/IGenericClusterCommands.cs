@@ -9,8 +9,9 @@ using static Valkey.Glide.Pipeline.Options;
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Defines generic commands for cluster Valkey operations.
+/// Generic commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#generic">Valkey – Generic Commands</seealso>
 public interface IGenericClusterCommands
 {
     /// <summary>
@@ -277,6 +278,6 @@ public interface IGenericClusterCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
-    /// <seealso href="https://glide.valkey.io/how-to/scan-cluster/">Cluster Scan</seealso>
+    /// <seealso href="https://glide.valkey.io/how-to/scan-cluster/">Valkey GLIDE – Scan a Cluster</seealso>
     Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null);
 }

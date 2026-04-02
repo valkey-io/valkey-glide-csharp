@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports bitmap commands for standalone and cluster clients.
-/// <br/>
-/// See more on <see href="https://valkey.io/commands#bitmap">valkey.io</see>.
+/// Bitmap commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
 public interface IBitmapCommands
 {
     /// <summary>

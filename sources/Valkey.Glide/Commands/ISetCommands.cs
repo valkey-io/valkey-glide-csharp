@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Set Commands" group for standalone and cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands#set">valkey.io</see>.
+/// Set commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#set">Valkey – Set Commands</seealso>
 public interface ISetCommands
 {
     /// <summary>

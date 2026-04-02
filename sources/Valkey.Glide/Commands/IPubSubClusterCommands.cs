@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Pub/sub commands specific to cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#pubsub">valkey.io</see>.
+/// Pub/sub commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
 public interface IPubSubClusterCommands
 {
     #region PublishCommands

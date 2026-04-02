@@ -147,7 +147,7 @@ public static class GlideStringExtensions
 /// </code>
 /// </example>
 /// </remarks>
-/// <seealso href="https://glide.valkey.io/commands/valkey-string/" />
+/// <seealso href="https://glide.valkey.io/commands/valkey-string/">Valkey GLIDE – Working with Strings and Binary Data</seealso>
 [ImmutableObject(true)]
 public sealed class GlideString : IComparable<GlideString>
 {

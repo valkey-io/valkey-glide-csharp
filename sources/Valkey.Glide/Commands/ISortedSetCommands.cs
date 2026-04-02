@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Sorted Set Commands" group for standalone and cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#sorted-set">valkey.io</see>.
+/// Sorted set commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#sorted-set">Valkey – Sorted Set Commands</seealso>
 public interface ISortedSetCommands
 {
     /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" />
