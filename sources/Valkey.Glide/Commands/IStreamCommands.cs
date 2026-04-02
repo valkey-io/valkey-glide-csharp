@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports stream commands for standalone and cluster clients.
-/// <br/>
-/// See more on <see href="https://valkey.io/commands#stream">valkey.io</see>.
+/// Stream commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#stream">Valkey – Stream Commands</seealso>
 public interface IStreamCommands
 {
     /// <summary>

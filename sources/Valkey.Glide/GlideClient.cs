@@ -10,10 +10,10 @@ using static Valkey.Glide.Pipeline.Options;
 
 namespace Valkey.Glide;
 
-// TODO add wiki link
 /// <summary>
 /// Client used for connection to standalone servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/client-initialization/">Valkey GLIDE – Client Initialization</seealso>
 public partial class GlideClient : BaseClient, IGenericCommands, IServerManagementCommands, IConnectionManagementCommands
 {
     internal GlideClient() { }
@@ -39,8 +39,8 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     /// </list>
     /// <example>
     /// <code>
-    /// using Glide;
-    /// using static Glide.ConnectionConfiguration;
+    /// using Valkey.Glide;
+    /// using static Valkey.Glide.ConnectionConfiguration;
     ///
     /// var config = new StandaloneClientConfigurationBuilder()
     ///     .WithAddress("primary.example.com", 6379)

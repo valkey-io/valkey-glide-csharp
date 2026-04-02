@@ -3,8 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Scripting and function commands specific to standalone clients.
+/// Scripting and function commands for standalone clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#scripting">Valkey – Scripting and Function Commands</seealso>
 public interface IScriptingAndFunctionStandaloneCommands : IScriptingAndFunctionBaseCommands
 {
     // ===== Function Inspection =====

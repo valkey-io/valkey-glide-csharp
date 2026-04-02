@@ -18,6 +18,9 @@ jobs:
 
         steps:
             - uses: actions/checkout@v6
+              with:
+                  # Allow validation of links to files in the valkey-glide submodule.
+                  submodules: true
 
             - name: Check links
               uses: lycheeverse/lychee-action@v2.7.0
