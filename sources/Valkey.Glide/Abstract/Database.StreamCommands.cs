@@ -59,7 +59,7 @@ internal partial class Database
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await StreamCreateConsumerGroupAsync(key, groupName, position);
+        await ((BaseClient)this).StreamCreateConsumerGroupAsync(key, groupName, position);
         return true;
     }
 
@@ -67,7 +67,7 @@ internal partial class Database
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await StreamCreateConsumerGroupAsync(key, groupName, position, createStream, entriesRead);
+        await ((BaseClient)this).StreamCreateConsumerGroupAsync(key, groupName, position, createStream, entriesRead);
         return true;
     }
 
@@ -96,7 +96,7 @@ internal partial class Database
     public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead);
+        await ((BaseClient)this).StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead);
         return true;
     }
 
