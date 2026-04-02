@@ -445,18 +445,22 @@ internal partial class Request
     public static Cmd<object[], StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue minId, ValkeyValue maxId, int count, ValkeyValue consumerName, TimeSpan? minIdleTime)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString()];
+
         if (minIdleTime.HasValue)
         {
-            args.Add("IDLE".ToGlideString());
-            args.Add(((long)minIdleTime.Value.TotalMilliseconds).ToGlideString());
+            args.Add("IDLE");
+            args.Add(minIdleTime.Value.TotalMilliseconds.ToGlideString());
         }
+
         args.Add(minId.ToGlideString());
         args.Add(maxId.ToGlideString());
         args.Add(count.ToGlideString());
+
         if (!consumerName.IsNull)
         {
             args.Add(consumerName.ToGlideString());
         }
+
         return new(RequestType.XPending, [.. args], false, ConvertStreamPendingMessages);
     }
 
