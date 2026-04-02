@@ -5,10 +5,9 @@ using Valkey.Glide.Commands.Options;
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Generic Commands" group for standalone and cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#generic">valkey.io</see>.
+/// Generic commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#generic">Valkey – Generic Commands</seealso>
 public interface IGenericBaseCommands
 {
     /// <summary>

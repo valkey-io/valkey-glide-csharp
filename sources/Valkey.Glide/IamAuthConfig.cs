@@ -5,7 +5,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration for IAM authentication with AWS services.
 /// </summary>
-/// <seealso href="https://glide.valkey.io/how-to/security/iam-integration"/>
+/// <seealso href="https://glide.valkey.io/how-to/security/iam-integration/">Valkey GLIDE – Configure AWS IAM Authentication</seealso>
 public sealed class IamAuthConfig : IDisposable
 {
     #region Fields

@@ -5,6 +5,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Base configuration for PubSub subscriptions.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>
 public abstract class BasePubSubSubscriptionConfig
 {
     internal MessageCallback? Callback { get; set; }

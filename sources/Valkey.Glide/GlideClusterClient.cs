@@ -16,10 +16,10 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
-// TODO add wiki link
 /// <summary>
 /// Client used for connection to cluster servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/client-initialization/">Valkey GLIDE – Client Initialization</seealso>
 public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands, ITransactionClusterCommands
 {
     private GlideClusterClient() { }
@@ -27,8 +27,6 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     // TODO add pubsub and other params to example and remarks
     /// <summary>
     /// Creates a new <see cref="GlideClusterClient" /> instance and establishes a connection to a cluster of Valkey servers.<br />
-    /// Use this static method to create and connect a <see cref="GlideClusterClient" /> to a Valkey Cluster. The client will
-    /// automatically handle connection establishment, including cluster topology discovery and handling of authentication and TLS configurations.
     /// </summary>
     /// <remarks>
     /// <b>Remarks:</b>
@@ -44,8 +42,8 @@ public sealed partial class GlideClusterClient : BaseClient, IGenericClusterComm
     /// </list>
     /// <example>
     /// <code>
-    /// using Glide;
-    /// using static Glide.ConnectionConfiguration;
+    /// using Valkey.Glide;
+    /// using static Valkey.Glide.ConnectionConfiguration;
     ///
     /// var config = new ClusterClientConfigurationBuilder()
     ///     .WithAddress("address1.example.com", 6379)

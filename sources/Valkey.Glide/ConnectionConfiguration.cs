@@ -11,6 +11,8 @@ namespace Valkey.Glide;
 /// <summary>
 /// Configuration classes and builders for establishing connections to Valkey servers.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/reference/connection-options/">Valkey GLIDE – Connection Options</seealso>
+/// <seealso href="https://glide.valkey.io/how-to/connections/timeouts-and-reconnect-strategy/">Valkey GLIDE – Timeouts and Reconnect Strategy</seealso>
 public abstract class ConnectionConfiguration
 {
     /// <summary>
@@ -423,8 +425,8 @@ public abstract class ConnectionConfiguration
         /// <br />
         /// Must match the TLS connection of the server or cluster.
         /// </summary>
-        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
-        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public bool UseTls
         {
             get => Config.TlsMode is TlsMode.SecureTls or TlsMode.InsecureTls;
@@ -461,7 +463,7 @@ public abstract class ConnectionConfiguration
         /// Requires <see cref="UseTls"/> to be enabled, otherwise throws <see cref="ArgumentException"/>.
         /// </summary>
         /// <exception cref="ArgumentException">If <see cref="UseTls"/> is not enabled.</exception>
-        /// <seealso href="https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode" />
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode">Valkey GLIDE – Configure TLS</seealso>
         public bool UseInsecureTls
         {
             get => Config.TlsMode == TlsMode.InsecureTls;
@@ -508,8 +510,8 @@ public abstract class ConnectionConfiguration
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
         /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/></exception>
-        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
-        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(string certificatePath)
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
@@ -542,8 +544,8 @@ public abstract class ConnectionConfiguration
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="ArgumentException">If the certificate data is null, empty, or exceeds <see cref="CertificateMaxSize"/></exception>
-        /// <seealso href="https://glide.valkey.io/tutorials/tls" />
-        /// <seealso href="https://glide.valkey.io/how-to/security/tls" />
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(byte[] certificateData)
         {
             if (certificateData == null)
