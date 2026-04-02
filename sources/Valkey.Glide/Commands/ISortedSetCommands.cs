@@ -361,27 +361,6 @@ public interface ISortedSetCommands
     Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout);
 
     /// <summary>
-    /// Blocks the connection until it pops and returns the specified number of elements from the sorted set stored at key. Can either pop the max or min element from the set.
-    /// This is the blocking variant of <see cref="SortedSetPopAsync(ValkeyKey, long, Order)"/>.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bzpopmin"/>
-    /// <seealso href="https://valkey.io/commands/bzpopmax"/>
-    /// <note>This is a client blocking command. See <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands"/> for more details and best practices.</note>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="count">The number of elements to return.</param>
-    /// <param name="order">The order to sort by when popping items out of the set.</param>
-    /// <param name="timeout">The timeout for the blocking operation. A timeout of zero can be used to block indefinitely.</param>
-    /// <returns>An array of elements, or an empty array when key does not exist or timeout expired.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// SortedSetEntry[] result = await client.SortedSetBlockingPopAsync(key, 2, Order.Ascending, TimeSpan.FromSeconds(5));
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, TimeSpan timeout);
-
-    /// <summary>
     /// Blocks the connection until it pops and returns up to <paramref name="count"/> entries from the first non-empty sorted set.
     /// The given keys are checked in the order they are provided.
     /// This is the blocking variant of <see cref="SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order)"/>.

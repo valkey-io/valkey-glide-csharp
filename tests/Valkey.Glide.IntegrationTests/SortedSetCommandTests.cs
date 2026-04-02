@@ -988,11 +988,11 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("member3", result.Value.Element);
         Assert.Equal(30.0, result.Value.Score);
 
-        // Test single-key blocking pop with multiple elements
-        SortedSetEntry[] multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, BlockingTimeoutSecs);
-        _ = Assert.Single(multiResult);
-        Assert.Equal("member2", multiResult[0].Element);
-        Assert.Equal(20.0, multiResult[0].Score);
+        // Test blocking pop with multiple elements
+        result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeoutSecs);
+        _ = Assert.NotNull(result);
+        Assert.Equal("member2", result.Value.Element);
+        Assert.Equal(20.0, result.Value.Score);
 
         // Add more test data for multi-key tests
         _ = await client.SortedSetAddAsync(key2, [
@@ -1013,9 +1013,6 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test timeout with empty keys
         result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeoutSecs);
         Assert.Null(result);
-
-        multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, BlockingTimeoutSecs);
-        Assert.Empty(multiResult);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1030,9 +1027,6 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test single-key blocking pop with non-existent key (should timeout)
         SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeoutSecs);
         Assert.Null(result);
-
-        SortedSetEntry[] multiResult = await client.SortedSetBlockingPopAsync(key1, 1, Order.Ascending, BlockingTimeoutSecs);
-        Assert.Empty(multiResult);
 
         // Test multi-key blocking pop with non-existent keys (should timeout)
         SortedSetPopResult popResult = await client.SortedSetBlockingPopAsync([key1, key2], 1, Order.Ascending, BlockingTimeoutSecs);

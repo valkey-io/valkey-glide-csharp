@@ -412,31 +412,6 @@ internal partial class Request
         }, allowConverterToHandleNull: true);
     }
 
-    // Note: We keep count for the future TODO but disable the warning for now.
-#pragma warning disable IDE0060 // Remove unused parameter
-    public static Cmd<object?, SortedSetEntry[]> SortedSetBlockingPopAsync(ValkeyKey key, long count, Order order, TimeSpan timeout)
-    {
-        // FUTURE TODO: support count > 1 requests
-        List<GlideString> args = [key.ToGlideString(), timeout.TotalSeconds.ToGlideString()];
-        RequestType requestType = order == Order.Ascending ? RequestType.BZPopMin : RequestType.BZPopMax;
-
-        return new(requestType, [.. args], true, response =>
-        {
-            if (response == null)
-            {
-                return [];
-            }
-
-            Object[] responseArray = (Object[])response;
-
-            // BZPOPMIN/BZPOPMAX returns [key, member, score] - only one element
-            ValkeyValue member = (ValkeyValue)(GlideString)responseArray[1];
-            double score = (double)responseArray[2];
-            return [new SortedSetEntry(member, score)];
-        }, allowConverterToHandleNull: true);
-    }
-#pragma warning restore IDE0060 // Remove unused parameter
-
     public static Cmd<object?, SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, TimeSpan timeout)
     {
         List<GlideString> args = [timeout.TotalSeconds.ToGlideString(), keys.Length.ToGlideString()];

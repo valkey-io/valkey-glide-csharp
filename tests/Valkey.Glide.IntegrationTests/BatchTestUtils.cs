@@ -830,9 +830,9 @@ internal partial class BatchTestUtils
             _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(new SortedSetEntry("block1", 10.0), "SortedSetBlockingPop(blockingKey, Ascending, 0.1s)"));
 
-            // Test SortedSetBlockingPop (single key, multiple elements)
-            _ = batch.SortedSetBlockingPop(blockingKey, 1, Order.Descending, TimeSpan.FromSeconds(0.1));
-            testData.Add(new(new SortedSetEntry[] { new("block2", 20.0) }, "SortedSetBlockingPop(blockingKey, 1, Descending, 0.1s)"));
+            // Test SortedSetBlockingPop (single key, single element - descending)
+            _ = batch.SortedSetBlockingPop(blockingKey, Order.Descending, TimeSpan.FromSeconds(0.1));
+            testData.Add(new(new SortedSetEntry("block2", 20.0), "SortedSetBlockingPop(blockingKey, Descending, 0.1s)"));
 
             // Test SortedSetBlockingPop (multi-key, multiple elements)
             _ = batch.SortedSetBlockingPop([(ValkeyKey)blockingKey], 1, Order.Descending, TimeSpan.FromSeconds(0.1));
