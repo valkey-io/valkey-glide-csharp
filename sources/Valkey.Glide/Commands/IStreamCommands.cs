@@ -293,8 +293,8 @@ public interface IStreamCommands
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
-    /// <param name="idleTime">Set the idle time (last delivery time) of the message. For example, <c>TimeSpan.FromSeconds(30)</c>.</param>
-    /// <param name="timestamp">Set the idle time to a specific absolute timestamp. For example, <c>DateTimeOffset.FromUnixTimeMilliseconds(1672531200000)</c>.</param>
+    /// <param name="idleTime">Set the idle time (last delivery time) of the message.</param>
+    /// <param name="timestamp">Set the idle time to a specific absolute timestamp.</param>
     /// <param name="retryCount">Set the retry counter to the specified value.</param>
     /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <returns>An array of claimed stream entries.</returns>
@@ -321,8 +321,8 @@ public interface IStreamCommands
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
     /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
-    /// <param name="idleTime">Set the idle time (last delivery time) of the message. For example, <c>TimeSpan.FromSeconds(30)</c>.</param>
-    /// <param name="timestamp">Set the idle time to a specific absolute timestamp. For example, <c>DateTimeOffset.FromUnixTimeMilliseconds(1672531200000)</c>.</param>
+    /// <param name="idleTime">Set the idle time (last delivery time) of the message.</param>
+    /// <param name="timestamp">Set the idle time to a specific absolute timestamp.</param>
     /// <param name="retryCount">Set the retry counter to the specified value.</param>
     /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <returns>An array of claimed message IDs.</returns>
