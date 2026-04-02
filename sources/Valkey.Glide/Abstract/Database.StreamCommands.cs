@@ -153,14 +153,6 @@ internal partial class Database
         return await StreamPendingMessagesAsync(key, groupName, count, consumerName, minId, maxId);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamPendingMessagesAsync(ValkeyKey, ValkeyValue, int, ValkeyValue, ValkeyValue?, ValkeyValue?, long?, CommandFlags)"/>
-    public async Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, long? minIdleTimeInMs = null, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        TimeSpan? minIdleTime = minIdleTimeInMs.HasValue ? TimeSpan.FromMilliseconds(minIdleTimeInMs.Value) : null;
-        return await StreamPendingMessagesAsync(key, groupName, count, consumerName, minId, maxId, minIdleTime);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags)
     {
@@ -168,31 +160,11 @@ internal partial class Database
         return await StreamClaimAsync(key, consumerGroup, claimingConsumer, TimeSpan.FromMilliseconds(minIdleTimeInMs), messageIds);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, long?, long?, int?, bool, CommandFlags)"/>
-    public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        TimeSpan minIdleTime = TimeSpan.FromMilliseconds(minIdleTimeInMs);
-        TimeSpan? idleTime = idleTimeInMs.HasValue ? TimeSpan.FromMilliseconds(idleTimeInMs.Value) : null;
-        DateTimeOffset? timestamp = timeUnixMs.HasValue ? DateTimeOffset.FromUnixTimeMilliseconds(timeUnixMs.Value) : null;
-        return await StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, idleTime, timestamp, retryCount, force);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.StreamClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, TimeSpan.FromMilliseconds(minIdleTimeInMs), messageIds);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, long?, long?, int?, bool, CommandFlags)"/>
-    public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        TimeSpan minIdleTime = TimeSpan.FromMilliseconds(minIdleTimeInMs);
-        TimeSpan? idleTime = idleTimeInMs.HasValue ? TimeSpan.FromMilliseconds(idleTimeInMs.Value) : null;
-        DateTimeOffset? timestamp = timeUnixMs.HasValue ? DateTimeOffset.FromUnixTimeMilliseconds(timeUnixMs.Value) : null;
-        return await StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, idleTime, timestamp, retryCount, force);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?, CommandFlags)"/>
