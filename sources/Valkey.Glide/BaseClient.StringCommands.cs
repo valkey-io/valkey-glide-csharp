@@ -33,14 +33,16 @@ public abstract partial class BaseClient : IStringCommands
     public async Task StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
         _ = await Command(Request.StringSetMultiple([.. values]));
 
+    // TODO #262: Replace with separate StringSetNXAsync(values) method; remove When parameter.
     /// <inheritdoc/>
     public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when) =>
         when switch
         {
             When.Always => await Command(Request.StringSetMultiple([.. values])),
-            When.Exists => throw new NotImplementedException($"{when} is not supported for StringSetAsync."),
+            When.Exists => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists"),
+
             When.NotExists => await Command(Request.StringSetMultipleNX([.. values])),
-            _ => throw new ArgumentOutOfRangeException(nameof(when), $"{when} is not supported for StringSetAsync.")
+            _ => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists")
         };
 
     /// <inheritdoc/>

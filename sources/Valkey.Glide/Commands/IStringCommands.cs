@@ -81,8 +81,9 @@ public interface IStringCommands
     /// while others did not. If this behavior impacts your application logic, consider splitting
     /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="values">A collection of key-value pairs to set.</param>
-    /// <param name="when">The condition under which the keys should be set.</param>
+    /// <param name="when">The condition under which the keys should be set. Only <see cref="When.Always"/> and <see cref="When.NotExists"/> are supported.</param>
     /// <returns><see langword="true"/> if all the keys were set, <see langword="false"/> if no key was set (at least one key already existed).</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is not <see cref="When.Always"/> or <see cref="When.NotExists"/>.</exception>
     /// <remarks>
     /// <example>
     /// <code>
@@ -95,6 +96,7 @@ public interface IStringCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #262: Replace with separate StringSetNXAsync(values) method; remove When parameter.
     Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when);
 
     /// <summary>
