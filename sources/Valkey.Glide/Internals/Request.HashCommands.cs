@@ -281,20 +281,7 @@ internal partial class Request
 
     public static Cmd<object[], long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] fields, HashFieldExpirationConditionOptions options)
     {
-        long milliseconds = (long)expiry.TotalMilliseconds;
-
-        List<GlideString> args = [key.ToGlideString()];
-
-        if (milliseconds % 1000 == 0)
-        {
-            // Use seconds precision
-            args.Add((milliseconds / 1000).ToGlideString());
-        }
-        else
-        {
-            // Use milliseconds precision
-            args.Add(milliseconds.ToGlideString());
-        }
+        List<GlideString> args = [key.ToGlideString(), ((long)expiry.TotalMilliseconds).ToGlideString()];
 
         // Add condition options before FIELDS keyword
         if (options.Condition != null)
@@ -325,31 +312,13 @@ internal partial class Request
         // Add field names
         args.AddRange(fields.ToGlideStrings());
 
-        // Choose command based on precision
-        var command = milliseconds % 1000 != 0
-            ? RequestType.HPExpire
-            : RequestType.HExpire;
-
-        return new(command, [.. args], false, response =>
+        return new(RequestType.HPExpire, [.. args], false, response =>
             [.. response.Select(item => (long)item)]);
     }
 
     public static Cmd<object[], long[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, ValkeyValue[] fields, HashFieldExpirationConditionOptions options)
     {
-        long unixMilliseconds = expiry.ToUnixTimeMilliseconds();
-
-        List<GlideString> args = [key.ToGlideString()];
-
-        if (unixMilliseconds % 1000 == 0)
-        {
-            // Use seconds precision
-            args.Add((unixMilliseconds / 1000).ToGlideString());
-        }
-        else
-        {
-            // Use milliseconds precision
-            args.Add(unixMilliseconds.ToGlideString());
-        }
+        List<GlideString> args = [key.ToGlideString(), expiry.ToUnixTimeMilliseconds().ToGlideString()];
 
         // Add condition options before FIELDS keyword
         if (options.Condition != null)
@@ -380,12 +349,7 @@ internal partial class Request
         // Add field names
         args.AddRange(fields.ToGlideStrings());
 
-        // Choose command based on precision
-        var command = unixMilliseconds % 1000 != 0
-            ? RequestType.HPExpireAt
-            : RequestType.HExpireAt;
-
-        return new(command, [.. args], false, response =>
+        return new(RequestType.HPExpireAt, [.. args], false, response =>
             [.. response.Select(item => (long)item)]);
     }
 

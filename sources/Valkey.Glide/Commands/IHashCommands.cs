@@ -427,29 +427,24 @@ public interface IHashCommands
     Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
-    /// Sets expiration time for the specified fields of the hash stored at <paramref name="key"/>.
-    /// The appropriate command (HEXPIRE or HPEXPIRE) is automatically selected based on the precision
-    /// of the provided <paramref name="expiry"/>. You can specify whether to set the expiration only if
-    /// the field has no expiration, only if the field has an existing expiration, only if the new
-    /// expiration is greater than the current one, or only if the new expiration is less than the
-    /// current one.
+    /// Sets the expiration time span for the specified fields of the given hash key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpire"/>
     /// <seealso href="https://valkey.io/commands/hpexpire"/>
     /// <note>
     /// Since: Valkey 9.0 and above.
     /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="expiry">The expiration duration for the fields.</param>
-    /// <param name="fields">The fields in the hash stored at <paramref name="key"/> to set expiration for.</param>
+    /// <param name="key">The hash key.</param>
+    /// <param name="expiry">The expiration time span for the fields. A zero or negative time span will delete the field immediately.</param>
+    /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration condition options.</param>
     /// <returns>
-    /// An array of <see langword="long"/> values indicating the result of setting expiration for each field:
+    /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
-    /// <item><description><c>1</c> if the expiration time was successfully set for the field.</description></item>
+    /// <item><description><c>1</c> if the expiration time span was successfully set for the field.</description></item>
     /// <item><description><c>0</c> if the specified condition was not met.</description></item>
-    /// <item><description><c>-2</c> if the field does not exist in the HASH, or key does not exist.</description></item>
-    /// <item><description><c>2</c> when called with a zero duration.</description></item>
+    /// <item><description><c>-2</c> if the field does not exist in the hash or the hash is empty.</description></item>
+    /// <item><description><c>2</c> when called with a zero or negative time span.</description></item>
     /// </list>
     /// </returns>
     /// <remarks>
@@ -463,29 +458,25 @@ public interface IHashCommands
     Task<long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
-    /// Sets expiration time for the specified fields of the hash stored at <paramref name="key"/>
-    /// using an absolute timestamp. The appropriate command (HEXPIREAT or HPEXPIREAT) is automatically
-    /// selected based on the precision of the provided <paramref name="expiry"/>. Creates the hash if
-    /// it doesn't exist. If a field is already expired, it will be deleted rather than expired.
+    /// Sets the expiration timestamp for the specified fields of the given hash key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpireat"/>
     /// <seealso href="https://valkey.io/commands/hpexpireat"/>
     /// <note>
     /// Since: Valkey 9.0 and above.
     /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="expiry">The absolute expiration timestamp for the fields.</param>
+    /// <param name="key">The hash key.</param>
+    /// <param name="expiry">The expiration timestamp for the fields. A timestamp in the past will delete the field immediately.</param>
     /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration options.</param>
     /// <returns>
     /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
-    /// <item><description><c>1</c> if the expiration time was successfully set for the field.</description></item>
+    /// <item><description><c>1</c> if the expiration timestamp was successfully set for the field.</description></item>
     /// <item><description><c>0</c> if the specified condition was not met.</description></item>
-    /// <item><description><c>-2</c> if the field does not exist in the HASH, or HASH is empty.</description></item>
-    /// <item><description><c>2</c> when called with a past timestamp.</description></item>
+    /// <item><description><c>-2</c> if the field does not exist in the hash or the hash is empty.</description></item>
+    /// <item><description><c>2</c> when called with a timestamp in the past.</description></item>
     /// </list>
-    /// If <paramref name="expiry"/> is in the past, the field will be deleted rather than expired.
     /// </returns>
     /// <remarks>
     /// <example>
