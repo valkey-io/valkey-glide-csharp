@@ -28,10 +28,10 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         string key3 = $"{prefix}:key3";
         string otherKey = "other:key";
 
-        _ = await db.StringSetAsync(key1, "value1");
-        _ = await db.StringSetAsync(key2, "value2");
-        _ = await db.StringSetAsync(key3, "value3");
-        _ = await db.StringSetAsync(otherKey, "other");
+        await db.StringSetAsync(key1, "value1");
+        await db.StringSetAsync(key2, "value2");
+        await db.StringSetAsync(key3, "value3");
+        await db.StringSetAsync(otherKey, "other");
 
         List<ValkeyKey> keys = [];
         await foreach (ValkeyKey key in server.KeysAsync(pattern: $"{prefix}:*"))
@@ -90,7 +90,7 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
 
         Assert.Equal(0, await server.DatabaseSizeAsync());
 
-        _ = await db.StringSetAsync(key, "test-value");
+        await db.StringSetAsync(key, "test-value");
         Assert.Equal(1, await server.DatabaseSizeAsync());
 
         _ = await db.KeyDeleteAsync(key);
@@ -114,7 +114,7 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         var db = fixture.Database;
 
         string key = $"server-flush-test-{Guid.NewGuid()}";
-        _ = await db.StringSetAsync(key, "test-value");
+        await db.StringSetAsync(key, "test-value");
 
         Assert.True(await db.KeyExistsAsync(key));
         Assert.Equal(1, await server.DatabaseSizeAsync());
@@ -142,7 +142,7 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         var db = fixture.Database;
 
         string key = $"server-flushall-test-{Guid.NewGuid()}";
-        _ = await db.StringSetAsync(key, "test-value");
+        await db.StringSetAsync(key, "test-value");
 
         Assert.True(await db.KeyExistsAsync(key));
         Assert.Equal(1, await server.DatabaseSizeAsync());

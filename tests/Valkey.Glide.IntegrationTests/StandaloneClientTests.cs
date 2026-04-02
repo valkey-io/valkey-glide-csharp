@@ -35,7 +35,7 @@ public class StandaloneClientTests(TestConfiguration config)
         string key2 = Guid.NewGuid().ToString();
         string key3 = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
-        Assert.True(await client.StringSetAsync(key1, value));
+        await client.StringSetAsync(key1, value);
 
         gs dump = (await client.CustomCommand(["DUMP", key1]) as gs)!;
 
@@ -44,7 +44,7 @@ public class StandaloneClientTests(TestConfiguration config)
         Assert.Equal(value, retrievedValue.ToString());
 
         // Set and get a binary value
-        Assert.True(await client.StringSetAsync(key3, dump!));
+        await client.StringSetAsync(key3, dump!);
         ValkeyValue binaryValue = await client.StringGetAsync(key3);
         Assert.Equal(dump, (gs)binaryValue);
     }
@@ -218,7 +218,7 @@ public class StandaloneClientTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
 
-        _ = await client.StringSetAsync(key, "val");
+        await client.StringSetAsync(key, "val");
         Assert.True(await client.KeyCopyAsync(key, key2, 1));
         Assert.True(await client.KeyMoveAsync(key, 2));
     }
@@ -385,7 +385,7 @@ public class StandaloneClientTests(TestConfiguration config)
             Assert.True(initialSize >= 0);
 
             // Add a key
-            _ = await client.StringSetAsync(key, "test-value");
+            await client.StringSetAsync(key, "test-value");
 
             // Size should increase
             long newSize = await client.DatabaseSizeAsync();

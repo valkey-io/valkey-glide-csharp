@@ -17,7 +17,7 @@ public class DBTests(TestConfiguration config)
 
         ValkeyValue result = await db.StringGetAsync(key);
         Assert.True(result.IsNull);
-        Assert.True(await db.StringSetAsync(key, "val"));
+        await db.StringSetAsync(key, "val");
         ValkeyValue retrievedValue = await db.StringGetAsync(key);
         Assert.Equal("val", retrievedValue.ToString());
 

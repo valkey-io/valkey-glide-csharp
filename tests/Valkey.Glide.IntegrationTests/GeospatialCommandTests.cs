@@ -109,7 +109,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoAdd_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        _ = await client.StringSetAsync(key, "not_a_geo_key");
+        await client.StringSetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo"));
@@ -377,7 +377,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoDistance_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        _ = await client.StringSetAsync(key, "not_a_geo_key");
+        await client.StringSetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoDistanceAsync(key, "member1", "member2"));
@@ -430,7 +430,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoHash_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        _ = await client.StringSetAsync(key, "not_a_geo_key");
+        await client.StringSetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoHashAsync(key, "member"));
@@ -499,7 +499,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoPosition_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        _ = await client.StringSetAsync(key, "not_a_geo_key");
+        await client.StringSetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoPositionAsync(key, "member"));
@@ -830,7 +830,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoSearch_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        _ = await client.StringSetAsync(key, "not_a_geo_key");
+        await client.StringSetAsync(key, "not_a_geo_key");
 
         var position = new GeoPosition(13.361389, 38.115556);
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
@@ -875,7 +875,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string sourceKey = keyPrefix + ":source";
         string destinationKey = keyPrefix + ":dest";
 
-        _ = await client.StringSetAsync(sourceKey, "not_a_geo_key");
+        await client.StringSetAsync(sourceKey, "not_a_geo_key");
 
         var position = new GeoPosition(13.361389, 38.115556);
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
