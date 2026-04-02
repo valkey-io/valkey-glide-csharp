@@ -1413,7 +1413,7 @@ internal partial class BatchTestUtils
 
             // Test HPEXPIRE with milliseconds
             _ = batch.HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), ["expire_field2"], new HashFieldExpirationConditionOptions());
-            testData.Add(new(new long[] { 1 }, "HashPExpire(expireKey, 5000, [expire_field2])"));
+            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
 
             // Test HTTL
             _ = batch.HashTtl(expireKey, ["expire_field1", "expire_field2"]);

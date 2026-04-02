@@ -988,7 +988,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("member3", result.Value.Element);
         Assert.Equal(30.0, result.Value.Score);
 
-        // Test blocking pop with multiple elements
+        // Test single-key blocking pop with next element
         result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeout);
         _ = Assert.NotNull(result);
         Assert.Equal("member2", result.Value.Element);
