@@ -55,6 +55,7 @@ public enum Level
 /// </list>
 /// If none of these functions are called, the first log attempt will initialize a new logger with default configuration.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/monitoring/logging/" />
 public class Logger
 {
     #region private fields

@@ -10,7 +10,7 @@ namespace Valkey.Glide;
 /// OpenTelemetry integration for Valkey GLIDE.
 /// OpenTelemetry can only be initialized once per process.
 /// </summary>
-/// <seealso href="https://glide.valkey.io/how-to/monitoring/open-telemetry" />
+/// <seealso href="https://glide.valkey.io/how-to/monitoring/open-telemetry/" />
 public static class OpenTelemetry
 {
     private static readonly object Lock = new();

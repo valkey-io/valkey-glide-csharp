@@ -346,7 +346,6 @@ public interface ISortedSetCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzpopmin"/>
     /// <seealso href="https://valkey.io/commands/bzpopmax"/>
-    /// <note>This is a client blocking command. See <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands"/> for more details and best practices.</note>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="order">The order to sort by when popping items out of the set.</param>
     /// <param name="timeout">The timeout in seconds. A timeout of zero can be used to block indefinitely.</param>
@@ -366,7 +365,6 @@ public interface ISortedSetCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzpopmin"/>
     /// <seealso href="https://valkey.io/commands/bzpopmax"/>
-    /// <note>This is a client blocking command. See <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands"/> for more details and best practices.</note>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="count">The number of elements to return.</param>
     /// <param name="order">The order to sort by when popping items out of the set.</param>
@@ -388,7 +386,6 @@ public interface ISortedSetCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzmpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>This is a client blocking command. See <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands"/> for more details and best practices.</note>
     /// <note>Since Valkey 7.0 and above.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop out of the sorted set.</param>

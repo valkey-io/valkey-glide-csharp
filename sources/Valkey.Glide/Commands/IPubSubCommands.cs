@@ -7,6 +7,7 @@ namespace Valkey.Glide.Commands;
 /// <br />
 /// See more on <see href="https://valkey.io/commands/#pubsub">valkey.io</see>.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/" />
 public interface IPubSubCommands
 {
     #region PublishCommands

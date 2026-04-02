@@ -468,7 +468,6 @@ public interface IListCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>BLPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <param name="keys">The keys of the lists to pop from.</param>
     /// <param name="timeout">The maximum time to wait for a blocking operation to complete. A value of TimeSpan.Zero will block indefinitely.</param>
     /// <returns>
@@ -492,7 +491,6 @@ public interface IListCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/brpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>BRPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <param name="keys">The keys of the lists to pop from.</param>
     /// <param name="timeout">The maximum time to wait for a blocking operation to complete. A value of TimeSpan.Zero will block indefinitely.</param>
     /// <returns>
@@ -514,7 +512,6 @@ public interface IListCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmove"/>
     /// <note>When in cluster mode, <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</note>
-    /// <note>BLMOVE is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <note>Since Valkey 6.2.0.</note>
     /// <param name="source">The key of the source list.</param>
     /// <param name="destination">The key of the destination list.</param>
@@ -540,7 +537,6 @@ public interface IListCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>BLMPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
@@ -564,7 +560,6 @@ public interface IListCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop"/>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>BLMPOP is a client blocking command, see <see href="https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#blocking-commands">Blocking Commands</see> for more details and best practices.</note>
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of keys to lists.</param>
     /// <param name="side">The side of the list to pop from (Left = head, Right = tail).</param>
