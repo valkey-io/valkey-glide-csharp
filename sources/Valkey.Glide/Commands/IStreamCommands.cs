@@ -268,7 +268,7 @@ public interface IStreamCommands
     /// <param name="consumerName">Filter by consumer name.</param>
     /// <param name="minId">The minimum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMinValue"/>  (smallest ID) if null.</param>
     /// <param name="maxId">The maximum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMaxValue"/>  (largest ID) if null.</param>
-    /// <param name="minIdleTime">The minimum idle time for pending messages. For example, <c>TimeSpan.FromMinutes(1)</c>.</param>
+    /// <param name="minIdleTime">The minimum idle time for pending messages</param>
     /// <returns>An array of detailed information about each pending message.</returns>
     Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null);
 
@@ -279,7 +279,7 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed. For example, <c>TimeSpan.FromMinutes(1)</c>.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <returns>An array of claimed stream entries.</returns>
     Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
@@ -291,7 +291,7 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed. For example, <c>TimeSpan.FromMinutes(1)</c>.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <param name="idleTime">Set the idle time (last delivery time) of the message. For example, <c>TimeSpan.FromSeconds(30)</c>.</param>
     /// <param name="timestamp">Set the idle time to a specific absolute timestamp. For example, <c>DateTimeOffset.FromUnixTimeMilliseconds(1672531200000)</c>.</param>
@@ -307,7 +307,7 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed. For example, <c>TimeSpan.FromMinutes(1)</c>.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <returns>An array of claimed message IDs.</returns>
     Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
@@ -319,7 +319,7 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed. For example, <c>TimeSpan.FromMinutes(1)</c>.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <param name="idleTime">Set the idle time (last delivery time) of the message. For example, <c>TimeSpan.FromSeconds(30)</c>.</param>
     /// <param name="timestamp">Set the idle time to a specific absolute timestamp. For example, <c>DateTimeOffset.FromUnixTimeMilliseconds(1672531200000)</c>.</param>
@@ -335,7 +335,7 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed. For example, <c>TimeSpan.FromMinutes(1)</c>.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="startAtId">The starting ID to scan for pending messages.</param>
     /// <param name="count">The maximum number of entries to claim. Defaults to 100 if null.</param>
     /// <returns>Result containing next start ID, claimed entries, and deleted IDs.</returns>
@@ -348,7 +348,7 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed. For example, <c>TimeSpan.FromMinutes(1)</c>.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="startAtId">The starting ID to scan for pending messages.</param>
     /// <param name="count">The maximum number of entries to claim. Defaults to 100 if null.</param>
     /// <returns>Result containing next start ID, claimed IDs, and deleted IDs.</returns>
