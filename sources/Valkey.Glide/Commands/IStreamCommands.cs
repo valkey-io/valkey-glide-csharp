@@ -113,6 +113,7 @@ public interface IStreamCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to start reading. Use <see cref="StreamConstants.NewMessages"/>  for new messages, <see cref="StreamConstants.AllMessages"/>  for all messages. Defaults to <see cref="StreamConstants.NewMessages"/>  if null.</param>
     /// <returns>A task that completes when the consumer group has been created. Throws on failure.</returns>
+    // TODO #263: Move to IClient.StreamCommands; signature diverges from SER (Task vs Task<bool>).
     Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position);
 
     /// <summary>
@@ -125,6 +126,7 @@ public interface IStreamCommands
     /// <param name="createStream">If true, creates the stream if it doesn't exist.</param>
     /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
     /// <returns>A task that completes when the consumer group has been created. Throws on failure.</returns>
+    // TODO #263: Move to IClient.StreamCommands; signature diverges from SER (Task vs Task<bool>).
     Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
 
     /// <summary>
@@ -165,6 +167,7 @@ public interface IStreamCommands
     /// <param name="position">The position from which to read.</param>
     /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
     /// <returns>A task that completes when the position has been set. Throws on failure.</returns>
+    // TODO #263: Move to IClient.StreamCommands; signature diverges from SER (Task vs Task<bool>).
     Task StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
 
     /// <summary>

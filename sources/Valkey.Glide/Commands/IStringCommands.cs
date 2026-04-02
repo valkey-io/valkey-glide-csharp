@@ -23,6 +23,7 @@ public interface IStringCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #263: Move to IClient.StringCommands; signature diverges from SER (Task vs Task<bool>).
     Task StringSetAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>

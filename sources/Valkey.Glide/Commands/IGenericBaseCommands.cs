@@ -247,6 +247,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #263: Move to IClient.GenericCommands; signature diverges from SER (Task vs Task<bool>).
     Task KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
 
     /// <summary>
