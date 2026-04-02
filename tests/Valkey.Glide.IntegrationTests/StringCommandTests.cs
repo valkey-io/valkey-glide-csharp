@@ -1039,4 +1039,27 @@ public class StringCommandTests(TestConfiguration config)
         ValkeyValue retrieved = await client.StringGetAsync(key);
         Assert.True(retrieved.IsNull);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetAsync_SingleKey_WhenAlways_KeyDoesNotExist(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        bool result = await client.StringSetAsync(key, "value", When.Always);
+        Assert.True(result);
+        ValkeyValue retrieved = await client.StringGetAsync(key);
+        Assert.Equal("value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetAsync_SingleKey_WhenAlways_KeyExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.StringSetAsync(key, "existing");
+        bool result = await client.StringSetAsync(key, "new_value", When.Always);
+        Assert.True(result);
+        ValkeyValue retrieved = await client.StringGetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
 }
