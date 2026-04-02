@@ -281,7 +281,7 @@ internal partial class Request
 
     public static Cmd<object[], long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] fields, HashFieldExpirationConditionOptions options)
     {
-        List<GlideString> args = [key.ToGlideString(), expiry.TotalMilliseconds.ToGlideString()];
+        List<GlideString> args = [key, ToMilliseconds(expiry).ToGlideString()];
 
         // Add condition options before FIELDS keyword
         if (options.Condition != null)

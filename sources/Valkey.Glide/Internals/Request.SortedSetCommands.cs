@@ -393,7 +393,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout)
     {
-        List<GlideString> args = [key.ToGlideString(), timeout.TotalSeconds.ToGlideString()];
+        List<GlideString> args = [key, ToSeconds(timeout).ToGlideString()];
 
         RequestType requestType = order == Order.Ascending ? RequestType.BZPopMin : RequestType.BZPopMax;
 
@@ -414,7 +414,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetPopResult> SortedSetBlockingPopAsync(ValkeyKey[] keys, long count, Order order, TimeSpan timeout)
     {
-        List<GlideString> args = [timeout.TotalSeconds.ToGlideString(), keys.Length.ToGlideString()];
+        List<GlideString> args = [ToSeconds(timeout).ToGlideString(), keys.Length.ToGlideString()];
         args.AddRange(keys.Select(key => key.ToGlideString()));
 
         args.Add(order == Order.Ascending ? MinKeyword : MaxKeyword);

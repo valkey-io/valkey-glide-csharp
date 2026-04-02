@@ -77,7 +77,7 @@ internal partial class Request
         if (expiry.HasValue)
         {
             args.Add(ExKeyword.ToGlideString());
-            args.Add(((long)expiry.Value.TotalSeconds).ToGlideString());
+            args.Add(ToSeconds(expiry.Value).ToGlideString());
         }
         else
         {

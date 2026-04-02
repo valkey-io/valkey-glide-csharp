@@ -449,7 +449,7 @@ internal partial class Request
         if (minIdleTime.HasValue)
         {
             args.Add("IDLE");
-            args.Add(minIdleTime.Value.TotalMilliseconds.ToGlideString());
+            args.Add(ToMilliseconds(minIdleTime.Value).ToGlideString());
         }
 
         args.Add(minId.ToGlideString());
@@ -511,7 +511,7 @@ internal partial class Request
 
     private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force, bool justId, Func<TResponse, TResult> converter)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString()];
+        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id.ToGlideString());
@@ -519,7 +519,7 @@ internal partial class Request
         if (idleTime.HasValue)
         {
             args.Add("IDLE");
-            args.Add(((long)idleTime.Value.TotalMilliseconds).ToGlideString());
+            args.Add(ToMilliseconds(idleTime.Value).ToGlideString());
         }
         if (timestamp.HasValue)
         {
@@ -554,7 +554,7 @@ internal partial class Request
 
     public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString(), startId.ToGlideString()];
+        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
         if (count.HasValue)
         {
             args.Add("COUNT");
@@ -565,7 +565,7 @@ internal partial class Request
 
     public static Cmd<object[], StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString(), startId.ToGlideString()];
+        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
         if (count.HasValue)
         {
             args.Add("COUNT");
