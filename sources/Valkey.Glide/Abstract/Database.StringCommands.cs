@@ -10,7 +10,8 @@ internal partial class Database
     public async Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StringSetAsync(key, value);
+        await StringSetAsync(key, value);
+        return true;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When, CommandFlags)"/>

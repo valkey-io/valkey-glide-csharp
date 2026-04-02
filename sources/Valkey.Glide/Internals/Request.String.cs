@@ -16,6 +16,18 @@ internal partial class Request
         return OKToBool(RequestType.Set, args);
     }
 
+    public static Cmd<string?, bool> StringSetNX(ValkeyKey key, ValkeyValue value)
+    {
+        GlideString[] args = [key.ToGlideString(), value.ToGlideString(), NxKeyword.ToGlideString()];
+        return new(RequestType.Set, args, true, response => response == "OK", allowConverterToHandleNull: true);
+    }
+
+    public static Cmd<string?, bool> StringSetXX(ValkeyKey key, ValkeyValue value)
+    {
+        GlideString[] args = [key.ToGlideString(), value.ToGlideString(), XxKeyword.ToGlideString()];
+        return new(RequestType.Set, args, true, response => response == "OK", allowConverterToHandleNull: true);
+    }
+
     public static Cmd<object[], ValkeyValue[]> StringGetMultiple(ValkeyKey[] keys)
     {
         GlideString[] glideKeys = [.. keys.Select(k => k.ToGlideString())];
