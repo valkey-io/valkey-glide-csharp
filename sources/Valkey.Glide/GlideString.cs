@@ -147,6 +147,7 @@ public static class GlideStringExtensions
 /// </code>
 /// </example>
 /// </remarks>
+/// <seealso href="https://glide.valkey.io/commands/valkey-string/" />
 [ImmutableObject(true)]
 public sealed class GlideString : IComparable<GlideString>
 {
