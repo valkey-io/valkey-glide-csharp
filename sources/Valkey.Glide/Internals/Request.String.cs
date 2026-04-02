@@ -124,13 +124,13 @@ internal partial class Request
         long totalLength = 0;
 
         // Extract length
-        if (response.TryGetValue("len".ToGlideString(), out object? lengthValue))
+        if (response.TryGetValue("len", out object? lengthValue))
         {
             totalLength = lengthValue is long l ? l : 0;
         }
 
         // Extract matches
-        if (response.TryGetValue("matches".ToGlideString(), out object? matchesValue) && matchesValue is object[] matchesArray)
+        if (response.TryGetValue("matches", out object? matchesValue) && matchesValue is object[] matchesArray)
         {
             foreach (object matchObj in matchesArray)
             {

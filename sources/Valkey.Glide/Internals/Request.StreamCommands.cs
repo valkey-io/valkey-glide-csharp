@@ -19,45 +19,45 @@ internal partial class Request
         // Add NOMKSTREAM if specified
         if (noMakeStream)
         {
-            args.Add("NOMKSTREAM".ToGlideString());
+            args.Add("NOMKSTREAM");
         }
 
         // Add trimming options (MAXLEN or MINID)
         if (maxLength.HasValue)
         {
-            args.Add("MAXLEN".ToGlideString());
+            args.Add("MAXLEN");
             if (useApproximateMaxLength)
             {
-                args.Add("~".ToGlideString());
+                args.Add("~");
             }
             args.Add(maxLength.Value.ToGlideString());
 
             // Add LIMIT if specified and approximate trimming is used
             if (limit.HasValue && useApproximateMaxLength)
             {
-                args.Add("LIMIT".ToGlideString());
+                args.Add("LIMIT");
                 args.Add(limit.Value.ToGlideString());
             }
         }
         else if (!minId.IsNull)
         {
-            args.Add("MINID".ToGlideString());
+            args.Add("MINID");
             if (useApproximateMaxLength)
             {
-                args.Add("~".ToGlideString());
+                args.Add("~");
             }
             args.Add(minId.ToGlideString());
 
             // Add LIMIT if specified and approximate trimming is used
             if (limit.HasValue && useApproximateMaxLength)
             {
-                args.Add("LIMIT".ToGlideString());
+                args.Add("LIMIT");
                 args.Add(limit.Value.ToGlideString());
             }
         }
 
         // Add message ID
-        args.Add(messageId.IsNull ? "*".ToGlideString() : messageId.ToGlideString());
+        args.Add(messageId.IsNull ? "*" : messageId.ToGlideString());
 
         // Add field-value pairs
         foreach (var pair in streamPairs)
@@ -85,11 +85,11 @@ internal partial class Request
 
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
 
-        args.Add("STREAMS".ToGlideString());
+        args.Add("STREAMS");
         foreach (var sp in streamPositions)
         {
             args.Add(sp.Key.ToGlideString());
@@ -108,7 +108,7 @@ internal partial class Request
 
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
 
@@ -345,16 +345,16 @@ internal partial class Request
 
     public static Cmd<string, bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, bool createStream, long? entriesRead)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.IsNull ? "$".ToGlideString() : position.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.IsNull ? "$" : position.ToGlideString()];
 
         if (createStream)
         {
-            args.Add("MKSTREAM".ToGlideString());
+            args.Add("MKSTREAM");
         }
 
         if (entriesRead.HasValue)
         {
-            args.Add("ENTRIESREAD".ToGlideString());
+            args.Add("ENTRIESREAD");
             args.Add(entriesRead.Value.ToGlideString());
         }
 
@@ -372,7 +372,7 @@ internal partial class Request
 
         if (entriesRead.HasValue)
         {
-            args.Add("ENTRIESREAD".ToGlideString());
+            args.Add("ENTRIESREAD");
             args.Add(entriesRead.Value.ToGlideString());
         }
 
@@ -401,27 +401,27 @@ internal partial class Request
 
     private static Cmd<object, TResult> StreamReadGroupAsync<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? count, bool noAck, Func<object, TResult> converter)
     {
-        List<GlideString> args = ["GROUP".ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString()];
+        List<GlideString> args = ["GROUP", groupName.ToGlideString(), consumerName.ToGlideString()];
 
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
 
         if (noAck)
         {
-            args.Add("NOACK".ToGlideString());
+            args.Add("NOACK");
         }
 
-        args.Add("STREAMS".ToGlideString());
+        args.Add("STREAMS");
         foreach (var sp in streamPositions)
         {
             args.Add(sp.Key.ToGlideString());
         }
         foreach (var sp in streamPositions)
         {
-            args.Add(sp.Position.IsNull ? ">".ToGlideString() : sp.Position.ToGlideString());
+            args.Add(sp.Position.IsNull ? ">" : sp.Position.ToGlideString());
         }
 
         return new(RequestType.XReadGroup, [.. args], false, converter, allowConverterToHandleNull: true);
@@ -518,26 +518,26 @@ internal partial class Request
         }
         if (idleTime.HasValue)
         {
-            args.Add("IDLE".ToGlideString());
+            args.Add("IDLE");
             args.Add(((long)idleTime.Value.TotalMilliseconds).ToGlideString());
         }
         if (timestamp.HasValue)
         {
-            args.Add("TIME".ToGlideString());
+            args.Add("TIME");
             args.Add(timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
         if (retryCount.HasValue)
         {
-            args.Add("RETRYCOUNT".ToGlideString());
+            args.Add("RETRYCOUNT");
             args.Add(retryCount.Value.ToGlideString());
         }
         if (force)
         {
-            args.Add("FORCE".ToGlideString());
+            args.Add("FORCE");
         }
         if (justId)
         {
-            args.Add("JUSTID".ToGlideString());
+            args.Add("JUSTID");
         }
         return new(RequestType.XClaim, [.. args], false, converter);
     }
@@ -557,7 +557,7 @@ internal partial class Request
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString(), startId.ToGlideString()];
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimResult);
@@ -568,10 +568,10 @@ internal partial class Request
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), ((long)minIdleTime.TotalMilliseconds).ToGlideString(), startId.ToGlideString()];
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
-        args.Add("JUSTID".ToGlideString());
+        args.Add("JUSTID");
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimIdsOnlyResult);
     }
 
@@ -721,20 +721,20 @@ internal partial class Request
 
         if (maxLength.HasValue)
         {
-            args.Add("MAXLEN".ToGlideString());
-            if (useApproximateMaxLength) args.Add("~".ToGlideString());
+            args.Add("MAXLEN");
+            if (useApproximateMaxLength) args.Add("~");
             args.Add(maxLength.Value.ToGlideString());
         }
         else if (!minId.IsNull)
         {
-            args.Add("MINID".ToGlideString());
-            if (useApproximateMaxLength) args.Add("~".ToGlideString());
+            args.Add("MINID");
+            if (useApproximateMaxLength) args.Add("~");
             args.Add(minId.ToGlideString());
         }
 
         if (limit.HasValue && useApproximateMaxLength)
         {
-            args.Add("LIMIT".ToGlideString());
+            args.Add("LIMIT");
             args.Add(limit.Value.ToGlideString());
         }
 
