@@ -55,7 +55,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// Manually refresh the IAM authentication token.
     /// This method is only available when the client is configured with IAM authentication.
     /// </summary>
-    /// <seealso href="https://glide.valkey.io/how-to/security/iam-integration/"/>
+    /// <seealso href="https://glide.valkey.io/how-to/security/iam-integration/">Valkey GLIDE – Configure AWS IAM Authentication</seealso>
     public async Task RefreshIamTokenAsync()
     {
         Message message = MessageContainer.GetMessageForCall();
@@ -77,7 +77,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// <param name="password">The new password to update the connection with</param>
     /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after updating password</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="password"/> is <c>null</c> or empty.</exception>
-    /// <seealso href="https://glide.valkey.io/how-to/security/dynamic-authentication/"/>
+    /// <seealso href="https://glide.valkey.io/how-to/security/dynamic-authentication/">Valkey GLIDE – Configure Dynamic Password</seealso>
     public async Task UpdateConnectionPasswordAsync(string password, bool immediateAuth = false)
     {
         if (password == null)
@@ -115,7 +115,7 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// Clear the password from the current connection.
     /// </summary>
     /// <param name="immediateAuth">If <c>true</c>, re-authenticate immediately after clearing password</param>
-    /// <seealso href="https://glide.valkey.io/how-to/security/dynamic-authentication/"/>
+    /// <seealso href="https://glide.valkey.io/how-to/security/dynamic-authentication/">Valkey GLIDE – Configure Dynamic Password</seealso>
     public async Task ClearConnectionPasswordAsync(bool immediateAuth = false)
     {
         Message message = MessageContainer.GetMessageForCall();
