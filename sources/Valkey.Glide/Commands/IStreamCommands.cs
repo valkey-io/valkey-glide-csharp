@@ -113,8 +113,8 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to start reading. Use <see cref="StreamConstants.NewMessages"/>  for new messages, <see cref="StreamConstants.AllMessages"/>  for all messages. Defaults to <see cref="StreamConstants.NewMessages"/>  if null.</param>
-    /// <returns>True if the group was created, false otherwise.</returns>
-    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position);
+    /// <returns>A task that completes when the consumer group has been created. Throws on failure.</returns>
+    Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position);
 
     /// <summary>
     /// Creates a consumer group for a stream.
@@ -125,8 +125,8 @@ public interface IStreamCommands
     /// <param name="position">The position from which to start reading. Use <see cref="StreamConstants.NewMessages"/>  for new messages, <see cref="StreamConstants.AllMessages"/>  for all messages. Defaults to <see cref="StreamConstants.NewMessages"/>  if null.</param>
     /// <param name="createStream">If true, creates the stream if it doesn't exist.</param>
     /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
-    /// <returns>True if the group was created, false otherwise.</returns>
-    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
+    /// <returns>A task that completes when the consumer group has been created. Throws on failure.</returns>
+    Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
 
     /// <summary>
     /// Destroys a consumer group.
@@ -165,8 +165,8 @@ public interface IStreamCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to read.</param>
     /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
-    /// <returns>True if successful, false otherwise.</returns>
-    Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
+    /// <returns>A task that completes when the position has been set. Throws on failure.</returns>
+    Task StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
 
     /// <summary>
     /// Reads entries from a stream for a consumer group.

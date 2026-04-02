@@ -106,15 +106,15 @@ public partial class BaseClient : IStreamCommands
     }
 
     /// <inheritdoc/>
-    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position)
+    public async Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position)
     {
-        return await StreamCreateConsumerGroupAsync(key, groupName, position, false, null);
+        await StreamCreateConsumerGroupAsync(key, groupName, position, false, null);
     }
 
     /// <inheritdoc/>
-    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null)
+    public async Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null)
     {
-        return await Command(Request.StreamCreateConsumerGroupAsync(key, groupName, position ?? default, createStream, entriesRead));
+        _ = await Command(Request.StreamCreateConsumerGroupAsync(key, groupName, position ?? default, createStream, entriesRead));
     }
 
     /// <inheritdoc/>
@@ -124,9 +124,9 @@ public partial class BaseClient : IStreamCommands
     }
 
     /// <inheritdoc/>
-    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null)
+    public async Task StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null)
     {
-        return await Command(Request.StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead));
+        _ = await Command(Request.StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead));
     }
 
     /// <inheritdoc/>
