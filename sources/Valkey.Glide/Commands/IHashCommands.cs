@@ -427,14 +427,14 @@ public interface IHashCommands
     Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
-    /// Sets the expiration time span for the specified fields of the given hash key.
+    /// Sets the expiration time span for the specified hash fields.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpire"/>
     /// <seealso href="https://valkey.io/commands/hpexpire"/>
     /// <note>
     /// Since: Valkey 9.0 and above.
     /// </note>
-    /// <param name="key">The hash key.</param>
+    /// <param name="key">The key of the hash.</param>
     /// <param name="expiry">The expiration time span for the fields. A zero or negative time span will delete the field immediately.</param>
     /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration condition options.</param>
@@ -458,14 +458,14 @@ public interface IHashCommands
     Task<long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
-    /// Sets the expiration timestamp for the specified fields of the given hash key.
+    /// Sets the expiration timestamp for the specified hash fields.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpireat"/>
     /// <seealso href="https://valkey.io/commands/hpexpireat"/>
     /// <note>
     /// Since: Valkey 9.0 and above.
     /// </note>
-    /// <param name="key">The hash key.</param>
+    /// <param name="key">The key of the hash.</param>
     /// <param name="expiry">The expiration timestamp for the fields. A timestamp in the past will delete the field immediately.</param>
     /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration options.</param>
