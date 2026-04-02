@@ -830,12 +830,12 @@ internal partial class BatchTestUtils
             _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(new SortedSetEntry("block1", 10.0), "SortedSetBlockingPop(blockingKey, Ascending, 0.1s)"));
 
-            // Test SortedSetBlockingPop (single key, single element - descending)
+            // Test SortedSetBlockingPop (single key, single element)
             _ = batch.SortedSetBlockingPop(blockingKey, Order.Descending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(new SortedSetEntry("block2", 20.0), "SortedSetBlockingPop(blockingKey, Descending, 0.1s)"));
 
             // Test SortedSetBlockingPop (multi-key, multiple elements)
-            _ = batch.SortedSetBlockingPop([(ValkeyKey)blockingKey], 1, Order.Descending, TimeSpan.FromSeconds(0.1));
+            _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(SortedSetPopResult.Null, "SortedSetBlockingPop([blockingKey], 1, Descending, 0.1s) - should be null"));
         }
 
@@ -1407,11 +1407,11 @@ internal partial class BatchTestUtils
             _ = batch.HashSetEx(expireKey, new Dictionary<ValkeyValue, ValkeyValue> { { "setex_field", "setex_value" } }, new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60)));
             testData.Add(new(true, "HashSetEx(expireKey, {setex_field: setex_value}, 60s)"));
 
-            // Test HEXPIRE
+            // Test HEXPIRE with seconds
             _ = batch.HashExpire(expireKey, TimeSpan.FromSeconds(30), ["expire_field1"], new HashFieldExpirationConditionOptions());
             testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, 30, [expire_field1])"));
 
-            // Test HPEXPIRE (consolidated into HashExpire with milliseconds)
+            // Test HPEXPIRE with milliseconds
             _ = batch.HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), ["expire_field2"], new HashFieldExpirationConditionOptions());
             testData.Add(new(new long[] { 1 }, "HashPExpire(expireKey, 5000, [expire_field2])"));
 

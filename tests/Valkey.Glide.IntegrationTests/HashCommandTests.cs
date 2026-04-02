@@ -671,7 +671,7 @@ public class HashCommandTests(TestConfiguration config)
         // Set up test data
         _ = await client.HashSetAsync(key, "field1", "value1");
 
-        // Test HPEXPIRE with milliseconds (consolidated into HashExpireAsync with TimeSpan)
+        // Test HPEXPIRE
         var options = new HashFieldExpirationConditionOptions();
         long[] results = await client.HashExpireAsync(key, TimeSpan.FromMilliseconds(5000), ["field1"], options);
         _ = Assert.Single(results);
@@ -697,15 +697,15 @@ public class HashCommandTests(TestConfiguration config)
         // Set up test data
         _ = await client.HashSetAsync(key, "field1", "value1");
 
-        // Test HEXPIREAT with DateTimeOffset
-        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
+        // Test HEXPIREAT
+        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        long[] results = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
+        long[] results = await client.HashExpireAtAsync(key, expiry, ["field1"], options);
         _ = Assert.Single(results);
         Assert.Equal(1, results[0]); // Successfully set expiry
 
         // Test HEXPIREAT on non-existing field
-        results = await client.HashExpireAtAsync(key, futureExpiry, ["nonexistent"], options);
+        results = await client.HashExpireAtAsync(key, expiry, ["nonexistent"], options);
         _ = Assert.Single(results);
         Assert.Equal(-2, results[0]); // Field does not exist
     }
@@ -724,15 +724,15 @@ public class HashCommandTests(TestConfiguration config)
         // Set up test data
         _ = await client.HashSetAsync(key, "field1", "value1");
 
-        // Test HPEXPIREAT with DateTimeOffset (consolidated into HashExpireAtAsync)
-        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
+        // Test HPEXPIREAT
+        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        long[] results = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
+        long[] results = await client.HashExpireAtAsync(key, expiry, ["field1"], options);
         _ = Assert.Single(results);
         Assert.Equal(1, results[0]); // Successfully set expiry
 
         // Test HPEXPIREAT on non-existing field
-        results = await client.HashExpireAtAsync(key, futureExpiry, ["nonexistent"], options);
+        results = await client.HashExpireAtAsync(key, expiry, ["nonexistent"], options);
         _ = Assert.Single(results);
         Assert.Equal(-2, results[0]); // Field does not exist
     }
@@ -753,9 +753,9 @@ public class HashCommandTests(TestConfiguration config)
         _ = await client.HashSetAsync(key, "field2", "value2"); // No expiry
 
         // Set expiry for field1
-        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
+        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        _ = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
+        _ = await client.HashExpireAtAsync(key, expiry, ["field1"], options);
 
         // Test HEXPIRETIME
         long[] results = await client.HashExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
@@ -781,9 +781,9 @@ public class HashCommandTests(TestConfiguration config)
         _ = await client.HashSetAsync(key, "field2", "value2"); // No expiry
 
         // Set expiry for field1
-        DateTimeOffset futureExpiry = DateTimeOffset.UtcNow.AddMinutes(5);
+        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var options = new HashFieldExpirationConditionOptions();
-        _ = await client.HashExpireAtAsync(key, futureExpiry, ["field1"], options);
+        _ = await client.HashExpireAtAsync(key, expiry, ["field1"], options);
 
         // Test HPEXPIRETIME
         long[] results = await client.HashPExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
