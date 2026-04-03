@@ -59,14 +59,16 @@ internal partial class Database
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamCreateConsumerGroupAsync(key, groupName, position);
+        await ((BaseClient)this).StreamCreateConsumerGroupAsync(key, groupName, position);
+        return true;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?, CommandFlags)"/>
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamCreateConsumerGroupAsync(key, groupName, position, createStream, entriesRead);
+        await ((BaseClient)this).StreamCreateConsumerGroupAsync(key, groupName, position, createStream, entriesRead);
+        return true;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamDeleteConsumerGroupAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
@@ -94,7 +96,8 @@ internal partial class Database
     public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead);
+        await ((BaseClient)this).StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead);
+        return true;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, CommandFlags)"/>

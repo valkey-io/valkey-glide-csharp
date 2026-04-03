@@ -57,8 +57,8 @@ public abstract partial class BaseClient : IGenericBaseCommands
         => await Command(Request.KeyTypeAsync(key));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey)
-        => await Command(Request.KeyRenameAsync(key, newKey));
+    public async Task KeyRenameAsync(ValkeyKey key, ValkeyKey newKey)
+        => _ = await Command(Request.KeyRenameAsync(key, newKey));
 
     /// <inheritdoc/>
     public async Task<bool> KeyRenameNXAsync(ValkeyKey key, ValkeyKey newKey)

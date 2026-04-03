@@ -84,7 +84,7 @@ public class OpenTelemetryTests : IDisposable
     {
         string key = Guid.NewGuid().ToString();
 
-        _ = await client.StringSetAsync(key, "value");
+        await client.StringSetAsync(key, "value");
         _ = await client.StringGetAsync(key);
         _ = await client.KeyDeleteAsync(key);
 

@@ -8,6 +8,7 @@ namespace Valkey.Glide;
 /// Describes functionality that is common to both standalone and cluster servers.<br />
 /// See also <see cref="GlideClient" /> and <see cref="GlideClusterClient" />.
 /// </summary>
+// TODO #263: Move GLIDE-only command interfaces out of IDatabaseAsync inheritance.
 public partial interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommands, IGenericBaseCommands, IHashCommands, IHyperLogLogCommands, IListCommands, IScriptingAndFunctionBaseCommands, IServerManagementCommands, ISetCommands, ISortedSetCommands, IStringCommands
 {
     /// <summary>

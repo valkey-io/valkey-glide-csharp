@@ -15,6 +15,8 @@ public class CommandTests
 
             // String Commands
             () => Assert.Equal(["SET", "key", "value"], Request.StringSet("key", "value").GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "NX"], Request.StringSetNX("key", "value").GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "XX"], Request.StringSetXX("key", "value").GetArgs()),
             () => Assert.Equal(["GET", "key"], Request.StringGet("key").GetArgs()),
             () => Assert.Equal(["MGET", "key1", "key2", "key3"], Request.StringGetMultiple(["key1", "key2", "key3"]).GetArgs()),
             () => Assert.Equal(["MSET", "key1", "value1", "key2", "value2"], Request.StringSetMultiple([
@@ -368,6 +370,10 @@ public class CommandTests
 
             // String Commands
             () => Assert.True(Request.StringSet("key", "value").Converter("OK")),
+            () => Assert.True(Request.StringSetNX("key", "value").Converter("OK")),
+            () => Assert.False(Request.StringSetNX("key", "value").Converter(null)),
+            () => Assert.True(Request.StringSetXX("key", "value").Converter("OK")),
+            () => Assert.False(Request.StringSetXX("key", "value").Converter(null)),
             () => Assert.Equal<GlideString>("value", Request.StringGet("key").Converter("value")),
             () => Assert.Equal(ValkeyValue.Null, Request.StringGet("key").Converter(null!)),
             () => Assert.Equal(5L, Request.StringLength("key").Converter(5L)),
