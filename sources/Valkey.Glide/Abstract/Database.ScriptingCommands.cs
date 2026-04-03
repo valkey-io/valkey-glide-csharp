@@ -7,44 +7,6 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?, CommandFlags)"/>
-    public ValkeyResult ScriptEvaluate(
-        string script,
-        IEnumerable<ValkeyKey>? keys = null,
-        IEnumerable<ValkeyValue>? values = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return ScriptEvaluateAsync(script, keys, values).GetAwaiter().GetResult();
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(byte[], IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?, CommandFlags)"/>
-    public ValkeyResult ScriptEvaluate(
-        byte[] hash,
-        IEnumerable<ValkeyKey>? keys = null,
-        IEnumerable<ValkeyValue>? values = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return ScriptEvaluateAsync(hash, keys, values).GetAwaiter().GetResult();
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(LuaScript, object?, CommandFlags)"/>
-    public ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return ScriptEvaluateAsync(script, parameters).GetAwaiter().GetResult();
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(LoadedLuaScript, object?, CommandFlags)"/>
-    public ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return ScriptEvaluateAsync(script, parameters).GetAwaiter().GetResult();
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}?, IEnumerable{ValkeyValue}?, CommandFlags)"/>
     public async Task<ValkeyResult> ScriptEvaluateAsync(
         string script,
         IEnumerable<ValkeyKey>? keys = null,

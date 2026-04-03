@@ -115,43 +115,6 @@ public sealed class LuaScript
     public static int GetCachedScriptCount() => Cache.Count;
 
     /// <summary>
-    /// Evaluates the script on the specified database synchronously.
-    /// </summary>
-    /// <remarks>
-    /// This method extracts parameter values from the provided object and passes them to the script.
-    /// Parameters of type <see cref="ValkeyKey" /> are treated as keys, while other types are treated as arguments.
-    /// </remarks>
-    /// <param name="db">The database to execute the script on.</param>
-    /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
-    /// <param name="withKeyPrefix">Optional key prefix to apply to all keys.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>The result of the script execution.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
-    /// <example>
-    /// <code>
-    /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
-    /// var result = script.Evaluate(db, new { key = new ValkeyKey("mykey"), value = "myvalue" });
-    /// </code>
-    /// </example>
-    public ValkeyResult Evaluate(IDatabase db, object? parameters = null,
-        ValkeyKey? withKeyPrefix = null, CommandFlags flags = CommandFlags.None)
-    {
-        if (db == null)
-        {
-            throw new ArgumentNullException(nameof(db));
-        }
-
-        // Note: withKeyPrefix is not supported by the ScriptEvaluate API
-        // We need to extract parameters with prefix applied and call ScriptEvaluate with keys/values
-        (ValkeyKey[] keys, ValkeyValue[] args) = ExtractParametersInternal(parameters, withKeyPrefix);
-
-        // Use the proper ScriptEvaluate method
-        return db.ScriptEvaluate(ExecutableScript, keys, args, flags);
-    }
-
-    /// <summary>
     /// Asynchronously evaluates the script on the specified database.
     /// </summary>
     /// <remarks>

@@ -99,20 +99,6 @@ public class LoadedLuaScriptTests
     }
 
     [Fact]
-    public void Evaluate_WithNullDatabase_ThrowsArgumentNullException()
-    {
-        // Arrange
-        string scriptText = "return redis.call('GET', @key)";
-        LuaScript script = LuaScript.Prepare(scriptText);
-        byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        string loadedScript = script.ExecutableScript;
-        LoadedLuaScript loaded = new(script, hash, loadedScript);
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentNullException>(() => loaded.Evaluate(null!));
-    }
-
-    [Fact]
     public async Task EvaluateAsync_WithNullDatabase_ThrowsArgumentNullException()
     {
         // Arrange
