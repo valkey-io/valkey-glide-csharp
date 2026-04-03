@@ -45,8 +45,7 @@ public interface IStringCommands
     Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, When when);
 
     /// <summary>
-    /// Sets multiple keys to multiple values in a single unconditional operation.
-    /// This always succeeds or throws; there is no failure return value.
+    /// Sets the specified keys to the given values.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/mset/">valkey.io</seealso>
     /// <note>In cluster mode, if keys in <paramref name="values"/> map to different hash slots, the command
@@ -71,9 +70,9 @@ public interface IStringCommands
     Task StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 
     /// <summary>
-    /// Sets multiple keys to multiple values in a single operation based on a specified condition.
+    /// Sets the specified keys to the given values if none of the keys exist.
+    /// If any of the keys already exists, no operation is performed.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/mset/">valkey.io</seealso>
     /// <seealso href="https://valkey.io/commands/msetnx/">valkey.io</seealso>
     /// <note>In cluster mode, if keys in <paramref name="values"/> map to different hash slots, the command
     /// will be split across these slots and executed separately for each. This means the command
@@ -82,9 +81,7 @@ public interface IStringCommands
     /// while others did not. If this behavior impacts your application logic, consider splitting
     /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="values">A collection of key-value pairs to set.</param>
-    /// <param name="when">The condition under which the keys should be set. Only <see cref="When.Always"/> and <see cref="When.NotExists"/> are supported.</param>
     /// <returns><see langword="true"/> if all the keys were set, <see langword="false"/> if no key was set (at least one key already existed).</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is not <see cref="When.Always"/> or <see cref="When.NotExists"/>.</exception>
     /// <remarks>
     /// <example>
     /// <code>
@@ -92,13 +89,12 @@ public interface IStringCommands
     ///     new("key1", "value1"),
     ///     new("key2", "value2")
     /// ];
-    /// var response = await client.StringSetAsync(values, When.NotExists);
+    /// var response = await client.StringSetNXAsync(values);
     /// Console.WriteLine(response); // Output: true (if neither key existed)
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #262: Replace with separate StringSetNXAsync(values) method; remove When parameter.
-    Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when);
+    Task<bool> StringSetNXAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 
     /// <summary>
     /// Get the value of key. If the key does not exist the special value <see langword="null" /> is returned.
