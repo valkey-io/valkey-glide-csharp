@@ -177,6 +177,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry);
 
     /// <summary>
@@ -198,6 +199,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when);
 
     /// <summary>
@@ -339,6 +341,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
     /// <summary>
@@ -390,6 +393,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key);
 
     /// <summary>

@@ -48,6 +48,7 @@ internal partial class Request
         return Simple<bool>(RequestType.PExpire, [.. args]);
     }
 
+    // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<bool, bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always)
     {
         List<GlideString> args = [key.ToGlideString()];
@@ -124,6 +125,7 @@ internal partial class Request
         return Ok(RequestType.Restore, [.. args]);
     }
 
+    // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<string, ValkeyValue> KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null)
     {
         List<GlideString> args = [key.ToGlideString()];
@@ -180,6 +182,7 @@ internal partial class Request
         return Simple<bool>(RequestType.Copy, [.. args]);
     }
 
+    // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<long, DateTime?> KeyExpireTimeAsync(ValkeyKey key)
         => new(RequestType.PExpireTime, [key.ToGlideString()], true, response =>
             response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response).DateTime);

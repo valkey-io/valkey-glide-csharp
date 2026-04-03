@@ -102,9 +102,11 @@ internal partial class Request
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
         => Ok(RequestType.FlushDB, []);
 
+    // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<long, DateTime> LastSaveAsync()
         => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));
 
+    // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<object[], DateTime> TimeAsync()
         => new(RequestType.Time, [], false, arr =>
         {

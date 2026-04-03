@@ -99,6 +99,7 @@ internal partial class Request
     }
 
 #pragma warning disable IDE0072 // Add missing cases
+    // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<GlideString, ValkeyValue> StringGetSetExpiry(ValkeyKey key, DateTime expiry)
     {
         long unixTimestamp = expiry.Kind switch
