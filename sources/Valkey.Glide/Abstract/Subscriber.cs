@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Net;
-
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -135,21 +133,6 @@ internal sealed class Subscriber : ISubscriber
             _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
         }
     }
-
-    #endregion
-    #region NotSupportedMethods
-
-    public bool IsConnected(ValkeyChannel channel = default)
-    => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
-
-    public EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
-        => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
-
-    public Task<EndPoint?> IdentifyEndpointAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
-        => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
-
-    public EndPoint? SubscribedEndpoint(ValkeyChannel channel)
-        => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
     #endregion
     #region HelperMethods

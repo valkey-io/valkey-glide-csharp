@@ -21,6 +21,9 @@ internal class ValkeyTransaction : ValkeyBatch, ITransaction
         return res;
     }
 
+    public bool Execute(CommandFlags flags = CommandFlags.None)
+        => ExecuteAsync(flags).GetAwaiter().GetResult();
+
     public async Task<bool> ExecuteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

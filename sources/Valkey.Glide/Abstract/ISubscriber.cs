@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Net;
-
 namespace Valkey.Glide;
 
 /// <summary>
@@ -85,23 +83,6 @@ public interface ISubscriber
     /// <seealso href="https://valkey.io/commands/sunsubscribe"/>.
     /// </remarks>
     Task UnsubscribeAllAsync(CommandFlags flags = CommandFlags.None);
-
-    #endregion
-    #region NotSupportedMethods
-
-#pragma warning disable CS1591 // Obsolete methods
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    bool IsConnected(ValkeyChannel channel = default);
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    Task<EndPoint?> IdentifyEndpointAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    EndPoint? SubscribedEndpoint(ValkeyChannel channel);
-#pragma warning restore CS1591
 
     #endregion
 }

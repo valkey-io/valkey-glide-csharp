@@ -32,5 +32,8 @@ public interface ITransaction : IBatch
     /// <see langword="true" /> if a transaction was applied or
     /// <see langword="false" /> if a transaction failed due to a <c>WATCH</c> command.
     /// </returns>
+    bool Execute(CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="Execute(CommandFlags)"/>
     Task<bool> ExecuteAsync(CommandFlags flags = CommandFlags.None);
 }
