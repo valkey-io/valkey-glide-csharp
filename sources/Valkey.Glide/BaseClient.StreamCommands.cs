@@ -275,5 +275,4 @@ public partial class BaseClient : IStreamCommands
     {
         return await Command(Request.StreamConsumerInfoAsync(key, groupName));
     }
-
 }
