@@ -564,7 +564,7 @@ public class StringCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task StringSetNXAsync_WhenKeysDoNotExists_Success(BaseClient client)
+    public async Task StringSetNXAsync_WhenKeysDoNotExist_Success(BaseClient client)
     {
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
