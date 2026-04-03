@@ -88,8 +88,8 @@ internal partial class Request
         List<GlideString> args = [key.ToGlideString()];
         if (expiry.HasValue)
         {
-            args.Add(ExKeyword.ToGlideString());
-            args.Add(ToSeconds(expiry.Value).ToGlideString());
+            args.Add(PxKeyword.ToGlideString());
+            args.Add(ToMilliseconds(expiry.Value).ToGlideString());
         }
         else
         {
