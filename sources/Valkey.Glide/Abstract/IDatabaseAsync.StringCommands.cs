@@ -15,9 +15,15 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
 
-    /// <inheritdoc cref="IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})"/>
-    /// <param name="when">The condition under which the keys should be set.</param>
+    /// <summary>
+    /// Sets the specified keys to the given values, subject to the <paramref name="when"/> condition.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/mset/">valkey.io</seealso>
+    /// <seealso href="https://valkey.io/commands/msetnx/">valkey.io</seealso>
+    /// <param name="values"><inheritdoc cref="IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" path="/param[@name='values']"/></param>
+    /// <param name="when">The condition under which the keys should be set.<see cref="When.Exists"/> is not supported.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if <paramref name="when"/> is <see cref="When.Always"/>; otherwise, <see langword="true"/> if all keys were set or <see langword="false"/> if no keys were set.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is <see cref="When.Exists"/>.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringSetAsync(
