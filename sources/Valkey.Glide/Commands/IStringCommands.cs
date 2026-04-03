@@ -71,7 +71,7 @@ public interface IStringCommands
 
     /// <summary>
     /// Sets the specified keys to the given values if none of the keys exist.
-    /// If any of the keys already exists, no operation is performed.
+    /// If any of the keys already exist, no operation is performed.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/msetnx/">valkey.io</seealso>
     /// <note>In cluster mode, if keys in <paramref name="values"/> map to different hash slots, the command
