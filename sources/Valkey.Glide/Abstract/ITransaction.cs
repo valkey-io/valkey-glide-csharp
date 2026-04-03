@@ -32,16 +32,5 @@ public interface ITransaction : IBatch
     /// <see langword="true" /> if a transaction was applied or
     /// <see langword="false" /> if a transaction failed due to a <c>WATCH</c> command.
     /// </returns>
-    bool Execute(CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// Execute the batch operation, sending all queued commands to the server.
-    /// </summary>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>
-    /// <see langword="true" /> if a transaction was applied or
-    /// <see langword="false" /> if a transaction failed due to a <c>WATCH</c> command.
-    /// </returns>
     Task<bool> ExecuteAsync(CommandFlags flags = CommandFlags.None);
 }

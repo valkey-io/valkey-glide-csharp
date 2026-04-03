@@ -74,7 +74,7 @@ public class BatchTests(TestConfiguration config)
         // wait for t3 for 100ms, expect to time out (transaction is queued, not sent yet)
         Assert.False(t3.Wait(100));
 
-        Assert.True(transaction.Execute());
+        Assert.True(await transaction.ExecuteAsync());
         // tasks could be awaited in any order
         DateTime dt3 = ParseTimeResponse(await t3);
         DateTime dt4 = ParseTimeResponse(await t4);
@@ -93,20 +93,20 @@ public class BatchTests(TestConfiguration config)
         Task<ValkeyValue> t1 = transaction.StringGetAsync(key);
         Task<object?> t3 = transaction.CustomCommand(["ping", "pong", "pang"]);
 
-        Assert.True(transaction.Execute());
+        Assert.True(await transaction.ExecuteAsync());
         Assert.True((await t1).IsNull);
         _ = await Assert.ThrowsAsync<RequestException>(async () => await t3);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterConnections), MemberType = typeof(TestConfiguration))]
-    public void TransactionWithCrossSlot(ConnectionMultiplexer conn)
+    public async Task TransactionWithCrossSlot(ConnectionMultiplexer conn)
     {
         ITransaction transaction = conn.GetDatabase().CreateTransaction();
         Task<ValkeyValue> t1 = transaction.StringGetAsync(Guid.NewGuid().ToString());
         Task<ValkeyValue> t2 = transaction.StringGetAsync(Guid.NewGuid().ToString());
 
-        RequestException ex = Assert.Throws<RequestException>(() => transaction.Execute());
+        RequestException ex = await Assert.ThrowsAsync<RequestException>(async () => await transaction.ExecuteAsync());
         Assert.Contains("CrossSlot", ex.Message);
         // in SER, commands' futures are never resolved if transaction failed, so we do the same
         Assert.False(t1.Wait(100));
@@ -138,7 +138,7 @@ public class BatchTests(TestConfiguration config)
             ? Condition.KeyNotExists(Guid.NewGuid().ToString())
             : Condition.KeyExists(Guid.NewGuid().ToString()));
 
-        Assert.Equal(conditionPass, transaction.Execute());
+        Assert.Equal(conditionPass, await transaction.ExecuteAsync());
         if (conditionPass)
         {
             Assert.True((await t1).IsNull);
@@ -177,7 +177,7 @@ public class BatchTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(PermuteTestConnectionsAndBool), 1)]
-    public void EmptyBatchIsntSubmitted(ConnectionMultiplexer conn, bool isBatch)
+    public async Task EmptyBatchIsntSubmitted(ConnectionMultiplexer conn, bool isBatch)
     {
         // note: there is no easy way to ensure that nothing was actually sent over the wire.
         IDatabase db = conn.GetDatabase();
@@ -188,7 +188,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            Assert.True(db.CreateTransaction().Execute());
+            Assert.True(await db.CreateTransaction().ExecuteAsync());
         }
     }
 
@@ -215,7 +215,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -249,7 +249,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -283,7 +283,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -311,7 +311,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.False(transaction.Execute());
+        Assert.False(await transaction.ExecuteAsync());
         Assert.False(c.WasSatisfied);
         _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
     }
@@ -334,7 +334,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(isConditionPositive ? Condition.HashExists(key, "f") : Condition.HashNotExists(key, "f"));
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -368,7 +368,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -402,7 +402,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -436,7 +436,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -466,7 +466,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -496,7 +496,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -533,7 +533,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -570,7 +570,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -607,7 +607,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -644,7 +644,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -681,7 +681,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -718,7 +718,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -755,7 +755,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -792,7 +792,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -829,7 +829,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -866,7 +866,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        bool res = transaction.Execute();
+        bool res = await transaction.ExecuteAsync();
         Assert.Equal(expectTranResult, res);
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
@@ -901,7 +901,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -936,7 +936,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult, transaction.Execute());
+        Assert.Equal(expectTranResult, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult, c.WasSatisfied);
         if (expectTranResult)
         {
@@ -970,7 +970,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
@@ -1004,7 +1004,7 @@ public class BatchTests(TestConfiguration config)
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
-        Assert.Equal(expectTranResult == conditionShouldPass, transaction.Execute());
+        Assert.Equal(expectTranResult == conditionShouldPass, await transaction.ExecuteAsync());
         Assert.Equal(expectTranResult == conditionShouldPass, c.WasSatisfied);
         if (expectTranResult == conditionShouldPass)
         {
