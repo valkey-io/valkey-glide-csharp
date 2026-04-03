@@ -31,7 +31,7 @@ internal partial class Database
                 return await StringSetNXAsync(values);
             case When.Exists:
             default:
-                throw new ArgumentException($"{when} is not valid in this context; the permitted values are: {When.Always}, {When.Exists}");
+                throw new ArgumentException($"{when} is not valid in this context; the permitted values are: {When.Always}, {When.NotExists}");
         }
     }
 
