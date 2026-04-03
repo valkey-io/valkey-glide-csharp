@@ -19,9 +19,13 @@ internal interface IBatchStringCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringSetAsync(ValkeyKey, ValkeyValue)" /></returns>
     IBatch StringSet(ValkeyKey key, ValkeyValue value);
 
-    /// <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When)" /></returns>
+    /// <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" /></returns>
     IBatch StringSet(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
+
+    /// <inheritdoc cref="Commands.IStringCommands.StringSetNXAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringSetNXAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" /></returns>
+    IBatch StringSetNX(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 
     /// <inheritdoc cref="Commands.IStringCommands.StringGetRangeAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStringCommands.StringGetRangeAsync(ValkeyKey, long, long)" /></returns>

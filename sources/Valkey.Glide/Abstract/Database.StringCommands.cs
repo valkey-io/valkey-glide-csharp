@@ -14,12 +14,25 @@ internal partial class Database
         return true;
     }
 
-    // TODO #262: Update to delegate to StringSetAsync(values) and StringSetNXAsync(values).
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When, CommandFlags)"/>
-    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> StringSetAsync(
+        IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values,
+        When when = When.Always,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StringSetAsync(values, when);
+
+        switch (when)
+        {
+            case When.Always:
+                _ = await StringSetAsync(values);
+                return true;
+            case When.NotExists:
+                return await StringSetNXAsync(values);
+            case When.Exists:
+            default:
+                throw new ArgumentException($"{when} is not valid in this context; the permitted values are: {When.Always}, {When.Exists}");
+        }
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetAsync(ValkeyKey, CommandFlags)"/>

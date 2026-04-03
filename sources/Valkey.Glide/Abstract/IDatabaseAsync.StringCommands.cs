@@ -15,11 +15,15 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
 
-    // TODO #262: Update to delegate to StringSetAsync(values) and StringSetNXAsync(values).
-    /// <inheritdoc cref="IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When)"/>
+    /// <inheritdoc cref="IStringCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})"/>
+    /// <param name="when">The condition under which the keys should be set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is <see cref="When.Exists"/>.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None);
+    Task<bool> StringSetAsync(
+        IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values,
+        When when = When.Always,
+        CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IStringCommands.StringGetAsync(ValkeyKey)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
