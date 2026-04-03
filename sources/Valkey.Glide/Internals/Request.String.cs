@@ -102,6 +102,7 @@ internal partial class Request
     // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<GlideString, ValkeyValue> StringGetSetExpiry(ValkeyKey key, DateTime expiry)
     {
+        // TODO #269: Remove DateTimeKind switch once this method accepts DateTimeOffset.
         long unixTimestamp = expiry.Kind switch
         {
             DateTimeKind.Local => ((DateTimeOffset)expiry.ToUniversalTime()).ToUnixTimeSeconds(),

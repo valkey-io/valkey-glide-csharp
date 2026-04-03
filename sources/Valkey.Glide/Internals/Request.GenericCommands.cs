@@ -55,6 +55,7 @@ internal partial class Request
 
         if (expiry.HasValue)
         {
+            // TODO #269: Remove implicit DateTime-to-DateTimeOffset cast once this method accepts DateTimeOffset.
             args.Add(((DateTimeOffset)expiry.Value).ToUnixTimeMilliseconds().ToGlideString());
         }
         else
