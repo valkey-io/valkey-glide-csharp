@@ -8,8 +8,18 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient : IStringCommands
 {
     /// <inheritdoc/>
-    public async Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value) =>
-        await Command(Request.StringSet(key, value));
+    public async Task StringSetAsync(ValkeyKey key, ValkeyValue value) =>
+        _ = await Command(Request.StringSet(key, value));
+
+    /// <inheritdoc/>
+    public async Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, When when) =>
+        when switch
+        {
+            When.Always => await Command(Request.StringSet(key, value)),
+            When.NotExists => await Command(Request.StringSetNX(key, value)),
+            When.Exists => await Command(Request.StringSetXX(key, value)),
+            _ => throw new ArgumentOutOfRangeException(nameof(when), $"{when} is not supported for StringSetAsync.")
+        };
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> StringGetAsync(ValkeyKey key) =>
@@ -20,13 +30,19 @@ public abstract partial class BaseClient : IStringCommands
         await Command(Request.StringGetMultiple([.. keys]));
 
     /// <inheritdoc/>
-    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always) =>
+    public async Task StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
+        _ = await Command(Request.StringSetMultiple([.. values]));
+
+    // TODO #262: Replace with separate StringSetNXAsync(values) method; remove When parameter.
+    /// <inheritdoc/>
+    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when) =>
         when switch
         {
             When.Always => await Command(Request.StringSetMultiple([.. values])),
-            When.Exists => throw new NotImplementedException($"{when} is not supported for StringSetAsync."),
+            When.Exists => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists"),
+
             When.NotExists => await Command(Request.StringSetMultipleNX([.. values])),
-            _ => throw new ArgumentOutOfRangeException(nameof(when), $"{when} is not supported for StringSetAsync.")
+            _ => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists")
         };
 
     /// <inheritdoc/>

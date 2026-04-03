@@ -10,20 +10,65 @@ public interface IStringCommands
 {
     /// <summary>
     /// Sets the value of a key to a string. If the key already holds a value, it is overwritten, regardless of its type.
+    /// This unconditional SET always succeeds or throws; there is no failure return value.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/set/">valkey.io</seealso>
     /// <param name="key">The key to store.</param>
     /// <param name="value">The value to store with the given key.</param>
-    /// <returns><see langword="true"/> if the string was set, <see langword="false"/> otherwise.</returns>
+    /// <returns>A task that completes when the value has been set.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.StringSetAsync("key", "value");
-    /// Console.WriteLine(response); // Output: true
+    /// await client.StringSetAsync("key", "value");
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value);
+    // TODO #263: Move to IClient.StringCommands; signature diverges from SER (Task vs Task<bool>).
+    Task StringSetAsync(ValkeyKey key, ValkeyValue value);
+
+    /// <summary>
+    /// Sets the value of a key to a string based on a specified condition.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/set/">valkey.io</seealso>
+    /// <param name="key">The key to store.</param>
+    /// <param name="value">The value to store with the given key.</param>
+    /// <param name="when">The condition under which the key should be set.</param>
+    /// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.StringSetAsync("key", "value", When.NotExists);
+    /// Console.WriteLine(response); // Output: true if key did not exist, false otherwise
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, When when);
+
+    /// <summary>
+    /// Sets multiple keys to multiple values in a single unconditional operation.
+    /// This always succeeds or throws; there is no failure return value.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/mset/">valkey.io</seealso>
+    /// <note>In cluster mode, if keys in <paramref name="values"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</note>
+    /// <param name="values">A collection of key-value pairs to set.</param>
+    /// <returns>A task that completes when all values have been set.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// KeyValuePair&lt;ValkeyKey, ValkeyValue&gt;[] values = [
+    ///     new("key1", "value1"),
+    ///     new("key2", "value2")
+    /// ];
+    /// await client.StringSetAsync(values);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 
     /// <summary>
     /// Sets multiple keys to multiple values in a single operation based on a specified condition.
@@ -37,8 +82,9 @@ public interface IStringCommands
     /// while others did not. If this behavior impacts your application logic, consider splitting
     /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="values">A collection of key-value pairs to set.</param>
-    /// <param name="when">The condition to specify. If specified to Not-Exists, sets multiple keys to values only if the key does not exist. Defaults to Always.</param>
+    /// <param name="when">The condition under which the keys should be set. Only <see cref="When.Always"/> and <see cref="When.NotExists"/> are supported.</param>
     /// <returns><see langword="true"/> if all the keys were set, <see langword="false"/> if no key was set (at least one key already existed).</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is not <see cref="When.Always"/> or <see cref="When.NotExists"/>.</exception>
     /// <remarks>
     /// <example>
     /// <code>
@@ -46,12 +92,13 @@ public interface IStringCommands
     ///     new("key1", "value1"),
     ///     new("key2", "value2")
     /// ];
-    /// var response = await client.StringSetAsync(values);
+    /// var response = await client.StringSetAsync(values, When.NotExists);
     /// Console.WriteLine(response); // Output: true (if neither key existed)
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always);
+    // TODO #262: Replace with separate StringSetNXAsync(values) method; remove When parameter.
+    Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when);
 
     /// <summary>
     /// Get the value of key. If the key does not exist the special value <see langword="null" /> is returned.

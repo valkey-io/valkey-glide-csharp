@@ -16,7 +16,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key first
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
         Assert.True(await client.KeyExistsAsync(key));
 
         // Delete the key
@@ -36,8 +36,8 @@ public class GenericCommandTests(TestConfiguration config)
         string key3 = Guid.NewGuid().ToString();
 
         // Set keys
-        _ = await client.StringSetAsync(key1, "value1");
-        _ = await client.StringSetAsync(key2, "value2");
+        await client.StringSetAsync(key1, "value1");
+        await client.StringSetAsync(key2, "value2");
 
         // Delete multiple keys (including non-existent)
         long deletedCount = await client.KeyDeleteAsync([key1, key2, key3]);
@@ -55,7 +55,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key first
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
         Assert.True(await client.KeyExistsAsync(key));
 
         // Unlink the key
@@ -75,8 +75,8 @@ public class GenericCommandTests(TestConfiguration config)
         string key3 = Guid.NewGuid().ToString();
 
         // Set some keys
-        _ = await client.StringSetAsync(key1, "value1");
-        _ = await client.StringSetAsync(key2, "value2");
+        await client.StringSetAsync(key1, "value1");
+        await client.StringSetAsync(key2, "value2");
 
         // Check existence
         long existingCount = await client.KeyExistsAsync([key1, key2, key3]);
@@ -91,7 +91,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Set expiry with seconds precision (should use EXPIRE)
         Assert.True(await client.KeyExpireAsync(key, TimeSpan.FromSeconds(10)));
@@ -128,7 +128,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Key without expiry should return null
         DateTime? expireTime = await client.KeyExpireTimeAsync(key);
@@ -157,7 +157,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a string key
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Get encoding for string key
         string? encoding = await client.KeyEncodingAsync(key);
@@ -190,7 +190,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a string key
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         try
         {
@@ -219,7 +219,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a string key
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Get idle time for string key
         long? idleTime = await client.KeyIdleTimeAsync(key);
@@ -252,7 +252,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a string key
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Get reference count for string key
         long? refCount = await client.KeyRefCountAsync(key);
@@ -273,7 +273,7 @@ public class GenericCommandTests(TestConfiguration config)
         string setKey = Guid.NewGuid().ToString();
 
         // Test string type
-        _ = await client.StringSetAsync(stringKey, "value");
+        await client.StringSetAsync(stringKey, "value");
         ValkeyType stringType = await client.KeyTypeAsync(stringKey);
         Assert.Equal(ValkeyType.String, stringType);
 
@@ -297,10 +297,10 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key
-        _ = await client.StringSetAsync(oldKey, value);
+        await client.StringSetAsync(oldKey, value);
 
         // Rename the key
-        Assert.True(await client.KeyRenameAsync(oldKey, newKey));
+        await client.KeyRenameAsync(oldKey, newKey);
 
         // Check that old key doesn't exist and new key exists
         Assert.False(await client.KeyExistsAsync(oldKey));
@@ -319,8 +319,8 @@ public class GenericCommandTests(TestConfiguration config)
         string existingValue = "existing_value";
 
         // Set keys
-        _ = await client.StringSetAsync(oldKey, value);
-        _ = await client.StringSetAsync(existingKey, existingValue);
+        await client.StringSetAsync(oldKey, value);
+        await client.StringSetAsync(existingKey, existingValue);
 
         // Rename to non-existing key should succeed
         Assert.True(await client.KeyRenameNXAsync(oldKey, newKey));
@@ -348,7 +348,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key with expiry
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
         _ = await client.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
 
         // Verify it has TTL
@@ -374,7 +374,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key
-        _ = await client.StringSetAsync(sourceKey, value);
+        await client.StringSetAsync(sourceKey, value);
 
         // Dump the key
         byte[]? dumpData = await client.KeyDumpAsync(sourceKey);
@@ -388,8 +388,8 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(value, await client.StringGetAsync(destKey));
 
         // Test RestoreOptions with Replace
-        _ = await client.StringSetAsync(replaceKey, "old_value");
-        _ = await client.StringSetAsync(replaceDateTimeKey, "old_value");
+        await client.StringSetAsync(replaceKey, "old_value");
+        await client.StringSetAsync(replaceDateTimeKey, "old_value");
         RestoreOptions replaceOptions = new RestoreOptions().Replace();
         await client.KeyRestoreAsync(replaceKey, dumpData, restoreOptions: replaceOptions);
         Assert.Equal(value, await client.StringGetAsync(replaceKey));
@@ -442,8 +442,8 @@ public class GenericCommandTests(TestConfiguration config)
         string key3 = Guid.NewGuid().ToString();
 
         // Set some keys
-        _ = await client.StringSetAsync(key1, "value1");
-        _ = await client.StringSetAsync(key2, "value2");
+        await client.StringSetAsync(key1, "value1");
+        await client.StringSetAsync(key2, "value2");
 
         // Touch single key
         Assert.True(await client.KeyTouchAsync(key1));
@@ -462,7 +462,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key
-        _ = await client.StringSetAsync(sourceKey, value);
+        await client.StringSetAsync(sourceKey, value);
 
         // Copy the key
         Assert.True(await client.KeyCopyAsync(sourceKey, destKey));
@@ -472,7 +472,7 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(value, await client.StringGetAsync(destKey));
 
         // Test copy with replace
-        _ = await client.StringSetAsync(destKey, "new_value");
+        await client.StringSetAsync(destKey, "new_value");
         Assert.True(await client.KeyCopyAsync(sourceKey, destKey, replace: true));
         Assert.Equal(value, await client.StringGetAsync(destKey));
     }
@@ -490,9 +490,9 @@ public class GenericCommandTests(TestConfiguration config)
         string key2 = Guid.NewGuid().ToString();
         string key3 = Guid.NewGuid().ToString();
 
-        _ = await client.StringSetAsync(key1, "value1");
-        _ = await client.StringSetAsync(key2, "value2");
-        _ = await client.StringSetAsync(key3, "value3");
+        await client.StringSetAsync(key1, "value1");
+        await client.StringSetAsync(key2, "value2");
+        await client.StringSetAsync(key3, "value3");
 
         // Now we should get a random key
         string? randomKey = await client.KeyRandomAsync();
@@ -601,7 +601,7 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(["a", "b", "c"], [.. result.Select(v => v.ToString())]);
 
         // Test overwriting existing destination
-        _ = await client.StringSetAsync(destKey, "existing_value");
+        await client.StringSetAsync(destKey, "existing_value");
         count = await client.SortAndStoreAsync(destKey, sourceKey);
         Assert.Equal(3, count);
         // Destination should now be a list, not a string
@@ -616,7 +616,7 @@ public class GenericCommandTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key to create a write operation
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Test WAIT with different expected behavior for cluster vs standalone
         long replicaCount = await client.WaitAsync(1, 2000);

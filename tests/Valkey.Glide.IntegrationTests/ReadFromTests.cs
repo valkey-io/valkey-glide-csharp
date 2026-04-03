@@ -62,7 +62,7 @@ public class ReadFromTests(TestConfiguration config)
         // Test data operations to verify the ReadFrom configuration is active
         string testKey = Guid.NewGuid().ToString();
         string testValue = useStandalone ? "standalone-end-to-end-test" : "cluster-end-to-end-test";
-        _ = await database.StringSetAsync(testKey, testValue);
+        await database.StringSetAsync(testKey, testValue);
         string? retrievedValue = await database.StringGetAsync(testKey);
         Assert.Equal(testValue, retrievedValue);
     }
@@ -93,7 +93,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test data operations to verify default behavior works
             string testKey = Guid.NewGuid().ToString();
             string testValue = "connection-string-default-behavior-test";
-            _ = await database.StringSetAsync(testKey, testValue);
+            await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
@@ -125,7 +125,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test data operations to verify default behavior works
             string testKey = Guid.NewGuid().ToString();
             string testValue = "config-options-null-readfrom-test";
-            _ = await database.StringSetAsync(testKey, testValue);
+            await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
@@ -235,7 +235,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test basic operations to ensure legacy behavior works
             string testKey = "legacy-config-test-key";
             string testValue = "legacy-config-test-value";
-            _ = await database.StringSetAsync(testKey, testValue);
+            await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
@@ -265,7 +265,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test basic operations to ensure legacy behavior works
             string testKey = "legacy-connection-string-test-key";
             string testValue = "legacy-connection-string-test-value";
-            _ = await database.StringSetAsync(testKey, testValue);
+            await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 

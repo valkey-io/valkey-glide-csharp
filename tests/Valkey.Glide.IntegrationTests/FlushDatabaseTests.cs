@@ -15,7 +15,7 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
         string key = $"flush-test-{Guid.NewGuid()}";
-        _ = await client.StringSetAsync(key, "test-value");
+        await client.StringSetAsync(key, "test-value");
 
         Assert.True(await client.KeyExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
@@ -32,7 +32,7 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
         string key = $"flushall-test-{Guid.NewGuid()}";
-        _ = await client.StringSetAsync(key, "test-value");
+        await client.StringSetAsync(key, "test-value");
 
         Assert.True(await client.KeyExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
@@ -49,7 +49,7 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
         string key = $"flush-cluster-test-{Guid.NewGuid()}";
-        _ = await client.StringSetAsync(key, "test-value");
+        await client.StringSetAsync(key, "test-value");
 
         Assert.True(await client.KeyExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
@@ -66,7 +66,7 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
         string key = $"flush-cluster-test-{Guid.NewGuid()}";
-        _ = await client.StringSetAsync(key, "test-value");
+        await client.StringSetAsync(key, "test-value");
 
         Assert.True(await client.KeyExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());

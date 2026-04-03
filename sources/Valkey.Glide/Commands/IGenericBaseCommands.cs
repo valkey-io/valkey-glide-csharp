@@ -239,15 +239,16 @@ public interface IGenericBaseCommands
     /// <note>When in cluster mode, both key and newKey must map to the same hash slot.</note>
     /// <param name="key">The key to rename.</param>
     /// <param name="newKey">The new name of the key.</param>
-    /// <returns><see langword="true"/> if the key was renamed. If key does not exist, an error is thrown.</returns>
+    /// <returns>A task that completes when the rename succeeds. If key does not exist, an error is thrown.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.KeyRenameAsync(oldKey, newKey);
+    /// await client.KeyRenameAsync(oldKey, newKey);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
+    // TODO #263: Move to IClient.GenericCommands; signature diverges from SER (Task vs Task<bool>).
+    Task KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
 
     /// <summary>
     /// Renames key to newKey if newKey does not yet exist.

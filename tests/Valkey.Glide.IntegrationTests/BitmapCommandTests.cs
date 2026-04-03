@@ -17,7 +17,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set a string value - ASCII 'A' is 01000001 in binary
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         // Test bit positions in 'A' (01000001)
         Assert.False(await client.StringGetBitAsync(key, 0));
@@ -46,7 +46,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set a short string
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         // Test bit beyond the string length
         bool bit = await client.StringGetBitAsync(key, 100);
@@ -61,7 +61,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set a string
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         // Test negative offset - should throw an exception
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StringGetBitAsync(key, -1));
@@ -159,7 +159,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set string to "A" (ASCII 65 = 01000001 in binary = 2 bits set)
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         // Count all bits
         long count = await client.StringBitCountAsync(key);
@@ -212,7 +212,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set string to "A" (ASCII 65 = 01000001 in binary)
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         // Find first set bit (should be at position 1)
         long pos1 = await client.StringBitPositionAsync(key, true);
@@ -268,8 +268,8 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = keyPrefix + ":result";
 
         // Set key1 to "A" (01000001) and key2 to "B" (01000010)
-        _ = await client.StringSetAsync(key1, "A");
-        _ = await client.StringSetAsync(key2, "B");
+        await client.StringSetAsync(key1, "A");
+        await client.StringSetAsync(key2, "B");
 
         // Perform AND operation
         long size = await client.StringBitOperationAsync(Bitwise.And, result, key1, key2);
@@ -290,8 +290,8 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = keyPrefix + ":result";
 
         // Set key1 to "A" (01000001) and key2 to "B" (01000010)
-        _ = await client.StringSetAsync(key1, "A");
-        _ = await client.StringSetAsync(key2, "B");
+        await client.StringSetAsync(key1, "A");
+        await client.StringSetAsync(key2, "B");
 
         // Perform OR operation
         long size = await client.StringBitOperationAsync(Bitwise.Or, result, key1, key2);
@@ -313,9 +313,9 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = keyPrefix + ":result";
 
         // Set keys with different bit patterns
-        _ = await client.StringSetAsync(key1, "A"); // 01000001
-        _ = await client.StringSetAsync(key2, "B"); // 01000010
-        _ = await client.StringSetAsync(key3, "D"); // 01000100
+        await client.StringSetAsync(key1, "A"); // 01000001
+        await client.StringSetAsync(key2, "B"); // 01000010
+        await client.StringSetAsync(key3, "D"); // 01000100
 
         // Perform OR operation on multiple keys
         ValkeyKey[] keys = [key1, key2, key3];
@@ -337,8 +337,8 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = keyPrefix + ":result";
 
         // Set key1 to "A" (01000001) and key2 to "B" (01000010)
-        _ = await client.StringSetAsync(key1, "A");
-        _ = await client.StringSetAsync(key2, "B");
+        await client.StringSetAsync(key1, "A");
+        await client.StringSetAsync(key2, "B");
 
         // Perform XOR operation
         long size = await client.StringBitOperationAsync(Bitwise.Xor, result, key1, key2);
@@ -359,7 +359,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = keyPrefix + ":result";
 
         // Set key1 to "A" (01000001)
-        _ = await client.StringSetAsync(key1, "A");
+        await client.StringSetAsync(key1, "A");
 
         // Perform NOT operation (NOT only takes one key)
         ValkeyKey[] keys = [key1];
@@ -379,7 +379,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value "A" (ASCII 65 = 01000001)
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         var subCommands = new BitFieldOptions.IBitFieldSubCommand[]
         {
@@ -410,7 +410,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value "A" (ASCII 65 = 01000001)
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         var readOnlyCommands = new BitFieldOptions.IBitFieldReadOnlySubCommand[]
         {
@@ -523,7 +523,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set initial value "A" (ASCII 65 = 01000001)
-        _ = await client.StringSetAsync(key, "A");
+        await client.StringSetAsync(key, "A");
 
         // Test with only GET operations
         var readOnlySubCommands = new BitFieldOptions.IBitFieldSubCommand[]

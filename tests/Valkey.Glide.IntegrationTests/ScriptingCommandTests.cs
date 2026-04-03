@@ -290,7 +290,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         // Set up test data
         string key = Guid.NewGuid().ToString();
         string value = "test value";
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Script that reads the data
         using var script = new Script("return redis.call('GET', KEYS[1])");
@@ -759,7 +759,7 @@ end)";
         // Set up test data
         string key = Guid.NewGuid().ToString();
         string value = "function test value";
-        _ = await client.StringSetAsync(key, value);
+        await client.StringSetAsync(key, value);
 
         // Use hardcoded unique library name per test
         string libName = "getlib";
@@ -1712,7 +1712,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             LoadedLuaScript loaded = await script.LoadAsync(server);
 
             // Set a test value first
-            _ = await client.StringSetAsync("loadedkey", "loadedvalue");
+            await client.StringSetAsync("loadedkey", "loadedvalue");
 
             // Execute the loaded script
             var parameters = new { key = new ValkeyKey("loadedkey") };

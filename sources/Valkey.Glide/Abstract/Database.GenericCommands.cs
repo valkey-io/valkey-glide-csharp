@@ -95,7 +95,8 @@ internal partial class Database
     public async Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await KeyRenameAsync(key, newKey);
+        await KeyRenameAsync(key, newKey);
+        return true;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRenameNXAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
