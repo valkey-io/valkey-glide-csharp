@@ -564,7 +564,7 @@ public class StringCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task StringSetAsync_MultipleKeyValuePairs_WithWhenNotExists_Success(BaseClient client)
+    public async Task StringSetNXAsync_WhenKeysDoNotExists_Success(BaseClient client)
     {
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -580,7 +580,7 @@ public class StringCommandTests(TestConfiguration config)
         ];
 
         // First call should succeed since keys don't exist
-        bool result = await client.StringSetAsync(keyValuePairs, When.NotExists);
+        bool result = await client.StringSetNXAsync(keyValuePairs);
         Assert.True(result);
 
         ValkeyValue retrievedValue1 = await client.StringGetAsync(key1);
@@ -592,7 +592,7 @@ public class StringCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task StringSetAsync_MultipleKeyValuePairs_WithWhenNotExists_Failure(BaseClient client)
+    public async Task StringSetNXAsync_WhenKeysExist_Failure(BaseClient client)
     {
         // Use hash tags to ensure keys map to the same slot in cluster mode
         string baseKey = Guid.NewGuid().ToString();
@@ -612,7 +612,7 @@ public class StringCommandTests(TestConfiguration config)
         ];
 
         // Should fail since key1 already exists
-        bool result = await client.StringSetAsync(keyValuePairs, When.NotExists);
+        bool result = await client.StringSetNXAsync(keyValuePairs);
         Assert.False(result);
 
         // Verify original values are unchanged
