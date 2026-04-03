@@ -92,10 +92,10 @@ internal partial class Request
         => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
 
     /// <summary>
-    /// Converts the given time span to seconds.
+    /// Converts the given time span to floating-point seconds.
     /// <param name="timeSpan">The time span to convert.</param>
-    /// <returns>The number of seconds in the time span, rounded to the nearest integer.</returns>
+    /// <returns>The number of seconds in the time span, as a floating-point number.</returns>
     /// </summary>
-    private static long ToSeconds(TimeSpan timeSpan)
-        => timeSpan.Ticks / TimeSpan.TicksPerSecond;
+    private static double ToSeconds(TimeSpan timeSpan)
+        => timeSpan.TotalSeconds;
 }
