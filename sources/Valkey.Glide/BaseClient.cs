@@ -149,14 +149,10 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Get compression statistics from the Rust core.
-    /// Returns statistics about compression operations including:
-    /// - Total values compressed/decompressed
-    /// - Total bytes before and after compression
-    /// - Number of times compression was skipped
+    /// Gets statistics for the client.
     /// </summary>
-    /// <returns>A <see cref="CompressionStatistics"/> object containing compression metrics.</returns>
-    public static CompressionStatistics GetCompressionStatistics()
+    /// <returns>Statistics for the client.</returns>
+    public static CompressionStatistics GetStatistics()
     {
         var stats = GetStatisticsFfi();
         return new CompressionStatistics(

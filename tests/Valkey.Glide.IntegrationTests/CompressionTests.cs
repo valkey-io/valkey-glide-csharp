@@ -29,7 +29,7 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
-        var statsBefore = BaseClient.GetCompressionStatistics();
+        var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_test_{Guid.NewGuid()}";
         string largeValue = new string('a', LargeValueSize);
@@ -39,7 +39,7 @@ public class CompressionTests(TestConfiguration config)
 
         Assert.Equal(largeValue, retrieved.ToString());
 
-        var statsAfter = BaseClient.GetCompressionStatistics();
+        var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression to occur. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
         Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed, $"Expected bytes compressed. Before: {statsBefore.TotalBytesCompressed}, After: {statsAfter.TotalBytesCompressed}");
     }
@@ -56,7 +56,7 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
-        var statsBefore = BaseClient.GetCompressionStatistics();
+        var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_lz4_test_{Guid.NewGuid()}";
         string largeValue = new string('b', LargeValueSize);
@@ -66,7 +66,7 @@ public class CompressionTests(TestConfiguration config)
 
         Assert.Equal(largeValue, retrieved.ToString());
 
-        var statsAfter = BaseClient.GetCompressionStatistics();
+        var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
     }
 
@@ -82,7 +82,7 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClusterClient.CreateClient(clientConfig);
 
-        var statsBefore = BaseClient.GetCompressionStatistics();
+        var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_cluster_test_{Guid.NewGuid()}";
         string largeValue = new string('c', LargeValueSize);
@@ -92,7 +92,7 @@ public class CompressionTests(TestConfiguration config)
 
         Assert.Equal(largeValue, retrieved.ToString());
 
-        var statsAfter = BaseClient.GetCompressionStatistics();
+        var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
     }
 
@@ -108,20 +108,20 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
-        var statsBefore = BaseClient.GetCompressionStatistics();
+        var statsBefore = BaseClient.GetStatistics();
 
         string smallKey = $"small_{Guid.NewGuid()}";
         string smallValue = new string('x', SmallValueSize);
         await client.StringSetAsync(smallKey, smallValue);
 
-        var statsAfterSmall = BaseClient.GetCompressionStatistics();
+        var statsAfterSmall = BaseClient.GetStatistics();
         var skippedCountSmall = statsAfterSmall.CompressionSkippedCount - statsBefore.CompressionSkippedCount;
 
         string largeKey = $"large_{Guid.NewGuid()}";
         string largeValue = new string('y', LargeValueSize);
         await client.StringSetAsync(largeKey, largeValue);
 
-        var statsAfterLarge = BaseClient.GetCompressionStatistics();
+        var statsAfterLarge = BaseClient.GetStatistics();
         var compressedCountLarge = statsAfterLarge.TotalValuesCompressed - statsAfterSmall.TotalValuesCompressed;
 
         Assert.True(skippedCountSmall > 0, $"Small value should have been skipped. Skipped delta: {skippedCountSmall}");
@@ -239,7 +239,7 @@ public class CompressionTests(TestConfiguration config)
 
         await using var client = await GlideClient.CreateClient(clientConfig);
 
-        var statsBefore = BaseClient.GetCompressionStatistics();
+        var statsBefore = BaseClient.GetStatistics();
 
         string key = $"stats_test_{Guid.NewGuid()}";
         string value = new string('m', LargeValueSize);
@@ -247,7 +247,7 @@ public class CompressionTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
         await client.StringGetAsync(key);
 
-        var statsAfter = BaseClient.GetCompressionStatistics();
+        var statsAfter = BaseClient.GetStatistics();
 
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
         Assert.True(statsAfter.TotalOriginalBytes > statsBefore.TotalOriginalBytes, $"Expected original bytes. Before: {statsBefore.TotalOriginalBytes}, After: {statsAfter.TotalOriginalBytes}");
