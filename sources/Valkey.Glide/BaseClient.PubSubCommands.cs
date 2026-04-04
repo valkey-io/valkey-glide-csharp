@@ -7,7 +7,9 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient : IPubSubCommands
 {
-    /// <summary>Maps from the channel mode strings returned by GLIDE core to the corresponding PubSubChannelMode enum value.</summary>
+    /// <summary>
+    /// Maps from the channel mode strings returned by GLIDE core to the corresponding PubSubChannelMode enum value
+    /// </summary>
     private static readonly Dictionary<string, PubSubChannelMode> ChannelModeMap = new()
     {
         { "Exact", PubSubChannelMode.Exact },
@@ -17,120 +19,146 @@ public abstract partial class BaseClient : IPubSubCommands
 
     #region PublishCommands
 
+    /// <inheritdoc/>
     public async Task<long> PublishAsync(string channel, string message)
         => await Command(Request.Publish(channel, message));
 
     #endregion
     #region SubscribeCommands
 
+    /// <inheritdoc/>
     public async Task SubscribeAsync(string channel, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SubscribeBlocking([channel], (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.SubscribeBlocking([channel], (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task SubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.SubscribeBlocking(channels.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.SubscribeBlocking(channels.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task SubscribeLazyAsync(string channel)
         => await Command(Request.Subscribe([channel]));
 
+    /// <inheritdoc/>
     public async Task SubscribeLazyAsync(IEnumerable<string> channels)
         => await Command(Request.Subscribe(channels.ToGlideStrings()));
 
+    /// <inheritdoc/>
     public async Task PSubscribeAsync(string pattern, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.PSubscribeBlocking([pattern], (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.PSubscribeBlocking([pattern], (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task PSubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.PSubscribeBlocking(patterns.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.PSubscribeBlocking(patterns.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task PSubscribeLazyAsync(string pattern)
         => await Command(Request.PSubscribe([pattern]));
 
+    /// <inheritdoc/>
     public async Task PSubscribeLazyAsync(IEnumerable<string> patterns)
         => await Command(Request.PSubscribe(patterns.ToGlideStrings()));
 
     #endregion
     #region UnsubscribeCommands
 
+    /// <inheritdoc/>
     public async Task UnsubscribeAsync(TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.UnsubscribeBlocking([], (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.UnsubscribeBlocking([], (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task UnsubscribeAsync(string channel, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.UnsubscribeBlocking([channel], (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.UnsubscribeBlocking([channel], (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task UnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.UnsubscribeBlocking(channels.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.UnsubscribeBlocking(channels.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task UnsubscribeLazyAsync()
         => await Command(Request.Unsubscribe([]));
 
+    /// <inheritdoc/>
     public async Task UnsubscribeLazyAsync(string channel)
         => await Command(Request.Unsubscribe([channel]));
 
+    /// <inheritdoc/>
     public async Task UnsubscribeLazyAsync(IEnumerable<string> channels)
         => await Command(Request.Unsubscribe(channels.ToGlideStrings()));
 
+    /// <inheritdoc/>
     public async Task PUnsubscribeAsync(TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.PUnsubscribeBlocking([], (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.PUnsubscribeBlocking([], (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task PUnsubscribeAsync(string pattern, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.PUnsubscribeBlocking([pattern], (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.PUnsubscribeBlocking([pattern], (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        await Command(Request.PUnsubscribeBlocking(patterns.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
+        _ = await Command(Request.PUnsubscribeBlocking(patterns.ToGlideStrings(), (uint)timeout.TotalMilliseconds));
     }
 
+    /// <inheritdoc/>
     public async Task PUnsubscribeLazyAsync()
         => await Command(Request.PUnsubscribe([]));
 
+    /// <inheritdoc/>
     public async Task PUnsubscribeLazyAsync(string pattern)
         => await Command(Request.PUnsubscribe([pattern]));
 
+    /// <inheritdoc/>
     public async Task PUnsubscribeLazyAsync(IEnumerable<string> patterns)
         => await Command(Request.PUnsubscribe(patterns.ToGlideStrings()));
 
     #endregion
     #region IntrospectionCommands
 
+    /// <inheritdoc/>
     public async Task<ISet<string>> PubSubChannelsAsync()
         => (await Command(Request.PubSubChannels())).ToHashSet();
 
+    /// <inheritdoc/>
     public async Task<ISet<string>> PubSubChannelsAsync(string pattern)
         => await Command(Request.PubSubChannels(pattern));
 
+    /// <inheritdoc/>
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(IEnumerable<string> channels)
         => await Command(Request.PubSubNumSub(channels.ToGlideStrings()));
 
+    /// <inheritdoc/>
     public async Task<long> PubSubNumPatAsync()
         => await Command(Request.PubSubNumPat());
 
+    /// <inheritdoc/>
     public async Task<PubSubState> GetSubscriptionsAsync()
     {
         var (desiredResponse, actualResponse) = await Command(Request.GetSubscriptions());

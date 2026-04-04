@@ -381,7 +381,7 @@ internal static class Format
         return s;
     }
 
-    internal static unsafe string GetString(ReadOnlySpan<byte> span)
+    internal static string GetString(ReadOnlySpan<byte> span)
     {
         if (span.IsEmpty) return "";
 #if NETCOREAPP3_1_OR_GREATER

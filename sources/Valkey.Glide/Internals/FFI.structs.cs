@@ -217,7 +217,8 @@ internal partial class FFI
             BasePubSubSubscriptionConfig? pubSubSubscriptions,
             List<byte[]> rootCertificates,
             uint? pubSubReconciliationIntervalMs,
-            CompressionConfig? compressionConfig)
+            CompressionConfig? compressionConfig,
+            bool readOnly)
         {
             _request = new()
             {
@@ -250,6 +251,7 @@ internal partial class FFI
                 PubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs ?? default,
                 HasCompressionConfig = compressionConfig.HasValue,
                 CompressionConfig = compressionConfig ?? default,
+                ReadOnly = readOnly,
             };
         }
 
@@ -588,6 +590,7 @@ internal partial class FFI
     {
         public nuint CmdCount;
         public IntPtr Cmds;
+
         [MarshalAs(UnmanagedType.U1)]
         public bool IsAtomic;
     }
@@ -597,8 +600,10 @@ internal partial class FFI
     {
         [MarshalAs(UnmanagedType.U1)]
         public bool RetryServerError;
+
         [MarshalAs(UnmanagedType.U1)]
         public bool RetryConnectionError;
+
         [MarshalAs(UnmanagedType.U1)]
         public bool HasTimeout;
         public uint Timeout;
@@ -610,6 +615,7 @@ internal partial class FFI
     {
         /// Invalid request type
         InvalidRequest = 0,
+
         /// An unknown command, where all arguments are defined by the user.
         CustomCommand = 1,
 
@@ -1058,9 +1064,11 @@ internal partial class FFI
     {
         public RouteType Type;
         public int SlotId;
+
         [MarshalAs(UnmanagedType.LPStr)]
         public string? SlotKey;
         public SlotType SlotType;
+
         [MarshalAs(UnmanagedType.LPStr)]
         public string? Host;
         public int Port;
@@ -1128,6 +1136,7 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCompressionConfig;
         public CompressionConfig CompressionConfig;
+        public bool ReadOnly;
 
         // TODO more config params, see ffi.rs
     }
@@ -1322,26 +1331,37 @@ internal partial class FFI
     {
         /// <summary>Disconnection notification sent from the library when connection is closed.</summary>
         PushDisconnection = 0,
+
         /// <summary>Other/unknown push notification type.</summary>
         PushOther = 1,
+
         /// <summary>Cache invalidation notification received when a key is changed/deleted.</summary>
         PushInvalidate = 2,
+
         /// <summary>Regular channel message received via SUBSCRIBE.</summary>
         PushMessage = 3,
+
         /// <summary>Pattern-based message received via PSUBSCRIBE.</summary>
         PushPMessage = 4,
+
         /// <summary>Sharded channel message received via SSUBSCRIBE.</summary>
         PushSMessage = 5,
+
         /// <summary>Unsubscribe confirmation.</summary>
         PushUnsubscribe = 6,
+
         /// <summary>Pattern unsubscribe confirmation.</summary>
         PushPUnsubscribe = 7,
+
         /// <summary>Sharded unsubscribe confirmation.</summary>
         PushSUnsubscribe = 8,
+
         /// <summary>Subscribe confirmation.</summary>
         PushSubscribe = 9,
+
         /// <summary>Pattern subscribe confirmation.</summary>
         PushPSubscribe = 10,
+
         /// <summary>Sharded subscribe confirmation.</summary>
         PushSSubscribe = 11,
     }

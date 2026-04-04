@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Diagnostics;
-
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -13,25 +11,13 @@ internal partial class Request
     public static Cmd<GlideString, string> Info(InfoOptions.Section[] sections)
         => new(RequestType.Info, sections.ToGlideStrings(), false, gs => gs.ToString());
 
-    public static Cmd<GlideString, TimeSpan> Ping()
-    {
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        return new(RequestType.Ping, [], false, _ =>
-        {
-            stopwatch.Stop();
-            return stopwatch.Elapsed;
-        });
-    }
+    public static Cmd<GlideString, ValkeyValue> Ping()
+        => new(RequestType.Ping, [], false, gs => (ValkeyValue)gs);
 
-    public static Cmd<GlideString, TimeSpan> Ping(ValkeyValue message)
+    public static Cmd<GlideString, ValkeyValue> Ping(ValkeyValue message)
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
         GlideString[] args = [message.ToGlideString()];
-        return new(RequestType.Ping, args, false, _ =>
-        {
-            stopwatch.Stop();
-            return stopwatch.Elapsed;
-        });
+        return new(RequestType.Ping, args, false, gs => (ValkeyValue)gs);
     }
 
     public static Cmd<GlideString, ValkeyValue> Echo(ValkeyValue message)
@@ -95,34 +81,26 @@ internal partial class Request
         });
     }
 
-    public static Cmd<string, object?> ConfigResetStatisticsAsync()
-        => new(RequestType.ConfigResetStat, [], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> ConfigResetStatisticsAsync()
+        => Ok(RequestType.ConfigResetStat, []);
 
-    public static Cmd<string, object?> ConfigRewriteAsync()
-        => new(RequestType.ConfigRewrite, [], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> ConfigRewriteAsync()
+        => Ok(RequestType.ConfigRewrite, []);
 
-    public static Cmd<string, object?> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
+    public static Cmd<string, ValkeyValue> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
         GlideString[] args = [setting.ToGlideString(), value.ToGlideString()];
-        return new(RequestType.ConfigSet, args, false, _ => ValkeyValue.Null);
+        return Ok(RequestType.ConfigSet, args);
     }
 
-    public static Cmd<long, long> DatabaseSizeAsync(int database = -1)
-        // DBSIZE doesn't take database parameter - it operates on current database
-        // Database selection should be handled at connection level
-        => database != -1
-            ? throw new ArgumentException("DBSIZE command does not support database selection. Use SELECT command first.")
-            : new(RequestType.DBSize, [], false, l => l);
+    public static Cmd<long, long> DatabaseSizeAsync()
+        => new(RequestType.DBSize, [], false, l => l);
 
-    public static Cmd<string, object?> FlushAllDatabasesAsync()
-        => new(RequestType.FlushAll, [], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
+        => Ok(RequestType.FlushAll, []);
 
-    public static Cmd<string, object?> FlushDatabaseAsync(int database = -1)
-        // FLUSHDB doesn't take database parameter - it operates on current database
-        // Database selection should be handled at connection level
-        => database != -1
-            ? throw new ArgumentException("FLUSHDB command does not support database selection. Use SELECT command first.")
-            : new(RequestType.FlushDB, [], false, _ => ValkeyValue.Null);
+    public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
+        => Ok(RequestType.FlushDB, []);
 
     public static Cmd<long, DateTime> LastSaveAsync()
         => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));
@@ -142,6 +120,7 @@ internal partial class Request
 
     public static Cmd<GlideString, string> LolwutAsync()
         => new(RequestType.Lolwut, [], false, gs => gs.ToString());
-    public static Cmd<string, string> Select(long index)
-        => OK(RequestType.Select, [index.ToString().ToGlideString()]);
+
+    public static Cmd<string, ValkeyValue> Select(long index)
+        => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
 }

@@ -7,6 +7,9 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide.Pipeline;
 
+/// <summary>
+/// Options classes for configuring batch (pipeline and transaction) requests.
+/// </summary>
 public class Options
 {
     /// <summary>
@@ -87,6 +90,9 @@ public class Options
     /// </param>
     public abstract class BaseBatchOptions(uint? timeout = null)
     {
+        /// <summary>
+        /// The duration in milliseconds that the client should wait for the batch request to complete.
+        /// </summary>
         protected readonly uint? _timeout = timeout;
 
         internal virtual FFI.BatchOptions ToFfi() => new(timeout: _timeout);

@@ -3,8 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Scripting and function commands specific to cluster clients with routing support.
+/// Scripting and function commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#scripting">Valkey – Scripting and Function Commands</seealso>
 public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBaseCommands
 {
     // ===== Script Execution with Routing =====
@@ -14,7 +15,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="script">The script to execute.</param>
     /// <param name="options">The options containing arguments and routing configuration.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing single or multi-node results depending on routing.</returns>
     /// <remarks>
@@ -28,14 +28,14 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     ///     foreach (var (node, value) in result.MultiValue)
     ///     {
     ///         Console.WriteLine($"{node}: {value}");
-    ///         ///     }
+    ///     }
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> ScriptInvokeAsync(
         Script script,
         ClusterScriptOptions options,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     // ===== Script Management with Routing =====
@@ -45,7 +45,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="sha1Hashes">The SHA1 hashes of scripts to check.</param>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing single or multi-node results.</returns>
     /// <remarks>
@@ -58,28 +57,24 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </example>
     /// </remarks>
     Task<ClusterValue<bool[]>> ScriptExistsAsync(
-        string[] sha1Hashes,
+        IEnumerable<string> sha1Hashes,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Flushes all scripts from the cache on specified nodes using default flush mode.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.ScriptFlushAsync(Route.AllNodes);
+    /// await client.ScriptFlushAsync(Route.AllNodes);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> ScriptFlushAsync(
+    Task ScriptFlushAsync(
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -87,41 +82,33 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.ScriptFlushAsync(
-    ///     FlushMode.Async,
-    ///     Route.AllPrimaries);
+    /// await client.ScriptFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> ScriptFlushAsync(
+    Task ScriptFlushAsync(
         FlushMode mode,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Terminates currently executing scripts on specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to target.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.ScriptKillAsync(Route.AllPrimaries);
+    /// await client.ScriptKillAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> ScriptKillAsync(
+    Task ScriptKillAsync(
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     // ===== Function Execution with Routing =====
@@ -131,7 +118,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing single or multi-node results.</returns>
     /// <remarks>
@@ -146,7 +132,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     Task<ClusterValue<ValkeyResult>> FCallAsync(
         string function,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -155,7 +140,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing single or multi-node results.</returns>
     /// <remarks>
@@ -170,9 +154,8 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallAsync(
         string function,
-        string[] args,
+        IEnumerable<string> args,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -180,7 +163,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing single or multi-node results.</returns>
     /// <remarks>
@@ -195,7 +177,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     Task<ClusterValue<ValkeyResult>> FCallReadOnlyAsync(
         string function,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -204,7 +185,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing single or multi-node results.</returns>
     /// <remarks>
@@ -219,9 +199,8 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallReadOnlyAsync(
         string function,
-        string[] args,
+        IEnumerable<string> args,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     // ===== Function Management with Routing =====
@@ -232,7 +211,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="libraryCode">The Lua code defining the function library.</param>
     /// <param name="replace">Whether to replace an existing library with the same name.</param>
     /// <param name="route">The routing configuration specifying which nodes to load on.</param>
-    ///    /// <param name="flags">Tho use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing library names from nodes.</returns>
     /// <remarks>
@@ -249,7 +227,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         string libraryCode,
         bool replace,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -257,41 +234,33 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="libraryName">The name of the library to delete.</param>
     /// <param name="route">The routing configuration specifying which nodes to delete from.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionDeleteAsync(
-    ///  ///     "mylib",
-    ///     imaries);
+    /// await client.FunctionDeleteAsync("mylib", Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> FunctionDeleteAsync(
+    Task FunctionDeleteAsync(
         string libraryName,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Flushes all loaded functions from specified nodes using default flush mode.
     /// </summary>
-    ///     /// <param name="route">g configuration specifying which nodes to flush.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
+    /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionFlushAsync(Route.AllPrimaries);
+    /// await client.FunctionFlushAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> FunctionFlushAsync(
+    Task FunctionFlushAsync(
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -299,41 +268,33 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
-    ///   /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionFlushAsync(
-    ///     FlushMode.Async,
-    ///     Route.AllPrimaries);
+    /// <code>
+    /// await client.FunctionFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> FunctionFlushAsync(
+    Task FunctionFlushAsync(
         FlushMode mode,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Terminates currently executing functions on specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to target.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionKillAsync(Route.AllPrimaries);
+    /// await client.FunctionKillAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> FunctionKillAsync(
+    Task FunctionKillAsync(
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     // ===== Function Inspection with Routing =====
@@ -343,13 +304,12 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="query">Optional query parameters to filter results.</param>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing library information from nodes.</returns>
     /// <remarks>
-    ///  /// <example>
+    /// <example>
     /// <code>
-    ///alue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync(
+    /// ClusterValue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync(
     ///     null,
     ///     Route.AllPrimaries);
     /// </code>
@@ -358,14 +318,12 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
         FunctionListQuery? query,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns function statistics from specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing per-node function statistics.</returns>
     /// <remarks>
@@ -382,7 +340,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </remarks>
     Task<ClusterValue<FunctionStatsResult>> FunctionStatsAsync(
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     // ===== Function Persistence with Routing =====
@@ -391,7 +348,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// Creates a binary backup of loaded functions from specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to backup from.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing binary payloads from nodes.</returns>
     /// <remarks>
@@ -403,7 +359,6 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </remarks>
     Task<ClusterValue<byte[]>> FunctionDumpAsync(
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -411,22 +366,17 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </summary>
     /// <param name="payload">The binary payload from FunctionDump.</param>
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionRestoreAsync(
-    ///     backup,
-    ///     Route.AllPrimaries);
+    /// await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> FunctionRestoreAsync(
+    Task FunctionRestoreAsync(
         byte[] payload,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -435,23 +385,20 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// <param name="payload">The binary payload from FunctionDump.</param>
     /// <param name="policy">The restore policy (APPEND, FLUSH, or REPLACE).</param>
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
-    /// <param name="flags">The flags to use for this operation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A ClusterValue containing "OK" responses from nodes.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionRestoreAsync(
+    /// await client.FunctionRestoreAsync(
     ///     backup,
     ///     FunctionRestorePolicy.Replace,
     ///     Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> FunctionRestoreAsync(
+    Task FunctionRestoreAsync(
         byte[] payload,
         FunctionRestorePolicy policy,
         Route route,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default);
 }

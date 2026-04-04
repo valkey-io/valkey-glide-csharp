@@ -131,7 +131,7 @@ internal partial class Request
     public static Cmd<GlideString, byte[]?> KeyDumpAsync(ValkeyKey key)
         => new(RequestType.Dump, [key.ToGlideString()], true, response => response?.Bytes);
 
-    public static Cmd<string, string> KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null)
+    public static Cmd<string, ValkeyValue> KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -151,10 +151,10 @@ internal partial class Request
             args.AddRange(restoreOptions.ToArgs());
         }
 
-        return OK(RequestType.Restore, [.. args]);
+        return Ok(RequestType.Restore, [.. args]);
     }
 
-    public static Cmd<string, string> KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null)
+    public static Cmd<string, ValkeyValue> KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -175,7 +175,7 @@ internal partial class Request
             args.AddRange(restoreOptions.ToArgs());
         }
 
-        return OK(RequestType.Restore, [.. args]);
+        return Ok(RequestType.Restore, [.. args]);
     }
 
     public static Cmd<long, bool> KeyTouchAsync(ValkeyKey key)

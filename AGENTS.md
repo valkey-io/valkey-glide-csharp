@@ -42,9 +42,15 @@ Common commands:
   - `task coverage`, `task coverage:unit`, `task coverage:integration`
   - Reports go to `reports/`; test artifacts to `testresults/`
 
-- Benchmarking:
-  - Preferred: `task benchmark FRAMEWORK=net8.0`
-  - Raw: `cd valkey-glide/benchmarks && ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net8.0`
+## Lint and Format Rules (Agents)
+
+- Prefer `task` commands for linting and formatting.
+- Lint checks (read-only, fail on issues):
+  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`
+- Auto-fix formatting:
+  - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`
+- Link checking (separate from lint, slower):
+  - `task check-links`
 
 ## Contribution Requirements
 
@@ -155,7 +161,7 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 ## Quality Gates (Agent Checklist)
 
 - Build passes on `net8.0`.
-- Lint/format ok when applicable: `dotnet build --configuration Lint`, `dotnet format --verify-no-changes`.
+- Lint passes: `task lint` (or individual `task lint:rust`, `task lint:csharp`, `task lint:yaml`).
 - Tests pass; targeted via filters instead of per-file execution.
 - Generated outputs not committed.
 - Public API changes respect StackExchange.Redis compatibility.

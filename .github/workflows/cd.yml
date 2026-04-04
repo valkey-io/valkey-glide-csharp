@@ -113,7 +113,7 @@ jobs:
 
             - name: Upload artifacts to publish
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: ${{ matrix.host.TARGET }}
                   if-no-files-found: error
@@ -131,7 +131,7 @@ jobs:
             - uses: actions/checkout@v6
 
             - name: Download published artifacts
-              uses: actions/download-artifact@v7
+              uses: actions/download-artifact@v8
               with:
                   path: bin
 
@@ -163,7 +163,7 @@ jobs:
                   SkipCargo: true
 
             - name: Upload artifacts to publish
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: package
                   if-no-files-found: error
@@ -178,7 +178,7 @@ jobs:
             RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
         steps:
             - name: Download package
-              uses: actions/download-artifact@v7
+              uses: actions/download-artifact@v8
               with:
                   name: package
 
@@ -226,7 +226,7 @@ jobs:
 
             - name: Download package
               if: ${{ needs.publish.result == 'skipped' }}
-              uses: actions/download-artifact@v7
+              uses: actions/download-artifact@v8
               with:
                   name: package
                   path: nuget.local
@@ -274,7 +274,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: test-reports-${{ matrix.host.TARGET }}
                   path: |

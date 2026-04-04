@@ -103,6 +103,7 @@ pub struct ConnectionConfig {
 
     pub has_compression_config: bool,
     pub compression_config: CompressionConfig,
+    pub read_only: bool,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -121,7 +122,7 @@ pub struct PubSubConfigInfo {
     pub sharded_channel_count: u32,
 }
 
-/// Convert a C string array to a Vec of Vec<u8>
+/// Convert a C string array to a `Vec` of `Vec<u8>`
 ///
 /// # Safety
 ///
@@ -272,7 +273,8 @@ pub(crate) unsafe fn create_connection_request(
                 config.root_certs_len,
             )
         },
-        pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
+        pubsub_reconciliation_interval_ms: config
+            .has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
         compression_config: config.has_compression_config.then_some(
             glide_core::compression::CompressionConfig {
@@ -286,6 +288,7 @@ pub(crate) unsafe fn create_connection_request(
                 },
             },
         ),
+        read_only: config.read_only,
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),

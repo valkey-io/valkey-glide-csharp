@@ -12,72 +12,58 @@ public partial class GlideClient : IScriptingAndFunctionStandaloneCommands
     /// <inheritdoc/>
     public async Task<LibraryInfo[]> FunctionListAsync(
         FunctionListQuery? query = null,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionListAsync(query));
     }
 
     /// <inheritdoc/>
     public async Task<FunctionStatsResult> FunctionStatsAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionStatsAsync());
     }
 
     // ===== Function Management =====
 
     /// <inheritdoc/>
-    public async Task<string> FunctionDeleteAsync(
+    public async Task FunctionDeleteAsync(
         string libraryName,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionDeleteAsync(libraryName));
+        _ = await Command(Request.FunctionDeleteAsync(libraryName));
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionKillAsync(
-        CommandFlags flags = CommandFlags.None,
+    public async Task FunctionKillAsync(
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionKillAsync());
+        _ = await Command(Request.FunctionKillAsync());
     }
 
     // ===== Function Persistence =====
 
     /// <inheritdoc/>
     public async Task<byte[]> FunctionDumpAsync(
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionDumpAsync());
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionRestoreAsync(
+    public async Task FunctionRestoreAsync(
         byte[] payload,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionRestoreAsync(payload, null));
+        _ = await Command(Request.FunctionRestoreAsync(payload, null));
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionRestoreAsync(
+    public async Task FunctionRestoreAsync(
         byte[] payload,
         FunctionRestorePolicy policy,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionRestoreAsync(payload, policy));
+        _ = await Command(Request.FunctionRestoreAsync(payload, policy));
     }
 }

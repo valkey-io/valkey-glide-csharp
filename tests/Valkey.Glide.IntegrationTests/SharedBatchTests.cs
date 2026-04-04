@@ -79,11 +79,7 @@ public class SharedBatchTests
             ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch2, false))!
             : (await ((GlideClient)client).Exec((Batch)batch2, false))!;
 
-        Assert.Multiple(
-            () => Assert.Equal(1L, (long)res[0]!),
-            () => Assert.Equal("OK", res[1]),
-            () => Assert.Equal("OK", res[2])
-        );
+        Assert.Equivalent(new object[] { 1L, ValkeyValue.Ok, ValkeyValue.Ok }, res);
 
     }
 

@@ -3,10 +3,10 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Pub/sub commands available in both standalone and cluster modes.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#pubsub">valkey.io</see>.
+/// Pub/sub commands for standalone and cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
+/// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>
 public interface IPubSubCommands
 {
     #region PublishCommands
@@ -38,7 +38,7 @@ public interface IPubSubCommands
     /// <param name="channel">The channel to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SubscribeAsync(string channel, TimeSpan timeout = default);
 
     /// <summary>
@@ -50,7 +50,7 @@ public interface IPubSubCommands
     /// <param name="channels">A collection of channels to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task SubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
 
     /// <summary>
@@ -99,7 +99,7 @@ public interface IPubSubCommands
     /// <param name="pattern">The pattern to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PSubscribeAsync(string pattern, TimeSpan timeout = default);
 
     /// <summary>
@@ -109,14 +109,14 @@ public interface IPubSubCommands
     /// <param name="patterns">A collection of patterns to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PSubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified pattern and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to subscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
@@ -135,7 +135,7 @@ public interface IPubSubCommands
     /// Subscribes the client to the specified patterns and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to subscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/psubscribe/">valkey.io</seealso>
@@ -160,7 +160,7 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task UnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
@@ -170,7 +170,7 @@ public interface IPubSubCommands
     /// <param name="channel">The channel to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task UnsubscribeAsync(string channel, TimeSpan timeout = default);
 
     /// <summary>
@@ -182,14 +182,14 @@ public interface IPubSubCommands
     /// <param name="channels">A collection of channels to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task UnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from all channels and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
@@ -207,7 +207,7 @@ public interface IPubSubCommands
     /// Unsubscribes the client from the specified channel and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
@@ -228,7 +228,7 @@ public interface IPubSubCommands
     /// If no channels or <see cref="PubSub.AllChannels"/> is specified, unsubscribes the client from all channels.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unsubscribe/">valkey.io</seealso>
@@ -256,7 +256,7 @@ public interface IPubSubCommands
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PUnsubscribeAsync(TimeSpan timeout = default);
 
     /// <summary>
@@ -266,7 +266,7 @@ public interface IPubSubCommands
     /// <param name="pattern">The pattern to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PUnsubscribeAsync(string pattern, TimeSpan timeout = default);
 
     /// <summary>
@@ -276,14 +276,14 @@ public interface IPubSubCommands
     /// <param name="patterns">A collection of patterns to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
-    /// <exception cref="Valkey.Glide.Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
+    /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
     abstract Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from all patterns and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
@@ -301,7 +301,7 @@ public interface IPubSubCommands
     /// Unsubscribes the client from the specified pattern and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>
@@ -322,7 +322,7 @@ public interface IPubSubCommands
     /// If no patterns or <see cref="PubSub.AllPatterns"/> is specified, unsubscribes the client from all patterns.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/punsubscribe/">valkey.io</seealso>

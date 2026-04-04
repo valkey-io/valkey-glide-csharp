@@ -16,7 +16,6 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     /// <inheritdoc/>
     public async Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         if (script == null)
@@ -24,15 +23,13 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             throw new ArgumentNullException(nameof(script));
         }
 
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ScriptInvokeInternalAsync(script.Hash, null, null, null);
+        return await ScriptInvokeInternalAsync(script.Hash, null, null);
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
         ScriptOptions options,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
         if (script == null)
@@ -45,15 +42,14 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             throw new ArgumentNullException(nameof(options));
         }
 
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ScriptInvokeInternalAsync(script.Hash, options.Keys, options.Args, null);
+        return await ScriptInvokeInternalAsync(script.Hash, options.Keys, options.Args);
     }
 
     private async Task<ValkeyResult> ScriptInvokeInternalAsync(
         string hash,
         string[]? keys,
         string[]? args,
-        Route? route)
+        Route? route = null)
     {
         // Convert hash to C string
         IntPtr hashPtr = Marshal.StringToHGlobalAnsi(hash);
@@ -74,9 +70,9 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
             // Prepare args
             ulong argsCount = PrepareStringArrayForFFI(args, out argPtrs, out argsPtr, out argsLenPtr);
 
-            // Prepare route (null for now)
-            IntPtr routePtr = IntPtr.Zero;
-            ulong routeLen = 0;
+            // Prepare route
+            using FFI.Route? ffiRoute = route?.ToFfi();
+            IntPtr routePtr = ffiRoute?.ToPtr() ?? IntPtr.Zero;
 
             // Call FFI
             Message message = MessageContainer.GetMessageForCall();
@@ -91,13 +87,13 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
                 argsPtr,
                 argsLenPtr,
                 routePtr,
-                routeLen);
+                routePtr != IntPtr.Zero ? 1UL : 0UL);
 
             // Wait for response
             IntPtr response = await message;
             try
             {
-                return ResponseConverters.HandleServerValue<object?, ValkeyResult>(HandleResponse(response), true, o => ValkeyResult.Create(o), true);
+                return ResponseConverters.HandleServerValue<object?, ValkeyResult>(HandleResponse(response), true, ValkeyResult.Create, true);
             }
             finally
             {
@@ -221,40 +217,32 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
 
     /// <inheritdoc/>
     public async Task<bool[]> ScriptExistsAsync(
-        string[] sha1Hashes,
-        CommandFlags flags = CommandFlags.None,
+        IEnumerable<string> sha1Hashes,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptExistsAsync(sha1Hashes));
+        return await Command(Request.ScriptExistsAsync([.. sha1Hashes]));
     }
 
     /// <inheritdoc/>
-    public async Task<string> ScriptFlushAsync(
-        CommandFlags flags = CommandFlags.None,
+    public async Task ScriptFlushAsync(
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptFlushAsync());
+        _ = await Command(Request.ScriptFlushAsync());
     }
 
     /// <inheritdoc/>
-    public async Task<string> ScriptFlushAsync(
+    public async Task ScriptFlushAsync(
         FlushMode mode,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptFlushAsync(mode));
+        _ = await Command(Request.ScriptFlushAsync(mode));
     }
 
     /// <inheritdoc/>
     public async Task<string?> ScriptShowAsync(
         string sha1Hash,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         try
         {
             return await Command(Request.ScriptShowAsync(sha1Hash));
@@ -267,12 +255,10 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     }
 
     /// <inheritdoc/>
-    public async Task<string> ScriptKillAsync(
-        CommandFlags flags = CommandFlags.None,
+    public async Task ScriptKillAsync(
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ScriptKillAsync());
+        _ = await Command(Request.ScriptKillAsync());
     }
 
     // ===== Function Execution =====
@@ -280,45 +266,37 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     /// <inheritdoc/>
     public async Task<ValkeyResult> FCallAsync(
         string function,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallAsync(function, null, null));
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyResult> FCallAsync(
         string function,
-        string[] keys,
-        string[] args,
-        CommandFlags flags = CommandFlags.None,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FCallAsync(function, keys, args));
+        return await Command(Request.FCallAsync(function, [.. keys], [.. args]));
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FCallReadOnlyAsync(function, null, null));
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
-        string[] keys,
-        string[] args,
-        CommandFlags flags = CommandFlags.None,
+        IEnumerable<string> keys,
+        IEnumerable<string> args,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FCallReadOnlyAsync(function, keys, args));
+        return await Command(Request.FCallReadOnlyAsync(function, [.. keys], [.. args]));
     }
 
     // ===== Function Management =====
@@ -327,40 +305,33 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
     public async Task<string> FunctionLoadAsync(
         string libraryCode,
         bool replace = false,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.FunctionLoadAsync(libraryCode, replace));
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionFlushAsync(
-        CommandFlags flags = CommandFlags.None,
+    public async Task FunctionFlushAsync(
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionFlushAsync());
+        _ = await Command(Request.FunctionFlushAsync());
     }
 
     /// <inheritdoc/>
-    public async Task<string> FunctionFlushAsync(
+    public async Task FunctionFlushAsync(
         FlushMode mode,
-        CommandFlags flags = CommandFlags.None,
         CancellationToken cancellationToken = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.FunctionFlushAsync(mode));
+        _ = await Command(Request.FunctionFlushAsync(mode));
     }
 
     // ===== StackExchange.Redis Compatibility Methods =====
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> ScriptEvaluateAsync(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
-        CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyResult> ScriptEvaluateAsync(
+        string script, IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
         // Use the optimized ScriptInvoke path via Script object
         // Script constructor will validate the script parameter
         using Script scriptObj = new(script);
@@ -370,15 +341,15 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
 
         // Use ScriptInvokeInternalAsync for automatic EVALSHA→EVAL optimization
-        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> ScriptEvaluateAsync(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
-        CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyResult> ScriptEvaluateAsync(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
         // Convert hash to hex string (lowercase)
         string hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
 
@@ -387,19 +358,16 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
 
         // Use ScriptInvokeInternalAsync (will use EVALSHA directly, no fallback since we don't have source)
-        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings);
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null)
     {
         if (script == null)
         {
             throw new ArgumentNullException(nameof(script));
         }
-
-        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Replace placeholders in the executable script with KEYS/ARGV references
         string executableScript = parameters != null
@@ -416,19 +384,16 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
         // Create a Script object from the executable script and use ScriptInvoke
         // This will automatically load the script if needed (EVALSHA with fallback to EVAL)
         using Script scriptObj = new(executableScript);
-        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters = null)
     {
         if (script == null)
         {
             throw new ArgumentNullException(nameof(script));
         }
-
-        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Extract parameters from the object using the internal LuaScript
         (ValkeyKey[] keys, ValkeyValue[] args) = script.Script.ExtractParametersInternal(parameters, null);
@@ -443,36 +408,30 @@ public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
 
         // Use ScriptInvokeInternalAsync with the hash from LoadedLuaScript
         // The script was already loaded on the server, so EVALSHA will work
-        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings, null);
+        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings);
     }
 
     // ===== Synchronous Wrappers =====
 
     /// <inheritdoc/>
-    public ValkeyResult ScriptEvaluate(string script, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(script, keys, values, flags).GetAwaiter().GetResult();
-    }
+    public ValkeyResult ScriptEvaluate(
+        string script,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null)
+    => ScriptEvaluateAsync(script, keys, values).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
-    public ValkeyResult ScriptEvaluate(byte[] hash, ValkeyKey[]? keys = null, ValkeyValue[]? values = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(hash, keys, values, flags).GetAwaiter().GetResult();
-    }
+    public ValkeyResult ScriptEvaluate(
+        byte[] hash,
+        IEnumerable<ValkeyKey>? keys = null,
+        IEnumerable<ValkeyValue>? values = null)
+    => ScriptEvaluateAsync(hash, keys, values).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
-    public ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
-    }
+    public ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null)
+        => ScriptEvaluateAsync(script, parameters).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
-    public ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null,
-        CommandFlags flags = CommandFlags.None)
-    {
-        return ScriptEvaluateAsync(script, parameters, flags).GetAwaiter().GetResult();
-    }
+    public ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null)
+        => ScriptEvaluateAsync(script, parameters).GetAwaiter().GetResult();
 }

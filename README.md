@@ -1,4 +1,4 @@
-# Valkey GLIDE for CSharp
+# Valkey GLIDE for C\#
 
 Valkey General Language Independent Driver for the Enterprise (GLIDE) is the official open-source Valkey client library for C#. Built on a robust Rust core, it provides high-performance, reliable connectivity to Valkey and Redis OSS servers with comprehensive async/await support.
 
@@ -26,306 +26,36 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 > [!IMPORTANT]
 > Valkey.Glide C# wrapper is in a preview state and still has many features that remain to be implemented before GA.
 
-## Supported Engine Versions
+## Why Choose Valkey GLIDE?
 
-Valkey GLIDE for C# is API-compatible with the following engine versions:
-
-| Engine Type           |  6.2  |  7.0  |   7.1  |  7.2  |  8.0  |  8.1  |  9.0  |
-|-----------------------|-------|-------|--------|-------|-------|-------|-------|
-| Valkey                |   -   |   -   |   -    |   V   |   V   |   V   |   V   |
-| Redis                 |   V   |   V   |   V    |   V   |   -   |   -   |   -   |
-
-## Installation
-
-### NuGet Package
-
-Install the Valkey GLIDE package from NuGet:
-
-```bash
-dotnet add package Valkey.Glide
-```
-
-Or via Package Manager Console in Visual Studio:
-
-```powershell
-Install-Package Valkey.Glide
-```
-
-### Requirements
-
-- **.NET 8.0** or higher
-- **Supported Platforms**: Windows, Linux, macOS
-- **Valkey/Redis Server**: Version 6.2+ (see compatibility table above)
-
-## Quick Start
-
-### Standalone Client
-
-```csharp
-using Valkey.Glide;
-
-// Create a standalone client
-var connection = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
-var db = connection.Database;
-
-// Basic string operations
-await db.StringSetAsync("key", "value");
-var result = await db.StringGetAsync("key");
-Console.WriteLine($"Retrieved: {result}");
-```
-
-### Cluster Client
-
-```csharp
-using Valkey.Glide;
-using static Valkey.Glide.ConnectionConfiguration;
-
-// Create a cluster client
-var config = new ClusterClientConfigurationBuilder()
-    .WithAddress("cluster-node1.example.com", 6379)
-    .WithAddress("cluster-node2.example.com", 6379)
-    .WithAddress("cluster-node3.example.com", 6379)
-    .Build();
-
-await using var client = await GlideClusterClient.CreateClient(config);
-
-// Cluster operations work seamlessly
-await client.StringSetAsync("user:1000", "John Doe");
-var user = await client.StringGetAsync("user:1000");
-Console.WriteLine($"User: {user}");
-```
-
-### With Authentication and TLS
-
-```csharp
-using Valkey.Glide;
-
-// Password-based authentication with TLS.
-var passwordConfig = new StandaloneClientConfigurationBuilder()
-    .WithAddress(host, port)
-    .WithAuthentication("username", "password")
-    .WithTls()
-    .Build();
-
-await using var passwordClient = await GlideClient.CreateClient(passwordConfig);
-
-// IAM authentication with TLS.
-var iamAuthConfig = new IamAuthConfig("my-cluster", ServiceType.ElastiCache, "us-east-1");
-var iamConfig = new ClusterClientConfigurationBuilder()
-    .WithAddress(host, port)
-    .WithAuthentication("username", iamAuthConfig)
-    .WithTls(true)
-    .Build();
-
-await using var iamClient = await GlideClient.CreateClient(iamConfig);
-```
-
-### With OpenTelemetry
-
-```csharp
-// Configure traces with sampling
-var tracesConfig = TracesConfig.CreateBuilder()
-    .WithEndpoint("http://localhost:4317")
-    .WithSamplePercentage(10)
-    .Build();
-
-// Configure metrics
-var metricsConfig = MetricsConfig.CreateBuilder()
-    .WithEndpoint("http://localhost:4317")
-    .Build();
-
-// Initialize OpenTelemetry (once per process)
-var otelConfig = OpenTelemetryConfig.CreateBuilder()
-    .WithTraces(tracesConfig)
-    .WithMetrics(metricsConfig)
-    .Build();
-
-OpenTelemetry.Init(otelConfig);
-```
-
-## Core API Examples
-
-### String Operations
-
-```csharp
-// Set and get strings
-await client.StringSetAsync("greeting", "Hello, World!");
-var greeting = await client.StringGetAsync("greeting");
-
-// Multiple keys
-var keyValuePairs = new KeyValuePair<ValkeyKey, ValkeyValue>[]
-{
-    new("key1", "value1"),
-    new("key2", "value2")
-};
-await client.StringSetAsync(keyValuePairs);
-
-var values = await client.StringGetAsync(new[] { "key1", "key2" });
-```
-
-### Hash Operations
-
-```csharp
-// Hash operations
-await client.HashSetAsync("user:1000", "name", "John Doe");
-await client.HashSetAsync("user:1000", "email", "john@example.com");
-
-var name = await client.HashGetAsync("user:1000", "name");
-var allFields = await client.HashGetAllAsync("user:1000");
-```
-
-### List Operations
-
-```csharp
-// List operations
-await client.ListPushAsync("tasks", "task1", ListDirection.Left);
-await client.ListPushAsync("tasks", "task2", ListDirection.Left);
-
-var task = await client.ListPopAsync("tasks", ListDirection.Right);
-var allTasks = await client.ListRangeAsync("tasks", 0, -1);
-```
-
-### Set Operations
-
-```csharp
-// Set operations
-await client.SetAddAsync("tags", "csharp");
-await client.SetAddAsync("tags", "dotnet");
-await client.SetAddAsync("tags", "valkey");
-
-var isMember = await client.SetIsMemberAsync("tags", "csharp");
-var allTags = await client.SetMembersAsync("tags");
-```
-
-### Pub/Sub Operations
-
-```csharp
-// Configure subscriptions at connection time.
-var config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("localhost", 6379)
-    .WithPubSubReconciliationInterval(TimeSpan.FromSeconds(1))
-    .WithPubSubSubscriptionConfig(new StandalonePubSubSubscriptionConfig()
-        .WithChannel("alerts")
-        .WithPattern("log:*")
-        .WithCallback((msg, ctx) => {
-            Console.WriteLine($"Received message: {msg.Message}");
-        }))
-    .Build();
-
-await using var client = await GlideClient.CreateClient(config);
-
-// Subscribe or unsubscribe dynamically.
-client.PSubscribeAsync("news*");
-client.UnsubscribeAsync("alerts");
-
-// Publish using a different client.
-otherClient.PublishAsync("news-sports", "Local team wins championship!");
-```
-
-### Compression Operations
-
-```csharp
-// Enable transparent compression with Zstd
-var config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("localhost", 6379)
-    .WithCompression(CompressionConfig.Zstd())
-    .Build();
-
-await using var client = await GlideClient.CreateClient(config);
-
-// Values are automatically compressed/decompressed
-await client.StringSetAsync("large_data", new string('a', 10000));
-var retrieved = await client.StringGetAsync("large_data");
-
-// Monitor compression statistics
-var stats = BaseClient.GetCompressionStatistics();
-Console.WriteLine($"Compression ratio: {stats.CompressionRatio:F2}x");
-Console.WriteLine($"Space saved: {stats.SpaceSavedPercent:F2}%");
-
-// Use LZ4 for faster compression
-var lz4Config = new StandaloneClientConfigurationBuilder()
-    .WithAddress("localhost", 6379)
-    .WithCompression(CompressionConfig.Lz4(compressionLevel: 5, minCompressionSize: 128))
-    .Build();
-```
-
-### Building & Testing
-
-Development instructions for local building & testing the package are in the [DEVELOPER.md](DEVELOPER.md) file.
+- **Community and Open Source** – Join our vibrant community and contribute to the project. We are always here to respond, and the client is for the community.
+- **High Performance** – Created from the ground up for high performance and low latency, powered by a shared Rust core.
+- **Reliability and High Availability** – Designed to ensure your applications are always up and running.
+- **Stability and Fault Tolerance** – Built on years of experience to create a bulletproof client.
+- **StackExchange.Redis Compatibility** – API-compatible with [StackExchange.Redis](https://github.com/StackExchange/StackExchange.Redis) to ease migration.
 
 ## Documentation
 
-- **[API Documentation](https://valkey.io/valkey-glide/)** - Complete API reference
-- **[General Concepts](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts)** - Core concepts and patterns
+Visit the official Valkey GLIDE [documentation site](https://glide.valkey.io).
 
-## Performance
-
-Valkey GLIDE for C# is built for high performance:
-
-- **Rust Core**: Leverages Rust's memory safety and performance included multi-threaded support
-- **Async/Await**: Non-blocking operations for better throughput
-- **Connection Pooling**: Efficient connection management
-- **Pipeline Support**: Batch operations for reduced latency
-
-## Error Handling
-
-```csharp
-try
-{
-    await client.StringSetAsync("key", "value");
-    var result = await client.StringGetAsync("key");
-}
-catch (ConnectionException ex)
-{
-    Console.WriteLine($"Connection error: {ex.Message}");
-}
-catch (TimeoutException ex)
-{
-    Console.WriteLine($"Operation timed out: {ex.Message}");
-}
-catch (ValkeyException ex)
-{
-    Console.WriteLine($"Valkey error: {ex.Message}");
-}
-```
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTING.md) for details on:
-
-- Setting up the development environment
-- Running tests
-- Submitting pull requests
-- Code style guidelines
+- [Key Features](https://glide.valkey.io/overview/#key-features)
+- [Quick Start](https://glide.valkey.io/getting-started/quickstart/?lang=csharp)
+- [Supported Engine Versions](https://glide.valkey.io/overview/#supported-engine-versions)
+- [Basic Operations](https://glide.valkey.io/getting-started/basic-operations/)
+- [Client Initialization](https://glide.valkey.io/how-to/client-initialization/)
+- [Installation](https://glide.valkey.io/how-to/installation/)
+- [Troubleshooting](https://glide.valkey.io/troubleshooting/)
 
 ## Getting Help
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/valkey-io/valkey-glide-csharp/issues)
 - **Valkey Slack**: [Join our community](https://join.slack.com/t/valkey-oss-developer/shared_invite/zt-2nxs51chx-EB9hu9Qdch3GMfRcztTSkQ)
-- **Documentation**: [Official docs](https://valkey.io/valkey-glide/)
+- **Documentation**: [Official documentation](https://glide.valkey.io)
 
-When reporting issues, please include:
+## Contributing
 
-1. Valkey GLIDE version
-2. .NET version and runtime
-3. Operating system
-4. Server version and configuration
-5. Minimal reproducible code
-6. Error messages and stack traces
+We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTING.md) for details. Development instructions for local building and testing are in [DEVELOPER.md](DEVELOPER.md).
 
 ## License
 
 This project is licensed under the [Apache License 2.0](./LICENSE).
-
-## Ecosystem
-
-Valkey GLIDE for C# integrates well with the .NET ecosystem:
-
-- **ASP.NET Core**: Use as a caching layer or session store
-- **Entity Framework**: Complement your ORM with high-performance caching
-- **Minimal APIs**: Perfect for microservices and API backends
-- **Background Services**: Ideal for queue processing and background tasks
-
----
-
-**Ready to get started?** Install the NuGet package and check out our [Quick Start](#quick-start) guide!

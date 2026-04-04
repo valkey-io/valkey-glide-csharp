@@ -10,6 +10,7 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// Describes a precondition used in a Valkey transaction.
+/// Provides compatibility with StackExchange.Redis.
 /// </summary>
 public abstract class Condition
 {
@@ -403,6 +404,11 @@ public abstract class Condition
         return (string)((object[])res!)[0] == "OK" && conditionResult is not Exception && ValidateImpl(conditionResult);
     }
 
+    /// <summary>
+    /// Validates the result of the condition check against the expected outcome.
+    /// </summary>
+    /// <param name="res">The result from the condition command execution.</param>
+    /// <returns><see langword="true"/> if the condition is satisfied; otherwise, <see langword="false"/>.</returns>
     protected abstract bool ValidateImpl(object? res);
 
 #pragma warning disable IDE1006 // Naming Styles

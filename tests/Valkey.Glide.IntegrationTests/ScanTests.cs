@@ -33,7 +33,7 @@ public class ScanTests(TestConfiguration config)
         Assert.Empty(matchingKeys);
 
         // Remove keys.
-        await client.KeyDeleteAsync([key1, key2]);
+        _ = await client.KeyDeleteAsync([key1, key2]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -47,8 +47,8 @@ public class ScanTests(TestConfiguration config)
         var setKey = new ValkeyKey($"{prefix}:set");
 
         await client.StringSetAsync(stringKey, "value");
-        await client.ListLeftPushAsync(listKey, "item");
-        await client.SetAddAsync(setKey, "member");
+        _ = await client.ListLeftPushAsync(listKey, "item");
+        _ = await client.SetAddAsync(setKey, "member");
 
         // Get all keys with string type.
         var options = new ScanOptions { MatchPattern = $"{prefix}:*", Type = ValkeyType.String };
@@ -69,7 +69,7 @@ public class ScanTests(TestConfiguration config)
         Assert.Empty(matchingKeys);
 
         // Remove keys.
-        await client.KeyDeleteAsync([stringKey, listKey, setKey]);
+        _ = await client.KeyDeleteAsync([stringKey, listKey, setKey]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -83,7 +83,7 @@ public class ScanTests(TestConfiguration config)
         var otherStringKey = new ValkeyKey($"{prefix}:other:string");
 
         await client.StringSetAsync(matchStringKey, "value");
-        await client.ListLeftPushAsync(matchListKey, "item");
+        _ = await client.ListLeftPushAsync(matchListKey, "item");
         await client.StringSetAsync(otherStringKey, "value");
 
         // Get all keys with matching type and prefix.
@@ -98,29 +98,29 @@ public class ScanTests(TestConfiguration config)
         Assert.Equivalent(new[] { matchStringKey }, matchingKeys);
 
         // Remove keys.
-        await client.KeyDeleteAsync([matchStringKey, matchListKey, otherStringKey]);
+        _ = await client.KeyDeleteAsync([matchStringKey, matchListKey, otherStringKey]);
     }
 
     [Fact]
     public async Task TestScanAsync_InvalidCursorId()
     {
         await using var standaloneClient = TestConfiguration.DefaultStandaloneClient();
-        await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(() => standaloneClient.ScanAsync("invalid"));
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => standaloneClient.ScanAsync("invalid"));
 
         await using var clusterClient = TestConfiguration.DefaultClusterClient();
-        await Assert.ThrowsAsync<Valkey.Glide.Errors.RequestException>(() => clusterClient.ScanAsync(new ClusterScanCursor("invalid")));
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => clusterClient.ScanAsync(new ClusterScanCursor("invalid")));
     }
 
     private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ScanOptions? options = null)
     {
         var allKeys = new List<ValkeyKey>();
 
-        if (client is GlideClient)
+        if (client is GlideClient standaloneClient)
         {
             string cursor = "0";
             do
             {
-                (cursor, var keys) = await ((GlideClient)client).ScanAsync(cursor, options);
+                (cursor, var keys) = await standaloneClient.ScanAsync(cursor, options);
                 allKeys.AddRange(keys);
             } while (cursor != "0");
         }

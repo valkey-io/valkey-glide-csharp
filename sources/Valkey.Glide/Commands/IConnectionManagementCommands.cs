@@ -3,17 +3,15 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for connection management for standalone clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#connection">valkey.io</see>.
+/// Connection management commands for standalone clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#connection">Valkey – Connection Management Commands</seealso>
 public interface IConnectionManagementCommands
 {
     /// <summary>
     /// Gets the name of the current connection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-getname"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// The name of the client connection as a <see cref="ValkeyValue"/>.
     /// If no name is assigned, <see cref="ValkeyValue.Null"/> will be returned.
@@ -33,13 +31,12 @@ public interface IConnectionManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> ClientGetNameAsync();
 
     /// <summary>
     /// Gets the current connection ID.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-id"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>The ID of the client connection.</returns>
     /// <remarks>
     /// <example>
@@ -49,5 +46,5 @@ public interface IConnectionManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None);
+    Task<long> ClientIdAsync();
 }

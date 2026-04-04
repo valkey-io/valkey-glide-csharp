@@ -57,7 +57,7 @@ public class PubSubThreadSafetyTests
             .WithCallback((msg, ctx) =>
             {
                 processingStarted.Set();
-                continueProcessing.Wait(TimeSpan.FromSeconds(5));
+                _ = continueProcessing.Wait(TimeSpan.FromSeconds(5));
                 Thread.Sleep(50); // Simulate processing
             }, null);
 
@@ -78,7 +78,7 @@ public class PubSubThreadSafetyTests
         });
 
         // Wait for processing to start
-        processingStarted.Wait(TimeSpan.FromSeconds(5));
+        _ = processingStarted.Wait(TimeSpan.FromSeconds(5));
 
         // Dispose client while message is being processed
         var disposeTask = Task.Run(() =>
@@ -169,7 +169,7 @@ public class PubSubThreadSafetyTests
             .WithCallback((msg, ctx) =>
             {
                 // This callback will block during disposal
-                disposeStarted.Wait(TimeSpan.FromSeconds(10));
+                _ = disposeStarted.Wait(TimeSpan.FromSeconds(10));
             }, null);
 
         var client = CreateMockClientWithPubSub(config);
@@ -217,7 +217,7 @@ public class PubSubThreadSafetyTests
             // Use reflection to call private InitializePubSubHandler method
             var method = typeof(BaseClient).GetMethod("InitializePubSubHandler",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            method?.Invoke(this, [config]);
+            _ = (method?.Invoke(this, [config]));
         }
 
         protected override Task<Version> GetServerVersionAsync()

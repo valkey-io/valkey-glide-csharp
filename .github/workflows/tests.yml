@@ -66,7 +66,7 @@ jobs:
                       core.info(`inputs.json => ${JSON.stringify(out)}`);
 
             - name: Upload inputs.json
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: inputs.json
                   path: .run-meta/inputs.json
@@ -90,6 +90,8 @@ jobs:
                 server: ${{ fromJson(needs.get-matrices.outputs.server-matrix-output) }}
                 host: ${{ fromJson(needs.get-matrices.outputs.host-matrix-output) }}
         runs-on: ${{ matrix.host.RUNNER }}
+        env:
+            VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
 
         steps:
             - uses: actions/checkout@v6
@@ -118,6 +120,19 @@ jobs:
                   target: ${{ matrix.host.TARGET }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   server-version: ${{ matrix.server.version }}
+
+            - name: Configure DNS for tests
+              shell: bash
+              run: |
+                  ENTRIES="127.0.0.1 valkey.glide.test.tls.com
+                  127.0.0.1 valkey.glide.test.no_tls.com
+                  ::1 valkey.glide.test.tls.com
+                  ::1 valkey.glide.test.no_tls.com"
+                  if [[ "${{ matrix.host.OS }}" == "windows" ]]; then
+                      echo "$ENTRIES" >> /c/Windows/System32/drivers/etc/hosts
+                  else
+                      echo "$ENTRIES" | sudo tee -a /etc/hosts
+                  fi
 
             - uses: actions/cache@v5
               with:
@@ -155,14 +170,6 @@ jobs:
                       echo '{"workflow":"C# tests","summary":{"note":"Install xmllint+jq for rich failures"}}' > "$SUMMARY_FILE"
                   fi
 
-            - name: Run benchmark
-              if: ${{ contains(matrix.host.RUNNER, 'ubuntu') }}
-              shell: bash
-              working-directory: valkey-glide/benchmarks
-              run: |
-                  valkey-server --save "" --daemonize "yes"
-                  ./install_and_test.sh -no-tls -minimal -only-glide -data 1 -tasks 10 -csharp -dotnet-framework net${{ matrix.dotnet }}
-
             - name: Run coverage
               if: ${{ matrix.dotnet == '8.0' && contains(matrix.host.RUNNER, 'ubuntu') && matrix.host.ARCH == 'x64' && matrix.server.version == '8.1' }}
               uses: ./.github/workflows/run-coverage
@@ -170,14 +177,13 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
                   path: |
                       TestReport.html
                       TestResults.trx
                       failures.json
-                      valkey-glide/benchmarks/results/*
                       valkey-glide/utils/clusters/**
 
     get-containers:
@@ -209,6 +215,8 @@ jobs:
         container:
             image: ${{ matrix.host.IMAGE }}
             options: ${{ join(' -q ', matrix.host.CONTAINER_OPTIONS) }} # adding `-q` to bypass empty options
+        env:
+            VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
         steps:
             - name: Install git
               run: |
@@ -235,6 +243,15 @@ jobs:
                   target: ${{ matrix.host.TARGET }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   server-version: ${{ matrix.server.version }}
+
+            - name: Configure DNS for tests
+              shell: bash
+              run: |
+                  ENTRIES="127.0.0.1 valkey.glide.test.tls.com
+                  127.0.0.1 valkey.glide.test.no_tls.com
+                  ::1 valkey.glide.test.tls.com
+                  ::1 valkey.glide.test.no_tls.com"
+                  echo "$ENTRIES" | tee -a /etc/hosts
 
             - uses: actions/cache@v5
               with:
@@ -275,7 +292,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.IMAGE }}-${{ matrix.host.ARCH }}
                   path: |
@@ -283,49 +300,3 @@ jobs:
                       TestResults.trx
                       failures.json
                       valkey-glide/utils/clusters/**
-
-    lint:
-        timeout-minutes: 20
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v6
-              with:
-                  submodules: true
-
-            - name: Install Rust toolchain
-              uses: ./.github/workflows/install-rust
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-
-            - uses: actions/cache@v5
-              with:
-                  path: rust/target
-                  key: rust-x86_64-unknown-linux-gnu
-
-            - name: lint rust
-              working-directory: rust
-              continue-on-error: true
-              shell: bash
-              run: |
-                  set +e
-                  cargo fmt --all -- --check
-                  cargo clippy --all-features --all-targets -- -D warnings
-                  cargo clippy --all-targets -- -D warnings
-                  cargo update
-                  cargo install --locked cargo-deny
-                  cargo deny check --config $GITHUB_WORKSPACE/valkey-glide/deny.toml
-                  RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
-
-            - name: Set up dotnet
-              uses: actions/setup-dotnet@v5
-              with:
-                  # install latest dotnet too to use language features
-                  dotnet-version: |
-                      9
-                      8
-
-            - name: Format
-              run: |
-                  dotnet format --verify-no-changes --verbosity diagnostic
-                  dotnet build-server shutdown
-                  dotnet build --configuration Lint --framework net8.0 -m:1

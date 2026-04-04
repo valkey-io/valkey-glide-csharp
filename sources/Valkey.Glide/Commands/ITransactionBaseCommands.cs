@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Transaction Commands" group for standalone and cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/?group=transactions">valkey.io</see>.
+/// Transaction commands for clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#transactions">Valkey – Transaction Commands</seealso>
 public interface ITransactionBaseCommands
 {
     /// <summary>
@@ -15,7 +14,6 @@ public interface ITransactionBaseCommands
     /// transaction. Keys that do not exist are watched as if they were empty.
     /// </summary>
     /// <param name="keys">The keys to watch.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <remarks>
     /// <para>
@@ -29,13 +27,13 @@ public interface ITransactionBaseCommands
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
-    /// 
+    ///
     /// // Execute transaction
     /// var batch = new Batch(true)
     ///     .StringSetAsync("sampleKey", "foobar");
     /// object[] transactionResult = await client.Exec(batch, false);
     /// // transactionResult is not null if transaction executed successfully
-    /// 
+    ///
     /// // Watch key again
     /// await client.WatchAsync(["sampleKey"]);
     /// var batch2 = new Batch(true)
@@ -48,5 +46,5 @@ public interface ITransactionBaseCommands
     /// </example>
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/watch/"/>
-    Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None);
+    Task WatchAsync(IEnumerable<ValkeyKey> keys);
 }

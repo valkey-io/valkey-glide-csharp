@@ -72,7 +72,7 @@ jobs:
               with:
                   repository: oss-review-toolkit/ort
                   path: ./ort
-                  ref: "46.0.0"
+                  ref: "82.1.0"
                   submodules: recursive
 
               # Move ORT outside of repo, otherwise it will try to analyze itself (can't checkout straight to /tmp)
@@ -82,6 +82,11 @@ jobs:
 
             - name: Install Rust toolchain
               uses: dtolnay/rust-toolchain@stable
+
+            - name: Install ScanCode Toolkit
+              run: |
+                  pip install --upgrade pip
+                  pip install scancode-toolkit
 
             - name: Build and install ORT
               if: steps.cache-ort.outputs.cache-hit != 'true'
@@ -137,7 +142,7 @@ jobs:
             - name: Upload ORT results
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: ort_results
                   path: |
@@ -162,7 +167,7 @@ jobs:
 
             - name: Upload the final package list
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: final-package-list-${{ steps.date.outputs.date }}
                   path: |
@@ -171,7 +176,7 @@ jobs:
 
             - name: Upload the skipped package list
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: skipped-package-list-${{ steps.date.outputs.date }}
                   path: |
@@ -180,7 +185,7 @@ jobs:
 
             - name: Upload the unknown/unapproved package list
               continue-on-error: true
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: unapproved-package-list-${{ steps.date.outputs.date }}
                   path: |

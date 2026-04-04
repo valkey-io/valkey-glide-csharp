@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Transaction Commands" group for cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/?group=transactions">valkey.io</see>.
+/// Transaction commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#transactions">Valkey – Transaction Commands</seealso>
 public interface ITransactionClusterCommands : ITransactionBaseCommands
 {
     /// <summary>
@@ -14,7 +13,6 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// automatically flush all previously watched keys.
     /// The command will be routed to all primary nodes.
     /// </summary>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
@@ -24,7 +22,7 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/unwatch/"/>
-    Task UnwatchAsync(CommandFlags flags = CommandFlags.None);
+    Task UnwatchAsync();
 
     /// <summary>
     /// Flushes all the previously watched keys for a transaction. Executing a transaction will
@@ -32,7 +30,6 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// </summary>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
-    /// <param name="flags">The flags to use for this operation. Currently flags are ignored.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
@@ -42,5 +39,5 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/unwatch/"/>
-    Task UnwatchAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task UnwatchAsync(Route route);
 }

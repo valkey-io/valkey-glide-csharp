@@ -1,6 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -29,7 +32,7 @@ public class PubSubCoexistenceTests
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task CustomPublishCommand_WithPubSub_WorksCorrectly(bool isCluster)
     {
         var message = BuildMessage();
@@ -41,9 +44,9 @@ public class PubSubCoexistenceTests
         var args = new GlideString[] { "PUBLISH", message.Channel, message.Message };
 
         if (isCluster)
-            await ((GlideClusterClient)publisher).CustomCommand(args);
+            _ = await ((GlideClusterClient)publisher).CustomCommand(args);
         else
-            await ((GlideClient)publisher).CustomCommand(args);
+            _ = await ((GlideClient)publisher).CustomCommand(args);
 
         await AssertReceivedAsync(subscriber, [message]);
     }
@@ -59,7 +62,7 @@ public class PubSubCoexistenceTests
         using var publisher = BuildPublisher(isCluster: true);
 
         // Publish to sharded channel with custom command and verify receipt.
-        await ((GlideClusterClient)publisher).CustomCommand(["SPUBLISH", message.Channel, message.Message]);
+        _ = await ((GlideClusterClient)publisher).CustomCommand(["SPUBLISH", message.Channel, message.Message]);
         await AssertReceivedAsync(subscriber, message);
     }
 }

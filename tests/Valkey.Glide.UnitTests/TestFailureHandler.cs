@@ -11,6 +11,8 @@ public static class TestFailureHandler
     private static bool s_initialized = false;
     private static bool s_firstFailure = true;
 
+    private const string GitHubUrl = "https://github.com";
+
     [ModuleInitializer]
     public static void Initialize()
     {
@@ -71,6 +73,6 @@ public static class TestFailureHandler
             filePath = filePath.Substring(workspace.Length).TrimStart('/');
         }
 
-        return $"[{testName}](https://github.com/{repo}/blob/{sha}/{filePath}#L{lineNumber})";
+        return $"[{testName}]({GitHubUrl}/{repo}/blob/{sha}/{filePath}#L{lineNumber})";
     }
 }

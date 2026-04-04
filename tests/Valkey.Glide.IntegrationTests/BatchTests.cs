@@ -42,7 +42,7 @@ public class BatchTests(TestConfiguration config)
         IDatabase db = conn.GetDatabase();
         IBatch batch = db.CreateBatch();
         string key = Guid.NewGuid().ToString();
-        Task<bool> t1 = batch.StringSetAsync(key, "val");
+        Task t1 = batch.StringSetAsync(key, "val");
         Task<ValkeyValue> t2 = batch.StringGetAsync(key);
         Task<object?> t3 = batch.CustomCommand(["time"]); // This cmd is queued
         Task<object?> t4 = db.CustomCommand(["time"]); // This cmd is sent
@@ -56,7 +56,7 @@ public class BatchTests(TestConfiguration config)
         DateTime dt4 = ParseTimeResponse(await t4);
         Assert.True(dt3 > dt4);
         Assert.Equal("val", await t2);
-        Assert.True(await t1);
+        await t1;
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -66,7 +66,7 @@ public class BatchTests(TestConfiguration config)
         IDatabase db = conn.GetDatabase();
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
-        Task<bool> t1 = transaction.StringSetAsync(key, "val");
+        Task t1 = transaction.StringSetAsync(key, "val");
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key);
         Task<object?> t3 = transaction.CustomCommand(["time"]); // This cmd is queued
         Task<object?> t4 = db.CustomCommand(["time"]); // This cmd is sent
@@ -80,7 +80,7 @@ public class BatchTests(TestConfiguration config)
         DateTime dt4 = ParseTimeResponse(await t4);
         Assert.True(dt3 > dt4);
         Assert.Equal("val", await t2);
-        Assert.True(await t1);
+        await t1;
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -95,7 +95,7 @@ public class BatchTests(TestConfiguration config)
 
         Assert.True(transaction.Execute());
         Assert.True((await t1).IsNull);
-        await Assert.ThrowsAsync<RequestException>(async () => await t3);
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await t3);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -145,7 +145,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t1);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t1);
         }
 
         Assert.True(c1.WasSatisfied);
@@ -167,7 +167,7 @@ public class BatchTests(TestConfiguration config)
         Assert.True((await t1).IsNull);
 
         // setting a key
-        Assert.True(await db.StringSetAsync(key, "val"));
+        await db.StringSetAsync(key, "val");
         Assert.Equal("val", await db.StringGetAsync(key));
 
         // resubmitting a batch does nothing - it is not re-sent to server
@@ -201,9 +201,9 @@ public class BatchTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
         string key3 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
-        Assert.True(await db.StringSetAsync(isConditionPositive == expectTranResult ? key : key3, "val"));
+        await db.StringSetAsync(isConditionPositive == expectTranResult ? key : key3, "val");
 
         Condition condition = isConditionPositive
             ? conditionShouldPass
@@ -223,7 +223,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -235,9 +235,9 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
-        Assert.True(await db.StringSetAsync(key, isConditionPositive == expectTranResult ? "val" : "_"));
+        await db.StringSetAsync(key, isConditionPositive == expectTranResult ? "val" : "_");
 
         Condition condition = isConditionPositive
             ? conditionShouldPass
@@ -257,7 +257,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -269,7 +269,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.Equal(1L, await db.CustomCommand(["HSET", key, "f", isConditionPositive == expectTranResult ? "val" : "_"]));
 
@@ -291,7 +291,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -303,17 +303,17 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         // Condition checks hash value, while key stores a string
-        Assert.True(await db.StringSetAsync(key, "f"));
+        await db.StringSetAsync(key, "f");
         Condition condition = Condition.HashEqual(key, "f", "val");
         ConditionResult c = transaction.AddCondition(condition);
         Task<ValkeyValue> t2 = transaction.StringGetAsync(key2);
 
         Assert.False(transaction.Execute());
         Assert.False(c.WasSatisfied);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+        _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -324,7 +324,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (isConditionPositive == expectTranResult)
         {
@@ -342,7 +342,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -354,7 +354,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.Equal(1L, await db.CustomCommand(["SADD", key, isConditionPositive == expectTranResult ? "val" : "_"]));
 
@@ -376,7 +376,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -388,7 +388,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.Equal(1L, await db.CustomCommand(["ZADD", key, "1", isConditionPositive == expectTranResult ? "val" : "_"]));
 
@@ -410,7 +410,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -422,7 +422,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.Equal(1L, await db.CustomCommand(["ZADD", key, isConditionPositive == expectTranResult ? "1" : "2", "val"]));
 
@@ -444,7 +444,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -456,9 +456,9 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
-        Assert.True(await db.StringSetAsync(key, expectTranResult ? "val" : "va"));
+        await db.StringSetAsync(key, expectTranResult ? "val" : "va");
 
         Condition condition = conditionShouldPass
                 ? Condition.StringLengthEqual(key, 3)
@@ -474,7 +474,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -486,9 +486,9 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
-        Assert.True(await db.StringSetAsync(key, expectTranResult == isConditionPositive ? "value" : "val"));
+        await db.StringSetAsync(key, expectTranResult == isConditionPositive ? "value" : "val");
 
         Condition condition = isConditionPositive
             ? Condition.StringLengthGreaterThan(key, 4)
@@ -504,7 +504,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -516,7 +516,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult)
         {
@@ -541,7 +541,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -553,7 +553,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult == isConditionPositive)
         {
@@ -578,7 +578,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -590,7 +590,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult)
         {
@@ -615,7 +615,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -627,7 +627,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult == isConditionPositive)
         {
@@ -652,7 +652,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -664,7 +664,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult)
         {
@@ -689,7 +689,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -701,7 +701,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult == isConditionPositive)
         {
@@ -726,7 +726,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -738,7 +738,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult)
         {
@@ -763,7 +763,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -775,7 +775,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult == isConditionPositive)
         {
@@ -800,7 +800,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -812,7 +812,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult == isConditionPositive)
         {
@@ -837,7 +837,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -849,7 +849,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         if (expectTranResult == isConditionPositive)
         {
@@ -875,7 +875,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -887,7 +887,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.NotNull(await db.CustomCommand(["XADD", key, "*", "f", "v"]));
         if (!expectTranResult)
@@ -909,7 +909,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -921,7 +921,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.NotNull(await db.CustomCommand(["XADD", key, "*", "f", "v"]));
         if (expectTranResult == isConditionPositive)
@@ -944,7 +944,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -956,7 +956,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.Equal(1L, await db.CustomCommand(["ZADD", key, isConditionPositive == expectTranResult ? "1" : "2", "val"]));
 
@@ -978,7 +978,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 
@@ -990,7 +990,7 @@ public class BatchTests(TestConfiguration config)
         ITransaction transaction = db.CreateTransaction();
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
-        Assert.True(await db.StringSetAsync(key2, "val"));
+        await db.StringSetAsync(key2, "val");
 
         Assert.Equal(2L, await db.CustomCommand(["ZADD", key, isConditionPositive == expectTranResult ? "1" : "2", "val", "1", "va"]));
 
@@ -1012,7 +1012,7 @@ public class BatchTests(TestConfiguration config)
         }
         else
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
+            _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t2);
         }
     }
 #pragma warning restore xUnit1042 // https://xunit.net/xunit.analyzers/rules/xUnit1042

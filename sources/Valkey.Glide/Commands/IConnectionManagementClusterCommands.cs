@@ -3,10 +3,9 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for connection management for cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/commands/#connection">valkey.io</see>.
+/// Connection management commands for cluster clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#connection">Valkey – Connection Management Commands</seealso>
 public interface IConnectionManagementClusterCommands
 {
     /// <summary>
@@ -14,7 +13,6 @@ public interface IConnectionManagementClusterCommands
     /// The command will be routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-getname"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// The name of the client connection as a <see cref="ValkeyValue"/>.
     /// If no name is set, <see cref="ValkeyValue.Null"/> will be returned.
@@ -34,7 +32,7 @@ public interface IConnectionManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> ClientGetNameAsync();
 
     /// <summary>
     /// Gets the name of the current connection.
@@ -42,7 +40,6 @@ public interface IConnectionManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/client-getname"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the name of the client connection as a <see cref="ValkeyValue"/>.
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -67,14 +64,13 @@ public interface IConnectionManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route);
 
     /// <summary>
     /// Gets the current connection ID.
     /// The command will be routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-id"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>The ID of the client connection.</returns>
     /// <remarks>
     /// <example>
@@ -84,7 +80,7 @@ public interface IConnectionManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None);
+    Task<long> ClientIdAsync();
 
     /// <summary>
     /// Gets the current connection ID.
@@ -92,7 +88,6 @@ public interface IConnectionManagementClusterCommands
     /// <seealso href="https://valkey.io/commands/client-id"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <c>route</c>.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the ID of the client connection.
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -117,5 +112,5 @@ public interface IConnectionManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<long>> ClientIdAsync(Route route, CommandFlags flags = CommandFlags.None);
+    Task<ClusterValue<long>> ClientIdAsync(Route route);
 }

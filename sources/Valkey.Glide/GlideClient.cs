@@ -10,10 +10,10 @@ using static Valkey.Glide.Pipeline.Options;
 
 namespace Valkey.Glide;
 
-// TODO add wiki link
 /// <summary>
 /// Client used for connection to standalone servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/client-initialization/">Valkey GLIDE – Client Initialization</seealso>
 public partial class GlideClient : BaseClient, IGenericCommands, IServerManagementCommands, IConnectionManagementCommands
 {
     internal GlideClient() { }
@@ -39,13 +39,13 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     /// </list>
     /// <example>
     /// <code>
-    /// using Glide;
-    /// using static Glide.ConnectionConfiguration;
+    /// using Valkey.Glide;
+    /// using static Valkey.Glide.ConnectionConfiguration;
     ///
     /// var config = new StandaloneClientConfigurationBuilder()
     ///     .WithAddress("primary.example.com", 6379)
     ///     .WithAddress("replica1.example.com", 6379)
-    ///     .WithDataBaseId(1)
+    ///     .WithDatabaseId(1)
     ///     .WithAuthentication("user1", "passwordA")
     ///     .WithTls()
     ///     .WithConnectionRetryStrategy(5, 100, 2)
@@ -59,161 +59,134 @@ public partial class GlideClient : BaseClient, IGenericCommands, IServerManageme
     public static async Task<GlideClient> CreateClient(StandaloneClientConfiguration config)
         => await CreateClient(config, () => new GlideClient());
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError)
         => await Batch(batch, raiseOnError);
 
+    /// <inheritdoc/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options)
         => await Batch(batch, raiseOnError, options);
 
-    public async Task<object?> CustomCommand(GlideString[] args)
-        => await Command(Request.CustomCommand(args));
+    /// <inheritdoc/>
+    public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
+        => await Command(Request.CustomCommand([.. args]));
 
+    /// <inheritdoc/>
     public async Task<string> InfoAsync() => await InfoAsync([]);
 
-    public async Task<string> InfoAsync(InfoOptions.Section[] sections)
-        => await Command(Request.Info(sections));
+    /// <inheritdoc/>
+    public async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
+        => await Command(Request.Info([.. sections]));
 
-    public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<ValkeyValue> EchoAsync(ValkeyValue message)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.Echo(message));
     }
 
-    public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping());
-    }
+    /// <inheritdoc/>
+    public async Task<ValkeyValue> PingAsync()
+        => await Command(Request.Ping());
 
-    public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Ping(message));
-    }
+    /// <inheritdoc/>
+    public async Task<ValkeyValue> PingAsync(ValkeyValue message)
+        => await Command(Request.Ping(message));
 
-    public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ConfigGetAsync(pattern));
     }
 
-    public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task ConfigResetStatisticsAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigResetStatisticsAsync());
+        _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
-    public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task ConfigRewriteAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigRewriteAsync());
+        _ = await Command(Request.ConfigRewriteAsync());
     }
 
-    public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.ConfigSetAsync(setting, value));
+        _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
-    public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<long> DatabaseSizeAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.DatabaseSizeAsync(database));
+        return await Command(Request.DatabaseSizeAsync());
     }
 
-    public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task FlushAllDatabasesAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FlushAllDatabasesAsync());
+        _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
-    public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task FlushDatabaseAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.FlushDatabaseAsync(database));
+        _ = await Command(Request.FlushDatabaseAsync());
     }
 
-    public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<DateTime> LastSaveAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LastSaveAsync());
     }
 
-    public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<DateTime> TimeAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.TimeAsync());
     }
 
-    public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<string> LolwutAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.LolwutAsync());
     }
 
-    public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<ValkeyValue> ClientGetNameAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientGetName());
     }
 
-    public async Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task<long> ClientIdAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
         return await Command(Request.ClientId());
     }
 
-    public async Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task SelectAsync(long index)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Select(index));
+        _ = await Command(Request.Select(index));
     }
 
-    public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
-        var options = new ScanOptions();
-        if (!pattern.IsNull) options.MatchPattern = pattern.ToString();
-        if (pageSize > 0) options.Count = pageSize;
-
-        string currentCursor = cursor.ToString();
-        ValkeyKey[] keys;
-        int currentOffset = pageOffset;
-
-        do
-        {
-            (currentCursor, keys) = await ScanAsync(currentCursor, options);
-
-            if (currentOffset > 0)
-            {
-                keys = [.. keys.Skip(currentOffset)];
-                currentOffset = 0;
-            }
-
-            foreach (ValkeyKey key in keys)
-            {
-                yield return key;
-            }
-
-        } while (currentCursor != "0");
-    }
-
+    /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
-    public async Task WatchAsync(ValkeyKey[] keys, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Watch(keys));
+        _ = await Command(Request.Watch(keys));
     }
 
-    public async Task UnwatchAsync(CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc/>
+    public async Task UnwatchAsync()
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await Command(Request.Unwatch());
+        _ = await Command(Request.Unwatch());
     }
 
+    /// <inheritdoc/>
     protected override async Task<Version> GetServerVersionAsync()
     {
         if (_serverVersion == null)

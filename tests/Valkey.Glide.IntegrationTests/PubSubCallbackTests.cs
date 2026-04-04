@@ -1,6 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -52,7 +55,7 @@ public class PubSubCallbackTests
 
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task Callback_WithException_ContinuesProcessing(bool isCluster)
     {
         // Build messages.
@@ -74,7 +77,7 @@ public class PubSubCallbackTests
                     if (invocation == 1)
                         throw new InvalidOperationException("Test exception in callback");
 
-                    Interlocked.Increment(ref succeededCount);
+                    _ = Interlocked.Increment(ref succeededCount);
 
                     if (invocation >= 3)
                         completed.Set();
@@ -88,13 +91,13 @@ public class PubSubCallbackTests
         await PublishAsync(publisher, message);
 
         // Verify that all messages received despite exception.
-        completed.Wait(MaxDuration);
+        _ = completed.Wait(MaxDuration);
         Assert.Equal(3, receivedCount);
         Assert.Equal(2, succeededCount);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterModeData), MemberType = typeof(PubSubUtils))]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task Callback_WithMultipleMessages_PreservesOrder(bool isCluster)
     {
         int messageCount = 20;
@@ -121,7 +124,7 @@ public class PubSubCallbackTests
 
         // Publish all messages and verify they are received in order.
         await PublishAsync(publisher, messages);
-        completed.Wait(MaxDuration);
+        _ = completed.Wait(MaxDuration);
         Assert.Equivalent(messages, receivedMessages);
     }
 }

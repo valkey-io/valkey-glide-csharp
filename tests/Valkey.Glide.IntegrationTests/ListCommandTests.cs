@@ -152,10 +152,10 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(5, await client.ListLengthAsync(key));
 
         // Test length after removing elements
-        await client.ListLeftPopAsync(key);
+        _ = await client.ListLeftPopAsync(key);
         Assert.Equal(4, await client.ListLengthAsync(key));
 
-        await client.ListRightPopAsync(key);
+        _ = await client.ListRightPopAsync(key);
         Assert.Equal(3, await client.ListLengthAsync(key));
     }
 
@@ -166,23 +166,23 @@ public class ListCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Setup list with duplicate values: [a, b, a, c, a, b]
-        await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
+        _ = await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
 
         // Test removing all occurrences (count = 0)
         Assert.Equal(3, await client.ListRemoveAsync(key, "a", 0));
         Assert.Equal(3, await client.ListLengthAsync(key)); // Should have [b, c, b]
 
         // Reset list
-        await client.KeyDeleteAsync(key);
-        await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
+        _ = await client.KeyDeleteAsync(key);
+        _ = await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
 
         // Test removing from head to tail (count > 0)
         Assert.Equal(2, await client.ListRemoveAsync(key, "a", 2));
         Assert.Equal(4, await client.ListLengthAsync(key)); // Should have [b, c, a, b]
 
         // Reset list
-        await client.KeyDeleteAsync(key);
-        await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
+        _ = await client.KeyDeleteAsync(key);
+        _ = await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
 
         // Test removing from tail to head (count < 0)
         Assert.Equal(2, await client.ListRemoveAsync(key, "a", -2));
@@ -202,7 +202,7 @@ public class ListCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Setup list: [0, 1, 2, 3, 4, 5]
-        await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
+        _ = await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
 
         // Trim to keep elements from index 1 to 3
         await client.ListTrimAsync(key, 1, 3);
@@ -213,8 +213,8 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(["1", "2", "3"], remaining.ToGlideStrings());
 
         // Test trim with negative indices
-        await client.KeyDeleteAsync(key);
-        await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
+        _ = await client.KeyDeleteAsync(key);
+        _ = await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
 
         // Keep last 3 elements
         await client.ListTrimAsync(key, -3, -1);
@@ -238,7 +238,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Empty(emptyResult);
 
         // Setup list: [0, 1, 2, 3, 4, 5]
-        await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
+        _ = await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
 
         // Test getting all elements (default parameters)
         ValkeyValue[] allElements = await client.ListRangeAsync(key);
@@ -290,7 +290,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(["extra1", "extra2", "left1", "left2", "right1", "right2"], fullList.ToGlideStrings());
 
         // 4. Add duplicates and test removal
-        await client.ListRightPushAsync(key, ["left1", "duplicate", "left1"]); // [extra1, extra2, left1, left2, right1, right2, left1, duplicate, left1]
+        _ = await client.ListRightPushAsync(key, ["left1", "duplicate", "left1"]); // [extra1, extra2, left1, left2, right1, right2, left1, duplicate, left1]
         Assert.Equal(9, await client.ListLengthAsync(key));
 
         // Remove first 2 occurrences of "left1"
@@ -334,8 +334,8 @@ public class ListCommandTests(TestConfiguration config)
         Assert.True(emptyResult.IsNull);
 
         // Setup lists
-        await client.ListRightPushAsync(key2, ["a", "b", "c", "d"]);
-        await client.ListRightPushAsync(key3, ["x", "y", "z"]);
+        _ = await client.ListRightPushAsync(key2, ["a", "b", "c", "d"]);
+        _ = await client.ListRightPushAsync(key3, ["x", "y", "z"]);
 
         // Test LMPOP LEFT - should pop from first non-empty list (key2)
         ListPopResult leftResult = await client.ListLeftPopAsync([key1, key2, key3], 2);
@@ -406,7 +406,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(ValkeyValue.Null, nullResult);
 
         // Setup list
-        await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
+        _ = await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
 
         // Test positive indices
         Assert.Equal("zero", (await client.ListGetByIndexAsync(key, 0)).ToGlideString());
@@ -437,7 +437,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(0, await client.ListInsertAfterAsync("non-exist-key", "pivot", "value"));
 
         // Setup list
-        await client.ListRightPushAsync(key, ["a", "c", "e"]);
+        _ = await client.ListRightPushAsync(key, ["a", "c", "e"]);
 
         // Test insert before
         Assert.Equal(4, await client.ListInsertBeforeAsync(key, "c", "b"));
@@ -458,7 +458,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(["a", "b", "c", "d", "e"], unchanged.ToGlideStrings());
 
         // Test insert with duplicate values (should insert at first occurrence)
-        await client.ListRightPushAsync(key, "c"); // Now: [a, b, c, d, e, c]
+        _ = await client.ListRightPushAsync(key, "c"); // Now: [a, b, c, d, e, c]
         Assert.Equal(7, await client.ListInsertBeforeAsync(key, "c", "before_first_c"));
         ValkeyValue[] withDuplicate = await client.ListRangeAsync(key, 0, -1);
         Assert.Equal(["a", "b", "before_first_c", "c", "d", "e", "c"], withDuplicate.ToGlideStrings());
@@ -476,7 +476,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(ValkeyValue.Null, nullMove);
 
         // Setup source list
-        await client.ListRightPushAsync(source, ["a", "b", "c", "d"]);
+        _ = await client.ListRightPushAsync(source, ["a", "b", "c", "d"]);
 
         // Test LEFT to RIGHT move
         ValkeyValue moved1 = await client.ListMoveAsync(source, dest, ListSide.Left, ListSide.Right);
@@ -530,7 +530,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(-1, result);
 
         // Setup list with duplicates
-        await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "d"]);
+        _ = await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "d"]);
 
         // Test basic position (first occurrence)
         Assert.Equal(0, await client.ListPositionAsync(key, "a"));
@@ -570,7 +570,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Empty(emptyResult);
 
         // Setup list with duplicates
-        await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "d", "a"]);
+        _ = await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "d", "a"]);
 
         // Test getting all positions
         long[] allPositions = await client.ListPositionsAsync(key, "a", 10);
@@ -608,7 +608,7 @@ public class ListCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Setup list
-        await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
+        _ = await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
 
         // Test setting by positive index
         await client.ListSetByIndexAsync(key, 0, "ZERO");
@@ -629,14 +629,14 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(["ZERO", "one", "TWO", "THREE", "FOUR"], finalState.ToGlideStrings());
 
         // Test error cases - out of range indices should throw
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.ListSetByIndexAsync(key, 10, "invalid"));
 
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.ListSetByIndexAsync(key, -10, "invalid"));
 
         // Test on non-existent key should throw
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.ListSetByIndexAsync("non-exist-key", 0, "value"));
     }
 
@@ -649,7 +649,7 @@ public class ListCommandTests(TestConfiguration config)
         string key2 = $"{{testkey}}-{Guid.NewGuid()}";
 
         // Test with populated list
-        await client.ListLeftPushAsync(key1, ["value1", "value2"]);
+        _ = await client.ListLeftPushAsync(key1, ["value1", "value2"]);
 
         ValkeyValue[]? result = await client.ListBlockingLeftPopAsync([key1, key2], BlockingTimeout);
         Assert.NotNull(result);
@@ -663,7 +663,7 @@ public class ListCommandTests(TestConfiguration config)
 
         // Test with data available - push first, then pop
         string testKey = $"{{testkey}}-test-{Guid.NewGuid()}";
-        await client.ListRightPushAsync(testKey, ["test1", "test2"]);
+        _ = await client.ListRightPushAsync(testKey, ["test1", "test2"]);
 
         ValkeyValue[]? result2 = await client.ListBlockingLeftPopAsync([testKey], BlockingTimeout);
         Assert.NotNull(result2);
@@ -680,7 +680,7 @@ public class ListCommandTests(TestConfiguration config)
         string key2 = $"{{testkey}}-{Guid.NewGuid()}";
 
         // Test with populated list
-        await client.ListRightPushAsync(key1, ["value1", "value2"]);
+        _ = await client.ListRightPushAsync(key1, ["value1", "value2"]);
 
         ValkeyValue[]? result = await client.ListBlockingRightPopAsync([key1, key2], BlockingTimeout);
         Assert.NotNull(result);
@@ -694,7 +694,7 @@ public class ListCommandTests(TestConfiguration config)
 
         // Test with data available - push first, then pop
         string testKey = $"{{testkey}}-test-{Guid.NewGuid()}";
-        await client.ListLeftPushAsync(testKey, ["test1", "test2"]);
+        _ = await client.ListLeftPushAsync(testKey, ["test1", "test2"]);
 
         ValkeyValue[]? result2 = await client.ListBlockingRightPopAsync([testKey], BlockingTimeout);
         Assert.NotNull(result2);
@@ -712,7 +712,7 @@ public class ListCommandTests(TestConfiguration config)
         string emptyKey = $"{{testkey}}-empty-{Guid.NewGuid()}";
 
         // Test with populated source list
-        await client.ListLeftPushAsync(source, ["value1", "value2"]);
+        _ = await client.ListLeftPushAsync(source, ["value1", "value2"]);
 
         ValkeyValue result = await client.ListBlockingMoveAsync(source, destination, ListSide.Left, ListSide.Right, BlockingTimeout);
         Assert.Equal("value2", result.ToGlideString());
@@ -731,7 +731,7 @@ public class ListCommandTests(TestConfiguration config)
         // Test with data available - push first, then move
         string testSource = $"{{testkey}}-test-src-{Guid.NewGuid()}";
         string testDest = $"{{testkey}}-test-dst-{Guid.NewGuid()}";
-        await client.ListLeftPushAsync(testSource, "move_value");
+        _ = await client.ListLeftPushAsync(testSource, "move_value");
 
         ValkeyValue result2 = await client.ListBlockingMoveAsync(testSource, testDest, ListSide.Left, ListSide.Right, BlockingTimeout);
         Assert.Equal("move_value", result2.ToGlideString());
@@ -753,7 +753,7 @@ public class ListCommandTests(TestConfiguration config)
         string key2 = $"{{testkey}}-{Guid.NewGuid()}";
 
         // Test with populated list - single element
-        await client.ListLeftPushAsync(key1, ["value1", "value2", "value3"]);
+        _ = await client.ListLeftPushAsync(key1, ["value1", "value2", "value3"]);
 
         ListPopResult result = await client.ListBlockingPopAsync([key1, key2], ListSide.Left, BlockingTimeout);
         Assert.NotEqual(ListPopResult.Null, result);
@@ -772,7 +772,7 @@ public class ListCommandTests(TestConfiguration config)
 
         // Test with data available - push first, then pop
         string testKey = $"{{testkey}}-test-{Guid.NewGuid()}";
-        await client.ListRightPushAsync(testKey, ["test1", "test2"]);
+        _ = await client.ListRightPushAsync(testKey, ["test1", "test2"]);
 
         ListPopResult result2 = await client.ListBlockingPopAsync([testKey], ListSide.Left, BlockingTimeout);
         Assert.NotEqual(ListPopResult.Null, result2);
