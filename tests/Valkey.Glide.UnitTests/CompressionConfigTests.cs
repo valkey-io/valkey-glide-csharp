@@ -4,7 +4,6 @@ namespace Valkey.Glide.Tests;
 
 public class CompressionConfigTests
 {
-    private const int DefaultCompressionLevel = 0;
     private const nuint DefaultMinCompressionSize = 64;
     private const int CustomCompressionLevel = 5;
     private const nuint CustomMinCompressionSize = 128;

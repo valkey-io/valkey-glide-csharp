@@ -540,18 +540,18 @@ pub unsafe extern "C-unwind" fn command(
     let route = unsafe { create_route(route_info, Some(&cmd)) };
 
     // Apply compression to command arguments if compression is enabled
-    if let Some(compression_manager) = core.client.compression_manager() {
-        if let Err(err) = compress_cmd(&mut cmd, compression_manager.as_ref()) {
-            unsafe {
-                report_error(
-                    core.failure_callback,
-                    callback_index,
-                    format!("Compression failed: {}", err),
-                    RequestErrorType::Unspecified,
-                );
-            }
-            return;
+    if let Some(compression_manager) = core.client.compression_manager()
+        && let Err(err) = compress_cmd(&mut cmd, compression_manager.as_ref())
+    {
+        unsafe {
+            report_error(
+                core.failure_callback,
+                callback_index,
+                format!("Compression failed: {}", err),
+                RequestErrorType::Unspecified,
+            );
         }
+        return;
     }
 
     client.runtime.spawn(async move {
@@ -1787,6 +1787,6 @@ pub extern "C" fn get_statistics() -> Statistics {
         total_bytes_decompressed: Telemetry::total_bytes_decompressed() as u64,
         compression_skipped_count: Telemetry::compression_skipped_count() as u64,
         subscription_out_of_sync_count: Telemetry::subscription_out_of_sync_count() as u64,
-        subscription_last_sync_timestamp: Telemetry::subscription_last_sync_timestamp() as u64,
+        subscription_last_sync_timestamp: Telemetry::subscription_last_sync_timestamp(),
     }
 }
