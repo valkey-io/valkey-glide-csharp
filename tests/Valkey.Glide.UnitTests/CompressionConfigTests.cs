@@ -74,9 +74,9 @@ public class CompressionConfigTests
     }
 
     [Fact]
-    public void CompressionStatistics_CompressionRatio_CalculatesCorrectly()
+    public void Statistics_CompressionRatio_CalculatesCorrectly()
     {
-        var stats = new CompressionStatistics
+        var stats = new Statistics
         {
             TotalOriginalBytes = TestOriginalBytes,
             TotalBytesCompressed = TestCompressedBytes500
@@ -86,9 +86,9 @@ public class CompressionConfigTests
     }
 
     [Fact]
-    public void CompressionStatistics_CompressionRatio_ZeroWhenNoData()
+    public void Statistics_CompressionRatio_ZeroWhenNoData()
     {
-        var stats = new CompressionStatistics
+        var stats = new Statistics
         {
             TotalOriginalBytes = 0,
             TotalBytesCompressed = 0
@@ -98,9 +98,9 @@ public class CompressionConfigTests
     }
 
     [Fact]
-    public void CompressionStatistics_SpaceSaved_CalculatesCorrectly()
+    public void Statistics_SpaceSaved_CalculatesCorrectly()
     {
-        var stats = new CompressionStatistics
+        var stats = new Statistics
         {
             TotalOriginalBytes = TestOriginalBytes,
             TotalBytesCompressed = TestCompressedBytes600
@@ -110,9 +110,9 @@ public class CompressionConfigTests
     }
 
     [Fact]
-    public void CompressionStatistics_SpaceSavedPercent_CalculatesCorrectly()
+    public void Statistics_SpaceSavedPercent_CalculatesCorrectly()
     {
-        var stats = new CompressionStatistics
+        var stats = new Statistics
         {
             TotalOriginalBytes = TestOriginalBytes,
             TotalBytesCompressed = TestCompressedBytes600

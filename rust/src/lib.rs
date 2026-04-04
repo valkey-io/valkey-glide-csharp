@@ -564,6 +564,23 @@ pub unsafe extern "C-unwind" fn command(
         let result = core.client.clone().send_command(&mut cmd, route).await;
         match result {
             Ok(value) => {
+                // Decompress response if compression is enabled
+                let value = if let Some(compression_manager) = core.client.compression_manager() {
+                    let original = value.clone();
+                    glide_core::compression::decompress_single_value_response(
+                        value,
+                        compression_manager.as_ref(),
+                    )
+                    .unwrap_or_else(|e| {
+                        logger_core::log_warn(
+                            "response_decompression",
+                            format!("Failed to decompress response: {}", e),
+                        );
+                        original
+                    })
+                } else {
+                    value
+                };
                 let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
                 unsafe { (core.success_callback)(callback_index, ptr) };
             }

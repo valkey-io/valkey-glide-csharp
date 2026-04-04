@@ -152,13 +152,17 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// Gets statistics for the client.
     /// </summary>
     /// <returns>Statistics for the client.</returns>
-    public static CompressionStatistics GetStatistics()
+    public static Statistics GetStatistics()
     {
         var stats = GetStatisticsFfi();
-        return new CompressionStatistics(
+        return new Statistics(
+            stats.TotalConnections,
+            stats.TotalClients,
             stats.TotalValuesCompressed,
+            stats.TotalValuesDecompressed,
             stats.TotalOriginalBytes,
             stats.TotalBytesCompressed,
+            stats.TotalBytesDecompressed,
             stats.CompressionSkippedCount,
             stats.SubscriptionOutOfSyncCount,
             stats.SubscriptionLastSyncTimestamp);
