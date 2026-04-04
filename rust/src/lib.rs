@@ -1742,6 +1742,10 @@ pub struct Statistics {
     pub total_bytes_decompressed: u64,
     /// Number of times compression was skipped
     pub compression_skipped_count: u64,
+    /// Number of times subscriptions went out of sync
+    pub subscription_out_of_sync_count: u64,
+    /// Timestamp of the last subscription synchronization
+    pub subscription_last_sync_timestamp: u64,
 }
 
 /// Get compression and connection statistics.
@@ -1765,5 +1769,7 @@ pub extern "C" fn get_statistics() -> Statistics {
         total_bytes_compressed: Telemetry::total_bytes_compressed() as u64,
         total_bytes_decompressed: Telemetry::total_bytes_decompressed() as u64,
         compression_skipped_count: Telemetry::compression_skipped_count() as u64,
+        subscription_out_of_sync_count: Telemetry::subscription_out_of_sync_count() as u64,
+        subscription_last_sync_timestamp: Telemetry::subscription_last_sync_timestamp() as u64,
     }
 }

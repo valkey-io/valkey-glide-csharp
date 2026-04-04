@@ -9,11 +9,15 @@ namespace Valkey.Glide;
 /// <param name="TotalOriginalBytes">Total size in bytes of original (uncompressed) data.</param>
 /// <param name="TotalBytesCompressed">Total size in bytes after compression.</param>
 /// <param name="CompressionSkippedCount">Number of times compression was skipped (e.g., value too small).</param>
+/// <param name="SubscriptionOutOfSyncCount">Number of times subscriptions went out of sync.</param>
+/// <param name="SubscriptionLastSyncTimestamp">Timestamp of the last subscription synchronization.</param>
 public sealed record CompressionStatistics(
     ulong TotalValuesCompressed,
     ulong TotalOriginalBytes,
     ulong TotalBytesCompressed,
-    ulong CompressionSkippedCount)
+    ulong CompressionSkippedCount,
+    ulong SubscriptionOutOfSyncCount,
+    ulong SubscriptionLastSyncTimestamp)
 {
     /// <summary>
     /// Compression ratio (original size / compressed size).

@@ -163,7 +163,9 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
             stats.TotalValuesCompressed,
             stats.TotalOriginalBytes,
             stats.TotalBytesCompressed,
-            stats.CompressionSkippedCount);
+            stats.CompressionSkippedCount,
+            stats.SubscriptionOutOfSyncCount,
+            stats.SubscriptionLastSyncTimestamp);
     }
 
     #endregion public methods

@@ -1221,6 +1221,10 @@ internal partial class FFI
         public readonly ulong TotalBytesDecompressed;
         /// <summary>Number of times compression was skipped.</summary>
         public readonly ulong CompressionSkippedCount;
+        /// <summary>Number of times subscriptions went out of sync.</summary>
+        public readonly ulong SubscriptionOutOfSyncCount;
+        /// <summary>Timestamp of the last subscription synchronization.</summary>
+        public readonly ulong SubscriptionLastSyncTimestamp;
     }
 
     /// <summary>
