@@ -541,46 +541,16 @@ pub unsafe extern "C-unwind" fn command(
 
     // Apply compression to command arguments if compression is enabled
     if let Some(compression_manager) = core.client.compression_manager() {
-        let all_args: Vec<Vec<u8>> = cmd
-            .args_iter()
-            .filter_map(|arg| match arg {
-                redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
-                redis::Arg::Cursor => None,
-            })
-            .collect();
-
-        if !all_args.is_empty() {
-            let command_name = &all_args[0];
-            let command_str = String::from_utf8_lossy(command_name).to_uppercase();
-            
-            if let Some(request_type) = match command_str.as_str() {
-                "SET" => Some(RequestType::Set),
-                "MSET" => Some(RequestType::MSet),
-                _ => None,
-            } {
-                let mut args: Vec<Vec<u8>> = all_args[1..].to_vec();
-                if let Err(err) = glide_core::compression::process_command_args_for_compression(
-                    &mut args,
-                    request_type,
-                    Some(compression_manager.as_ref()),
-                ) {
-                    unsafe {
-                        report_error(
-                            core.failure_callback,
-                            callback_index,
-                            format!("Compression failed: {}", err),
-                            RequestErrorType::Unspecified,
-                        );
-                    }
-                    return;
-                }
-                // Rebuild command with compressed arguments
-                cmd = redis::Cmd::new();
-                cmd.arg(command_name);
-                for arg in args {
-                    cmd.arg(arg);
-                }
+        if let Err(err) = compress_cmd(&mut cmd, compression_manager.as_ref()) {
+            unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    format!("Compression failed: {}", err),
+                    RequestErrorType::Unspecified,
+                );
             }
+            return;
         }
     }
 
@@ -1680,6 +1650,52 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     }
 
     Some(command_name.to_string())
+}
+
+/// Applies compression to command arguments if the command supports it.
+///
+/// Returns `Ok(())` if compression was applied or skipped, `Err` if compression failed.
+fn compress_cmd(
+    cmd: &mut redis::Cmd,
+    compression_manager: &glide_core::compression::CompressionManager,
+) -> Result<(), String> {
+    let all_args: Vec<Vec<u8>> = cmd
+        .args_iter()
+        .filter_map(|arg| match arg {
+            redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
+            redis::Arg::Cursor => None,
+        })
+        .collect();
+
+    if all_args.is_empty() {
+        return Ok(());
+    }
+
+    let command_name = &all_args[0];
+    let command_str = String::from_utf8_lossy(command_name).to_uppercase();
+
+    let request_type = match command_str.as_str() {
+        "SET" => RequestType::Set,
+        "MSET" => RequestType::MSet,
+        _ => return Ok(()),
+    };
+
+    let mut args: Vec<Vec<u8>> = all_args[1..].to_vec();
+    glide_core::compression::process_command_args_for_compression(
+        &mut args,
+        request_type,
+        Some(compression_manager),
+    )
+    .map_err(|err| err.to_string())?;
+
+    // Rebuild command with compressed arguments
+    *cmd = redis::Cmd::new();
+    cmd.arg(command_name);
+    for arg in args {
+        cmd.arg(arg);
+    }
+
+    Ok(())
 }
 
 /// Returns a new span for the given command name.

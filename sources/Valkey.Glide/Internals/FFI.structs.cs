@@ -1167,19 +1167,47 @@ internal partial class FFI
     }
 
     /// <summary>
+    /// FFI representation of compression configuration for marshalling to Rust core.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CompressionConfig
+    {
+        /// <summary>Minimum value size in bytes to compress.</summary>
+        public nuint MinCompressionSize;
+
+        /// <summary>Compression level (0 = backend default).</summary>
+        public int CompressionLevel;
+
+        /// <summary>The compression backend to use.</summary>
+        public CompressionBackend Backend;
+
+        /// <summary>Whether compression is enabled.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool Enabled;
+    }
+
+    /// <summary>
     /// Statistics structure containing telemetry data from Rust core.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    internal struct Statistics
+    internal readonly struct Statistics
     {
-        public ulong TotalConnections;
-        public ulong TotalClients;
-        public ulong TotalValuesCompressed;
-        public ulong TotalValuesDecompressed;
-        public ulong TotalOriginalBytes;
-        public ulong TotalBytesCompressed;
-        public ulong TotalBytesDecompressed;
-        public ulong CompressionSkippedCount;
+        /// <summary>Total number of connections opened to Valkey.</summary>
+        public readonly ulong TotalConnections;
+        /// <summary>Total number of GLIDE clients.</summary>
+        public readonly ulong TotalClients;
+        /// <summary>Total number of values compressed.</summary>
+        public readonly ulong TotalValuesCompressed;
+        /// <summary>Total number of values decompressed.</summary>
+        public readonly ulong TotalValuesDecompressed;
+        /// <summary>Total original bytes before compression.</summary>
+        public readonly ulong TotalOriginalBytes;
+        /// <summary>Total bytes after compression.</summary>
+        public readonly ulong TotalBytesCompressed;
+        /// <summary>Total bytes after decompression.</summary>
+        public readonly ulong TotalBytesDecompressed;
+        /// <summary>Number of times compression was skipped.</summary>
+        public readonly ulong CompressionSkippedCount;
     }
 
     /// <summary>

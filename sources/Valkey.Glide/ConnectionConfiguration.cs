@@ -50,7 +50,7 @@ public abstract class ConnectionConfiguration
                 PubSubSubscriptions,
                 RootCertificates,
                 (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
-                CompressionConfig
+                CompressionConfig?.ToFfi()
             );
     }
 
