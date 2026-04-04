@@ -68,7 +68,7 @@ public sealed class CompressionConfig
     /// <summary>
     /// Creates a compression configuration with Zstd backend.
     /// </summary>
-    /// <param name="compressionLevel">Optional compression level (1-22).</param>
+    /// <param name="compressionLevel">Optional compression level.</param>
     /// <param name="minCompressionSize">Minimum value size to compress (default: 64 bytes).</param>
     /// <returns>A new CompressionConfig instance.</returns>
     public static CompressionConfig Zstd(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>
@@ -77,7 +77,7 @@ public sealed class CompressionConfig
     /// <summary>
     /// Creates a compression configuration with LZ4 backend.
     /// </summary>
-    /// <param name="compressionLevel">Optional compression level (0-12).</param>
+    /// <param name="compressionLevel">Optional compression level.</param>
     /// <param name="minCompressionSize">Minimum value size to compress (default: 64 bytes).</param>
     /// <returns>A new CompressionConfig instance.</returns>
     public static CompressionConfig Lz4(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>

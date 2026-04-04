@@ -156,13 +156,11 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     public static CompressionStatistics GetCompressionStatistics()
     {
         var stats = GetStatisticsFfi();
-        return new CompressionStatistics
-        {
-            TotalValuesCompressed = stats.TotalValuesCompressed,
-            TotalOriginalBytes = stats.TotalOriginalBytes,
-            TotalBytesCompressed = stats.TotalBytesCompressed,
-            CompressionSkippedCount = stats.CompressionSkippedCount
-        };
+        return new CompressionStatistics(
+            stats.TotalValuesCompressed,
+            stats.TotalOriginalBytes,
+            stats.TotalBytesCompressed,
+            stats.CompressionSkippedCount);
     }
 
     #endregion public methods

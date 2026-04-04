@@ -5,28 +5,16 @@ namespace Valkey.Glide;
 /// <summary>
 /// Statistics about compression operations.
 /// </summary>
-public sealed class CompressionStatistics
+/// <param name="TotalValuesCompressed">Total number of values that were compressed.</param>
+/// <param name="TotalOriginalBytes">Total size in bytes of original (uncompressed) data.</param>
+/// <param name="TotalBytesCompressed">Total size in bytes after compression.</param>
+/// <param name="CompressionSkippedCount">Number of times compression was skipped (e.g., value too small).</param>
+public sealed record CompressionStatistics(
+    ulong TotalValuesCompressed,
+    ulong TotalOriginalBytes,
+    ulong TotalBytesCompressed,
+    ulong CompressionSkippedCount)
 {
-    /// <summary>
-    /// Total number of values that were compressed.
-    /// </summary>
-    public ulong TotalValuesCompressed { get; init; }
-
-    /// <summary>
-    /// Total size in bytes of original (uncompressed) data.
-    /// </summary>
-    public ulong TotalOriginalBytes { get; init; }
-
-    /// <summary>
-    /// Total size in bytes after compression.
-    /// </summary>
-    public ulong TotalBytesCompressed { get; init; }
-
-    /// <summary>
-    /// Number of times compression was skipped (e.g., value too small).
-    /// </summary>
-    public ulong CompressionSkippedCount { get; init; }
-
     /// <summary>
     /// Compression ratio (original size / compressed size).
     /// Returns 0 if no data has been compressed.
