@@ -2,27 +2,6 @@
 
 Valkey General Language Independent Driver for the Enterprise (GLIDE) is the official open-source Valkey client library for C#. Built on a robust Rust core, it provides high-performance, reliable connectivity to Valkey and Redis OSS servers with comprehensive async/await support.
 
-## Why Choose Valkey GLIDE for C#?
-
-- **High Performance**: Built with a Rust core for optimal performance and low latency
-- **Async/Await Support**: Full support for modern C# asynchronous programming patterns
-- **Cross-Platform**: Supports .NET 8.0+ on Windows, Linux, and macOS
-- **Type Safety**: Strongly-typed API with comprehensive IntelliSense support
-- **Enterprise Ready**: Designed for production workloads with robust error handling
-- **Community Driven**: Open source with active community support
-- **API Compatibility**: Compatible with StackExchange.Redis APIs to ease migration
-
-## Key Features
-
-- **[AZ Affinity](https://valkey.io/blog/az-affinity-strategy/)** – Ensures low-latency connections and minimal cross-zone costs by routing read traffic to replicas in the client's availability zone. **(Requires Valkey server version 8.0+ or AWS ElastiCache for Valkey 7.2+)**
-- **[PubSub Auto-Reconnection](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#pubsub-support)** – Seamless background resubscription on topology updates or disconnection
-- **[Sharded PubSub](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#pubsub-support)** – Native support for sharded PubSub across cluster slots
-- **[Cluster-Aware MGET/MSET/DEL/FLUSHALL](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#multi-slot-command-handling)** – Execute multi-key commands across cluster slots without manual key grouping
-- **[Cluster Scan](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#cluster-scan)** – Unified key iteration across shards using a consistent, high-level API
-- **[Batching (Pipeline and Transaction)](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#batching-pipeline-and-transaction)** – Execute multiple commands efficiently in a single network roundtrip
-- **[OpenTelemetry](https://github.com/valkey-io/valkey-glide/wiki/General-Concepts#opentelemetry)** – Integrated tracing support for enhanced observability
-- **[Transparent Compression](#compression-operations)** – Automatic value compression with Zstd and LZ4 backends to reduce bandwidth and storage
-
 > [!IMPORTANT]
 > Valkey.Glide C# wrapper is in a preview state and still has many features that remain to be implemented before GA.
 
