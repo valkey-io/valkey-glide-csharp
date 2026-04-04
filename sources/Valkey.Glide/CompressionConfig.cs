@@ -15,6 +15,11 @@ public sealed class CompressionConfig
     public const nuint MinCompressionSizeLimit = 16;
 
     /// <summary>
+    /// Default minimum compression size in bytes.
+    /// </summary>
+    public const nuint DefaultMinCompressionSize = 64;
+
+    /// <summary>
     /// Minimum value size in bytes to compress.
     /// Values smaller than this will not be compressed.
     /// </summary>
@@ -46,7 +51,7 @@ public sealed class CompressionConfig
     public CompressionConfig(
         CompressionBackend backend,
         int? compressionLevel = null,
-        nuint minCompressionSize = 64)
+        nuint minCompressionSize = DefaultMinCompressionSize)
     {
         if (minCompressionSize < MinCompressionSizeLimit)
         {
@@ -66,7 +71,7 @@ public sealed class CompressionConfig
     /// <param name="compressionLevel">Optional compression level (1-22).</param>
     /// <param name="minCompressionSize">Minimum value size to compress (default: 64 bytes).</param>
     /// <returns>A new CompressionConfig instance.</returns>
-    public static CompressionConfig Zstd(int? compressionLevel = null, nuint minCompressionSize = 64) =>
+    public static CompressionConfig Zstd(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>
         new(CompressionBackend.Zstd, compressionLevel, minCompressionSize);
 
     /// <summary>
@@ -75,7 +80,7 @@ public sealed class CompressionConfig
     /// <param name="compressionLevel">Optional compression level (0-12).</param>
     /// <param name="minCompressionSize">Minimum value size to compress (default: 64 bytes).</param>
     /// <returns>A new CompressionConfig instance.</returns>
-    public static CompressionConfig Lz4(int? compressionLevel = null, nuint minCompressionSize = 64) =>
+    public static CompressionConfig Lz4(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>
         new(CompressionBackend.Lz4, compressionLevel, minCompressionSize);
 
     /// <summary>

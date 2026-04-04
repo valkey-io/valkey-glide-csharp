@@ -9,15 +9,13 @@ public enum CompressionBackend : uint
 {
     /// <summary>
     /// Zstandard (zstd) compression backend.
-    /// Provides high compression ratios with good performance.
-    /// Default compression level: 3
     /// </summary>
+    /// <seealso href="https://facebook.github.io/zstd/"/>
     Zstd = 0,
 
     /// <summary>
     /// LZ4 compression backend.
-    /// Provides fast compression and decompression with moderate compression ratios.
-    /// Default compression level: 0
     /// </summary>
+    /// <seealso href="https://lz4.org/"/>
     Lz4 = 1,
 }
