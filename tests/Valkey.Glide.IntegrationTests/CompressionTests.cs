@@ -245,7 +245,7 @@ public class CompressionTests(TestConfiguration config)
         string value = new string('m', LargeValueSize);
 
         await client.StringSetAsync(key, value);
-        await client.StringGetAsync(key);
+        _ = await client.StringGetAsync(key);
 
         var statsAfter = BaseClient.GetStatistics();
 

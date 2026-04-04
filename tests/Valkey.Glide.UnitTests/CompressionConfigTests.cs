@@ -24,7 +24,7 @@ public class CompressionConfigTests
         var config = CompressionConfig.Zstd();
 
         Assert.Equal(CompressionBackend.Zstd, config.Backend);
-        Assert.Equal(DefaultCompressionLevel, config.CompressionLevel);
+        Assert.Null(config.CompressionLevel);
         Assert.Equal(DefaultMinCompressionSize, config.MinCompressionSize);
     }
 
@@ -34,7 +34,7 @@ public class CompressionConfigTests
         var config = CompressionConfig.Lz4();
 
         Assert.Equal(CompressionBackend.Lz4, config.Backend);
-        Assert.Equal(DefaultCompressionLevel, config.CompressionLevel);
+        Assert.Null(config.CompressionLevel);
         Assert.Equal(DefaultMinCompressionSize, config.MinCompressionSize);
     }
 
@@ -57,7 +57,7 @@ public class CompressionConfigTests
     [Fact]
     public void CompressionConfig_MinSizeTooSmall_ThrowsException()
     {
-        var exception = Assert.Throws<ArgumentException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             CompressionConfig.Zstd(minCompressionSize: InvalidMinCompressionSize));
 
         Assert.Contains("minCompressionSize must be at least 16 bytes", exception.Message);
