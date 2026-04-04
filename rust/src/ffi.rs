@@ -273,27 +273,18 @@ pub(crate) unsafe fn create_connection_request(
         },
         pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
-        compression_config: if config.has_compression_config {
-            Some(glide_core::compression::CompressionConfig {
+        compression_config: config.has_compression_config.then_some(
+            glide_core::compression::CompressionConfig {
                 enabled: config.compression_config.enabled,
                 min_compression_size: config.compression_config.min_compression_size,
-                compression_level: if config.compression_config.compression_level == 0 {
-                    None
-                } else {
-                    Some(config.compression_config.compression_level)
-                },
+                compression_level: (config.compression_config.compression_level != 0)
+                    .then_some(config.compression_config.compression_level),
                 backend: match config.compression_config.backend {
-                    CompressionBackend::Zstd => {
-                        glide_core::compression::CompressionBackendType::Zstd
-                    }
-                    CompressionBackend::Lz4 => {
-                        glide_core::compression::CompressionBackendType::Lz4
-                    }
+                    CompressionBackend::Zstd => glide_core::compression::CompressionBackendType::Zstd,
+                    CompressionBackend::Lz4 => glide_core::compression::CompressionBackendType::Lz4,
                 },
-            })
-        } else {
-            None
-        },
+            },
+        ),
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),
