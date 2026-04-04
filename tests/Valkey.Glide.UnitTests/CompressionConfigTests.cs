@@ -76,48 +76,28 @@ public class CompressionConfigTests
     [Fact]
     public void Statistics_CompressionRatio_CalculatesCorrectly()
     {
-        var stats = new Statistics
-        {
-            TotalOriginalBytes = TestOriginalBytes,
-            TotalBytesCompressed = TestCompressedBytes500
-        };
-
+        var stats = new Statistics(0, 0, 0, 0, TestOriginalBytes, TestCompressedBytes500, 0, 0, 0, 0);
         Assert.Equal(ExpectedRatio2x, stats.CompressionRatio);
     }
 
     [Fact]
     public void Statistics_CompressionRatio_ZeroWhenNoData()
     {
-        var stats = new Statistics
-        {
-            TotalOriginalBytes = 0,
-            TotalBytesCompressed = 0
-        };
-
+        var stats = new Statistics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         Assert.Equal(ExpectedRatioZero, stats.CompressionRatio);
     }
 
     [Fact]
     public void Statistics_SpaceSaved_CalculatesCorrectly()
     {
-        var stats = new Statistics
-        {
-            TotalOriginalBytes = TestOriginalBytes,
-            TotalBytesCompressed = TestCompressedBytes600
-        };
-
+        var stats = new Statistics(0, 0, 0, 0, TestOriginalBytes, TestCompressedBytes600, 0, 0, 0, 0);
         Assert.Equal(ExpectedSpaceSaved400, stats.SpaceSaved);
     }
 
     [Fact]
     public void Statistics_SpaceSavedPercent_CalculatesCorrectly()
     {
-        var stats = new Statistics
-        {
-            TotalOriginalBytes = TestOriginalBytes,
-            TotalBytesCompressed = TestCompressedBytes600
-        };
-
+        var stats = new Statistics(0, 0, 0, 0, TestOriginalBytes, TestCompressedBytes600, 0, 0, 0, 0);
         Assert.Equal(ExpectedSpaceSavedPercent40, stats.SpaceSavedPercent);
     }
 }
