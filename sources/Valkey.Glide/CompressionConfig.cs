@@ -27,9 +27,9 @@ public sealed class CompressionConfig
 
     /// <summary>
     /// Compression level for the backend.
-    /// 0 means use backend default.
+    /// Null means use backend default.
     /// </summary>
-    public int CompressionLevel { get; }
+    public int? CompressionLevel { get; }
 
     /// <summary>
     /// The compression backend to use.
@@ -60,7 +60,7 @@ public sealed class CompressionConfig
         }
 
         MinCompressionSize = minCompressionSize;
-        CompressionLevel = compressionLevel ?? 0;
+        CompressionLevel = compressionLevel;
         Backend = backend;
         Enabled = true;
     }
@@ -89,7 +89,8 @@ public sealed class CompressionConfig
     internal Internals.FFI.CompressionConfig ToFfi() => new()
     {
         MinCompressionSize = MinCompressionSize,
-        CompressionLevel = CompressionLevel,
+        HasCompressionLevel = CompressionLevel.HasValue,
+        CompressionLevel = CompressionLevel ?? default,
         Backend = Backend,
         Enabled = Enabled,
     };

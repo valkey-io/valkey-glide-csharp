@@ -51,6 +51,7 @@ unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Option<String> {
 #[derive(Debug, Clone, Copy)]
 pub struct CompressionConfig {
     pub min_compression_size: usize,
+    pub has_compression_level: bool,
     pub compression_level: i32,
     pub backend: CompressionBackend,
     pub enabled: bool,
@@ -277,7 +278,7 @@ pub(crate) unsafe fn create_connection_request(
             glide_core::compression::CompressionConfig {
                 enabled: config.compression_config.enabled,
                 min_compression_size: config.compression_config.min_compression_size,
-                compression_level: (config.compression_config.compression_level != 0)
+                compression_level: config.compression_config.has_compression_level
                     .then_some(config.compression_config.compression_level),
                 backend: match config.compression_config.backend {
                     CompressionBackend::Zstd => glide_core::compression::CompressionBackendType::Zstd,

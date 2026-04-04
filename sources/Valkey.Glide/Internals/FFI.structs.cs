@@ -1175,7 +1175,11 @@ internal partial class FFI
         /// <summary>Minimum value size in bytes to compress.</summary>
         public nuint MinCompressionSize;
 
-        /// <summary>Compression level (0 = backend default).</summary>
+        /// <summary>Whether a compression level was explicitly specified.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasCompressionLevel;
+
+        /// <summary>Compression level for the backend.</summary>
         public int CompressionLevel;
 
         /// <summary>The compression backend to use.</summary>
