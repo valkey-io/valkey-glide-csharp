@@ -556,7 +556,7 @@ public class StreamCommandTests
     {
         string key = "{StreamError}" + Guid.NewGuid();
         ValkeyValue id = await client.StreamAddAsync(key, "field", "value");
-        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamClaimAsync(key, "nonexistent", "consumer", 0, [id]));
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamClaimAsync(key, "nonexistent", "consumer", TimeSpan.Zero, [id]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -565,7 +565,7 @@ public class StreamCommandTests
     {
         string key = "{StreamError}" + Guid.NewGuid();
         await client.StringSetAsync(key, "not a stream");
-        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamClaimAsync(key, "group", "consumer", 0, ["1-0"]));
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamClaimAsync(key, "group", "consumer", TimeSpan.Zero, ["1-0"]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -650,7 +650,7 @@ public class StreamCommandTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
         _ = await client.StreamDeleteAsync(key, [id2]);
 
-        StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", 0, StreamConstants.MinimumId);
+        StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", TimeSpan.Zero, StreamConstants.MinimumId);
 
         Assert.Equal(2, result.ClaimedEntries.Length);
         if (result.DeletedIds != null && result.DeletedIds.Length > 0)

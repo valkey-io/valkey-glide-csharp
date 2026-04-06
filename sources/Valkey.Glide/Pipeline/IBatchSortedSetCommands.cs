@@ -97,17 +97,13 @@ internal interface IBatchSortedSetCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetScoresAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch SortedSetScores(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, double)" /></returns>
-    IBatch SortedSetBlockingPop(ValkeyKey key, Order order, double timeout);
+    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, TimeSpan)" /></returns>
+    IBatch SortedSetBlockingPop(ValkeyKey key, Order order, TimeSpan timeout);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double)" /></returns>
-    IBatch SortedSetBlockingPop(ValkeyKey key, long count, Order order, double timeout);
-
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double)" /></returns>
-    IBatch SortedSetBlockingPop(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout);
+    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, TimeSpan)" /></returns>
+    IBatch SortedSetBlockingPop(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout);
 
     /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(ValkeyKey, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(ValkeyKey, Order)" /></returns>

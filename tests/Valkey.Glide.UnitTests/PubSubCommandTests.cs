@@ -13,8 +13,8 @@ public class PubSubCommandTests
     private static readonly string Pattern1 = "news.*";
     private static readonly string Pattern2 = "weather.*";
     private static readonly string Message = "message";
-    private static readonly uint TimeoutMs = 123;
-    private static readonly string TimeoutExpected = TimeoutMs.ToString();
+    private static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(123);
+    private static readonly string TimeoutExpected = "123";
 
     #region PublishCommands
 
@@ -40,8 +40,8 @@ public class PubSubCommandTests
     [Fact]
     public void Subscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SubscribeBlocking([Channel1], Timeout).GetArgs());
+        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
     }
 
     [Fact]
@@ -54,8 +54,8 @@ public class PubSubCommandTests
     [Fact]
     public void PSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PSubscribeBlocking([Pattern1], TimeoutMs).GetArgs());
-        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PSubscribeBlocking([Pattern1, Pattern2], TimeoutMs).GetArgs());
+        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PSubscribeBlocking([Pattern1], Timeout).GetArgs());
+        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PSubscribeBlocking([Pattern1, Pattern2], Timeout).GetArgs());
     }
 
     [Fact]
@@ -68,8 +68,8 @@ public class PubSubCommandTests
     [Fact]
     public void SSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SSubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SSubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SSubscribeBlocking([Channel1], Timeout).GetArgs());
+        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SSubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
     }
 
     [Fact]
@@ -85,9 +85,9 @@ public class PubSubCommandTests
     [Fact]
     public void Unsubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["UNSUBSCRIBEBLOCKING", TimeoutExpected], Request.UnsubscribeBlocking([], TimeoutMs).GetArgs());
-        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.UnsubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.UnsubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["UNSUBSCRIBEBLOCKING", TimeoutExpected], Request.UnsubscribeBlocking([], Timeout).GetArgs());
+        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.UnsubscribeBlocking([Channel1], Timeout).GetArgs());
+        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.UnsubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
     }
 
     [Fact]
@@ -101,9 +101,9 @@ public class PubSubCommandTests
     [Fact]
     public void PUnsubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.PUnsubscribeBlocking([], TimeoutMs).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1], TimeoutMs).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1, Pattern2], TimeoutMs).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.PUnsubscribeBlocking([], Timeout).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1], Timeout).GetArgs());
+        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1, Pattern2], Timeout).GetArgs());
     }
 
     [Fact]
@@ -117,9 +117,9 @@ public class PubSubCommandTests
     [Fact]
     public void SUnsubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.SUnsubscribeBlocking([], TimeoutMs).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1], TimeoutMs).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1, Channel2], TimeoutMs).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.SUnsubscribeBlocking([], Timeout).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1], Timeout).GetArgs());
+        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
     }
 
     [Fact]

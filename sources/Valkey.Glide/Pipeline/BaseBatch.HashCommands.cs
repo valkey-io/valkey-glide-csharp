@@ -79,17 +79,11 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashPersist(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashPersistAsync(key, [.. fields]));
 
-    /// <inheritdoc cref="IBatchHashCommands.HashExpire(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)" />
-    public T HashExpire(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => AddCmd(HashExpireAsync(key, seconds, [.. fields], options));
+    /// <inheritdoc cref="IBatchHashCommands.HashExpire(ValkeyKey, TimeSpan, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)" />
+    public T HashExpire(ValkeyKey key, TimeSpan expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => AddCmd(HashExpireAsync(key, expiry, [.. fields], options));
 
-    /// <inheritdoc cref="IBatchHashCommands.HashPExpire(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)" />
-    public T HashPExpire(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => AddCmd(HashPExpireAsync(key, milliseconds, [.. fields], options));
-
-    /// <inheritdoc cref="IBatchHashCommands.HashExpireAt(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)" />
-    public T HashExpireAt(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => AddCmd(HashExpireAtAsync(key, unixSeconds, [.. fields], options));
-
-    /// <inheritdoc cref="IBatchHashCommands.HashPExpireAt(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)" />
-    public T HashPExpireAt(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => AddCmd(HashPExpireAtAsync(key, unixMilliseconds, [.. fields], options));
+    /// <inheritdoc cref="IBatchHashCommands.HashExpireAt(ValkeyKey, DateTimeOffset, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)" />
+    public T HashExpireAt(ValkeyKey key, DateTimeOffset expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => AddCmd(HashExpireAtAsync(key, expiry, [.. fields], options));
 
     /// <inheritdoc cref="IBatchHashCommands.HashExpireTime(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashExpireTimeAsync(key, [.. fields]));
@@ -128,10 +122,8 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchHashCommands.HashGetEx(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options) => HashGetEx(key, fields, options);
     IBatch IBatchHashCommands.HashSetEx(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options) => HashSetEx(key, fieldValueMap, options);
     IBatch IBatchHashCommands.HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashPersist(key, fields);
-    IBatch IBatchHashCommands.HashExpire(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashExpire(key, seconds, fields, options);
-    IBatch IBatchHashCommands.HashPExpire(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashPExpire(key, milliseconds, fields, options);
-    IBatch IBatchHashCommands.HashExpireAt(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashExpireAt(key, unixSeconds, fields, options);
-    IBatch IBatchHashCommands.HashPExpireAt(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashPExpireAt(key, unixMilliseconds, fields, options);
+    IBatch IBatchHashCommands.HashExpire(ValkeyKey key, TimeSpan expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashExpire(key, expiry, fields, options);
+    IBatch IBatchHashCommands.HashExpireAt(ValkeyKey key, DateTimeOffset expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options) => HashExpireAt(key, expiry, fields, options);
     IBatch IBatchHashCommands.HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashExpireTime(key, fields);
     IBatch IBatchHashCommands.HashPExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashPExpireTime(key, fields);
     IBatch IBatchHashCommands.HashTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashTtl(key, fields);
