@@ -306,7 +306,7 @@ cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true do
 ```
 #### IAM Authentication Tests
 
-To run [IAM authentication tests](integTest/src/test/java/glide/AuthTest.java) locally, set the following environment variables:
+To run [IAM authentication tests](tests/Valkey.Glide.IntegrationTests/IamAuthTests.cs) locally, set the following environment variables:
 
 ```bash
 export AWS_ACCESS_KEY_ID=test_access_key
