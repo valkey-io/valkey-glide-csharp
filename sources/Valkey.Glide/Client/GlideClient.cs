@@ -154,10 +154,8 @@ public partial class GlideClient :
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> ClientGetNameAsync()
-    {
-        return await Command(Request.ClientGetName());
-    }
+    public override async Task<ValkeyValue> ClientGetNameAsync()
+        => await Command(Request.ClientGetName());
 
     /// <inheritdoc/>
     public async Task<long> ClientIdAsync()

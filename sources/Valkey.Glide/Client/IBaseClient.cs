@@ -26,4 +26,21 @@ public interface IBaseClient :
     IStreamBaseCommands,
     IStringBaseCommands
 {
+    /// <summary>
+    /// Gets the name of the current connection.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-getname"/>
+    /// <returns>
+    /// The name of the client connection as a <see cref="ValkeyValue"/>.
+    /// If no name is assigned, <see cref="ValkeyValue.Null"/> will be returned.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ValkeyValue result = await client.ClientGetNameAsync();
+    /// Console.WriteLine($"Connection name: {result}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> ClientGetNameAsync();
 }

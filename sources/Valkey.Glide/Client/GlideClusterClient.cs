@@ -243,16 +243,12 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> ClientGetNameAsync()
-    {
-        return await Command(Request.ClientGetName(), Route.Random);
-    }
+    public override async Task<ValkeyValue> ClientGetNameAsync()
+        => await Command(Request.ClientGetName(), Route.Random);
 
     /// <inheritdoc/>
     public async Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route)
-    {
-        return await Command(Request.ClientGetNameCluster(route), route);
-    }
+        => await Command(Request.ClientGetNameCluster(route), route);
 
     /// <inheritdoc/>
     public async Task<long> ClientIdAsync()

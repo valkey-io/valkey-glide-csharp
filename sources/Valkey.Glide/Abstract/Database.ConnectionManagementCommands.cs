@@ -8,20 +8,6 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    /// <inheritdoc cref="IDatabaseAsync.ClientGetNameAsync(CommandFlags)"/>
-    public async Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ClientGetNameAsync();
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ClientGetNameAsync(Route, CommandFlags)"/>
-    public async Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.ClientGetNameCluster(route), route);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.ClientIdAsync(CommandFlags)"/>
     public async Task<long> ClientIdAsync(CommandFlags flags)
     {
