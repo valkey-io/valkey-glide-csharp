@@ -8,7 +8,9 @@ namespace Valkey.Glide;
 /// Describes functionality that is common to both standalone and cluster servers.<br />
 /// See also <see cref="GlideClient" /> and <see cref="GlideClusterClient" />.
 /// </summary>
-// TODO #263: Move GLIDE-only command interfaces out of IDatabaseAsync inheritance.
+// NOTE: Methods should only be added to this interface if they are implemented by StackExchange.Redis
+// databases but NOT by Valkey GLIDE clients. Methods implemented by both should be added to the corresponding
+// Commands interface instead.
 public partial interface IDatabaseAsync :
     IBitmapBaseCommands,
     IConnectionManagementCommands,

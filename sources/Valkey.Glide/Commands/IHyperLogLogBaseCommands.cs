@@ -6,6 +6,8 @@ namespace Valkey.Glide.Commands;
 /// HyperLogLog commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#hyperloglog">Valkey – HyperLogLog Commands</seealso>
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
 public interface IHyperLogLogBaseCommands
 {
     /// <summary>
