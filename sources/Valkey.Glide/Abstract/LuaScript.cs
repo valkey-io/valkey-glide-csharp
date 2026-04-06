@@ -115,43 +115,6 @@ public sealed class LuaScript
     public static int GetCachedScriptCount() => Cache.Count;
 
     /// <summary>
-    /// Evaluates the script on the specified database synchronously.
-    /// </summary>
-    /// <remarks>
-    /// This method extracts parameter values from the provided object and passes them to the script.
-    /// Parameters of type <see cref="ValkeyKey" /> are treated as keys, while other types are treated as arguments.
-    /// </remarks>
-    /// <param name="db">The database to execute the script on.</param>
-    /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
-    /// <param name="withKeyPrefix">Optional key prefix to apply to all keys.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>The result of the script execution.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
-    /// <example>
-    /// <code>
-    /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
-    /// var result = script.Evaluate(db, new { key = new ValkeyKey("mykey"), value = "myvalue" });
-    /// </code>
-    /// </example>
-    public ValkeyResult Evaluate(IDatabase db, object? parameters = null,
-        ValkeyKey? withKeyPrefix = null, CommandFlags flags = CommandFlags.None)
-    {
-        if (db == null)
-        {
-            throw new ArgumentNullException(nameof(db));
-        }
-
-        // Note: withKeyPrefix is not supported by the ScriptEvaluate API
-        // We need to extract parameters with prefix applied and call ScriptEvaluate with keys/values
-        (ValkeyKey[] keys, ValkeyValue[] args) = ExtractParametersInternal(parameters, withKeyPrefix);
-
-        // Use the proper ScriptEvaluate method
-        return db.ScriptEvaluate(ExecutableScript, keys, args, flags);
-    }
-
-    /// <summary>
     /// Asynchronously evaluates the script on the specified database.
     /// </summary>
     /// <remarks>
@@ -226,42 +189,6 @@ public sealed class LuaScript
             ScriptParameterMapper.GetParameterExtractor(paramType, Arguments);
 
         return extractor(parameters, keyPrefix);
-    }
-
-    /// <summary>
-    /// Loads the script on the server and returns a LoadedLuaScript synchronously.
-    /// </summary>
-    /// <param name="server">The server to load the script on.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>A LoadedLuaScript instance that can be used to execute the script via EVALSHA.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when server is null.</exception>
-    /// <remarks>
-    /// This method loads the script onto the server using the SCRIPT LOAD command.
-    /// The returned LoadedLuaScript contains the SHA1 hash and can be used to execute
-    /// the script more efficiently using EVALSHA.
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// var script = LuaScript.Prepare("return redis.call('GET', @key)");
-    /// var loaded = script.Load(server);
-    /// var result = loaded.Evaluate(db, new { key = "mykey" });
-    /// </code>
-    /// </example>
-    public LoadedLuaScript Load(IServer server, CommandFlags flags = CommandFlags.None)
-    {
-        if (server == null)
-        {
-            throw new ArgumentNullException(nameof(server));
-        }
-
-        // Replace placeholders in the executable script using a heuristic
-        // We assume parameters named "key", "keys", or starting with "key" are keys
-        string scriptToLoad = ScriptParameterMapper.ReplacePlaceholdersWithHeuristic(ExecutableScript, Arguments);
-
-        // Load the script and get its hash
-        byte[] hash = server.ScriptLoadAsync(scriptToLoad, flags).GetAwaiter().GetResult();
-        return new LoadedLuaScript(this, hash, scriptToLoad);
     }
 
     /// <summary>

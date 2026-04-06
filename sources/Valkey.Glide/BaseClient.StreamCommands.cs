@@ -275,37 +275,4 @@ public partial class BaseClient : IStreamCommands
     {
         return await Command(Request.StreamConsumerInfoAsync(key, groupName));
     }
-
-    /// <inheritdoc/>
-    public Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamAcknowledgeAsync followed by StreamDeleteAsync instead.");
-    }
-
-    /// <inheritdoc/>
-    public Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, object mode)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.");
-    }
-
-    /// <inheritdoc/>
-    public Task<ValkeyValue> StreamAddAsync(
-        ValkeyKey key,
-        IEnumerable<NameValueEntry> streamPairs,
-        ValkeyValue? messageId,
-        long? maxLength,
-        bool useApproximateTrimming,
-        long? limit,
-        bool noMakeStream,
-        ValkeyValue? minId,
-        object mode)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamAddAsync without the mode parameter instead.");
-    }
-
-    /// <inheritdoc/>
-    public Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength, bool useApproximateTrimming, long? limit, ValkeyValue? minId, object mode)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamTrimAsync without the mode parameter instead.");
-    }
 }
