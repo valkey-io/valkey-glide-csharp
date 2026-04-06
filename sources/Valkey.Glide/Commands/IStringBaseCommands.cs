@@ -6,7 +6,9 @@ namespace Valkey.Glide.Commands;
 /// String commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#string">Valkey – String Commands</seealso>
-public interface IStringCommands
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
+public interface IStringBaseCommands
 {
     /// <summary>
     /// Sets the value of a key to a string. If the key already holds a value, it is overwritten, regardless of its type.

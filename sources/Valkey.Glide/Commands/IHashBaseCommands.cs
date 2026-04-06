@@ -8,7 +8,9 @@ namespace Valkey.Glide.Commands;
 /// Hash commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#hash">Valkey – Hash Commands</seealso>
-public interface IHashCommands
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
+public interface IHashBaseCommands
 {
     /// <summary>
     /// Returns the value associated with field in the hash stored at key.

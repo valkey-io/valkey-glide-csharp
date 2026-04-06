@@ -6,7 +6,9 @@ namespace Valkey.Glide.Commands;
 /// Sorted set commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#sorted-set">Valkey – Sorted Set Commands</seealso>
-public interface ISortedSetCommands
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
+public interface ISortedSetBaseCommands
 {
     /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" />
     Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score);

@@ -1,12 +1,11 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public abstract partial class BaseClient : IHashCommands
+public abstract partial class BaseClient
 {
     /// <inheritdoc/>
     public async Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField)

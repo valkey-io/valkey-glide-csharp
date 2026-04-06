@@ -1,11 +1,10 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public abstract partial class BaseClient : IPubSubCommands
+public abstract partial class BaseClient
 {
     /// <summary>
     /// Maps from the channel mode strings returned by GLIDE core to the corresponding PubSubChannelMode enum value
