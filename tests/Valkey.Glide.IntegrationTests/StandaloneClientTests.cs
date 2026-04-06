@@ -112,13 +112,14 @@ public class StandaloneClientTests(TestConfiguration config)
         );
         Assert.Equal(
             new string?[] { "v1", "v2", null },
-            db.Execute("hmget", [key1, "f1", "f2", "f3"]).AsStringArray()!
+            (await db.ExecuteAsync("hmget", [key1, "f1", "f2", "f3"])).AsStringArray()!
         );
 
         string key2 = Guid.NewGuid().ToString();
-        Assert.Equal(3L, db.Execute("sadd", [key2, "a", "b", "c"]).AsInt64());
-        Assert.False(db.Execute("smembers", [key2]).AsStringArray()!.Except(["a", "b", "c"]).Any());
-        Assert.Equal([true, true, false], db.Execute("smismember", [key2, "a", "b", "d"]).AsBooleanArray()!);
+        Assert.Equal(3L, (await db.ExecuteAsync("sadd", [key2, "a", "b", "c"])).AsInt64());
+        Assert.False((await db.ExecuteAsync("smembers", [key2])).AsStringArray()!.Except(["a", "b", "c"]).Any());
+        ValkeyResult smismemberResult = await db.ExecuteAsync("smismember", [key2, "a", "b", "d"]);
+        Assert.Equal([true, true, false], smismemberResult.AsBooleanArray()!);
 
         string key3 = Guid.NewGuid().ToString();
         _ = await db.ExecuteAsync("xadd", [key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);

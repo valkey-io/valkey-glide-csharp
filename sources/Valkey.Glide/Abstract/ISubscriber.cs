@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Net;
-
 namespace Valkey.Glide;
 
 /// <summary>
@@ -10,7 +8,7 @@ namespace Valkey.Glide;
 /// </summary>
 public interface ISubscriber
 {
-    #region SyncMethods
+    #region AsyncMethods
 
     /// <summary>
     /// Posts a message to the given channel.
@@ -24,7 +22,7 @@ public interface ISubscriber
     /// note that this doesn't mean much in a cluster as clients can get the message through other nodes.
     /// </returns>
     /// <remarks><seealso href="https://valkey.io/commands/publish"/></remarks>
-    long Publish(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None);
+    Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Subscribe to perform some operation when a message to the preferred/active node is broadcast, without any guarantee of ordered handling.
@@ -39,7 +37,7 @@ public interface ISubscriber
     /// <seealso href="https://valkey.io/commands/psubscribe"/>.
     /// <seealso href="https://valkey.io/commands/ssubscribe"/>.
     /// </remarks>
-    void Subscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None);
+    Task SubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Subscribe to perform some operation when a message to the preferred/active node is broadcast, as a queue that guarantees ordered handling.
@@ -54,7 +52,7 @@ public interface ISubscriber
     /// <seealso href="https://valkey.io/commands/psubscribe"/>.
     /// <seealso href="https://valkey.io/commands/ssubscribe"/>.
     /// </remarks>
-    ChannelMessageQueue Subscribe(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
+    Task<ChannelMessageQueue> SubscribeAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribe from a specified message channel.
@@ -71,7 +69,7 @@ public interface ISubscriber
     /// <seealso href="https://valkey.io/commands/punsubscribe"/>.
     /// <seealso href="https://valkey.io/commands/sunsubscribe"/>.
     /// </remarks>
-    void Unsubscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None);
+    Task UnsubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Unsubscribe all subscriptions on this instance.
@@ -84,42 +82,7 @@ public interface ISubscriber
     /// <seealso href="https://valkey.io/commands/punsubscribe"/>.
     /// <seealso href="https://valkey.io/commands/sunsubscribe"/>.
     /// </remarks>
-    void UnsubscribeAll(CommandFlags flags = CommandFlags.None);
-
-    #endregion
-    #region AsyncMethods
-
-    /// <inheritdoc cref="Publish(ValkeyChannel, ValkeyValue, CommandFlags)"/>
-    Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="Subscribe(ValkeyChannel, Action{ValkeyChannel, ValkeyValue}, CommandFlags)"/>
-    Task SubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="Subscribe(ValkeyChannel, CommandFlags)"/>
-    Task<ChannelMessageQueue> SubscribeAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="Unsubscribe(ValkeyChannel, Action{ValkeyChannel, ValkeyValue}?, CommandFlags)"/>
-    Task UnsubscribeAsync(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="UnsubscribeAll(CommandFlags)"/>
     Task UnsubscribeAllAsync(CommandFlags flags = CommandFlags.None);
-
-    #endregion
-    #region NotSupportedMethods
-
-#pragma warning disable CS1591 // Obsolete methods
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    bool IsConnected(ValkeyChannel channel = default);
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    Task<EndPoint?> IdentifyEndpointAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    EndPoint? SubscribedEndpoint(ValkeyChannel channel);
-#pragma warning restore CS1591
 
     #endregion
 }

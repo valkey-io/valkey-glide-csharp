@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Net;
-
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -23,24 +21,6 @@ internal sealed class Subscriber : ISubscriber
         _client = client;
     }
 
-    #region SyncMethods
-
-    public long Publish(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
-        => PublishAsync(channel, message, flags).GetAwaiter().GetResult();
-
-    public void Subscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue> handler, CommandFlags flags = CommandFlags.None)
-        => SubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
-
-    public ChannelMessageQueue Subscribe(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
-        => SubscribeAsync(channel, flags).GetAwaiter().GetResult();
-
-    public void Unsubscribe(ValkeyChannel channel, Action<ValkeyChannel, ValkeyValue>? handler = null, CommandFlags flags = CommandFlags.None)
-        => UnsubscribeAsync(channel, handler, flags).GetAwaiter().GetResult();
-
-    public void UnsubscribeAll(CommandFlags flags = CommandFlags.None)
-        => UnsubscribeAllAsync(flags).GetAwaiter().GetResult();
-
-    #endregion
     #region AsyncMethods
 
     public async Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
@@ -153,21 +133,6 @@ internal sealed class Subscriber : ISubscriber
             _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
         }
     }
-
-    #endregion
-    #region NotSupportedMethods
-
-    public bool IsConnected(ValkeyChannel channel = default)
-    => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
-
-    public EndPoint? IdentifyEndpoint(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
-        => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
-
-    public Task<EndPoint?> IdentifyEndpointAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None)
-        => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
-
-    public EndPoint? SubscribedEndpoint(ValkeyChannel channel)
-        => throw new NotImplementedException("This method is not supported by Valkey GLIDE.");
 
     #endregion
     #region HelperMethods

@@ -60,44 +60,6 @@ public sealed class LoadedLuaScript
     internal string LoadedExecutableScript { get; }
 
     /// <summary>
-    /// Evaluates the loaded script using EVALSHA synchronously.
-    /// </summary>
-    /// <param name="db">The database to execute the script on.</param>
-    /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
-    /// <param name="withKeyPrefix">Optional key prefix to apply to all keys.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>The result of the script execution.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
-    /// <remarks>
-    /// This method uses EVALSHA to execute the script by its hash, which is more efficient than
-    /// transmitting the full script source. If the script is not cached on the server, a NOSCRIPT
-    /// error will be thrown.
-    ///
-    /// Example:
-    /// <code>
-    /// var loaded = await script.LoadAsync(server);
-    /// var result = loaded.Evaluate(db, new { key = new ValkeyKey("mykey"), value = "myvalue" });
-    /// </code>
-    /// </remarks>
-    public ValkeyResult Evaluate(IDatabase db, object? parameters = null,
-        ValkeyKey? withKeyPrefix = null, CommandFlags flags = CommandFlags.None)
-    {
-        if (db == null)
-        {
-            throw new ArgumentNullException(nameof(db));
-        }
-
-        // Note: withKeyPrefix is not supported by the ScriptEvaluate API
-        // We need to extract parameters with prefix applied and call ScriptEvaluate with keys/values
-        (ValkeyKey[] keys, ValkeyValue[] args) = Script.ExtractParametersInternal(parameters, withKeyPrefix);
-
-        // Use the proper ScriptEvaluate method with hash
-        return db.ScriptEvaluate(Hash, keys, args, flags);
-    }
-
-    /// <summary>
     /// Asynchronously evaluates the loaded script using EVALSHA.
     /// </summary>
     /// <param name="db">The database to execute the script on.</param>

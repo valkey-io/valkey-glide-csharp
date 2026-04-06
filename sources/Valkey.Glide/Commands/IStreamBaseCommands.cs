@@ -429,31 +429,4 @@ public interface IStreamBaseCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <returns>An array of information about each consumer in the group.</returns>
     Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName);
-
-    // Obsolete methods - not supported by Valkey GLIDE
-
-    /// <summary>
-    /// This method is not implemented. Valkey does not support acknowledging and deleting messages in a single operation.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamAcknowledgeAsync followed by StreamDeleteAsync instead.", error: true)]
-    Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds);
-
-    /// <summary>
-    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.", error: true)]
-    Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, object mode);
-
-    /// <summary>
-    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamAddAsync without the mode parameter instead.", error: true)]
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit, bool noMakeStream, ValkeyValue? minId, object mode);
-
-    /// <summary>
-    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamTrimAsync without the mode parameter instead.", error: true)]
-    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength, bool useApproximateMaxLength, long? limit, ValkeyValue? minId, object mode);
-
 }
