@@ -2,7 +2,6 @@
 
 using System.Runtime.InteropServices;
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 using Valkey.Glide.Pipeline;
@@ -20,7 +19,9 @@ namespace Valkey.Glide;
 /// Client used for connection to cluster servers. Use <see cref="CreateClient"/> to request a client.
 /// </summary>
 /// <seealso href="https://glide.valkey.io/how-to/client-initialization/">Valkey GLIDE – Client Initialization</seealso>
-public sealed partial class GlideClusterClient : BaseClient, IGenericClusterCommands, IServerManagementClusterCommands, IConnectionManagementClusterCommands, ITransactionClusterCommands
+public sealed partial class GlideClusterClient :
+    BaseClient,
+    IGlideClusterClient
 {
     private GlideClusterClient() { }
 
