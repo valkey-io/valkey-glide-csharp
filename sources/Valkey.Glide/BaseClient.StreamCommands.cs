@@ -190,43 +190,43 @@ public partial class BaseClient : IStreamCommands
     }
 
     /// <inheritdoc/>
-    public async Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, long? minIdleTimeInMs = null)
+    public async Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null)
     {
-        return await Command(Request.StreamPendingMessagesAsync(key, groupName, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, consumerName, minIdleTimeInMs));
+        return await Command(Request.StreamPendingMessagesAsync(key, groupName, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, consumerName, minIdleTime));
     }
     /// <inheritdoc/>
-    public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds)
+    public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
-        return await StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTimeInMs, messageIds, null, null, null, false);
-    }
-
-    /// <inheritdoc/>
-    public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false)
-    {
-        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTimeInMs, [.. messageIds], idleTimeInMs, timeUnixMs, retryCount, force));
+        return await StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, null, null, null, false);
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds)
+    public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false)
     {
-        return await StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTimeInMs, messageIds, null, null, null, false);
+        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], idleTime, timestamp, retryCount, force));
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false)
+    public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
-        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTimeInMs, [.. messageIds], idleTimeInMs, timeUnixMs, retryCount, force));
-    }
-    /// <inheritdoc/>
-    public async Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null)
-    {
-        return await Command(Request.StreamAutoClaimAsync(key, consumerGroup, claimingConsumer, minIdleTimeInMs, startAtId, count));
+        return await StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, null, null, null, false);
     }
 
     /// <inheritdoc/>
-    public async Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null)
+    public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false)
     {
-        return await Command(Request.StreamAutoClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTimeInMs, startAtId, count));
+        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], idleTime, timestamp, retryCount, force));
+    }
+    /// <inheritdoc/>
+    public async Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null)
+    {
+        return await Command(Request.StreamAutoClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
+    }
+
+    /// <inheritdoc/>
+    public async Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null)
+    {
+        return await Command(Request.StreamAutoClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
     }
     /// <inheritdoc/>
     public async Task<long> StreamLengthAsync(ValkeyKey key)
@@ -274,38 +274,5 @@ public partial class BaseClient : IStreamCommands
     public async Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName)
     {
         return await Command(Request.StreamConsumerInfoAsync(key, groupName));
-    }
-
-    /// <inheritdoc/>
-    public Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamAcknowledgeAsync followed by StreamDeleteAsync instead.");
-    }
-
-    /// <inheritdoc/>
-    public Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, object mode)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.");
-    }
-
-    /// <inheritdoc/>
-    public Task<ValkeyValue> StreamAddAsync(
-        ValkeyKey key,
-        IEnumerable<NameValueEntry> streamPairs,
-        ValkeyValue? messageId,
-        long? maxLength,
-        bool useApproximateTrimming,
-        long? limit,
-        bool noMakeStream,
-        ValkeyValue? minId,
-        object mode)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamAddAsync without the mode parameter instead.");
-    }
-
-    /// <inheritdoc/>
-    public Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength, bool useApproximateTrimming, long? limit, ValkeyValue? minId, object mode)
-    {
-        throw new NotSupportedException("This method is not implemented. Use StreamTrimAsync without the mode parameter instead.");
     }
 }

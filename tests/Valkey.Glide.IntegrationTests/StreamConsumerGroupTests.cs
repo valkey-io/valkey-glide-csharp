@@ -420,7 +420,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Query with high minIdleTime - should return empty
-        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", minIdleTimeInMs: 999999);
+        StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", minIdleTime: TimeSpan.FromMilliseconds(999999));
         Assert.Empty(messages);
     }
 
@@ -438,7 +438,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims the message
-        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1]);
+        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", TimeSpan.Zero, [id1]);
         _ = Assert.Single(claimed);
         Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
         Assert.Equal("value1", claimed[0].Values[0].Value.ToString());
@@ -455,7 +455,7 @@ public class StreamConsumerGroupTests
 
         // Try to claim from non-existent group - should error
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
-            await client.StreamClaimAsync(key, "nonexistent", "consumer1", 0, [id]));
+            await client.StreamClaimAsync(key, "nonexistent", "consumer1", TimeSpan.Zero, [id]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -469,7 +469,7 @@ public class StreamConsumerGroupTests
 
         // Try to claim from string key - should error
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
-            await client.StreamClaimAsync(key, "mygroup", "consumer1", 0, ["1-0"]));
+            await client.StreamClaimAsync(key, "mygroup", "consumer1", TimeSpan.Zero, ["1-0"]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -487,7 +487,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims the messages (IDs only)
-        ValkeyValue[] claimedIds = await client.StreamClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, [id1, id2]);
+        ValkeyValue[] claimedIds = await client.StreamClaimIdsOnlyAsync(key, "mygroup", "consumer2", TimeSpan.Zero, [id1, id2]);
         Assert.Equal(2, claimedIds.Length);
         Assert.Equal(id1.ToString(), claimedIds[0].ToString());
         Assert.Equal(id2.ToString(), claimedIds[1].ToString());
@@ -508,7 +508,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 auto-claims pending messages
-        StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", 0, StreamConstants.MinimumId);
+        StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", TimeSpan.Zero, StreamConstants.MinimumId);
         Assert.Equal("0-0", result.NextStartId.ToString());
         Assert.Equal(2, result.ClaimedEntries.Length);
         Assert.Equal("value1", result.ClaimedEntries[0].Values[0].Value.ToString());
@@ -529,7 +529,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 auto-claims pending messages (IDs only)
-        StreamAutoClaimIdsOnlyResult result = await client.StreamAutoClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, StreamConstants.MinimumId);
+        StreamAutoClaimIdsOnlyResult result = await client.StreamAutoClaimIdsOnlyAsync(key, "mygroup", "consumer2", TimeSpan.Zero, StreamConstants.MinimumId);
         Assert.Equal("0-0", result.NextStartId.ToString());
         Assert.Equal(2, result.ClaimedIds.Length);
     }
@@ -550,7 +550,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 auto-claims only 2 messages
-        StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", 0, StreamConstants.MinimumId, count: 2);
+        StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", TimeSpan.Zero, StreamConstants.MinimumId, count: 2);
         Assert.Equal(2, result.ClaimedEntries.Length);
     }
 
@@ -610,7 +610,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims with IDLE parameter
-        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1], idleTimeInMs: 5000);
+        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", TimeSpan.Zero, [id1], idleTime: TimeSpan.FromMilliseconds(5000));
         _ = Assert.Single(claimed);
         Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
     }
@@ -629,7 +629,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims with RETRYCOUNT parameter
-        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", 0, [id1], retryCount: 10);
+        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer2", TimeSpan.Zero, [id1], retryCount: 10);
         _ = Assert.Single(claimed);
 
         // Verify retry count was set
@@ -649,7 +649,7 @@ public class StreamConsumerGroupTests
         await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Claim message without reading it first (using FORCE)
-        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer1", 0, [id1], force: true);
+        StreamEntry[] claimed = await client.StreamClaimAsync(key, "mygroup", "consumer1", TimeSpan.Zero, [id1], force: true);
         _ = Assert.Single(claimed);
         Assert.Equal(id1.ToString(), claimed[0].Id.ToString());
     }
@@ -668,7 +668,7 @@ public class StreamConsumerGroupTests
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         // Consumer2 claims with optional parameters
-        ValkeyValue[] claimedIds = await client.StreamClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, [id1], idleTimeInMs: 1000, retryCount: 5);
+        ValkeyValue[] claimedIds = await client.StreamClaimIdsOnlyAsync(key, "mygroup", "consumer2", TimeSpan.Zero, [id1], idleTime: TimeSpan.FromMilliseconds(1000), retryCount: 5);
         _ = Assert.Single(claimedIds);
         Assert.Equal(id1.ToString(), claimedIds[0].ToString());
     }

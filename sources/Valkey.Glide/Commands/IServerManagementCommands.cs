@@ -203,6 +203,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<DateTime> LastSaveAsync();
 
     /// <summary>
@@ -218,6 +219,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<DateTime> TimeAsync();
 
     /// <summary>

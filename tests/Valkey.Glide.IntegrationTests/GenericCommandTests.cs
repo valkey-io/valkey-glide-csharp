@@ -619,7 +619,7 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Test WAIT with different expected behavior for cluster vs standalone
-        long replicaCount = await client.WaitAsync(1, 2000);
+        long replicaCount = await client.WaitAsync(1, TimeSpan.FromSeconds(2));
         if (client is GlideClusterClient)
         {
             Assert.True(replicaCount >= 1); // Cluster mode
@@ -630,11 +630,11 @@ public class GenericCommandTests(TestConfiguration config)
         }
 
         // Test WAIT with 0 replicas (should return immediately)
-        replicaCount = await client.WaitAsync(0, 2000);
+        replicaCount = await client.WaitAsync(0, TimeSpan.FromSeconds(2));
         Assert.True(replicaCount >= 0);
 
         // Test WAIT with timeout 0 (should return immediately)
-        replicaCount = await client.WaitAsync(1, 0);
+        replicaCount = await client.WaitAsync(1, TimeSpan.Zero);
         Assert.True(replicaCount >= 0);
     }
 
@@ -644,7 +644,7 @@ public class GenericCommandTests(TestConfiguration config)
     {
         // Test negative timeout should throw exception
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(
-            () => client.WaitAsync(1, -1));
+            () => client.WaitAsync(1, TimeSpan.FromMilliseconds(-1)));
         Assert.Contains("Timeout cannot be negative", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 

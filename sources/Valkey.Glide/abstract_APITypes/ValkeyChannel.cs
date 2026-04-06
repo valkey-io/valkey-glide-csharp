@@ -253,20 +253,4 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         }
     }
 
-    // Not supported by Valkey GLIDE
-    // -----------------------------
-
-#pragma warning disable CS1591 // Obsolete methods
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    public ValkeyChannel WithKeyRouting()
-        => throw new NotSupportedException("This method is not supported by Valkey GLIDE.");
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    public static implicit operator ValkeyChannel(string key)
-        => throw new NotSupportedException("This method is not supported by Valkey GLIDE.");
-
-    [Obsolete("This method is not supported by Valkey GLIDE.", error: true)]
-    public static implicit operator ValkeyChannel(byte[]? key)
-        => throw new NotSupportedException("This method is not supported by Valkey GLIDE.");
-#pragma warning restore CS1591
 }

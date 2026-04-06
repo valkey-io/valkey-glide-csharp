@@ -19,45 +19,45 @@ internal partial class Request
         // Add NOMKSTREAM if specified
         if (noMakeStream)
         {
-            args.Add("NOMKSTREAM".ToGlideString());
+            args.Add("NOMKSTREAM");
         }
 
         // Add trimming options (MAXLEN or MINID)
         if (maxLength.HasValue)
         {
-            args.Add("MAXLEN".ToGlideString());
+            args.Add("MAXLEN");
             if (useApproximateMaxLength)
             {
-                args.Add("~".ToGlideString());
+                args.Add("~");
             }
             args.Add(maxLength.Value.ToGlideString());
 
             // Add LIMIT if specified and approximate trimming is used
             if (limit.HasValue && useApproximateMaxLength)
             {
-                args.Add("LIMIT".ToGlideString());
+                args.Add("LIMIT");
                 args.Add(limit.Value.ToGlideString());
             }
         }
         else if (!minId.IsNull)
         {
-            args.Add("MINID".ToGlideString());
+            args.Add("MINID");
             if (useApproximateMaxLength)
             {
-                args.Add("~".ToGlideString());
+                args.Add("~");
             }
             args.Add(minId.ToGlideString());
 
             // Add LIMIT if specified and approximate trimming is used
             if (limit.HasValue && useApproximateMaxLength)
             {
-                args.Add("LIMIT".ToGlideString());
+                args.Add("LIMIT");
                 args.Add(limit.Value.ToGlideString());
             }
         }
 
         // Add message ID
-        args.Add(messageId.IsNull ? "*".ToGlideString() : messageId.ToGlideString());
+        args.Add(messageId.IsNull ? "*" : messageId.ToGlideString());
 
         // Add field-value pairs
         foreach (var pair in streamPairs)
@@ -85,11 +85,11 @@ internal partial class Request
 
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
 
-        args.Add("STREAMS".ToGlideString());
+        args.Add("STREAMS");
         foreach (var sp in streamPositions)
         {
             args.Add(sp.Key.ToGlideString());
@@ -108,7 +108,7 @@ internal partial class Request
 
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
 
@@ -345,16 +345,16 @@ internal partial class Request
 
     public static Cmd<string, bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, bool createStream, long? entriesRead)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.IsNull ? "$".ToGlideString() : position.ToGlideString()];
+        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), position.IsNull ? "$" : position.ToGlideString()];
 
         if (createStream)
         {
-            args.Add("MKSTREAM".ToGlideString());
+            args.Add("MKSTREAM");
         }
 
         if (entriesRead.HasValue)
         {
-            args.Add("ENTRIESREAD".ToGlideString());
+            args.Add("ENTRIESREAD");
             args.Add(entriesRead.Value.ToGlideString());
         }
 
@@ -372,7 +372,7 @@ internal partial class Request
 
         if (entriesRead.HasValue)
         {
-            args.Add("ENTRIESREAD".ToGlideString());
+            args.Add("ENTRIESREAD");
             args.Add(entriesRead.Value.ToGlideString());
         }
 
@@ -401,27 +401,27 @@ internal partial class Request
 
     private static Cmd<object, TResult> StreamReadGroupAsync<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? count, bool noAck, Func<object, TResult> converter)
     {
-        List<GlideString> args = ["GROUP".ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString()];
+        List<GlideString> args = ["GROUP", groupName.ToGlideString(), consumerName.ToGlideString()];
 
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
 
         if (noAck)
         {
-            args.Add("NOACK".ToGlideString());
+            args.Add("NOACK");
         }
 
-        args.Add("STREAMS".ToGlideString());
+        args.Add("STREAMS");
         foreach (var sp in streamPositions)
         {
             args.Add(sp.Key.ToGlideString());
         }
         foreach (var sp in streamPositions)
         {
-            args.Add(sp.Position.IsNull ? ">".ToGlideString() : sp.Position.ToGlideString());
+            args.Add(sp.Position.IsNull ? ">" : sp.Position.ToGlideString());
         }
 
         return new(RequestType.XReadGroup, [.. args], false, converter, allowConverterToHandleNull: true);
@@ -442,21 +442,25 @@ internal partial class Request
         return new(RequestType.XPending, [key.ToGlideString(), groupName.ToGlideString()], false, ConvertStreamPendingInfo);
     }
 
-    public static Cmd<object[], StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue minId, ValkeyValue maxId, int count, ValkeyValue consumerName, long? minIdleTime)
+    public static Cmd<object[], StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue minId, ValkeyValue maxId, int count, ValkeyValue consumerName, TimeSpan? minIdleTime)
     {
         List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString()];
+
         if (minIdleTime.HasValue)
         {
-            args.Add("IDLE".ToGlideString());
-            args.Add(minIdleTime.Value.ToGlideString());
+            args.Add("IDLE");
+            args.Add(ToMilliseconds(minIdleTime.Value).ToGlideString());
         }
+
         args.Add(minId.ToGlideString());
         args.Add(maxId.ToGlideString());
         args.Add(count.ToGlideString());
+
         if (!consumerName.IsNull)
         {
             args.Add(consumerName.ToGlideString());
         }
+
         return new(RequestType.XPending, [.. args], false, ConvertStreamPendingMessages);
     }
 
@@ -495,45 +499,45 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force)
+    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
     {
-        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTimeInMs, timeUnixMs, retryCount, force, false, ConvertXRangeResponse);
+        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, false, ConvertXRangeResponse);
     }
 
-    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force)
+    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
     {
-        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTimeInMs, timeUnixMs, retryCount, force, true, ConvertClaimIdsOnly);
+        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, true, ConvertClaimIdsOnly);
     }
 
-    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue[] messageIds, long? idleTimeInMs, long? timeUnixMs, int? retryCount, bool force, bool justId, Func<TResponse, TResult> converter)
+    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force, bool justId, Func<TResponse, TResult> converter)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString()];
+        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id.ToGlideString());
         }
-        if (idleTimeInMs.HasValue)
+        if (idleTime.HasValue)
         {
-            args.Add("IDLE".ToGlideString());
-            args.Add(idleTimeInMs.Value.ToGlideString());
+            args.Add("IDLE");
+            args.Add(ToMilliseconds(idleTime.Value).ToGlideString());
         }
-        if (timeUnixMs.HasValue)
+        if (timestamp.HasValue)
         {
-            args.Add("TIME".ToGlideString());
-            args.Add(timeUnixMs.Value.ToGlideString());
+            args.Add("TIME");
+            args.Add(timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
         if (retryCount.HasValue)
         {
-            args.Add("RETRYCOUNT".ToGlideString());
+            args.Add("RETRYCOUNT");
             args.Add(retryCount.Value.ToGlideString());
         }
         if (force)
         {
-            args.Add("FORCE".ToGlideString());
+            args.Add("FORCE");
         }
         if (justId)
         {
-            args.Add("JUSTID".ToGlideString());
+            args.Add("JUSTID");
         }
         return new(RequestType.XClaim, [.. args], false, converter);
     }
@@ -548,26 +552,26 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString(), startId.ToGlideString()];
+        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimResult);
     }
 
-    public static Cmd<object[], StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, long minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key.ToGlideString(), groupName.ToGlideString(), consumerName.ToGlideString(), minIdleTime.ToGlideString(), startId.ToGlideString()];
+        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
         if (count.HasValue)
         {
-            args.Add("COUNT".ToGlideString());
+            args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
         }
-        args.Add("JUSTID".ToGlideString());
+        args.Add("JUSTID");
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimIdsOnlyResult);
     }
 
@@ -717,20 +721,20 @@ internal partial class Request
 
         if (maxLength.HasValue)
         {
-            args.Add("MAXLEN".ToGlideString());
-            if (useApproximateMaxLength) args.Add("~".ToGlideString());
+            args.Add("MAXLEN");
+            if (useApproximateMaxLength) args.Add("~");
             args.Add(maxLength.Value.ToGlideString());
         }
         else if (!minId.IsNull)
         {
-            args.Add("MINID".ToGlideString());
-            if (useApproximateMaxLength) args.Add("~".ToGlideString());
+            args.Add("MINID");
+            if (useApproximateMaxLength) args.Add("~");
             args.Add(minId.ToGlideString());
         }
 
         if (limit.HasValue && useApproximateMaxLength)
         {
-            args.Add("LIMIT".ToGlideString());
+            args.Add("LIMIT");
             args.Add(limit.Value.ToGlideString());
         }
 

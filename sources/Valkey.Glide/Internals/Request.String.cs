@@ -88,8 +88,8 @@ internal partial class Request
         List<GlideString> args = [key.ToGlideString()];
         if (expiry.HasValue)
         {
-            args.Add(ExKeyword.ToGlideString());
-            args.Add(((long)expiry.Value.TotalSeconds).ToGlideString());
+            args.Add(PxKeyword.ToGlideString());
+            args.Add(ToMilliseconds(expiry.Value).ToGlideString());
         }
         else
         {
@@ -99,8 +99,10 @@ internal partial class Request
     }
 
 #pragma warning disable IDE0072 // Add missing cases
+    // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<GlideString, ValkeyValue> StringGetSetExpiry(ValkeyKey key, DateTime expiry)
     {
+        // TODO #269: Remove DateTimeKind switch once this method accepts DateTimeOffset.
         long unixTimestamp = expiry.Kind switch
         {
             DateTimeKind.Local => ((DateTimeOffset)expiry.ToUniversalTime()).ToUnixTimeSeconds(),
@@ -136,13 +138,13 @@ internal partial class Request
         long totalLength = 0;
 
         // Extract length
-        if (response.TryGetValue("len".ToGlideString(), out object? lengthValue))
+        if (response.TryGetValue("len", out object? lengthValue))
         {
             totalLength = lengthValue is long l ? l : 0;
         }
 
         // Extract matches
-        if (response.TryGetValue("matches".ToGlideString(), out object? matchesValue) && matchesValue is object[] matchesArray)
+        if (response.TryGetValue("matches", out object? matchesValue) && matchesValue is object[] matchesArray)
         {
             foreach (object matchObj in matchesArray)
             {

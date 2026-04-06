@@ -20,14 +20,8 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     private Dictionary<GlideString, object> Hello()
         => (Dictionary<GlideString, object>)_conn.CustomCommand(["hello"]).GetAwaiter().GetResult()!;
 
-    public ValkeyResult Execute(string command, params object[] args)
-        => ExecuteAsync(command, args).GetAwaiter().GetResult();
-
     public async Task<ValkeyResult> ExecuteAsync(string command, params object[] args)
         => await ExecuteAsync(command, args.ToList());
-
-    public ValkeyResult Execute(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
-        => ExecuteAsync(command, args, flags).GetAwaiter().GetResult();
 
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
     {
@@ -66,9 +60,6 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public Task<IGrouping<string, KeyValuePair<string, string>>[]> InfoAsync(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
         => InfoRawAsync(section, flags).ContinueWith(static t
             => Utils.ParseInfoResponse(t.Result!).GroupBy(static x => x.Item1, static x => x.Item2).ToArray());
-
-    public string? InfoRaw(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
-        => InfoRawAsync(section, flags).GetAwaiter().GetResult();
 
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
