@@ -1,0 +1,92 @@
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using Valkey.Glide.Internals;
+
+namespace Valkey.Glide;
+
+public partial class GlideClusterClient
+{
+    #region PublishCommands
+
+    /// <inheritdoc/>
+    public async Task<long> SPublishAsync(string channel, string message)
+        => await Command(Request.SPublish(channel, message));
+
+    #endregion
+    #region SubscribeCommands
+
+    /// <inheritdoc/>
+    public async Task SSubscribeAsync(string channel, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        _ = await Command(Request.SSubscribeBlocking([channel], timeout));
+    }
+
+    /// <inheritdoc/>
+    public async Task SSubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        _ = await Command(Request.SSubscribeBlocking(channels.ToGlideStrings(), timeout));
+    }
+
+    /// <inheritdoc/>
+    public async Task SSubscribeLazyAsync(string channel)
+        => await Command(Request.SSubscribe([channel]));
+
+    /// <inheritdoc/>
+    public async Task SSubscribeLazyAsync(IEnumerable<string> channels)
+        => await Command(Request.SSubscribe(channels.ToGlideStrings()));
+
+    #endregion
+    #region UnsubscribeCommands
+
+    /// <inheritdoc/>
+    public async Task SUnsubscribeAsync(TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        _ = await Command(Request.SUnsubscribeBlocking([], timeout));
+    }
+
+    /// <inheritdoc/>
+    public async Task SUnsubscribeAsync(string channel, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        _ = await Command(Request.SUnsubscribeBlocking([channel], timeout));
+    }
+
+    /// <inheritdoc/>
+    public async Task SUnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    {
+        GuardClauses.ThrowIfTimeSpanNegative(timeout);
+        _ = await Command(Request.SUnsubscribeBlocking(channels.ToGlideStrings(), timeout));
+    }
+
+    /// <inheritdoc/>
+    public async Task SUnsubscribeLazyAsync()
+        => await Command(Request.SUnsubscribe([]));
+
+    /// <inheritdoc/>
+    public async Task SUnsubscribeLazyAsync(string channel)
+        => await Command(Request.SUnsubscribe([channel]));
+
+    /// <inheritdoc/>
+    public async Task SUnsubscribeLazyAsync(IEnumerable<string> channels)
+        => await Command(Request.SUnsubscribe(channels.ToGlideStrings()));
+
+    #endregion
+    #region IntrospectionCommands
+
+    /// <inheritdoc/>
+    public async Task<ISet<string>> PubSubShardChannelsAsync()
+        => await Command(Request.PubSubShardChannels());
+
+    /// <inheritdoc/>
+    public async Task<ISet<string>> PubSubShardChannelsAsync(string pattern)
+        => await Command(Request.PubSubShardChannels(pattern));
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<string, long>> PubSubShardNumSubAsync(IEnumerable<string> channels)
+        => await Command(Request.PubSubShardNumSub(channels.ToGlideStrings()));
+
+    #endregion
+}

@@ -69,11 +69,11 @@ public class GeospatialCommandTests(TestConfiguration config)
         string member = "InvalidPlace";
 
         // Test longitude too low (-181)
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, -181, 0, member));
 
         // Test longitude too high (181)
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, 181, 0, member));
     }
 
@@ -85,11 +85,11 @@ public class GeospatialCommandTests(TestConfiguration config)
         string member = "InvalidPlace";
 
         // Test latitude too high (86)
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, 0, 86, member));
 
         // Test latitude too low (-86)
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, 0, -86, member));
     }
 
@@ -100,7 +100,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         GeoEntry[] emptyEntries = [];
 
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, emptyEntries));
     }
 
@@ -111,7 +111,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.StringSetAsync(key, "not_a_geo_key");
 
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo"));
     }
 
@@ -199,7 +199,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         // Test all units with expected values (approximate distance between Palermo and Catania)
         double? distanceMeters = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Meters);
@@ -233,7 +233,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         // Test default unit (should be meters)
         double? distanceDefault = await client.GeoDistanceAsync(key, "Palermo", "Catania");
@@ -252,7 +252,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.758489, 38.788135, "Trapani")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var position = new GeoPosition(13.361389, 38.115556); // Palermo coordinates
 
@@ -298,7 +298,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         string?[] hashes = await client.GeoHashAsync(key, ["Palermo", "Catania", "NonExistent"]);
         Assert.NotNull(hashes[0]); // Palermo
@@ -311,10 +311,10 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoPosition_NonExistentMembers_ReturnsNulls(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         GeoPosition?[] positions = await client.GeoPositionAsync(key, ["Palermo", "NonExistent"]);
-        Assert.NotNull(positions[0]); // Palermo
+        _ = Assert.NotNull(positions[0]); // Palermo
         Assert.Null(positions[1]); // NonExistent
     }
 
@@ -323,7 +323,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoDistance_NonExistentMember_ReturnsNull(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         double? distance = await client.GeoDistanceAsync(key, "Palermo", "NonExistent");
         Assert.Null(distance);
@@ -365,10 +365,10 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
 
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         double? distance = await client.GeoDistanceAsync(key, "Palermo", "Catania", GeoUnit.Kilometers);
-        Assert.NotNull(distance);
+        _ = Assert.NotNull(distance);
         Assert.Equal(166.27, distance.Value, 1); // Approximate distance between Palermo and Catania
     }
 
@@ -379,7 +379,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.StringSetAsync(key, "not_a_geo_key");
 
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoDistanceAsync(key, "member1", "member2"));
     }
 
@@ -388,7 +388,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoHash_SingleMember_ReturnsHash(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         string? hash = await client.GeoHashAsync(key, "Palermo");
         Assert.NotNull(hash);
@@ -405,7 +405,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         string?[] hashes = await client.GeoHashAsync(key, ["Palermo", "Catania"]);
         Assert.NotNull(hashes[0]);
@@ -419,7 +419,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoHash_NonExistentMember_ReturnsNull(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         string? hash = await client.GeoHashAsync(key, "NonExistent");
         Assert.Null(hash);
@@ -432,7 +432,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.StringSetAsync(key, "not_a_geo_key");
 
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoHashAsync(key, "member"));
     }
 
@@ -441,7 +441,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoHash_EmptyMembers_ReturnsEmptyArray(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         string?[] hashes = await client.GeoHashAsync(key, []);
         Assert.Empty(hashes);
@@ -454,10 +454,10 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         double longitude = 13.361389;
         double latitude = 38.115556;
-        await client.GeoAddAsync(key, longitude, latitude, "Palermo");
+        _ = await client.GeoAddAsync(key, longitude, latitude, "Palermo");
 
         GeoPosition? position = await client.GeoPositionAsync(key, "Palermo");
-        Assert.NotNull(position);
+        _ = Assert.NotNull(position);
         Assert.True(Math.Abs(position.Value.Longitude - longitude) < 0.001);
         Assert.True(Math.Abs(position.Value.Latitude - latitude) < 0.001);
     }
@@ -472,11 +472,11 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         GeoPosition?[] positions = await client.GeoPositionAsync(key, ["Palermo", "Catania"]);
-        Assert.NotNull(positions[0]);
-        Assert.NotNull(positions[1]);
+        _ = Assert.NotNull(positions[0]);
+        _ = Assert.NotNull(positions[1]);
         Assert.True(Math.Abs(positions[0]!.Value.Longitude - 13.361389) < 0.001);
         Assert.True(Math.Abs(positions[0]!.Value.Latitude - 38.115556) < 0.001);
         Assert.True(Math.Abs(positions[1]!.Value.Longitude - 15.087269) < 0.001);
@@ -488,7 +488,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoPosition_NonExistentMember_ReturnsNull(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         GeoPosition? position = await client.GeoPositionAsync(key, "NonExistent");
         Assert.Null(position);
@@ -501,7 +501,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.StringSetAsync(key, "not_a_geo_key");
 
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoPositionAsync(key, "member"));
     }
 
@@ -516,7 +516,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.758489, 38.788135, "edge")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         GeoRadiusResult[] results = await client.GeoSearchAsync(key, "Palermo", shape);
@@ -536,7 +536,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var position = new GeoPosition(13.361389, 38.115556); // Palermo coordinates
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
@@ -558,7 +558,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.758489, 38.788135, "edge")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var shape = new GeoSearchBox(400, 400, GeoUnit.Kilometers);
         GeoRadiusResult[] results = await client.GeoSearchAsync(key, "Palermo", shape);
@@ -578,7 +578,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var position = new GeoPosition(13.361389, 38.115556); // Palermo coordinates
         var shape = new GeoSearchBox(400, 400, GeoUnit.Kilometers);
@@ -603,7 +603,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(12.758489, 38.788135, "edge1"),
             new GeoEntry(14.015482, 37.734741, "edge2")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         GeoRadiusResult[] allResults = await client.GeoSearchAsync(key, "Palermo", shape);
@@ -626,7 +626,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(14.015482, 37.734741, "edge2"),
             new GeoEntry(13.5, 38.0, "close1")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
 
@@ -657,7 +657,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.758489, 38.788135, "edge1")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
 
@@ -683,7 +683,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
 
@@ -693,7 +693,7 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         var palermoDist = distResults.FirstOrDefault(r => r.Member.ToString() == "Palermo");
         Assert.Equal("Palermo", palermoDist.Member.ToString());
-        Assert.NotNull(palermoDist.Distance); // Should have distance
+        _ = Assert.NotNull(palermoDist.Distance); // Should have distance
         Assert.Equal(0.0, palermoDist.Distance.Value, 1); // Distance from itself should be ~0
         Assert.Null(palermoDist.Position); // Should be null without WithCoordinates
 
@@ -717,7 +717,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(key, entries);
+        _ = await client.GeoAddAsync(key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         GeoRadiusResult[] results = await client.GeoSearchAsync(key, "Palermo", shape, options: GeoRadiusOptions.WithDistance);
@@ -725,8 +725,8 @@ public class GeospatialCommandTests(TestConfiguration config)
         var palermoResult = results.FirstOrDefault(r => r.Member.ToString() == "Palermo");
         var cataniaResult = results.FirstOrDefault(r => r.Member.ToString() == "Catania");
 
-        Assert.NotNull(palermoResult.Distance);
-        Assert.NotNull(cataniaResult.Distance);
+        _ = Assert.NotNull(palermoResult.Distance);
+        _ = Assert.NotNull(cataniaResult.Distance);
 
         Assert.Equal(0.0, palermoResult.Distance.Value, 1); // Distance from itself should be ~0
         Assert.Equal(166.27, cataniaResult.Distance.Value, 1); // ~166km between cities
@@ -746,7 +746,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(15.087269, 37.502669, "Catania"),
             new GeoEntry(12.758489, 38.788135, "Trapani")
         ];
-        await client.GeoAddAsync(sourceKey, entries);
+        _ = await client.GeoAddAsync(sourceKey, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape);
@@ -773,7 +773,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(sourceKey, entries);
+        _ = await client.GeoAddAsync(sourceKey, entries);
 
         var position = new GeoPosition(13.361389, 38.115556);
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
@@ -796,7 +796,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(sourceKey, entries);
+        _ = await client.GeoAddAsync(sourceKey, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, storeDistances: true);
@@ -818,10 +818,10 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoSearch_NonExistentMember_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoSearchAsync(key, "NonExistentMember", shape));
     }
 
@@ -834,7 +834,7 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         var position = new GeoPosition(13.361389, 38.115556);
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoSearchAsync(key, position, shape));
     }
 
@@ -843,7 +843,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoSearch_NoMembersInArea_ReturnsEmpty(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(key, 13.361389, 38.115556, "Palermo");
 
         var position = new GeoPosition(0.0, 0.0); // Far from Palermo
         var shape = new GeoSearchCircle(1, GeoUnit.Meters); // Very small radius
@@ -860,10 +860,10 @@ public class GeospatialCommandTests(TestConfiguration config)
         string sourceKey = keyPrefix + ":source";
         string destinationKey = keyPrefix + ":dest";
 
-        await client.GeoAddAsync(sourceKey, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(sourceKey, 13.361389, 38.115556, "Palermo");
 
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "NonExistentMember", shape));
     }
 
@@ -879,7 +879,7 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         var position = new GeoPosition(13.361389, 38.115556);
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
-        await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, position, shape));
     }
 
@@ -897,7 +897,7 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(12.758489, 38.788135, "Trapani"),
             new GeoEntry(14.015482, 37.734741, "Enna")
         ];
-        await client.GeoAddAsync(sourceKey, entries);
+        _ = await client.GeoAddAsync(sourceKey, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
         long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, count: 2);
@@ -921,9 +921,9 @@ public class GeospatialCommandTests(TestConfiguration config)
             new GeoEntry(13.361389, 38.115556, "Palermo"),
             new GeoEntry(15.087269, 37.502669, "Catania")
         ];
-        await client.GeoAddAsync(sourceKey, entries);
+        _ = await client.GeoAddAsync(sourceKey, entries);
 
-        await client.SortedSetAddAsync(destinationKey, [new SortedSetEntry("OldMember", 100)]);
+        _ = await client.SortedSetAddAsync(destinationKey, [new SortedSetEntry("OldMember", 100)]);
         Assert.Equal(1, await client.SortedSetCardAsync(destinationKey));
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
@@ -946,7 +946,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string sourceKey = keyPrefix + ":source";
         string destinationKey = keyPrefix + ":dest";
 
-        await client.GeoAddAsync(sourceKey, 13.361389, 38.115556, "Palermo");
+        _ = await client.GeoAddAsync(sourceKey, 13.361389, 38.115556, "Palermo");
 
         var position = new GeoPosition(0.0, 0.0);
         var shape = new GeoSearchCircle(1, GeoUnit.Meters);

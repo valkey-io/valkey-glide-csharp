@@ -9,8 +9,8 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide;
 
-// (Add braces to if statement) | (Convert to conditional expression) | (Naming rule: missing '_') | (Expression value is never used)
-#pragma warning disable IDE0011, IDE0046, IDE1006, IDE0058
+// (Add braces to if statement) | (Convert to conditional expression) | (Naming rule: missing '_')
+#pragma warning disable IDE0011, IDE0046, IDE1006
 
 /// <summary>
 /// The options relevant to a set of server connections.
@@ -275,20 +275,37 @@ public sealed class ConfigurationOptions : ICloneable
     /// <param name="certificatePath">Trusted certificate file path</param>
     /// <exception cref="ArgumentNullException">If the certificate path is null.</exception>
     /// <exception cref="FileNotFoundException">If the certificate file does not exist.</exception>
-    /// <exception cref="ArgumentException">If the certificate file is empty.</exception>
+    /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/>.</exception>
     public void TrustIssuer(string certificatePath)
     {
         ArgumentNullException.ThrowIfNull(certificatePath);
 
-        if (!File.Exists(certificatePath))
+        // Normalize path and check file length within try/catch block to
+        // avoid race condition where file is deleted before being read.
+        try
+        {
+            var fullPath = Path.GetFullPath(certificatePath);
+
+            var fileLength = new FileInfo(fullPath).Length;
+            if (fileLength == 0)
+            {
+                throw new ArgumentException("Certificate file cannot be empty", nameof(fullPath));
+            }
+            else if (fileLength > CertificateMaxSize)
+            {
+                throw new ArgumentException($"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes", nameof(fullPath));
+            }
+
+            var certificateData = File.ReadAllBytes(fullPath);
+            _trustedIssuers.Add(certificateData);
+
+            return;
+        }
+
+        catch (FileNotFoundException)
+        {
             throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
-
-        var certificateData = File.ReadAllBytes(certificatePath);
-        if (certificateData.Length == 0)
-            throw new ArgumentException("Certificate file cannot be empty", nameof(certificatePath));
-
-        _trustedIssuers.Add(certificateData);
-        return;
+        }
     }
 
     /// <summary>
@@ -432,8 +449,8 @@ public sealed class ConfigurationOptions : ICloneable
         string s = Format.ToString(value);
         if (!string.IsNullOrWhiteSpace(s))
         {
-            if (sb.Length != 0) sb.Append(',');
-            sb.Append(s);
+            if (sb.Length != 0) _ = sb.Append(',');
+            _ = sb.Append(s);
         }
     }
 
@@ -442,12 +459,12 @@ public sealed class ConfigurationOptions : ICloneable
         string? s = value?.ToString();
         if (!string.IsNullOrWhiteSpace(s))
         {
-            if (sb.Length != 0) sb.Append(',');
+            if (sb.Length != 0) _ = sb.Append(',');
             if (!string.IsNullOrEmpty(prefix))
             {
-                sb.Append(prefix).Append('=');
+                _ = sb.Append(prefix).Append('=');
             }
-            sb.Append(s);
+            _ = sb.Append(s);
         }
     }
 
@@ -641,4 +658,4 @@ public sealed class ConfigurationOptions : ICloneable
         return false;
     }
 }
-#pragma warning restore IDE0011, IDE0046, IDE1006, IDE0058
+#pragma warning restore IDE0011, IDE0046, IDE1006

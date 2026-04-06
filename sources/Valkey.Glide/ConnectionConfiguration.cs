@@ -8,8 +8,18 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide;
 
+/// <summary>
+/// Configuration classes and builders for establishing connections to Valkey servers.
+/// </summary>
+/// <seealso href="https://glide.valkey.io/reference/connection-options/">Valkey GLIDE – Connection Options</seealso>
+/// <seealso href="https://glide.valkey.io/how-to/connections/timeouts-and-reconnect-strategy/">Valkey GLIDE – Timeouts and Reconnect Strategy</seealso>
 public abstract class ConnectionConfiguration
 {
+    /// <summary>
+    /// Maximum root certificate size for TLS connections.
+    /// </summary>
+    public static readonly long CertificateMaxSize = 10 * 1024 * 1024; // 10 MB
+
     #region Structs and Enums definitions
 
     internal record ConnectionConfig
@@ -30,6 +40,7 @@ public abstract class ConnectionConfiguration
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
         public readonly List<byte[]> RootCertificates = [];
         public TimeSpan? PubSubReconciliationInterval;
+        public bool ReadOnly;
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(
@@ -48,7 +59,8 @@ public abstract class ConnectionConfiguration
                 RefreshTopologyFromInitialNodes,
                 PubSubSubscriptions,
                 RootCertificates,
-                (uint?)PubSubReconciliationInterval?.TotalMilliseconds
+                (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
+                ReadOnly
             );
     }
 
@@ -73,16 +85,20 @@ public abstract class ConnectionConfiguration
         /// time between retries will remain constant until a reconnect attempt is successful.
         /// </summary>
         public uint NumberOfRetries = numberOfRetries;
+
         /// <summary>
         /// The multiplier that will be applied to the waiting time between each retry.
         /// </summary>
         public uint Factor = factor;
+
         /// <summary>
         /// The exponent base configured for the strategy.
         /// </summary>
         public uint ExponentBase = exponentBase;
+
         [MarshalAs(UnmanagedType.U1)]
         internal bool HasJitterPercent = jitterPercent is not null;
+
         /// <summary>
         /// The Jitter precent configured for the strategy.
         /// </summary>
@@ -95,7 +111,15 @@ public abstract class ConnectionConfiguration
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct ReadFrom
     {
+        /// <summary>
+        /// The read from strategy that determines how read operations are routed to nodes.
+        /// </summary>
         public ReadFromStrategy Strategy;
+
+        /// <summary>
+        /// The Availability Zone (AZ) identifier used with <see cref="ReadFromStrategy.AzAffinity"/>
+        /// or <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/> strategies.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
         public string? Az;
 
@@ -212,7 +236,7 @@ public abstract class ConnectionConfiguration
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
-        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DatabaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
@@ -239,7 +263,7 @@ public abstract class ConnectionConfiguration
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
-            _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
+            _ = databaseId.HasValue ? builder.DatabaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
             builder.LazyConnect = lazyConnect;
@@ -265,7 +289,7 @@ public abstract class ConnectionConfiguration
         /// <param name="retryStrategy"><inheritdoc cref="ClientConfigurationBuilder{T}.ConnectionRetryStrategy" path="/summary" /></param>
         /// <param name="username">The username for authentication.</param>
         /// <param name="password">The password for authentication.</param>
-        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DataBaseId" path="/summary" /></param>
+        /// <param name="databaseId"><inheritdoc cref="ClientConfigurationBuilder{T}.DatabaseId" path="/summary" /></param>
         /// <param name="protocol"><inheritdoc cref="ClientConfigurationBuilder{T}.ProtocolVersion" path="/summary" /></param>
         /// <param name="clientName"><inheritdoc cref="ClientConfigurationBuilder{T}.ClientName" path="/summary" /></param>
         /// <param name="lazyConnect"><inheritdoc cref="ClientConfigurationBuilder{T}.LazyConnect" path="/summary" /></param>
@@ -292,7 +316,7 @@ public abstract class ConnectionConfiguration
             _ = readFrom.HasValue ? builder.ReadFrom = readFrom.Value : new();
             _ = retryStrategy.HasValue ? builder.ConnectionRetryStrategy = retryStrategy.Value : new();
             _ = (username ?? password) is not null ? builder.WithAuthentication(username, password!) : new();
-            _ = databaseId.HasValue ? builder.DataBaseId = databaseId.Value : new();
+            _ = databaseId.HasValue ? builder.DatabaseId = databaseId.Value : new();
             _ = protocol.HasValue ? builder.ProtocolVersion = protocol.Value : new();
             _ = clientName is not null ? builder.ClientName = clientName : "";
             builder.LazyConnect = lazyConnect;
@@ -397,9 +421,12 @@ public abstract class ConnectionConfiguration
         #region TLS
 
         /// <summary>
-        /// Configure whether to use Transport Layer Security (TLS) when connecting to the server.<br />
+        /// Configure whether to use Transport Layer Security (TLS) when connecting to the server.
+        /// <br />
         /// Must match the TLS connection of the server or cluster.
         /// </summary>
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public bool UseTls
         {
             get => Config.TlsMode is TlsMode.SecureTls or TlsMode.InsecureTls;
@@ -408,7 +435,9 @@ public abstract class ConnectionConfiguration
                 if (value)
                 {
                     if (Config.TlsMode == TlsMode.NoTls)
+                    {
                         Config.TlsMode = TlsMode.SecureTls;
+                    }
                 }
                 else
                 {
@@ -428,19 +457,31 @@ public abstract class ConnectionConfiguration
         /// Configure whether to bypass certificate verification when using
         /// Transport Layer Security (TLS) to connect to the server.
         /// <br />
-        /// Typically used in development or testing environments. <b>Strongly discouraged in production</b>,
-        /// as it introduces security risks such as man-in-the-middle attacks.
+        /// <b>SECURITY WARNING</b>: Insecure mode is only for development and testing environments.
+        /// <b>It is strongly discouraged in production environments</b> as it introduces security risks such as man-in-the-middle attacks.
         /// <br />
         /// Requires <see cref="UseTls"/> to be enabled, otherwise throws <see cref="ArgumentException"/>.
         /// </summary>
         /// <exception cref="ArgumentException">If <see cref="UseTls"/> is not enabled.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode">Valkey GLIDE – Configure TLS</seealso>
         public bool UseInsecureTls
         {
             get => Config.TlsMode == TlsMode.InsecureTls;
             set
             {
                 if (Config.TlsMode == TlsMode.NoTls)
+                {
                     throw new ArgumentException("Cannot configure insecure TLS when TLS is disabled.");
+                }
+
+                if (value)
+                {
+                    var msg = "SECURITY WARNING: Insecure TLS mode enabled. "
+                        + "Certificate verification is disabled. "
+                        + "This is strongly discouraged in production environments."
+                        + "See https://glide.valkey.io/how-to/security/tls/#insecure-tls-mode for more details.";
+                    Logger.Log(Level.Warn, GetType().Name, msg);
+                }
 
                 Config.TlsMode =
                     value
@@ -468,15 +509,33 @@ public abstract class ConnectionConfiguration
         /// <param name="certificatePath">Trusted certificate file path</param>
         /// <returns>This builder for method chaining</returns>
         /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
-        /// <exception cref="ArgumentException">If the certificate file is empty</exception>
+        /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/></exception>
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(string certificatePath)
         {
             ArgumentNullException.ThrowIfNull(certificatePath);
 
-            if (!File.Exists(certificatePath))
-                throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+            // Normalize path and check file length within try/catch block to
+            // avoid race condition where file is deleted before being read.
+            try
+            {
+                var fullPath = Path.GetFullPath(certificatePath);
 
-            return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
+                var fileLength = new FileInfo(fullPath).Length;
+                if (fileLength > CertificateMaxSize)
+                {
+                    throw new ArgumentException($"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes", nameof(fullPath));
+                }
+
+                var certificateData = File.ReadAllBytes(fullPath);
+                return WithTrustedCertificate(certificateData);
+            }
+
+            catch (FileNotFoundException)
+            {
+                throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
+            }
         }
 
         /// <summary>
@@ -484,14 +543,24 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
-        /// <exception cref="ArgumentException">If the certificate data is null or empty</exception>
+        /// <exception cref="ArgumentException">If the certificate data is null, empty, or exceeds <see cref="CertificateMaxSize"/></exception>
+        /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(byte[] certificateData)
         {
             if (certificateData == null)
-                throw new ArgumentException("Certificate data cannot be null", nameof(certificateData));
-
+            {
+                throw new ArgumentNullException(nameof(certificateData), "Certificate data cannot be null");
+            }
             else if (certificateData.Length == 0)
+            {
                 throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
+            }
+            else if (certificateData.Length > CertificateMaxSize)
+            {
+                var msg = $"Certificate data exceeds maximum allowed size of {CertificateMaxSize} bytes: {certificateData.Length} bytes";
+                throw new ArgumentException(msg, nameof(certificateData));
+            }
 
             TrustedCertificates.Add(certificateData);
             return (T)this;
@@ -512,6 +581,7 @@ public abstract class ConnectionConfiguration
             get => Config.RequestTimeout ?? TimeSpan.FromMilliseconds(250);
             set => Config.RequestTimeout = value;
         }
+
         /// <inheritdoc cref="RequestTimeout" />
         public T WithRequestTimeout(TimeSpan requestTimeout)
         {
@@ -533,6 +603,7 @@ public abstract class ConnectionConfiguration
             get => Config.ConnectionTimeout ?? TimeSpan.FromMilliseconds(250);
             set => Config.ConnectionTimeout = value;
         }
+
         /// <inheritdoc cref="ConnectionTimeout" />
         public T WithConnectionTimeout(TimeSpan connectionTimeout)
         {
@@ -550,6 +621,7 @@ public abstract class ConnectionConfiguration
         {
             set => Config.ReadFrom = value;
         }
+
         /// <inheritdoc cref="ReadFrom" />
         public T WithReadFrom(ReadFrom readFrom)
         {
@@ -571,27 +643,27 @@ public abstract class ConnectionConfiguration
             ArgumentNullException.ThrowIfNull(credentials);
 
             IamCredentials? iamCredentials = null;
-            if (credentials.IamConfig != null)
+            if (credentials.IamAuthConfig != null)
             {
-                var serviceType = credentials.IamConfig.ServiceType switch
+                FFI.ServiceType serviceType = credentials.IamAuthConfig.ServiceType switch
                 {
                     ServiceType.ElastiCache => FFI.ServiceType.ElastiCache,
                     ServiceType.MemoryDB => FFI.ServiceType.MemoryDB,
-                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamConfig.ServiceType))
+                    _ => throw new ArgumentOutOfRangeException(nameof(credentials.IamAuthConfig.ServiceType))
                 };
 
                 iamCredentials = new IamCredentials(
-                    credentials.IamConfig.ClusterName,
-                    credentials.IamConfig.Region,
+                    credentials.IamAuthConfig.ClusterName,
+                    credentials.IamAuthConfig.Region,
                     serviceType,
-                    credentials.IamConfig.RefreshIntervalSeconds
+                    credentials.IamAuthConfig.RefreshIntervalSeconds
                 );
             }
 
             Config.AuthenticationInfo = new AuthenticationInfo
             (
                 credentials.Username,
-                credentials.Password,
+                credentials.Password != null ? new string(credentials.Password) : null,
                 iamCredentials
             );
 
@@ -605,9 +677,7 @@ public abstract class ConnectionConfiguration
         /// <param name="password">The password for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string? username, string password)
-        {
-            return WithCredentials(new ServerCredentials(username, password));
-        }
+            => WithCredentials(new ServerCredentials(username, password));
 
         /// <summary>
         /// Configure server credentials for password-based authentication with username "default".
@@ -615,9 +685,7 @@ public abstract class ConnectionConfiguration
         /// <param name="password">The password for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string password)
-        {
-            return WithCredentials(new ServerCredentials(password));
-        }
+            => WithCredentials(new ServerCredentials(password));
 
         /// <summary>
         /// Configure server credentials for IAM authentication.
@@ -626,9 +694,7 @@ public abstract class ConnectionConfiguration
         /// <param name="iamConfig">The IAM authentication configuration.</param>
         /// <returns>The builder instance for method chaining.</returns>
         public T WithAuthentication(string username, IamAuthConfig iamConfig)
-        {
-            return WithCredentials(new ServerCredentials(username, iamConfig));
-        }
+            => WithCredentials(new ServerCredentials(username, iamConfig));
 
         #endregion
         #region Protocol
@@ -694,21 +760,22 @@ public abstract class ConnectionConfiguration
             => WithConnectionRetryStrategy(new RetryStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
 
         #endregion
-        #region DataBase ID
+        #region Database ID
 
         /// <summary>
         /// Index of the logical database to connect to. Must be non-negative and within the range
         /// supported by the server configuration. If not specified, defaults to database 0.
         /// For cluster mode, requires Valkey 9.0+ with cluster-databases configuration enabled.
         /// </summary>
-        public uint DataBaseId
+        public uint DatabaseId
         {
             set => Config.DatabaseId = value;
         }
-        /// <inheritdoc cref="DataBaseId" />
-        public T WithDataBaseId(uint dataBaseId)
+
+        /// <inheritdoc cref="DatabaseId" />
+        public T WithDatabaseId(uint dataBaseId)
         {
-            DataBaseId = dataBaseId;
+            DatabaseId = dataBaseId;
             return (T)this;
         }
 
@@ -744,7 +811,9 @@ public abstract class ConnectionConfiguration
             set
             {
                 if (value <= TimeSpan.Zero)
+                {
                     throw new ArgumentException("PubSubReconciliationInterval must be positive", nameof(value));
+                }
 
                 Config.PubSubReconciliationInterval = value;
             }
@@ -796,8 +865,7 @@ public abstract class ConnectionConfiguration
     }
 
     /// <summary>
-    /// Represents the configuration settings for a Cluster GLIDE client.<br />
-    /// Notes: Currently, the reconnection strategy in cluster mode is not configurable, and exponential backoff with fixed values is used.
+    /// Represents the configuration settings for a Cluster GLIDE client.
     /// </summary>
     public class ClusterClientConfigurationBuilder : ClientConfigurationBuilder<ClusterClientConfigurationBuilder>
     {

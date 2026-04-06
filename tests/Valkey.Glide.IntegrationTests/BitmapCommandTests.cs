@@ -64,7 +64,7 @@ public class BitmapCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, "A");
 
         // Test negative offset - should throw an exception
-        await Assert.ThrowsAsync<RequestException>(async () => await client.StringGetBitAsync(key, -1));
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StringGetBitAsync(key, -1));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -112,7 +112,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test negative offset - should throw an exception
-        await Assert.ThrowsAsync<RequestException>(async () => await client.StringSetBitAsync(key, -1, true));
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StringSetBitAsync(key, -1, true));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -192,9 +192,9 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set multiple bits
-        await client.StringSetBitAsync(key, 0, true);  // bit 0
-        await client.StringSetBitAsync(key, 1, true);  // bit 1
-        await client.StringSetBitAsync(key, 8, true);  // bit 8 (second byte)
+        _ = await client.StringSetBitAsync(key, 0, true);  // bit 0
+        _ = await client.StringSetBitAsync(key, 1, true);  // bit 1
+        _ = await client.StringSetBitAsync(key, 8, true);  // bit 8 (second byte)
 
         // Count all bits
         long totalCount = await client.StringBitCountAsync(key);
@@ -246,8 +246,8 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Set multiple bits: bit 1 and bit 9
-        await client.StringSetBitAsync(key, 1, true);
-        await client.StringSetBitAsync(key, 9, true);
+        _ = await client.StringSetBitAsync(key, 1, true);
+        _ = await client.StringSetBitAsync(key, 9, true);
 
         // Find first set bit in entire string
         long pos1 = await client.StringBitPositionAsync(key, true);

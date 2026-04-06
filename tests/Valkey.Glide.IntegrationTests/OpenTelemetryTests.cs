@@ -16,7 +16,7 @@ public class OpenTelemetryTests : IDisposable
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
-    private static readonly TempFile TracesFile = new TempFile();
+    private static readonly TempFile TracesFile = new();
 
     static OpenTelemetryTests()
     {
@@ -85,8 +85,8 @@ public class OpenTelemetryTests : IDisposable
         string key = Guid.NewGuid().ToString();
 
         await client.StringSetAsync(key, "value");
-        await client.StringGetAsync(key);
-        await client.KeyDeleteAsync(key);
+        _ = await client.StringGetAsync(key);
+        _ = await client.KeyDeleteAsync(key);
 
         await Task.Delay(WaitInterval);
     }
@@ -98,20 +98,20 @@ public class OpenTelemetryTests : IDisposable
         if (client is GlideClient standaloneClient)
         {
             var batch = new Batch(isAtomic: false);
-            batch.StringSetAsync(key, "value");
-            batch.StringGetAsync(key);
-            batch.KeyDelete(key);
+            _ = batch.StringSetAsync(key, "value");
+            _ = batch.StringGetAsync(key);
+            _ = batch.KeyDelete(key);
 
-            await standaloneClient.Exec(batch, raiseOnError: true);
+            _ = await standaloneClient.Exec(batch, raiseOnError: true);
         }
         else if (client is GlideClusterClient clusterClient)
         {
             var batch = new ClusterBatch(isAtomic: false);
-            batch.StringSetAsync(key, "value");
-            batch.StringGetAsync(key);
-            batch.KeyDelete(key);
+            _ = batch.StringSetAsync(key, "value");
+            _ = batch.StringGetAsync(key);
+            _ = batch.KeyDelete(key);
 
-            await clusterClient.Exec(batch, raiseOnError: true);
+            _ = await clusterClient.Exec(batch, raiseOnError: true);
         }
 
         await Task.Delay(WaitInterval);

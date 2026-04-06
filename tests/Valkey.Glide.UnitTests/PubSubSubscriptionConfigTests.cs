@@ -51,9 +51,9 @@ public class PubSubSubscriptionConfigTests
         var config = new StandalonePubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
-        Assert.Throws<ArgumentException>(() => config.WithChannel(""));
-        Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
+        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
+        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(""));
+        _ = Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
     }
 
     [Fact]
@@ -63,9 +63,9 @@ public class PubSubSubscriptionConfigTests
         var config = new StandalonePubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
-        Assert.Throws<ArgumentException>(() => config.WithPattern(""));
-        Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
+        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
+        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(""));
+        _ = Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class PubSubSubscriptionConfigTests
         var config = new StandalonePubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => config.WithCallback(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => config.WithCallback(null!));
     }
 
     [Fact]
@@ -142,13 +142,13 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void ClusterConfig_WithShardChannel_AddsShardedSubscription()
+    public void ClusterConfig_WithShardedChannel_AddsShardedSubscription()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act
-        var result = config.WithShardChannel(TestShardedChannel);
+        var result = config.WithShardedChannel(TestShardedChannel);
 
         // Assert
         Assert.Same(config, result);
@@ -162,9 +162,9 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
-        Assert.Throws<ArgumentException>(() => config.WithChannel(""));
-        Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
+        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
+        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(""));
+        _ = Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
     }
 
     [Fact]
@@ -174,21 +174,21 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
-        Assert.Throws<ArgumentException>(() => config.WithPattern(""));
-        Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
+        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
+        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(""));
+        _ = Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
     }
 
     [Fact]
-    public void ClusterConfig_WithShardChannel_NullOrEmptyChannel_ThrowsArgumentException()
+    public void ClusterConfig_WithShardedChannel_NullOrEmptyChannel_ThrowsArgumentException()
     {
         // Arrange
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => config.WithShardChannel(null!));
-        Assert.Throws<ArgumentException>(() => config.WithShardChannel(""));
-        Assert.Throws<ArgumentException>(() => config.WithShardChannel("   "));
+        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel(null!));
+        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel(""));
+        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel("   "));
     }
 
     [Fact]
@@ -198,11 +198,11 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act
-        config.WithShardChannel(TestShardedChannel);
-        config.WithShardChannel(TestShardedChannel); // Add same channel again
+        _ = config.WithShardedChannel(TestShardedChannel);
+        _ = config.WithShardedChannel(TestShardedChannel); // Add same channel again
 
         // Assert
-        Assert.Single(config.Subscriptions[PubSubChannelMode.Sharded]);
+        _ = Assert.Single(config.Subscriptions[PubSubChannelMode.Sharded]);
         Assert.Contains(TestShardedChannel, config.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
@@ -228,7 +228,7 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => config.WithCallback(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => config.WithCallback(null!));
     }
 
     [Fact]
@@ -238,7 +238,7 @@ public class PubSubSubscriptionConfigTests
         var config = new ClusterPubSubSubscriptionConfig()
             .WithChannel("channel1")
             .WithPattern("pattern*")
-            .WithShardChannel("sharded1")
+            .WithShardedChannel("sharded1")
             .WithCallback(Callback, Context);
 
         // Assert

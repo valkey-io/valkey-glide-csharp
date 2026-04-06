@@ -6,64 +6,147 @@ namespace Valkey.Glide;
 /// Represents the credentials for connecting to a server.
 /// Supports both password-based and IAM authentication modes, which are mutually exclusive.
 /// </summary>
-public class ServerCredentials
+/// <seealso href="https://glide.valkey.io/how-to/security/authentication/">Valkey GLIDE – Configure Valkey Authentication</seealso>
+public sealed class ServerCredentials : IDisposable
 {
-    /// <summary>
-    /// The username that will be used for authenticating connections to the servers.
-    /// If not supplied, "default" will be used.
-    /// </summary>
-    public string? Username { get; set; }
+    #region Fields
+
+    private bool _disposed;
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
-    /// The password that will be used for authenticating connections to the servers.
-    /// Required for password-based authentication, must be null for IAM authentication.
+    /// The username to use for authenticating connections.
+    /// If not specified, "default" will be used.
     /// </summary>
-    public string? Password { get; set; }
+    public string? Username
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
 
     /// <summary>
-    /// IAM authentication configuration.
-    /// Required for IAM authentication, must be null for password-based authentication.
+    /// IAM authentication configuration to use for authenticating connections.
+    /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
+    /// It is not owned by the <see cref="ServerCredentials"/> instance - the caller is responsible for disposing it.
     /// </summary>
-    public IamAuthConfig? IamConfig { get; set; }
+    public IamAuthConfig? IamAuthConfig
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
+
+    #endregion
+    #region Internal Properties
+
+    /// <summary>
+    /// The password to use for authenticating connections.
+    /// Required for password-based authentication, must be <c>null</c> for IAM authentication.
+    /// </summary>
+    internal char[]? Password
+    {
+        get { ThrowIfDisposed(); return field; }
+        private set;
+    }
+
+    #endregion
+    #region Constructors
 
     /// <summary>
     /// Creates server credentials for password-based authentication.
     /// </summary>
-    /// <param name="username">The username for authentication. If null, "default" will be used.</param>
-    /// <param name="password">The password for authentication.</param>
+    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
+    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
     public ServerCredentials(string? username, string password)
     {
+        ArgumentNullException.ThrowIfNull(password, nameof(password));
+
         Username = username;
-        Password = password ?? throw new ArgumentNullException(nameof(password));
-        IamConfig = null;
+        Password = password.ToCharArray();
+        IamAuthConfig = null;
     }
 
     /// <summary>
     /// Creates server credentials for password-based authentication.
-    /// Username "default" will be used.
     /// </summary>
-    /// <param name="password">The password for authentication.</param>
+    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
     public ServerCredentials(string password)
     {
+        ArgumentNullException.ThrowIfNull(password, nameof(password));
+
         Username = null;
-        Password = password ?? throw new ArgumentNullException(nameof(password));
-        IamConfig = null;
+        Password = password.ToCharArray();
+        IamAuthConfig = null;
     }
 
     /// <summary>
     /// Creates server credentials for IAM authentication.
     /// </summary>
-    /// <param name="username">The username for authentication.</param>
-    /// <param name="iamConfig">The IAM authentication configuration.</param>
+    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
+    /// <param name="iamConfig"><inheritdoc cref="IamAuthConfig" path="/summary" /></param>
     public ServerCredentials(string username, IamAuthConfig iamConfig)
     {
-        Username = username ?? throw new ArgumentNullException(nameof(username));
-        IamConfig = iamConfig ?? throw new ArgumentNullException(nameof(iamConfig));
+        ArgumentNullException.ThrowIfNull(username, nameof(username));
+        ArgumentNullException.ThrowIfNull(iamConfig, nameof(iamConfig));
+
+        Username = username;
         Password = null;
+        IamAuthConfig = iamConfig;
     }
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Returns true if this instance is configured for IAM authentication.
     /// </summary>
-    public bool IsIamAuth() => IamConfig != null;
+    public bool IsIamAuth()
+    {
+        ThrowIfDisposed();
+        return IamAuthConfig != null;
+    }
+
+    /// <summary>
+    /// Returns a string representation with sensitive data omitted.
+    /// </summary>
+    public override string ToString()
+    {
+        ThrowIfDisposed();
+        return $"ServerCredentials {{ Username = {Username}, IsIamAuth = {IsIamAuth()} }}";
+    }
+
+    /// <summary>
+    /// Clears sensitive data.
+    /// </summary>
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            Username = null;
+
+            if (Password != null)
+            {
+                Array.Clear(Password);
+                Password = null;
+            }
+
+            IamAuthConfig = null;
+
+            _disposed = true;
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Throws <see cref="ObjectDisposedException"/> if the object is disposed.
+    /// </summary>
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(_disposed, this);
+
+    #endregion
 }

@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Diagnostics;
 using System.Net;
 
 using Valkey.Glide.Commands.Options;
@@ -19,19 +20,13 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     private Dictionary<GlideString, object> Hello()
         => (Dictionary<GlideString, object>)_conn.CustomCommand(["hello"]).GetAwaiter().GetResult()!;
 
-    public ValkeyResult Execute(string command, params object[] args)
-        => ExecuteAsync(command, args).GetAwaiter().GetResult();
-
     public async Task<ValkeyResult> ExecuteAsync(string command, params object[] args)
         => await ExecuteAsync(command, args.ToList());
-
-    public ValkeyResult Execute(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
-        => ExecuteAsync(command, args, flags).GetAwaiter().GetResult();
 
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(a => a.ToString()!) ?? []]), MakeRoute());
+        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(static a => a.ToString()!) ?? []]), MakeRoute());
         return ValkeyResult.Create(res);
     }
 
@@ -59,26 +54,33 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
         return _conn
             .Command(Request.Info(sections), MakeRoute())
-            .ContinueWith(task => (string?)task.Result);
+            .ContinueWith(static task => (string?)task.Result);
     }
 
     public Task<IGrouping<string, KeyValuePair<string, string>>[]> InfoAsync(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
-        => InfoRawAsync(section, flags).ContinueWith(t
-            => Utils.ParseInfoResponse(t.Result!).GroupBy(x => x.Item1, x => x.Item2).ToArray());
-
-    public string? InfoRaw(ValkeyValue section = default, CommandFlags flags = CommandFlags.None)
-        => InfoRawAsync(section, flags).GetAwaiter().GetResult();
+        => InfoRawAsync(section, flags).ContinueWith(static t
+            => Utils.ParseInfoResponse(t.Result!).GroupBy(static x => x.Item1, static x => x.Item2).ToArray());
 
     public async Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.Ping(), MakeRoute());
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        _ = await _conn.Command(Request.Ping(), MakeRoute());
+        stopwatch.Stop();
+
+        return stopwatch.Elapsed;
     }
 
     public async Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.Ping(message), MakeRoute());
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        _ = await _conn.Command(Request.Ping(message), MakeRoute());
+        stopwatch.Stop();
+
+        return stopwatch.Elapsed;
     }
 
     public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None)
@@ -108,37 +110,46 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
     }
 
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
     }
 
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
+        _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
     }
 
     public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.DatabaseSizeAsync(database), MakeRoute());
+
+        return database != -1
+            ? throw new NotImplementedException("GLIDE does not support database selection. Use SelectAsync to change the current database first.")
+            : await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
+        _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
     }
 
     public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.FlushDatabaseAsync(database), MakeRoute());
+
+        if (database != -1)
+        {
+            throw new NotImplementedException("GLIDE does not support database selection. Use SelectAsync to change the current database first.");
+        }
+
+        _ = await _conn.Command(Request.FlushDatabaseAsync(), MakeRoute());
     }
 
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
@@ -233,6 +244,48 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
+    }
+
+    public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        if (database != -1)
+        {
+            throw new NotImplementedException($"Database ID {database} is not supported by Valkey GLIDE");
+        }
+
+        var options = new ScanOptions();
+        if (!pattern.IsNull)
+        {
+            options.MatchPattern = pattern.ToString();
+        }
+
+        if (pageSize > 0)
+        {
+            options.Count = pageSize;
+        }
+
+        string currentCursor = cursor.ToString();
+        ValkeyKey[] keys;
+        int currentOffset = pageOffset;
+
+        do
+        {
+            (currentCursor, keys) = await _conn.Command(Request.ScanAsync(currentCursor, options));
+
+            if (currentOffset > 0)
+            {
+                keys = [.. keys.Skip(currentOffset)];
+                currentOffset = 0;
+            }
+
+            foreach (ValkeyKey key in keys)
+            {
+                yield return key;
+            }
+
+        } while (currentCursor != "0");
     }
 }

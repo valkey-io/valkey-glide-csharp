@@ -196,45 +196,45 @@ pub unsafe extern "C-unwind" fn create_client(
 
             // Set up graceful shutdown coordination for PubSub task
             // Only spawn the callback task if a callback is provided
-            let (pubsub_shutdown, pubsub_task) = if is_subscriber && pubsub_callback.is_some() {
-                let callback = pubsub_callback.unwrap();
-                let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
+            let (pubsub_shutdown, pubsub_task) =
+                if let (true, Some(callback)) = (is_subscriber, pubsub_callback) {
+                    let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
 
-                let task_handle = runtime.spawn(async move {
-                    logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
+                    let task_handle = runtime.spawn(async move {
+                        logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
 
-                    loop {
-                        tokio::select! {
-                            Some(push_msg) = push_rx.recv() => {
-                                unsafe {
-                                    process_push_notification(push_msg, callback);
+                        loop {
+                            tokio::select! {
+                                Some(push_msg) = push_rx.recv() => {
+                                    unsafe {
+                                        process_push_notification(push_msg, callback);
+                                    }
+                                }
+                                _ = &mut shutdown_rx => {
+                                    logger_core::log(
+                                        logger_core::Level::Info,
+                                        "pubsub",
+                                        "PubSub task received shutdown signal",
+                                    );
+                                    break;
                                 }
                             }
-                            _ = &mut shutdown_rx => {
-                                logger_core::log(
-                                    logger_core::Level::Info,
-                                    "pubsub",
-                                    "PubSub task received shutdown signal",
-                                );
-                                break;
-                            }
                         }
-                    }
 
-                    logger_core::log(
-                        logger_core::Level::Info,
-                        "pubsub",
-                        "PubSub task completed gracefully",
-                    );
-                });
+                        logger_core::log(
+                            logger_core::Level::Info,
+                            "pubsub",
+                            "PubSub task completed gracefully",
+                        );
+                    });
 
-                (
-                    std::sync::Mutex::new(Some(shutdown_tx)),
-                    std::sync::Mutex::new(Some(task_handle)),
-                )
-            } else {
-                (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
-            };
+                    (
+                        std::sync::Mutex::new(Some(shutdown_tx)),
+                        std::sync::Mutex::new(Some(task_handle)),
+                    )
+                } else {
+                    (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
+                };
 
             let client_adapter = Arc::new(Client {
                 runtime,
@@ -282,7 +282,7 @@ pub unsafe extern "C-unwind" fn create_client(
 ///
 /// # Memory Safety
 /// This implementation uses scoped lifetime management instead of `std::mem::forget()`.
-/// Vec<u8> instances are kept alive during callback execution and automatically cleaned up
+/// `Vec<u8>` instances are kept alive during callback execution and automatically cleaned up
 /// when the function exits, preventing memory leaks.
 unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: PubSubCallback) {
     use redis::Value;
@@ -299,7 +299,7 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
                 logger_core::log(
                     logger_core::Level::Warn,
                     "pubsub",
-                    &format!("Unexpected value type in PubSub message: {:?}", value),
+                    format!("Unexpected value type in PubSub message: {:?}", value),
                 );
                 Vec::new()
             }
@@ -375,7 +375,7 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
             logger_core::log(
                 logger_core::Level::Error,
                 "pubsub",
-                &format!(
+                format!(
                     "Invalid PubSub message structure: kind={:?}, len={}",
                     kind, len
                 ),
@@ -427,62 +427,62 @@ pub extern "C" fn close_client(client_ptr: *const c_void) {
     let client = unsafe { &*(client_ptr as *const Client) };
 
     // Take ownership of shutdown sender and signal graceful shutdown
-    if let Ok(mut guard) = client.pubsub_shutdown.lock() {
-        if let Some(shutdown_tx) = guard.take() {
-            logger_core::log(
-                logger_core::Level::Debug,
-                "pubsub",
-                "Signaling PubSub task to shutdown",
-            );
+    if let Ok(mut guard) = client.pubsub_shutdown.lock()
+        && let Some(shutdown_tx) = guard.take()
+    {
+        logger_core::log(
+            logger_core::Level::Debug,
+            "pubsub",
+            "Signaling PubSub task to shutdown",
+        );
 
-            // Send shutdown signal (ignore error if receiver already dropped)
-            let _ = shutdown_tx.send(());
-        }
+        // Send shutdown signal (ignore error if receiver already dropped)
+        let _ = shutdown_tx.send(());
     }
 
     // Take ownership of task handle and wait for completion with timeout
-    if let Ok(mut guard) = client.pubsub_task.lock() {
-        if let Some(task_handle) = guard.take() {
-            let timeout = std::time::Duration::from_secs(5);
+    if let Ok(mut guard) = client.pubsub_task.lock()
+        && let Some(task_handle) = guard.take()
+    {
+        let timeout = std::time::Duration::from_secs(5);
 
-            logger_core::log(
-                logger_core::Level::Debug,
-                "pubsub",
-                &format!(
-                    "Waiting for PubSub task to complete (timeout: {:?})",
-                    timeout
-                ),
-            );
+        logger_core::log(
+            logger_core::Level::Debug,
+            "pubsub",
+            format!(
+                "Waiting for PubSub task to complete (timeout: {:?})",
+                timeout
+            ),
+        );
 
-            let result = client
-                .runtime
-                .block_on(async { tokio::time::timeout(timeout, task_handle).await });
+        let result = client
+            .runtime
+            .block_on(async { tokio::time::timeout(timeout, task_handle).await });
 
-            match result {
-                Ok(Ok(())) => {
-                    logger_core::log(
-                        logger_core::Level::Info,
-                        "pubsub",
-                        "PubSub task completed successfully",
-                    );
-                }
-                Ok(Err(e)) => {
-                    logger_core::log(
-                        logger_core::Level::Warn,
-                        "pubsub",
-                        &format!("PubSub task completed with error: {:?}", e),
-                    );
-                }
-                Err(_) => {
-                    logger_core::log(
-                        logger_core::Level::Warn,
-                        "pubsub",
-                        &format!(
-                            "PubSub task did not complete within timeout ({:?})",
-                            timeout
-                        ),
-                    );
-                }
+        match result {
+            Ok(Ok(())) => {
+                logger_core::log(
+                    logger_core::Level::Info,
+                    "pubsub",
+                    "PubSub task completed successfully",
+                );
+            }
+            Ok(Err(e)) => {
+                logger_core::log(
+                    logger_core::Level::Warn,
+                    "pubsub",
+                    format!("PubSub task completed with error: {:?}", e),
+                );
+            }
+            Err(_) => {
+                logger_core::log(
+                    logger_core::Level::Warn,
+                    "pubsub",
+                    format!(
+                        "PubSub task did not complete within timeout ({:?})",
+                        timeout
+                    ),
+                );
             }
         }
     }
@@ -680,6 +680,8 @@ pub unsafe extern "C" fn free_response(ptr: *mut ResponseValue) {
 ///
 /// # Parameters
 /// * `str_ptr`: Pointer to the C string to free.
+/// # Safety
+/// * `str_ptr` must be a valid pointer to a C string allocated by Rust (e.g., via `CString::into_raw`), or null.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn free_string(str_ptr: *mut c_char) {
     if !str_ptr.is_null() {
@@ -828,12 +830,12 @@ pub unsafe extern "C" fn free_script_hash_buffer(buffer: *mut ScriptHashBuffer) 
 /// # Returns
 ///
 /// A null pointer on success, or a pointer to a C string error message on failure.
-/// The caller is responsible for freeing the error message using [`free_drop_script_error`].
+/// The caller is responsible for freeing the error message using `free_drop_script_error`.
 ///
 /// # Safety
 ///
 /// * `hash` must be a valid pointer to a UTF-8 string.
-/// * The returned error pointer (if not null) must be freed using [`free_drop_script_error`].
+/// * The returned error pointer (if not null) must be freed using `free_drop_script_error`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn drop_script(hash: *mut u8, len: usize) -> *mut c_char {
     if hash.is_null() {
@@ -1534,7 +1536,7 @@ pub extern "C" fn create_otel_span(request_type: u32) -> *const c_void {
 #[unsafe(no_mangle)]
 pub extern "C" fn create_batch_otel_span() -> *const c_void {
     let command_name = "Batch";
-    create_span(&command_name)
+    create_span(command_name)
 }
 
 /// Drops an OpenTelemetry span given its pointer as u64.
@@ -1639,7 +1641,7 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
 
 /// Returns a new span for the given command name.
 fn create_span(command_name: &str) -> *const c_void {
-    let span = GlideOpenTelemetry::new_span(&command_name);
+    let span = GlideOpenTelemetry::new_span(command_name);
     let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
 
     logger_core::log_debug(

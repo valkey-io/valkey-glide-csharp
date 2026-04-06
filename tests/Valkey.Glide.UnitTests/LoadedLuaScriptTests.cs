@@ -31,7 +31,7 @@ public class LoadedLuaScriptTests
         string loadedScript = "return 1";
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(null!, hash, loadedScript));
+        _ = Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(null!, hash, loadedScript));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class LoadedLuaScriptTests
         string loadedScript = script.ExecutableScript;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(script, null!, loadedScript));
+        _ = Assert.Throws<ArgumentNullException>(() => new LoadedLuaScript(script, null!, loadedScript));
     }
 
     [Fact]
@@ -99,20 +99,6 @@ public class LoadedLuaScriptTests
     }
 
     [Fact]
-    public void Evaluate_WithNullDatabase_ThrowsArgumentNullException()
-    {
-        // Arrange
-        string scriptText = "return redis.call('GET', @key)";
-        LuaScript script = LuaScript.Prepare(scriptText);
-        byte[] hash = [0x12, 0x34, 0x56, 0x78];
-        string loadedScript = script.ExecutableScript;
-        LoadedLuaScript loaded = new(script, hash, loadedScript);
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => loaded.Evaluate(null!));
-    }
-
-    [Fact]
     public async Task EvaluateAsync_WithNullDatabase_ThrowsArgumentNullException()
     {
         // Arrange
@@ -123,7 +109,7 @@ public class LoadedLuaScriptTests
         LoadedLuaScript loaded = new(script, hash, loadedScript);
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => loaded.EvaluateAsync(null!));
+        _ = await Assert.ThrowsAsync<ArgumentNullException>(() => loaded.EvaluateAsync(null!));
     }
 
     [Fact]

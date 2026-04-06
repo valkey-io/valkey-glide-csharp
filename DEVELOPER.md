@@ -8,12 +8,9 @@ We're excited to share that the GLIDE C# client is currently in development! How
 
 The C# client contains the following parts:
 
-1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](/valkey-glide/glide-core/README.md).
+1. Rust part of the C# client located in `rust/src`; it communicates with [GLIDE core rust library](./valkey-glide/glide-core/README.md).
 2. C# part of the client located in `sources`; it translates Rust async API into .NET async API.
 3. Tests for the C# client located in `tests` directory.
-4. A dedicated benchmarking tool designed to evaluate and compare the performance of Valkey GLIDE and other .NET clients. It is located in `/benchmarks`.
-
-TODO: examples, UT, design docs
 
 ## Build from Source
 
@@ -25,7 +22,7 @@ Software Dependencies:
 - [WSL](#wsl-installation) (for Windows only)
 - [Valkey](#valkey-installation) (for testing)
 
-Install the following packages to build [GLIDE core rust library](/valkey-glide/glide-core/README.md):
+Install the following packages to build [GLIDE core rust library](./valkey-glide/glide-core/README.md):
 
 - [ziglang and zigbuild](#ziglang-and-zigbuild-installation) (for GNU Linux only)
 - [Protoc](#protoc-installation)
@@ -122,28 +119,44 @@ sudo cp protoc /usr/bin/
 ### Additional Dependencies Installation for Ubuntu
 
 ```bash
+# Install dependecies using apt:
 sudo apt-get update -y
 sudo apt install -y gcc pkg-config openssl libssl-dev
+
+# Install Rust using curl:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
+
+# Install dependencies using cargo:
+cargo install --locked cargo-deny lychee
 ```
 
 ### Additional Dependencies Installation for MacOS
 
 ```bash
+# Install dependencies using Homebrew:
 brew update
-brew install openssl coreutils
+brew install openssl coreutils lychee
+
+# Install Rust using curl:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
+
+# Install dependencies using cargo:
+cargo install --locked cargo-deny
 ```
 
 ### Additional Dependencies Installation for Windows
 
 ```bash
+# Install dependencies using choco:
 choco install mingw pkgconfiglite openssl
 
 # Install Rust directly:
 # <https://rust-lang.org/tools/install/>
+
+# Install dependencies using cargo:
+cargo install --locked cargo-deny lychee
 ```
 
 ### Building and Installation
@@ -237,8 +250,11 @@ task coverage:report        # Generate HTML coverage report
 task coverage:summary       # Display coverage summary
 task clean                  # Clean test results and reports
 
-# Benchmarking
-task benchmark FRAMEWORK=net8.0  # Run performance benchmarks
+# Linting and formatting
+task lint                   # Run all linters
+task format                 # Run all formatters
+task check-links            # Check for broken links
+
 ```
 
 ## Advanced Testing Options
@@ -289,62 +305,67 @@ You can combine this with test filter as well:
 cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true dotnet test --logger "console;verbosity=detailed" --filter "FullyQualifiedName~GetReturnsNull"
 ```
 
-## Benchmark
+### DNS Tests
 
-1. Ensure that you have installed `valkey-server` and `valkey-cli` on your host. You can find the valkey installation guide above.
+To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
-2. Execute benchmarks using Task (preferred):
+1. Add the following entries to your hosts file:
+   - Linux/macOS: `/etc/hosts`
+   - Windows: `C:\Windows\System32\drivers\etc\hosts`
 
-    ```bash
-    cd csharp
-    # Run benchmarks with standardized configuration
-    task benchmark FRAMEWORK=net8.0
-    ```
+   ```text
+   127.0.0.1 valkey.glide.test.tls.com
+   127.0.0.1 valkey.glide.test.no_tls.com
+   ::1 valkey.glide.test.tls.com
+   ::1 valkey.glide.test.no_tls.com
+   ```
 
-3. Alternative using raw commands:
+2. Set the environment variable:
 
-    ```bash
-    cd <repo root>/benchmarks/csharp
-    dotnet run --framework net8.0 --dataSize 1024 --resultsFile test.json --concurrentTasks 4 --clients all --host localhost --clientCount 4
-    ```
+   ```bash
+   export VALKEY_GLIDE_DNS_TESTS_ENABLED=1
+   ```
 
-4. Use a [helper script](../benchmarks/README.md) which runs end-to-end benchmarking workflow:
+If the environment variable is not set, DNS tests will be skipped.
 
-    ```bash
-    cd <repo root>/benchmarks
-    ./install_and_test.sh -csharp
-    ```
-
-Run benchmarking script with `-h` flag to get list and help about all command line parameters.
-
-## Linting
+## Linting and Formatting
 
 Before making a contribution, ensure that all new user APIs and non-obvious code is well documented, and run the code linters and analyzers.
 
-C# linter:
-
 ```bash
-dotnet format --verify-no-changes --verbosity diagnostic
+# Run all linters:
+task lint
+
+# Run linters for specific languages:
+task lint:rust     # Run Rust linting
+task lint:csharp   # Run C# linting
+task lint:yaml     # Run YAML linting
+
+# Run all formatters:
+task format
+
+# Run formatters for specific languages:
+task format:rust
+task format:csharp
+task format:yaml
+
+# Check for broken links
+task check-links
 ```
-
-C# code analyzer:
-
-```bash
-dotnet build --configuration Lint
-```
-
-Rust linter:
-
-```bash
-cargo clippy --all-features --all-targets -- -D warnings
-cargo fmt --all -- --check
-```
-
-**Note**: Task commands automatically use standardized configurations for build and test operations, ensuring consistency across development environments.
 
 ## Test framework and Style
 
 The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code styles are defined in `.editorconfing` (see `dotnet_diagnostic.xUnit..` rules). The xUnit rules are enforced by the [xUnit analyzers](https://github.com/xunit/xunit.analyzers) referenced in the main xunit.v3 NuGet package. If you choose to use xunit.v3.core instead, you can reference xunit.analyzers explicitly. For additional info, please, refer to <https://xunit.NET> and <https://github.com/xunit/xunit>
+
+## Documentation
+
+For user-facing documentation including quick start guides, tutorials, and how-to guides, visit the official [Valkey GLIDE documentation site](https://glide.valkey.io/getting-started/quickstart/?lang=csharp).
+
+## Benchmarking
+
+Performance benchmarking for the C# client can be performed using [resp-bench](https://github.com/ikolomi/resp-bench), a multi-language benchmark suite for RESP protocol compatible databases. It supports Valkey GLIDE C# and StackExchange.Redis out of the box.
+
+Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main/README.md) and [C# benchmark docs](https://github.com/ikolomi/resp-bench/blob/main/docs/BENCHMARKS_CSHARP.md) for setup and usage instructions.
 
 ## Community and Feedback
 

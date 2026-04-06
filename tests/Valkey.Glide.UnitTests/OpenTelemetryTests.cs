@@ -10,7 +10,7 @@ public class OpenTelemetryTests : IDisposable
     private const uint SamplePercentageLow = 10u;
     private const uint SamplePercentageHigh = 90u;
     private const uint SamplePercentageMax = 100u;
-    private const string Endpoint = "ENDPOINT";
+    private const string Endpoint = "http://localhost:4317";
 
     public OpenTelemetryTests()
     {
@@ -27,9 +27,7 @@ public class OpenTelemetryTests : IDisposable
 
     [Fact]
     public void Init_WithNullConfig_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => OpenTelemetry.Init(null!));
-    }
+        => _ = Assert.Throws<ArgumentNullException>(() => OpenTelemetry.Init(null!));
 
     [Fact]
     public void Init_WithValidConfig_Succeeds()
@@ -76,15 +74,11 @@ public class OpenTelemetryTests : IDisposable
 
     [Fact]
     public void IsInitialized_WhenNotInitialized_ReturnsFalse()
-    {
-        Assert.False(OpenTelemetry.IsInitialized());
-    }
+        => Assert.False(OpenTelemetry.IsInitialized());
 
     [Fact]
     public void GetSamplePercentage_WhenNotInitialized_ReturnsNull()
-    {
-        Assert.Null(OpenTelemetry.GetSamplePercentage());
-    }
+        => Assert.Null(OpenTelemetry.GetSamplePercentage());
 
     [Fact]
     public void GetSamplePercentage_WithTracesConfigured_ReturnsDefault()
@@ -134,9 +128,7 @@ public class OpenTelemetryTests : IDisposable
 
     [Fact]
     public void SetSamplePercentage_WhenNotInitialized_ThrowsInvalidOperationException()
-    {
-        Assert.Throws<InvalidOperationException>(() => OpenTelemetry.SetSamplePercentage(SamplePercentageLow));
-    }
+        => _ = Assert.Throws<InvalidOperationException>(() => OpenTelemetry.SetSamplePercentage(SamplePercentageLow));
 
     [Fact]
     public void SetSamplePercentage_WithoutTracesConfigured_ThrowsInvalidOperationException()
@@ -150,7 +142,7 @@ public class OpenTelemetryTests : IDisposable
 
         OpenTelemetry.Init(config);
 
-        Assert.Throws<InvalidOperationException>(() => OpenTelemetry.SetSamplePercentage(SamplePercentageLow));
+        _ = Assert.Throws<InvalidOperationException>(() => OpenTelemetry.SetSamplePercentage(SamplePercentageLow));
     }
 
     [Fact]
@@ -182,7 +174,7 @@ public class OpenTelemetryTests : IDisposable
 
         OpenTelemetry.Init(config);
 
-        Assert.Throws<ArgumentException>(() => OpenTelemetry.SetSamplePercentage(101));
+        _ = Assert.Throws<ArgumentException>(() => OpenTelemetry.SetSamplePercentage(101));
     }
 
     [Fact]
@@ -217,8 +209,9 @@ public class OpenTelemetryTests : IDisposable
         Assert.Equal(SamplePercentageMax, OpenTelemetry.GetSamplePercentage());
     }
 
+    /// <summary>
+    /// Returns a mock pointer for the OpenTelemetry FFI initialization function.
+    /// </summary>
     private IntPtr MockInitOpenTelemetryFfi(IntPtr configPtr)
-    {
-        return IntPtr.Zero;
-    }
+        => IntPtr.Zero;
 }

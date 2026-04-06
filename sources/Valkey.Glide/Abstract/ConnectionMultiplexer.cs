@@ -65,8 +65,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
             var configBuilder = CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(configuration);
 
             var subscriptionsConfig = new ClusterPubSubSubscriptionConfig();
-            subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
-            configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
+            _ = subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
+            _ = configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
 
             config = configBuilder.Build();
         }
@@ -76,8 +76,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
             var configBuilder = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration);
 
             var subscriptionsConfig = new StandalonePubSubSubscriptionConfig();
-            subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
-            configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
+            _ = subscriptionsConfig.WithCallback((msg, ctx) => ((ConnectionMultiplexer)ctx!).OnMessage(msg), multiplexer);
+            _ = configBuilder.WithPubSubSubscriptions(subscriptionsConfig);
 
             config = configBuilder.Build();
         }
@@ -87,22 +87,27 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return multiplexer;
     }
 
+    /// <inheritdoc/>
     public EndPoint[] GetEndPoints(bool configuredOnly)
         => configuredOnly
             ? [.. RawConfig.EndPoints]
             : [.. GetServers().Select(s => s.EndPoint)];
 
+    /// <inheritdoc/>
     public IServer GetServer(string host, int port, object? asyncState = null)
         => GetServer(Format.ParseEndPoint(host, port), asyncState);
 
+    /// <inheritdoc/>
     public IServer GetServer(string hostAndPort, object? asyncState = null)
         => Format.TryParseEndPoint(hostAndPort, out EndPoint? ep)
             ? GetServer(ep, asyncState)
             : throw new ArgumentException($"The specified host and port could not be parsed: {hostAndPort}", nameof(hostAndPort));
 
+    /// <inheritdoc/>
     public IServer GetServer(IPAddress host, int port)
         => GetServer(new IPEndPoint(host, port));
 
+    /// <inheritdoc/>
     public IServer GetServer(EndPoint endpoint, object? asyncState = null)
     {
         GuardClauses.ThrowIfAsyncState(asyncState);
@@ -119,6 +124,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
     // TODO currently this returns only primary node on standalone
     // https://github.com/valkey-io/valkey-glide/issues/4293
+    /// <inheritdoc/>
     public IServer[] GetServers()
     {
         // run INFO on all nodes, but disregard the node responses, we need node addresses only
@@ -145,8 +151,10 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         }
     }
 
+    /// <inheritdoc/>
     public bool IsConnected => true;
 
+    /// <inheritdoc/>
     public bool IsConnecting => false;
 
     /// <inheritdoc/>
@@ -156,6 +164,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return new Subscriber(this, _db!);
     }
 
+    /// <inheritdoc/>
     public IDatabase GetDatabase(int db = -1, object? asyncState = null)
     {
         Utils.Requires<NotImplementedException>(db == -1, "To switch the database, please use `SELECT` command.");
@@ -163,9 +172,11 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         return _db!;
     }
 
+    /// <inheritdoc/>
     public long? GetConnectionId(EndPoint endpoint, ConnectionType connectionType)
         => GetConnectionIdAsync(endpoint, connectionType).GetAwaiter().GetResult();
 
+    /// <inheritdoc/>
     public async Task<long?> GetConnectionIdAsync(EndPoint endpoint, ConnectionType connectionType)
     {
         IServer server = GetServer(endpoint);
@@ -216,7 +227,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         config.UseTls = configuration.Ssl;
         foreach (var cert in configuration._trustedIssuers)
         {
-            config.WithTrustedCertificate(cert);
+            _ = config.WithTrustedCertificate(cert);
         }
 
         _ = configuration.ConnectTimeout.HasValue ? config.ConnectionTimeout = TimeSpan.FromMilliseconds(configuration.ConnectTimeout.Value) : new();
@@ -234,7 +245,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         }
         if (config is StandaloneClientConfigurationBuilder standalone)
         {
-            _ = configuration.DefaultDatabase.HasValue ? standalone.DataBaseId = (uint)configuration.DefaultDatabase.Value : 0;
+            _ = configuration.DefaultDatabase.HasValue ? standalone.DatabaseId = (uint)configuration.DefaultDatabase.Value : 0;
         }
         _ = configuration.ReconnectRetryPolicy.HasValue ? config.ConnectionRetryStrategy = configuration.ReconnectRetryPolicy.Value : new();
         _ = configuration.ReadFrom.HasValue ? config.ReadFrom = configuration.ReadFrom.Value : new();
@@ -360,7 +371,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         lock (_subscriptions)
         {
-            _subscriptions.Remove(channel, out var sub);
+            _ = _subscriptions.Remove(channel, out var sub);
             sub?.Dispose();
         }
     }

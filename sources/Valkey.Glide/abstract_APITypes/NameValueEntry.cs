@@ -50,7 +50,7 @@ public readonly struct NameValueEntry : IEquatable<NameValueEntry>
     /// </summary>
     public override string ToString() => name + ": " + value;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override int GetHashCode() => name.GetHashCode() ^ value.GetHashCode();
 
     /// <summary>

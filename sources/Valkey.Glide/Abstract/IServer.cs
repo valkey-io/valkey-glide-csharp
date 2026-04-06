@@ -2,8 +2,14 @@
 
 using System.Net;
 
+using Valkey.Glide.Commands;
+
 namespace Valkey.Glide;
 
+/// <summary>
+/// Provides configuration controls of a Valkey server.
+/// Compatible with StackExchange.Redis <c>IServer</c>.
+/// </summary>
 public interface IServer
 {
     /// <summary>
@@ -40,9 +46,6 @@ public interface IServer
     /// <param name="args">The arguments to pass for the command.</param>
     /// <returns>A dynamic representation of the command's result.</returns>
     /// <remarks>This API should be considered an advanced feature; inappropriate use can be harmful.</remarks>
-    ValkeyResult Execute(string command, params object[] args);
-
-    /// <inheritdoc cref="Execute(string, object[])"/>
     Task<ValkeyResult> ExecuteAsync(string command, params object[] args);
 
     /// <summary>
@@ -52,19 +55,18 @@ public interface IServer
     /// </summary>
     /// <param name="command">The command to run.</param>
     /// <param name="args">The arguments to pass for the command.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A dynamic representation of the command's result.</returns>
     /// <remarks>This API should be considered an advanced feature; inappropriate use can be harmful.</remarks>
-    ValkeyResult Execute(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="Execute(string, ICollection{object}, CommandFlags)"/>
     Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// The INFO command returns information and statistics about the server in a format that is simple to parse by computers and easy to read by humans.
     /// </summary>
     /// <param name="section">The info section to get, if getting a specific one.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The entire raw <c>INFO</c> string.</returns>
     /// <remarks><seealso href="https://valkey.io/commands/info/"/></remarks>
     Task<string?> InfoRawAsync(ValkeyValue section = default, CommandFlags flags = CommandFlags.None);
@@ -73,19 +75,18 @@ public interface IServer
     /// The INFO command returns information and statistics about the server in a format that is simple to parse by computers and easy to read by humans.
     /// </summary>
     /// <param name="section">The info section to get, if getting a specific one.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A grouping of key/value pairs, grouped by their section header.</returns>
     /// <remarks><seealso href="https://valkey.io/commands/info/"/></remarks>
     Task<IGrouping<string, KeyValuePair<string, string>>[]> InfoAsync(ValkeyValue section = default, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="InfoRawAsync(ValkeyValue, CommandFlags)"/>
-    string? InfoRaw(ValkeyValue section = default, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// This command is often used to test if a connection is still alive, or to measure latency.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The observed latency.</returns>
     /// <remarks>
     /// <example>
@@ -101,7 +102,8 @@ public interface IServer
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping"/>
     /// <param name="message">The message to send.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The observed latency.</returns>
     /// <remarks>
     /// <example>
@@ -117,7 +119,8 @@ public interface IServer
     /// </summary>
     /// <seealso href="https://valkey.io/commands/echo"/>
     /// <param name="message">The message to echo.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The provided message.</returns>
     /// <remarks>
     /// <example>
@@ -133,7 +136,8 @@ public interface IServer
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-get"/>
     /// <param name="pattern">The pattern to match configuration parameters. If not specified, returns all parameters.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>An array of key-value pairs representing configuration parameters and their values.</returns>
     Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None);
 
@@ -141,14 +145,16 @@ public interface IServer
     /// Reset the statistics reported by the INFO command.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-resetstat"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Rewrite the configuration file with the current configuration.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-rewrite"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -157,38 +163,44 @@ public interface IServer
     /// <seealso href="https://valkey.io/commands/config-set"/>
     /// <param name="setting">The configuration parameter to set.</param>
     /// <param name="value">The value to set for the configuration parameter.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Return the number of keys in the selected database.
+    /// Return the number of keys in the current database.
+    /// GLIDE does not support database selection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize"/>
-    /// <param name="database">The database index. If -1, uses the current database.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="database">The database index (currently only <c>-1</c> is supported by GLIDE).</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not -1.</exception>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The number of keys in the database.</returns>
     Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
 
-    /// <summary>
-    /// Delete all the keys of all databases on the server.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Delete all the keys of the selected database.
+    /// Delete all the keys of the current database.
+    /// GLIDE does not support database selection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb"/>
-    /// <param name="database">The database index. If -1, uses the current database.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="database">The database index (currently only <c>-1</c> is supported by GLIDE).</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not -1.</exception>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Return the UNIX timestamp of the last successful save to disk.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lastsave"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The timestamp of the last successful save.</returns>
     Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None);
 
@@ -196,7 +208,8 @@ public interface IServer
     /// Return the current server time.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/time"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The current server time.</returns>
     Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None);
 
@@ -204,7 +217,8 @@ public interface IServer
     /// Display some computer art and the Valkey version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A string containing computer art and version information.</returns>
     Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None);
 
@@ -212,7 +226,8 @@ public interface IServer
     /// Gets the name of the current connection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-getname"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>
     /// The name of the client connection as a <see cref="string"/>.
     /// If no name is assigned, <see langword="ValkeyValue.Null"/> will be returned.
@@ -238,7 +253,8 @@ public interface IServer
     /// Gets the current connection ID.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-id"/>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The ID of the client connection.</returns>
     /// <remarks>
     /// <example>
@@ -255,6 +271,7 @@ public interface IServer
     /// </summary>
     /// <param name="script">The Lua script to check.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing true if the script exists in the cache, false otherwise.</returns>
     /// <remarks>
     /// This method calculates the SHA1 hash of the script and checks if it exists in the server's cache.
@@ -266,6 +283,7 @@ public interface IServer
     /// </summary>
     /// <param name="sha1">The SHA1 hash of the script to check.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing true if the script exists in the cache, false otherwise.</returns>
     Task<bool> ScriptExistsAsync(byte[] sha1, CommandFlags flags = CommandFlags.None);
 
@@ -274,6 +292,7 @@ public interface IServer
     /// </summary>
     /// <param name="script">The Lua script to load.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing the SHA1 hash of the loaded script.</returns>
     /// <remarks>
     /// The script is cached on the server and can be executed using EVALSHA with the returned hash.
@@ -285,6 +304,7 @@ public interface IServer
     /// </summary>
     /// <param name="script">The LuaScript to load.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing a LoadedLuaScript instance.</returns>
     /// <remarks>
     /// The script is cached on the server and can be executed using the returned LoadedLuaScript.
@@ -295,9 +315,33 @@ public interface IServer
     /// Removes all scripts from the server's script cache.
     /// </summary>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
     /// After calling this method, all scripts must be reloaded before they can be executed with EVALSHA.
     /// </remarks>
     Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None);
-} ///
+
+    /// <summary>
+    /// Returns all keys matching <paramref name="pattern"/>.
+    /// Uses <c>SCAN</c> internally for cursor-based iteration.
+    /// Note: to resume an iteration via <paramref name="cursor"/>, pass the cursor value from a previous iteration.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/scan"/>.
+    /// <param name="database">The database ID. Only the current database (<c>-1</c>) is supported by Valkey GLIDE.</param>
+    /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
+    /// <param name="pageSize">The number of keys to return per SCAN iteration.</param>
+    /// <param name="cursor">The cursor to start scanning from.</param>
+    /// <param name="pageOffset">The number of keys to skip from the first page of results.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not the current database (<c>-1</c>).</exception>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>An async enumerable of keys matching the pattern.</returns>
+    IAsyncEnumerable<ValkeyKey> KeysAsync(
+        int database = -1,
+        ValkeyValue pattern = default,
+        int pageSize = 250,
+        long cursor = 0,
+        int pageOffset = 0,
+        CommandFlags flags = CommandFlags.None);
+}

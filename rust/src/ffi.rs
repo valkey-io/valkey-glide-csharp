@@ -82,6 +82,7 @@ pub struct ConnectionConfig {
 
     pub has_pubsub_reconciliation_interval_ms: bool,
     pub pubsub_reconciliation_interval_ms: u32,
+    pub read_only: bool,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -100,7 +101,7 @@ pub struct PubSubConfigInfo {
     pub sharded_channel_count: u32,
 }
 
-/// Convert a C string array to a Vec of Vec<u8>
+/// Convert a C string array to a `Vec` of `Vec<u8>`
 ///
 /// # Safety
 ///
@@ -153,7 +154,7 @@ unsafe fn convert_pubsub_config(
         );
     }
 
-    // Convert shard channels
+    // Convert sharded channels
     if config.sharded_channel_count > 0 {
         let sharded = unsafe {
             convert_string_array(config.sharded_channels_ptr, config.sharded_channel_count)
@@ -251,8 +252,10 @@ pub(crate) unsafe fn create_connection_request(
                 config.root_certs_len,
             )
         },
-        pubsub_reconciliation_interval_ms: config.has_pubsub_reconciliation_interval_ms
+        pubsub_reconciliation_interval_ms: config
+            .has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
+        read_only: config.read_only,
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),

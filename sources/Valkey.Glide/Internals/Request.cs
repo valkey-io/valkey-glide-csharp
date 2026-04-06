@@ -13,12 +13,6 @@ internal partial class Request
         => new(RequestType.CustomCommand, args, true, converter);
 
     /// <summary>
-    /// Create a Cmd which returns OK
-    /// </summary>
-    private static Cmd<string, string> OK(RequestType request, GlideString[] args)
-        => Simple<string>(request, args);
-
-    /// <summary>
     /// Create a Cmd which does not need type conversion
     /// </summary>
     private static Cmd<T, T> Simple<T>(RequestType request, GlideString[] args, bool isNullable = false)
@@ -42,6 +36,15 @@ internal partial class Request
     /// <returns>A command that converts the response to a boolean value (true if response equals OK)</returns>
     private static Cmd<string, bool> OKToBool(RequestType request, GlideString[] args)
         => new(request, args, false, response => response == "OK");
+
+    /// <summary>
+    /// Create a Cmd which returns "OK" when it completes.
+    /// </summary>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
+    /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
+    private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[] args)
+        => new(request, args, false, _ => ValkeyValue.Ok);
 
     /// <summary>
     /// Create a Cmd which converts the response to a ValkeyValue.
@@ -79,4 +82,20 @@ internal partial class Request
     /// <returns>A converted string set.</returns>
     private static HashSet<string> ToStringSet(object[] objects)
         => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())];
+
+    /// <summary>
+    /// Converts the given time span to milliseconds.
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <returns>The number of milliseconds in the time span, rounded to the nearest integer.</returns>
+    /// </summary>
+    private static long ToMilliseconds(TimeSpan timeSpan)
+        => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
+
+    /// <summary>
+    /// Converts the given time span to seconds.
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <returns>The number of seconds in the time span, as a floating-point number.</returns>
+    /// </summary>
+    private static double ToSeconds(TimeSpan timeSpan)
+        => timeSpan.TotalSeconds;
 }

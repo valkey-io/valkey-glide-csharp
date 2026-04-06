@@ -189,7 +189,8 @@ internal partial class BatchTestUtils
         string multiKey2 = $"{atomicPrefix}multi2-{Guid.NewGuid()}";
         string multiKey3 = $"{atomicPrefix}multi3-{Guid.NewGuid()}";
 
-        KeyValuePair<ValkeyKey, ValkeyValue>[] multiKeyValues = [
+        KeyValuePair<ValkeyKey, ValkeyValue>[] multiKeyValues =
+        [
             new(multiKey1, "value1"),
             new(multiKey2, "value2"),
             new(multiKey3, "value3")
@@ -447,14 +448,14 @@ internal partial class BatchTestUtils
 
         // ConfigSet and ConfigGet combination
         _ = batch.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lru");
-        testData.Add(new(ValkeyValue.Null, "ConfigSetAsync(maxmemory-policy, allkeys-lru)", true));
+        testData.Add(new(ValkeyValue.Ok, "ConfigSetAsync(maxmemory-policy, allkeys-lru)", true));
 
         _ = batch.ConfigGetAsync("maxmemory-policy");
         testData.Add(new(Array.Empty<KeyValuePair<string, string>>(), "ConfigGetAsync(maxmemory-policy)", true));
 
         // ConfigResetStatistics
         _ = batch.ConfigResetStatisticsAsync();
-        testData.Add(new(ValkeyValue.Null, "ConfigResetStatisticsAsync()", true));
+        testData.Add(new(ValkeyValue.Ok, "ConfigResetStatisticsAsync()", true));
 
         // DatabaseSize
         _ = batch.DatabaseSizeAsync();
@@ -587,10 +588,10 @@ internal partial class BatchTestUtils
         _ = batch.StringSet(prefix + "waitkey", "value");
         testData.Add(new(true, "StringSet(prefix + waitkey, value)"));
 
-        _ = batch.Wait(0, 1000);
+        _ = batch.Wait(0, TimeSpan.FromMilliseconds(1000));
         testData.Add(new(0L, "Wait(0, 1000)", true));
 
-        _ = batch.Wait(1, 0);
+        _ = batch.Wait(1, TimeSpan.Zero);
         testData.Add(new(0L, "Wait(1, 0)", true));
 
         return testData;
@@ -752,10 +753,6 @@ internal partial class BatchTestUtils
         _ = batch.SortedSetRangeByValue(key2, "a", "c", order: Order.Ascending);
         testData.Add(new(new ValkeyValue[] { "apple", "banana" }, "SortedSetRangeByValue(key2, 'a', 'c', order: Ascending)"));
 
-        // Test new sorted set commands
-        string key3 = $"{atomicPrefix}3-{Guid.NewGuid()}";
-        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
-
         // Test SortedSetIncrement
         _ = batch.SortedSetIncrement(key1, "testMember1", 5.0);
         testData.Add(new(6.0, "SortedSetIncrement(key1, testMember1, 5.0)"));
@@ -830,15 +827,15 @@ internal partial class BatchTestUtils
             testData.Add(new(2L, "SortedSetAdd(blockingKey, test data for blocking)"));
 
             // Test SortedSetBlockingPop (single key, single element)
-            _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, 0.1);
+            _ = batch.SortedSetBlockingPop(blockingKey, Order.Ascending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(new SortedSetEntry("block1", 10.0), "SortedSetBlockingPop(blockingKey, Ascending, 0.1s)"));
 
-            // Test SortedSetBlockingPop (single key, multiple elements)
-            _ = batch.SortedSetBlockingPop(blockingKey, 1, Order.Descending, 0.1);
-            testData.Add(new(new SortedSetEntry[] { new("block2", 20.0) }, "SortedSetBlockingPop(blockingKey, 1, Descending, 0.1s)"));
+            // Test SortedSetBlockingPop (single key, single element)
+            _ = batch.SortedSetBlockingPop(blockingKey, Order.Descending, TimeSpan.FromSeconds(0.1));
+            testData.Add(new(new SortedSetEntry("block2", 20.0), "SortedSetBlockingPop(blockingKey, Descending, 0.1s)"));
 
             // Test SortedSetBlockingPop (multi-key, multiple elements)
-            _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, 0.1);
+            _ = batch.SortedSetBlockingPop([blockingKey], 1, Order.Descending, TimeSpan.FromSeconds(0.1));
             testData.Add(new(SortedSetPopResult.Null, "SortedSetBlockingPop([blockingKey], 1, Descending, 0.1s) - should be null"));
         }
 
@@ -1061,7 +1058,7 @@ internal partial class BatchTestUtils
         testData.Add(new(6L, "ListRightPush(trimKey, [a, b, c, d, e, f])"));
 
         _ = batch.ListTrim(trimKey, 1, 4);
-        testData.Add(new("OK", "ListTrim(trimKey, 1, 4) - keep middle elements", true));
+        testData.Add(new(ValkeyValue.Ok, "ListTrim(trimKey, 1, 4) - keep middle elements", true));
 
         _ = batch.ListLength(trimKey);
         testData.Add(new(4L, "ListLength(trimKey) after trim"));
@@ -1075,7 +1072,7 @@ internal partial class BatchTestUtils
         testData.Add(new(5L, "ListRightPush(trimKey2, [1, 2, 3, 4, 5])"));
 
         _ = batch.ListTrim(trimKey2, -3, -1);
-        testData.Add(new("OK", "ListTrim(trimKey2, -3, -1) - keep last 3", true));
+        testData.Add(new(ValkeyValue.Ok, "ListTrim(trimKey2, -3, -1) - keep last 3", true));
 
         _ = batch.ListLength(trimKey2);
         testData.Add(new(3L, "ListLength(trimKey2) after negative trim"));
@@ -1188,7 +1185,7 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "ListRightPush(setKey, [set0, set1, set2])"));
 
         _ = batch.ListSetByIndex(setKey, 1, "newvalue");
-        testData.Add(new("OK", "ListSetByIndex(setKey, 1, newvalue)", true));
+        testData.Add(new(ValkeyValue.Ok, "ListSetByIndex(setKey, 1, newvalue)", true));
 
         _ = batch.ListGetByIndex(setKey, 1);
         testData.Add(new(new ValkeyValue("newvalue"), "ListGetByIndex(setKey, 1) after set"));
@@ -1232,11 +1229,11 @@ internal partial class BatchTestUtils
         List<TestInfo> testData = [];
 
         _ = batch.Ping();
-        testData.Add(new(TimeSpan.Zero, "Ping()", true));
+        testData.Add(new(new ValkeyValue("PONG"), "Ping()"));
 
         ValkeyValue pingMessage = "Hello Valkey!";
         _ = batch.Ping(pingMessage);
-        testData.Add(new(TimeSpan.Zero, "Ping(message)", true));
+        testData.Add(new(pingMessage, "Ping(message)"));
 
         ValkeyValue echoMessage = "Echo test message";
         _ = batch.Echo(echoMessage);
@@ -1257,7 +1254,7 @@ internal partial class BatchTestUtils
         if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
         {
             _ = batch.SelectAsync(0); // Select database 0 (default)
-            testData.Add(new("OK", "SelectAsync(0)"));
+            testData.Add(new(ValkeyValue.Ok, "SelectAsync(0)"));
         }
 
         return testData;
@@ -1382,7 +1379,7 @@ internal partial class BatchTestUtils
             new HashEntry("multi2", "value2")
         ];
         _ = batch.HashSet(key2, multiEntries);
-        testData.Add(new("OK", "HashSet(key2, multiEntries)"));
+        testData.Add(new(ValkeyValue.Ok, "HashSet(key2, multiEntries)"));
 
         _ = batch.HashGet(key2, ["multi1", "multi2"]);
         testData.Add(new(new ValkeyValue[] { "value1", "value2" }, "HashGet(key2, [multi1, multi2])"));
@@ -1410,13 +1407,13 @@ internal partial class BatchTestUtils
             _ = batch.HashSetEx(expireKey, new Dictionary<ValkeyValue, ValkeyValue> { { "setex_field", "setex_value" } }, new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60)));
             testData.Add(new(true, "HashSetEx(expireKey, {setex_field: setex_value}, 60s)"));
 
-            // Test HEXPIRE
-            _ = batch.HashExpire(expireKey, 30, ["expire_field1"], new HashFieldExpirationConditionOptions());
+            // Test HEXPIRE with seconds
+            _ = batch.HashExpire(expireKey, TimeSpan.FromSeconds(30), ["expire_field1"], new HashFieldExpirationConditionOptions());
             testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, 30, [expire_field1])"));
 
-            // Test HPEXPIRE
-            _ = batch.HashPExpire(expireKey, 5000, ["expire_field2"], new HashFieldExpirationConditionOptions());
-            testData.Add(new(new long[] { 1 }, "HashPExpire(expireKey, 5000, [expire_field2])"));
+            // Test HPEXPIRE with milliseconds
+            _ = batch.HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), ["expire_field2"], new HashFieldExpirationConditionOptions());
+            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
 
             // Test HTTL
             _ = batch.HashTtl(expireKey, ["expire_field1", "expire_field2"]);
@@ -1448,8 +1445,8 @@ internal partial class BatchTestUtils
         string prefix = "{geoKey}-";
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
-        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
-        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         // Test GeoAdd
         _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"));
@@ -1510,8 +1507,8 @@ internal partial class BatchTestUtils
         string prefix = "{bitmapKey}-";
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
-        string key2 = $"{atomicPrefix}2-{Guid.NewGuid()}";
-        string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}2-{Guid.NewGuid()}";
+        _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         // Test StringSetBit and StringGetBit
         _ = batch.StringSetBit(key1, 7, true);

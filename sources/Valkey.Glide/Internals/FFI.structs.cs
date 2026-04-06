@@ -216,7 +216,8 @@ internal partial class FFI
             bool refreshTopologyFromInitialNodes,
             BasePubSubSubscriptionConfig? pubSubSubscriptions,
             List<byte[]> rootCertificates,
-            uint? pubSubReconciliationIntervalMs)
+            uint? pubSubReconciliationIntervalMs,
+            bool readOnly)
         {
             _request = new()
             {
@@ -247,6 +248,7 @@ internal partial class FFI
                 RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
                 HasPubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs.HasValue,
                 PubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs ?? default,
+                ReadOnly = readOnly,
             };
         }
 
@@ -411,7 +413,7 @@ internal partial class FFI
                 pubSubConfig.PatternCount = (uint)patterns.Count;
             }
 
-            // Marshal shard channels - only for cluster clients.
+            // Marshal sharded channels - only for cluster clients.
             if (subscriptions.TryGetValue(PubSubChannelMode.Sharded, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
             {
                 pubSubConfig.ShardedChannelsPtr = MarshalStringArray(shardedChannels);
@@ -533,7 +535,7 @@ internal partial class FFI
 
             else if (pushKind == PushKind.PushSMessage)
             {
-                return PubSubMessage.FromShardChannel(message, channel);
+                return PubSubMessage.FromShardedChannel(message, channel);
             }
 
             else if (pushKind == PushKind.PushPMessage)
@@ -585,6 +587,7 @@ internal partial class FFI
     {
         public nuint CmdCount;
         public IntPtr Cmds;
+
         [MarshalAs(UnmanagedType.U1)]
         public bool IsAtomic;
     }
@@ -594,8 +597,10 @@ internal partial class FFI
     {
         [MarshalAs(UnmanagedType.U1)]
         public bool RetryServerError;
+
         [MarshalAs(UnmanagedType.U1)]
         public bool RetryConnectionError;
+
         [MarshalAs(UnmanagedType.U1)]
         public bool HasTimeout;
         public uint Timeout;
@@ -607,6 +612,7 @@ internal partial class FFI
     {
         /// Invalid request type
         InvalidRequest = 0,
+
         /// An unknown command, where all arguments are defined by the user.
         CustomCommand = 1,
 
@@ -796,6 +802,12 @@ internal partial class FFI
         Subscribe = 911,
         SUnsubscribe = 912,
         Unsubscribe = 913,
+        SubscribeBlocking = 914,
+        UnsubscribeBlocking = 915,
+        PSubscribeBlocking = 916,
+        PUnsubscribeBlocking = 917,
+        SSubscribeBlocking = 918,
+        SUnsubscribeBlocking = 919,
         GetSubscriptions = 920,
 
         //// Scripting and Functions commands
@@ -1049,9 +1061,11 @@ internal partial class FFI
     {
         public RouteType Type;
         public int SlotId;
+
         [MarshalAs(UnmanagedType.LPStr)]
         public string? SlotKey;
         public SlotType SlotType;
+
         [MarshalAs(UnmanagedType.LPStr)]
         public string? Host;
         public int Port;
@@ -1115,6 +1129,9 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasPubSubReconciliationIntervalMs;
         public uint PubSubReconciliationIntervalMs;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool ReadOnly;
 
         // TODO more config params, see ffi.rs
     }
@@ -1261,26 +1278,37 @@ internal partial class FFI
     {
         /// <summary>Disconnection notification sent from the library when connection is closed.</summary>
         PushDisconnection = 0,
+
         /// <summary>Other/unknown push notification type.</summary>
         PushOther = 1,
+
         /// <summary>Cache invalidation notification received when a key is changed/deleted.</summary>
         PushInvalidate = 2,
+
         /// <summary>Regular channel message received via SUBSCRIBE.</summary>
         PushMessage = 3,
+
         /// <summary>Pattern-based message received via PSUBSCRIBE.</summary>
         PushPMessage = 4,
+
         /// <summary>Sharded channel message received via SSUBSCRIBE.</summary>
         PushSMessage = 5,
+
         /// <summary>Unsubscribe confirmation.</summary>
         PushUnsubscribe = 6,
+
         /// <summary>Pattern unsubscribe confirmation.</summary>
         PushPUnsubscribe = 7,
+
         /// <summary>Sharded unsubscribe confirmation.</summary>
         PushSUnsubscribe = 8,
+
         /// <summary>Subscribe confirmation.</summary>
         PushSubscribe = 9,
+
         /// <summary>Pattern subscribe confirmation.</summary>
         PushPSubscribe = 10,
+
         /// <summary>Sharded subscribe confirmation.</summary>
         PushSSubscribe = 11,
     }

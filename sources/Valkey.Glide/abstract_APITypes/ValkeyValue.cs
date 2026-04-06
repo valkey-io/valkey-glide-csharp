@@ -47,6 +47,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1085:Use auto-implemented property.", Justification = "Intentional field ref")]
     internal object? DirectObject => _objectOrSentinel;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1085:Use auto-implemented property.", Justification = "Intentional field ref")]
     internal long DirectOverlappedBits64 => _overlappedBits64;
 
@@ -109,6 +110,11 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// A null value.
     /// </summary>
     public static ValkeyValue Null { get; } = new ValkeyValue(0, default, null);
+
+    /// <summary>
+    /// Represents a successful status response (<c>"OK"</c>).
+    /// </summary>
+    public static ValkeyValue Ok { get; } = new ValkeyValue("OK");
 
     /// <summary>
     /// Indicates whether the **underlying** value is a primitive integer (signed or unsigned); this is **not**
@@ -281,7 +287,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return true;
     }
 
-    internal static unsafe int GetHashCode(ReadOnlySpan<byte> span)
+    internal static int GetHashCode(ReadOnlySpan<byte> span)
     {
         unchecked
         {

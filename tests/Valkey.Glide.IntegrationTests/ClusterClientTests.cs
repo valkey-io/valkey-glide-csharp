@@ -8,6 +8,7 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -183,16 +184,16 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_NoMessage(GlideClusterClient client)
     {
-        TimeSpan result = await client.PingAsync();
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync();
+        Assert.Equal("PONG", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestPing_NoMessage_WithRoute(GlideClusterClient client)
     {
-        TimeSpan result = await client.PingAsync(AllNodes);
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync(AllNodes);
+        Assert.Equal("PONG", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -200,8 +201,8 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task TestPing_WithMessage(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
-        TimeSpan result = await client.PingAsync(message);
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync(message);
+        Assert.Equal(message, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -209,8 +210,8 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task TestPing_WithMessage_WithRoute(GlideClusterClient client)
     {
         ValkeyValue message = "Hello, Valkey!";
-        TimeSpan result = await client.PingAsync(message, AllNodes);
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync(message, AllNodes);
+        Assert.Equal(message, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -280,8 +281,6 @@ public class ClusterClientTests(TestConfiguration config)
 
         // Test with specific route using maxmemory-policy parameter (which should exist)
         var singleNodeConfig = await client.ConfigGetAsync("maxmemory-policy", Route.Random);
-        Assert.NotNull(singleNodeConfig.SingleValue);
-        Assert.Single(singleNodeConfig.SingleValue);
         Assert.Equal("maxmemory-policy", singleNodeConfig.SingleValue[0].Key);
 
         // Test ConfigSet and ConfigGet combination (like Go TestConfigSetGet)
@@ -303,10 +302,10 @@ public class ClusterClientTests(TestConfiguration config)
 
             // Test with route options (like Go TestConfigSetGetWithOptions)
             // Set on all primaries and verify we can read from primaries
-            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lfu", Route.AllPrimaries);
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"allkeys-lfu", AllPrimaries);
 
             // Get from all primaries to verify the change was applied
-            var primariesResult = await client.ConfigGetAsync("maxmemory-policy", Route.AllPrimaries);
+            var primariesResult = await client.ConfigGetAsync("maxmemory-policy", AllPrimaries);
             Assert.NotEmpty(primariesResult.MultiValue.Values);
             foreach (var nodeConfig in primariesResult.MultiValue.Values)
             {
@@ -314,8 +313,8 @@ public class ClusterClientTests(TestConfiguration config)
             }
 
             // Test setting different value and verify it propagates to all primaries
-            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"volatile-lru", Route.AllPrimaries);
-            var finalResult = await client.ConfigGetAsync("maxmemory-policy", Route.AllPrimaries);
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)"volatile-lru", AllPrimaries);
+            var finalResult = await client.ConfigGetAsync("maxmemory-policy", AllPrimaries);
             Assert.NotEmpty(finalResult.MultiValue.Values);
             foreach (var nodeConfig in finalResult.MultiValue.Values)
             {
@@ -325,11 +324,11 @@ public class ClusterClientTests(TestConfiguration config)
         finally
         {
             // Restore original value
-            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)originalValue, Route.AllPrimaries);
+            await client.ConfigSetAsync((ValkeyValue)"maxmemory-policy", (ValkeyValue)originalValue, AllPrimaries);
         }
 
         // Test invalid parameters
-        await Assert.ThrowsAsync<RequestException>(async () =>
+        _ = await Assert.ThrowsAsync<RequestException>(async () =>
             await client.ConfigSetAsync((ValkeyValue)"invalid-config-param", (ValkeyValue)"value"));
 
         // Test getting non-existent configuration
@@ -371,7 +370,7 @@ public class ClusterClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task DatabaseSizeAsync_ReturnsSizePerNode(GlideClusterClient client)
+    public async Task DatabaseSizeAsync_ReturnsTotalSize(GlideClusterClient client)
     {
         string key = $"cluster-dbsize-test-{Guid.NewGuid()}";
 
@@ -380,23 +379,17 @@ public class ClusterClientTests(TestConfiguration config)
             // Add a key
             await client.StringSetAsync(key, "test-value");
 
-            // Get database size from all nodes
-            var allSizes = await client.DatabaseSizeAsync();
-            Assert.NotEmpty(allSizes);
-
-            // Each node should have a size >= 0
-            foreach (var size in allSizes.Values)
-            {
-                Assert.True(size >= 0);
-            }
+            // Get aggregated database size from all primary nodes
+            long totalSize = await client.DatabaseSizeAsync();
+            Assert.True(totalSize > 0);
 
             // Test with specific route
-            var singleNodeSize = await client.DatabaseSizeAsync(Route.Random);
-            Assert.True(singleNodeSize.SingleValue >= 0);
+            long singleNodeSize = await client.DatabaseSizeAsync(Route.Random);
+            Assert.True(singleNodeSize >= 0);
         }
         finally
         {
-            await client.KeyDeleteAsync(key);
+            _ = await client.KeyDeleteAsync(key);
         }
     }
 
@@ -506,8 +499,13 @@ public class ClusterClientTests(TestConfiguration config)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "SELECT for Cluster Client is supported since 9.0.0"
         );
-        string result = await client.SelectAsync(0);
-        Assert.Equal("OK", result);
+
+        // Test selecting database 0 (default)
+        await client.SelectAsync(0);
+
+        // Switching to a valid database causes issue to tests running in parallel. So instead, we test
+        // that using an invalid value to ensure different values can still be sent through.
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.SelectAsync(-1));
     }
 
     [Fact]
@@ -517,14 +515,14 @@ public class ClusterClientTests(TestConfiguration config)
         );
 
         var config = TestConfiguration.DefaultClusterClientConfig()
-            .WithDataBaseId(1)
+            .WithDatabaseId(1)
             .Build();
 
         await using var client = await GlideClusterClient.CreateClient(config);
 
         // Verify we can connect with database ID 1
-        TimeSpan result = await client.PingAsync();
-        Assert.True(result >= TimeSpan.Zero);
+        ValkeyValue result = await client.PingAsync();
+        Assert.Equal("PONG", result.ToString());
 
         // Verify database isolation by setting a key in database 1
         string testKey = Guid.NewGuid().ToString();
@@ -565,8 +563,8 @@ public class ClusterClientTests(TestConfiguration config)
         );
 
         string hashTag = Guid.NewGuid().ToString();
-        string sourceKey = $"{{hashTag}}{Guid.NewGuid()}";
-        string destKey = $"{{hashTag}}{Guid.NewGuid()}";
+        string sourceKey = $"{{{hashTag}}}{Guid.NewGuid()}";
+        string destKey = $"{{{hashTag}}}{Guid.NewGuid()}";
         string value = "test_value";
 
         // Set a key in the current database
@@ -599,7 +597,7 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.Equal(initialCount, connectCount);
 
         // First command establishes connection.
-        await lazyClient.PingAsync();
+        _ = await lazyClient.PingAsync();
 
         var commandCount = await Client.GetConnectionCount(referenceClient);
         Assert.True(connectCount < commandCount);
@@ -615,12 +613,25 @@ public class ClusterClientTests(TestConfiguration config)
         var eagerConfig = server.CreateConfigBuilder().WithLazyConnect(false).Build();
         await using var referenceClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-        var initialCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        var initialCount = await Client.GetConnectionCount(referenceClient);
 
         // Create eager client (connects immediately).
         await using var eagerClient = await GlideClusterClient.CreateClient(eagerConfig);
 
-        var connectCount = await TestUtils.Client.GetConnectionCount(referenceClient);
+        var connectCount = await Client.GetConnectionCount(referenceClient);
         Assert.True(initialCount < connectCount);
+    }
+
+    [Theory]
+    [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
+    public async Task Connect_WithIpAddress_Succeeds(string address)
+    {
+        using var server = new ClusterServer(useTls: false);
+        var port = server.Addresses.First().Port;
+        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
+            .WithAddress(address, port);
+
+        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await Client.AssertConnected(client);
     }
 }

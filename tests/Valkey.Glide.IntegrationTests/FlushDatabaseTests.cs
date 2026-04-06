@@ -1,68 +1,94 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests;
 
-// Separate collection for flush tests to prevent interference with other tests
-[Collection(typeof(FlushDatabaseTests))]
-[CollectionDefinition(DisableParallelization = true)]
-public class FlushDatabaseTests(TestConfiguration config)
+/// <summary>
+/// Tests for flush database commands.
+/// </summary>
+public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<FlushDatabaseFixture>
 {
-    public TestConfiguration Config { get; } = config;
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushDatabaseAsync_ClearsDatabase(GlideClient client)
+    [Fact]
+    public async Task FlushDatabaseAsync_Standalone_ClearsDatabase()
     {
+        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
+
         string key = $"flush-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
-        Assert.True(await client.KeyExistsAsync(key));
 
-        // Flush database
+        Assert.True(await client.KeyExistsAsync(key));
+        Assert.Equal(1, await client.DatabaseSizeAsync());
+
         await client.FlushDatabaseAsync();
 
-        // Key should be gone
         Assert.False(await client.KeyExistsAsync(key));
-
-        // Database size should be 0 or very small
-        long size = await client.DatabaseSizeAsync();
-        Assert.True(size <= 1); // Allow for some system keys
+        Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_ClearsAllDatabases(GlideClient client)
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Standalone_ClearsAllDatabases()
     {
+        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
+
         string key = $"flushall-test-{Guid.NewGuid()}";
-
-        // Add a key
         await client.StringSetAsync(key, "test-value");
-        Assert.True(await client.KeyExistsAsync(key));
 
-        // Flush all databases
+        Assert.True(await client.KeyExistsAsync(key));
+        Assert.Equal(1, await client.DatabaseSizeAsync());
+
         await client.FlushAllDatabasesAsync();
 
-        // Key should be gone
         Assert.False(await client.KeyExistsAsync(key));
-
-        // Database size should be 0 or very small
-        long size = await client.DatabaseSizeAsync();
-        Assert.True(size <= 1); // Allow for some system keys
+        Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases(GlideClusterClient client)
+    [Fact]
+    public async Task FlushDatabaseAsync_Cluster_ClearsDatabase()
     {
-        string key = $"flushall-cluster-test-{Guid.NewGuid()}";
+        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
-        // Add a key
+        string key = $"flush-cluster-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
+
         Assert.True(await client.KeyExistsAsync(key));
+        Assert.Equal(1, await client.DatabaseSizeAsync());
 
-        // Flush all databases on cluster
-        await client.FlushAllDatabasesAsync();
+        await client.FlushDatabaseAsync();
 
-        // Key should be gone
         Assert.False(await client.KeyExistsAsync(key));
+        Assert.Equal(0, await client.DatabaseSizeAsync());
+    }
+
+    [Fact]
+    public async Task FlushDatabaseAsync_Cluster_WithRoute_ClearsDatabase()
+    {
+        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+
+        string key = $"flush-cluster-test-{Guid.NewGuid()}";
+        await client.StringSetAsync(key, "test-value");
+
+        Assert.True(await client.KeyExistsAsync(key));
+        Assert.Equal(1, await client.DatabaseSizeAsync());
+
+        await client.FlushDatabaseAsync(Route.AllPrimaries);
+
+        Assert.False(await client.KeyExistsAsync(key));
+        Assert.Equal(0, await client.DatabaseSizeAsync());
+    }
+}
+
+/// <summary>
+/// Fixture class for flush database tests.
+/// </summary>
+public class FlushDatabaseFixture : IDisposable
+{
+    public StandaloneServer StandaloneServer = new();
+    public ClusterServer ClusterServer = new();
+
+    public void Dispose()
+    {
+        StandaloneServer.Dispose();
+        ClusterServer.Dispose();
     }
 }

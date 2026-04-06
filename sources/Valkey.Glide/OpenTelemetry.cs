@@ -10,6 +10,7 @@ namespace Valkey.Glide;
 /// OpenTelemetry integration for Valkey GLIDE.
 /// OpenTelemetry can only be initialized once per process.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/monitoring/open-telemetry/">Valkey GLIDE – Configure OpenTelemetry</seealso>
 public static class OpenTelemetry
 {
     private static readonly object Lock = new();
@@ -97,7 +98,7 @@ public static class OpenTelemetry
                 throw new InvalidOperationException("OpenTelemetry traces not initialized");
             }
 
-            s_config.Traces.SetSamplePercentage(percentage);
+            s_config.Traces.SamplePercentage = percentage;
         }
     }
 
@@ -113,7 +114,7 @@ public static class OpenTelemetry
         }
 
         var percentage = GetSamplePercentage();
-        return (Random.Shared.Next(100)) < percentage;
+        return Random.Shared.Next(100) < percentage;
     }
 
     /// <summary>

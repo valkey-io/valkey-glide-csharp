@@ -31,6 +31,10 @@ public static class BitFieldOptions
     /// </summary>
     public interface IBitOffset
     {
+        /// <summary>
+        /// Gets the string representation of the offset for use in BITFIELD commands.
+        /// </summary>
+        /// <returns>The offset as a string.</returns>
         string GetOffset();
     }
 
@@ -40,6 +44,7 @@ public static class BitFieldOptions
     /// <param name="offset">The bit offset value.</param>
     public class BitOffset(long offset) : IBitOffset
     {
+        /// <inheritdoc/>
         public string GetOffset() => offset.ToString();
     }
 
@@ -49,6 +54,7 @@ public static class BitFieldOptions
     /// <param name="multiplier">The multiplier value.</param>
     public class BitOffsetMultiplier(long multiplier) : IBitOffset
     {
+        /// <inheritdoc/>
         public string GetOffset() => $"#{multiplier}";
     }
 
@@ -59,6 +65,7 @@ public static class BitFieldOptions
     /// <param name="offset">The bit field offset.</param>
     public class BitFieldGet(string encoding, IBitOffset offset) : IBitFieldReadOnlySubCommand
     {
+        /// <inheritdoc/>
         public string[] ToArgs() => ["GET", encoding, offset.GetOffset()];
     }
 
@@ -70,6 +77,7 @@ public static class BitFieldOptions
     /// <param name="value">The value to set.</param>
     public class BitFieldSet(string encoding, IBitOffset offset, long value) : IBitFieldSubCommand
     {
+        /// <inheritdoc/>
         public string[] ToArgs() => ["SET", encoding, offset.GetOffset(), value.ToString()];
     }
 
@@ -81,6 +89,7 @@ public static class BitFieldOptions
     /// <param name="increment">The increment value.</param>
     public class BitFieldIncrBy(string encoding, IBitOffset offset, long increment) : IBitFieldSubCommand
     {
+        /// <inheritdoc/>
         public string[] ToArgs() => ["INCRBY", encoding, offset.GetOffset(), increment.ToString()];
     }
 
@@ -90,6 +99,7 @@ public static class BitFieldOptions
     /// <param name="overflowType">The overflow behavior type.</param>
     public class BitFieldOverflow(OverflowType overflowType) : IBitFieldSubCommand
     {
+        /// <inheritdoc/>
         public string[] ToArgs() => ["OVERFLOW", overflowType.ToString().ToUpper()];
     }
 
@@ -102,10 +112,12 @@ public static class BitFieldOptions
         /// Wrap around on overflow (modulo arithmetic).
         /// </summary>
         Wrap,
+
         /// <summary>
         /// Saturate at min/max values on overflow.
         /// </summary>
         Sat,
+
         /// <summary>
         /// Return null on overflow.
         /// </summary>

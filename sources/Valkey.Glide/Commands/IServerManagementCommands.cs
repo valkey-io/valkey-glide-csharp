@@ -5,10 +5,11 @@ using static Valkey.Glide.Commands.Options.InfoOptions;
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Supports commands for the "Server Management" group for a standalone client.
-/// <br />
-/// See <see href="https://valkey.io/commands#server">Server Management Commands</see>.
+/// Server management commands for standalone clients.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
 public interface IServerManagementCommands
 {
     /// <summary>
@@ -31,8 +32,8 @@ public interface IServerManagementCommands
     /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(Section[])" path="/remarks" />
-    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(Section[])" path="/param" />
+    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(IEnumerable{Section})" path="/remarks" />
+    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(IEnumerable{Section})" path="/param" />
     /// <returns>
     /// <inheritdoc cref="InfoAsync()" />
     /// </returns>
@@ -43,14 +44,13 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> InfoAsync(Section[] sections);
+    Task<string> InfoAsync(IEnumerable<Section> sections);
 
     /// <summary>
     /// Echo the given message back from the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/echo/"/>
     /// <param name="message">The message to echo</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
     /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
     /// <remarks>
     /// <example>
@@ -59,45 +59,44 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> EchoAsync(ValkeyValue message);
 
     /// <summary>
-    /// Ping the server and measure the round-trip time.
+    /// Ping the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan latency = await client.PingAsync();
+    /// var response = await client.PingAsync();
+    /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync();
 
     /// <summary>
-    /// Ping the server with a message and measure the round-trip time.
+    /// Ping the server with a message.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/"/>
     /// <param name="message">The message to send with the ping</param>
-    /// <param name="flags">The command flags. Currently flags are ignored.</param>
-    /// <returns>The round-trip time as a <see cref="TimeSpan"/>.</returns>
+    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan latency = await client.PingAsync("test message");
+    /// var response = await client.PingAsync("Hello World");
+    /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue> PingAsync(ValkeyValue message);
 
     /// <summary>
     /// Gets the values of configuration parameters.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-get/"/>
     /// <param name="pattern">The pattern of config values to get.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>All matching configuration parameters.</returns>
     /// <remarks>
     /// <example>
@@ -106,14 +105,12 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None);
+    Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default);
 
     /// <summary>
     /// Resets the statistics reported by the server using the INFO and LATENCY HISTOGRAM.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -121,7 +118,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None);
+    Task ConfigResetStatisticsAsync();
 
     /// <summary>
     /// The CONFIG REWRITE command rewrites the valkey.conf file the server was started with,
@@ -129,8 +126,6 @@ public interface IServerManagementCommands
     /// used by the server, that may be different compared to the original one because of the use of the CONFIG SET command.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -138,7 +133,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None);
+    Task ConfigRewriteAsync();
 
     /// <summary>
     /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
@@ -147,8 +142,6 @@ public interface IServerManagementCommands
     /// <seealso href="https://valkey.io/commands/config-set/"/>
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -156,15 +149,13 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None);
+    Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
     /// <summary>
     /// Returns the number of keys in the currently-selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
-    /// <param name="database">The database ID.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>The number of keys in the currently selected database.</returns>
+    /// <returns>The number of keys in the currently-selected database.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -172,14 +163,12 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+    Task<long> DatabaseSizeAsync();
 
     /// <summary>
     /// Deletes all the keys of all the existing databases.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -187,15 +176,12 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);
+    Task FlushAllDatabasesAsync();
 
     /// <summary>
     /// Deletes all the keys of the currently selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="database">The database ID.</param>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -203,7 +189,7 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+    Task FlushDatabaseAsync();
 
     /// <summary>
     /// Return the time of the last DB save executed with success.
@@ -211,7 +197,6 @@ public interface IServerManagementCommands
     /// and checking at regular intervals every N seconds if LASTSAVE changed.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lastsave/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>UNIX TIME of the last DB save executed with success.</returns>
     /// <remarks>
     /// <example>
@@ -220,14 +205,14 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None);
+    // TODO #269: Replace DateTime with DateTimeOffset.
+    Task<DateTime> LastSaveAsync();
 
     /// <summary>
     /// The TIME command returns the current server time in UTC format.
     /// Use the <see cref="DateTime.ToLocalTime"/> method to get local time.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/time/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>The server's current time.</returns>
     /// <remarks>
     /// <example>
@@ -236,13 +221,13 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None);
+    // TODO #269: Replace DateTime with DateTimeOffset.
+    Task<DateTime> TimeAsync();
 
     /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="flags">The command flags to use. Currently flags are ignored</param>
     /// <returns>A string containing the Valkey version and generative art.</returns>
     /// <remarks>
     /// <example>
@@ -251,22 +236,19 @@ public interface IServerManagementCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None);
+    Task<string> LolwutAsync();
 
     /// <summary>
     /// Changes the currently selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/select"/>
     /// <param name="index">The index of the database to select.</param>
-    /// <param name="flags">Command flags are not supported by GLIDE.</param>
-    /// <returns>A simple "OK" response.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.SelectAsync(1);
-    /// Console.WriteLine(result); // Output: "OK"
+    /// await client.SelectAsync(1);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> SelectAsync(long index, CommandFlags flags = CommandFlags.None);
+    Task SelectAsync(long index);
 }

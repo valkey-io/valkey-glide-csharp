@@ -7,9 +7,7 @@ namespace Valkey.Glide.UnitTests;
 public class SortedSetCommandTests
 {
     [Fact]
-    public void SortedSetCommands_ValidateArguments()
-    {
-        Assert.Multiple(
+    public void SortedSetCommands_ValidateArguments() => Assert.Multiple(
             // SortedSetAdd - Single Member
             () => Assert.Equal(["ZADD", "key", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5).GetArgs()),
             () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, SortedSetWhen.NotExists).GetArgs()),
@@ -165,19 +163,14 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZMSCORE", "key"], Request.SortedSetScoresAsync("key", []).GetArgs()),
 
             // SortedSetBlockingPopAsync  - single key, single element (uses BZPOPMIN/BZPOPMAX)
-            () => Assert.Equal(["BZPOPMIN", "key", "5"], Request.SortedSetBlockingPopAsync("key", Order.Ascending, 5.0).GetArgs()),
-            () => Assert.Equal(["BZPOPMAX", "key", "0"], Request.SortedSetBlockingPopAsync("key", Order.Descending, 0.0).GetArgs()),
-            () => Assert.Equal(["BZPOPMIN", "key", "10.5"], Request.SortedSetBlockingPopAsync("key", Order.Ascending, 10.5).GetArgs()),
-
-            // SortedSetBlockingPopAsync - single key, multiple elements (always uses BZPOPMIN/BZPOPMAX like SER)
-            () => Assert.Equal(["BZPOPMIN", "key", "5"], Request.SortedSetBlockingPopAsync("key", 3, Order.Ascending, 5.0).GetArgs()),
-            () => Assert.Equal(["BZPOPMAX", "key", "0"], Request.SortedSetBlockingPopAsync("key", 1, Order.Descending, 0.0).GetArgs()),
-            () => Assert.Equal(["BZPOPMIN", "key", "10.5"], Request.SortedSetBlockingPopAsync("key", 2, Order.Ascending, 10.5).GetArgs()),
+            () => Assert.Equal(["BZPOPMIN", "key", "5"], Request.SortedSetBlockingPopAsync("key", Order.Ascending, TimeSpan.FromSeconds(5)).GetArgs()),
+            () => Assert.Equal(["BZPOPMAX", "key", "0"], Request.SortedSetBlockingPopAsync("key", Order.Descending, TimeSpan.Zero).GetArgs()),
+            () => Assert.Equal(["BZPOPMIN", "key", "10.5"], Request.SortedSetBlockingPopAsync("key", Order.Ascending, TimeSpan.FromSeconds(10.5)).GetArgs()),
 
             // SortedSetBlockingPopAsync (BZMPOP) - multi-key, multiple elements
-            () => Assert.Equal(["BZMPOP", "5", "2", "key1", "key2", "MIN", "COUNT", "3"], Request.SortedSetBlockingPopAsync(["key1", "key2"], 3, Order.Ascending, 5.0).GetArgs()),
-            () => Assert.Equal(["BZMPOP", "0", "1", "key", "MAX", "COUNT", "1"], Request.SortedSetBlockingPopAsync(["key"], 1, Order.Descending, 0.0).GetArgs()),
-            () => Assert.Equal(["BZMPOP", "10.5", "3", "key1", "key2", "key3", "MIN", "COUNT", "2"], Request.SortedSetBlockingPopAsync(["key1", "key2", "key3"], 2, Order.Ascending, 10.5).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "5", "2", "key1", "key2", "MIN", "COUNT", "3"], Request.SortedSetBlockingPopAsync(["key1", "key2"], 3, Order.Ascending, TimeSpan.FromSeconds(5)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "0", "1", "key", "MAX", "COUNT", "1"], Request.SortedSetBlockingPopAsync(["key"], 1, Order.Descending, TimeSpan.Zero).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "10.5", "3", "key1", "key2", "key3", "MIN", "COUNT", "2"], Request.SortedSetBlockingPopAsync(["key1", "key2", "key3"], 2, Order.Ascending, TimeSpan.FromSeconds(10.5)).GetArgs()),
 
             // Double formatting tests
             () => Assert.Equal("+inf", double.PositiveInfinity.ToGlideString().ToString()),
@@ -240,12 +233,9 @@ public class SortedSetCommandTests
             // SortedSetScore
             () => Assert.Equal(["ZSCORE", "key", "member"], Request.SortedSetScoreAsync("key", "member").GetArgs())
         );
-    }
 
     [Fact]
-    public void SortedSetCommands_ValidateConverters()
-    {
-        Assert.Multiple(
+    public void SortedSetCommands_ValidateConverters() => Assert.Multiple(
             // Basic converter tests
             () => Assert.True(Request.SortedSetAddAsync("key", "member", 10.5).Converter(1L)),
             () => Assert.False(Request.SortedSetAddAsync("key", "member", 10.5).Converter(0L)),
@@ -261,7 +251,6 @@ public class SortedSetCommandTests
             // Type converter test
             () => Assert.Equal(ValkeyType.SortedSet, Request.KeyTypeAsync("key").Converter("zset"))
         );
-    }
 
     [Fact]
     public void SortedSetCommands_ValidateArrayConverters()
@@ -327,8 +316,8 @@ public class SortedSetCommandTests
                 // Check that entries have proper element and score values
                 foreach (SortedSetEntry entry in result)
                 {
-                    Assert.IsType<ValkeyValue>(entry.Element);
-                    Assert.IsType<double>(entry.Score);
+                    _ = Assert.IsType<ValkeyValue>(entry.Element);
+                    _ = Assert.IsType<double>(entry.Score);
                 }
                 // Validate specific values (sorted by score)
                 SortedSetEntry[] sortedResults = [.. result.OrderBy(e => e.Score)];
@@ -449,8 +438,8 @@ public class SortedSetCommandTests
                     (GlideString)"member1",
                     10.5
                 ];
-                SortedSetEntry? result = Request.SortedSetBlockingPopAsync("key1", Order.Ascending, 5.0).Converter(testBlockingPopResponse);
-                Assert.NotNull(result);
+                SortedSetEntry? result = Request.SortedSetBlockingPopAsync("key1", Order.Ascending, TimeSpan.FromSeconds(5)).Converter(testBlockingPopResponse);
+                _ = Assert.NotNull(result);
                 Assert.Equal("member1", result.Value.Element);
                 Assert.Equal(10.5, result.Value.Score);
             },
@@ -458,30 +447,8 @@ public class SortedSetCommandTests
             // Test SortedSetBlockingPopAsync (single key, single element) converter with null response
             () =>
             {
-                SortedSetEntry? result = Request.SortedSetBlockingPopAsync("key1", Order.Ascending, 5.0).Converter(null);
+                SortedSetEntry? result = Request.SortedSetBlockingPopAsync("key1", Order.Ascending, TimeSpan.FromSeconds(5)).Converter(null);
                 Assert.Null(result);
-            },
-
-            // Test SortedSetBlockingPopAsync (single key, multiple elements) converter
-            () =>
-            {
-                // BZPOPMIN/BZPOPMAX returns [key, member, score] - only one element
-                object[] testBlockingPopResponse = [
-                    (GlideString)"key1",
-                    (GlideString)"member1",
-                    10.5
-                ];
-                SortedSetEntry[] result = Request.SortedSetBlockingPopAsync("key1", 2, Order.Ascending, 5.0).Converter(testBlockingPopResponse);
-                Assert.Single(result);
-                Assert.Equal("member1", result[0].Element);
-                Assert.Equal(10.5, result[0].Score);
-            },
-
-            // Test SortedSetBlockingPopAsync (single key, multiple elements) converter with null response
-            () =>
-            {
-                SortedSetEntry[] result = Request.SortedSetBlockingPopAsync("key1", 2, Order.Ascending, 5.0).Converter(null);
-                Assert.Empty(result);
             },
 
             // Test SortedSetBlockingPopAsync (multi-key, multiple elements) converter
@@ -495,7 +462,7 @@ public class SortedSetCommandTests
                         { (GlideString)"member2", 8.25 }
                     }
                 ];
-                SortedSetPopResult result = Request.SortedSetBlockingPopAsync(["key1", "key2"], 2, Order.Ascending, 5.0).Converter(testBlockingPopResponse);
+                SortedSetPopResult result = Request.SortedSetBlockingPopAsync(["key1", "key2"], 2, Order.Ascending, TimeSpan.FromSeconds(5)).Converter(testBlockingPopResponse);
                 Assert.False(result.IsNull);
                 Assert.Equal("key1", result.Key);
                 Assert.Equal(2, result.Entries.Length);
@@ -508,7 +475,7 @@ public class SortedSetCommandTests
             // Test SortedSetBlockingPopAsync (multi-key, multiple elements) converter with null response
             () =>
             {
-                SortedSetPopResult result = Request.SortedSetBlockingPopAsync(["key1", "key2"], 2, Order.Ascending, 5.0).Converter(null);
+                SortedSetPopResult result = Request.SortedSetBlockingPopAsync(["key1", "key2"], 2, Order.Ascending, TimeSpan.FromSeconds(5)).Converter(null);
                 Assert.True(result.IsNull);
                 Assert.Equal(ValkeyKey.Null, result.Key);
                 Assert.Empty(result.Entries);
@@ -529,7 +496,7 @@ public class SortedSetCommandTests
                     { (GlideString)"member1", 10.5 }
                 };
                 SortedSetEntry? result = Request.SortedSetPopAsync("key").Converter(testPopMaxDict);
-                Assert.NotNull(result);
+                _ = Assert.NotNull(result);
                 Assert.Equal("member1", result.Value.Element);
                 Assert.Equal(10.5, result.Value.Score);
             },
@@ -565,7 +532,7 @@ public class SortedSetCommandTests
                     { (GlideString)"member1", 8.25 }
                 };
                 SortedSetEntry? result = Request.SortedSetPopAsync("key", Order.Ascending).Converter(testPopMinDict);
-                Assert.NotNull(result);
+                _ = Assert.NotNull(result);
                 Assert.Equal("member1", result.Value.Element);
                 Assert.Equal(8.25, result.Value.Score);
             },
@@ -652,7 +619,7 @@ public class SortedSetCommandTests
                 ];
                 (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
                 Assert.Equal(10L, result.cursor);
-                Assert.Single(result.items);
+                _ = Assert.Single(result.items);
                 Assert.Equal("single", result.items[0].Element);
                 Assert.Equal(42.0, result.items[0].Score);
             },
@@ -666,7 +633,7 @@ public class SortedSetCommandTests
                 ];
                 (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
                 Assert.Equal(15L, result.cursor);
-                Assert.Single(result.items);
+                _ = Assert.Single(result.items);
                 Assert.Equal("test", result.items[0].Element);
                 Assert.Equal(1.5, result.items[0].Score);
             },

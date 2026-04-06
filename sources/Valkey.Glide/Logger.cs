@@ -5,14 +5,39 @@ using System.Text;
 
 namespace Valkey.Glide;
 
-// TODO - use a bindings generator to create this enum.
+/// <summary>
+/// Specifies the severity level for log messages.
+/// </summary>
 public enum Level
 {
+    /// <summary>
+    /// Error level - logs only error messages indicating failures.
+    /// </summary>
     Error = 0,
+
+    /// <summary>
+    /// Warning level - logs warnings and errors.
+    /// </summary>
     Warn = 1,
+
+    /// <summary>
+    /// Info level - logs informational messages, warnings, and errors.
+    /// </summary>
     Info = 2,
+
+    /// <summary>
+    /// Debug level - logs debug information and all higher severity messages.
+    /// </summary>
     Debug = 3,
+
+    /// <summary>
+    /// Trace level - logs all messages including detailed trace information.
+    /// </summary>
     Trace = 4,
+
+    /// <summary>
+    /// Off - disables all logging.
+    /// </summary>
     Off = 5,
 }
 
@@ -30,6 +55,7 @@ public enum Level
 /// </list>
 /// If none of these functions are called, the first log attempt will initialize a new logger with default configuration.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/monitoring/logging/">Valkey GLIDE – Logging</seealso>
 public class Logger
 {
     #region private fields

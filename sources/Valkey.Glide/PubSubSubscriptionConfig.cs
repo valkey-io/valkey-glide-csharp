@@ -5,6 +5,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Base configuration for PubSub subscriptions.
 /// </summary>
+/// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>
 public abstract class BasePubSubSubscriptionConfig
 {
     internal MessageCallback? Callback { get; set; }
@@ -56,7 +57,7 @@ public abstract class BasePubSubSubscriptionConfig
         if (!Subscriptions.ContainsKey(mode))
             Subscriptions[mode] = new HashSet<string>();
 
-        Subscriptions[mode].Add(channelOrPattern);
+        _ = Subscriptions[mode].Add(channelOrPattern);
 
         return this;
     }
@@ -72,12 +73,15 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
     /// </summary>
     public StandalonePubSubSubscriptionConfig() { }
 
+    /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
         => (StandalonePubSubSubscriptionConfig)base.WithCallback(callback, context);
 
+    /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithChannel(string channel)
         => (StandalonePubSubSubscriptionConfig)base.WithChannel(channel);
 
+    /// <inheritdoc/>
     public override StandalonePubSubSubscriptionConfig WithPattern(string pattern)
         => (StandalonePubSubSubscriptionConfig)base.WithPattern(pattern);
 }
@@ -92,20 +96,23 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
     /// </summary>
     public ClusterPubSubSubscriptionConfig() { }
 
+    /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithCallback(MessageCallback callback, object? context = null)
         => (ClusterPubSubSubscriptionConfig)base.WithCallback(callback, context);
 
+    /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithChannel(string channel)
         => (ClusterPubSubSubscriptionConfig)base.WithChannel(channel);
 
+    /// <inheritdoc/>
     public override ClusterPubSubSubscriptionConfig WithPattern(string pattern)
         => (ClusterPubSubSubscriptionConfig)base.WithPattern(pattern);
 
     /// <summary>
-    /// Add a shard channel subscription.
+    /// Add a sharded channel subscription.
     /// </summary>
-    /// <param name="channel">The shard channel to subscribe to.</param>
+    /// <param name="channel">The sharded channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    public ClusterPubSubSubscriptionConfig WithShardChannel(string channel)
+    public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel)
         => (ClusterPubSubSubscriptionConfig)AddSubscription(PubSubChannelMode.Sharded, channel);
 }
