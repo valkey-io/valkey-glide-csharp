@@ -132,6 +132,6 @@ public abstract partial class BaseClient
         => await Command(Request.SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get?.ToArray()));
 
     /// <inheritdoc/>
-    public async Task<long> WaitAsync(long numreplicas, long timeout)
+    public async Task<long> WaitAsync(long numreplicas, TimeSpan timeout)
         => await Command(Request.WaitAsync(numreplicas, timeout));
 }

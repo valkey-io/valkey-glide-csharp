@@ -59,7 +59,7 @@ internal partial class BatchTestUtils
         testData.Add(new(0L, "StreamAcknowledge(key1, mygroup, [0-0])", true));
 
         // Test StreamClaim
-        _ = batch.StreamClaim(key1, groupName, consumer2, 0, ["0-0"]);
+        _ = batch.StreamClaim(key1, groupName, consumer2, TimeSpan.Zero, ["0-0"]);
         testData.Add(new(Array.Empty<StreamEntry>(), "StreamClaim(key1, mygroup, consumer2, 0, [0-0])", true));
 
         // Test StreamGroupInfo

@@ -115,49 +115,4 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashPersistAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashExpireAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashPExpireAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashExpireAtAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashPExpireAtAsync(ValkeyKey, long, IEnumerable{ValkeyValue}, HashFieldExpirationConditionOptions)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashPExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashPExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashTtlAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashPTtlAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> HashPTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, CommandFlags flags);
 }

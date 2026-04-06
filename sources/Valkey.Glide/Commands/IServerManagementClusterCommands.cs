@@ -391,6 +391,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<Dictionary<string, DateTime>> LastSaveAsync();
 
     /// <summary>
@@ -414,6 +415,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<ClusterValue<DateTime>> LastSaveAsync(Route route);
 
     /// <summary>
@@ -430,6 +432,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<Dictionary<string, DateTime>> TimeAsync();
 
     /// <summary>
@@ -452,6 +455,7 @@ public interface IServerManagementClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<ClusterValue<DateTime>> TimeAsync(Route route);
 
     /// <summary>

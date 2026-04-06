@@ -179,6 +179,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry);
 
     /// <summary>
@@ -200,6 +201,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when);
 
     /// <summary>
@@ -341,6 +343,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
     /// <summary>
@@ -392,6 +395,7 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key);
 
     /// <summary>
@@ -557,14 +561,14 @@ public interface IGenericBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/wait"/>
     /// <param name="numreplicas">The number of replicas to wait for.</param>
-    /// <param name="timeout">The timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout to wait.</param>
     /// <returns>The number of replicas that acknowledged the write commands.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.WaitAsync(1, 1000);
+    /// long result = await client.WaitAsync(1, TimeSpan.FromSeconds(1));
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> WaitAsync(long numreplicas, long timeout);
+    Task<long> WaitAsync(long numreplicas, TimeSpan timeout);
 }

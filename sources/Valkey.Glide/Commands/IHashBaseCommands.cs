@@ -351,8 +351,6 @@ public interface IHashBaseCommands
     /// </remarks>
     Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
 
-    // TODO: ALIGN HASH FIELD EXPIRE COMMANDS WITH SER AFTER SER IMPLEMENTS THEM
-
     /// <summary>
     /// Retrieves the values of specified fields from the hash stored at <paramref name="key"/> and
     /// optionally sets their expiration or removes it.
@@ -430,134 +428,66 @@ public interface IHashBaseCommands
     Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
-    /// Sets expiration time for hash fields. HEXPIRE sets the expiration time in seconds for the
-    /// specified fields of the hash stored at <paramref name="key"/>. You can specify whether to set the
-    /// expiration only if the field has no expiration, only if the field has an existing expiration,
-    /// only if the new expiration is greater than the current one, or only if the new expiration is
-    /// less than the current one.
+    /// Sets the expiration time span for the specified hash fields.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpire"/>
-    /// <note>
-    /// Since: Valkey 9.0 and above.
-    /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="seconds">The expiration time in seconds.</param>
-    /// <param name="fields">The fields in the hash stored at <paramref name="key"/> to set expiration for.</param>
-    /// <param name="options">The expiration condition options.</param>
-    /// <returns>
-    /// An array of <see langword="long"/> values indicating the result of setting expiration for each field:
-    /// <list type="bullet">
-    /// <item><description><c>1</c> if the expiration time was successfully set for the field.</description></item>
-    /// <item><description><c>0</c> if the specified condition was not met.</description></item>
-    /// <item><description><c>-2</c> if the field does not exist in the HASH, or key does not exist.</description></item>
-    /// <item><description><c>2</c> when called with 0 seconds.</description></item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashExpireAsync(key, 60, [field1, field2], options);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
-
-    /// <summary>
-    /// Sets expiration time for hash fields, in milliseconds. Creates the hash if it doesn't exist. If
-    /// a field is already expired, it will be deleted rather than expired.
-    /// </summary>
     /// <seealso href="https://valkey.io/commands/hpexpire"/>
     /// <note>
     /// Since: Valkey 9.0 and above.
     /// </note>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="milliseconds">The expiration time to set for the fields, in milliseconds.</param>
+    /// <param name="expiry">The expiration time span for the fields. A zero or negative time span will delete the field immediately.</param>
     /// <param name="fields">The fields to set expiration for.</param>
-    /// <param name="options">The expiration options.</param>
+    /// <param name="options">The expiration condition options.</param>
     /// <returns>
     /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
-    /// <item><description><c>1</c> if the expiration time was successfully set for the field.</description></item>
+    /// <item><description><c>1</c> if the expiration time span was successfully set for the field.</description></item>
     /// <item><description><c>0</c> if the specified condition was not met.</description></item>
-    /// <item><description><c>-2</c> if the field does not exist in the HASH, or HASH is empty.</description></item>
-    /// <item><description><c>2</c> when called with 0 milliseconds.</description></item>
+    /// <item><description><c>-2</c> if the field does not exist in the hash or the hash is empty.</description></item>
+    /// <item><description><c>2</c> when called with a zero or negative time span.</description></item>
     /// </list>
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashPExpireAsync(key, 5000, [field1, field2], options);
+    /// long[] results = await client.HashExpireAsync(key, TimeSpan.FromSeconds(60), [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
+    Task<long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
-    /// Sets expiration time for hash fields, in seconds, using an absolute Unix timestamp. Creates the
-    /// hash if it doesn't exist. If a field is already expired, it will be deleted rather than
-    /// expired.
+    /// Sets the expiration timestamp for the specified hash fields.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpireat"/>
-    /// <note>
-    /// Since: Valkey 9.0 and above.
-    /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="unixSeconds">The expiration time to set for the fields, as a Unix timestamp in seconds.</param>
-    /// <param name="fields">The fields to set expiration for.</param>
-    /// <param name="options">The expiration options.</param>
-    /// <returns>
-    /// An array of <see langword="long"/> values, each corresponding to a field:
-    /// <list type="bullet">
-    /// <item><description><c>1</c> if the expiration time was successfully set for the field.</description></item>
-    /// <item><description><c>0</c> if the specified condition was not met.</description></item>
-    /// <item><description><c>-2</c> if the field does not exist in the HASH, or HASH is empty.</description></item>
-    /// <item><description><c>2</c> when called with 0 seconds or past Unix time.</description></item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashExpireAtAsync(key, 1672531200, [field1, field2], options);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
-
-    /// <summary>
-    /// Sets expiration time for hash fields, using an absolute Unix timestamp in milliseconds.
-    /// HPEXPIREAT has the same effect and semantic as HEXPIREAT, but the Unix time
-    /// at which the field will expire is specified in milliseconds instead of seconds.
-    /// </summary>
     /// <seealso href="https://valkey.io/commands/hpexpireat"/>
     /// <note>
     /// Since: Valkey 9.0 and above.
     /// </note>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="unixMilliseconds">The expiration time to set for the fields, as a Unix timestamp in milliseconds.</param>
-    /// <param name="fields">A collection of hash field names for which to set the expiration.</param>
-    /// <param name="options">Optional conditions and configurations for the expiration.</param>
+    /// <param name="expiry">The expiration timestamp for the fields. A timestamp in the past will delete the field immediately.</param>
+    /// <param name="fields">The fields to set expiration for.</param>
+    /// <param name="options">The expiration options.</param>
     /// <returns>
-    /// An array of <see langword="long"/> values indicating the result for each field:
+    /// An array of <see langword="long"/> values, each corresponding to a field:
     /// <list type="bullet">
-    /// <item><description><c>1</c> if the expiration time was successfully set for the field.</description></item>
+    /// <item><description><c>1</c> if the expiration timestamp was successfully set for the field.</description></item>
     /// <item><description><c>0</c> if the specified condition was not met.</description></item>
-    /// <item><description><c>-2</c> if the field does not exist in the HASH, or HASH is empty.</description></item>
-    /// <item><description><c>2</c> when called with 0 seconds or past Unix time in milliseconds.</description></item>
+    /// <item><description><c>-2</c> if the field does not exist in the hash or the hash is empty.</description></item>
+    /// <item><description><c>2</c> when called with a timestamp in the past.</description></item>
     /// </list>
-    /// If <paramref name="unixMilliseconds"/> is in the past, the field will be deleted rather than expired.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// var options = new HashFieldExpirationConditionOptions().SetCondition(ExpireOptions.HAS_NO_EXPIRY);
-    /// long[] results = await client.HashPExpireAtAsync(key, 1672531200000, [field1, field2], options);
+    /// long[] results = await client.HashExpireAtAsync(key, DateTimeOffset.UtcNow.AddMinutes(5), [field1, field2], options);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
+    Task<long[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options);
 
     /// <summary>
     /// Returns the absolute Unix timestamp (in seconds) at which the given hash fields will expire.

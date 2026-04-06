@@ -403,6 +403,7 @@ public interface IStringBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #269: Replace DateTime with DateTimeOffset.
     Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry);
 
     /// <summary>

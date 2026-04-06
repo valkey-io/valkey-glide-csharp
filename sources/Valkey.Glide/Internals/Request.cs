@@ -82,4 +82,20 @@ internal partial class Request
     /// <returns>A converted string set.</returns>
     private static HashSet<string> ToStringSet(object[] objects)
         => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())];
+
+    /// <summary>
+    /// Converts the given time span to milliseconds.
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <returns>The number of milliseconds in the time span, rounded to the nearest integer.</returns>
+    /// </summary>
+    private static long ToMilliseconds(TimeSpan timeSpan)
+        => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
+
+    /// <summary>
+    /// Converts the given time span to seconds.
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <returns>The number of seconds in the time span, as a floating-point number.</returns>
+    /// </summary>
+    private static double ToSeconds(TimeSpan timeSpan)
+        => timeSpan.TotalSeconds;
 }

@@ -115,37 +115,26 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId, ValkeyValue? maxId, CommandFlags flags);
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamPendingMessagesAsync(ValkeyKey, ValkeyValue, int, ValkeyValue, ValkeyValue?, ValkeyValue?, long?)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, long? minIdleTimeInMs = null, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue})"/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})" path="//*[not(self::param[@name='minIdleTime'])]"/>
+    /// <param name="minIdleTimeInMs">The minimum message idle time in milliseconds.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags);
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, long?, long?, int?, bool)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue})"/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})" path="//*[not(self::param[@name='minIdleTime'])]"/>
+    /// <param name="minIdleTimeInMs">The minimum message idle time in milliseconds.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags);
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, long?, long?, int?, bool)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="IStreamBaseCommands.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?)"/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" path="//*[not(self::param[@name='minIdleTime'])]"/>
+    /// <param name="minIdleTimeInMs">The minimum message idle time in milliseconds.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamAutoClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?)"/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamAutoClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" path="//*[not(self::param[@name='minIdleTime'])]"/>
+    /// <param name="minIdleTimeInMs">The minimum message idle time in milliseconds.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None);
