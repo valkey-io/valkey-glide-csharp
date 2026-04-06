@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands;
 /// Sorted set commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#sorted-set">Valkey – Sorted Set Commands</seealso>
-public interface ISortedSetCommands
+public interface ISortedSetBaseCommands
 {
     /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" />
     Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score);

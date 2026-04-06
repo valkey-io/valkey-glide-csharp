@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands;
 /// Stream commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#stream">Valkey – Stream Commands</seealso>
-public interface IStreamCommands
+public interface IStreamBaseCommands
 {
     /// <summary>
     /// Appends a new entry to a stream with a single field-value pair.

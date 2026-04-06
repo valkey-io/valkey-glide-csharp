@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands;
 /// Geospatial commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#geo">Valkey – Geospatial Commands</seealso>
-public interface IGeospatialCommands
+public interface IGeospatialBaseCommands
 {
     /// <summary>
     /// Adds the specified geospatial items (longitude, latitude, name) to the specified key.

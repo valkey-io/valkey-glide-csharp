@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands;
 /// Set commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#set">Valkey – Set Commands</seealso>
-public interface ISetCommands
+public interface ISetBaseCommands
 {
     /// <summary>
     /// Adds specified members to the set stored at key.

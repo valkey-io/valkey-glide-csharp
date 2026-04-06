@@ -9,7 +9,7 @@ namespace Valkey.Glide;
 /// See also <see cref="GlideClient" /> and <see cref="GlideClusterClient" />.
 /// </summary>
 // TODO #263: Move GLIDE-only command interfaces out of IDatabaseAsync inheritance.
-public partial interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommands, IGenericBaseCommands, IHashCommands, IHyperLogLogCommands, IListCommands, IScriptingAndFunctionBaseCommands, IServerManagementCommands, ISetCommands, ISortedSetCommands, IStringCommands
+public partial interface IDatabaseAsync : IConnectionManagementCommands, IGenericCommands, IGenericBaseCommands, IHashBaseCommands, IHyperLogLogBaseCommands, IListBaseCommands, IScriptingAndFunctionBaseCommands, IServerManagementCommands, ISetBaseCommands, ISortedSetBaseCommands, IStringBaseCommands
 {
     /// <summary>
     /// Execute an arbitrary command against the server; this is primarily intended for executing modules,

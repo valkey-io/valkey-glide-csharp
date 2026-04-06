@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands;
 /// Bitmap commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
-public interface IBitmapCommands
+public interface IBitmapBaseCommands
 {
     /// <summary>
     /// Returns the bit value at offset in the string value stored at key.

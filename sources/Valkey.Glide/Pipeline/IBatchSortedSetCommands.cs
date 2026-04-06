@@ -9,128 +9,128 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 internal interface IBatchSortedSetCommands
 {
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)" /></returns>
     IBatch SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when = SortedSetWhen.Always);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen)" /></returns>
     IBatch SortedSetAdd(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveAsync(ValkeyKey, ValkeyValue)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveAsync(ValkeyKey, ValkeyValue)" /></returns>
     IBatch SortedSetRemove(ValkeyKey key, ValkeyValue member);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch SortedSetRemove(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetLengthAsync(ValkeyKey, double, double, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetLengthAsync(ValkeyKey, double, double, Exclude)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetLengthAsync(ValkeyKey, double, double, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetLengthAsync(ValkeyKey, double, double, Exclude)" /></returns>
     IBatch SortedSetLength(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCardAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCardAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCardAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCardAsync(ValkeyKey)" /></returns>
     IBatch SortedSetCard(ValkeyKey key);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCountAsync(ValkeyKey, double, double, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCountAsync(ValkeyKey, double, double, Exclude)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCountAsync(ValkeyKey, double, double, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCountAsync(ValkeyKey, double, double, Exclude)" /></returns>
     IBatch SortedSetCount(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order)" /></returns>
     IBatch SortedSetRangeByRank(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByRankWithScoresAsync(ValkeyKey, long, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByRankWithScoresAsync(ValkeyKey, long, long, Order)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByRankWithScoresAsync(ValkeyKey, long, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByRankWithScoresAsync(ValkeyKey, long, long, Order)" /></returns>
     IBatch SortedSetRangeByRankWithScores(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long)" /></returns>
     IBatch SortedSetRangeByScore(ValkeyKey key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByScoreWithScoresAsync(ValkeyKey, double, double, Exclude, Order, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByScoreWithScoresAsync(ValkeyKey, double, double, Exclude, Order, long, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByScoreWithScoresAsync(ValkeyKey, double, double, Exclude, Order, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByScoreWithScoresAsync(ValkeyKey, double, double, Exclude, Order, long, long)" /></returns>
     IBatch SortedSetRangeByScoreWithScores(ValkeyKey key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long)" /></returns>
     IBatch SortedSetRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None, long skip = 0, long take = -1);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long)" /></returns>
     IBatch SortedSetRangeByValue(ValkeyKey key, ValkeyValue min = default, ValkeyValue max = default, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" /></returns>
     IBatch SortedSetCombine(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineWithScoresAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineWithScoresAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineWithScoresAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineWithScoresAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" /></returns>
     IBatch SortedSetCombineWithScores(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate)" /></returns>
     IBatch SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}, Aggregate)" /></returns>
     IBatch SortedSetCombineAndStore(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double)" /></returns>
     IBatch SortedSetIncrement(ValkeyKey key, ValkeyValue member, double value);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)" /></returns>
     IBatch SortedSetIntersectionLength(IEnumerable<ValkeyKey> keys, long limit = 0);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetLengthByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetLengthByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetLengthByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetLengthByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" /></returns>
     IBatch SortedSetLengthByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order)" /></returns>
     IBatch SortedSetPop(IEnumerable<ValkeyKey> keys, long count, Order order = Order.Ascending);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetScoresAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetScoresAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScoresAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScoresAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch SortedSetScores(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, double)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetBlockingPopAsync(ValkeyKey, Order, double)" /></returns>
     IBatch SortedSetBlockingPop(ValkeyKey key, Order order, double timeout);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetBlockingPopAsync(ValkeyKey, long, Order, double)" /></returns>
     IBatch SortedSetBlockingPop(ValkeyKey key, long count, Order order, double timeout);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, double)" /></returns>
     IBatch SortedSetBlockingPop(IEnumerable<ValkeyKey> keys, long count, Order order, double timeout);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(ValkeyKey, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(ValkeyKey, Order)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetPopAsync(ValkeyKey, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetPopAsync(ValkeyKey, Order)" /></returns>
     IBatch SortedSetPop(ValkeyKey key, Order order = Order.Ascending);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(ValkeyKey, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetPopAsync(ValkeyKey, long, Order)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetPopAsync(ValkeyKey, long, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetPopAsync(ValkeyKey, long, Order)" /></returns>
     IBatch SortedSetPop(ValkeyKey key, long count, Order order = Order.Ascending);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRandomMemberAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRandomMemberAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRandomMemberAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRandomMemberAsync(ValkeyKey)" /></returns>
     IBatch SortedSetRandomMember(ValkeyKey key);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRandomMembersAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRandomMembersAsync(ValkeyKey, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRandomMembersAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRandomMembersAsync(ValkeyKey, long)" /></returns>
     IBatch SortedSetRandomMembers(ValkeyKey key, long count);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRandomMembersWithScoresAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRandomMembersWithScoresAsync(ValkeyKey, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRandomMembersWithScoresAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRandomMembersWithScoresAsync(ValkeyKey, long)" /></returns>
     IBatch SortedSetRandomMembersWithScores(ValkeyKey key, long count);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?)" /></returns>
     IBatch SortedSetRangeAndStore(
         ValkeyKey sourceKey,
         ValkeyKey destinationKey,
@@ -142,27 +142,27 @@ internal interface IBatchSortedSetCommands
         long skip = 0,
         long? take = null);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRankAsync(ValkeyKey, ValkeyValue, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRankAsync(ValkeyKey, ValkeyValue, Order)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRankAsync(ValkeyKey, ValkeyValue, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRankAsync(ValkeyKey, ValkeyValue, Order)" /></returns>
     IBatch SortedSetRank(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude)" /></returns>
     IBatch SortedSetRemoveRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveRangeByRankAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveRangeByRankAsync(ValkeyKey, long, long)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveRangeByRankAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveRangeByRankAsync(ValkeyKey, long, long)" /></returns>
     IBatch SortedSetRemoveRangeByRank(ValkeyKey key, long start, long stop);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude)" /></returns>
     IBatch SortedSetRemoveRangeByScore(ValkeyKey key, double min, double max, Exclude exclude = Exclude.None);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
     IBatch SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0);
 
-    /// <inheritdoc cref="Commands.ISortedSetCommands.SortedSetScoreAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetCommands.SortedSetScoreAsync(ValkeyKey, ValkeyValue)" /></returns>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScoreAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScoreAsync(ValkeyKey, ValkeyValue)" /></returns>
     IBatch SortedSetScore(ValkeyKey key, ValkeyValue member);
 }

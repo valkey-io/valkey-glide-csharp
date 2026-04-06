@@ -10,17 +10,17 @@ namespace Valkey.Glide;
 public interface IBaseClient :
     IDisposable,
     IAsyncDisposable,
-    IBitmapCommands,
+    IBitmapBaseCommands,
     IGenericBaseCommands,
-    IGeospatialCommands,
-    IHashCommands,
-    IHyperLogLogCommands,
-    IListCommands,
-    IPubSubCommands,
+    IGeospatialBaseCommands,
+    IHashBaseCommands,
+    IHyperLogLogBaseCommands,
+    IListBaseCommands,
+    IPubSubBaseCommands,
     IScriptingAndFunctionBaseCommands,
-    ISetCommands,
-    ISortedSetCommands,
-    IStreamCommands,
-    IStringCommands
+    ISetBaseCommands,
+    ISortedSetBaseCommands,
+    IStreamBaseCommands,
+    IStringBaseCommands
 {
 }
