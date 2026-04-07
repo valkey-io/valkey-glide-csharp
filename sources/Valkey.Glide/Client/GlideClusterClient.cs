@@ -100,17 +100,15 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> EchoAsync(ValkeyValue message)
-    {
-        return await Command(Request.Echo(message), Route.Random);
-    }
+    public override async Task<ValkeyValue> EchoAsync(ValkeyValue message)
+        => await Command(Request.Echo(message), Route.Random);
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> PingAsync()
+    public override async Task<ValkeyValue> PingAsync()
         => await Command(Request.Ping(), AllPrimaries);
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> PingAsync(ValkeyValue message)
+    public override async Task<ValkeyValue> PingAsync(ValkeyValue message)
         => await Command(Request.Ping(message), AllPrimaries);
 
     /// <inheritdoc/>
@@ -251,10 +249,8 @@ public sealed partial class GlideClusterClient :
         => await Command(Request.ClientGetNameCluster(route), route);
 
     /// <inheritdoc/>
-    public async Task<long> ClientIdAsync()
-    {
-        return await Command(Request.ClientId(), Route.Random);
-    }
+    public override async Task<long> ClientIdAsync()
+        => await Command(Request.ClientId(), Route.Random);
 
     /// <inheritdoc/>
     public async Task<ClusterValue<long>> ClientIdAsync(Route route)
@@ -263,10 +259,8 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task SelectAsync(long index)
-    {
-        _ = await Command(Request.Select(index), Route.Random);
-    }
+    public override async Task SelectAsync(long index)
+        => _ = await Command(Request.Select(index), Route.Random);
 
     /// <inheritdoc/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
