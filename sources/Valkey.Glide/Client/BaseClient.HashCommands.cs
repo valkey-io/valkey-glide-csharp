@@ -56,46 +56,6 @@ public abstract partial class BaseClient
         => await Command(Request.HashLengthAsync(key));
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0)
-    {
-        long currentCursor = cursor;
-
-        do
-        {
-            (long nextCursor, HashEntry[] entries) = await Command(Request.HashScanAsync<HashEntry[]>(key, currentCursor, pattern, pageSize, true));
-
-            IEnumerable<HashEntry> entriesToYield = pageOffset > 0 ? entries.Skip(pageOffset) : entries;
-
-            foreach (HashEntry entry in entriesToYield)
-            {
-                yield return entry;
-            }
-
-            currentCursor = nextCursor;
-        } while (currentCursor != 0);
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0)
-    {
-        long currentCursor = cursor;
-
-        do
-        {
-            (long nextCursor, ValkeyValue[] fields) = await Command(Request.HashScanAsync<ValkeyValue[]>(key, currentCursor, pattern, pageSize, false));
-
-            IEnumerable<ValkeyValue> fieldsToYield = pageOffset > 0 ? fields.Skip(pageOffset) : fields;
-
-            foreach (ValkeyValue field in fieldsToYield)
-            {
-                yield return field;
-            }
-
-            currentCursor = nextCursor;
-        } while (currentCursor != 0);
-    }
-
-    /// <inheritdoc/>
     public async Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField)
         => await Command(Request.HashStringLengthAsync(key, hashField));
 

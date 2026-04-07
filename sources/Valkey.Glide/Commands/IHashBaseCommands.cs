@@ -221,50 +221,6 @@ public interface IHashBaseCommands
     Task<long> HashLengthAsync(ValkeyKey key);
 
     /// <summary>
-    /// Iterates fields of Hash types and their associated values.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hscan"/>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="pattern">The pattern to match fields against (defaults to all fields).</param>
-    /// <param name="pageSize">The number of elements to return in each page (defaults to 250).</param>
-    /// <param name="cursor">The cursor that points to the next iteration of results.</param>
-    /// <param name="pageOffset">The page offset to start at (defaults to 0).</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the HashSet.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await foreach (HashEntry entry in client.HashScanAsync(key, "*pattern*"))
-    /// {
-    ///     // Process each hash entry
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
-
-    /// <summary>
-    /// Iterates field names of Hash types (without values).
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hscan"/>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="pattern">The pattern to match fields against (defaults to all fields).</param>
-    /// <param name="pageSize">The number of elements to return in each page (defaults to 250).</param>
-    /// <param name="cursor">The cursor that points to the next iteration of results.</param>
-    /// <param name="pageOffset">The page offset to start at (defaults to 0).</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the HashSet.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await foreach (ValkeyValue field in client.HashScanNoValuesAsync(key, "*pattern*"))
-    /// {
-    ///     // Process each hash field name
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
-
-    /// <summary>
     /// Returns the string length of the value associated with field in the hash stored at key.
     /// If the key or the field do not exist, 0 is returned.
     /// </summary>

@@ -91,20 +91,6 @@ internal partial class Database
         return await HashLengthAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.HashScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public IAsyncEnumerable<HashEntry> HashScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return HashScanAsync(key, pattern, pageSize, cursor, pageOffset);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public IAsyncEnumerable<ValkeyValue> HashScanNoValuesAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return HashScanNoValuesAsync(key, pattern, pageSize, cursor, pageOffset);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.HashStringLengthAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public async Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {

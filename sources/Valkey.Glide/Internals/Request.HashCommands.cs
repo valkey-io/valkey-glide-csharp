@@ -93,51 +93,6 @@ internal partial class Request
         return Simple<long>(RequestType.HLen, args);
     }
 
-    public static Cmd<object[], (long, T)> HashScanAsync<T>(ValkeyKey key, long cursor, ValkeyValue pattern, long count, bool includeValues = true)
-    {
-        List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
-
-        if (!pattern.IsNull)
-        {
-            args.AddRange([Constants.MatchKeyword.ToGlideString(), pattern.ToGlideString()]);
-        }
-
-        if (count > 0)
-        {
-            args.AddRange([Constants.CountKeyword.ToGlideString(), count.ToGlideString()]);
-        }
-
-        return new(RequestType.HScan, [.. args], false, arr =>
-        {
-            object[] scanArray = arr;
-            long nextCursor = long.Parse(((GlideString)scanArray[0]).ToString());
-            object[] items = (object[])scanArray[1]; // This array will always have an even-length
-
-            if (includeValues)
-            {
-                // Return HashEntry[] with both field names and values
-                HashEntry[] entries = new HashEntry[items.Length / 2];
-                for (int i = 0; i < items.Length; i += 2)
-                {
-                    ValkeyValue field = (GlideString)items[i];
-                    ValkeyValue value = (GlideString)items[i + 1];
-                    entries[i / 2] = new HashEntry(field, value);
-                }
-                return (nextCursor, (T)(object)entries);
-            }
-            else
-            {
-                // Return ValkeyValue[] with only field names
-                ValkeyValue[] fields = new ValkeyValue[items.Length / 2];
-                for (int i = 0; i < items.Length; i += 2)
-                {
-                    fields[i / 2] = (GlideString)items[i];
-                }
-                return (nextCursor, (T)(object)fields);
-            }
-        });
-    }
-
     public static Cmd<long, long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField)
     {
         GlideString[] args = [key.ToGlideString(), hashField.ToGlideString()];

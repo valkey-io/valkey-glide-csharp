@@ -75,14 +75,6 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long)" /></returns>
     IBatch HashRandomFieldsWithValues(ValkeyKey key, long count);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashScanAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashScanAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
-    IBatch HashScan(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashScanNoValuesAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
-    IBatch HashScanNoValues(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0);
-
     // Hash Field Expire Commands (Valkey 9.0+)
 
     /// <inheritdoc cref="IHashBaseCommands.HashGetExAsync(ValkeyKey, IEnumerable{ValkeyValue}, HashGetExOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
