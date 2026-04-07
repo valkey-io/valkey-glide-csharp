@@ -2,7 +2,7 @@
 
 using Valkey.Glide.TestUtils;
 
-namespace Valkey.Glide.IntegrationTests;
+namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
 /// Tests for <see cref="ValkeyServer" />.

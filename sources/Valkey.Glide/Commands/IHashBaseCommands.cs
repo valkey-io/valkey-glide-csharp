@@ -14,12 +14,12 @@ namespace Valkey.Glide.Commands;
 public interface IHashBaseCommands
 {
     /// <summary>
-    /// Returns the value associated with field in the hash stored at key.
+    /// Returns the value associated with the specified field in the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hget"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field in the hash to get.</param>
-    /// <returns>The value associated with field, or <see cref="ValkeyValue.Null"/> when field is not present in the hash or key does not exist.</returns>
+    /// <returns>The value associated with the field, or <see cref="ValkeyValue.Null"/> when field is not present in the hash or key does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -30,9 +30,9 @@ public interface IHashBaseCommands
     Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
-    /// Returns the values associated with the specified fields in the hash stored at key.
-    /// For every field that does not exist in the hash, a <see cref="ValkeyValue.Null"/> value is returned.
-    /// Because non-existing keys are treated as empty hashes, running HMGET against a non-existing key will return a list of <see cref="ValkeyValue.Null"/> values.
+    /// Returns the values associated with the specified fields in the hash stored at the given key.
+    /// For every field that does not exist in the hash, <see cref="ValkeyValue.Null"/> value is returned.
+    /// Because non-existing keys are treated as empty hashes, a non-existing key will return a list of <see cref="ValkeyValue.Null"/> values.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hmget"/>
     /// <param name="key">The key of the hash.</param>
@@ -48,7 +48,7 @@ public interface IHashBaseCommands
     Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
-    /// Returns all fields and values of the hash stored at key.
+    /// Returns all fields and values of the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetall"/>
     /// <param name="key">The key of the hash to get all entries from.</param>
@@ -63,54 +63,64 @@ public interface IHashBaseCommands
     Task<HashEntry[]> HashGetAllAsync(ValkeyKey key);
 
     /// <summary>
-    /// Sets the specified fields to their respective values in the hash stored at key.
-    /// This command overwrites any specified fields that already exist in the hash, leaving other unspecified fields untouched.
-    /// If key does not exist, a new key holding a hash is created.
+    /// Sets the specified field to its respective value in the hash stored at the given key.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/hmset"/>
+    /// <seealso href="https://valkey.io/commands/hset"/>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="hashFields">The entries to set in the hash.</param>
+    /// <param name="hashField">The field to set in the hash.</param>
+    /// <param name="value">The value to set.</param>
+    /// <returns><see langword="true"/> if the field was added (new), <see langword="false"/> if it was updated.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.HashSetAsync(key, [new HashEntry(field1, value1), new HashEntry(field2, value2)]);
+    /// bool added = await client.HashSetAsync(key, hashField, value);
     /// </code>
     /// </example>
     /// </remarks>
-    Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields);
+    Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value);
 
     /// <summary>
-    /// Sets <paramref name="hashField"/> in the hash stored at <paramref name="key"/> to <paramref name="value"/>.
-    /// If <paramref name="key"/> does not exist, a new key holding a hash is created.
-    /// If <paramref name="hashField"/> already exists in the hash, it is overwritten.
-    ///
-    /// Sets <paramref name="hashField"/> in the hash stored at <paramref name="key"/> to <paramref name="value"/>, only if <paramref name="hashField"/> does not yet exist.
-    /// If <paramref name="key"/> does not exist, a new key holding a hash is created.
-    /// If <paramref name="hashField"/> already exists, this operation has no effect.
+    /// Sets the specified fields to their respective values in the hash stored at the given key.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/hset"/>
+    /// <seealso href="https://valkey.io/commands/hmset"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="hashFieldsAndValues">The field-value pairs to set in the hash.</param>
+    /// <returns>The number of fields that were added (not updated).</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long added = await client.HashSetAsync(key, new KeyValuePair&lt;ValkeyValue, ValkeyValue&gt;[] { new("field1", "value1"), new("field2", "value2") });
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues);
+
+    /// <summary>
+    /// Sets the specified field to its respective value in the hash stored at the given key, only if the field does not yet exist.
+    /// If the key does not exist, a new key holding a hash is created.
+    /// If the key exists but the field already exists, this operation has no effect.
+    /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetnx"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to set in the hash.</param>
     /// <param name="value">The value to set.</param>
-    /// <param name="when">Which conditions under which to set the field value (defaults to always).</param>
-    /// <returns><see langword="true"/> if <paramref name="hashField"/> is a new field in the hash and <paramref name="value"/> was set, <see langword="false"/> if <paramref name="hashField"/> already exists in the hash and no operation was performed.</returns>
+    /// <returns><see langword="true"/> if <paramref name="hashField"/> is a new field in the hash and <paramref name="value"/> was set, <see langword="false"/> if <paramref name="hashField"/> already exists.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool isNewField = await client.HashSetAsync(key, hashField, value);
+    /// bool added = await client.HashSetIfNotExistsAsync(key, hashField, value);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always);
+    Task<bool> HashSetIfNotExistsAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value);
 
     /// <summary>
-    /// Removes the specified field from the hash stored at key.
+    /// Removes the specified field from the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hdel"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to remove from the hash.</param>
-    /// <returns><see langword="true"/> if the field was removed, <see langword="false"/> if the field was not found or the key does not exist.</returns>
+    /// <returns><see langword="true"/> if the field was removed from the hash.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -121,12 +131,12 @@ public interface IHashBaseCommands
     Task<bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
-    /// Removes the specified fields from the hash stored at key.
+    /// Removes the specified fields from the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hdel"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashFields">The fields to remove from the hash.</param>
-    /// <returns>The number of fields that were removed from the hash, not including specified but non-existing fields.</returns>
+    /// <returns>The number of fields that were removed from the hash.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -137,7 +147,7 @@ public interface IHashBaseCommands
     Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
-    /// Returns if field is an existing field in the hash stored at key.
+    /// Returns if the specified field exists in the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexists"/>
     /// <param name="key">The key of the hash.</param>
@@ -153,13 +163,13 @@ public interface IHashBaseCommands
     Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
-    /// Increments the number stored at <paramref name="hashField"/> in the hash stored at <paramref name="key"/> by increment.
-    /// By using a negative increment value, the value stored at <paramref name="hashField"/> in the hash stored at <paramref name="key"/> is decremented.
-    /// If <paramref name="hashField"/> or <paramref name="key"/> does not exist, it is set to <c>0</c> before performing the operation.
+    /// Increments the value stored at the specified field in the hash stored at the given key by an increment.
+    /// A negative increment will decremented the value.
+    /// If the key does not exist, it is set to zero before performing the operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hincrby"/>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="hashField">The field in the hash stored at <paramref name="key"/> to increment its value.</param>
+    /// <param name="hashField">The field to increment in the hash.</param>
     /// <param name="value">The amount to increment.</param>
     /// <returns>The value of <paramref name="hashField"/> in the hash stored at <paramref name="key"/> after the increment.</returns>
     /// <remarks>
@@ -206,7 +216,7 @@ public interface IHashBaseCommands
     Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key);
 
     /// <summary>
-    /// Returns the number of fields contained in the hash stored at key.
+    /// Returns the number of fields contained in the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hlen"/>
     /// <param name="key">The key of the hash.</param>
@@ -221,13 +231,13 @@ public interface IHashBaseCommands
     Task<long> HashLengthAsync(ValkeyKey key);
 
     /// <summary>
-    /// Returns the string length of the value associated with field in the hash stored at key.
+    /// Returns the string length of the value associated with the specified field in the hash stored at the given key.
     /// If the key or the field do not exist, 0 is returned.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hstrlen"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to get the string length of its value.</param>
-    /// <returns>The length of the string value associated with field, or 0 when field or key do not exist.</returns>
+    /// <returns>The length of the string value associated with the field, or 0 when field or key do not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -238,7 +248,7 @@ public interface IHashBaseCommands
     Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField);
 
     /// <summary>
-    /// Returns all values in the hash stored at key.
+    /// Returns all values in the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hvals"/>
     /// <param name="key">The key of the hash.</param>
@@ -368,7 +378,7 @@ public interface IHashBaseCommands
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields to remove expiration from.</param>
     /// <returns>
-    /// An array of <see langword="long"/> values, each corresponding to a field:
+    /// An array of <see langword="long"/> values, each associated with a field:
     /// <list type="bullet">
     /// <item><description><c>1</c> if the expiration time was successfully removed from the field.</description></item>
     /// <item><description><c>-1</c> if the field exists but has no expiration time.</description></item>
@@ -397,7 +407,7 @@ public interface IHashBaseCommands
     /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration condition options.</param>
     /// <returns>
-    /// An array of <see langword="long"/> values, each corresponding to a field:
+    /// An array of <see langword="long"/> values, each associated with a field:
     /// <list type="bullet">
     /// <item><description><c>1</c> if the expiration time span was successfully set for the field.</description></item>
     /// <item><description><c>0</c> if the specified condition was not met.</description></item>
@@ -428,7 +438,7 @@ public interface IHashBaseCommands
     /// <param name="fields">The fields to set expiration for.</param>
     /// <param name="options">The expiration options.</param>
     /// <returns>
-    /// An array of <see langword="long"/> values, each corresponding to a field:
+    /// An array of <see langword="long"/> values, each associated with a field:
     /// <list type="bullet">
     /// <item><description><c>1</c> if the expiration timestamp was successfully set for the field.</description></item>
     /// <item><description><c>0</c> if the specified condition was not met.</description></item>
@@ -508,7 +518,7 @@ public interface IHashBaseCommands
     /// <param name="key">The key of the hash.</param>
     /// <param name="fields">The fields to get the TTL for.</param>
     /// <returns>
-    /// An array of <see langword="long"/> values, each corresponding to a field:
+    /// An array of <see langword="long"/> values, each associated with a field:
     /// <list type="bullet">
     /// <item><description>TTL in seconds if the field exists and has a timeout.</description></item>
     /// <item><description><c>-1</c> if the field exists but has no associated expire.</description></item>

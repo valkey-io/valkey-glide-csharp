@@ -32,14 +32,20 @@ internal partial class Database
     public async Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await HashSetAsync(key, hashFields);
+        _ = await HashSetAsync(key, hashFields.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, When, CommandFlags)"/>
-    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashSetAsync(key, hashField, value, when);
+        return when switch
+        {
+            When.Always => await HashSetAsync(key, hashField, value),
+            When.NotExists => await HashSetIfNotExistsAsync(key, hashField, value),
+            When.Exists => throw new ArgumentException(when + " is not valid in this context; the permitted values are: Always, NotExists"),
+            _ => throw new NotSupportedException($"When {when} is not supported by Valkey GLIDE"),
+        };
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashDeleteAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>

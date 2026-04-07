@@ -20,12 +20,16 @@ public abstract partial class BaseClient
         => await Command(Request.HashGetAllAsync(key));
 
     /// <inheritdoc/>
-    public async Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields)
-        => _ = await Command(Request.HashSetAsync(key, [.. hashFields]));
+    public async Task<long> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues)
+        => await Command(Request.HashSetAsync(key, [.. hashFieldsAndValues]));
 
     /// <inheritdoc/>
-    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always)
-        => await Command(Request.HashSetAsync(key, hashField, value, when));
+    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
+        => await Command(Request.HashSetAsync(key, hashField, value));
+
+    /// <inheritdoc/>
+    public async Task<bool> HashSetIfNotExistsAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
+        => await Command(Request.HashSetNotExistsAsync(key, hashField, value));
 
     /// <inheritdoc/>
     public async Task<bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField)

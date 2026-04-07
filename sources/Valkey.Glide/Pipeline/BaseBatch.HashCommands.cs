@@ -21,10 +21,17 @@ public abstract partial class BaseBatch<T>
     public T HashGetAll(ValkeyKey key) => AddCmd(HashGetAllAsync(key));
 
     /// <inheritdoc cref="IBatchHashCommands.HashSet(ValkeyKey, IEnumerable{HashEntry})" />
-    public T HashSet(ValkeyKey key, IEnumerable<HashEntry> hashFields) => AddCmd(HashSetAsync(key, [.. hashFields]));
+    public T HashSet(ValkeyKey key, IEnumerable<HashEntry> hashFields) => AddCmd(HashSetAsync(key, [.. hashFields.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value))]));
 
     /// <inheritdoc cref="IBatchHashCommands.HashSet(ValkeyKey, ValkeyValue, ValkeyValue, When)" />
-    public T HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always) => AddCmd(HashSetAsync(key, hashField, value, when));
+    public T HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when = When.Always)
+        => when switch
+        {
+            When.Always => AddCmd(HashSetAsync(key, hashField, value)),
+            When.NotExists => AddCmd(HashSetNotExistsAsync(key, hashField, value)),
+            When.Exists => throw new ArgumentException(when + " is not valid in this context; the permitted values are: Always, NotExists"),
+            _ => throw new NotSupportedException($"When {when} is not supported by Valkey GLIDE"),
+        };
 
     /// <inheritdoc cref="IBatchHashCommands.HashDelete(ValkeyKey, ValkeyValue)" />
     public T HashDelete(ValkeyKey key, ValkeyValue hashField) => AddCmd(HashDeleteAsync(key, hashField));

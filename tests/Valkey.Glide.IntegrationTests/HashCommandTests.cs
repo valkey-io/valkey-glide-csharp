@@ -26,7 +26,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         ValkeyValue[] values = await client.HashGetAsync(key, ["field1", "field2", "field3"]);
         Assert.Equal(3, values.Length);
@@ -47,7 +47,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         HashEntry[] result = await client.HashGetAllAsync(key);
         Assert.Equal(3, result.Length);
@@ -77,7 +77,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field3", "value3"),
             new HashEntry("field4", "value4")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         // Test single field delete
         Assert.True(await client.HashDeleteAsync(key, "field1"));
@@ -116,7 +116,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         Assert.Equal(3, await client.HashLengthAsync(key));
     }
@@ -146,7 +146,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         ValkeyValue[] values = await client.HashValuesAsync(key);
         Assert.Equal(3, values.Length);
@@ -171,7 +171,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         // Test single random field
         ValkeyValue randomField = await client.HashRandomFieldAsync(key);
@@ -198,7 +198,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         HashEntry[] randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 2);
         Assert.Equal(2, randomEntries.Length);
@@ -215,29 +215,35 @@ public class HashCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashSetWithWhen(BaseClient client)
+    public async Task TestHashSet_SingleField(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
-        // Initial set should succeed
+        // Initial set should return true (new field)
         Assert.True(await client.HashSetAsync(key, "field1", "value1"));
 
-        // Overwriting existing value should return false
-        Assert.False(await client.HashSetAsync(key, "field1", "value1-updated", When.Always));
-        // Value should be updated
+        // Overwriting existing value should return false (not new)
+        Assert.False(await client.HashSetAsync(key, "field1", "value1-updated"));
         Assert.Equal("value1-updated", await client.HashGetAsync(key, "field1"));
+    }
 
-        // Set with When.NotExists should fail for existing field
-        Assert.False(await client.HashSetAsync(key, "field1", "should-not-update", When.NotExists));
-        Assert.Equal("value1-updated", await client.HashGetAsync(key, "field1"));
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSetIfNotExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
 
-        // Set with When.NotExists should succeed for non-existing field
-        Assert.True(await client.HashSetAsync(key, "field2", "value2", When.NotExists));
+        // Set on non-existing field should succeed
+        Assert.True(await client.HashSetIfNotExistsAsync(key, "field1", "value1"));
+        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
+
+        // Set on existing field should fail
+        Assert.False(await client.HashSetIfNotExistsAsync(key, "field1", "should-not-update"));
+        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
+
+        // Set on new field should succeed
+        Assert.True(await client.HashSetIfNotExistsAsync(key, "field2", "value2"));
         Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
-
-        // Set with When.Exists should throw an exception
-        _ = await Assert.ThrowsAsync<ArgumentException>(
-            () => client.HashSetAsync(key, "field1", "should-not-update", When.Exists));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -305,7 +311,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         // Test getting all keys
         keys = await client.HashKeysAsync(key);
@@ -336,7 +342,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2"),
             new HashEntry("field3", "value3")
         ];
-        await client.HashSetAsync(key, entries);
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
         // Test HGETEX with expiry in seconds
         var options = new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60));

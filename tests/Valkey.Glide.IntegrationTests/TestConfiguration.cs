@@ -275,7 +275,9 @@ public class TestConfiguration : IDisposable
             {
                 if (field.Count == 0)
                 {
+#pragma warning disable xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
                     field = [.. TestStandaloneConnections.Select(d => new TheoryDataRow<IDatabaseAsync>(d.Data.GetDatabase()))];
+#pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
                 }
             }
             return field;

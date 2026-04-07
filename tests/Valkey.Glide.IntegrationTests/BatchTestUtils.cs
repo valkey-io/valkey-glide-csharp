@@ -1371,7 +1371,7 @@ internal partial class BatchTestUtils
             new HashEntry("multi2", "value2")
         ];
         _ = batch.HashSet(key2, multiEntries);
-        testData.Add(new(ValkeyValue.Ok, "HashSet(key2, multiEntries)"));
+        testData.Add(new(2L, "HashSet(key2, multiEntries)"));
 
         _ = batch.HashGet(key2, ["multi1", "multi2"]);
         testData.Add(new(new ValkeyValue[] { "value1", "value2" }, "HashGet(key2, [multi1, multi2])"));

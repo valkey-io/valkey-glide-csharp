@@ -143,6 +143,4 @@ public static class BitFieldOptions
         /// <returns>Signed encoding string (e.g., "i8").</returns>
         public static string Signed(int bits) => $"i{bits}";
     }
-
-
 }
