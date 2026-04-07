@@ -80,18 +80,6 @@ public partial class GlideClient :
         => await Command(Request.Info([.. sections]));
 
     /// <inheritdoc/>
-    public override async Task<ValkeyValue> EchoAsync(ValkeyValue message)
-        => await Command(Request.Echo(message));
-
-    /// <inheritdoc/>
-    public override async Task<ValkeyValue> PingAsync()
-        => await Command(Request.Ping());
-
-    /// <inheritdoc/>
-    public override async Task<ValkeyValue> PingAsync(ValkeyValue message)
-        => await Command(Request.Ping(message));
-
-    /// <inheritdoc/>
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
         return await Command(Request.ConfigGetAsync(pattern));
@@ -150,18 +138,6 @@ public partial class GlideClient :
     {
         return await Command(Request.LolwutAsync());
     }
-
-    /// <inheritdoc/>
-    public override async Task<ValkeyValue> ClientGetNameAsync()
-        => await Command(Request.ClientGetName());
-
-    /// <inheritdoc/>
-    public override async Task<long> ClientIdAsync()
-        => await Command(Request.ClientId());
-
-    /// <inheritdoc/>
-    public override async Task SelectAsync(long index)
-        => _ = await Command(Request.Select(index));
 
     /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
