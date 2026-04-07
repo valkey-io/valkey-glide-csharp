@@ -275,7 +275,7 @@ public class CompressionTests(TestConfiguration config)
             await client.StringSetAsync(key, value);
         }
 
-        ValkeyKey[] keys = keysAndValues.Select(kv => kv.Key).ToArray();
+        ValkeyKey[] keys = [.. keysAndValues.Select(kv => kv.Key)];
         ValkeyValue[] results = await client.StringGetAsync(keys);
 
         for (int i = 0; i < 5; i++)
@@ -416,7 +416,7 @@ public class CompressionTests(TestConfiguration config)
         string key = $"setex_test_{Guid.NewGuid()}";
         string value = new string('s', LargeValueSize);
 
-        object? setexResult = await client.CustomCommand(new GlideString[] { "SETEX", key, "10", value });
+        object? setexResult = await client.CustomCommand((GlideString[])["SETEX", key, "10", value]);
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
@@ -443,7 +443,7 @@ public class CompressionTests(TestConfiguration config)
         string key = $"psetex_test_{Guid.NewGuid()}";
         string value = new string('p', LargeValueSize);
 
-        object? psetexResult = await client.CustomCommand(new GlideString[] { "PSETEX", key, "10000", value });
+        object? psetexResult = await client.CustomCommand((GlideString[])["PSETEX", key, "10000", value]);
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
@@ -470,7 +470,7 @@ public class CompressionTests(TestConfiguration config)
         string key = $"setnx_test_{Guid.NewGuid()}";
         string value = new string('n', LargeValueSize);
 
-        object? result = await client.CustomCommand(new GlideString[] { "SETNX", key, value });
+        object? result = await client.CustomCommand((GlideString[])["SETNX", key, value]);
         Assert.Equal(1L, result);
 
         var statsAfter = BaseClient.GetStatistics();
