@@ -8,20 +8,6 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    /// <inheritdoc cref="IDatabaseAsync.EchoAsync(ValkeyValue, CommandFlags)"/>
-    public async Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await EchoAsync(message);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.EchoAsync(ValkeyValue, Route, CommandFlags)"/>
-    public async Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.Echo(message).ToClusterValue(route is SingleNodeRoute), route);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.ConfigGetAsync(ValkeyValue, CommandFlags)"/>
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern, CommandFlags flags)
     {
@@ -120,10 +106,4 @@ internal partial class Database
         return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SelectAsync(long, CommandFlags)"/>
-    public async Task SelectAsync(long index, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        await SelectAsync(index);
-    }
 }

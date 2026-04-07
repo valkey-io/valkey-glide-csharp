@@ -16,17 +16,11 @@ internal partial class Database : GlideClient, IDatabase
             ? await Command(Request.Info([.. sections]), Route.Random)
             : await base.InfoAsync(sections);
 
-    public IBatch CreateBatch(object? asyncState = null)
-    {
-        GuardClauses.ThrowIfAsyncState(asyncState);
-        return new ValkeyBatch(this);
-    }
+    public IBatch CreateBatch()
+        => new ValkeyBatch(this);
 
-    public ITransaction CreateTransaction(object? asyncState = null)
-    {
-        GuardClauses.ThrowIfAsyncState(asyncState);
-        return new ValkeyTransaction(this);
-    }
+    public ITransaction CreateTransaction()
+        => new ValkeyTransaction(this);
 
     internal readonly bool IsCluster;
 
