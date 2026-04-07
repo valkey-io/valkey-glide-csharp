@@ -17,13 +17,13 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StringBitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte) => AddCmd(Request.BitCountAsync(key, start, end, indexType));
 
     /// <inheritdoc cref="IBatchBitmapCommands.StringBitPosition(ValkeyKey, bool, long, long, StringIndexType)" />
-    public T StringBitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte) => AddCmd(Request.BitPositionAsync(key, bit, start, end, indexType));
+    public T StringBitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte) => AddCmd(Request.BitPosAsync(key, bit, start, end, indexType));
 
     /// <inheritdoc cref="IBatchBitmapCommands.StringBitOperation(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey)" />
-    public T StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.BitOperationAsync(operation, destination, first, second));
+    public T StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.BitOpAsync(operation, destination, first, second));
 
     /// <inheritdoc cref="IBatchBitmapCommands.StringBitOperation(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})" />
-    public T StringBitOperationAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(Request.BitOperationAsync(operation, destination, [.. keys]));
+    public T StringBitOperationAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(Request.BitOpAsync(operation, destination, [.. keys]));
 
     /// <inheritdoc cref="IBatchBitmapCommands.StringBitField(ValkeyKey, IEnumerable{BitFieldOptions.IBitFieldSubCommand})" />
     public T StringBitFieldAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldSubCommand> subCommands) => AddCmd(Request.BitFieldAsync(key, [.. subCommands]));

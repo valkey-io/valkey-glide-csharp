@@ -10,7 +10,7 @@ namespace Valkey.Glide;
 // NOTE: Methods should only be added to this interface if they are implemented by Valkey GLIDE clients
 // but NOT by StackExchange.Redis databases. Methods implemented by both should be added to the corresponding
 // Commands interface instead.
-public interface IBaseClient :
+public partial interface IBaseClient :
     IDisposable,
     IAsyncDisposable,
     IBitmapBaseCommands,
