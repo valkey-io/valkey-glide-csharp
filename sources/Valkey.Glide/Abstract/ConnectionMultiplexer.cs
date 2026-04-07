@@ -94,13 +94,13 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
             : [.. GetServers().Select(s => s.EndPoint)];
 
     /// <inheritdoc/>
-    public IServer GetServer(string host, int port, object? asyncState = null)
-        => GetServer(Format.ParseEndPoint(host, port), asyncState);
+    public IServer GetServer(string host, int port)
+        => GetServer(Format.ParseEndPoint(host, port));
 
     /// <inheritdoc/>
-    public IServer GetServer(string hostAndPort, object? asyncState = null)
+    public IServer GetServer(string hostAndPort)
         => Format.TryParseEndPoint(hostAndPort, out EndPoint? ep)
-            ? GetServer(ep, asyncState)
+            ? GetServer(ep)
             : throw new ArgumentException($"The specified host and port could not be parsed: {hostAndPort}", nameof(hostAndPort));
 
     /// <inheritdoc/>
@@ -108,10 +108,8 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         => GetServer(new IPEndPoint(host, port));
 
     /// <inheritdoc/>
-    public IServer GetServer(EndPoint endpoint, object? asyncState = null)
+    public IServer GetServer(EndPoint endpoint)
     {
-        GuardClauses.ThrowIfAsyncState(asyncState);
-
         foreach (IServer server in GetServers())
         {
             if (server.EndPoint.Equals(endpoint))
@@ -119,6 +117,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
                 return server;
             }
         }
+
         throw new ArgumentException("The specified endpoint is not defined", nameof(endpoint));
     }
 
@@ -158,19 +157,10 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     public bool IsConnecting => false;
 
     /// <inheritdoc/>
-    public ISubscriber GetSubscriber(object? asyncState = null)
-    {
-        GuardClauses.ThrowIfAsyncState(asyncState);
-        return new Subscriber(this, _db!);
-    }
+    public ISubscriber GetSubscriber() => new Subscriber(this, _db!);
 
     /// <inheritdoc/>
-    public IDatabase GetDatabase(int db = -1, object? asyncState = null)
-    {
-        Utils.Requires<NotImplementedException>(db == -1, "To switch the database, please use `SELECT` command.");
-        GuardClauses.ThrowIfAsyncState(asyncState);
-        return _db!;
-    }
+    public IDatabase GetDatabase() => _db!;
 
     /// <inheritdoc/>
     public long? GetConnectionId(EndPoint endpoint, ConnectionType connectionType)

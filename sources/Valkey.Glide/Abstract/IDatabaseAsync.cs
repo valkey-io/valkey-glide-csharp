@@ -4,16 +4,17 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented by StackExchange.Redis
+// databases but NOT by Valkey GLIDE clients. Methods implemented by both should be added to the corresponding
+// Commands interface instead.
+
 /// <summary>
 /// Describes functionality that is common to both standalone and cluster servers.<br />
 /// See also <see cref="GlideClient" /> and <see cref="GlideClusterClient" />.
 /// </summary>
-// NOTE: Methods should only be added to this interface if they are implemented by StackExchange.Redis
-// databases but NOT by Valkey GLIDE clients. Methods implemented by both should be added to the corresponding
-// Commands interface instead.
 public partial interface IDatabaseAsync :
+    IRedisAsync,
     IBitmapBaseCommands,
-    IConnectionManagementCommands,
     IGeospatialBaseCommands,
     IGenericCommands,
     IGenericBaseCommands,

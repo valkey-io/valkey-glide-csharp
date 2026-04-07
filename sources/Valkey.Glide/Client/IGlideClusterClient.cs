@@ -4,15 +4,15 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented by Valkey GLIDE clients
+// but NOT by StackExchange.Redis databases. Methods implemented by both should be added to the corresponding
+// Commands interface instead.
+
 /// <summary>
 /// Interface for Valkey GLIDE cluster client.
 /// </summary>
-// NOTE: Methods should only be added to this interface if they are implemented by Valkey GLIDE clients
-// but NOT by StackExchange.Redis databases. Methods implemented by both should be added to the corresponding
-// Commands interface instead.
 public interface IGlideClusterClient :
     IBaseClient,
-    IConnectionManagementClusterCommands,
     IGenericClusterCommands,
     IPubSubClusterCommands,
     IScriptingAndFunctionClusterCommands,
@@ -50,4 +50,93 @@ public interface IGlideClusterClient :
     /// </example>
     /// </remarks>
     Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route);
+
+    /// <summary>
+    /// Gets the current connection ID.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-id"/>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <c>route</c>.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}" /> containing the ID of the client connection.
+    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
+    /// with a <c>Dictionary&lt;string, long&gt;</c> with each address as the key and its corresponding
+    /// connection ID. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;long&gt; response = await client.ClientIdAsync(Route.AllPrimaries);
+    /// if (response.HasSingleValue)
+    /// {
+    ///     Console.WriteLine($"Connection ID: {response.SingleValue}");
+    /// }
+    /// else
+    /// {
+    ///     foreach (var kvp in response.MultiValue)
+    ///     {
+    ///         Console.WriteLine($"Node {kvp.Key}: Connection ID {kvp.Value}");
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<long>> ClientIdAsync(Route route);
+
+    /// <summary>
+    /// Echo the given message back from the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/echo/"/>
+    /// <param name="message">The message to echo</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <c>route</c>.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}" /> containing the echoed message as a <see cref="ValkeyValue"/>.<br />
+    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
+    /// with a <c>Dictionary&lt;string, ValkeyValue&gt;</c> with each address as the key and its corresponding
+    /// echoed message. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;ValkeyValue&gt; response = await client.EchoAsync("Hello World", Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route);
+
+    /// <summary>
+    /// Ping the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ping/"/>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <c>route</c>.</param>
+    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.PingAsync(Route.AllPrimaries);
+    /// Console.WriteLine(response); // Output: "PONG"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> PingAsync(Route route);
+
+    /// <summary>
+    /// Ping the server with a message.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ping/"/>
+    /// <param name="message">The message to send with the ping</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <c>route</c>.</param>
+    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.PingAsync("Hello World", Route.AllPrimaries);
+    /// Console.WriteLine(response); // Output: "Hello World"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> PingAsync(ValkeyValue message, Route route);
 }

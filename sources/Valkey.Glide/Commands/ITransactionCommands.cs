@@ -2,12 +2,13 @@
 
 namespace Valkey.Glide.Commands;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+
 /// <summary>
 /// Transaction commands for standalone clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#transactions">Valkey – Transaction Commands</seealso>
-// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
-// and StackExchange.Redis databases.
 public interface ITransactionCommands : ITransactionBaseCommands
 {
     /// <summary>
