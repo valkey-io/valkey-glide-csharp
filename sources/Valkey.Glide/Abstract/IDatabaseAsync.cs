@@ -15,7 +15,6 @@ namespace Valkey.Glide;
 public partial interface IDatabaseAsync :
     IRedisAsync,
     IBitmapBaseCommands,
-    IConnectionManagementCommands,
     IGeospatialBaseCommands,
     IGenericCommands,
     IGenericBaseCommands,
