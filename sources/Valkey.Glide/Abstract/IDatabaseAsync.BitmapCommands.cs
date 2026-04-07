@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
@@ -12,23 +11,35 @@ namespace Valkey.Glide;
 /// <para>
 /// This interface provides StackExchange.Redis-compatible method signatures with "String" prefix
 /// and <see cref="StringIndexType"/>. For Valkey GLIDE-native methods without the "String" prefix
-/// and using <see cref="BitmapIndexType"/>, use <see cref="IBitmapBaseCommands"/>.
+/// and using <see cref="BitmapIndexType"/>, use <see cref="IBaseClient"/>.
 /// </para>
 /// <para>
 /// BITFIELD and BITFIELD_RO are not supported by StackExchange.Redis and are available
 /// only through <see cref="IBaseClient"/>.
 /// </para>
 /// </remarks>
-/// <seealso cref="IBitmapBaseCommands" />
 public partial interface IDatabaseAsync
 {
-    /// <inheritdoc cref="IBitmapBaseCommands.GetBitAsync(ValkeyKey, long)"/>
+    /// <summary>
+    /// Returns the bit value at offset in the string value stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/getbit"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="offset">The offset in the string to get the bit at.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The bit value stored at offset. Returns false if the key does not exist or if the offset is beyond the string length.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringGetBitAsync(ValkeyKey key, long offset, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBitmapBaseCommands.SetBitAsync(ValkeyKey, long, bool)"/>
+    /// <summary>
+    /// Sets or clears the bit at offset in the string value stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/setbit"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="offset">The offset in the string to set the bit at.</param>
+    /// <param name="value">The bit value to set (true for 1, false for 0).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The original bit value stored at offset.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringSetBitAsync(ValkeyKey key, long offset, bool value, CommandFlags flags = CommandFlags.None);
 
@@ -72,8 +83,15 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second = default, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBitmapBaseCommands.BitOpAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})"/>
+    /// <summary>
+    /// Perform a bitwise operation between multiple keys and store the result in the destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitop"/>
+    /// <param name="operation">The bitwise operation to perform.</param>
+    /// <param name="destination">The key to store the result.</param>
+    /// <param name="keys">The source keys.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The size of the string stored in the destination key.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 }

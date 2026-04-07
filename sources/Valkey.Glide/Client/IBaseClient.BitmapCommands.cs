@@ -5,11 +5,87 @@ using Valkey.Glide.Commands.Options;
 namespace Valkey.Glide;
 
 /// <summary>
-/// BITFIELD commands for Valkey GLIDE clients.
-/// These commands are not supported by StackExchange.Redis.
+/// Bitmap commands for Valkey GLIDE clients.
 /// </summary>
+/// <remarks>
+/// These methods use Valkey GLIDE naming conventions. For StackExchange.Redis-compatible
+/// methods with "String" prefix, use <see cref="IDatabaseAsync"/>.
+/// </remarks>
+/// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
 public partial interface IBaseClient
 {
+    /// <summary>
+    /// Returns the bit value at offset in the string value stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/getbit"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="offset">The offset in the string to get the bit at.</param>
+    /// <returns>The bit value stored at offset. Returns false if the key does not exist or if the offset is beyond the string length.</returns>
+    Task<bool> GetBitAsync(ValkeyKey key, long offset);
+
+    /// <summary>
+    /// Sets or clears the bit at offset in the string value stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/setbit"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="offset">The offset in the string to set the bit at.</param>
+    /// <param name="value">The bit value to set (true for 1, false for 0).</param>
+    /// <returns>The original bit value stored at offset.</returns>
+    Task<bool> SetBitAsync(ValkeyKey key, long offset, bool value);
+
+    /// <summary>
+    /// Count the number of set bits in a string.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitcount"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="start">The start offset. Default is 0.</param>
+    /// <param name="end">The end offset. Default is -1 (end of string).</param>
+    /// <param name="indexType">The index type (bit or byte). Default is <see cref="BitmapIndexType.Byte"/>.</param>
+    /// <returns>The number of bits set to 1.</returns>
+    Task<long> BitCountAsync(ValkeyKey key, long start = 0, long end = -1, BitmapIndexType indexType = BitmapIndexType.Byte);
+
+    /// <summary>
+    /// Count the number of set bits in a string using offset options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitcount"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="options">The offset options specifying start, end, and index type. If null, defaults are used.</param>
+    /// <returns>The number of bits set to 1.</returns>
+    Task<long> BitCountAsync(ValkeyKey key, BitOffsetOptions? options);
+
+    /// <summary>
+    /// Return the position of the first bit set to 1 or 0 in a string.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitpos"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="bit">The bit value to search for (true for 1, false for 0).</param>
+    /// <param name="start">The start offset. Default is 0.</param>
+    /// <param name="end">The end offset. Default is -1 (end of string).</param>
+    /// <param name="indexType">The index type (bit or byte). Default is <see cref="BitmapIndexType.Byte"/>.</param>
+    /// <returns>The position of the first bit with the specified value, or -1 if not found.</returns>
+    Task<long> BitPosAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, BitmapIndexType indexType = BitmapIndexType.Byte);
+
+    /// <summary>
+    /// Return the position of the first bit set to 1 or 0 in a string using offset options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitpos"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="bit">The bit value to search for (true for 1, false for 0).</param>
+    /// <param name="options">The offset options specifying start, end, and index type. If null, defaults are used.</param>
+    /// <returns>The position of the first bit with the specified value, or -1 if not found.</returns>
+    Task<long> BitPosAsync(ValkeyKey key, bool bit, BitOffsetOptions? options);
+
+    /// <summary>
+    /// Perform a bitwise operation between multiple keys and store the result in the destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitop"/>
+    /// <param name="operation">The bitwise operation to perform.</param>
+    /// <param name="destination">The key to store the result.</param>
+    /// <param name="keys">The source keys. Must contain at least one key. For NOT operation, must contain exactly one key.</param>
+    /// <returns>The size of the string stored in the destination key.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="keys"/> is empty.</exception>
+    Task<long> BitOpAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys);
+
     /// <summary>
     /// Reads or modifies the array of bits representing the string stored at key based on the specified subcommands.
     /// </summary>
@@ -18,29 +94,8 @@ public partial interface IBaseClient
     /// <param name="subCommands">The subcommands to execute (GET, SET, INCRBY, OVERFLOW).</param>
     /// <returns>
     /// An array of results from the executed subcommands.
-    /// <para>
-    /// <b>Important:</b> Null values in the array indicate overflow when using <c>OVERFLOW FAIL</c>.
-    /// This differs from other clients that may convert null to 0, which would mask overflow failures.
-    /// </para>
+    /// Null values indicate overflow when using OVERFLOW FAIL.
     /// </returns>
-    /// <remarks>
-    /// <para>
-    /// When using <c>OVERFLOW FAIL</c>, if an operation would cause an overflow, the server returns null
-    /// for that operation. This method preserves that null value to allow callers to detect overflow conditions.
-    /// </para>
-    /// <example>
-    /// <code>
-    /// var subCommands = new IBitFieldSubCommand[] {
-    ///     new BitFieldOverflow(OverflowType.Fail),
-    ///     new BitFieldIncrBy(Encoding.Unsigned(8), new BitOffset(0), 200),
-    ///     new BitFieldIncrBy(Encoding.Unsigned(8), new BitOffset(0), 200) // Will overflow
-    /// };
-    /// long?[] results = await client.BitFieldAsync("mykey", subCommands);
-    /// // results[0] = 200 (first increment succeeded)
-    /// // results[1] = null (overflow occurred - NOT masked as 0)
-    /// </code>
-    /// </example>
-    /// </remarks>
     Task<long?[]> BitFieldAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldSubCommand> subCommands);
 
     /// <summary>
@@ -51,16 +106,5 @@ public partial interface IBaseClient
     /// <param name="key">The key of the string.</param>
     /// <param name="subCommands">The GET subcommands to execute.</param>
     /// <returns>An array of results from the executed GET subcommands.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var subCommands = new IBitFieldReadOnlySubCommand[] {
-    ///     new BitFieldGet(Encoding.Unsigned(8), new BitOffset(0))
-    /// };
-    /// long[] results = await client.BitFieldReadOnlyAsync("mykey", subCommands);
-    /// Console.WriteLine(results[0]); // Output: 65 (ASCII 'A')
-    /// </code>
-    /// </example>
-    /// </remarks>
     Task<long[]> BitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands);
 }
