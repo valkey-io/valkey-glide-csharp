@@ -2,14 +2,13 @@
 
 using System.Runtime.InteropServices;
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 using static Valkey.Glide.Internals.ResponseHandler;
 
 namespace Valkey.Glide;
 
-public abstract partial class BaseClient : IScriptingAndFunctionBaseCommands
+public abstract partial class BaseClient
 {
     // ===== Script Execution =====
 

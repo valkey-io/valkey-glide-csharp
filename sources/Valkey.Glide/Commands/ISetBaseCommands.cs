@@ -6,7 +6,9 @@ namespace Valkey.Glide.Commands;
 /// Set commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#set">Valkey – Set Commands</seealso>
-public interface ISetCommands
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
+public interface ISetBaseCommands
 {
     /// <summary>
     /// Adds specified members to the set stored at key.

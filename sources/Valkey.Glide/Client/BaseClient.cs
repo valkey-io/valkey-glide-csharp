@@ -18,7 +18,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Abstract Valkey GLIDE client base class.
 /// </summary>
-public abstract partial class BaseClient : IDisposable, IAsyncDisposable
+public abstract partial class BaseClient : IBaseClient
 {
     #region public methods
 
@@ -481,6 +481,9 @@ public abstract partial class BaseClient : IDisposable, IAsyncDisposable
     /// </summary>
     /// <returns>The server version.</returns>
     protected abstract Task<Version> GetServerVersionAsync();
+
+    /// <inheritdoc/>
+    public abstract Task<ValkeyValue> ClientGetNameAsync();
 
     /// <summary>
     /// Initializes PubSub message handling.

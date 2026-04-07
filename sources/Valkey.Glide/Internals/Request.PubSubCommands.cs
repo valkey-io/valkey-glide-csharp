@@ -41,10 +41,10 @@ internal partial class Request
     /// Subscribes to the specified channels and waits for server confirmation.
     /// </summary>
     /// <param name="channels">The channels to subscribe to.</param>
-    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout for the blocking subscribe.</param>
     /// <returns>Command for subscribing to channels with blocking confirmation.</returns>
-    public static Cmd<object, object> SubscribeBlocking(GlideString[] channels, uint timeoutMs)
-        => Simple<object>(RequestType.SubscribeBlocking, [.. channels, timeoutMs.ToString()], isNullable: true);
+    public static Cmd<object, object> SubscribeBlocking(GlideString[] channels, TimeSpan timeout)
+        => Simple<object>(RequestType.SubscribeBlocking, [.. channels, ToMilliseconds(timeout).ToGlideString()], isNullable: true);
 
     /// <summary>
     /// Subscribes to the specified patterns and returns without waiting for server confirmation.
@@ -58,10 +58,10 @@ internal partial class Request
     /// Subscribes to the specified patterns and waits for server confirmation.
     /// </summary>
     /// <param name="patterns">The patterns to subscribe to.</param>
-    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout for the blocking subscribe.</param>
     /// <returns>Command for subscribing to patterns with blocking confirmation.</returns>
-    public static Cmd<object, object> PSubscribeBlocking(GlideString[] patterns, uint timeoutMs)
-        => Simple<object>(RequestType.PSubscribeBlocking, [.. patterns, timeoutMs.ToString()], isNullable: true);
+    public static Cmd<object, object> PSubscribeBlocking(GlideString[] patterns, TimeSpan timeout)
+        => Simple<object>(RequestType.PSubscribeBlocking, [.. patterns, ToMilliseconds(timeout).ToGlideString()], isNullable: true);
 
     /// <summary>
     /// Subscribes to the specified sharded channels and returns without waiting for server confirmation.
@@ -75,10 +75,10 @@ internal partial class Request
     /// Subscribes to the specified sharded channels and waits for server confirmation.
     /// </summary>
     /// <param name="channels">The sharded channels to subscribe to.</param>
-    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout for the blocking subscribe.</param>
     /// <returns>Command for subscribing to sharded channels with blocking confirmation.</returns>
-    public static Cmd<object, object> SSubscribeBlocking(GlideString[] channels, uint timeoutMs)
-        => Simple<object>(RequestType.SSubscribeBlocking, [.. channels, timeoutMs.ToString()], isNullable: true);
+    public static Cmd<object, object> SSubscribeBlocking(GlideString[] channels, TimeSpan timeout)
+        => Simple<object>(RequestType.SSubscribeBlocking, [.. channels, ToMilliseconds(timeout).ToGlideString()], isNullable: true);
 
     #endregion
     #region UnsubscribeCommands
@@ -97,10 +97,10 @@ internal partial class Request
     /// If no channels are specified, unsubscribes from all channels.
     /// </summary>
     /// <param name="channels">The channels to unsubscribe from.</param>
-    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout for the blocking unsubscribe.</param>
     /// <returns>Command for unsubscribing from channels.</returns>
-    public static Cmd<object, object> UnsubscribeBlocking(GlideString[] channels, uint timeoutMs)
-        => Simple<object>(RequestType.UnsubscribeBlocking, [.. channels, timeoutMs.ToString()], isNullable: true);
+    public static Cmd<object, object> UnsubscribeBlocking(GlideString[] channels, TimeSpan timeout)
+        => Simple<object>(RequestType.UnsubscribeBlocking, [.. channels, ToMilliseconds(timeout).ToGlideString()], isNullable: true);
 
     /// <summary>
     /// Unsubscribes from the specified patterns and returns without waiting for server confirmation.
@@ -116,10 +116,10 @@ internal partial class Request
     /// If no patterns are specified, unsubscribes from all patterns.
     /// </summary>
     /// <param name="patterns">The patterns to unsubscribe from.</param>
-    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout for the blocking unsubscribe.</param>
     /// <returns>Command for unsubscribing from patterns.</returns>
-    public static Cmd<object, object> PUnsubscribeBlocking(GlideString[] patterns, uint timeoutMs)
-        => Simple<object>(RequestType.PUnsubscribeBlocking, [.. patterns, timeoutMs.ToString()], isNullable: true);
+    public static Cmd<object, object> PUnsubscribeBlocking(GlideString[] patterns, TimeSpan timeout)
+        => Simple<object>(RequestType.PUnsubscribeBlocking, [.. patterns, ToMilliseconds(timeout).ToGlideString()], isNullable: true);
 
     /// <summary>
     /// Unsubscribes from the specified sharded channels and returns without waiting for server confirmation.
@@ -135,10 +135,10 @@ internal partial class Request
     /// If no sharded channels are specified, unsubscribes from all sharded channels.
     /// </summary>
     /// <param name="channels">The sharded channels to unsubscribe from.</param>
-    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <param name="timeout">The timeout for the blocking unsubscribe.</param>
     /// <returns>Command for unsubscribing from sharded channels.</returns>
-    public static Cmd<object, object> SUnsubscribeBlocking(GlideString[] channels, uint timeoutMs)
-        => Simple<object>(RequestType.SUnsubscribeBlocking, [.. channels, timeoutMs.ToString()], isNullable: true);
+    public static Cmd<object, object> SUnsubscribeBlocking(GlideString[] channels, TimeSpan timeout)
+        => Simple<object>(RequestType.SUnsubscribeBlocking, [.. channels, ToMilliseconds(timeout).ToGlideString()], isNullable: true);
 
     #endregion
     #region IntrospectionCommands

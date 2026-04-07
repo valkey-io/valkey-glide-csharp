@@ -6,7 +6,9 @@ namespace Valkey.Glide.Commands;
 /// Stream commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#stream">Valkey – Stream Commands</seealso>
-public interface IStreamCommands
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
+public interface IStreamBaseCommands
 {
     /// <summary>
     /// Appends a new entry to a stream with a single field-value pair.
@@ -270,9 +272,9 @@ public interface IStreamCommands
     /// <param name="consumerName">Filter by consumer name.</param>
     /// <param name="minId">The minimum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMinValue"/>  (smallest ID) if null.</param>
     /// <param name="maxId">The maximum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMaxValue"/>  (largest ID) if null.</param>
-    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="minIdleTime">The minimum idle time for pending messages</param>
     /// <returns>An array of detailed information about each pending message.</returns>
-    Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, long? minIdleTimeInMs = null);
+    Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null);
 
     /// <summary>
     /// Claims pending messages for a consumer.
@@ -281,10 +283,10 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <returns>An array of claimed stream entries.</returns>
-    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds);
+    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
 
     /// <summary>
     /// Claims pending messages for a consumer.
@@ -293,14 +295,14 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
-    /// <param name="idleTimeInMs">Set the idle time (last delivery time) of the message.</param>
-    /// <param name="timeUnixMs">Set the idle time to a specific Unix time in milliseconds.</param>
+    /// <param name="idleTime">Set the idle time (last delivery time) of the message.</param>
+    /// <param name="timestamp">Set the idle time to a specific absolute timestamp.</param>
     /// <param name="retryCount">Set the retry counter to the specified value.</param>
     /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <returns>An array of claimed stream entries.</returns>
-    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false);
+    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false);
 
     /// <summary>
     /// Claims pending messages for a consumer, returning only IDs.
@@ -309,10 +311,10 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <returns>An array of claimed message IDs.</returns>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds);
+    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
 
     /// <summary>
     /// Claims pending messages for a consumer, returning only IDs.
@@ -321,14 +323,14 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
-    /// <param name="idleTimeInMs">Set the idle time (last delivery time) of the message.</param>
-    /// <param name="timeUnixMs">Set the idle time to a specific Unix time in milliseconds.</param>
+    /// <param name="idleTime">Set the idle time (last delivery time) of the message.</param>
+    /// <param name="timestamp">Set the idle time to a specific absolute timestamp.</param>
     /// <param name="retryCount">Set the retry counter to the specified value.</param>
     /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
     /// <returns>An array of claimed message IDs.</returns>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, long? idleTimeInMs = null, long? timeUnixMs = null, int? retryCount = null, bool force = false);
+    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false);
 
     /// <summary>
     /// Automatically claims pending messages.
@@ -337,11 +339,11 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="startAtId">The starting ID to scan for pending messages.</param>
     /// <param name="count">The maximum number of entries to claim. Defaults to 100 if null.</param>
     /// <returns>Result containing next start ID, claimed entries, and deleted IDs.</returns>
-    Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null);
+    Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
 
     /// <summary>
     /// Automatically claims pending messages, returning only IDs.
@@ -350,11 +352,11 @@ public interface IStreamCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="startAtId">The starting ID to scan for pending messages.</param>
     /// <param name="count">The maximum number of entries to claim. Defaults to 100 if null.</param>
     /// <returns>Result containing next start ID, claimed IDs, and deleted IDs.</returns>
-    Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null);
+    Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
 
     /// <summary>
     /// Returns the number of entries in a stream.
@@ -429,31 +431,4 @@ public interface IStreamCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <returns>An array of information about each consumer in the group.</returns>
     Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName);
-
-    // Obsolete methods - not supported by Valkey GLIDE
-
-    /// <summary>
-    /// This method is not implemented. Valkey does not support acknowledging and deleting messages in a single operation.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamAcknowledgeAsync followed by StreamDeleteAsync instead.", error: true)]
-    Task<long> StreamAcknowledgeAndDeleteAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds);
-
-    /// <summary>
-    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamDeleteAsync without the mode parameter instead.", error: true)]
-    Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, object mode);
-
-    /// <summary>
-    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamAddAsync without the mode parameter instead.", error: true)]
-    Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit, bool noMakeStream, ValkeyValue? minId, object mode);
-
-    /// <summary>
-    /// This method is not implemented. The mode parameter is not supported by Valkey GLIDE.
-    /// </summary>
-    [Obsolete("This method is not implemented. Use StreamTrimAsync without the mode parameter instead.", error: true)]
-    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength, bool useApproximateMaxLength, long? limit, ValkeyValue? minId, object mode);
-
 }

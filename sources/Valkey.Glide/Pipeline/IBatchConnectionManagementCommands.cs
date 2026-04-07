@@ -18,8 +18,8 @@ internal interface IBatchConnectionManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.EchoAsync(ValkeyValue)" /></returns>
     IBatch Echo(ValkeyValue message);
 
-    /// <inheritdoc cref="IConnectionManagementCommands.ClientGetNameAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IConnectionManagementCommands.ClientGetNameAsync()" /></returns>
+    /// <inheritdoc cref="IBaseClient.ClientGetNameAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ClientGetNameAsync()" /></returns>
     IBatch ClientGetNameAsync();
 
     /// <inheritdoc cref="IConnectionManagementCommands.ClientIdAsync()" path="/*[not(self::remarks) and not(self::returns)]" />

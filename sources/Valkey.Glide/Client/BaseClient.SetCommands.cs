@@ -1,11 +1,10 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public abstract partial class BaseClient : ISetCommands
+public abstract partial class BaseClient
 {
     /// <inheritdoc/>
     public async Task<bool> SetAddAsync(ValkeyKey key, ValkeyValue value)

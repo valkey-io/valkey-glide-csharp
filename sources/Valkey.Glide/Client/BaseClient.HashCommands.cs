@@ -1,12 +1,11 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public abstract partial class BaseClient : IHashCommands
+public abstract partial class BaseClient
 {
     /// <inheritdoc/>
     public async Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField)
@@ -129,20 +128,12 @@ public abstract partial class BaseClient : IHashCommands
         => await Command(Request.HashPersistAsync(key, [.. fields]));
 
     /// <inheritdoc/>
-    public async Task<long[]> HashExpireAsync(ValkeyKey key, long seconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
-        => await Command(Request.HashExpireAsync(key, seconds, [.. fields], options));
+    public async Task<long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
+        => await Command(Request.HashExpireAsync(key, expiry, [.. fields], options));
 
     /// <inheritdoc/>
-    public async Task<long[]> HashPExpireAsync(ValkeyKey key, long milliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
-        => await Command(Request.HashPExpireAsync(key, milliseconds, [.. fields], options));
-
-    /// <inheritdoc/>
-    public async Task<long[]> HashExpireAtAsync(ValkeyKey key, long unixSeconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
-        => await Command(Request.HashExpireAtAsync(key, unixSeconds, [.. fields], options));
-
-    /// <inheritdoc/>
-    public async Task<long[]> HashPExpireAtAsync(ValkeyKey key, long unixMilliseconds, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
-        => await Command(Request.HashPExpireAtAsync(key, unixMilliseconds, [.. fields], options));
+    public async Task<long[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
+        => await Command(Request.HashExpireAtAsync(key, expiry, [.. fields], options));
 
     /// <inheritdoc/>
     public async Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields)

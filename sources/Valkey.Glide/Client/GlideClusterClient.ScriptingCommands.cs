@@ -1,11 +1,10 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public sealed partial class GlideClusterClient : IScriptingAndFunctionClusterCommands
+public sealed partial class GlideClusterClient
 {
     // ===== Script Execution with Routing =====
 

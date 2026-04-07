@@ -1,12 +1,11 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public abstract partial class BaseClient : IGenericBaseCommands
+public abstract partial class BaseClient
 {
     /// <inheritdoc/>
     public async Task<bool> KeyDeleteAsync(ValkeyKey key)
@@ -133,6 +132,6 @@ public abstract partial class BaseClient : IGenericBaseCommands
         => await Command(Request.SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get?.ToArray()));
 
     /// <inheritdoc/>
-    public async Task<long> WaitAsync(long numreplicas, long timeout)
+    public async Task<long> WaitAsync(long numreplicas, TimeSpan timeout)
         => await Command(Request.WaitAsync(numreplicas, timeout));
 }

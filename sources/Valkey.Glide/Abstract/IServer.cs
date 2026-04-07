@@ -46,9 +46,6 @@ public interface IServer
     /// <param name="args">The arguments to pass for the command.</param>
     /// <returns>A dynamic representation of the command's result.</returns>
     /// <remarks>This API should be considered an advanced feature; inappropriate use can be harmful.</remarks>
-    ValkeyResult Execute(string command, params object[] args);
-
-    /// <inheritdoc cref="Execute(string, object[])"/>
     Task<ValkeyResult> ExecuteAsync(string command, params object[] args);
 
     /// <summary>
@@ -62,9 +59,6 @@ public interface IServer
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A dynamic representation of the command's result.</returns>
     /// <remarks>This API should be considered an advanced feature; inappropriate use can be harmful.</remarks>
-    ValkeyResult Execute(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="Execute(string, ICollection{object}, CommandFlags)"/>
     Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -86,9 +80,6 @@ public interface IServer
     /// <returns>A grouping of key/value pairs, grouped by their section header.</returns>
     /// <remarks><seealso href="https://valkey.io/commands/info/"/></remarks>
     Task<IGrouping<string, KeyValuePair<string, string>>[]> InfoAsync(ValkeyValue section = default, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="InfoRawAsync(ValkeyValue, CommandFlags)"/>
-    string? InfoRaw(ValkeyValue section = default, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// This command is often used to test if a connection is still alive, or to measure latency.

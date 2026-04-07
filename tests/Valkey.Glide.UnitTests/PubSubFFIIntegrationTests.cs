@@ -208,5 +208,7 @@ public class PubSubFFIIntegrationTests
 
         // Mock implementations
         internal override void HandlePubSubMessage(PubSubMessage message) { }
+
+        public override Task<ValkeyValue> ClientGetNameAsync() => Task.FromResult(ValkeyValue.Null);
     }
 }

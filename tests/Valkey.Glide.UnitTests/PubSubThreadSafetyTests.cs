@@ -225,5 +225,7 @@ public class PubSubThreadSafetyTests
             _serverVersion = new Version(7, 2, 0);
             return Task.FromResult(_serverVersion);
         }
+
+        public override Task<ValkeyValue> ClientGetNameAsync() => Task.FromResult(ValkeyValue.Null);
     }
 }

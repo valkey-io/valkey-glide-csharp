@@ -11,16 +11,6 @@ namespace Valkey.Glide;
 /// <seealso cref="IConnectionManagementClusterCommands" />
 public partial interface IDatabaseAsync
 {
-    /// <inheritdoc cref="IConnectionManagementCommands.ClientGetNameAsync()"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags);
-
-    /// <inheritdoc cref="IConnectionManagementClusterCommands.ClientGetNameAsync(Route)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route, CommandFlags flags);
-
     /// <inheritdoc cref="IConnectionManagementCommands.ClientIdAsync()"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>

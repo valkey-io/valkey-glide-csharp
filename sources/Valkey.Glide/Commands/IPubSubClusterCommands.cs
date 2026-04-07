@@ -6,6 +6,8 @@ namespace Valkey.Glide.Commands;
 /// Pub/sub commands for cluster clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
+// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
+// and StackExchange.Redis databases.
 public interface IPubSubClusterCommands
 {
     #region PublishCommands
@@ -55,7 +57,7 @@ public interface IPubSubClusterCommands
     /// Subscribes the client to the specified sharded channel and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to subscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="IPubSubBaseCommands.GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
@@ -74,7 +76,7 @@ public interface IPubSubClusterCommands
     /// Subscribes the client to the specified sharded channels and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to subscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="IPubSubBaseCommands.GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
@@ -126,7 +128,7 @@ public interface IPubSubClusterCommands
     /// Unsubscribes the client from all sharded channels and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the
+    /// Use <see cref="IPubSubBaseCommands.GetSubscriptionsAsync"/> to verify the
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
@@ -144,7 +146,7 @@ public interface IPubSubClusterCommands
     /// Unsubscribes the client from the specified sharded channel and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// Use <see cref="IPubSubBaseCommands.GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
     /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
@@ -162,7 +164,7 @@ public interface IPubSubClusterCommands
     /// Unsubscribes the client from the specified sharded channels and returns without waiting for server confirmation.
     /// <para />
     /// The client will attempt to unsubscribe asynchronously in the background.
-    /// Use <see cref="IPubSubCommands.GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// Use <see cref="IPubSubBaseCommands.GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// <para />
     /// If no sharded channels or <see cref="PubSub.AllShardedChannels"/> is specified, unsubscribes the client from all sharded channels.
     /// </summary>
