@@ -561,15 +561,34 @@ pub unsafe extern "C-unwind" fn command(
             callback_index,
         };
 
+        // Extract request type for response decompression before sending
+        let request_type = cmd.args_iter().next().and_then(|arg| match arg {
+            redis::Arg::Simple(bytes) => {
+                let name = String::from_utf8_lossy(bytes).to_uppercase();
+                match name.as_str() {
+                    "GET" => Some(RequestType::Get),
+                    "MGET" => Some(RequestType::MGet),
+                    "GETEX" => Some(RequestType::GetEx),
+                    "GETDEL" => Some(RequestType::GetDel),
+                    "GETSET" => Some(RequestType::GetSet),
+                    _ => None,
+                }
+            }
+            _ => None,
+        });
+
         let result = core.client.clone().send_command(&mut cmd, route).await;
         match result {
             Ok(value) => {
                 // Decompress response if compression is enabled
-                let value = if let Some(compression_manager) = core.client.compression_manager() {
+                let value = if let (Some(compression_manager), Some(req_type)) =
+                    (core.client.compression_manager(), request_type)
+                {
                     let original = value.clone();
-                    glide_core::compression::decompress_single_value_response(
+                    glide_core::compression::process_response_for_decompression(
                         value,
-                        compression_manager.as_ref(),
+                        req_type,
+                        Some(compression_manager.as_ref()),
                     )
                     .unwrap_or_else(|e| {
                         logger_core::log_warn(
@@ -1696,6 +1715,10 @@ fn compress_cmd(
     let request_type = match command_str.as_str() {
         "SET" => RequestType::Set,
         "MSET" => RequestType::MSet,
+        "MSETNX" => RequestType::MSetNX,
+        "SETEX" => RequestType::SetEx,
+        "PSETEX" => RequestType::PSetEx,
+        "SETNX" => RequestType::SetNX,
         _ => return Ok(()),
     };
 

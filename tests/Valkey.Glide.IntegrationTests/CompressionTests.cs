@@ -253,4 +253,231 @@ public class CompressionTests(TestConfiguration config)
         Assert.True(statsAfter.TotalOriginalBytes > statsBefore.TotalOriginalBytes, $"Expected original bytes. Before: {statsBefore.TotalOriginalBytes}, After: {statsAfter.TotalOriginalBytes}");
         Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed, $"Expected compressed bytes. Before: {statsBefore.TotalBytesCompressed}, After: {statsAfter.TotalBytesCompressed}");
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_MGet_DecompressesValues(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var keysAndValues = new KeyValuePair<ValkeyKey, ValkeyValue>[5];
+        for (int i = 0; i < 5; i++)
+        {
+            string key = $"mget_test_{i}_{Guid.NewGuid()}";
+            string value = new string((char)('a' + i), LargeValueSize);
+            keysAndValues[i] = new(key, value);
+            await client.StringSetAsync(key, value);
+        }
+
+        ValkeyKey[] keys = keysAndValues.Select(kv => kv.Key).ToArray();
+        ValkeyValue[] results = await client.StringGetAsync(keys);
+
+        for (int i = 0; i < 5; i++)
+        {
+            Assert.Equal(keysAndValues[i].Value.ToString(), results[i].ToString());
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_GetEx_DecompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"getex_test_{Guid.NewGuid()}";
+        string value = new string('g', LargeValueSize);
+
+        await client.StringSetAsync(key, value);
+        ValkeyValue retrieved = await client.StringGetSetExpiryAsync(key, TimeSpan.FromSeconds(10));
+
+        Assert.Equal(value, retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_GetDel_DecompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"getdel_test_{Guid.NewGuid()}";
+        string value = new string('d', LargeValueSize);
+
+        await client.StringSetAsync(key, value);
+        ValkeyValue retrieved = await client.StringGetDeleteAsync(key);
+
+        Assert.Equal(value, retrieved.ToString());
+
+        // Verify key was deleted
+        ValkeyValue afterDelete = await client.StringGetAsync(key);
+        Assert.True(afterDelete.IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_MSet_CompressesValues(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        var keysAndValues = new KeyValuePair<ValkeyKey, ValkeyValue>[3];
+        for (int i = 0; i < 3; i++)
+        {
+            keysAndValues[i] = new($"mset_test_{i}_{Guid.NewGuid()}", new string((char)('a' + i), LargeValueSize));
+        }
+
+        await client.StringSetAsync(keysAndValues);
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"MSET should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify values can be retrieved and decompressed
+        foreach (var kv in keysAndValues)
+        {
+            ValkeyValue retrieved = await client.StringGetAsync(kv.Key);
+            Assert.Equal(kv.Value.ToString(), retrieved.ToString());
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_MSetNX_CompressesValues(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        var keysAndValues = new KeyValuePair<ValkeyKey, ValkeyValue>[3];
+        for (int i = 0; i < 3; i++)
+        {
+            keysAndValues[i] = new($"msetnx_test_{i}_{Guid.NewGuid()}", new string((char)('a' + i), LargeValueSize));
+        }
+
+        bool result = await client.StringSetAsync(keysAndValues, When.NotExists);
+        Assert.True(result, "MSETNX should succeed for new keys");
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"MSETNX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify values can be retrieved and decompressed
+        foreach (var kv in keysAndValues)
+        {
+            ValkeyValue retrieved = await client.StringGetAsync(kv.Key);
+            Assert.Equal(kv.Value.ToString(), retrieved.ToString());
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_Setex_CompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key = $"setex_test_{Guid.NewGuid()}";
+        string value = new string('s', LargeValueSize);
+
+        object? setexResult = await client.CustomCommand(new GlideString[] { "SETEX", key, "10", value });
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"SETEX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        ValkeyValue retrieved = await client.StringGetAsync(key);
+        Assert.Equal(value, retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_Psetex_CompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key = $"psetex_test_{Guid.NewGuid()}";
+        string value = new string('p', LargeValueSize);
+
+        object? psetexResult = await client.CustomCommand(new GlideString[] { "PSETEX", key, "10000", value });
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"PSETEX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        ValkeyValue retrieved = await client.StringGetAsync(key);
+        Assert.Equal(value, retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_Setnx_CompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key = $"setnx_test_{Guid.NewGuid()}";
+        string value = new string('n', LargeValueSize);
+
+        object? result = await client.CustomCommand(new GlideString[] { "SETNX", key, value });
+        Assert.Equal(1L, result);
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"SETNX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        ValkeyValue retrieved = await client.StringGetAsync(key);
+        Assert.Equal(value, retrieved.ToString());
+    }
 }
