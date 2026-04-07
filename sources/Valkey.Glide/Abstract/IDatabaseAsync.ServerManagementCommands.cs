@@ -11,16 +11,6 @@ namespace Valkey.Glide;
 /// <seealso cref="IServerManagementClusterCommands" />
 public partial interface IDatabaseAsync
 {
-    /// <inheritdoc cref="IServerManagementCommands.EchoAsync(ValkeyValue)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags);
-
-    /// <inheritdoc cref="IServerManagementClusterCommands.EchoAsync(ValkeyValue, Route)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route, CommandFlags flags);
-
     /// <inheritdoc cref="IServerManagementCommands.ConfigGetAsync(ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
@@ -91,8 +81,4 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ClusterValue<string>> LolwutAsync(Route route, CommandFlags flags);
 
-    /// <inheritdoc cref="IServerManagementCommands.SelectAsync(long)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task SelectAsync(long index, CommandFlags flags);
 }

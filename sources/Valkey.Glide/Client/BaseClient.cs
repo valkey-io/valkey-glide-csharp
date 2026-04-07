@@ -462,9 +462,6 @@ public abstract partial class BaseClient : IBaseClient
     /// <returns>The server version.</returns>
     protected abstract Task<Version> GetServerVersionAsync();
 
-    /// <inheritdoc/>
-    public abstract Task<ValkeyValue> ClientGetNameAsync();
-
     /// <summary>
     /// Initializes PubSub message handling.
     /// Uses thread-safe initialization to ensure proper visibility across threads.

@@ -103,11 +103,6 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
             () => fixture.Server.DatabaseSizeAsync(flags: UnsupportedCommandFlag));
 
     [Fact]
-    public async Task DatabaseSizeAsync_NonDefaultDatabase_Throws()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Server.DatabaseSizeAsync(database: 0));
-
-    [Fact]
     public async Task FlushDatabaseAsync_ClearsDatabase()
     {
         var server = fixture.Server;
@@ -129,11 +124,6 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
     public async Task FlushDatabaseAsync_CommandFlags_Throws()
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => fixture.Server.FlushDatabaseAsync(flags: UnsupportedCommandFlag));
-
-    [Fact]
-    public async Task FlushDatabaseAsync_NonDefaultDatabase_Throws()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Server.FlushDatabaseAsync(database: 0));
 
     [Fact]
     public async Task FlushAllDatabasesAsync_ClearsAllDatabases()

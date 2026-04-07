@@ -4,12 +4,13 @@ using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide.Commands;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+
 /// <summary>
 /// Server management commands for standalone clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
-// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
-// and StackExchange.Redis databases.
 public interface IServerManagementCommands
 {
     /// <summary>
@@ -45,52 +46,6 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task<string> InfoAsync(IEnumerable<Section> sections);
-
-    /// <summary>
-    /// Echo the given message back from the server.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/echo/"/>
-    /// <param name="message">The message to echo</param>
-    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ValkeyValue result = await client.EchoAsync("Hello World");
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> EchoAsync(ValkeyValue message);
-
-    /// <summary>
-    /// Ping the server.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.PingAsync();
-    /// Console.WriteLine(response); // Output: "PONG"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> PingAsync();
-
-    /// <summary>
-    /// Ping the server with a message.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="message">The message to send with the ping</param>
-    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.PingAsync("Hello World");
-    /// Console.WriteLine(response); // Output: "Hello World"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> PingAsync(ValkeyValue message);
 
     /// <summary>
     /// Gets the values of configuration parameters.
@@ -238,17 +193,4 @@ public interface IServerManagementCommands
     /// </remarks>
     Task<string> LolwutAsync();
 
-    /// <summary>
-    /// Changes the currently selected database.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/select"/>
-    /// <param name="index">The index of the database to select.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.SelectAsync(1);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task SelectAsync(long index);
 }

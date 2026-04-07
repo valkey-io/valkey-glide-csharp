@@ -226,6 +226,12 @@ public class PubSubThreadSafetyTests
             return Task.FromResult(_serverVersion);
         }
 
+        // Mock abstract methods.
         public override Task<ValkeyValue> ClientGetNameAsync() => Task.FromResult(ValkeyValue.Null);
+        public override Task<long> ClientIdAsync() => Task.FromResult(0L);
+        public override Task<ValkeyValue> EchoAsync(ValkeyValue message) => Task.FromResult(message);
+        public override Task<ValkeyValue> PingAsync() => Task.FromResult((ValkeyValue)"PONG");
+        public override Task<ValkeyValue> PingAsync(ValkeyValue message) => Task.FromResult(message);
+        public override Task SelectAsync(long index) => Task.CompletedTask;
     }
 }
