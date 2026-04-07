@@ -27,5 +27,15 @@ public class CommandFlagsTests(TestConfiguration config)
             () => db.HashSetAsync("key", [new HashEntry("field", "value")], UnsupportedFlag));
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashIncrementAsync(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashIncrementAsync("key", "field", 1, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashIncrementAsync("key", "field", 1.0, UnsupportedFlag));
+    }
+
     #endregion
 }

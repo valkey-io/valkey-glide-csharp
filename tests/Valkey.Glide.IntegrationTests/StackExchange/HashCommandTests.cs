@@ -67,4 +67,28 @@ public class SERHashCommandTests(TestConfiguration config)
     }
 
     #endregion
+
+    #region HashIncrementAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashIncrementAsync_Long(IDatabaseAsync db)
+    {
+        string key = $"ser-hincr-{Guid.NewGuid()}";
+
+        Assert.Equal(5, await db.HashIncrementAsync(key, "counter", 5));
+        Assert.Equal(6, await db.HashIncrementAsync(key, "counter"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashIncrementAsync_Double(IDatabaseAsync db)
+    {
+        string key = $"ser-hincrf-{Guid.NewGuid()}";
+
+        Assert.Equal(2.5, await db.HashIncrementAsync(key, "counter", 2.5, CommandFlags.None));
+        Assert.Equal(5.0, await db.HashIncrementAsync(key, "counter", 2.5, CommandFlags.None));
+    }
+
+    #endregion
 }
