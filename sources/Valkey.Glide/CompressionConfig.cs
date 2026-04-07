@@ -37,11 +37,6 @@ public sealed class CompressionConfig
     public CompressionBackend Backend { get; }
 
     /// <summary>
-    /// Whether compression is enabled.
-    /// </summary>
-    public bool Enabled { get; }
-
-    /// <summary>
     /// Creates a new compression configuration.
     /// </summary>
     /// <param name="backend">The compression backend to use.</param>
@@ -62,7 +57,6 @@ public sealed class CompressionConfig
         MinCompressionSize = minCompressionSize;
         CompressionLevel = compressionLevel;
         Backend = backend;
-        Enabled = true;
     }
 
     /// <summary>
@@ -92,6 +86,6 @@ public sealed class CompressionConfig
         HasCompressionLevel = CompressionLevel.HasValue,
         CompressionLevel = CompressionLevel ?? default,
         Backend = Backend,
-        Enabled = Enabled,
+        Enabled = true,
     };
 }

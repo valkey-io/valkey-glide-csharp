@@ -25,24 +25,4 @@ public sealed record Statistics(
     ulong TotalBytesDecompressed,
     ulong CompressionSkippedCount,
     ulong SubscriptionOutOfSyncCount,
-    ulong SubscriptionLastSyncTimestamp)
-{
-    /// <summary>
-    /// Compression ratio (original size / compressed size).
-    /// Returns 0 if no data has been compressed.
-    /// </summary>
-    public double CompressionRatio =>
-        TotalBytesCompressed > 0 ? (double)TotalOriginalBytes / TotalBytesCompressed : 0.0;
-
-    /// <summary>
-    /// Space saved in bytes (original size - compressed size).
-    /// </summary>
-    public ulong SpaceSaved =>
-        TotalOriginalBytes > TotalBytesCompressed ? TotalOriginalBytes - TotalBytesCompressed : 0;
-
-    /// <summary>
-    /// Space saved as a percentage.
-    /// </summary>
-    public double SpaceSavedPercent =>
-        TotalOriginalBytes > 0 ? (double)SpaceSaved / TotalOriginalBytes * 100.0 : 0.0;
-}
+    ulong SubscriptionLastSyncTimestamp);

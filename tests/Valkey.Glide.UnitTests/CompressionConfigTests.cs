@@ -9,13 +9,6 @@ public class CompressionConfigTests
     private const nuint CustomMinCompressionSize = 128;
     private const nuint InvalidMinCompressionSize = 10;
     private const nuint ValidMinCompressionSize = 100;
-    private const ulong TestOriginalBytes = 1000;
-    private const ulong TestCompressedBytes500 = 500;
-    private const ulong TestCompressedBytes600 = 600;
-    private const double ExpectedRatio2x = 2.0;
-    private const double ExpectedRatioZero = 0.0;
-    private const ulong ExpectedSpaceSaved400 = 400;
-    private const double ExpectedSpaceSavedPercent40 = 40.0;
 
     [Fact]
     public void CompressionConfig_Zstd_CreatesValidConfig()
@@ -72,31 +65,4 @@ public class CompressionConfigTests
         Assert.Equal(ValidMinCompressionSize, config.MinCompressionSize);
     }
 
-    [Fact]
-    public void Statistics_CompressionRatio_CalculatesCorrectly()
-    {
-        var stats = new Statistics(0, 0, 0, 0, TestOriginalBytes, TestCompressedBytes500, 0, 0, 0, 0);
-        Assert.Equal(ExpectedRatio2x, stats.CompressionRatio);
-    }
-
-    [Fact]
-    public void Statistics_CompressionRatio_ZeroWhenNoData()
-    {
-        var stats = new Statistics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        Assert.Equal(ExpectedRatioZero, stats.CompressionRatio);
-    }
-
-    [Fact]
-    public void Statistics_SpaceSaved_CalculatesCorrectly()
-    {
-        var stats = new Statistics(0, 0, 0, 0, TestOriginalBytes, TestCompressedBytes600, 0, 0, 0, 0);
-        Assert.Equal(ExpectedSpaceSaved400, stats.SpaceSaved);
-    }
-
-    [Fact]
-    public void Statistics_SpaceSavedPercent_CalculatesCorrectly()
-    {
-        var stats = new Statistics(0, 0, 0, 0, TestOriginalBytes, TestCompressedBytes600, 0, 0, 0, 0);
-        Assert.Equal(ExpectedSpaceSavedPercent40, stats.SpaceSavedPercent);
-    }
 }
