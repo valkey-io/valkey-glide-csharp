@@ -175,11 +175,11 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long newValue = await client.HashIncrementAsync(key, hashField, 5);
+    /// long newValue = await client.HashIncrementByAsync(key, hashField, 5);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1);
+    Task<long> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, long value = 1);
 
     /// <summary>
     /// Increments the string representing a floating point number stored at <paramref name="hashField"/> in the hash stored at <paramref name="key"/> by increment.
@@ -194,11 +194,11 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// double newValue = await client.HashIncrementAsync(key, hashField, 2.5);
+    /// double newValue = await client.HashIncrementByAsync(key, hashField, 2.5);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value);
+    Task<double> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, double value);
 
     /// <summary>
     /// Returns all field names in the hash stored at <paramref name="key"/>.

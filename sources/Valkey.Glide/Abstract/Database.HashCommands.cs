@@ -73,14 +73,14 @@ internal partial class Database
     public async Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashIncrementAsync(key, hashField, value);
+        return await HashIncrementByAsync(key, hashField, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashIncrementAsync(ValkeyKey, ValkeyValue, double, CommandFlags)"/>
     public async Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashIncrementAsync(key, hashField, value);
+        return await HashIncrementByAsync(key, hashField, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashKeysAsync(ValkeyKey, CommandFlags)"/>

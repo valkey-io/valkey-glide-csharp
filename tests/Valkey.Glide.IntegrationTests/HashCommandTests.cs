@@ -253,21 +253,21 @@ public class HashCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test increment on non-existing field (should start from 0)
-        Assert.Equal(5, await client.HashIncrementAsync(key, "counter", 5));
+        Assert.Equal(5, await client.HashIncrementByAsync(key, "counter", 5));
         Assert.Equal("5", await client.HashGetAsync(key, "counter"));
 
         // Test increment with default value (1)
-        Assert.Equal(6, await client.HashIncrementAsync(key, "counter"));
+        Assert.Equal(6, await client.HashIncrementByAsync(key, "counter"));
         Assert.Equal("6", await client.HashGetAsync(key, "counter"));
 
         // Test increment with negative value (decrement)
-        Assert.Equal(3, await client.HashIncrementAsync(key, "counter", -3));
+        Assert.Equal(3, await client.HashIncrementByAsync(key, "counter", -3));
         Assert.Equal("3", await client.HashGetAsync(key, "counter"));
 
         // Test increment on existing non-numeric field should throw
         _ = await client.HashSetAsync(key, "text_field", "not_a_number");
         _ = await Assert.ThrowsAsync<RequestException>(
-            () => client.HashIncrementAsync(key, "text_field", 1));
+            () => client.HashIncrementByAsync(key, "text_field", 1));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -277,21 +277,21 @@ public class HashCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test increment on non-existing field (should start from 0)
-        Assert.Equal(2.5, await client.HashIncrementAsync(key, "float_counter", 2.5));
+        Assert.Equal(2.5, await client.HashIncrementByAsync(key, "float_counter", 2.5));
         Assert.Equal("2.5", await client.HashGetAsync(key, "float_counter"));
 
         // Test increment with positive value
-        Assert.Equal(5.0, await client.HashIncrementAsync(key, "float_counter", 2.5));
+        Assert.Equal(5.0, await client.HashIncrementByAsync(key, "float_counter", 2.5));
         Assert.Equal("5", await client.HashGetAsync(key, "float_counter"));
 
         // Test increment with negative value (decrement)
-        Assert.Equal(2.5, await client.HashIncrementAsync(key, "float_counter", -2.5));
+        Assert.Equal(2.5, await client.HashIncrementByAsync(key, "float_counter", -2.5));
         Assert.Equal("2.5", await client.HashGetAsync(key, "float_counter"));
 
         // Test increment on existing non-numeric field should throw
         _ = await client.HashSetAsync(key, "text_field", "not_a_number");
         _ = await Assert.ThrowsAsync<RequestException>(
-            () => client.HashIncrementAsync(key, "text_field", 1.5));
+            () => client.HashIncrementByAsync(key, "text_field", 1.5));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

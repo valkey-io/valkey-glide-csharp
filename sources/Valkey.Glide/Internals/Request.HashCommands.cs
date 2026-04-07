@@ -48,10 +48,10 @@ internal partial class Request
     public static Cmd<bool, bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField)
         => Boolean<bool>(RequestType.HExists, [key.ToGlideString(), hashField.ToGlideString()]);
 
-    public static Cmd<long, long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value)
+    public static Cmd<long, long> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, long value)
         => Simple<long>(RequestType.HIncrBy, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
-    public static Cmd<double, double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value)
+    public static Cmd<double, double> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, double value)
         => Simple<double>(RequestType.HIncrByFloat, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
     public static Cmd<object[], ValkeyValue[]> HashKeysAsync(ValkeyKey key)

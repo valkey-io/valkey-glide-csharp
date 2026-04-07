@@ -39,12 +39,12 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashExistsAsync(ValkeyKey, ValkeyValue)" /></returns>
     IBatch HashExists(ValkeyKey key, ValkeyValue hashField);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, long)" /></returns>
+    /// <inheritdoc cref="IHashBaseCommands.HashIncrementByAsync(ValkeyKey, ValkeyValue, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashIncrementByAsync(ValkeyKey, ValkeyValue, long)" /></returns>
     IBatch HashIncrement(ValkeyKey key, ValkeyValue hashField, long value = 1);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashIncrementAsync(ValkeyKey, ValkeyValue, double)" /></returns>
+    /// <inheritdoc cref="IHashBaseCommands.HashIncrementByAsync(ValkeyKey, ValkeyValue, double)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashIncrementByAsync(ValkeyKey, ValkeyValue, double)" /></returns>
     IBatch HashIncrement(ValkeyKey key, ValkeyValue hashField, double value);
 
     /// <inheritdoc cref="IHashBaseCommands.HashKeysAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />

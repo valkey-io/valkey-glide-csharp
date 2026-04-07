@@ -43,10 +43,10 @@ public abstract partial class BaseBatch<T>
     public T HashExists(ValkeyKey key, ValkeyValue hashField) => AddCmd(HashExistsAsync(key, hashField));
 
     /// <inheritdoc cref="IBatchHashCommands.HashIncrement(ValkeyKey, ValkeyValue, long)" />
-    public T HashIncrement(ValkeyKey key, ValkeyValue hashField, long value = 1) => AddCmd(HashIncrementAsync(key, hashField, value));
+    public T HashIncrement(ValkeyKey key, ValkeyValue hashField, long value = 1) => AddCmd(HashIncrementByAsync(key, hashField, value));
 
     /// <inheritdoc cref="IBatchHashCommands.HashIncrement(ValkeyKey, ValkeyValue, double)" />
-    public T HashIncrement(ValkeyKey key, ValkeyValue hashField, double value) => AddCmd(HashIncrementAsync(key, hashField, value));
+    public T HashIncrement(ValkeyKey key, ValkeyValue hashField, double value) => AddCmd(HashIncrementByAsync(key, hashField, value));
 
     /// <inheritdoc cref="IBatchHashCommands.HashKeys(ValkeyKey)" />
     public T HashKeys(ValkeyKey key) => AddCmd(HashKeysAsync(key));

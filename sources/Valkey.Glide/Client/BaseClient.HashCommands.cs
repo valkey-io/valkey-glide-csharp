@@ -44,12 +44,12 @@ public abstract partial class BaseClient
         => await Command(Request.HashExistsAsync(key, hashField));
 
     /// <inheritdoc/>
-    public async Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1)
-        => await Command(Request.HashIncrementAsync(key, hashField, value));
+    public async Task<long> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, long value = 1)
+        => await Command(Request.HashIncrementByAsync(key, hashField, value));
 
     /// <inheritdoc/>
-    public async Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value)
-        => await Command(Request.HashIncrementAsync(key, hashField, value));
+    public async Task<double> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, double value)
+        => await Command(Request.HashIncrementByAsync(key, hashField, value));
 
     /// <inheritdoc/>
     public async Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key)
