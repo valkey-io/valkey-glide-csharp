@@ -262,9 +262,27 @@ public class TestConfiguration : IDisposable
     {
         TestConnections.ForEach(test => test.Data.Item1.Dispose());
         TestConnections = [];
+        TestDatabases = [];
         TestClusterConnections = [];
         TestStandaloneConnections = [];
     }
+
+    public static TheoryData<IDatabaseAsync> TestDatabases
+    {
+        get
+        {
+            lock (LockObject)
+            {
+                if (field.Count == 0)
+                {
+                    field = [.. TestStandaloneConnections.Select(d => new TheoryDataRow<IDatabaseAsync>(d.Data.GetDatabase()))];
+                }
+            }
+            return field;
+        }
+
+        private set;
+    } = [];
     #endregion
 
     public TestConfiguration()
