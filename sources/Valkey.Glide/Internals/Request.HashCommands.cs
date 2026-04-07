@@ -228,19 +228,19 @@ internal partial class Request
         {
             switch (options.Expiry.Type)
             {
-                case ExpiryType.Seconds:
+                case Commands.Options.ExpiryType.Seconds:
                     args.AddRange([Constants.ExKeyword, options.Expiry.Value!.Value.ToGlideString()]);
                     break;
-                case ExpiryType.Milliseconds:
+                case Commands.Options.ExpiryType.Milliseconds:
                     args.AddRange([Constants.PxKeyword, options.Expiry.Value!.Value.ToGlideString()]);
                     break;
-                case ExpiryType.UnixSeconds:
+                case Commands.Options.ExpiryType.UnixSeconds:
                     args.AddRange([Constants.ExAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
                     break;
-                case ExpiryType.UnixMilliseconds:
+                case Commands.Options.ExpiryType.UnixMilliseconds:
                     args.AddRange([Constants.PxAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
                     break;
-                case ExpiryType.KeepExisting:
+                case Commands.Options.ExpiryType.KeepExisting:
                     args.Add(Constants.KeepTtlKeyword);
                     break;
                 default:
