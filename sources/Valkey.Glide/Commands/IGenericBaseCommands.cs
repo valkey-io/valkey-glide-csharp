@@ -3,10 +3,14 @@
 namespace Valkey.Glide.Commands;
 
 // ATTENTION: Methods should only be added to this interface if they are implemented
+<<<<<<< HEAD
 // by both Valkey GLIDE clients and StackExchange.Redis databases with the same signature.
 // Methods with different naming conventions between GLIDE and SER should NOT be here:
 // - GLIDE-style methods (DeleteAsync, ExistsAsync, etc.) go in IBaseClient.GenericCommands.cs
 // - SER-style methods (KeyDeleteAsync, KeyExistsAsync, etc.) go in IDatabaseAsync.GenericCommands.cs
+=======
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+>>>>>>> 5409f2c (refactor: Connection management command API cleanup (#279))
 
 /// <summary>
 /// Generic commands shared between Valkey GLIDE clients and StackExchange.Redis-compatible databases.
