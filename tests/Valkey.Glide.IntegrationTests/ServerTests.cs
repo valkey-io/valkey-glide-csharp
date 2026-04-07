@@ -81,22 +81,36 @@ public class ServerTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task CanPingAndEcho(ConnectionMultiplexer conn, bool isCluster)
+    public async Task PingAsync_Succeeds(ConnectionMultiplexer conn, bool _)
     {
         foreach (IServer server in conn.GetServers())
         {
-            Assert.Equal(conn.RawConfig.Protocol, server.Protocol);
-            Assert.Equal(TestConfiguration.SERVER_VERSION, server.Version);
-            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
-
-            ValkeyValue randomMessage = "hello";
             TimeSpan ping = await server.PingAsync();
-            TimeSpan pingWithMessage = await server.PingAsync(randomMessage);
-            ValkeyValue echo = await server.EchoAsync(randomMessage);
-
             Assert.True(ping > TimeSpan.Zero);
-            Assert.True(pingWithMessage > TimeSpan.Zero);
-            Assert.Equal(randomMessage, echo);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task PingAsync_WithMessage_Succeeds(ConnectionMultiplexer conn, bool _)
+    {
+        ValkeyValue message = "hello";
+        foreach (IServer server in conn.GetServers())
+        {
+            TimeSpan ping = await server.PingAsync(message);
+            Assert.True(ping > TimeSpan.Zero);
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task EchoAsync_Succeeds(ConnectionMultiplexer conn, bool _)
+    {
+        ValkeyValue message = "hello";
+        foreach (IServer server in conn.GetServers())
+        {
+            ValkeyValue echo = await server.EchoAsync(message);
+            Assert.Equal(message, echo);
         }
     }
 

@@ -4,12 +4,13 @@ using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide.Commands;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+
 /// <summary>
 /// Server management commands for cluster clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
-// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
-// and StackExchange.Redis databases.
 public interface IServerManagementClusterCommands
 {
     /// <summary>
@@ -94,96 +95,6 @@ public interface IServerManagementClusterCommands
     /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
     Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
-
-    /// <summary>
-    /// Echo the given message back from the server.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/echo/"/>
-    /// <param name="message">The message to echo</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing the echoed message as a <see cref="ValkeyValue"/>.<br />
-    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, ValkeyValue&gt;</c> with each address as the key and its corresponding
-    /// echoed message. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ClusterValue&lt;ValkeyValue&gt; response = await client.EchoAsync("Hello World", Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route);
-
-    /// <summary>
-    /// Ping the server.<br />
-    /// The command will be routed to all primary nodes.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.PingAsync();
-    /// Console.WriteLine(response); // Output: "PONG"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> PingAsync();
-
-    /// <summary>
-    /// Ping the server with a message.<br />
-    /// The command will be routed to all primary nodes.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="message">The message to send with the ping</param>
-    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.PingAsync("Hello World");
-    /// Console.WriteLine(response); // Output: "Hello World"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> PingAsync(ValkeyValue message);
-
-    /// <summary>
-    /// Ping the server.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.PingAsync(Route.AllPrimaries);
-    /// Console.WriteLine(response); // Output: "PONG"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> PingAsync(Route route);
-
-    /// <summary>
-    /// Ping the server with a message.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="message">The message to send with the ping</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.PingAsync("Hello World", Route.AllPrimaries);
-    /// Console.WriteLine(response); // Output: "Hello World"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> PingAsync(ValkeyValue message, Route route);
 
     /// <summary>
     /// Gets the values of configuration parameters.<br />
@@ -494,17 +405,4 @@ public interface IServerManagementClusterCommands
     /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(Route route);
 
-    /// <summary>
-    /// Changes the currently selected database.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/select"/>
-    /// <param name="index">The index of the database to select.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.SelectAsync(1);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task SelectAsync(long index);
 }

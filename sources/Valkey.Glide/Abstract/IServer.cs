@@ -10,7 +10,7 @@ namespace Valkey.Glide;
 /// Provides configuration controls of a Valkey server.
 /// Compatible with StackExchange.Redis <c>IServer</c>.
 /// </summary>
-public interface IServer
+public interface IServer : IRedisAsync
 {
     /// <summary>
     /// Gets the address of the connected server.
@@ -85,22 +85,6 @@ public interface IServer
     /// This command is often used to test if a connection is still alive, or to measure latency.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>The observed latency.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// TimeSpan result = await client.PingAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None);
-
-    /// <summary>
-    /// This command is often used to test if a connection is still alive, or to measure latency.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping"/>
     /// <param name="message">The message to send.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
@@ -169,15 +153,16 @@ public interface IServer
 
     /// <summary>
     /// Return the number of keys in the current database.
-    /// GLIDE does not support database selection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize"/>
-    /// <param name="database">The database index (currently only <c>-1</c> is supported by GLIDE).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not -1.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The number of keys in the database.</returns>
-    Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+    /// <remarks>
+    /// Unlike StackExchange.Redis, GLIDE does not support per-database selection.
+    /// Use <see cref="IConnectionManagementBaseCommands.SelectAsync(long)"/> to change the current database.
+    /// </remarks>
+    Task<long> DatabaseSizeAsync(CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -186,14 +171,15 @@ public interface IServer
 
     /// <summary>
     /// Delete all the keys of the current database.
-    /// GLIDE does not support database selection.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb"/>
-    /// <param name="database">The database index (currently only <c>-1</c> is supported by GLIDE).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not -1.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None);
+    /// <remarks>
+    /// Unlike StackExchange.Redis, GLIDE does not support per-database selection.
+    /// Use <see cref="IConnectionManagementBaseCommands.SelectAsync(long)"/> to change the current database.
+    /// </remarks>
+    Task FlushDatabaseAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Return the UNIX timestamp of the last successful save to disk.
@@ -328,17 +314,18 @@ public interface IServer
     /// Note: to resume an iteration via <paramref name="cursor"/>, pass the cursor value from a previous iteration.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/scan"/>.
-    /// <param name="database">The database ID. Only the current database (<c>-1</c>) is supported by Valkey GLIDE.</param>
     /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
     /// <param name="pageSize">The number of keys to return per SCAN iteration.</param>
     /// <param name="cursor">The cursor to start scanning from.</param>
     /// <param name="pageOffset">The number of keys to skip from the first page of results.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="database"/> is not the current database (<c>-1</c>).</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>An async enumerable of keys matching the pattern.</returns>
+    /// <remarks>
+    /// Unlike StackExchange.Redis, GLIDE does not support per-database selection.
+    /// Use <see cref="IConnectionManagementBaseCommands.SelectAsync(long)"/> to change the current database.
+    /// </remarks>
     IAsyncEnumerable<ValkeyKey> KeysAsync(
-        int database = -1,
         ValkeyValue pattern = default,
         int pageSize = 250,
         long cursor = 0,

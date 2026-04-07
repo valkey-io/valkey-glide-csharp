@@ -8,12 +8,13 @@ using static Valkey.Glide.Pipeline.Options;
 
 namespace Valkey.Glide.Commands;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+
 /// <summary>
 /// Generic commands for standalone clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#generic">Valkey – Generic Commands</seealso>
-// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
-// and StackExchange.Redis databases.
 public interface IGenericCommands
 {
     /// <summary>

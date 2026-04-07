@@ -125,13 +125,10 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
     }
 
-    public async Task<long> DatabaseSizeAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    public async Task<long> DatabaseSizeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-
-        return database != -1
-            ? throw new NotImplementedException("GLIDE does not support database selection. Use SelectAsync to change the current database first.")
-            : await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
+        return await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
     }
 
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
@@ -140,15 +137,9 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
     }
 
-    public async Task FlushDatabaseAsync(int database = -1, CommandFlags flags = CommandFlags.None)
+    public async Task FlushDatabaseAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-
-        if (database != -1)
-        {
-            throw new NotImplementedException("GLIDE does not support database selection. Use SelectAsync to change the current database first.");
-        }
-
         _ = await _conn.Command(Request.FlushDatabaseAsync(), MakeRoute());
     }
 
@@ -247,14 +238,9 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
     }
 
-    public async IAsyncEnumerable<ValkeyKey> KeysAsync(int database = -1, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    public async IAsyncEnumerable<ValkeyKey> KeysAsync(ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-
-        if (database != -1)
-        {
-            throw new NotImplementedException($"Database ID {database} is not supported by Valkey GLIDE");
-        }
 
         var options = new ScanOptions();
         if (!pattern.IsNull)

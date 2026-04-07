@@ -556,6 +556,6 @@ dotnet_diagnostic.xUnit3001.severity = error
 dotnet_diagnostic.xUnit3002.severity = error
 
 # IDE0130: Namespace does not match folder structure
-[**/Abstract/*.cs,**/Client/*.cs]
+[sources/Valkey.Glide/{Abstract,Client}/*.cs]
 dotnet_style_namespace_match_folder = false
 dotnet_diagnostic.IDE0130.severity = none
