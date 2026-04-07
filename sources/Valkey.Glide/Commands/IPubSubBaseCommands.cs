@@ -2,13 +2,14 @@
 
 namespace Valkey.Glide.Commands;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+
 /// <summary>
 /// Pub/sub commands for standalone and cluster clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
 /// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>
-// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
-// and StackExchange.Redis databases.
 public interface IPubSubBaseCommands
 {
     #region PublishCommands

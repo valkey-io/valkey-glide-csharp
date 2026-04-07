@@ -2,14 +2,15 @@
 
 namespace Valkey.Glide.Commands;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+
 /// <summary>
 /// Scripting and function commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#scripting">Valkey – Scripting and Function Commands</seealso>
 /// <seealso href="https://glide.valkey.io/how-to/execute-custom-scripts/">Valkey GLIDE – Execute Custom Scripts</seealso>
 /// <seealso href="https://glide.valkey.io/how-to/load-and-execute-functions/">Valkey GLIDE – Load and Execute Functions</seealso>
-// NOTE: Methods should only be added to this interface if they are implemented by both Valkey GLIDE clients
-// and StackExchange.Redis databases.
 public interface IScriptingAndFunctionBaseCommands
 {
     // ===== Script Execution =====
