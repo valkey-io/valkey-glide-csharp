@@ -4,7 +4,7 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class DBTests(TestConfiguration config)
+public class DatabaseTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
@@ -30,13 +30,11 @@ public class DBTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task PingAsync_ReturnsPositiveLatency(ConnectionMultiplexer conn, bool isCluster)
+    public async Task PingAsync_Succeeds(ConnectionMultiplexer conn, bool _)
     {
-        _ = isCluster; // Unused — test applies to both standalone and cluster.
-
         IDatabase db = conn.GetDatabase();
-        TimeSpan ping = await db.PingAsync();
 
+        TimeSpan ping = await db.PingAsync();
         Assert.True(ping > TimeSpan.Zero);
     }
 }
