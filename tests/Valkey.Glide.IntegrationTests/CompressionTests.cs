@@ -413,11 +413,11 @@ public class CompressionTests(TestConfiguration config)
         string key = $"setex_test_{Guid.NewGuid()}";
         string value = new string('s', LargeValueSize);
 
-        object? setexResult = await client.CustomCommand((GlideString[])["SETEX", key, "10", value]);
+        await client.StringSetAsync(key, value, TimeSpan.FromSeconds(10));
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"SETEX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+            $"SET with EX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await client.StringGetAsync(key);
         Assert.Equal(value, retrieved.ToString());
@@ -440,11 +440,11 @@ public class CompressionTests(TestConfiguration config)
         string key = $"psetex_test_{Guid.NewGuid()}";
         string value = new string('p', LargeValueSize);
 
-        object? psetexResult = await client.CustomCommand((GlideString[])["PSETEX", key, "10000", value]);
+        await client.StringSetAsync(key, value, TimeSpan.FromMilliseconds(10000));
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"PSETEX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+            $"SET with PX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await client.StringGetAsync(key);
         Assert.Equal(value, retrieved.ToString());
@@ -467,12 +467,12 @@ public class CompressionTests(TestConfiguration config)
         string key = $"setnx_test_{Guid.NewGuid()}";
         string value = new string('n', LargeValueSize);
 
-        object? result = await client.CustomCommand((GlideString[])["SETNX", key, value]);
-        Assert.Equal(1L, result);
+        bool result = await client.StringSetAsync(key, value, when: When.NotExists);
+        Assert.True(result);
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"SETNX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+            $"SET NX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await client.StringGetAsync(key);
         Assert.Equal(value, retrieved.ToString());
