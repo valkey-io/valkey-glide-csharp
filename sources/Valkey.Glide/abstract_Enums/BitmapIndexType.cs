@@ -35,14 +35,4 @@ internal static class BitmapIndexTypeExtensions
         BitmapIndexType.Byte => ValkeyLiterals.BYTE,
         _ => throw new ArgumentOutOfRangeException(nameof(indexType)),
     };
-
-    /// <summary>
-    /// Converts a <see cref="StringIndexType"/> to <see cref="BitmapIndexType"/>.
-    /// </summary>
-    internal static BitmapIndexType ToBitmapIndexType(this StringIndexType indexType) => indexType switch
-    {
-        StringIndexType.Bit => BitmapIndexType.Bit,
-        StringIndexType.Byte => BitmapIndexType.Byte,
-        _ => throw new ArgumentOutOfRangeException(nameof(indexType)),
-    };
 }

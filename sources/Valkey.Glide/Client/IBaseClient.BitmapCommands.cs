@@ -180,6 +180,24 @@ public partial interface IBaseClient
     Task<long?[]> BitFieldAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldSubCommand> subCommands);
 
     /// <summary>
+    /// Reads or modifies the array of bits representing the string stored at key based on a single subcommand.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitfield"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="subCommand">The subcommand to execute (GET, SET, or INCRBY).</param>
+    /// <returns>
+    /// The result of the subcommand, or null if overflow occurred with OVERFLOW FAIL.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long? value = await client.BitFieldAsync("mykey", new BitFieldGet(Encoding.Signed(8), new BitOffset(0)));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long?> BitFieldAsync(ValkeyKey key, BitFieldOptions.IBitFieldSubCommand subCommand);
+
+    /// <summary>
     /// Reads the array of bits representing the string stored at key based on the specified GET subcommands.
     /// This is a read-only variant of BITFIELD that can be routed to replicas.
     /// </summary>
@@ -200,4 +218,21 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task<long[]> BitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands);
+
+    /// <summary>
+    /// Reads the bits representing the string stored at key based on a single GET subcommand.
+    /// This is a read-only variant of BITFIELD that can be routed to replicas.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitfield_ro"/>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="subCommand">The GET subcommand to execute.</param>
+    /// <returns>The result of the GET subcommand.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long value = await client.BitFieldReadOnlyAsync("mykey", new BitFieldGet(Encoding.Unsigned(8), new BitOffset(0)));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> BitFieldReadOnlyAsync(ValkeyKey key, BitFieldOptions.IBitFieldReadOnlySubCommand subCommand);
 }

@@ -20,7 +20,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T BitPosAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, BitmapIndexType indexType = BitmapIndexType.Byte) => AddCmd(Request.BitPosAsync(key, bit, start, end, indexType));
 
     /// <inheritdoc cref="IBatchBitmapCommands.BitOp(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey)" />
-    public T BitOpAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.BitOpAsync(operation, destination, first, second));
+    public T BitOpAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.BitOpAsync(operation, destination, [first, second]));
 
     /// <inheritdoc cref="IBatchBitmapCommands.BitOp(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})" />
     public T BitOpAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(Request.BitOpAsync(operation, destination, [.. keys]));

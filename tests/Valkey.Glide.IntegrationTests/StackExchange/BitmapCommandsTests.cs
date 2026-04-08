@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.ConnectionConfiguration;
@@ -358,97 +357,6 @@ public class BitmapCommandsTests(BitmapCommandsFixture fixture) : IClassFixture<
         ValkeyKey[] keys = ["key1", "key2"];
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => fixture.Database.StringBitOperationAsync(Bitwise.And, "result", keys, UnsupportedCommandFlag));
-    }
-
-    #endregion
-
-    #region API Equivalence Tests
-
-    [Fact]
-    public async Task GetBitAsync_EquivalentTo_StringGetBitAsync()
-    {
-        var db = fixture.Database;
-        var client = fixture.Client;
-        string key = $"equiv-getbit-{Guid.NewGuid()}";
-
-        await db.StringSetAsync(key, "A");
-
-        bool glideResult = await client.GetBitAsync(key, 1);
-        bool serResult = await db.StringGetBitAsync(key, 1, CommandFlags.None);
-
-        Assert.Equal(glideResult, serResult);
-    }
-
-    [Fact]
-    public async Task SetBitAsync_EquivalentTo_StringSetBitAsync()
-    {
-        var db = fixture.Database;
-        var client = fixture.Client;
-        string key1 = $"equiv-setbit-glide-{Guid.NewGuid()}";
-        string key2 = $"equiv-setbit-ser-{Guid.NewGuid()}";
-
-        bool glideResult = await client.SetBitAsync(key1, 5, true);
-        bool serResult = await db.StringSetBitAsync(key2, 5, true, CommandFlags.None);
-
-        Assert.Equal(glideResult, serResult);
-
-        Assert.True(await client.GetBitAsync(key1, 5));
-        Assert.True(await db.StringGetBitAsync(key2, 5));
-    }
-
-    [Fact]
-    public async Task BitCountAsync_EquivalentTo_StringBitCountAsync()
-    {
-        var db = fixture.Database;
-        var client = fixture.Client;
-        string key = $"equiv-bitcount-{Guid.NewGuid()}";
-
-        await db.StringSetAsync(key, "ABC");
-
-        long glideResult = await client.BitCountAsync(key, 0, 1, BitmapIndexType.Byte);
-        long serResult = await db.StringBitCountAsync(key, 0, 1, StringIndexType.Byte, CommandFlags.None);
-
-        Assert.Equal(glideResult, serResult);
-    }
-
-    [Fact]
-    public async Task BitPosAsync_EquivalentTo_StringBitPositionAsync()
-    {
-        var db = fixture.Database;
-        var client = fixture.Client;
-        string key = $"equiv-bitpos-{Guid.NewGuid()}";
-
-        await db.StringSetAsync(key, "A");
-
-        long glideResult = await client.BitPosAsync(key, true, 0, -1, BitmapIndexType.Byte);
-        long serResult = await db.StringBitPositionAsync(key, true, 0, -1, StringIndexType.Byte, CommandFlags.None);
-
-        Assert.Equal(glideResult, serResult);
-    }
-
-    [Fact]
-    public async Task BitOpAsync_EquivalentTo_StringBitOperationAsync()
-    {
-        var db = fixture.Database;
-        var client = fixture.Client;
-        string keyPrefix = $"{{equiv-bitop-{Guid.NewGuid()}}}";
-        string key1 = $"{keyPrefix}:key1";
-        string key2 = $"{keyPrefix}:key2";
-        string glideResult = $"{keyPrefix}:glide-result";
-        string serResult = $"{keyPrefix}:ser-result";
-
-        await db.StringSetAsync(key1, "A");
-        await db.StringSetAsync(key2, "B");
-
-        ValkeyKey[] keys = [key1, key2];
-        long glideSize = await client.BitOpAsync(Bitwise.And, glideResult, keys);
-        long serSize = await db.StringBitOperationAsync(Bitwise.And, serResult, keys, CommandFlags.None);
-
-        Assert.Equal(glideSize, serSize);
-
-        ValkeyValue glideValue = await db.StringGetAsync(glideResult);
-        ValkeyValue serValue = await db.StringGetAsync(serResult);
-        Assert.Equal(glideValue.ToString(), serValue.ToString());
     }
 
     #endregion

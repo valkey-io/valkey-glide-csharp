@@ -69,6 +69,20 @@ public abstract partial class BaseClient
     }
 
     /// <inheritdoc/>
+    public async Task<long?> BitFieldAsync(ValkeyKey key, BitFieldOptions.IBitFieldSubCommand subCommand)
+    {
+        long?[] results = await BitFieldAsync(key, [subCommand]);
+        return results.Length > 0 ? results[0] : null;
+    }
+
+    /// <inheritdoc/>
     public async Task<long[]> BitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands)
         => await Command(Request.BitFieldReadOnlyAsync(key, [.. subCommands]));
+
+    /// <inheritdoc/>
+    public async Task<long> BitFieldReadOnlyAsync(ValkeyKey key, BitFieldOptions.IBitFieldReadOnlySubCommand subCommand)
+    {
+        long[] results = await BitFieldReadOnlyAsync(key, [subCommand]);
+        return results.Length > 0 ? results[0] : 0;
+    }
 }
