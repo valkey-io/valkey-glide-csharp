@@ -199,9 +199,30 @@ public class SERHashCommandTests(TestConfiguration config)
 
         long[] results = await db.HashFieldGetTimeToLiveAsync(key, ["field1", "field2", "nonexistent"]);
         Assert.Equal(3, results.Length);
-        Assert.True(results[0] is > 0 and <= 60000); // field1 has TTL
-        Assert.Equal(-1, results[1]); // field2 is persistent
-        Assert.Equal(-2, results[2]); // nonexistent
+        Assert.True(results[0] is > 0 and <= 60000);
+        Assert.Equal(-1, results[1]);
+        Assert.Equal(-2, results[2]);
+    }
+
+    #endregion
+    #region HashFieldPersistAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldPersistAsync(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hpersist-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        PersistResult[] results = await db.HashFieldPersistAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(3, results.Length);
+        Assert.Equal(PersistResult.Success, results[0]);
+        Assert.Equal(PersistResult.ConditionNotMet, results[1]);
+        Assert.Equal(PersistResult.NoSuchField, results[2]);
     }
 
     #endregion

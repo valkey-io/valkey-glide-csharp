@@ -167,16 +167,12 @@ internal partial class Request
         return Simple<long>(RequestType.HSetEx, [.. args]);
     }
 
-    public static Cmd<object[], long[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] fields)
+    public static Cmd<object[], HashPersistResult[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] hashFields)
     {
         List<GlideString> args = [key.ToGlideString()];
-
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-        args.AddRange(fields.ToGlideStrings());
-
+        AddFields(args, hashFields);
         return new(RequestType.HPersist, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
+            [.. response.Select(item => (HashPersistResult)(long)item)]);
     }
 
     public static Cmd<object[], ExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)

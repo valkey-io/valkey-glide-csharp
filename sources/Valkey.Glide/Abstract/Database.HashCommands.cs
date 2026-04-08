@@ -176,6 +176,14 @@ internal partial class Database
         return [.. results.Select(r => r.TimeToLiveMs)];
     }
 
+    /// <inheritdoc/>
+    public async Task<PersistResult[]> HashFieldPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        HashPersistResult[] results = await HashPersistAsync(key, hashFields);
+        return [.. results.Select(r => (PersistResult)(int)r)];
+    }
+
     /// <summary>
     /// Maps the given StackExchange.Redis <see cref="ExpireWhen"/> to the corresponding Valkey GLIDE <see cref="ExpireCondition"/>.
     /// </summary>

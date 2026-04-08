@@ -91,4 +91,22 @@ public partial interface IBaseClient
     Task<TimeToLiveResult[]> HashTimeToLiveAsync(
         ValkeyKey key,
         IEnumerable<ValkeyValue> hashFields);
+
+    /// <summary>
+    /// Removes the expiry from the specified hash field.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hpersist"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="hashField">The field to remove the expiry from.</param>
+    /// <returns>A <see cref="HashPersistResult"/> for the hash field.</returns>
+    Task<HashPersistResult> HashPersistAsync(
+        ValkeyKey key,
+        ValkeyValue hashField);
+
+    /// <inheritdoc cref="HashPersistAsync(ValkeyKey, ValkeyValue)"/>
+    /// <param name="hashFields">The fields to remove the expiry from.</param>
+    /// <returns>A <see cref="HashPersistResult"/> array with one entry per field.</returns>
+    Task<HashPersistResult[]> HashPersistAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields);
 }

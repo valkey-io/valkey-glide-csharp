@@ -88,8 +88,12 @@ public abstract partial class BaseClient
         => await Command(Request.HashSetExAsync(key, fieldValueMap, options));
 
     /// <inheritdoc/>
-    public async Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields)
-        => await Command(Request.HashPersistAsync(key, [.. fields]));
+    public async Task<HashPersistResult> HashPersistAsync(ValkeyKey key, ValkeyValue hashField)
+        => (await Command(Request.HashPersistAsync(key, [hashField]))).First();
+
+    /// <inheritdoc/>
+    public async Task<HashPersistResult[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
+        => await Command(Request.HashPersistAsync(key, [.. hashFields]));
 
     /// <inheritdoc/>
     public async Task<ExpireResult[]> HashExpireAsync(ValkeyKey key, ValkeyValue hashField, TimeSpan expiry, ExpireCondition condition = ExpireCondition.Always)

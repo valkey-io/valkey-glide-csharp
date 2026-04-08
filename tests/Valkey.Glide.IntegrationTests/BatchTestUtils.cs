@@ -1413,7 +1413,7 @@ internal partial class BatchTestUtils
 
             // Test HPERSIST
             _ = batch.HashPersist(expireKey, ["expire_field1"]);
-            testData.Add(new(new long[] { 1 }, "HashPersist(expireKey, [expire_field1])"));
+            testData.Add(new(new HashPersistResult[] { HashPersistResult.ExpiryRemoved }, "HashPersist(expireKey, [expire_field1])"));
 
             // Test HEXPIRETIME
             _ = batch.HashExpireTime(expireKey, ["expire_field1", "expire_field2"]);

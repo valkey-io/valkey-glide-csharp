@@ -595,14 +595,14 @@ public class CommandTests
             () => Assert.Null(Request.HashGetExAsync("key", ["field1"], new HashGetExOptions()).Converter(null!)),
             () => Assert.Equal(1L, Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions()).Converter(1L)),
             () => Assert.Equal(0L, Request.HashSetExAsync("key", new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "value1" } }, new HashSetExOptions()).Converter(0L)),
-            () => Assert.Equal([1L, -1L, -2L], Request.HashPersistAsync("key", ["field1", "field2", "field3"]).Converter([1L, -1L, -2L])),
+            () => Assert.Equal([HashPersistResult.ExpiryRemoved, HashPersistResult.NoExpiry, HashPersistResult.NoField], Request.HashPersistAsync("key", ["field1", "field2", "field3"]).Converter([1L, -1L, -2L])),
             () => Assert.Equal([ExpireResult.Success, ExpireResult.ConditionNotMet, ExpireResult.NoSuchField], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
             () => Assert.Equal([ExpireResult.Success, ExpireResult.ConditionNotMet, ExpireResult.NoSuchField], Request.HashExpireAtAsync("key", DateTimeOffset.FromUnixTimeSeconds(1609459200), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
             () => Assert.True(Request.HashExpireTimeAsync("key", ["field1"]).Converter([1609459200000L])[0].HasExpiry),
             () => Assert.False(Request.HashExpireTimeAsync("key", ["field1"]).Converter([-1L])[0].HasExpiry),
             () => Assert.False(Request.HashExpireTimeAsync("key", ["field1"]).Converter([-2L])[0].Exists),
-            () => Assert.True(Request.HashTimeToLiveAsync("key", ["field1"]).Converter([60000L])[0].HasExpiry),
-            () => Assert.False(Request.HashTimeToLiveAsync("key", ["field1"]).Converter([-1L])[0].HasExpiry),
+            () => Assert.True(Request.HashTimeToLiveAsync("key", ["field1"]).Converter([60000L])[0].HasTimeToLive),
+            () => Assert.False(Request.HashTimeToLiveAsync("key", ["field1"]).Converter([-1L])[0].HasTimeToLive),
             () => Assert.False(Request.HashTimeToLiveAsync("key", ["field1"]).Converter([-2L])[0].Exists),
 
             // List Commands converters

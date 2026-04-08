@@ -1,7 +1,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents the result of a time-to-live operation.
+/// Represents the result of an operation to retrieve the time to live for a key or field.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ttl/"/>
 /// <seealso href="https://valkey.io/commands/pttl/"/>
@@ -17,15 +17,15 @@ public readonly struct TimeToLiveResult
     public bool Exists => TimeToLiveMs != -2L;
 
     /// <summary>
-    /// Whether the key or field has an expiry set.
+    /// Whether the key or field has a time to live.
     /// </summary>
-    public bool HasExpiry => TimeToLiveMs >= 0;
+    public bool HasTimeToLive => TimeToLiveMs >= 0;
 
     /// <summary>
     /// The remaining time to live, or <see langword="null"/> if the key
     /// or field does not exist or does not have an expiry set.
     /// </summary>
-    public TimeSpan? TimeToLive => HasExpiry ? TimeSpan.FromMilliseconds(TimeToLiveMs) : null;
+    public TimeSpan? TimeToLive => HasTimeToLive ? TimeSpan.FromMilliseconds(TimeToLiveMs) : null;
 
     /// <summary>
     /// Creates a <see cref="TimeToLiveResult"/> from given value.

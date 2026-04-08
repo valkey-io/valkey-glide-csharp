@@ -438,22 +438,22 @@ public class HashCommandTests(TestConfiguration config)
         TimeToLiveResult[] ttlResults = await client.HashTimeToLiveAsync(key, ["field1"]);
         _ = Assert.Single(ttlResults);
         Assert.True(ttlResults[0].Exists);
-        Assert.False(ttlResults[0].HasExpiry);
+        Assert.False(ttlResults[0].HasTimeToLive);
 
-        // Now test HPERSIST (should return -1 for field exists but has no expiry)
-        long[] results = await client.HashPersistAsync(key, ["field1"]);
+        // Now test HPERSIST (should return ConditionNotMet for field exists but has no expiry)
+        HashPersistResult[] results = await client.HashPersistAsync(key, ["field1"]);
         _ = Assert.Single(results);
-        Assert.Equal(-1, results[0]); // Field exists but has no expiry
+        Assert.Equal(HashPersistResult.NoExpiry, results[0]);
 
-        // Test HPERSIST on non-existing field (should return -2)
+        // Test HPERSIST on non-existing field (should return NoSuchField)
         results = await client.HashPersistAsync(key, ["nonexistent"]);
         _ = Assert.Single(results);
-        Assert.Equal(-2, results[0]); // Field does not exist
+        Assert.Equal(HashPersistResult.NoField, results[0]);
 
         // Test HPERSIST on non-existing key
         results = await client.HashPersistAsync("nonexistent_key", ["field1"]);
         _ = Assert.Single(results);
-        Assert.Equal(-2, results[0]); // Key does not exist
+        Assert.Equal(HashPersistResult.NoField, results[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -627,16 +627,16 @@ public class HashCommandTests(TestConfiguration config)
         // Test multi-field
         TimeToLiveResult[] results = await client.HashTimeToLiveAsync(key, ["field1", "field2", "nonexistent"]);
         Assert.Equal(3, results.Length);
-        Assert.True(results[0].HasExpiry);
+        Assert.True(results[0].HasTimeToLive);
         _ = Assert.NotNull(results[0].TimeToLive);
         Assert.True(results[0].TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
         Assert.True(results[1].Exists);
-        Assert.False(results[1].HasExpiry); // field2 has no expiry
-        Assert.False(results[2].Exists); // nonexistent field
+        Assert.False(results[1].HasTimeToLive);
+        Assert.False(results[2].Exists);
 
         // Test single-field
         TimeToLiveResult singleResult = await client.HashTimeToLiveAsync(key, "field1");
-        Assert.True(singleResult.HasExpiry);
+        Assert.True(singleResult.HasTimeToLive);
         _ = Assert.NotNull(singleResult.TimeToLive);
         Assert.True(singleResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
     }

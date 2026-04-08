@@ -1,7 +1,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents the result of an expire time operation.
+/// Represents the result of an operation to set the expiry for a key or field.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/expiretime/"/>
 /// <seealso href="https://valkey.io/commands/pexpiretime/"/>

@@ -365,32 +365,4 @@ public interface IHashBaseCommands
     /// </example>
     /// </remarks>
     Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options);
-
-    /// <summary>
-    /// Removes the expiration time for each specified field, turning the field from volatile (a field
-    /// with expiration time) to persistent (a field that will never expire as no expiration time is
-    /// associated).
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hpersist"/>
-    /// <note>
-    /// Since: Valkey 9.0 and above.
-    /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="fields">The fields to remove expiration from.</param>
-    /// <returns>
-    /// An array of <see langword="long"/> values, each associated with a field:
-    /// <list type="bullet">
-    /// <item><description><c>1</c> if the expiration time was successfully removed from the field.</description></item>
-    /// <item><description><c>-1</c> if the field exists but has no expiration time.</description></item>
-    /// <item><description><c>-2</c> if the field does not exist in the provided hash key, or the hash key does not exist.</description></item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// long[] results = await client.HashPersistAsync(key, [field1, field2, field3]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 }
