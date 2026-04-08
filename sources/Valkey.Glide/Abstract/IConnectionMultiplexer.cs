@@ -20,29 +20,30 @@ public interface IConnectionMultiplexer : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="host">The host to get a server for.</param>
     /// <param name="port">The specific port for <paramref name="host"/> to get a server for.</param>
-    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
-    IServer GetServer(string host, int port, object? asyncState = null);
+    /// <remarks>Unlike StackExchange.Redis, GLIDE does not support <c>asyncState</c>.</remarks>
+    IServer GetServer(string host, int port);
 
     /// <summary>
     /// Obtain a configuration API for an individual server.
     /// </summary>
     /// <param name="hostAndPort">The "host:port" string to get a server for.</param>
-    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
-    IServer GetServer(string hostAndPort, object? asyncState = null);
+    /// <remarks>Unlike StackExchange.Redis, GLIDE does not support <c>asyncState</c>.</remarks>
+    IServer GetServer(string hostAndPort);
 
     /// <summary>
     /// Obtain a configuration API for an individual server.
     /// </summary>
     /// <param name="host">The host to get a server for.</param>
     /// <param name="port">The specific port for <paramref name="host"/> to get a server for.</param>
+    /// <remarks>Unlike StackExchange.Redis, GLIDE does not support <c>asyncState</c>.</remarks>
     IServer GetServer(IPAddress host, int port);
 
     /// <summary>
     /// Obtain a configuration API for an individual server.
     /// </summary>
     /// <param name="endpoint">The endpoint to get a server for.</param>
-    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
-    IServer GetServer(EndPoint endpoint, object? asyncState = null);
+    /// <remarks>Unlike StackExchange.Redis, GLIDE does not support <c>asyncState</c>.</remarks>
+    IServer GetServer(EndPoint endpoint);
 
     /// <summary>
     /// Obtain configuration APIs for all servers in this multiplexer.
@@ -62,16 +63,21 @@ public interface IConnectionMultiplexer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Obtain a pub/sub subscriber connection to the specified server.
     /// </summary>
-    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
-    ISubscriber GetSubscriber(object? asyncState = null);
+    /// <remarks>Unlike StackExchange.Redis, GLIDE does not support <c>asyncState</c>.</remarks>
+    ISubscriber GetSubscriber();
 
-    // TODO add link to `SELECT` once implemented
     /// <summary>
-    /// Obtain an interactive connection to a database inside server.
+    /// Obtain an interactive connection to a database.
     /// </summary>
-    /// <param name="db">Not supported. To switch the database, please use `SELECT` command.</param>
-    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
-    IDatabase GetDatabase(int db = -1, object? asyncState = null);
+    /// <remarks>
+    /// <para>
+    /// Unlike StackExchange.Redis, GLIDE does not support per-database connections or <c>asyncState</c>.
+    /// To switch databases, use <see cref="Commands.IConnectionManagementBaseCommands.SelectAsync(long)"/>
+    /// on the GLIDE client. This changes the database for the entire connection and all subsequent commands.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="Commands.IConnectionManagementBaseCommands.SelectAsync(long)" />
+    IDatabase GetDatabase();
 
     /// <summary>
     /// Gets the connection ID for a specific endpoint and connection type.

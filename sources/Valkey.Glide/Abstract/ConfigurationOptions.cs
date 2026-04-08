@@ -163,7 +163,7 @@ public sealed class ConfigurationOptions : ICloneable
     public int? ConnectTimeout { get; set; }
 
     /// <summary>
-    /// Specifies the default database to be used when calling <see cref="ConnectionMultiplexer.GetDatabase(int, object)" /> without any parameters.
+    /// Specifies the default database to be used when calling <see cref="ConnectionMultiplexer.GetDatabase()" /> without any parameters.
     /// </summary>
     public int? DefaultDatabase { get; set; }
 

@@ -12,15 +12,15 @@ public interface IDatabase : IDatabaseAsync
     /// Allows creation of a group of operations that will be sent to the server as a single unit,
     /// but which may or may not be processed on the server contiguously.
     /// </summary>
-    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
     /// <returns>The created batch.</returns>
-    IBatch CreateBatch(object? asyncState = null);
+    /// <remarks>Unlike StackExchange.Redis, GLIDE does not support <c>asyncState</c>.</remarks>
+    IBatch CreateBatch();
 
     /// <summary>
     /// Allows creation of a group of operations that will be sent to the server as a single unit,
     /// and processed on the server as a single unit.
     /// </summary>
-    /// <param name="asyncState">The async state is not supported by GLIDE.</param>
     /// <returns>The created transaction.</returns>
-    ITransaction CreateTransaction(object? asyncState = null);
+    /// <remarks>Unlike StackExchange.Redis, GLIDE does not support <c>asyncState</c>.</remarks>
+    ITransaction CreateTransaction();
 }
