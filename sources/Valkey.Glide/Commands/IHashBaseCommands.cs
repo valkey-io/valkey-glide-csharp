@@ -261,14 +261,14 @@ public interface IHashBaseCommands
     Task<ValkeyValue[]> HashValuesAsync(ValkeyKey key);
 
     /// <summary>
-    /// Gets a random field from the hash at key.
+    /// Gets a random field name from the specified hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield"/>
     /// <note>
     /// Since: Valkey 6.2.0 and above.
     /// </note>
     /// <param name="key">The key of the hash.</param>
-    /// <returns>A random hash field name or <see cref="ValkeyValue.Null"/> if the hash does not exist.</returns>
+    /// <returns>A random field name or <see cref="ValkeyValue.Null"/> if the hash does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -279,40 +279,55 @@ public interface IHashBaseCommands
     Task<ValkeyValue> HashRandomFieldAsync(ValkeyKey key);
 
     /// <summary>
-    /// Gets count field names from the hash at key.
+    /// Gets random field names from the specified hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield"/>
     /// <note>
     /// Since: Valkey 6.2.0 and above.
     /// </note>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="count">The number of fields to return.</param>
-    /// <returns>An array of hash field names of size of at most count, or an empty array if the hash does not exist.</returns>
+    /// <param name="count">
+    /// The maximum number of field names to return.
+    /// If positive, returns up to <paramref name="count"/> distinct fields.
+    /// If negative, allows duplicates and returns exactly <c>abs(count)</c> fields.
+    /// </param>
+    /// <returns>An array of field names, or an empty array if the hash does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] randomFields = await client.HashRandomFieldsAsync(key, 3);
+    /// var distinctFields = await client.HashRandomFieldsAsync(key, 3);
+    /// </code>
+    /// </example>
+    /// /// <example>
+    /// <code>
+    /// var randomFields = await client.HashRandomFieldsAsync(key, -3);
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count);
 
     /// <summary>
-    /// Gets count field names and values from the hash at key.
+    /// Gets random field-value pairs from the specified hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield"/>
-    /// <note>
-    /// Since: Valkey 6.2.0 and above.
-    /// </note>
     /// <param name="key">The key of the hash.</param>
-    /// <param name="count">The number of fields to return.</param>
-    /// <returns>An array of hash entries of size of at most count, or an empty array if the hash does not exist.</returns>
+    /// <param name="count">
+    /// The number of field-value pairs to return.
+    /// If positive, returns up to <paramref name="count"/> distinct pairs.
+    /// If negative, allows duplicates and returns exactly <c>abs(count)</c> pairs.
+    /// </param>
+    /// <returns>An array of field-value pairs, or an empty array if the hash does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// HashEntry[] randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 3);
+    /// var distinctPairs = await client.HashRandomFieldsWithValuesAsync(key, 3);
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var randomPairs = await client.HashRandomFieldsWithValuesAsync(key, -3);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
+    Task<KeyValuePair<ValkeyValue, ValkeyValue>[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
 }

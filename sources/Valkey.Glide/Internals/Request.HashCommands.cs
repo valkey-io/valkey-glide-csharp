@@ -69,8 +69,16 @@ internal partial class Request
     public static Cmd<object[], ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count)
         => ObjectArrayToValkeyValueArray(RequestType.HRandField, [key.ToGlideString(), count.ToGlideString()]);
 
-    public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
-        => ObjectArrayToHashEntries(RequestType.HRandField, [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword]);
+    public static Cmd<object[], KeyValuePair<ValkeyValue, ValkeyValue>[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
+    {
+        GlideString[] args = [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword];
+        return new(RequestType.HRandField, args, false, response =>
+            [.. response.Select(item =>
+            {
+                object[] arr = (object[])item;
+                return new KeyValuePair<ValkeyValue, ValkeyValue>((GlideString)arr[0], (GlideString)arr[1]);
+            })]);
+    }
 
     public static Cmd<object[], ValkeyValue[]> HashGetExpiryAsync(
         ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)

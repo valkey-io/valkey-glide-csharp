@@ -129,7 +129,8 @@ internal partial class Database
     public async Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashRandomFieldsWithValuesAsync(key, count);
+        KeyValuePair<ValkeyValue, ValkeyValue>[] kvps = await HashRandomFieldsWithValuesAsync(key, count);
+        return [.. kvps.Select(kvp => new HashEntry(kvp.Key, kvp.Value))];
     }
 
     /// <inheritdoc/>

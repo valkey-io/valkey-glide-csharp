@@ -847,12 +847,11 @@ public class CommandTests
             // Test HashRandomFieldsWithValuesAsync
             () =>
             {
-                HashEntry[] result = Request.HashRandomFieldsWithValuesAsync("key", 3).Converter(testObjectNestedArray);
+                var result = Request.HashRandomFieldsWithValuesAsync("key", 3).Converter(testObjectNestedArray);
                 Assert.Equal(3, result.Length);
-                foreach (HashEntry entry in result)
+                foreach (var entry in result)
                 {
-                    _ = Assert.IsType<HashEntry>(entry);
-                    _ = Assert.IsType<ValkeyValue>(entry.Name);
+                    _ = Assert.IsType<ValkeyValue>(entry.Key);
                     _ = Assert.IsType<ValkeyValue>(entry.Value);
                 }
             }

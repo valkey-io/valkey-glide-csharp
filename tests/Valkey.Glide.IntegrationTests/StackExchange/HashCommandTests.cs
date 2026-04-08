@@ -227,6 +227,58 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region HashRandomFieldAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashRandomFieldAsync_ReturnsField(IDatabaseAsync db)
+    {
+        string key = $"ser-hrandfield-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+
+        ValkeyValue field = await db.HashRandomFieldAsync(key, CommandFlags.None);
+        Assert.Contains(field.ToString(), new[] { "field1", "field2" });
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashRandomFieldsAsync_ReturnsFields(IDatabaseAsync db)
+    {
+        string key = $"ser-hrandfields-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+        _ = await db.HashSetAsync(key, "field3", "value3", When.Always);
+
+        ValkeyValue[] fields = await db.HashRandomFieldsAsync(key, 2, CommandFlags.None);
+        Assert.Equal(2, fields.Length);
+        foreach (ValkeyValue field in fields)
+        {
+            Assert.Contains(field.ToString(), new[] { "field1", "field2", "field3" });
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashRandomFieldsWithValuesAsync_ReturnsEntries(IDatabaseAsync db)
+    {
+        string key = $"ser-hrandfieldwv-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+        _ = await db.HashSetAsync(key, "field3", "value3", When.Always);
+
+        // SER layer returns HashEntry[]
+        HashEntry[] entries = await db.HashRandomFieldsWithValuesAsync(key, 2, CommandFlags.None);
+        Assert.Equal(2, entries.Length);
+        foreach (HashEntry entry in entries)
+        {
+            string fieldName = entry.Name.ToString();
+            Assert.Contains(fieldName, new[] { "field1", "field2", "field3" });
+            Assert.Equal("value" + fieldName[5..], entry.Value.ToString());
+        }
+    }
+
+    #endregion
     #region HashFieldSetAndSetExpiryAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]

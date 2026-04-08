@@ -76,7 +76,14 @@ public abstract partial class BaseClient
         => await Command(Request.HashRandomFieldsAsync(key, count));
 
     /// <inheritdoc/>
-    public async Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
+    public async Task<KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key)
+    {
+        KeyValuePair<ValkeyValue, ValkeyValue>[] result = await Command(Request.HashRandomFieldsWithValuesAsync(key, 1));
+        return result.Length > 0 ? result[0] : null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<KeyValuePair<ValkeyValue, ValkeyValue>[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
         => await Command(Request.HashRandomFieldsWithValuesAsync(key, count));
 
     /// <inheritdoc/>

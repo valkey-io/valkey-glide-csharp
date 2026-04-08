@@ -298,7 +298,6 @@ public class HashCommandTests(TestConfiguration config)
             () => client.HashIncrementByAsync(key, "text_field", 1.5));
     }
 
-
     #endregion
     #region HashRandomFieldAsync
 
@@ -343,17 +342,39 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        HashEntry[] randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 2);
+        var randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 2);
         Assert.Equal(2, randomEntries.Length);
 
-        foreach (HashEntry entry in randomEntries)
+        foreach (var entry in randomEntries)
         {
-            string fieldName = entry.Name.ToString();
+            string fieldName = entry.Key.ToString();
             string fieldValue = entry.Value.ToString();
 
             Assert.Contains(fieldName, new[] { "field1", "field2", "field3" });
             Assert.Equal("value" + fieldName[5..], fieldValue);
         }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashRandomFieldWithValue(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        HashEntry[] entries =
+        [
+            new HashEntry("field1", "value1"),
+            new HashEntry("field2", "value2"),
+            new HashEntry("field3", "value3")
+        ];
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
+
+        // Test single random field with value
+        KeyValuePair<ValkeyValue, ValkeyValue>? entry = await client.HashRandomFieldWithValueAsync(key);
+        _ = Assert.NotNull(entry);
+        string fieldName = entry.Value.Key.ToString();
+        Assert.Contains(fieldName, new[] { "field1", "field2", "field3" });
+        Assert.Equal("value" + fieldName[5..], entry.Value.Value.ToString());
     }
 
     #endregion

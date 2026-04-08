@@ -113,6 +113,14 @@ public partial interface IBaseClient
         IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
+    /// Gets a random field-value pair from the specified hash.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hrandfield"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <returns>A random field-value pair, or <see langword="null"/> if the hash does not exist or is empty.</returns>
+    Task<KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key);
+
+    /// <summary>
     /// Gets the value and sets the expiry for the specified hash field(s).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetex"/>
