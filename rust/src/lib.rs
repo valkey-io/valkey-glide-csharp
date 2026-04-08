@@ -554,6 +554,8 @@ pub unsafe extern "C-unwind" fn command(
         return;
     }
 
+    let request_type = unsafe { (*cmd_ptr).request_type };
+
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
             panicked: true,
@@ -561,34 +563,16 @@ pub unsafe extern "C-unwind" fn command(
             callback_index,
         };
 
-        // Extract request type for response decompression before sending
-        let request_type = cmd.args_iter().next().and_then(|arg| match arg {
-            redis::Arg::Simple(bytes) => {
-                let name = String::from_utf8_lossy(bytes).to_uppercase();
-                match name.as_str() {
-                    "GET" => Some(RequestType::Get),
-                    "MGET" => Some(RequestType::MGet),
-                    "GETEX" => Some(RequestType::GetEx),
-                    "GETDEL" => Some(RequestType::GetDel),
-                    "GETSET" => Some(RequestType::GetSet),
-                    _ => None,
-                }
-            }
-            _ => None,
-        });
-
         let result = core.client.clone().send_command(&mut cmd, route).await;
         match result {
             Ok(value) => {
                 // Decompress response if compression is enabled
-                let value = if let (Some(compression_manager), Some(req_type)) =
-                    (core.client.compression_manager(), request_type)
-                {
-                    let original = value.clone();
+                let original = value.clone();
+                let value =
                     glide_core::compression::process_response_for_decompression(
                         value,
-                        req_type,
-                        Some(compression_manager.as_ref()),
+                        request_type,
+                        core.client.compression_manager().as_deref(),
                     )
                     .unwrap_or_else(|e| {
                         logger_core::log_warn(
@@ -596,10 +580,7 @@ pub unsafe extern "C-unwind" fn command(
                             format!("Failed to decompress response: {}", e),
                         );
                         original
-                    })
-                } else {
-                    value
-                };
+                    });
                 let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
                 unsafe { (core.success_callback)(callback_index, ptr) };
             }
