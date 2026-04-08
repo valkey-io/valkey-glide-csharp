@@ -86,7 +86,6 @@ internal partial class Request
     private static long ToMilliseconds(TimeSpan timeSpan)
         => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
 
-    // TODO #280: Return GlideString
     /// <summary>
     /// Converts the given time span to seconds.
     /// <param name="timeSpan">The time span to convert.</param>
