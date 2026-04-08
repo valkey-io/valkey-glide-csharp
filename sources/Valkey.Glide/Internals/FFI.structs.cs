@@ -1136,6 +1136,7 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCompressionConfig;
         public CompressionConfig CompressionConfig;
+        [MarshalAs(UnmanagedType.U1)]
         public bool ReadOnly;
 
         // TODO more config params, see ffi.rs
@@ -1175,9 +1176,6 @@ internal partial class FFI
         public UIntPtr Capacity;
     }
 
-    /// <summary>
-    /// FFI representation of compression configuration for marshalling to Rust core.
-    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     internal struct CompressionConfig
     {
@@ -1199,9 +1197,6 @@ internal partial class FFI
         public bool Enabled;
     }
 
-    /// <summary>
-    /// Statistics structure containing telemetry data from Rust core.
-    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct Statistics
     {

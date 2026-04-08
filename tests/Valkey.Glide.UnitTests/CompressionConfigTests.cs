@@ -4,11 +4,9 @@ namespace Valkey.Glide.Tests;
 
 public class CompressionConfigTests
 {
-    private const nuint DefaultMinCompressionSize = 64;
     private const int CustomCompressionLevel = 5;
     private const nuint CustomMinCompressionSize = 128;
-    private const nuint InvalidMinCompressionSize = 10;
-    private const nuint ValidMinCompressionSize = 100;
+    private const nuint InvalidMinCompressionSize = 5;
 
     [Fact]
     public void CompressionConfig_Zstd_CreatesValidConfig()
@@ -17,7 +15,7 @@ public class CompressionConfigTests
 
         Assert.Equal(CompressionBackend.Zstd, config.Backend);
         Assert.Null(config.CompressionLevel);
-        Assert.Equal(DefaultMinCompressionSize, config.MinCompressionSize);
+        Assert.Equal(CompressionConfig.DefaultMinCompressionSize, config.MinCompressionSize);
     }
 
     [Fact]
@@ -27,7 +25,7 @@ public class CompressionConfigTests
 
         Assert.Equal(CompressionBackend.Lz4, config.Backend);
         Assert.Null(config.CompressionLevel);
-        Assert.Equal(DefaultMinCompressionSize, config.MinCompressionSize);
+        Assert.Equal(CompressionConfig.DefaultMinCompressionSize, config.MinCompressionSize);
     }
 
     [Fact]
@@ -52,17 +50,17 @@ public class CompressionConfigTests
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             CompressionConfig.Zstd(minCompressionSize: InvalidMinCompressionSize));
 
-        Assert.Contains("minCompressionSize must be at least 16 bytes", exception.Message);
+        Assert.Contains("minCompressionSize must be at least 6 bytes", exception.Message);
     }
 
     [Fact]
     public void CompressionConfig_Constructor_CreatesValidConfig()
     {
-        var config = new CompressionConfig(CompressionBackend.Zstd, CustomCompressionLevel, ValidMinCompressionSize);
+        var config = new CompressionConfig(CompressionBackend.Zstd, CustomCompressionLevel, CustomMinCompressionSize);
 
         Assert.Equal(CompressionBackend.Zstd, config.Backend);
         Assert.Equal(CustomCompressionLevel, config.CompressionLevel);
-        Assert.Equal(ValidMinCompressionSize, config.MinCompressionSize);
+        Assert.Equal(CustomMinCompressionSize, config.MinCompressionSize);
     }
 
 }

@@ -12,7 +12,7 @@ public sealed class CompressionConfig
     /// <summary>
     /// Minimum allowed value for <see cref="MinCompressionSize"/>.
     /// </summary>
-    public const nuint MinCompressionSizeLimit = 16;
+    public const nuint MinCompressionSizeLimit = 6;
 
     /// <summary>
     /// Default minimum compression size in bytes.
@@ -41,7 +41,7 @@ public sealed class CompressionConfig
     /// </summary>
     /// <param name="backend">The compression backend to use.</param>
     /// <param name="compressionLevel">Optional compression level. If null, uses backend default.</param>
-    /// <param name="minCompressionSize">Minimum value size to compress (default: 64 bytes).</param>
+    /// <param name="minCompressionSize">Minimum value size to compress.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if minCompressionSize is less than 16 bytes.</exception>
     public CompressionConfig(
         CompressionBackend backend,
@@ -63,7 +63,7 @@ public sealed class CompressionConfig
     /// Creates a compression configuration with Zstd backend.
     /// </summary>
     /// <param name="compressionLevel">Optional compression level.</param>
-    /// <param name="minCompressionSize">Minimum value size to compress (default: 64 bytes).</param>
+    /// <param name="minCompressionSize">Minimum value size to compress.</param>
     /// <returns>A new CompressionConfig instance.</returns>
     public static CompressionConfig Zstd(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>
         new(CompressionBackend.Zstd, compressionLevel, minCompressionSize);
@@ -72,7 +72,7 @@ public sealed class CompressionConfig
     /// Creates a compression configuration with LZ4 backend.
     /// </summary>
     /// <param name="compressionLevel">Optional compression level.</param>
-    /// <param name="minCompressionSize">Minimum value size to compress (default: 64 bytes).</param>
+    /// <param name="minCompressionSize">Minimum value size to compress.</param>
     /// <returns>A new CompressionConfig instance.</returns>
     public static CompressionConfig Lz4(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>
         new(CompressionBackend.Lz4, compressionLevel, minCompressionSize);

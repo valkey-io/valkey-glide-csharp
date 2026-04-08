@@ -14,6 +14,7 @@ public class CompressionTests(TestConfiguration config)
     private const int MultiOpCount = 10;
     private const int MultiOpBaseSize = 500;
     private const int MultiOpSizeIncrement = 100;
+    private static readonly string LargeValue = new('y', LargeValueSize);
 
     public TestConfiguration Config { get; } = config;
 
@@ -32,12 +33,11 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_test_{Guid.NewGuid()}";
-        string largeValue = new string('a', LargeValueSize);
 
-        await client.StringSetAsync(key, largeValue);
+        await client.StringSetAsync(key, LargeValue);
         var retrieved = await client.StringGetAsync(key);
 
-        Assert.Equal(largeValue, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression to occur. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
@@ -59,12 +59,11 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_lz4_test_{Guid.NewGuid()}";
-        string largeValue = new string('b', LargeValueSize);
 
-        await client.StringSetAsync(key, largeValue);
+        await client.StringSetAsync(key, LargeValue);
         var retrieved = await client.StringGetAsync(key);
 
-        Assert.Equal(largeValue, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
@@ -85,12 +84,11 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_cluster_test_{Guid.NewGuid()}";
-        string largeValue = new string('c', LargeValueSize);
 
-        await client.StringSetAsync(key, largeValue);
+        await client.StringSetAsync(key, LargeValue);
         var retrieved = await client.StringGetAsync(key);
 
-        Assert.Equal(largeValue, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
@@ -118,8 +116,7 @@ public class CompressionTests(TestConfiguration config)
         var skippedCountSmall = statsAfterSmall.CompressionSkippedCount - statsBefore.CompressionSkippedCount;
 
         string largeKey = $"large_{Guid.NewGuid()}";
-        string largeValue = new string('y', LargeValueSize);
-        await client.StringSetAsync(largeKey, largeValue);
+        await client.StringSetAsync(largeKey, LargeValue);
 
         var statsAfterLarge = BaseClient.GetStatistics();
         var compressedCountLarge = statsAfterLarge.TotalValuesCompressed - statsAfterSmall.TotalValuesCompressed;
