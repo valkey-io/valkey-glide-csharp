@@ -9,44 +9,29 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/hpexpiretime/"/>
 public readonly struct ExpireTimeResult
 {
+    internal readonly long ExpireTimeMs;
+
     /// <summary>
     /// Whether the key or field exists.
     /// </summary>
-    public bool Exists { get; }
+    public bool Exists => ExpireTimeMs != -2L;
 
     /// <summary>
     /// Whether the key or field has an expiry set.
     /// </summary>
-    public bool HasExpiry { get; }
+    public bool HasExpiry => ExpireTimeMs >= 0;
 
     /// <summary>
     /// The expiry timestamp, or <see langword="null"/> if the key
     /// or field does not exist or does not have an expiry set.
     /// </summary>
-    public DateTimeOffset? Expiry { get; }
+    public DateTimeOffset? Expiry => HasExpiry ? DateTimeOffset.FromUnixTimeMilliseconds(ExpireTimeMs) : null;
 
     /// <summary>
-    /// Creates an <see cref="ExpireTimeResult"/> from the raw millisecond value.
+    /// Creates an <see cref="ExpireTimeResult"/> from the given value.
     /// </summary>
-    internal ExpireTimeResult(long rawMilliseconds)
+    internal ExpireTimeResult(long expireTimeMs)
     {
-        switch (rawMilliseconds)
-        {
-            case -2:
-                Exists = false;
-                HasExpiry = false;
-                Expiry = null;
-                break;
-            case -1:
-                Exists = true;
-                HasExpiry = false;
-                Expiry = null;
-                break;
-            default:
-                Exists = true;
-                HasExpiry = true;
-                Expiry = DateTimeOffset.FromUnixTimeMilliseconds(rawMilliseconds);
-                break;
-        }
+        ExpireTimeMs = expireTimeMs;
     }
 }

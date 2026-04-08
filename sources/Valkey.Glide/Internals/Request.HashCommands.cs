@@ -209,28 +209,12 @@ internal partial class Request
             [.. response.Select(item => new ExpireTimeResult((long)item))]);
     }
 
-    public static Cmd<object[], long[]> HashTtlAsync(ValkeyKey key, ValkeyValue[] fields)
+    public static Cmd<object[], TimeToLiveResult[]> HashTimeToLiveAsync(ValkeyKey key, ValkeyValue[] hashFields)
     {
         List<GlideString> args = [key.ToGlideString()];
-
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HTtl, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
-    public static Cmd<object[], long[]> HashPTtlAsync(ValkeyKey key, ValkeyValue[] fields)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-        args.AddRange(fields.ToGlideStrings());
-
+        AddFields(args, hashFields);
         return new(RequestType.HPTtl, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
+            [.. response.Select(item => new TimeToLiveResult((long)item))]);
     }
 
     /// <summary>

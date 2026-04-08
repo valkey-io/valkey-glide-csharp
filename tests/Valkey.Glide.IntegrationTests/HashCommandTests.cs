@@ -434,10 +434,11 @@ public class HashCommandTests(TestConfiguration config)
         // First, let's test a simple case - set a field without expiry and try to persist it
         _ = await client.HashSetAsync(key, "field1", "value1");
 
-        // First test HTTL to see if it works (should return -1 for no expiry)
-        long[] ttlResults = await client.HashTtlAsync(key, ["field1"]);
+        // First test HTTL to see if it works (should return no expiry)
+        TimeToLiveResult[] ttlResults = await client.HashTimeToLiveAsync(key, ["field1"]);
         _ = Assert.Single(ttlResults);
-        Assert.Equal(-1, ttlResults[0]); // Field exists but has no expiry
+        Assert.True(ttlResults[0].Exists);
+        Assert.False(ttlResults[0].HasExpiry);
 
         // Now test HPERSIST (should return -1 for field exists but has no expiry)
         long[] results = await client.HashPersistAsync(key, ["field1"]);
@@ -607,33 +608,7 @@ public class HashCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashTtl(BaseClient client)
-    {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HTTL is supported since Valkey 9.0.0"
-        );
-
-        string key = Guid.NewGuid().ToString();
-
-        // Set up test data with expiry
-        _ = await client.HashSetAsync(key, "field1", "value1");
-        _ = await client.HashSetAsync(key, "field2", "value2"); // No expiry
-
-        // Set expiry for field1
-        _ = await client.HashExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
-
-        // Test HTTL
-        long[] results = await client.HashTtlAsync(key, ["field1", "field2", "nonexistent"]);
-        Assert.Equal(3, results.Length);
-        Assert.True(results[0] is > 0 and <= 60); // Should return TTL for field1
-        Assert.Equal(-1, results[1]); // field2 has no expiry
-        Assert.Equal(-2, results[2]); // nonexistent field
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashPTtl(BaseClient client)
+    public async Task TestHashTimeToLive(BaseClient client)
     {
         Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
@@ -647,13 +622,22 @@ public class HashCommandTests(TestConfiguration config)
         _ = await client.HashSetAsync(key, "field2", "value2"); // No expiry
 
         // Set expiry for field1
-        _ = await client.HashExpireAsync(key, ["field1"], TimeSpan.FromMilliseconds(5000));
+        _ = await client.HashExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
 
-        // Test HPTTL
-        long[] results = await client.HashPTtlAsync(key, ["field1", "field2", "nonexistent"]);
+        // Test multi-field
+        TimeToLiveResult[] results = await client.HashTimeToLiveAsync(key, ["field1", "field2", "nonexistent"]);
         Assert.Equal(3, results.Length);
-        Assert.True(results[0] > 0 && results[0] <= 5000); // Should return TTL for field1
-        Assert.Equal(-1, results[1]); // field2 has no expiry
-        Assert.Equal(-2, results[2]); // nonexistent field
+        Assert.True(results[0].HasExpiry);
+        _ = Assert.NotNull(results[0].TimeToLive);
+        Assert.True(results[0].TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
+        Assert.True(results[1].Exists);
+        Assert.False(results[1].HasExpiry); // field2 has no expiry
+        Assert.False(results[2].Exists); // nonexistent field
+
+        // Test single-field
+        TimeToLiveResult singleResult = await client.HashTimeToLiveAsync(key, "field1");
+        Assert.True(singleResult.HasExpiry);
+        _ = Assert.NotNull(singleResult.TimeToLive);
+        Assert.True(singleResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
     }
 }

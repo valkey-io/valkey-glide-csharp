@@ -89,11 +89,9 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashExpireTime(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => AddCmd(HashExpireTimeAsync(key, [.. hashFields]));
 
-    /// <inheritdoc cref="IBatchHashCommands.HashTtl(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T HashTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashTtlAsync(key, [.. fields]));
+    /// <inheritdoc cref="IBatchHashCommands.HashTimeToLive(ValkeyKey, IEnumerable{ValkeyValue})" />
+    public T HashTimeToLive(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => AddCmd(HashTimeToLiveAsync(key, [.. hashFields]));
 
-    /// <inheritdoc cref="IBatchHashCommands.HashPTtl(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T HashPTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashPTtlAsync(key, [.. fields]));
 
     // Explicit interface implementations for IBatchHashCommands
     IBatch IBatchHashCommands.HashGet(ValkeyKey key, ValkeyValue hashField) => HashGet(key, hashField);
@@ -121,6 +119,5 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchHashCommands.HashExpire(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireCondition condition) => HashExpire(key, hashFields, expiry, condition);
     IBatch IBatchHashCommands.HashExpireAt(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTimeOffset expiry, ExpireCondition condition) => HashExpireAt(key, hashFields, expiry, condition);
     IBatch IBatchHashCommands.HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashExpireTime(key, hashFields);
-    IBatch IBatchHashCommands.HashTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashTtl(key, fields);
-    IBatch IBatchHashCommands.HashPTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashPTtl(key, fields);
+    IBatch IBatchHashCommands.HashTimeToLive(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashTimeToLive(key, hashFields);
 }

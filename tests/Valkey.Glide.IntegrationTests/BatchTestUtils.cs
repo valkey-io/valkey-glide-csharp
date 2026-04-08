@@ -1408,12 +1408,8 @@ internal partial class BatchTestUtils
             testData.Add(new(new ExpireResult[] { ExpireResult.Success }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
 
             // Test HTTL
-            _ = batch.HashTtl(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashTtl(expireKey, [expire_field1, expire_field2])", true));
-
-            // Test HPTTL
-            _ = batch.HashPTtl(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashPTtl(expireKey, [expire_field1, expire_field2])", true));
+            _ = batch.HashTimeToLive(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<TimeToLiveResult>(), "HashTimeToLive(expireKey, [expire_field1, expire_field2])", true));
 
             // Test HPERSIST
             _ = batch.HashPersist(expireKey, ["expire_field1"]);

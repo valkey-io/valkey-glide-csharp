@@ -42,16 +42,12 @@ public class SERHashCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashSetAsync_WhenExists_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-hset-exists-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<ArgumentException>(
-            () => db.HashSetAsync(key, "field1", "value1", When.Exists));
-    }
+        => _ = await Assert.ThrowsAsync<ArgumentException>(
+            () => db.HashSetAsync("key", "field1", "value1", When.Exists));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashSetAsync_MultiField_SetsEntries(IDatabaseAsync db)
+    public async Task HashSetAsync_MultiField_WhenAlways_SetsFields(IDatabaseAsync db)
     {
         string key = $"ser-hmset-{Guid.NewGuid()}";
 
@@ -85,8 +81,8 @@ public class SERHashCommandTests(TestConfiguration config)
     {
         string key = $"ser-hincrf-{Guid.NewGuid()}";
 
-        Assert.Equal(2.5, await db.HashIncrementAsync(key, "counter", 2.5, CommandFlags.None));
-        Assert.Equal(5.0, await db.HashIncrementAsync(key, "counter", 2.5, CommandFlags.None));
+        Assert.Equal(2.5, await db.HashIncrementAsync(key, "counter", 2.5));
+        Assert.Equal(5.0, await db.HashIncrementAsync(key, "counter", 2.5));
     }
 
     #endregion
@@ -128,18 +124,42 @@ public class SERHashCommandTests(TestConfiguration config)
 
         string key = $"ser-hexpire-when-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
-        // Always
-        ExpireResult[] results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60), ExpireWhen.Always);
+        // Always — multi-field
+        ExpireResult[] results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(60), ExpireWhen.Always);
+        Assert.Equal(2, results.Length);
         Assert.Equal(ExpireResult.Success, results[0]);
+        Assert.Equal(ExpireResult.Success, results[1]);
 
-        // HasNoExpiry — should fail since field already has expiry
-        results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(120), ExpireWhen.HasNoExpiry);
+        // HasNoExpiry — should fail since both fields already have expiry
+        results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(120), ExpireWhen.HasNoExpiry);
+        Assert.Equal(2, results.Length);
         Assert.Equal(ExpireResult.ConditionNotMet, results[0]);
+        Assert.Equal(ExpireResult.ConditionNotMet, results[1]);
 
-        // HasExpiry — should succeed since field has expiry
-        results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(30), ExpireWhen.HasExpiry);
+        // HasExpiry — should succeed since both fields have expiry
+        results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(30), ExpireWhen.HasExpiry);
+        Assert.Equal(2, results.Length);
         Assert.Equal(ExpireResult.Success, results[0]);
+        Assert.Equal(ExpireResult.Success, results[1]);
+
+        // GreaterThanCurrentExpiry — 120s > 30s, should succeed
+        results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(120), ExpireWhen.GreaterThanCurrentExpiry);
+        Assert.Equal(2, results.Length);
+        Assert.Equal(ExpireResult.Success, results[0]);
+        Assert.Equal(ExpireResult.Success, results[1]);
+
+        // LessThanCurrentExpiry — 10s < 120s, should succeed
+        results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(10), ExpireWhen.LessThanCurrentExpiry);
+        Assert.Equal(2, results.Length);
+        Assert.Equal(ExpireResult.Success, results[0]);
+        Assert.Equal(ExpireResult.Success, results[1]);
+
+        // Non-existent field
+        results = await db.HashFieldExpireAsync(key, ["nonexistent"], TimeSpan.FromSeconds(60));
+        _ = Assert.Single(results);
+        Assert.Equal(ExpireResult.NoSuchField, results[0]);
     }
 
     #endregion
@@ -147,17 +167,41 @@ public class SERHashCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetExpireDateTimeAsync_ReturnsTimestamps(IDatabaseAsync db)
+    public async Task HashFieldGetExpireDateTimeAsync(IDatabaseAsync db)
     {
         SkipIfHashExpireNotSupported();
 
         string key = $"ser-hexpiretime-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
         _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
 
-        long[] results = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
-        _ = Assert.Single(results);
-        Assert.True(results[0] > 0);
+        long[] results = await db.HashFieldGetExpireDateTimeAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(3, results.Length);
+        Assert.True(results[0] > 0); // field1 has expiry
+        Assert.Equal(-1, results[1]); // field2 is persistent
+        Assert.Equal(-2, results[2]); // nonexistent
+    }
+
+    #endregion
+    #region HashFieldGetTimeToLiveAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetTimeToLiveAsync(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-httl-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        long[] results = await db.HashFieldGetTimeToLiveAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(3, results.Length);
+        Assert.True(results[0] is > 0 and <= 60000); // field1 has TTL
+        Assert.Equal(-1, results[1]); // field2 is persistent
+        Assert.Equal(-2, results[2]); // nonexistent
     }
 
     #endregion

@@ -7,8 +7,9 @@ namespace Valkey.Glide;
 public partial interface IBaseClient
 {
     /// <summary>
-    /// Sets the expiry duration for the specified hash field.
+    /// Sets the expiry duration for the specified hash field(s).
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/hexpire"/>
     /// <seealso href="https://valkey.io/commands/hpexpire"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to set the expiry for.</param>
@@ -30,8 +31,9 @@ public partial interface IBaseClient
         ExpireCondition condition = ExpireCondition.Always);
 
     /// <summary>
-    /// Sets the expiry timestamp for the specified hash field.
+    /// Sets the expiry timestamp for the specified hash field(s).
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/hexpireat"/>
     /// <seealso href="https://valkey.io/commands/hpexpireat"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to set the expiry for.</param>
@@ -53,16 +55,40 @@ public partial interface IBaseClient
         ExpireCondition condition = ExpireCondition.Always);
 
     /// <summary>
-    /// Gets the expiry time for the specified hash field.
+    /// Gets the expiry time for the specified hash field(s).
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/hpxpiretime"/>
     /// <seealso href="https://valkey.io/commands/hpexpiretime"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to get the expiry time for.</param>
     /// <returns>An <see cref="ExpireTimeResult"/> for the hash field.</returns>
-    Task<ExpireTimeResult> HashExpireTimeAsync(ValkeyKey key, ValkeyValue hashField);
+    Task<ExpireTimeResult> HashExpireTimeAsync(
+        ValkeyKey key,
+        ValkeyValue hashField);
 
     /// <inheritdoc cref="HashExpireTimeAsync(ValkeyKey, ValkeyValue)"/>
     /// <param name="hashFields">The fields to get the expiry time for.</param>
     /// <returns>An <see cref="ExpireTimeResult"/> array with one entry for each hash field.</returns>
-    Task<ExpireTimeResult[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
+    Task<ExpireTimeResult[]> HashExpireTimeAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields);
+
+    /// <summary>
+    /// Returns the time to live for the specified hash field(s).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/httl"/>
+    /// <seealso href="https://valkey.io/commands/hpttl"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="hashField">The field to get the time to live for.</param>
+    /// <returns>A <see cref="TimeToLiveResult"/> for the hash field.</returns>
+    Task<TimeToLiveResult> HashTimeToLiveAsync(
+        ValkeyKey key,
+        ValkeyValue hashField);
+
+    /// <inheritdoc cref="HashTimeToLiveAsync(ValkeyKey, ValkeyValue)"/>
+    /// <param name="hashFields">The fields to get the time to live for.</param>
+    /// <returns>A <see cref="TimeToLiveResult"/> array with one entry per hash field.</returns>
+    Task<TimeToLiveResult[]> HashTimeToLiveAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields);
 }

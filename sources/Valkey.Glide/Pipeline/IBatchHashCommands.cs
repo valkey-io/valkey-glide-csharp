@@ -101,11 +101,7 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/returns" /></returns>
     IBatch HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashTtlAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashTtlAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
-    IBatch HashTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields);
-
-    /// <inheritdoc cref="IHashBaseCommands.HashPTtlAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashPTtlAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
-    IBatch HashPTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields);
+    /// <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/returns" /></returns>
+    IBatch HashTimeToLive(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 }

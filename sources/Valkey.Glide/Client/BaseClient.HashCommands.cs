@@ -109,17 +109,17 @@ public abstract partial class BaseClient
 
     /// <inheritdoc/>
     public async Task<ExpireTimeResult> HashExpireTimeAsync(ValkeyKey key, ValkeyValue hashField)
-        => (await Command(Request.HashExpireTimeAsync(key, [hashField])))[0];
+        => (await Command(Request.HashExpireTimeAsync(key, [hashField]))).First();
 
     /// <inheritdoc/>
     public async Task<ExpireTimeResult[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
         => await Command(Request.HashExpireTimeAsync(key, [.. hashFields]));
 
     /// <inheritdoc/>
-    public async Task<long[]> HashTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields)
-        => await Command(Request.HashTtlAsync(key, [.. fields]));
+    public async Task<TimeToLiveResult> HashTimeToLiveAsync(ValkeyKey key, ValkeyValue hashField)
+        => (await Command(Request.HashTimeToLiveAsync(key, [hashField]))).First();
 
     /// <inheritdoc/>
-    public async Task<long[]> HashPTtlAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields)
-        => await Command(Request.HashPTtlAsync(key, [.. fields]));
+    public async Task<TimeToLiveResult[]> HashTimeToLiveAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
+        => await Command(Request.HashTimeToLiveAsync(key, [.. hashFields]));
 }
