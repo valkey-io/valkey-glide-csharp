@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
-
 namespace Valkey.Glide.Commands;
 
 // ATTENTION: Methods should only be added to this interface if they are implemented
@@ -317,52 +315,4 @@ public interface IHashBaseCommands
     /// </example>
     /// </remarks>
     Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
-
-    /// <summary>
-    /// Retrieves the values of specified fields from the hash stored at <paramref name="key"/> and
-    /// optionally sets their expiration or removes it.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hgetex"/>
-    /// <note>
-    /// Since: Valkey 9.0 and above.
-    /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="fields">The fields in the hash stored at <paramref name="key"/> to retrieve from the database.</param>
-    /// <param name="options">Optional parameters for the command including expiry settings or persist option.</param>
-    /// <returns>
-    /// An array of values associated with the given fields, in the same order as they are requested.
-    /// For every field that does not exist in the hash, a <see cref="ValkeyValue.Null"/> value is returned.
-    /// If <paramref name="key"/> does not exist, it returns <see langword="null"/>.
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var options = new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60));
-    /// ValkeyValue[] values = await client.HashGetExAsync(key, [field1, field2], options);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue[]?> HashGetExAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields, HashGetExOptions options);
-
-    /// <summary>
-    /// Sets the specified fields to their respective values in the hash stored at <paramref name="key"/>
-    /// with optional expiration and conditional options.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hsetex"/>
-    /// <note>
-    /// Since: Valkey 9.0 and above.
-    /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="fieldValueMap">A field-value map consisting of fields and their corresponding values to be set in the hash stored at the specified key.</param>
-    /// <param name="options">Optional parameters for the command including conditional changes and expiry settings.</param>
-    /// <returns><see langword="1"/> if all the fields' values and expiration times were set successfully, <see langword="0"/> otherwise.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var options = new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60));
-    /// long result = await client.HashSetExAsync(key, new Dictionary&lt;ValkeyValue, ValkeyValue&gt; { { field1, value1 }, { field2, value2 } }, options);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options);
 }

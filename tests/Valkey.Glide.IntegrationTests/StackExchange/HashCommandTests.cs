@@ -3,10 +3,11 @@
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
-/// SER-compat layer tests for hash commands.
+/// Tests for <see cref="IDatabaseAsync"/> hash commands.
 /// </summary>
-public class SERHashCommandTests(TestConfiguration config)
+public class HashCommandTests(TestConfiguration config)
 {
+    // TODO #280: Cleanup this class
     public TestConfiguration Config { get; } = config;
 
     #region HashSetAsync
@@ -226,10 +227,338 @@ public class SERHashCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region HashFieldSetAndSetExpiryAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_SingleField_WithTimeSpan(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-single-ts-{Guid.NewGuid()}";
+
+        // Field does not exist yet — previous value should be null
+        ValkeyValue result = await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60));
+        Assert.True(result.IsNull);
+
+        // Verify field was set
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+
+        // Verify TTL was applied
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.True(ttls[0] is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_MultiField_WithTimeSpan(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-ts-{Guid.NewGuid()}";
+
+        HashEntry[] fields =
+        [
+            new("field1", "value1"),
+            new("field2", "value2"),
+        ];
+
+        _ = await db.HashFieldSetAndSetExpiryAsync(key, fields, TimeSpan.FromSeconds(60));
+
+        // Verify fields were set
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+        Assert.Equal("value2", await db.HashGetAsync(key, "field2"));
+
+        // Verify TTL was applied
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1", "field2"]);
+        Assert.True(ttls[0] is > 0 and <= 60000);
+        Assert.True(ttls[1] is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_SingleField_WithNullTimeSpan_KeepsTtl(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-keepttl-null-{Guid.NewGuid()}";
+
+        // Set field with an expiry first
+        Assert.Equal(
+            ValkeyValue.Null,
+            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60)));
+
+        // Update with null TimeSpan — should keep existing TTL
+        Assert.Equal(
+            "value1",
+            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", expiry: null));
+
+        // Verify value was updated
+        Assert.Equal("updated", await db.HashGetAsync(key, "field1"));
+
+        // Verify TTL was preserved
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.True(ttls[0] is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_SingleField_WithDateTime(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-single-dt-{Guid.NewGuid()}";
+
+        ValkeyValue result = await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", DateTime.UtcNow.AddMinutes(5));
+        Assert.True(result.IsNull);
+
+        // Verify field was set
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+
+        // Verify expiry was applied
+        long[] expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
+        Assert.True(expireTimes[0] > 0);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_MultiField_WithDateTime(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-dt-{Guid.NewGuid()}";
+
+        HashEntry[] fields = [new("field1", "value1")];
+        _ = await db.HashFieldSetAndSetExpiryAsync(key, fields, DateTime.UtcNow.AddMinutes(5));
+
+        // Verify field was set
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+
+        // Verify expiry was applied
+        long[] expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
+        Assert.True(expireTimes[0] > 0);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_SingleField_WithKeepTtlTrue(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-keepttl-{Guid.NewGuid()}";
+
+        // Set field with an expiry first
+        Assert.Equal(
+            ValkeyValue.Null,
+            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60)));
+
+        // Update with keepTtl=true — should preserve existing TTL
+        Assert.Equal(
+            "value1",
+            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", keepTtl: true));
+
+        // Verify value was updated
+        Assert.Equal("updated", await db.HashGetAsync(key, "field1"));
+
+        // Verify TTL was preserved
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.True(ttls[0] is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_MultiField_WithWhenNotExists(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-nx-{Guid.NewGuid()}";
+
+        // Set field1 first
+        _ = await db.HashSetAsync(key, "field1", "original", When.Always);
+
+        // Try to set field1 (exists) and field2 (new) with When.NotExists
+        HashEntry[] fields =
+        [
+            new("field1", "should-not-update"),
+            new("field2", "value2"),
+        ];
+        _ = await db.HashFieldSetAndSetExpiryAsync(key, fields, TimeSpan.FromSeconds(60), when: When.NotExists);
+
+        // When.NotExists maps to FNX — only sets if NONE of the specified fields exist.
+        // Since field1 exists, none should be set
+        Assert.Equal("original", await db.HashGetAsync(key, "field1"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiry_MultiField_WithWhenExists(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hsetex-xx-{Guid.NewGuid()}";
+
+        // Set field1 first
+        _ = await db.HashSetAsync(key, "field1", "original", When.Always);
+
+        // Try to set field1 (exists) and field2 (new) with When.Exists
+        HashEntry[] fields =
+        [
+            new("field1", "updated"),
+            new("field2", "value2"),
+        ];
+        _ = await db.HashFieldSetAndSetExpiryAsync(key, fields, TimeSpan.FromSeconds(60), when: When.Exists);
+
+        // When.Exists maps to FXX — only sets if ALL specified fields exist.
+        // Since field2 doesn't exist, none should be set
+        Assert.Equal("original", await db.HashGetAsync(key, "field1"));
+    }
+
+    #endregion
+    #region HashFieldGetAndSetExpiryAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithTimeSpan(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hgetex-single-ts-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        ValkeyValue value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", TimeSpan.FromSeconds(60));
+        Assert.Equal("value1", value);
+
+        // Verify TTL was set
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.True(ttls[0] is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_MultiField_WithTimeSpan(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hgetex-ts-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+
+        ValkeyValue[] values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(60));
+        Assert.Equal(2, values.Length);
+        Assert.Equal("value1", values[0]);
+        Assert.Equal("value2", values[1]);
+
+        // Verify TTL was set
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1", "field2"]);
+        Assert.True(ttls[0] is > 0 and <= 60000);
+        Assert.True(ttls[1] is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithNullTimeSpan_Persists(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hgetex-persist-null-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        // Set an expiry first
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        // Null TimeSpan should persist (remove expiry)
+        ValkeyValue value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", expiry: null);
+        Assert.Equal("value1", value);
+
+        // Verify expiry was removed
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.Equal(-1, ttls[0]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithDateTime(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hgetex-single-dt-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        ValkeyValue value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", DateTime.UtcNow.AddMinutes(5));
+        Assert.Equal("value1", value);
+
+        // Verify expiry was set
+        long[] expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
+        Assert.True(expireTimes[0] > 0);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_MultiField_WithDateTime(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hgetex-dt-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        ValkeyValue[] values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], DateTime.UtcNow.AddMinutes(5));
+        _ = Assert.Single(values);
+        Assert.Equal("value1", values[0]);
+
+        // Verify expiry was set
+        long[] expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
+        Assert.True(expireTimes[0] > 0);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithPersistTrue(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hgetex-persist-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        // Set an expiry first
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        // persist=true should remove expiry
+        ValkeyValue value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", persist: true);
+        Assert.Equal("value1", value);
+
+        // Verify expiry was removed
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.Equal(-1, ttls[0]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_MultiField_WithPersistTrue(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hgetex-multi-persist-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        // Set an expiry first
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        // persist=true should remove expiry
+        ValkeyValue[] values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], persist: true);
+        _ = Assert.Single(values);
+        Assert.Equal("value1", values[0]);
+
+        // Verify expiry was removed
+        long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.Equal(-1, ttls[0]);
+    }
+
+    #endregion
     #region Helpers
 
-    private static void SkipIfHashExpireNotSupported() =>
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "Requires Valkey 9.0+");
+    // TODO #280: Extract to TestUtils
+    private static void SkipIfHashExpireNotSupported()
+        => Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "Requires Valkey 9.0+");
 
     #endregion
 }

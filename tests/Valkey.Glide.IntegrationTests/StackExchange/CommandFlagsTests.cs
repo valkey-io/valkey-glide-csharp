@@ -65,5 +65,47 @@ public class CommandFlagsTests(TestConfiguration config)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.HashFieldPersistAsync("key", ["field"], UnsupportedFlag));
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiryAsync_SingleField_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldGetAndSetExpiryAsync("key", "field", TimeSpan.FromSeconds(60), false, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldGetAndSetExpiryAsync("key", "field", DateTime.UtcNow.AddMinutes(5), UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiryAsync_MultiField_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        ValkeyValue[] fields = ["field"];
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldGetAndSetExpiryAsync("key", fields, TimeSpan.FromSeconds(60), false, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldGetAndSetExpiryAsync("key", fields, DateTime.UtcNow.AddMinutes(5), UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiryAsync_SingleField_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldSetAndSetExpiryAsync("key", "field", "value", TimeSpan.FromSeconds(60), false, When.Always, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldSetAndSetExpiryAsync("key", "field", "value", DateTime.UtcNow.AddMinutes(5), When.Always, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldSetAndSetExpiryAsync_MultiField_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        HashEntry[] entries = [new("field", "value")];
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldSetAndSetExpiryAsync("key", entries, TimeSpan.FromSeconds(60), false, When.Always, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldSetAndSetExpiryAsync("key", entries, DateTime.UtcNow.AddMinutes(5), When.Always, UnsupportedFlag));
+    }
+
     #endregion
 }

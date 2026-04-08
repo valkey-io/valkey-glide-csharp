@@ -63,4 +63,5 @@ internal static class GuardClauses
             throw new ArgumentException("Time span cannot be negative.");
         }
     }
+
 }

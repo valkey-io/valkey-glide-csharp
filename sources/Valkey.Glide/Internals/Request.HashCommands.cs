@@ -7,6 +7,7 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
 
+// TODO #280: Remove HashEntry and any other SER-specific methods.
 internal partial class Request
 {
     public static Cmd<GlideString, ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField)
@@ -25,11 +26,7 @@ internal partial class Request
     public static Cmd<long, long> HashSetAsync(ValkeyKey key, KeyValuePair<ValkeyValue, ValkeyValue>[] hashFieldsAndValues)
     {
         List<GlideString> args = [key.ToGlideString()];
-        foreach (var kvp in hashFieldsAndValues)
-        {
-            args.Add(kvp.Key.ToGlideString());
-            args.Add(kvp.Value.ToGlideString());
-        }
+        AddPairs(args, hashFieldsAndValues);
         return Simple<long>(RequestType.HSet, [.. args]);
     }
 
@@ -75,96 +72,67 @@ internal partial class Request
     public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
         => ObjectArrayToHashEntries(RequestType.HRandField, [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword]);
 
-    public static Cmd<object[], ValkeyValue[]?> HashGetExAsync(ValkeyKey key, ValkeyValue[] fields, HashGetExOptions options)
+    public static Cmd<object[], ValkeyValue[]> HashGetExpiryAsync(
+        ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        // Add expiry options before FIELDS keyword
-        if (options.Expiry != null)
+        if (options.Duration is { } duration)
         {
-            switch (options.Expiry.Type)
-            {
-                case HGetExExpiryType.Seconds:
-                    args.AddRange([Constants.ExKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.Milliseconds:
-                    args.AddRange([Constants.PxKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.UnixSeconds:
-                    args.AddRange([Constants.ExAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.UnixMilliseconds:
-                    args.AddRange([Constants.PxAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.Persist:
-                    args.Add(Constants.PersistKeyword);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            args.Add(Constants.PxKeyword);
+            args.Add(ToMilliseconds(duration).ToGlideString());
+        }
+        else if (options.Timestamp is { } timestamp)
+        {
+            args.Add(Constants.PxAtKeyword);
+            args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());
+        }
+        else
+        {
+            args.Add(Constants.PersistKeyword);
         }
 
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
+        AddFields(args, [.. hashFields]);
 
         return new(RequestType.HGetEx, [.. args], true, response =>
-            response == null ? null : [.. response.Select(item =>
-                item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)], allowConverterToHandleNull: true);
+            [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
     }
 
-    public static Cmd<long, long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options)
+    public static Cmd<long, bool> HashSetExpiryAsync(
+        ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        SetExpiryOptions options, HashSetCondition condition)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        // Add field existence condition options first (FNX/FXX)
-        if (options.OnlyIfNoneExist)
+        if (condition == HashSetCondition.OnlyIfNoneExist)
         {
             args.Add(Constants.FnxKeyword);
         }
-        else if (options.OnlyIfAllExist)
+        else if (condition == HashSetCondition.OnlyIfAllExist)
         {
             args.Add(Constants.FxxKeyword);
         }
 
-        // Add expiry options after conditional options
-        if (options.Expiry != null)
+        if (options.Duration is { } duration)
         {
-            switch (options.Expiry.Type)
-            {
-                case Commands.Options.ExpiryType.Seconds:
-                    args.AddRange([Constants.ExKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case Commands.Options.ExpiryType.Milliseconds:
-                    args.AddRange([Constants.PxKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case Commands.Options.ExpiryType.UnixSeconds:
-                    args.AddRange([Constants.ExAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case Commands.Options.ExpiryType.UnixMilliseconds:
-                    args.AddRange([Constants.PxAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case Commands.Options.ExpiryType.KeepExisting:
-                    args.Add(Constants.KeepTtlKeyword);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            args.Add(Constants.PxKeyword);
+            args.Add(ToMilliseconds(duration).ToGlideString());
+        }
+        else if (options.Timestamp is { } timestamp)
+        {
+            args.Add(Constants.PxAtKeyword);
+            args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());
+        }
+        else
+        {
+            args.Add(Constants.KeepTtlKeyword);
         }
 
         args.Add(Constants.FieldsKeyword);
-        args.Add(fieldValueMap.Count.ToGlideString());
+        args.Add(hashFieldsAndValues.Count().ToGlideString());
+        AddPairs(args, hashFieldsAndValues);
 
-        foreach (var kvp in fieldValueMap)
-        {
-            args.Add(kvp.Key.ToGlideString());
-            args.Add(kvp.Value.ToGlideString());
-        }
-
-        return Simple<long>(RequestType.HSetEx, [.. args]);
+        return Boolean<long>(RequestType.HSetEx, [.. args]);
     }
 
     public static Cmd<object[], HashPersistResult[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] hashFields)
@@ -221,6 +189,18 @@ internal partial class Request
         args.Add(Constants.FieldsKeyword);
         args.Add(fields.Length.ToGlideString());
         args.AddRange(fields.ToGlideStrings());
+    }
+
+    /// <summary>
+    /// Adds the given key-value pairs to the arguments list.
+    /// </summary>
+    private static void AddPairs(List<GlideString> args, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
+    {
+        foreach (var kvp in pairs)
+        {
+            args.Add(kvp.Key.ToGlideString());
+            args.Add(kvp.Value.ToGlideString());
+        }
     }
 
     /// <summary>

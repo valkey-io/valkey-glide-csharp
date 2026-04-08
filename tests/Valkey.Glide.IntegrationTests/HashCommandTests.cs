@@ -8,7 +8,10 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class HashCommandTests(TestConfiguration config)
 {
+    // TODO #280: Cleanup this class
     public TestConfiguration Config { get; } = config;
+
+    #region HashSetAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -34,6 +37,45 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal("value2", values[1]);
         Assert.Equal("value3", values[2]);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSet_SingleField(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Initial set should return true (new field)
+        Assert.True(await client.HashSetAsync(key, "field1", "value1"));
+
+        // Overwriting existing value should return false (not new)
+        Assert.False(await client.HashSetAsync(key, "field1", "value1-updated"));
+        Assert.Equal("value1-updated", await client.HashGetAsync(key, "field1"));
+    }
+
+    #endregion
+    #region HashSetIfNotExistsAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSetIfNotExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Set on non-existing field should succeed
+        Assert.True(await client.HashSetIfNotExistsAsync(key, "field1", "value1"));
+        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
+
+        // Set on existing field should fail
+        Assert.False(await client.HashSetIfNotExistsAsync(key, "field1", "should-not-update"));
+        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
+
+        // Set on new field should succeed
+        Assert.True(await client.HashSetIfNotExistsAsync(key, "field2", "value2"));
+        Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
+    }
+
+    #endregion
+    #region HashGetAllAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -63,6 +105,9 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal("value3", result[2].Value);
     }
 
+    #endregion
+    #region HashDeleteAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashDelete(BaseClient client)
@@ -90,6 +135,9 @@ public class HashCommandTests(TestConfiguration config)
         Assert.True(await client.HashExistsAsync(key, "field4"));
     }
 
+    #endregion
+    #region HashExistsAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExists(BaseClient client)
@@ -101,6 +149,9 @@ public class HashCommandTests(TestConfiguration config)
         Assert.True(await client.HashExistsAsync(key, "field1"));
         Assert.False(await client.HashExistsAsync(key, "nonexistent"));
     }
+
+    #endregion
+    #region HashLengthAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -121,6 +172,9 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(3, await client.HashLengthAsync(key));
     }
 
+    #endregion
+    #region HashStringLengthAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashStringLength(BaseClient client)
@@ -133,6 +187,9 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(6, await client.HashStringLengthAsync(key, "field1"));
         Assert.Equal(25, await client.HashStringLengthAsync(key, "field2"));
     }
+
+    #endregion
+    #region HashValuesAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -158,6 +215,92 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal("value2", values[1]);
         Assert.Equal("value3", values[2]);
     }
+
+    #endregion
+    #region HashKeysAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashKeys(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test on non-existing key
+        ValkeyValue[] keys = await client.HashKeysAsync(key);
+        Assert.Empty(keys);
+
+        // Set up test data
+        HashEntry[] entries =
+        [
+            new HashEntry("field1", "value1"),
+            new HashEntry("field2", "value2"),
+            new HashEntry("field3", "value3")
+        ];
+        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
+
+        // Test getting all keys
+        keys = await client.HashKeysAsync(key);
+        Assert.Equal(3, keys.Length);
+
+        // Sort the keys for consistent testing
+        string[] sortedKeys = [.. keys.Select(k => k.ToString()).OrderBy(k => k)];
+        Assert.Equal(["field1", "field2", "field3"], sortedKeys);
+    }
+
+    #endregion
+    #region HashIncrementByAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashIncrement_Long(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test increment on non-existing field (should start from 0)
+        Assert.Equal(5, await client.HashIncrementByAsync(key, "counter", 5));
+        Assert.Equal("5", await client.HashGetAsync(key, "counter"));
+
+        // Test increment with default value (1)
+        Assert.Equal(6, await client.HashIncrementByAsync(key, "counter"));
+        Assert.Equal("6", await client.HashGetAsync(key, "counter"));
+
+        // Test increment with negative value (decrement)
+        Assert.Equal(3, await client.HashIncrementByAsync(key, "counter", -3));
+        Assert.Equal("3", await client.HashGetAsync(key, "counter"));
+
+        // Test increment on existing non-numeric field should throw
+        _ = await client.HashSetAsync(key, "text_field", "not_a_number");
+        _ = await Assert.ThrowsAsync<RequestException>(
+            () => client.HashIncrementByAsync(key, "text_field", 1));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashIncrement_Double(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test increment on non-existing field (should start from 0)
+        Assert.Equal(2.5, await client.HashIncrementByAsync(key, "float_counter", 2.5));
+        Assert.Equal("2.5", await client.HashGetAsync(key, "float_counter"));
+
+        // Test increment with positive value
+        Assert.Equal(5.0, await client.HashIncrementByAsync(key, "float_counter", 2.5));
+        Assert.Equal("5", await client.HashGetAsync(key, "float_counter"));
+
+        // Test increment with negative value (decrement)
+        Assert.Equal(2.5, await client.HashIncrementByAsync(key, "float_counter", -2.5));
+        Assert.Equal("2.5", await client.HashGetAsync(key, "float_counter"));
+
+        // Test increment on existing non-numeric field should throw
+        _ = await client.HashSetAsync(key, "text_field", "not_a_number");
+        _ = await Assert.ThrowsAsync<RequestException>(
+            () => client.HashIncrementByAsync(key, "text_field", 1.5));
+    }
+
+
+    #endregion
+    #region HashRandomFieldAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -213,125 +356,14 @@ public class HashCommandTests(TestConfiguration config)
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashSet_SingleField(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        // Initial set should return true (new field)
-        Assert.True(await client.HashSetAsync(key, "field1", "value1"));
-
-        // Overwriting existing value should return false (not new)
-        Assert.False(await client.HashSetAsync(key, "field1", "value1-updated"));
-        Assert.Equal("value1-updated", await client.HashGetAsync(key, "field1"));
-    }
+    #endregion
+    #region HashGetExpiryAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashSetIfNotExists(BaseClient client)
+    public async Task TestHashGetExpiry(BaseClient client)
     {
-        string key = Guid.NewGuid().ToString();
-
-        // Set on non-existing field should succeed
-        Assert.True(await client.HashSetIfNotExistsAsync(key, "field1", "value1"));
-        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
-
-        // Set on existing field should fail
-        Assert.False(await client.HashSetIfNotExistsAsync(key, "field1", "should-not-update"));
-        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
-
-        // Set on new field should succeed
-        Assert.True(await client.HashSetIfNotExistsAsync(key, "field2", "value2"));
-        Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashIncrement_Long(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        // Test increment on non-existing field (should start from 0)
-        Assert.Equal(5, await client.HashIncrementByAsync(key, "counter", 5));
-        Assert.Equal("5", await client.HashGetAsync(key, "counter"));
-
-        // Test increment with default value (1)
-        Assert.Equal(6, await client.HashIncrementByAsync(key, "counter"));
-        Assert.Equal("6", await client.HashGetAsync(key, "counter"));
-
-        // Test increment with negative value (decrement)
-        Assert.Equal(3, await client.HashIncrementByAsync(key, "counter", -3));
-        Assert.Equal("3", await client.HashGetAsync(key, "counter"));
-
-        // Test increment on existing non-numeric field should throw
-        _ = await client.HashSetAsync(key, "text_field", "not_a_number");
-        _ = await Assert.ThrowsAsync<RequestException>(
-            () => client.HashIncrementByAsync(key, "text_field", 1));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashIncrement_Double(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        // Test increment on non-existing field (should start from 0)
-        Assert.Equal(2.5, await client.HashIncrementByAsync(key, "float_counter", 2.5));
-        Assert.Equal("2.5", await client.HashGetAsync(key, "float_counter"));
-
-        // Test increment with positive value
-        Assert.Equal(5.0, await client.HashIncrementByAsync(key, "float_counter", 2.5));
-        Assert.Equal("5", await client.HashGetAsync(key, "float_counter"));
-
-        // Test increment with negative value (decrement)
-        Assert.Equal(2.5, await client.HashIncrementByAsync(key, "float_counter", -2.5));
-        Assert.Equal("2.5", await client.HashGetAsync(key, "float_counter"));
-
-        // Test increment on existing non-numeric field should throw
-        _ = await client.HashSetAsync(key, "text_field", "not_a_number");
-        _ = await Assert.ThrowsAsync<RequestException>(
-            () => client.HashIncrementByAsync(key, "text_field", 1.5));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashKeys(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        // Test on non-existing key
-        ValkeyValue[] keys = await client.HashKeysAsync(key);
-        Assert.Empty(keys);
-
-        // Set up test data
-        HashEntry[] entries =
-        [
-            new HashEntry("field1", "value1"),
-            new HashEntry("field2", "value2"),
-            new HashEntry("field3", "value3")
-        ];
-        _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
-
-        // Test getting all keys
-        keys = await client.HashKeysAsync(key);
-        Assert.Equal(3, keys.Length);
-
-        // Sort the keys for consistent testing
-        string[] sortedKeys = [.. keys.Select(k => k.ToString()).OrderBy(k => k)];
-        Assert.Equal(["field1", "field2", "field3"], sortedKeys);
-    }
-
-    // Hash Field Expire Commands (Valkey 9.0+)
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashGetEx(BaseClient client)
-    {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HGETEX is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -344,35 +376,25 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        // Test HGETEX with expiry in seconds
-        var options = new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60));
-        ValkeyValue[]? values = await client.HashGetExAsync(key, ["field1", "field2"], options);
-        Assert.NotNull(values);
+        // Test HGETEX with expiry as duration
+        var options = GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
+        ValkeyValue[] values = await client.HashGetExpiryAsync(key, ["field1", "field2"], options);
         Assert.Equal(2, values.Length);
         Assert.Equal("value1", values[0]);
         Assert.Equal("value2", values[1]);
 
-        // Test HGETEX with expiry in milliseconds
-        var msOptions = new HashGetExOptions().SetExpiry(HGetExExpiry.Milliseconds(5000));
-        values = await client.HashGetExAsync(key, ["field3"], msOptions);
-        Assert.NotNull(values);
-        _ = Assert.Single(values);
-        Assert.Equal("value3", values[0]);
-
         // Test HGETEX with persist option
-        var persistOptions = new HashGetExOptions().SetExpiry(HGetExExpiry.Persist());
-        values = await client.HashGetExAsync(key, ["field1"], persistOptions);
-        Assert.NotNull(values);
+        var persistOptions = GetExpiryOptions.Persist();
+        values = await client.HashGetExpiryAsync(key, ["field1"], persistOptions);
         _ = Assert.Single(values);
         Assert.Equal("value1", values[0]);
 
         // Test HGETEX on non-existing key
-        values = await client.HashGetExAsync("nonexistent", ["field1"], options);
-        Assert.NotNull(values);
+        values = await client.HashGetExpiryAsync("nonexistent", ["field1"], options);
         Assert.Equal(ValkeyValue.Null, values[0]);
 
         // Test HGETEX with non-existing fields
-        values = await client.HashGetExAsync(key, ["nonexistent1", "nonexistent2"], options);
+        values = await client.HashGetExpiryAsync(key, ["nonexistent1", "nonexistent2"], options);
         Assert.NotNull(values);
         Assert.Equal(2, values.Length);
         Assert.Equal(ValkeyValue.Null, values[0]);
@@ -381,53 +403,160 @@ public class HashCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashSetEx(BaseClient client)
+    public async Task TestHashGetExpiry_SingleField(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HSETEX is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
-        // Test HSETEX with expiry in seconds
-        var fieldValueMap = new Dictionary<ValkeyValue, ValkeyValue>
-        {
-            { "field1", "value1" },
-            { "field2", "value2" }
-        };
-        var options = new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60));
-        Assert.Equal(1L, await client.HashSetExAsync(key, fieldValueMap, options));
+        // Set up test data
+        _ = await client.HashSetAsync(key, "field1", "value1");
+
+        // Test HGETEX single field with expiry as duration
+        var expireInOptions = GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
+        ValkeyValue value = await client.HashGetExpiryAsync(key, "field1", expireInOptions);
+        Assert.Equal("value1", value);
+
+        // Verify TTL was set
+        TimeToLiveResult ttlResult = await client.HashTimeToLiveAsync(key, "field1");
+        Assert.True(ttlResult.HasTimeToLive);
+        Assert.True(ttlResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
+
+        // Test HGETEX single field with expiry as timestamp
+        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
+        var expireAtOptions = GetExpiryOptions.ExpireAt(expiry);
+        value = await client.HashGetExpiryAsync(key, "field1", expireAtOptions);
+        Assert.Equal("value1", value);
+
+        // Verify expiry was set
+        ExpireTimeResult expireTimeResult = await client.HashExpireTimeAsync(key, "field1");
+        Assert.True(expireTimeResult.HasExpiry);
+        _ = Assert.NotNull(expireTimeResult.Expiry);
+
+        // Test HGETEX single field with persist option
+        var persistOptions = GetExpiryOptions.Persist();
+        value = await client.HashGetExpiryAsync(key, "field1", persistOptions);
+        Assert.Equal("value1", value);
+
+        // Verify expiry was removed
+        ttlResult = await client.HashTimeToLiveAsync(key, "field1");
+        Assert.True(ttlResult.Exists);
+        Assert.False(ttlResult.HasTimeToLive);
+
+        // Test HGETEX single field that doesn't exist
+        value = await client.HashGetExpiryAsync(key, "nonexistent", expireInOptions);
+        Assert.Equal(ValkeyValue.Null, value);
+
+        // Test HGETEX single field on non-existing key
+        value = await client.HashGetExpiryAsync("nonexistent_key", "field1", expireInOptions);
+        Assert.Equal(ValkeyValue.Null, value);
+    }
+
+
+    #endregion
+    #region HashSetExpiryAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSetExpiry(BaseClient client)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = Guid.NewGuid().ToString();
+
+        // Test HSETEX with expiry as duration
+        KeyValuePair<ValkeyValue, ValkeyValue>[] hashFieldsAndValues =
+        [
+            new("field1", "value1"),
+            new("field2", "value2")
+        ];
+        var options = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
+        Assert.True(await client.HashSetExpiryAsync(key, hashFieldsAndValues, options));
 
         // Verify values were set
         Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
         Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
 
-        // Test HSETEX with NX condition (should fail for existing fields)
-        var nxOptions = new HashSetExOptions().SetOnlyIfNoneExist();
-        Assert.Equal(0L, await client.HashSetExAsync(key, fieldValueMap, nxOptions));
+        // Test HSETEX with FNX condition (should fail for existing fields)
+        Assert.False(await client.HashSetExpiryAsync(key, hashFieldsAndValues, options, HashSetCondition.OnlyIfNoneExist));
 
-        // Test HSETEX with XX condition (should succeed for existing fields)
-        var xxOptions = new HashSetExOptions().SetOnlyIfAllExist();
-        var updateMap = new Dictionary<ValkeyValue, ValkeyValue> { { "field1", "updated_value1" } };
-        Assert.Equal(1L, await client.HashSetExAsync(key, updateMap, xxOptions));
+        // Test HSETEX with FXX condition (should succeed for existing fields)
+        KeyValuePair<ValkeyValue, ValkeyValue>[] updateFields = [new("field1", "updated_value1")];
+        Assert.True(await client.HashSetExpiryAsync(key, updateFields, options, HashSetCondition.OnlyIfAllExist));
         Assert.Equal("updated_value1", await client.HashGetAsync(key, "field1"));
 
         // Test HSETEX with KEEPTTL option
-        var keepTtlOptions = new HashSetExOptions().SetExpiry(ExpirySet.KeepExisting());
-        var keepTtlMap = new Dictionary<ValkeyValue, ValkeyValue> { { "field3", "value3" } };
-        Assert.Equal(1L, await client.HashSetExAsync(key, keepTtlMap, keepTtlOptions));
+        var keepTtlOptions = SetExpiryOptions.KeepTimeToLive();
+        KeyValuePair<ValkeyValue, ValkeyValue>[] keepTtlFields = [new("field3", "value3")];
+        Assert.True(await client.HashSetExpiryAsync(key, keepTtlFields, keepTtlOptions));
         Assert.Equal("value3", await client.HashGetAsync(key, "field3"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSetExpiry_SingleField(BaseClient client)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = Guid.NewGuid().ToString();
+
+        // Test HSETEX single field with expiry as duration
+        var expireInOptions = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
+        Assert.True(await client.HashSetExpiryAsync(key, "field1", "value1", expireInOptions));
+        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
+
+        // Verify TTL was set
+        TimeToLiveResult ttlResult = await client.HashTimeToLiveAsync(key, "field1");
+        Assert.True(ttlResult.HasTimeToLive);
+        Assert.True(ttlResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
+
+        // Test HSETEX single field with expiry as timestamp
+        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
+        var expireAtOptions = SetExpiryOptions.ExpireAt(expiry);
+        Assert.True(await client.HashSetExpiryAsync(key, "field2", "value2", expireAtOptions));
+        Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
+
+        // Verify expiry was set
+        ExpireTimeResult expireTimeResult = await client.HashExpireTimeAsync(key, "field2");
+        Assert.True(expireTimeResult.HasExpiry);
+        _ = Assert.NotNull(expireTimeResult.Expiry);
+
+        // Test HSETEX single field with KEEPTTL option
+        var keepTtlOptions = SetExpiryOptions.KeepTimeToLive();
+        Assert.True(await client.HashSetExpiryAsync(key, "field1", "updated_value1", keepTtlOptions));
+        Assert.Equal("updated_value1", await client.HashGetAsync(key, "field1"));
+
+        // Verify TTL was preserved
+        ttlResult = await client.HashTimeToLiveAsync(key, "field1");
+        Assert.True(ttlResult.HasTimeToLive);
+        Assert.True(ttlResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
+
+        // Test HSETEX single field with FNX condition on new field (should succeed)
+        Assert.True(await client.HashSetExpiryAsync(key, "new_field", "new_value", expireInOptions, HashSetCondition.OnlyIfNoneExist));
+        Assert.Equal("new_value", await client.HashGetAsync(key, "new_field"));
+
+        // Test HSETEX single field with FNX condition on existing field (should fail)
+        Assert.False(await client.HashSetExpiryAsync(key, "field1", "should_not_set", expireInOptions, HashSetCondition.OnlyIfNoneExist));
+        Assert.Equal("updated_value1", await client.HashGetAsync(key, "field1"));
+
+        // Test HSETEX single field with FXX condition on existing field (should succeed)
+        Assert.True(await client.HashSetExpiryAsync(key, "field1", "exist_updated", expireInOptions, HashSetCondition.OnlyIfAllExist));
+        Assert.Equal("exist_updated", await client.HashGetAsync(key, "field1"));
+
+        // Test HSETEX single field with FXX condition on new field (should fail)
+        Assert.False(await client.HashSetExpiryAsync(key, "nonexistent_field", "value", expireInOptions, HashSetCondition.OnlyIfAllExist));
+        Assert.False(await client.HashExistsAsync(key, "nonexistent_field"));
+    }
+
+
+    #endregion
+    #region HashPersistAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPersist(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HPERSIST is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -456,14 +585,14 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(HashPersistResult.NoField, results[0]);
     }
 
+    #endregion
+    #region HashExpireAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpire(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HEXPIRE is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -497,10 +626,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpire(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HPEXPIRE is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -518,14 +644,15 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(ExpireResult.NoSuchField, results[0]);
     }
 
+
+    #endregion
+    #region HashExpireAtAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireAt(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HEXPIREAT is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -548,10 +675,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpireAt(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HPEXPIREAT is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -570,14 +694,14 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(ExpireResult.NoSuchField, results[0]);
     }
 
+    #endregion
+    #region HashExpireTimeAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireTime(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HPEXPIRETIME is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -606,14 +730,14 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Null(results[2].Expiry);
     }
 
+    #endregion
+    #region HashTimeToLiveAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashTimeToLive(BaseClient client)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HPTTL is supported since Valkey 9.0.0"
-        );
+        SkipIfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -640,4 +764,13 @@ public class HashCommandTests(TestConfiguration config)
         _ = Assert.NotNull(singleResult.TimeToLive);
         Assert.True(singleResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
     }
+
+    #endregion
+    #region Helpers
+
+    // TODO #280: Extract to TestUtils
+    private static void SkipIfHashExpireNotSupported()
+        => Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "Requires Valkey 9.0+");
+
+    #endregion
 }
