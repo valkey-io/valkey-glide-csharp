@@ -1752,7 +1752,7 @@ pub struct Statistics {
     pub total_bytes_decompressed: u64,
     /// Number of times compression was skipped
     pub compression_skipped_count: u64,
-    /// Number of times subscriptions went out of sync
+    /// Number of subscriptions that are out of sync
     pub subscription_out_of_sync_count: u64,
     /// Timestamp of the last subscription synchronization
     pub subscription_last_sync_timestamp: u64,
