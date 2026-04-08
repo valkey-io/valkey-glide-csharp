@@ -13,7 +13,7 @@ namespace Valkey.Glide;
 /// <param name="TotalBytesCompressed">Total size in bytes after compression.</param>
 /// <param name="TotalBytesDecompressed">Total size in bytes after decompression.</param>
 /// <param name="CompressionSkippedCount">Number of times compression was skipped (e.g., value too small).</param>
-/// <param name="SubscriptionOutOfSyncCount">Number of times subscriptions went out of sync.</param>
+/// <param name="SubscriptionOutOfSyncCount">Number of subscriptions that are out of sync.</param>
 /// <param name="SubscriptionLastSyncTimestamp">Timestamp of the last subscription synchronization.</param>
 public sealed record Statistics(
     ulong TotalConnections,

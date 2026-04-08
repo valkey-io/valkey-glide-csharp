@@ -539,9 +539,11 @@ pub unsafe extern "C-unwind" fn command(
 
     let route = unsafe { create_route(route_info, Some(&cmd)) };
 
+    let request_type = unsafe { (*cmd_ptr).request_type };
+
     // Apply compression to command arguments if compression is enabled
     if let Some(compression_manager) = core.client.compression_manager()
-        && let Err(err) = compress_cmd(&mut cmd, compression_manager.as_ref())
+        && let Err(err) = compress_cmd(&mut cmd, request_type, compression_manager.as_ref())
     {
         unsafe {
             report_error(
@@ -553,8 +555,6 @@ pub unsafe extern "C-unwind" fn command(
         }
         return;
     }
-
-    let request_type = unsafe { (*cmd_ptr).request_type };
 
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
@@ -1675,6 +1675,7 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
 /// Returns `Ok(())` if compression was applied or skipped, `Err` if compression failed.
 fn compress_cmd(
     cmd: &mut redis::Cmd,
+    request_type: RequestType,
     compression_manager: &glide_core::compression::CompressionManager,
 ) -> Result<(), String> {
     let all_args: Vec<Vec<u8>> = cmd
@@ -1690,17 +1691,6 @@ fn compress_cmd(
     }
 
     let command_name = &all_args[0];
-    let command_str = String::from_utf8_lossy(command_name).to_uppercase();
-
-    let request_type = match command_str.as_str() {
-        "SET" => RequestType::Set,
-        "MSET" => RequestType::MSet,
-        "MSETNX" => RequestType::MSetNX,
-        "SETEX" => RequestType::SetEx,
-        "PSETEX" => RequestType::PSetEx,
-        "SETNX" => RequestType::SetNX,
-        _ => return Ok(()),
-    };
 
     let mut args: Vec<Vec<u8>> = all_args[1..].to_vec();
     glide_core::compression::process_command_args_for_compression(
