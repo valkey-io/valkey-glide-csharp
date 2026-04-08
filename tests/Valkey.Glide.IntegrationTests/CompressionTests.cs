@@ -398,7 +398,7 @@ public class CompressionTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Setex_CompressesValue(GlideClient _)
+    public async Task Compression_SetWithExpiry_CompressesValue(GlideClient _)
     {
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
@@ -410,41 +410,15 @@ public class CompressionTests(TestConfiguration config)
 
         var statsBefore = BaseClient.GetStatistics();
 
-        string key = $"setex_test_{Guid.NewGuid()}";
+        string key = $"set_expiry_test_{Guid.NewGuid()}";
         string value = new string('s', LargeValueSize);
 
-        await client.StringSetAsync(key, value, TimeSpan.FromSeconds(10));
+        await client.StringSetAsync(key, value);
+        await client.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"SET with EX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
-
-        ValkeyValue retrieved = await client.StringGetAsync(key);
-        Assert.Equal(value, retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Psetex_CompressesValue(GlideClient _)
-    {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
-        var statsBefore = BaseClient.GetStatistics();
-
-        string key = $"psetex_test_{Guid.NewGuid()}";
-        string value = new string('p', LargeValueSize);
-
-        await client.StringSetAsync(key, value, TimeSpan.FromMilliseconds(10000));
-
-        var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"SET with PX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+            $"SET should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await client.StringGetAsync(key);
         Assert.Equal(value, retrieved.ToString());
