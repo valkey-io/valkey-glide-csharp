@@ -87,10 +87,7 @@ public abstract partial class BaseBatch<T>
     public T HashExpireAt(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTimeOffset expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(HashExpireAtAsync(key, expiry, [.. hashFields], condition));
 
     /// <inheritdoc cref="IBatchHashCommands.HashExpireTime(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashExpireTimeAsync(key, [.. fields]));
-
-    /// <inheritdoc cref="IBatchHashCommands.HashPExpireTime(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T HashPExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashPExpireTimeAsync(key, [.. fields]));
+    public T HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => AddCmd(HashExpireTimeAsync(key, [.. hashFields]));
 
     /// <inheritdoc cref="IBatchHashCommands.HashTtl(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => AddCmd(HashTtlAsync(key, [.. fields]));
@@ -123,8 +120,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchHashCommands.HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashPersist(key, fields);
     IBatch IBatchHashCommands.HashExpire(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireCondition condition) => HashExpire(key, hashFields, expiry, condition);
     IBatch IBatchHashCommands.HashExpireAt(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTimeOffset expiry, ExpireCondition condition) => HashExpireAt(key, hashFields, expiry, condition);
-    IBatch IBatchHashCommands.HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashExpireTime(key, fields);
-    IBatch IBatchHashCommands.HashPExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashPExpireTime(key, fields);
+    IBatch IBatchHashCommands.HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashExpireTime(key, hashFields);
     IBatch IBatchHashCommands.HashTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashTtl(key, fields);
     IBatch IBatchHashCommands.HashPTtl(ValkeyKey key, IEnumerable<ValkeyValue> fields) => HashPTtl(key, fields);
 }

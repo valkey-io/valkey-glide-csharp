@@ -201,28 +201,12 @@ internal partial class Request
             [.. response.Select(item => (ExpireResult)(long)item)]);
     }
 
-    public static Cmd<object[], long[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields)
+    public static Cmd<object[], ExpireTimeResult[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] hashFields)
     {
         List<GlideString> args = [key.ToGlideString()];
-
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HExpireTime, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
-    public static Cmd<object[], long[]> HashPExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-        args.AddRange(fields.ToGlideStrings());
-
+        AddFields(args, hashFields);
         return new(RequestType.HPExpireTime, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
+            [.. response.Select(item => new ExpireTimeResult((long)item))]);
     }
 
     public static Cmd<object[], long[]> HashTtlAsync(ValkeyKey key, ValkeyValue[] fields)

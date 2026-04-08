@@ -1421,11 +1421,7 @@ internal partial class BatchTestUtils
 
             // Test HEXPIRETIME
             _ = batch.HashExpireTime(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
-
-            // Test HPEXPIRETIME
-            _ = batch.HashPExpireTime(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashPExpireTime(expireKey, [expire_field1, expire_field2])", true));
+            testData.Add(new(Array.Empty<ExpireTimeResult>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
         }
 
         return testData;

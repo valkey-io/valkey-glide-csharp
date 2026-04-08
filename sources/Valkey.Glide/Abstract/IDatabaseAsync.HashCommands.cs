@@ -130,4 +130,13 @@ public partial interface IDatabaseAsync
         DateTime expiry,
         ExpireWhen when = ExpireWhen.Always,
         CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::returns)]"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of Unix timestamps in milliseconds, -1 for persistent fields, -2 for non-existent fields.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<long[]> HashFieldGetExpireDateTimeAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields,
+        CommandFlags flags = CommandFlags.None);
 }

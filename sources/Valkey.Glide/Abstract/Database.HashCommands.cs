@@ -170,6 +170,17 @@ internal partial class Database
         return await HashExpireAtAsync(key, hashFields, new DateTimeOffset(expiry), MapExpireWhen(when));
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetExpireDateTimeAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
+    public async Task<long[]> HashFieldGetExpireDateTimeAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields,
+        CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        ExpireTimeResult[] results = await HashExpireTimeAsync(key, hashFields);
+        return [.. results.Select(r => r.Expiry?.ToUnixTimeMilliseconds() ?? (r.Exists ? -1L : -2L))];
+    }
+
     /// <summary>
     /// Maps the given StackExchange.Redis <see cref="ExpireWhen"/> to the corresponding Valkey GLIDE <see cref="ExpireCondition"/>.
     /// </summary>
@@ -182,5 +193,4 @@ internal partial class Database
         ExpireWhen.LessThanCurrentExpiry => ExpireCondition.OnlyIfLessThan,
         _ => throw new ArgumentOutOfRangeException(nameof(when)),
     };
-
 }

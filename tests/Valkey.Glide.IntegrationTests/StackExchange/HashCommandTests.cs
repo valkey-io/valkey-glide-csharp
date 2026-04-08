@@ -67,7 +67,6 @@ public class SERHashCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region HashIncrementAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -91,14 +90,13 @@ public class SERHashCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region HashFieldExpireAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldExpireAsync_TimeSpan(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "HEXPIRE requires Valkey 9.0+");
+        SkipIfHashExpireNotSupported();
 
         string key = $"ser-hexpire-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -112,7 +110,7 @@ public class SERHashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldExpireAsync_DateTime(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "HEXPIREAT requires Valkey 9.0+");
+        SkipIfHashExpireNotSupported();
 
         string key = $"ser-hexpireat-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -126,7 +124,7 @@ public class SERHashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldExpireAsync_AllExpireWhenValues(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "HEXPIRE requires Valkey 9.0+");
+        SkipIfHashExpireNotSupported();
 
         string key = $"ser-hexpire-when-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -143,6 +141,30 @@ public class SERHashCommandTests(TestConfiguration config)
         results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(30), ExpireWhen.HasExpiry);
         Assert.Equal(ExpireResult.Success, results[0]);
     }
+
+    #endregion
+    #region HashFieldGetExpireDateTimeAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetExpireDateTimeAsync_ReturnsTimestamps(IDatabaseAsync db)
+    {
+        SkipIfHashExpireNotSupported();
+
+        string key = $"ser-hexpiretime-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        long[] results = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
+        _ = Assert.Single(results);
+        Assert.True(results[0] > 0);
+    }
+
+    #endregion
+    #region Helpers
+
+    private static void SkipIfHashExpireNotSupported() =>
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "Requires Valkey 9.0+");
 
     #endregion
 }

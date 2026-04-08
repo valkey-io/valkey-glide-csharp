@@ -353,8 +353,7 @@ public class CommandTests
             () => Assert.Equal(["HPEXPIREAT", "key", "1609459200000", "FIELDS", "2", "field1", "field2"], Request.HashExpireAtAsync("key", DateTimeOffset.FromUnixTimeSeconds(1609459200), ["field1", "field2"], ExpireCondition.Always).GetArgs()),
             () => Assert.Equal(["HPEXPIREAT", "key", "1609459200000", "NX", "FIELDS", "2", "field1", "field2"], Request.HashExpireAtAsync("key", DateTimeOffset.FromUnixTimeSeconds(1609459200), ["field1", "field2"], ExpireCondition.OnlyIfNotExists).GetArgs()),
             () => Assert.Equal(["HPEXPIREAT", "key", "1609459200500", "FIELDS", "2", "field1", "field2"], Request.HashExpireAtAsync("key", DateTimeOffset.FromUnixTimeMilliseconds(1609459200500), ["field1", "field2"], ExpireCondition.Always).GetArgs()),
-            () => Assert.Equal(["HEXPIRETIME", "key", "FIELDS", "2", "field1", "field2"], Request.HashExpireTimeAsync("key", ["field1", "field2"]).GetArgs()),
-            () => Assert.Equal(["HPEXPIRETIME", "key", "FIELDS", "2", "field1", "field2"], Request.HashPExpireTimeAsync("key", ["field1", "field2"]).GetArgs()),
+            () => Assert.Equal(["HPEXPIRETIME", "key", "FIELDS", "2", "field1", "field2"], Request.HashExpireTimeAsync("key", ["field1", "field2"]).GetArgs()),
             () => Assert.Equal(["HTTL", "key", "FIELDS", "2", "field1", "field2"], Request.HashTtlAsync("key", ["field1", "field2"]).GetArgs()),
             () => Assert.Equal(["HPTTL", "key", "FIELDS", "2", "field1", "field2"], Request.HashPTtlAsync("key", ["field1", "field2"]).GetArgs())
         );
@@ -600,8 +599,9 @@ public class CommandTests
             () => Assert.Equal([1L, -1L, -2L], Request.HashPersistAsync("key", ["field1", "field2", "field3"]).Converter([1L, -1L, -2L])),
             () => Assert.Equal([ExpireResult.Success, ExpireResult.ConditionNotMet, ExpireResult.NoSuchField], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
             () => Assert.Equal([ExpireResult.Success, ExpireResult.ConditionNotMet, ExpireResult.NoSuchField], Request.HashExpireAtAsync("key", DateTimeOffset.FromUnixTimeSeconds(1609459200), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
-            () => Assert.Equal([1609459200L, -1L, -2L], Request.HashExpireTimeAsync("key", ["field1", "field2", "field3"]).Converter([1609459200L, -1L, -2L])),
-            () => Assert.Equal([1609459200000L, -1L, -2L], Request.HashPExpireTimeAsync("key", ["field1", "field2", "field3"]).Converter([1609459200000L, -1L, -2L])),
+            () => Assert.True(Request.HashExpireTimeAsync("key", ["field1"]).Converter([1609459200000L])[0].HasExpiry),
+            () => Assert.False(Request.HashExpireTimeAsync("key", ["field1"]).Converter([-1L])[0].HasExpiry),
+            () => Assert.False(Request.HashExpireTimeAsync("key", ["field1"]).Converter([-2L])[0].Exists),
             () => Assert.Equal([60L, -1L, -2L], Request.HashTtlAsync("key", ["field1", "field2", "field3"]).Converter([60L, -1L, -2L])),
             () => Assert.Equal([5000L, -1L, -2L], Request.HashPTtlAsync("key", ["field1", "field2", "field3"]).Converter([5000L, -1L, -2L])),
 

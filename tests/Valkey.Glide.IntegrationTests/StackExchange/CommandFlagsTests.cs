@@ -47,5 +47,11 @@ public class CommandFlagsTests(TestConfiguration config)
             () => db.HashFieldExpireAsync("key", ["field"], DateTime.UtcNow.AddMinutes(5), ExpireWhen.Always, UnsupportedFlag));
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetExpireDateTimeAsync(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldGetExpireDateTimeAsync("key", ["field"], UnsupportedFlag));
+
     #endregion
 }

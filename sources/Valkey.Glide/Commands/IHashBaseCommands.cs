@@ -395,58 +395,6 @@ public interface IHashBaseCommands
     Task<long[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
 
     /// <summary>
-    /// Returns the absolute Unix timestamp (in seconds) at which the given hash fields will expire.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hexpiretime"/>
-    /// <note>
-    /// Since: Valkey 9.0 and above.
-    /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="fields">The fields to get the expiration timestamp for.</param>
-    /// <returns>
-    /// An array of expiration timestamps in seconds for the specified fields:
-    /// <list type="bullet">
-    /// <item><description>For fields with a timeout, returns the absolute Unix timestamp in seconds.</description></item>
-    /// <item><description>For fields that exist but have no associated expire, returns <c>-1</c>.</description></item>
-    /// <item><description>For fields that do not exist in the provided hash key, or the hash key is empty, returns <c>-2</c>.</description></item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// long[] timestamps = await client.HashExpireTimeAsync(key, [field1, field2, field3]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
-
-    /// <summary>
-    /// Returns the absolute Unix timestamp (in milliseconds) at which the given hash fields will expire.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hpexpiretime"/>
-    /// <note>
-    /// Since: Valkey 9.0 and above.
-    /// </note>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="fields">The fields to get the expiration timestamp for.</param>
-    /// <returns>
-    /// An array of expiration timestamps in milliseconds for the specified fields:
-    /// <list type="bullet">
-    /// <item><description>For fields with a timeout, returns the absolute Unix timestamp in milliseconds.</description></item>
-    /// <item><description>For fields that exist but have no associated expire, returns <c>-1</c>.</description></item>
-    /// <item><description>For fields that do not exist in the provided hash key, or the hash key is empty, returns <c>-2</c>.</description></item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// long[] timestamps = await client.HashPExpireTimeAsync(key, [field1, field2, field3]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long[]> HashPExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields);
-
-    /// <summary>
     /// Returns the remaining time to live of hash fields that have a timeout, in seconds.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/httl"/>

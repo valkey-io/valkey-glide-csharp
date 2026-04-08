@@ -575,33 +575,6 @@ public class HashCommandTests(TestConfiguration config)
     {
         Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
-            "HEXPIRETIME is supported since Valkey 9.0.0"
-        );
-
-        string key = Guid.NewGuid().ToString();
-
-        // Set up test data with expiry
-        _ = await client.HashSetAsync(key, "field1", "value1");
-        _ = await client.HashSetAsync(key, "field2", "value2"); // No expiry
-
-        // Set expiry for field1
-        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
-        _ = await client.HashExpireAtAsync(key, ["field1"], expiry);
-
-        // Test HEXPIRETIME
-        long[] results = await client.HashExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
-        Assert.Equal(3, results.Length);
-        Assert.True(results[0] > 0); // Should return expiry timestamp for field1
-        Assert.Equal(-1, results[1]); // field2 has no expiry
-        Assert.Equal(-2, results[2]); // nonexistent field
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashPExpireTime(BaseClient client)
-    {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("9.0.0"),
             "HPEXPIRETIME is supported since Valkey 9.0.0"
         );
 
@@ -615,12 +588,21 @@ public class HashCommandTests(TestConfiguration config)
         DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
         _ = await client.HashExpireAtAsync(key, ["field1"], expiry);
 
-        // Test HPEXPIRETIME
-        long[] results = await client.HashPExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
+        // Test single-field
+        ExpireTimeResult singleResult = await client.HashExpireTimeAsync(key, "field1");
+        Assert.True(singleResult.HasExpiry);
+        _ = Assert.NotNull(singleResult.Expiry);
+
+        // Test multi-field
+        ExpireTimeResult[] results = await client.HashExpireTimeAsync(key, ["field1", "field2", "nonexistent"]);
         Assert.Equal(3, results.Length);
-        Assert.True(results[0] > 0); // Should return expiry timestamp for field1
-        Assert.Equal(-1, results[1]); // field2 has no expiry
-        Assert.Equal(-2, results[2]); // nonexistent field
+        Assert.True(results[0].HasExpiry);
+        _ = Assert.NotNull(results[0].Expiry);
+        Assert.True(results[1].Exists);
+        Assert.False(results[1].HasExpiry);
+        Assert.Null(results[1].Expiry);
+        Assert.False(results[2].Exists);
+        Assert.Null(results[2].Expiry);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -644,7 +626,7 @@ public class HashCommandTests(TestConfiguration config)
         // Test HTTL
         long[] results = await client.HashTtlAsync(key, ["field1", "field2", "nonexistent"]);
         Assert.Equal(3, results.Length);
-        Assert.True(results[0] > 0 && results[0] <= 60); // Should return TTL for field1
+        Assert.True(results[0] is > 0 and <= 60); // Should return TTL for field1
         Assert.Equal(-1, results[1]); // field2 has no expiry
         Assert.Equal(-2, results[2]); // nonexistent field
     }
