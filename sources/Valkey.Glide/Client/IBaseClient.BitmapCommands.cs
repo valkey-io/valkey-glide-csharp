@@ -21,6 +21,14 @@ public partial interface IBaseClient
     /// <param name="key">The key of the string.</param>
     /// <param name="offset">The offset in the string to get the bit at.</param>
     /// <returns>The bit value stored at offset. Returns false if the key does not exist or if the offset is beyond the string length.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool bit = await client.GetBitAsync("mykey", 7);
+    /// Console.WriteLine($"Bit at offset 7: {bit}");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> GetBitAsync(ValkeyKey key, long offset);
 
     /// <summary>
@@ -31,6 +39,14 @@ public partial interface IBaseClient
     /// <param name="offset">The offset in the string to set the bit at.</param>
     /// <param name="value">The bit value to set (true for 1, false for 0).</param>
     /// <returns>The original bit value stored at offset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool previousBit = await client.SetBitAsync("mykey", 7, true);
+    /// Console.WriteLine($"Previous bit value: {previousBit}");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> SetBitAsync(ValkeyKey key, long offset, bool value);
 
     /// <summary>
@@ -42,6 +58,18 @@ public partial interface IBaseClient
     /// <param name="end">The end offset. Default is -1 (end of string).</param>
     /// <param name="indexType">The index type (bit or byte). Default is <see cref="BitmapIndexType.Byte"/>.</param>
     /// <returns>The number of bits set to 1.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // Count all set bits in the string
+    /// long count = await client.BitCountAsync("mykey");
+    /// Console.WriteLine($"Total bits set: {count}");
+    ///
+    /// // Count set bits in byte range [0, 1]
+    /// long rangeCount = await client.BitCountAsync("mykey", 0, 1, BitmapIndexType.Byte);
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> BitCountAsync(ValkeyKey key, long start = 0, long end = -1, BitmapIndexType indexType = BitmapIndexType.Byte);
 
     /// <summary>
@@ -51,6 +79,14 @@ public partial interface IBaseClient
     /// <param name="key">The key of the string.</param>
     /// <param name="options">The offset options specifying start, end, and index type. If null, defaults are used.</param>
     /// <returns>The number of bits set to 1.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long count = await client.BitCountAsync("mykey", BitOffsetOptions.InBitRange(0, 10));
+    /// Console.WriteLine($"Bits set in range: {count}");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> BitCountAsync(ValkeyKey key, BitOffsetOptions? options);
 
     /// <summary>
@@ -63,6 +99,18 @@ public partial interface IBaseClient
     /// <param name="end">The end offset. Default is -1 (end of string).</param>
     /// <param name="indexType">The index type (bit or byte). Default is <see cref="BitmapIndexType.Byte"/>.</param>
     /// <returns>The position of the first bit with the specified value, or -1 if not found.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // Find the first set bit (1)
+    /// long pos = await client.BitPosAsync("mykey", true);
+    /// Console.WriteLine($"First set bit at position: {pos}");
+    ///
+    /// // Find the first clear bit (0) in byte range [1, 3]
+    /// long clearPos = await client.BitPosAsync("mykey", false, 1, 3, BitmapIndexType.Byte);
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> BitPosAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, BitmapIndexType indexType = BitmapIndexType.Byte);
 
     /// <summary>
@@ -73,6 +121,14 @@ public partial interface IBaseClient
     /// <param name="bit">The bit value to search for (true for 1, false for 0).</param>
     /// <param name="options">The offset options specifying start, end, and index type. If null, defaults are used.</param>
     /// <returns>The position of the first bit with the specified value, or -1 if not found.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long pos = await client.BitPosAsync("mykey", true, BitOffsetOptions.InBitRange(0, 100));
+    /// Console.WriteLine($"First set bit in range: {pos}");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> BitPosAsync(ValkeyKey key, bool bit, BitOffsetOptions? options);
 
     /// <summary>
@@ -84,6 +140,18 @@ public partial interface IBaseClient
     /// <param name="keys">The source keys. Must contain at least one key. For NOT operation, must contain exactly one key.</param>
     /// <returns>The size of the string stored in the destination key.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="keys"/> is empty.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // AND operation between two keys
+    /// long size = await client.BitOpAsync(Bitwise.And, "result", new[] { "key1", "key2" });
+    /// Console.WriteLine($"Result string size: {size} bytes");
+    ///
+    /// // NOT operation (single key)
+    /// long notSize = await client.BitOpAsync(Bitwise.Not, "inverted", new[] { "key1" });
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> BitOpAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
     /// <summary>
@@ -96,6 +164,19 @@ public partial interface IBaseClient
     /// An array of results from the executed subcommands.
     /// Null values indicate overflow when using OVERFLOW FAIL.
     /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var subCommands = new IBitFieldSubCommand[]
+    /// {
+    ///     new BitFieldGet(new SignedEncoding(8), new BitOffset(0)),
+    ///     new BitFieldSet(new UnsignedEncoding(4), new BitOffset(8), 15),
+    ///     new BitFieldIncrBy(new SignedEncoding(8), new BitOffset(0), 1)
+    /// };
+    /// long?[] results = await client.BitFieldAsync("mykey", subCommands);
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long?[]> BitFieldAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldSubCommand> subCommands);
 
     /// <summary>
@@ -106,5 +187,17 @@ public partial interface IBaseClient
     /// <param name="key">The key of the string.</param>
     /// <param name="subCommands">The GET subcommands to execute.</param>
     /// <returns>An array of results from the executed GET subcommands.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var subCommands = new IBitFieldReadOnlySubCommand[]
+    /// {
+    ///     new BitFieldGet(new SignedEncoding(8), new BitOffset(0)),
+    ///     new BitFieldGet(new UnsignedEncoding(16), new BitOffset(8))
+    /// };
+    /// long[] results = await client.BitFieldReadOnlyAsync("mykey", subCommands);
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long[]> BitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands);
 }
