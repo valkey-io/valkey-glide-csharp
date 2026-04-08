@@ -146,4 +146,41 @@ internal partial class Database
         return await HashSetExAsync(key, fieldValueMap, options);
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan, ExpireWhen, CommandFlags)"/>
+    public async Task<ExpireResult[]> HashFieldExpireAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields,
+        TimeSpan expiry,
+        ExpireWhen when = ExpireWhen.Always,
+        CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await HashExpireAsync(key, hashFields, expiry, MapExpireWhen(when));
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, DateTime, ExpireWhen, CommandFlags)"/>
+    public async Task<ExpireResult[]> HashFieldExpireAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields,
+        DateTime expiry,
+        ExpireWhen when = ExpireWhen.Always,
+        CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await HashExpireAtAsync(key, hashFields, new DateTimeOffset(expiry), MapExpireWhen(when));
+    }
+
+    /// <summary>
+    /// Maps the given StackExchange.Redis <see cref="ExpireWhen"/> to the corresponding Valkey GLIDE <see cref="ExpireCondition"/>.
+    /// </summary>
+    private static ExpireCondition MapExpireWhen(ExpireWhen when) => when switch
+    {
+        ExpireWhen.Always => ExpireCondition.Always,
+        ExpireWhen.HasExpiry => ExpireCondition.OnlyIfExists,
+        ExpireWhen.HasNoExpiry => ExpireCondition.OnlyIfNotExists,
+        ExpireWhen.GreaterThanCurrentExpiry => ExpireCondition.OnlyIfGreaterThan,
+        ExpireWhen.LessThanCurrentExpiry => ExpireCondition.OnlyIfLessThan,
+        _ => throw new ArgumentOutOfRangeException(nameof(when)),
+    };
+
 }

@@ -3,14 +3,14 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Options for a get/expiry operation.
+/// Options for a command to get the value for a key or field and set its expiry.
 /// </summary>
-public sealed class GetExpiryOptions
+public sealed class GetExpireOptions
 {
     internal TimeSpan? Duration { get; }
     internal DateTimeOffset? Timestamp { get; }
 
-    private GetExpiryOptions(
+    private GetExpireOptions(
         TimeSpan? duration = null,
         DateTimeOffset? timestamp = null)
     {
@@ -22,19 +22,19 @@ public sealed class GetExpiryOptions
     /// Set expiry to a duration from now.
     /// </summary>
     /// <param name="duration">The duration until expiry.</param>
-    /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions ExpireIn(TimeSpan duration) => new(duration: duration);
+    /// <returns>A new <see cref="GetExpireOptions"/> instance.</returns>
+    public static GetExpireOptions ExpireIn(TimeSpan duration) => new(duration: duration);
 
     /// <summary>
     /// Set expiry to an absolute timestamp.
     /// </summary>
     /// <param name="timestamp">The expiry timestamp.</param>
-    /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions ExpireAt(DateTimeOffset timestamp) => new(timestamp: timestamp);
+    /// <returns>A new <see cref="GetExpireOptions"/> instance.</returns>
+    public static GetExpireOptions ExpireAt(DateTimeOffset timestamp) => new(timestamp: timestamp);
 
     /// <summary>
     /// Remove expiry (make persistent).
     /// </summary>
-    /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions Persist() => new();
+    /// <returns>A new <see cref="GetExpireOptions"/> instance.</returns>
+    public static GetExpireOptions Persist() => new();
 }

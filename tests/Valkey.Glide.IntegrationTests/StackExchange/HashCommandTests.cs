@@ -91,4 +91,58 @@ public class SERHashCommandTests(TestConfiguration config)
     }
 
     #endregion
+
+    #region HashFieldExpireAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldExpireAsync_TimeSpan(IDatabaseAsync db)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "HEXPIRE requires Valkey 9.0+");
+
+        string key = $"ser-hexpire-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        ExpireResult[] results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+        _ = Assert.Single(results);
+        Assert.Equal(ExpireResult.Success, results[0]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldExpireAsync_DateTime(IDatabaseAsync db)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "HEXPIREAT requires Valkey 9.0+");
+
+        string key = $"ser-hexpireat-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        ExpireResult[] results = await db.HashFieldExpireAsync(key, ["field1"], DateTime.UtcNow.AddMinutes(5));
+        _ = Assert.Single(results);
+        Assert.Equal(ExpireResult.Success, results[0]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldExpireAsync_AllExpireWhenValues(IDatabaseAsync db)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "HEXPIRE requires Valkey 9.0+");
+
+        string key = $"ser-hexpire-when-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        // Always
+        ExpireResult[] results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60), ExpireWhen.Always);
+        Assert.Equal(ExpireResult.Success, results[0]);
+
+        // HasNoExpiry — should fail since field already has expiry
+        results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(120), ExpireWhen.HasNoExpiry);
+        Assert.Equal(ExpireResult.ConditionNotMet, results[0]);
+
+        // HasExpiry — should succeed since field has expiry
+        results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(30), ExpireWhen.HasExpiry);
+        Assert.Equal(ExpireResult.Success, results[0]);
+    }
+
+    #endregion
 }

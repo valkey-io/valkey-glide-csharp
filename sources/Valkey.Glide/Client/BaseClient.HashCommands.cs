@@ -92,12 +92,20 @@ public abstract partial class BaseClient
         => await Command(Request.HashPersistAsync(key, [.. fields]));
 
     /// <inheritdoc/>
-    public async Task<long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
-        => await Command(Request.HashExpireAsync(key, expiry, [.. fields], options));
+    public async Task<ExpireResult[]> HashExpireAsync(ValkeyKey key, ValkeyValue hashField, TimeSpan expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.HashExpireAsync(key, expiry, [hashField], condition));
 
     /// <inheritdoc/>
-    public async Task<long[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, IEnumerable<ValkeyValue> fields, HashFieldExpirationConditionOptions options)
-        => await Command(Request.HashExpireAtAsync(key, expiry, [.. fields], options));
+    public async Task<ExpireResult[]> HashExpireAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.HashExpireAsync(key, expiry, [.. hashFields], condition));
+
+    /// <inheritdoc/>
+    public async Task<ExpireResult[]> HashExpireAtAsync(ValkeyKey key, ValkeyValue hashField, DateTimeOffset expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.HashExpireAtAsync(key, expiry, [hashField], condition));
+
+    /// <inheritdoc/>
+    public async Task<ExpireResult[]> HashExpireAtAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTimeOffset expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.HashExpireAtAsync(key, expiry, [.. hashFields], condition));
 
     /// <inheritdoc/>
     public async Task<long[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> fields)

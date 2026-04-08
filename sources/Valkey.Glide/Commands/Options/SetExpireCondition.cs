@@ -3,9 +3,9 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// The condition for the set expiry operation.
+/// The condition for a command to the set the value and expiries for hash fields.
 /// </summary>
-public enum SetExpiryCondition
+public enum HashSetExpireCondition
 {
     /// <summary>
     /// Always set the expiry.

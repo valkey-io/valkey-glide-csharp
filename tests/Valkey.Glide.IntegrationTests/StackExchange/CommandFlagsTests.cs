@@ -37,5 +37,15 @@ public class CommandFlagsTests(TestConfiguration config)
             () => db.HashIncrementAsync("key", "field", 1.0, UnsupportedFlag));
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldExpireAsync(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldExpireAsync("key", ["field"], TimeSpan.FromSeconds(60), ExpireWhen.Always, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldExpireAsync("key", ["field"], DateTime.UtcNow.AddMinutes(5), ExpireWhen.Always, UnsupportedFlag));
+    }
+
     #endregion
 }

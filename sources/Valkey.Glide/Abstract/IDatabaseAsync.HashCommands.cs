@@ -108,4 +108,26 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options, CommandFlags flags);
+
+    /// <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan, ExpireCondition)" path="/*[not(self::param[@name='condition'])]"/>
+    /// <param name="when">The condition under which the expiry will be set.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ExpireResult[]> HashFieldExpireAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields,
+        TimeSpan expiry,
+        ExpireWhen when = ExpireWhen.Always,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IBaseClient.HashExpireAtAsync(ValkeyKey, IEnumerable{ValkeyValue}, DateTimeOffset, ExpireCondition)" path="/*[not(self::param[@name='condition'])]"/>
+    /// <param name="when">The condition under which the expiry will be set.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ExpireResult[]> HashFieldExpireAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields,
+        DateTime expiry,
+        ExpireWhen when = ExpireWhen.Always,
+        CommandFlags flags = CommandFlags.None);
 }

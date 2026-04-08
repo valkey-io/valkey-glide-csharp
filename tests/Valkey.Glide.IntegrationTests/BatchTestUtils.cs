@@ -1400,12 +1400,12 @@ internal partial class BatchTestUtils
             testData.Add(new(true, "HashSetEx(expireKey, {setex_field: setex_value}, 60s)"));
 
             // Test HEXPIRE with seconds
-            _ = batch.HashExpire(expireKey, TimeSpan.FromSeconds(30), ["expire_field1"], new HashFieldExpirationConditionOptions());
-            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, 30, [expire_field1])"));
+            _ = batch.HashExpire(expireKey, ["expire_field1"], TimeSpan.FromSeconds(30));
+            testData.Add(new(new ExpireResult[] { ExpireResult.Success }, "HashExpire(expireKey, 30, [expire_field1])"));
 
             // Test HPEXPIRE with milliseconds
-            _ = batch.HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), ["expire_field2"], new HashFieldExpirationConditionOptions());
-            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
+            _ = batch.HashExpire(expireKey, ["expire_field2"], TimeSpan.FromMilliseconds(5000));
+            testData.Add(new(new ExpireResult[] { ExpireResult.Success }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
 
             // Test HTTL
             _ = batch.HashTtl(expireKey, ["expire_field1", "expire_field2"]);
