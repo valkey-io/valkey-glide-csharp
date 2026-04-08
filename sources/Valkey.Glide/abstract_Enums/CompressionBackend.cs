@@ -4,6 +4,7 @@ namespace Valkey.Glide;
 
 /// <summary>
 /// Compression backend types supported by Valkey GLIDE.
+/// Values must match the corresponding enum in glide-core.
 /// </summary>
 public enum CompressionBackend : uint
 {
