@@ -670,7 +670,7 @@ public class CommandTests
         };
 
         // Verify that all subcommands are read-only
-        bool allReadOnly = readOnlySubCommands.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
+        var allReadOnly = readOnlySubCommands.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
         Assert.True(allReadOnly);
 
         // Test that mixed subcommands don't qualify for read-only optimization
@@ -681,7 +681,7 @@ public class CommandTests
         };
 
         // Verify that mixed subcommands are not all read-only
-        bool mixedAllReadOnly = mixedSubCommands.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
+        var mixedAllReadOnly = mixedSubCommands.All(cmd => cmd is BitFieldOptions.IBitFieldReadOnlySubCommand);
         Assert.False(mixedAllReadOnly);
     }
 
@@ -692,8 +692,8 @@ public class CommandTests
             () =>
             {
                 // Test MGET with GlideString objects (what the server actually returns)
-                object[] mgetResponse = [new GlideString("value1"), null!, new GlideString("value3")];
-                ValkeyValue[] result = Request.StringGetMultiple(["key1", "key2", "key3"]).Converter(mgetResponse);
+                var mgetResponse = new object[] { new GlideString("value1"), null!, new GlideString("value3") };
+                var result = Request.StringGetMultiple(["key1", "key2", "key3"]).Converter(mgetResponse);
                 Assert.Equal(3, result.Length);
                 Assert.Equal(new ValkeyValue("value1"), result[0]);
                 Assert.Equal(ValkeyValue.Null, result[1]);
@@ -703,15 +703,15 @@ public class CommandTests
             () =>
             {
                 // Test empty MGET response
-                ValkeyValue[] emptyResult = Request.StringGetMultiple([]).Converter([]);
+                var emptyResult = Request.StringGetMultiple([]).Converter([]);
                 Assert.Empty(emptyResult);
             },
 
             () =>
             {
                 // Test MGET with all null values
-                object[] allNullResponse = [null!, null!];
-                ValkeyValue[] result = Request.StringGetMultiple(["key1", "key2"]).Converter(allNullResponse);
+                var allNullResponse = new object[] { null!, null! };
+                var result = Request.StringGetMultiple(["key1", "key2"]).Converter(allNullResponse);
                 Assert.Equal(2, result.Length);
                 Assert.Equal(ValkeyValue.Null, result[0]);
                 Assert.Equal(ValkeyValue.Null, result[1]);
@@ -731,31 +731,31 @@ public class CommandTests
 
         Assert.Multiple([
             () => {
-                ValkeyValue[] result = Request.SetMembersAsync("key").Converter(testHashSet);
+                var result = Request.SetMembersAsync("key").Converter(testHashSet);
                 Assert.Equal(3, result.Length);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
-                ValkeyValue[] result = Request.SetPopAsync("key", 2).Converter(testHashSet);
+                var result = Request.SetPopAsync("key", 2).Converter(testHashSet);
                 Assert.Equal(3, result.Length);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
-                ValkeyValue[] result = Request.SetUnionAsync(["key1", "key2"]).Converter(testHashSet);
+                var result = Request.SetUnionAsync(["key1", "key2"]).Converter(testHashSet);
                 Assert.Equal(3, result.Length);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
-                ValkeyValue[] result = Request.SetIntersectAsync(["key1", "key2"]).Converter(testHashSet);
+                var result = Request.SetIntersectAsync(["key1", "key2"]).Converter(testHashSet);
                 Assert.Equal(3, result.Length);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
-                ValkeyValue[] result = Request.SetDifferenceAsync(["key1", "key2"]).Converter(testHashSet);
+                var result = Request.SetDifferenceAsync(["key1", "key2"]).Converter(testHashSet);
                 Assert.Equal(3, result.Length);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
@@ -799,7 +799,7 @@ public class CommandTests
             // Test HashGetAsync with multiple fields
             () =>
             {
-                ValkeyValue[] result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter((object[])testList.ToArray()!);
+                var result = Request.HashGetAsync("key", ["field1", "field2", "field3"]).Converter((object[])testList.ToArray()!);
                 Assert.Equal(3, result.Length);
                 Assert.Equal("value1", result[0]);
                 Assert.Equal("value2", result[1]);
@@ -809,7 +809,7 @@ public class CommandTests
             // Test HashGetAllAsync
             () =>
             {
-                IDictionary<ValkeyValue, ValkeyValue> result = Request.HashGetAllAsync("key").Converter(testKvpList);
+                var result = Request.HashGetAllAsync("key").Converter(testKvpList);
                 Assert.Equal(3, result.Count);
                 Assert.Equal("value1", result["field1"]);
             },
@@ -817,30 +817,30 @@ public class CommandTests
             // Test HashValuesAsync
             () =>
             {
-                ICollection<ValkeyValue> result = Request.HashValuesAsync("key").Converter(testObjectArray);
+                var result = Request.HashValuesAsync("key").Converter(testObjectArray);
                 Assert.Equal(3, result.Count);
-                foreach (ValkeyValue item in result) _ = Assert.IsType<ValkeyValue>(item);
+                foreach (var item in result) _ = Assert.IsType<ValkeyValue>(item);
             },
 
             // Test HashRandomFieldAsync
             () =>
             {
-                ValkeyValue result = Request.HashRandomFieldAsync("key").Converter("field1");
+                var result = Request.HashRandomFieldAsync("key").Converter("field1");
                 Assert.Equal("field1", result);
             },
 
             // Test HashRandomFieldsAsync
             () =>
             {
-                ValkeyValue[] result = Request.HashRandomFieldsAsync("key", 3).Converter(testObjectArray);
+                var result = Request.HashRandomFieldsAsync("key", 3).Converter(testObjectArray);
                 Assert.Equal(3, result.Length);
-                foreach (ValkeyValue item in result) _ = Assert.IsType<ValkeyValue>(item);
+                foreach (var item in result) _ = Assert.IsType<ValkeyValue>(item);
             },
 
             // Test HashRandomFieldsWithValuesAsync
             () =>
             {
-                ICollection<KeyValuePair<ValkeyValue, ValkeyValue>> result = Request.HashRandomFieldsWithValuesAsync("key", 3).Converter(testObjectNestedArray);
+                var result = Request.HashRandomFieldsWithValuesAsync("key", 3).Converter(testObjectNestedArray);
                 Assert.Equal(3, result.Count);
                 foreach (var entry in result)
                 {
