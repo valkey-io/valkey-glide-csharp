@@ -222,25 +222,25 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Get idle time for string key
-        long? idleTime = await client.KeyIdleTimeAsync(key);
+        TimeSpan? idleTime = await client.KeyIdleTimeAsync(key);
         _ = Assert.NotNull(idleTime);
-        Assert.True(idleTime >= 0);
+        Assert.True(idleTime.Value.TotalSeconds >= 0);
 
         // Wait a bit and check that idle time increases
         await Task.Delay(1000);
-        long? idleTime2 = await client.KeyIdleTimeAsync(key);
+        TimeSpan? idleTime2 = await client.KeyIdleTimeAsync(key);
         _ = Assert.NotNull(idleTime2);
-        Assert.True(idleTime2 >= idleTime);
+        Assert.True(idleTime2.Value.TotalSeconds >= idleTime.Value.TotalSeconds);
 
         // Access the key to reset idle time
         _ = await client.StringGetAsync(key);
-        long? idleTimeAfterAccess = await client.KeyIdleTimeAsync(key);
+        TimeSpan? idleTimeAfterAccess = await client.KeyIdleTimeAsync(key);
         _ = Assert.NotNull(idleTimeAfterAccess);
-        Assert.True(idleTimeAfterAccess < idleTime2);
+        Assert.True(idleTimeAfterAccess.Value.TotalSeconds < idleTime2.Value.TotalSeconds);
 
         // Non-existent key should return null
         string nonExistentKey = Guid.NewGuid().ToString();
-        long? nonExistentIdleTime = await client.KeyIdleTimeAsync(nonExistentKey);
+        TimeSpan? nonExistentIdleTime = await client.KeyIdleTimeAsync(nonExistentKey);
         Assert.Null(nonExistentIdleTime);
     }
 

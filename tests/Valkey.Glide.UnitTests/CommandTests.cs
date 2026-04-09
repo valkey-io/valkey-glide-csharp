@@ -522,7 +522,7 @@ public class CommandTests
             () => Assert.Null(Request.KeyEncodingAsync("key").Converter(null!)),
             () => Assert.Equal(5L, Request.KeyFrequencyAsync("key").Converter(5L)),
             () => Assert.Null(Request.KeyFrequencyAsync("key").Converter(-1L)),
-            () => Assert.Equal(10L, Request.KeyIdleTimeAsync("key").Converter(10L)),
+            () => Assert.Equal(TimeSpan.FromSeconds(10), Request.KeyIdleTimeAsync("key").Converter(10L)),
             () => Assert.Null(Request.KeyIdleTimeAsync("key").Converter(-1L)),
             () => Assert.Equal(3L, Request.KeyRefCountAsync("key").Converter(3L)),
             () => Assert.Null(Request.KeyRefCountAsync("key").Converter(-1L)),

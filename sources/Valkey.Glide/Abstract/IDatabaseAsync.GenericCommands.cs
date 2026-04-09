@@ -201,12 +201,12 @@ public partial interface IDatabaseAsync
     Task<long?> KeyFrequencyAsync(ValkeyKey key, CommandFlags flags);
 
     /// <inheritdoc cref="IBaseClient.ObjectIdleTimeAsync(ValkeyKey)"/>
-    Task<long?> KeyIdleTimeAsync(ValkeyKey key);
+    Task<TimeSpan?> KeyIdleTimeAsync(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.ObjectIdleTimeAsync(ValkeyKey)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags);
+    Task<TimeSpan?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags);
 
     /// <inheritdoc cref="IBaseClient.ObjectRefCountAsync(ValkeyKey)"/>
     Task<long?> KeyRefCountAsync(ValkeyKey key);

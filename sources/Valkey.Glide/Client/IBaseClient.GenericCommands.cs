@@ -430,19 +430,19 @@ public partial interface IBaseClient
     Task<long?> ObjectFrequencyAsync(ValkeyKey key);
 
     /// <summary>
-    /// Returns the time in seconds since the object stored at key was last accessed.
+    /// Returns the time since the object stored at key was last accessed.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/object-idletime"/>
     /// <param name="key">The key to determine the idle time of.</param>
-    /// <returns>The idle time in seconds, or <see langword="null"/> when key does not exist.</returns>
+    /// <returns>The idle time, or <see langword="null"/> when key does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long? idleTime = await client.ObjectIdleTimeAsync(key);
+    /// TimeSpan? idleTime = await client.ObjectIdleTimeAsync(key);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long?> ObjectIdleTimeAsync(ValkeyKey key);
+    Task<TimeSpan?> ObjectIdleTimeAsync(ValkeyKey key);
 
     /// <summary>
     /// Returns the reference count of the object stored at key.

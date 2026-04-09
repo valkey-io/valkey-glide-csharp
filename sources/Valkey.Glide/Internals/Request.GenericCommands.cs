@@ -194,8 +194,8 @@ internal partial class Request
     public static Cmd<long, long?> KeyFrequencyAsync(ValkeyKey key)
         => new(RequestType.ObjectFreq, [key.ToGlideString()], true, response => response == -1 ? null : response);
 
-    public static Cmd<long, long?> KeyIdleTimeAsync(ValkeyKey key)
-        => new(RequestType.ObjectIdleTime, [key.ToGlideString()], true, response => response == -1 ? null : response);
+    public static Cmd<long, TimeSpan?> KeyIdleTimeAsync(ValkeyKey key)
+        => new(RequestType.ObjectIdleTime, [key.ToGlideString()], true, response => response == -1 ? null : TimeSpan.FromSeconds(response));
 
     public static Cmd<long, long?> KeyRefCountAsync(ValkeyKey key)
         => new(RequestType.ObjectRefCount, [key.ToGlideString()], true, response => response == -1 ? null : response);

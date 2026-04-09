@@ -103,7 +103,7 @@ public abstract partial class BaseClient
         => await Command(Request.KeyFrequencyAsync(key));
 
     /// <inheritdoc/>
-    public async Task<long?> ObjectIdleTimeAsync(ValkeyKey key)
+    public async Task<TimeSpan?> ObjectIdleTimeAsync(ValkeyKey key)
         => await Command(Request.KeyIdleTimeAsync(key));
 
     /// <inheritdoc/>
@@ -233,7 +233,7 @@ public abstract partial class BaseClient
         => ObjectFrequencyAsync(key);
 
     /// <inheritdoc/>
-    public Task<long?> KeyIdleTimeAsync(ValkeyKey key)
+    public Task<TimeSpan?> KeyIdleTimeAsync(ValkeyKey key)
         => ObjectIdleTimeAsync(key);
 
     /// <inheritdoc/>

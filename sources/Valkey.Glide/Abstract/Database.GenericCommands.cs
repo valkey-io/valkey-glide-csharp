@@ -171,7 +171,7 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyIdleTimeAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<long?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags)
+    public async Task<TimeSpan?> KeyIdleTimeAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await KeyIdleTimeAsync(key);
