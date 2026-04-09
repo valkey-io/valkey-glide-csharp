@@ -624,6 +624,48 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
 
     #endregion
 
+    #region KeyIdleTimeAsync Tests
+
+    [Fact]
+    public async Task KeyIdleTimeAsync_ReturnsIdleTime()
+    {
+        var db = fixture.Database;
+        string key = $"ser-idletime-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(key, "value");
+        TimeSpan? idleTime = await db.KeyIdleTimeAsync(key);
+        _ = Assert.NotNull(idleTime);
+        Assert.True(idleTime.Value.TotalSeconds >= 0);
+    }
+
+    [Fact]
+    public async Task KeyIdleTimeAsync_NonExistentKey_ReturnsNull()
+    {
+        var db = fixture.Database;
+        string key = $"ser-idletime-nonexistent-{Guid.NewGuid()}";
+
+        TimeSpan? idleTime = await db.KeyIdleTimeAsync(key);
+        Assert.Null(idleTime);
+    }
+
+    [Fact]
+    public async Task KeyIdleTimeAsync_WithCommandFlagsNone_Succeeds()
+    {
+        var db = fixture.Database;
+        string key = $"ser-idletime-flags-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(key, "value");
+        TimeSpan? idleTime = await db.KeyIdleTimeAsync(key, CommandFlags.None);
+        _ = Assert.NotNull(idleTime);
+    }
+
+    [Fact]
+    public async Task KeyIdleTimeAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => fixture.Database.KeyIdleTimeAsync("key", UnsupportedCommandFlag));
+
+    #endregion
+
     #region KeyRandomAsync Tests
 
     [Fact]
