@@ -58,15 +58,32 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, GeoRadiusOptions)"/>
+    /// <inheritdoc cref="IBaseClient.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchOptions)" path="/*[self::summary or self::seealso]"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="member">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When <see langword="true"/>, returns the closest results.</param>
+    /// <param name="order">The sort order for results, or <see langword="null"/> for server default.</param>
+    /// <param name="options">The result fields to include.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of <see cref="GeoRadiusResult"/> for matching members.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
+    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue member, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, long, bool, Order?, GeoRadiusOptions)"/>
+    /// <inheritdoc cref="IBaseClient.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchOptions)" path="/*[self::summary or self::seealso]"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="longitude">The longitude of the search origin.</param>
+    /// <param name="latitude">The latitude of the search origin.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to return. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When <see langword="true"/>, returns the closest results.</param>
+    /// <param name="order">The sort order for results, or <see langword="null"/> for server default.</param>
+    /// <param name="options">The result fields to include.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of <see cref="GeoRadiusResult"/> for matching members.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
+    Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, double longitude, double latitude, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, bool)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>

@@ -34,13 +34,13 @@ internal interface IBatchGeospatialCommands
     /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoPositionAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch GeoPosition(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, GeoRadiusOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, GeoRadiusOptions)" /></returns>
-    IBatch GeoSearch(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default);
+    /// <inheritdoc cref="IBaseClient.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchOptions)" /></returns>
+    IBatch GeoSearch(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, long, bool, Order?, GeoRadiusOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, long, bool, Order?, GeoRadiusOptions)" /></returns>
-    IBatch GeoSearch(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default);
+    /// <inheritdoc cref="IBaseClient.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchOptions)" /></returns>
+    IBatch GeoSearch(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default);
 
 
 }

@@ -63,18 +63,22 @@ internal partial class Database
         return await GeoPositionAsync(key, members);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, GeoRadiusOptions, CommandFlags)"/>
-    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, int, bool, Order?, GeoRadiusOptions, CommandFlags)"/>
+    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue member, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoSearchAsync(key, fromMember, shape, count, demandClosest, order, options);
+        var searchOptions = ToSearchOptions(options, order, count, demandClosest);
+        var results = await GeoSearchAsync(key, member, shape, searchOptions);
+        return [.. results.Select(r => new GeoRadiusResult(r.Member, r.Distance, r.Hash, r.Position))];
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.GeoSearchAsync(ValkeyKey, GeoPosition, GeoSearchShape, long, bool, Order?, GeoRadiusOptions, CommandFlags)"/>
-    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.GeoSearchAsync(ValkeyKey, double, double, GeoSearchShape, int, bool, Order?, GeoRadiusOptions, CommandFlags)"/>
+    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, double longitude, double latitude, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoSearchAsync(key, fromPosition, shape, count, demandClosest, order, options);
+        var searchOptions = ToSearchOptions(options, order, count, demandClosest);
+        var results = await GeoSearchAsync(key, new GeoPosition(longitude, latitude), shape, searchOptions);
+        return [.. results.Select(r => new GeoRadiusResult(r.Member, r.Distance, r.Hash, r.Position))];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, bool, CommandFlags)"/>
@@ -90,4 +94,18 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
         return await GeoSearchAndStoreAsync(sourceKey, destinationKey, fromPosition, shape, count, demandClosest, order, storeDistances);
     }
+
+    /// <summary>
+    /// Maps the given argument to the corresponding <see cref="GeoSearchOptions"/>.
+    /// </summary>
+    private static GeoSearchOptions ToSearchOptions(GeoRadiusOptions options, Order? order, int count, bool demandClosest) =>
+        new()
+        {
+            Order = order,
+            Count = count > 0 ? count : null,
+            Any = count > 0 && !demandClosest,
+            WithPosition = (options & GeoRadiusOptions.WithCoordinates) != 0,
+            WithDistance = (options & GeoRadiusOptions.WithDistance) != 0,
+            WithHash = (options & GeoRadiusOptions.WithGeoHash) != 0,
+        };
 }

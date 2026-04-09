@@ -33,4 +33,34 @@ public partial interface IBaseClient
         ValkeyKey key,
         IDictionary<ValkeyValue, GeoPosition> members,
         GeoAddOptions options = default);
+
+    /// <summary>
+    /// Searches for geospatial members within an area centered on another geospatial member.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearch/"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="from">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="options">Optional search parameters.</param>
+    /// <returns>An array of <see cref="GeoSearchResult"/> for matching members.</returns>
+    Task<GeoSearchResult[]> GeoSearchAsync(
+        ValkeyKey key,
+        ValkeyValue from,
+        GeoSearchShape shape,
+        GeoSearchOptions options = default);
+
+    /// <summary>
+    /// Searches for geospatial members within an area centered on a geospatial position.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearch/"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="from">The position to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="options">Optional search parameters.</param>
+    /// <returns>An array of <see cref="GeoSearchResult"/> for matching members.</returns>
+    Task<GeoSearchResult[]> GeoSearchAsync(
+        ValkeyKey key,
+        GeoPosition from,
+        GeoSearchShape shape,
+        GeoSearchOptions options = default);
 }

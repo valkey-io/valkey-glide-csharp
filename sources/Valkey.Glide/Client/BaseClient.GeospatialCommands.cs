@@ -45,16 +45,12 @@ public abstract partial class BaseClient
     }
 
     /// <inheritdoc/>
-    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default)
-    {
-        return await Command(Request.GeoSearchAsync(key, fromMember, shape, count, demandClosest, order, options));
-    }
+    public async Task<GeoSearchResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default)
+        => await Command(Request.GeoSearchAsync(key, from, shape, options));
 
     /// <inheritdoc/>
-    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default)
-    {
-        return await Command(Request.GeoSearchAsync(key, fromPosition, shape, count, demandClosest, order, options));
-    }
+    public async Task<GeoSearchResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default)
+        => await Command(Request.GeoSearchAsync(key, from, shape, options));
 
     /// <inheritdoc/>
     public async Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false)
