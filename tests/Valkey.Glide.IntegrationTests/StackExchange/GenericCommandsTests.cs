@@ -239,6 +239,28 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
+    public async Task KeyTimeToLiveAsync_ReturnsNullForNonExistentKey()
+    {
+        var db = fixture.Database;
+        string nonExistentKey = $"ser-ttl-nonexistent-{Guid.NewGuid()}";
+
+        // Non-existent key should return null (sentinel -2 converted to null)
+        Assert.Null(await db.KeyTimeToLiveAsync(nonExistentKey));
+    }
+
+    [Fact]
+    public async Task KeyTimeToLiveAsync_ReturnsNullForKeyWithNoExpiry()
+    {
+        var db = fixture.Database;
+        string key = $"ser-ttl-noexpiry-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(key, "value");
+
+        // Key exists but has no expiry should return null (sentinel -1 converted to null)
+        Assert.Null(await db.KeyTimeToLiveAsync(key));
+    }
+
+    [Fact]
     public async Task KeyTimeToLiveAsync_WithCommandFlagsNone_Succeeds()
     {
         var db = fixture.Database;
@@ -725,6 +747,42 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     public async Task SortAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => fixture.Database.SortAsync("key", flags: UnsupportedCommandFlag));
+
+    #endregion
+
+    #region SortAndStoreAsync Tests
+
+    [Fact]
+    public async Task SortAndStoreAsync_StoresSortedElements()
+    {
+        var db = fixture.Database;
+        string sourceKey = $"ser-sortstore-src-{Guid.NewGuid()}";
+        string destKey = $"ser-sortstore-dst-{Guid.NewGuid()}";
+
+        _ = await fixture.Client.ListLeftPushAsync(sourceKey, ["3", "1", "2"]);
+        long count = await db.SortAndStoreAsync(destKey, sourceKey);
+        Assert.Equal(3, count);
+
+        ValkeyValue[] result = await fixture.Client.ListRangeAsync(destKey);
+        Assert.Equal(new[] { "1", "2", "3" }, result.Select(v => v.ToString()).ToArray());
+    }
+
+    [Fact]
+    public async Task SortAndStoreAsync_WithCommandFlagsNone_Succeeds()
+    {
+        var db = fixture.Database;
+        string sourceKey = $"ser-sortstore-flags-src-{Guid.NewGuid()}";
+        string destKey = $"ser-sortstore-flags-dst-{Guid.NewGuid()}";
+
+        _ = await fixture.Client.ListLeftPushAsync(sourceKey, ["3", "1", "2"]);
+        long count = await db.SortAndStoreAsync(destKey, sourceKey, 0, -1, Order.Ascending, SortType.Numeric, default, null, CommandFlags.None);
+        Assert.Equal(3, count);
+    }
+
+    [Fact]
+    public async Task SortAndStoreAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => fixture.Database.SortAndStoreAsync("dst", "src", 0, -1, Order.Ascending, SortType.Numeric, default, null, UnsupportedCommandFlag));
 
     #endregion
 }

@@ -51,7 +51,7 @@ public abstract partial class BaseClient
         => await Command(Request.KeyExpireAsync(key, expiry, when));
 
     /// <inheritdoc/>
-    public async Task<TimeSpan?> TimeToLiveAsync(ValkeyKey key)
+    public async Task<long> TimeToLiveAsync(ValkeyKey key)
         => await Command(Request.KeyTimeToLiveAsync(key));
 
     /// <inheritdoc/>
@@ -179,10 +179,6 @@ public abstract partial class BaseClient
     /// <inheritdoc/>
     public Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when)
         => ExpireAsync(key, expiry, when);
-
-    /// <inheritdoc/>
-    public Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key)
-        => TimeToLiveAsync(key);
 
     /// <inheritdoc/>
     public Task<ValkeyType> KeyTypeAsync(ValkeyKey key)

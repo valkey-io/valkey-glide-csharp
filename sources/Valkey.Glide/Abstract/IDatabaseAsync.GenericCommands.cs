@@ -1,7 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
-using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
@@ -95,11 +94,21 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)"/>
+    /// <summary>
+    /// Returns the remaining time to live of a key that has a timeout.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pttl"/>
+    /// <param name="key">The key to return its timeout.</param>
+    /// <returns>TTL, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
     Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key);
 
-    /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)"/>
+    /// <summary>
+    /// Returns the remaining time to live of a key that has a timeout.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pttl"/>
+    /// <param name="key">The key to return its timeout.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>TTL, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key, CommandFlags flags);
 
@@ -151,8 +160,14 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<byte[]?> KeyDumpAsync(ValkeyKey key, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)"/>
-    Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
+    /// <summary>
+    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <param name="key">The key to create.</param>
+    /// <param name="value">The serialized value to deserialize and assign to key.</param>
+    /// <param name="expiry">The expiry to set as a duration.</param>
+    Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null);
 
     /// <summary>
     /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
@@ -164,9 +179,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry, CommandFlags flags);
-
-    /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)"/>
-    Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
     /// <summary>
     /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
@@ -288,4 +300,18 @@ public partial interface IDatabaseAsync
         ValkeyValue by = default,
         IEnumerable<ValkeyValue>? get = null,
         CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IGenericBaseCommands.SortAndStoreAsync(ValkeyKey, ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<long> SortAndStoreAsync(
+        ValkeyKey destination,
+        ValkeyKey key,
+        long skip,
+        long take,
+        Order order,
+        SortType sortType,
+        ValkeyValue by,
+        IEnumerable<ValkeyValue>? get,
+        CommandFlags flags);
 }

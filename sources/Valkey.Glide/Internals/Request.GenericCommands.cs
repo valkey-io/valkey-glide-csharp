@@ -71,9 +71,8 @@ internal partial class Request
         return Simple<bool>(RequestType.PExpireAt, [.. args]);
     }
 
-    public static Cmd<long, TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key)
-        => new(RequestType.PTTL, [key.ToGlideString()], true, response =>
-            response is -1 or -2 ? null : TimeSpan.FromMilliseconds(response));
+    public static Cmd<long, long> KeyTimeToLiveAsync(ValkeyKey key)
+        => new(RequestType.PTTL, [key.ToGlideString()], true, response => response);
 
     public static Cmd<GlideString, ValkeyType> KeyTypeAsync(ValkeyKey key)
         => new(RequestType.Type, [key.ToGlideString()], false, response =>

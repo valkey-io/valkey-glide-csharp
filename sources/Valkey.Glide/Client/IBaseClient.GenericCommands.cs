@@ -207,19 +207,25 @@ public partial interface IBaseClient
     Task<bool> ExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when);
 
     /// <summary>
-    /// Returns the remaining time to live of a key that has a timeout.
+    /// Returns the remaining time to live of a key that has a timeout, in milliseconds.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/ttl"/>
+    /// <seealso href="https://valkey.io/commands/pttl"/>
     /// <param name="key">The key to return its timeout.</param>
-    /// <returns>TTL, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
+    /// <returns>
+    /// TTL in milliseconds, or -1 if the key exists but has no associated expiration,
+    /// or -2 if the key does not exist.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan? result = await client.TimeToLiveAsync(key);
+    /// long ttl = await client.TimeToLiveAsync(key);
+    /// if (ttl == -2) Console.WriteLine("Key does not exist");
+    /// else if (ttl == -1) Console.WriteLine("Key has no expiry");
+    /// else Console.WriteLine($"TTL: {ttl}ms");
     /// </code>
     /// </example>
     /// </remarks>
-    Task<TimeSpan?> TimeToLiveAsync(ValkeyKey key);
+    Task<long> TimeToLiveAsync(ValkeyKey key);
 
     /// <summary>
     /// Returns the ValkeyType of the value stored at key.

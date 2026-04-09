@@ -71,12 +71,12 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDumpAsync(ValkeyKey)" /></returns>
     IBatch KeyDump(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" /></returns>
+    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" /></returns>
     IBatch KeyRestore(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" /></returns>
+    /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" /></returns>
     IBatch KeyRestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
     /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />

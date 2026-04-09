@@ -1,7 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
-using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -78,6 +77,13 @@ internal partial class Database
         return await KeyExpireAsync(key, expiry, when);
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey)"/>
+    public async Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key)
+    {
+        long ttl = await TimeToLiveAsync(key);
+        return ttl is -1 or -2 ? null : TimeSpan.FromMilliseconds(ttl);
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)"/>
     public async Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key, CommandFlags flags)
     {
@@ -138,6 +144,10 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
         await KeyRestoreAsync(key, value, expiry);
     }
+
+    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], TimeSpan?)"/>
+    public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null)
+        => await RestoreAsync(key, value, expiry);
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], DateTime?)"/>
     public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry)
@@ -232,6 +242,13 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await ((IGenericBaseCommands)this).SortAsync(key, skip, take, order, sortType, by, get);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.SortAndStoreAsync(ValkeyKey, ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?, CommandFlags)"/>
+    public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await ((IGenericBaseCommands)this).SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get);
     }
 
 }
