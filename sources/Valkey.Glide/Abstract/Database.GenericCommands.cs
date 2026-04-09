@@ -132,18 +132,22 @@ internal partial class Database
         return await KeyDumpAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?, CommandFlags)"/>
-    public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry, RestoreOptions? restoreOptions, CommandFlags flags)
+    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], TimeSpan?, CommandFlags)"/>
+    public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await KeyRestoreAsync(key, value, expiry, restoreOptions);
+        await KeyRestoreAsync(key, value, expiry);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?, CommandFlags)"/>
-    public async Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry, RestoreOptions? restoreOptions, CommandFlags flags)
+    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], DateTime?)"/>
+    public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry)
+        => await KeyRestoreDateTimeAsync(key, value, expiry);
+
+    /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], DateTime?, CommandFlags)"/>
+    public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await KeyRestoreDateTimeAsync(key, value, expiry, restoreOptions);
+        await KeyRestoreDateTimeAsync(key, value, expiry);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey, CommandFlags)"/>

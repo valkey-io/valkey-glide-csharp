@@ -154,18 +154,39 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)"/>
     Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
 
-    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)"/>
+    /// <summary>
+    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <param name="key">The key to create.</param>
+    /// <param name="value">The serialized value to deserialize and assign to key.</param>
+    /// <param name="expiry">The expiry to set as a duration.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry, RestoreOptions? restoreOptions, CommandFlags flags);
+    Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry, CommandFlags flags);
 
     /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)"/>
     Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
-    /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)"/>
+    /// <summary>
+    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <param name="key">The key to create.</param>
+    /// <param name="value">The serialized value to deserialize and assign to key.</param>
+    /// <param name="expiry">The expiry to set as an absolute timestamp.</param>
+    Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry);
+
+    /// <summary>
+    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <param name="key">The key to create.</param>
+    /// <param name="value">The serialized value to deserialize and assign to key.</param>
+    /// <param name="expiry">The expiry to set as an absolute timestamp.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry, RestoreOptions? restoreOptions, CommandFlags flags);
+    Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry, CommandFlags flags);
 
     /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)"/>
     Task<bool> KeyTouchAsync(ValkeyKey key);

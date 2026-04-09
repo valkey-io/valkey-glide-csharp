@@ -442,6 +442,87 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
 
     #endregion
 
+    #region KeyRestoreAsync Tests
+
+    [Fact]
+    public async Task KeyRestoreAsync_WithTimeSpan_RestoresKey()
+    {
+        var db = fixture.Database;
+        string sourceKey = $"ser-restore-src-{Guid.NewGuid()}";
+        string destKey = $"ser-restore-dst-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(sourceKey, "value");
+        byte[]? dump = await db.KeyDumpAsync(sourceKey);
+        Assert.NotNull(dump);
+
+        await db.KeyRestoreAsync(destKey, dump, TimeSpan.FromSeconds(10));
+        Assert.True(await db.KeyExistsAsync(destKey));
+        Assert.Equal("value", (await db.StringGetAsync(destKey)).ToString());
+    }
+
+    [Fact]
+    public async Task KeyRestoreAsync_WithTimeSpan_WithCommandFlagsNone_Succeeds()
+    {
+        var db = fixture.Database;
+        string sourceKey = $"ser-restore-flags-src-{Guid.NewGuid()}";
+        string destKey = $"ser-restore-flags-dst-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(sourceKey, "value");
+        byte[]? dump = await db.KeyDumpAsync(sourceKey);
+        Assert.NotNull(dump);
+
+        await db.KeyRestoreAsync(destKey, dump, TimeSpan.FromSeconds(10), CommandFlags.None);
+        Assert.True(await db.KeyExistsAsync(destKey));
+    }
+
+    [Fact]
+    public async Task KeyRestoreAsync_WithTimeSpan_WithNonNoneCommandFlags_ThrowsNotImplementedException()
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => fixture.Database.KeyRestoreAsync("key", [], TimeSpan.FromSeconds(10), UnsupportedCommandFlag));
+
+    [Fact]
+    public async Task KeyRestoreAsync_WithDateTime_RestoresKey()
+    {
+        var db = fixture.Database;
+        string sourceKey = $"ser-restore-dt-src-{Guid.NewGuid()}";
+        string destKey = $"ser-restore-dt-dst-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(sourceKey, "value");
+        byte[]? dump = await db.KeyDumpAsync(sourceKey);
+        Assert.NotNull(dump);
+
+        DateTime expiry = DateTime.UtcNow.AddSeconds(10);
+        await db.KeyRestoreAsync(destKey, dump, expiry);
+        Assert.True(await db.KeyExistsAsync(destKey));
+        Assert.Equal("value", (await db.StringGetAsync(destKey)).ToString());
+    }
+
+    [Fact]
+    public async Task KeyRestoreAsync_WithDateTime_WithCommandFlagsNone_Succeeds()
+    {
+        var db = fixture.Database;
+        string sourceKey = $"ser-restore-dt-flags-src-{Guid.NewGuid()}";
+        string destKey = $"ser-restore-dt-flags-dst-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(sourceKey, "value");
+        byte[]? dump = await db.KeyDumpAsync(sourceKey);
+        Assert.NotNull(dump);
+
+        DateTime expiry = DateTime.UtcNow.AddSeconds(10);
+        await db.KeyRestoreAsync(destKey, dump, expiry, CommandFlags.None);
+        Assert.True(await db.KeyExistsAsync(destKey));
+    }
+
+    [Fact]
+    public async Task KeyRestoreAsync_WithDateTime_WithNonNoneCommandFlags_ThrowsNotImplementedException()
+    {
+        DateTime expiry = DateTime.UtcNow.AddSeconds(10);
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => fixture.Database.KeyRestoreAsync("key", [], expiry, UnsupportedCommandFlag));
+    }
+
+    #endregion
+
     #region KeyTouchAsync Tests
 
     [Fact]
