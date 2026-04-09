@@ -317,7 +317,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldExpireAsync_TimeSpan(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hexpire-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -331,7 +331,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldExpireAsync_DateTime(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hexpireat-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -345,7 +345,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldExpireAsync_AllExpireWhenValues(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hexpire-when-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -394,7 +394,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetExpireDateTimeAsync(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hexpiretime-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -415,7 +415,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetTimeToLiveAsync(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-httl-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -436,7 +436,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldPersistAsync(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hpersist-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -509,7 +509,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_SingleField_WithTimeSpan(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-single-ts-{Guid.NewGuid()}";
 
@@ -529,7 +529,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_MultiField_WithTimeSpan(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-ts-{Guid.NewGuid()}";
 
@@ -555,7 +555,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_SingleField_WithNullTimeSpan_KeepsTtl(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-keepttl-null-{Guid.NewGuid()}";
 
@@ -577,7 +577,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_SingleField_WithDateTime(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-single-dt-{Guid.NewGuid()}";
 
@@ -597,7 +597,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_MultiField_WithDateTime(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-dt-{Guid.NewGuid()}";
 
@@ -616,7 +616,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_SingleField_WithKeepTtlTrue(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-keepttl-{Guid.NewGuid()}";
 
@@ -638,7 +638,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_MultiField_WithWhenNotExists(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-nx-{Guid.NewGuid()}";
 
@@ -662,7 +662,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldSetAndSetExpiry_MultiField_WithWhenExists(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-xx-{Guid.NewGuid()}";
 
@@ -689,7 +689,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetAndSetExpiry_SingleField_WithTimeSpan(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hgetex-single-ts-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -706,7 +706,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetAndSetExpiry_MultiField_WithTimeSpan(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hgetex-ts-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -727,7 +727,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetAndSetExpiry_SingleField_WithNullTimeSpan_Persists(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hgetex-persist-null-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -748,7 +748,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetAndSetExpiry_SingleField_WithDateTime(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hgetex-single-dt-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -765,7 +765,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetAndSetExpiry_MultiField_WithDateTime(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hgetex-dt-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -783,7 +783,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetAndSetExpiry_SingleField_WithPersistTrue(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hgetex-persist-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -804,7 +804,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashFieldGetAndSetExpiry_MultiField_WithPersistTrue(IDatabaseAsync db)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hgetex-multi-persist-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
@@ -821,13 +821,6 @@ public class HashCommandTests(TestConfiguration config)
         long[] ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
         Assert.Equal(-1, ttls[0]);
     }
-
-    #endregion
-    #region Helpers
-
-    // TODO #280: Extract to TestUtils
-    private static void SkipIfHashExpireNotSupported()
-        => Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "Requires Valkey 9.0+");
 
     #endregion
 }

@@ -373,7 +373,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashGetExpiry(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -415,7 +415,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashGetExpiry_SingleField(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -470,7 +470,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashSetExpiry(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -506,7 +506,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashSetExpiry_SingleField(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -566,7 +566,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPersist(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -602,7 +602,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpire(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -636,7 +636,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpire(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -662,7 +662,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireAt(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -685,7 +685,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpireAt(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -711,7 +711,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireTime(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -747,7 +747,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashTimeToLive(BaseClient client)
     {
-        SkipIfHashExpireNotSupported();
+        SkipUtils.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -774,13 +774,6 @@ public class HashCommandTests(TestConfiguration config)
         _ = Assert.NotNull(singleResult.TimeToLive);
         Assert.True(singleResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
     }
-
-    #endregion
-    #region Helpers
-
-    // TODO #280: Extract to TestUtils
-    private static void SkipIfHashExpireNotSupported()
-        => Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "Requires Valkey 9.0+");
 
     #endregion
 }
