@@ -267,10 +267,10 @@ public class GeospatialCommandTests(TestConfiguration config)
         var shapeMiles = new GeoSearchCircle(124.27, GeoUnit.Miles); // ~200km in miles
         var shapeFeet = new GeoSearchCircle(656168, GeoUnit.Feet); // ~200km in feet
 
-        GeoRadiusResult[] resultsMeters = await client.GeoSearchAsync(key, position, shapeMeters);
-        GeoRadiusResult[] resultsKilometers = await client.GeoSearchAsync(key, position, shapeKilometers);
-        GeoRadiusResult[] resultsMiles = await client.GeoSearchAsync(key, position, shapeMiles);
-        GeoRadiusResult[] resultsFeet = await client.GeoSearchAsync(key, position, shapeFeet);
+        GeoSearchResult[] resultsMeters = await client.GeoSearchAsync(key, position, shapeMeters);
+        GeoSearchResult[] resultsKilometers = await client.GeoSearchAsync(key, position, shapeKilometers);
+        GeoSearchResult[] resultsMiles = await client.GeoSearchAsync(key, position, shapeMiles);
+        GeoSearchResult[] resultsFeet = await client.GeoSearchAsync(key, position, shapeFeet);
 
         // All searches should return the same members (Palermo and Catania should be within 200km)
         Assert.NotEmpty(resultsMeters);
@@ -355,7 +355,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         // GeoSearch should return empty array for non-existent key
         var searchPosition = new GeoPosition(13.361389, 38.115556);
         var shape = new GeoSearchCircle(100, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, searchPosition, shape);
+        GeoSearchResult[] results = await client.GeoSearchAsync(key, searchPosition, shape);
         Assert.Empty(results);
     }
 
@@ -524,7 +524,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await AddGeoEntriesAsync(client, key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, "Palermo", shape);
+        GeoSearchResult[] results = await client.GeoSearchAsync(key, "Palermo", shape);
 
         Assert.NotEmpty(results);
         Assert.Contains("Palermo", results.Select(r => r.Member.ToString()));
@@ -545,7 +545,7 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         var position = new GeoPosition(13.361389, 38.115556); // Palermo coordinates
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, position, shape);
+        GeoSearchResult[] results = await client.GeoSearchAsync(key, position, shape);
 
         Assert.NotEmpty(results);
         Assert.Contains("Palermo", results.Select(r => r.Member.ToString()));
@@ -566,7 +566,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await AddGeoEntriesAsync(client, key, entries);
 
         var shape = new GeoSearchBox(400, 400, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, "Palermo", shape);
+        GeoSearchResult[] results = await client.GeoSearchAsync(key, "Palermo", shape);
 
         Assert.NotEmpty(results);
         Assert.Contains("Palermo", results.Select(r => r.Member.ToString()));
@@ -587,7 +587,7 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         var position = new GeoPosition(13.361389, 38.115556); // Palermo coordinates
         var shape = new GeoSearchBox(400, 400, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, position, shape);
+        GeoSearchResult[] results = await client.GeoSearchAsync(key, position, shape);
 
         Assert.NotEmpty(results);
         Assert.Contains("Palermo", results.Select(r => r.Member.ToString()));
@@ -611,8 +611,8 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await AddGeoEntriesAsync(client, key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] allResults = await client.GeoSearchAsync(key, "Palermo", shape);
-        GeoRadiusResult[] limitedResults = await client.GeoSearchAsync(key, "Palermo", shape, 2);
+        GeoSearchResult[] allResults = await client.GeoSearchAsync(key, "Palermo", shape);
+        GeoSearchResult[] limitedResults = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { Count = 2 });
 
         Assert.True(allResults.Length >= 2);
         Assert.Equal(2, limitedResults.Length);
@@ -636,13 +636,13 @@ public class GeospatialCommandTests(TestConfiguration config)
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
 
         // Test that demandClosest=true works (should return closest results)
-        GeoRadiusResult[] closestResults = await client.GeoSearchAsync(key, "Palermo", shape, 3, true);
+        GeoSearchResult[] closestResults = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { Count = 3 });
         Assert.Equal(3, closestResults.Length);
         Assert.Contains("Palermo", closestResults.Select(r => r.Member.ToString()));
         Assert.Contains("close1", closestResults.Select(r => r.Member.ToString())); // close1 should be in closest results
 
         // Test that demandClosest=false works (should return any results, not necessarily closest)
-        GeoRadiusResult[] anyResults = await client.GeoSearchAsync(key, "Palermo", shape, 3, false);
+        GeoSearchResult[] anyResults = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { Count = 3, Any = true });
         Assert.Equal(3, anyResults.Length);
         Assert.Contains("Palermo", anyResults.Select(r => r.Member.ToString()));
 
@@ -667,11 +667,11 @@ public class GeospatialCommandTests(TestConfiguration config)
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
 
         // Test ascending order
-        GeoRadiusResult[] ascResults = await client.GeoSearchAsync(key, "Palermo", shape, order: Order.Ascending);
+        GeoSearchResult[] ascResults = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { Order = Order.Ascending });
         Assert.NotEmpty(ascResults);
 
         // Test descending order
-        GeoRadiusResult[] descResults = await client.GeoSearchAsync(key, "Palermo", shape, order: Order.Descending);
+        GeoSearchResult[] descResults = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { Order = Order.Descending });
         Assert.NotEmpty(descResults);
 
         // Verify both return same count but potentially different order
@@ -693,17 +693,17 @@ public class GeospatialCommandTests(TestConfiguration config)
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
 
         // Test with distance option
-        GeoRadiusResult[] distResults = await client.GeoSearchAsync(key, "Palermo", shape, options: GeoRadiusOptions.WithDistance);
+        GeoSearchResult[] distResults = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { WithDistance = true });
         Assert.NotEmpty(distResults);
 
         var palermoDist = distResults.FirstOrDefault(r => r.Member.ToString() == "Palermo");
         Assert.Equal("Palermo", palermoDist.Member.ToString());
         _ = Assert.NotNull(palermoDist.Distance); // Should have distance
         Assert.Equal(0.0, palermoDist.Distance.Value, 1); // Distance from itself should be ~0
-        Assert.Null(palermoDist.Position); // Should be null without WithCoordinates
+        Assert.Null(palermoDist.Position); // Should be null without WithPosition
 
         // Test with coordinates option
-        GeoRadiusResult[] coordResults = await client.GeoSearchAsync(key, "Palermo", shape, options: GeoRadiusOptions.WithCoordinates);
+        GeoSearchResult[] coordResults = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { WithPosition = true });
         Assert.NotEmpty(coordResults);
 
         var palermoCoord = coordResults.FirstOrDefault(r => r.Member.ToString() == "Palermo");
@@ -725,7 +725,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await AddGeoEntriesAsync(client, key, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, "Palermo", shape, options: GeoRadiusOptions.WithDistance);
+        GeoSearchResult[] results = await client.GeoSearchAsync(key, "Palermo", shape, new GeoSearchOptions { WithDistance = true });
 
         var palermoResult = results.FirstOrDefault(r => r.Member.ToString() == "Palermo");
         var cataniaResult = results.FirstOrDefault(r => r.Member.ToString() == "Catania");
@@ -852,7 +852,7 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         var position = new GeoPosition(0.0, 0.0); // Far from Palermo
         var shape = new GeoSearchCircle(1, GeoUnit.Meters); // Very small radius
-        GeoRadiusResult[] results = await client.GeoSearchAsync(key, position, shape);
+        GeoSearchResult[] results = await client.GeoSearchAsync(key, position, shape);
 
         Assert.Empty(results);
     }
