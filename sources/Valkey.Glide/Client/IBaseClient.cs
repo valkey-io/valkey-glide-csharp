@@ -11,12 +11,6 @@ namespace Valkey.Glide;
 /// <summary>
 /// Interface for Valkey GLIDE client.
 /// </summary>
-<<<<<<< HEAD
-// NOTE: Methods should only be added to this interface if they are implemented by Valkey GLIDE clients
-// but NOT by StackExchange.Redis databases. Methods implemented by both should be added to the corresponding
-// Commands interface instead.
-=======
->>>>>>> 5409f2c (refactor: Connection management command API cleanup (#279))
 public partial interface IBaseClient :
     IDisposable,
     IAsyncDisposable,
