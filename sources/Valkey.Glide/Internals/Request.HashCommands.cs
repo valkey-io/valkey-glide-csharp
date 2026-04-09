@@ -33,8 +33,8 @@ internal partial class Request
     public static Cmd<long, bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
         => Boolean<long>(RequestType.HSet, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
-    public static Cmd<long, bool> HashSetNotExistsAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
-        => Boolean<long>(RequestType.HSetNX, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
+    public static Cmd<bool, bool> HashSetNotExistsAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
+        => Boolean<bool>(RequestType.HSetNX, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
     public static Cmd<long, bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField)
         => Boolean<long>(RequestType.HDel, [key.ToGlideString(), hashField.ToGlideString()]);
