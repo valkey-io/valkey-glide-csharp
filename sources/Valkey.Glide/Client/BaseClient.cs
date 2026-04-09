@@ -148,6 +148,26 @@ public abstract partial class BaseClient : IBaseClient
         }
     }
 
+    /// <summary>
+    /// Gets statistics for the client.
+    /// </summary>
+    /// <returns>Statistics for the client.</returns>
+    public static Statistics GetStatistics()
+    {
+        var stats = GetStatisticsFfi();
+        return new Statistics(
+            stats.TotalConnections,
+            stats.TotalClients,
+            stats.TotalValuesCompressed,
+            stats.TotalValuesDecompressed,
+            stats.TotalOriginalBytes,
+            stats.TotalBytesCompressed,
+            stats.TotalBytesDecompressed,
+            stats.CompressionSkippedCount,
+            stats.SubscriptionOutOfSyncCount,
+            stats.SubscriptionLastSyncTimestamp);
+    }
+
     #endregion public methods
 
     #region protected methods
