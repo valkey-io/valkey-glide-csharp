@@ -83,7 +83,7 @@ public partial interface IBaseClient
     /// <summary>
     /// Gets the expiry time for the specified hash field(s).
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/hpxpiretime"/>
+    /// <seealso href="https://valkey.io/commands/hpexpiretime"/>
     /// <seealso href="https://valkey.io/commands/hpexpiretime"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to get the expiry time for.</param>
