@@ -1,8 +1,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Specifies the result of operation to remove the expire time.
-/// StackExchange.Redis compatibility enum.
+/// The result of an operation to clear the expiry for a hash field.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/hpersist/"/>
 public enum PersistResult

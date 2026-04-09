@@ -1,7 +1,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents the result of an operation to retrieve the time to live for a key or field.
+/// The result of an operation to retrieve the time to live for a key or field.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ttl/"/>
 /// <seealso href="https://valkey.io/commands/pttl/"/>

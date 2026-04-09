@@ -205,14 +205,16 @@ internal partial class Database
     public async Task<ExpireResult[]> HashFieldExpireAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashExpireAsync(key, hashFields, expiry, MapExpireWhen(when));
+        var results = await HashExpireAsync(key, hashFields, expiry, MapExpireWhen(when));
+        return [.. results.Select(r => (ExpireResult)(int)r)];
     }
 
     /// <inheritdoc/>
     public async Task<ExpireResult[]> HashFieldExpireAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTime expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashExpireAtAsync(key, hashFields, new DateTimeOffset(expiry), MapExpireWhen(when));
+        var results = await HashExpireAtAsync(key, hashFields, new DateTimeOffset(expiry), MapExpireWhen(when));
+        return [.. results.Select(r => (ExpireResult)(int)r)];
     }
 
     /// <inheritdoc/>

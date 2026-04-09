@@ -1401,11 +1401,11 @@ internal partial class BatchTestUtils
 
             // Test HEXPIRE with seconds
             _ = batch.HashExpire(expireKey, ["expire_field1"], TimeSpan.FromSeconds(30));
-            testData.Add(new(new ExpireResult[] { ExpireResult.Success }, "HashExpire(expireKey, 30, [expire_field1])"));
+            testData.Add(new(new HashExpireResult[] { HashExpireResult.ExpirySet }, "HashExpire(expireKey, 30, [expire_field1])"));
 
             // Test HPEXPIRE with milliseconds
             _ = batch.HashExpire(expireKey, ["expire_field2"], TimeSpan.FromMilliseconds(5000));
-            testData.Add(new(new ExpireResult[] { ExpireResult.Success }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
+            testData.Add(new(new HashExpireResult[] { HashExpireResult.ExpirySet }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
 
             // Test HTTL
             _ = batch.HashTimeToLive(expireKey, ["expire_field1", "expire_field2"]);

@@ -162,7 +162,7 @@ internal partial class Request
             [.. response.Select(item => (HashPersistResult)(long)item)]);
     }
 
-    public static Cmd<object[], ExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
+    public static Cmd<object[], HashExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
     {
         List<GlideString> args = [key, ToMilliseconds(expiry).ToGlideString()];
 
@@ -170,10 +170,10 @@ internal partial class Request
         AddFields(args, hashFields);
 
         return new(RequestType.HPExpire, [.. args], false, response =>
-            [.. response.Select(item => (ExpireResult)(long)item)]);
+            [.. response.Select(item => (HashExpireResult)(long)item)]);
     }
 
-    public static Cmd<object[], ExpireResult[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, ValkeyValue[] hashFields, ExpireCondition condition)
+    public static Cmd<object[], HashExpireResult[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, ValkeyValue[] hashFields, ExpireCondition condition)
     {
         List<GlideString> args = [key.ToGlideString(), expiry.ToUnixTimeMilliseconds().ToGlideString()];
 
@@ -181,7 +181,7 @@ internal partial class Request
         AddFields(args, hashFields);
 
         return new(RequestType.HPExpireAt, [.. args], false, response =>
-            [.. response.Select(item => (ExpireResult)(long)item)]);
+            [.. response.Select(item => (HashExpireResult)(long)item)]);
     }
 
     public static Cmd<object[], ExpireTimeResult[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] hashFields)

@@ -39,8 +39,8 @@ public partial interface IBaseClient
     /// <param name="hashField">The field to set the expiry for.</param>
     /// <param name="expiry">The expiry duration.</param>
     /// <param name="condition">The condition under which to set the expiry.</param>
-    /// <returns>An <see cref="ExpireResult"/> for the field.</returns>
-    Task<ExpireResult> HashExpireAsync(
+    /// <returns>A <see cref="HashExpireResult"/> for the field.</returns>
+    Task<HashExpireResult> HashExpireAsync(
         ValkeyKey key,
         ValkeyValue hashField,
         TimeSpan expiry,
@@ -48,8 +48,8 @@ public partial interface IBaseClient
 
     /// <inheritdoc cref="HashExpireAsync(ValkeyKey, ValkeyValue, TimeSpan, ExpireCondition)"/>
     /// <param name="hashFields">The fields to set the expiry for.</param>
-    /// <returns>An <see cref="ExpireResult"/> array with one entry per field.</returns>
-    Task<ExpireResult[]> HashExpireAsync(
+    /// <returns>A <see cref="HashExpireResult"/> array with one entry per field.</returns>
+    Task<HashExpireResult[]> HashExpireAsync(
         ValkeyKey key,
         IEnumerable<ValkeyValue> hashFields,
         TimeSpan expiry,
@@ -64,8 +64,8 @@ public partial interface IBaseClient
     /// <param name="hashField">The field to set the expiry for.</param>
     /// <param name="expiry">The expiry timestamp.</param>
     /// <param name="condition">The condition under which to set the expiry.</param>
-    /// <returns>An <see cref="ExpireResult"/> for the field.</returns>
-    Task<ExpireResult> HashExpireAtAsync(
+    /// <returns>A <see cref="HashExpireResult"/> for the field.</returns>
+    Task<HashExpireResult> HashExpireAtAsync(
         ValkeyKey key,
         ValkeyValue hashField,
         DateTimeOffset expiry,
@@ -73,8 +73,8 @@ public partial interface IBaseClient
 
     /// <inheritdoc cref="HashExpireAtAsync(ValkeyKey, ValkeyValue, DateTimeOffset, ExpireCondition)"/>
     /// <param name="hashFields">The fields to set the expiry for.</param>
-    /// <returns>An <see cref="ExpireResult"/> array with one entry per field.</returns>
-    Task<ExpireResult[]> HashExpireAtAsync(
+    /// <returns>A <see cref="HashExpireResult"/> array with one entry per field.</returns>
+    Task<HashExpireResult[]> HashExpireAtAsync(
         ValkeyKey key,
         IEnumerable<ValkeyValue> hashFields,
         DateTimeOffset expiry,
