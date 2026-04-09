@@ -1,41 +1,51 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.Pipeline;
 
 /// <summary>
 /// Supports commands for the "Bitmap Commands" group for batch requests.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
 internal interface IBatchBitmapCommands
 {
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringGetBitAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringGetBitAsync(ValkeyKey, long)" /></returns>
-    IBatch StringGetBit(ValkeyKey key, long offset);
+    /// <inheritdoc cref="IBaseClient.GetBitAsync(ValkeyKey, long)"/>
+    /// <returns>Command Response - The bit value stored at offset.</returns>
+    IBatch GetBit(ValkeyKey key, long offset);
 
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringSetBitAsync(ValkeyKey, long, bool)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringSetBitAsync(ValkeyKey, long, bool)" /></returns>
-    IBatch StringSetBit(ValkeyKey key, long offset, bool value);
+    /// <inheritdoc cref="IBaseClient.SetBitAsync(ValkeyKey, long, bool)"/>
+    /// <returns>Command Response - The original bit value stored at offset.</returns>
+    IBatch SetBit(ValkeyKey key, long offset, bool value);
 
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitCountAsync(ValkeyKey, long, long, StringIndexType)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitCountAsync(ValkeyKey, long, long, StringIndexType)" /></returns>
-    IBatch StringBitCount(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte);
+    /// <inheritdoc cref="IBaseClient.BitCountAsync(ValkeyKey, long, long, BitmapIndexType)"/>
+    /// <returns>Command Response - The number of bits set to 1.</returns>
+    IBatch BitCount(ValkeyKey key, long start = 0, long end = -1, BitmapIndexType indexType = BitmapIndexType.Byte);
 
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitPositionAsync(ValkeyKey, bool, long, long, StringIndexType)" /></returns>
-    IBatch StringBitPosition(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte);
+    /// <inheritdoc cref="IBaseClient.BitPosAsync(ValkeyKey, bool, long, long, BitmapIndexType)"/>
+    /// <returns>Command Response - The position of the first bit with the specified value, or -1 if not found.</returns>
+    IBatch BitPos(ValkeyKey key, bool bit, long start = 0, long end = -1, BitmapIndexType indexType = BitmapIndexType.Byte);
 
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey)" /></returns>
-    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second);
+    /// <summary>
+    /// Perform a bitwise operation between two keys and store the result in the destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bitop"/>
+    /// <param name="operation">The bitwise operation to perform.</param>
+    /// <param name="destination">The key to store the result.</param>
+    /// <param name="first">The first source key.</param>
+    /// <param name="second">The second source key.</param>
+    /// <returns>Command Response - The size of the string stored in the destination key.</returns>
+    IBatch BitOp(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second);
 
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitOperationAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitOperationAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})" /></returns>
-    IBatch StringBitOperation(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys);
+    /// <inheritdoc cref="IBaseClient.BitOpAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})"/>
+    /// <returns>Command Response - The size of the string stored in the destination key.</returns>
+    IBatch BitOp(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitFieldAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldSubCommand})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitFieldAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldSubCommand})" /></returns>
-    IBatch StringBitField(ValkeyKey key, IEnumerable<Commands.Options.BitFieldOptions.IBitFieldSubCommand> subCommands);
+    /// <inheritdoc cref="IBaseClient.BitFieldAsync(ValkeyKey, IEnumerable{BitFieldOptions.IBitFieldSubCommand})"/>
+    /// <returns>Command Response - An array of results from the executed subcommands.</returns>
+    IBatch BitField(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldSubCommand> subCommands);
 
-    /// <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitFieldReadOnlyAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IBitmapBaseCommands.StringBitFieldReadOnlyAsync(ValkeyKey, IEnumerable{Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand})" /></returns>
-    IBatch StringBitFieldReadOnly(ValkeyKey key, IEnumerable<Commands.Options.BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands);
+    /// <inheritdoc cref="IBaseClient.BitFieldReadOnlyAsync(ValkeyKey, IEnumerable{BitFieldOptions.IBitFieldReadOnlySubCommand})"/>
+    /// <returns>Command Response - An array of results from the executed GET subcommands.</returns>
+    IBatch BitFieldReadOnly(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands);
 }
