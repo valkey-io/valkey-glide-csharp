@@ -21,7 +21,7 @@ public abstract class GeoSearchShape
     /// constructs a <see cref="GeoSearchShape"/>.
     /// </summary>
     /// <param name="unit">The geography unit to use.</param>
-    public GeoSearchShape(GeoUnit unit)
+    protected GeoSearchShape(GeoUnit unit)
     {
         Unit = unit;
     }
@@ -35,6 +35,7 @@ public abstract class GeoSearchShape
 public class GeoSearchCircle : GeoSearchShape
 {
     private readonly double _radius;
+    internal override int ArgCount => 3;
 
     /// <summary>
     /// Creates a <see cref="GeoSearchCircle"/> Shape.
@@ -45,8 +46,6 @@ public class GeoSearchCircle : GeoSearchShape
     {
         _radius = radius;
     }
-
-    internal override int ArgCount => 3;
 
     /// <summary>
     /// Gets the <see cref="ValkeyValue"/>s for this shape.
@@ -65,8 +64,8 @@ public class GeoSearchCircle : GeoSearchShape
 public class GeoSearchBox : GeoSearchShape
 {
     private readonly double _height;
-
     private readonly double _width;
+    internal override int ArgCount => 4;
 
     /// <summary>
     /// Initializes a GeoBox.
@@ -79,8 +78,6 @@ public class GeoSearchBox : GeoSearchShape
         _height = height;
         _width = width;
     }
-
-    internal override int ArgCount => 4;
 
     internal override void AddArgs(List<ValkeyValue> args)
     {
