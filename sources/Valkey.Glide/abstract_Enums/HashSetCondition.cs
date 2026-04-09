@@ -12,12 +12,12 @@ public enum HashSetCondition
     Always,
 
     /// <summary>
-    /// Only set the expiry if none of the hash fields already exist (FNX).
+    /// Only set the expiry if none of the hash fields exist (FNX).
     /// </summary>
     OnlyIfNoneExist,
 
     /// <summary>
-    /// Only set the expiry if all of the hash fields already exist (FXX).
+    /// Only set the expiry if all of the hash fields exist (FXX).
     /// </summary>
     OnlyIfAllExist,
 }
