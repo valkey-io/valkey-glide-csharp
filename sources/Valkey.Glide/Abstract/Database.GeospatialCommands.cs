@@ -7,38 +7,25 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, double, double, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags)
+    public async Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoAddAsync(key, longitude, latitude, member);
+        return await GeoAddAsync(key, member, new GeoPosition(longitude, latitude));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, GeoEntry, CommandFlags)"/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags)
+    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoAddAsync(key, value);
+        return await GeoAddAsync(key, value.Member, new GeoPosition(value.Longitude, value.Latitude));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, CommandFlags)"/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags)
+    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoAddAsync(key, values);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions, CommandFlags)"/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoAddAsync(key, value, options);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, GeoAddOptions, CommandFlags)"/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoAddAsync(key, values, options);
+        var members = values.ToDictionary(e => e.Member, e => new GeoPosition(e.Longitude, e.Latitude));
+        return await GeoAddAsync(key, members);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit, CommandFlags)"/>

@@ -10,30 +10,28 @@ namespace Valkey.Glide;
 /// <seealso cref="IGeospatialBaseCommands" />
 public partial interface IDatabaseAsync
 {
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, double, double, ValkeyValue)"/>
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="longitude">The longitude coordinate.</param>
+    /// <param name="latitude">The latitude coordinate.</param>
+    /// <param name="member">The name of the member to add.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags);
+    Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, GeoEntry)"/>
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="value">The geospatial entry to add.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags);
+    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry})"/>
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="values">The geospatial entries to add.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags);
-
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options, CommandFlags flags);
-
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, GeoAddOptions)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options, CommandFlags flags);
+    Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGeospatialBaseCommands.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>

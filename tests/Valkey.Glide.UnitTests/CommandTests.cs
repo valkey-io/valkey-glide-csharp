@@ -287,11 +287,13 @@ public class CommandTests
             () => Assert.Equal(new string[] { "HRANDFIELD", "key", "3", "WITHVALUES" }, Request.HashRandomFieldsWithValuesAsync("key", 3).GetArgs()),
 
             // Geospatial Commands
-            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo")).GetArgs()),
-            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo", "15.087268999999999", "37.502668999999997", "Catania"], Request.GeoAddAsync("key", [new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoEntry(15.087269, 37.502669, "Catania")]).GetArgs()),
-            () => Assert.Equal(["GEOADD", "key", "NX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_DOES_NOT_EXIST)).GetArgs()),
-            () => Assert.Equal(["GEOADD", "key", "XX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS)).GetArgs()),
-            () => Assert.Equal(["GEOADD", "key", "CH", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(true)).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", "Palermo", new GeoPosition(13.361389, 38.115556)).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo", "15.087268999999999", "37.502668999999997", "Catania"], Request.GeoAddAsync("key", new Dictionary<ValkeyValue, GeoPosition> { ["Palermo"] = new(13.361389, 38.115556), ["Catania"] = new(15.087269, 37.502669) }).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "NX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", "Palermo", new GeoPosition(13.361389, 38.115556), new GeoAddOptions { Condition = GeoAddCondition.OnlyIfNotExists }).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "XX", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", "Palermo", new GeoPosition(13.361389, 38.115556), new GeoAddOptions { Condition = GeoAddCondition.OnlyIfExists }).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", "Palermo", new GeoPosition(13.361389, 38.115556), new GeoAddOptions { Condition = GeoAddCondition.Always }).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "CH", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", "Palermo", new GeoPosition(13.361389, 38.115556), new GeoAddOptions { Changed = true }).GetArgs()),
+            () => Assert.Equal(["GEOADD", "key", "NX", "CH", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAddAsync("key", "Palermo", new GeoPosition(13.361389, 38.115556), new GeoAddOptions { Condition = GeoAddCondition.OnlyIfNotExists, Changed = true }).GetArgs()),
             () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "m"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Meters).GetArgs()),
             () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "km"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Kilometers).GetArgs()),
             () => Assert.Equal(["GEODIST", "key", "Palermo", "Catania", "mi"], Request.GeoDistanceAsync("key", "Palermo", "Catania", GeoUnit.Miles).GetArgs()),

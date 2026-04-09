@@ -6,59 +6,25 @@ namespace Valkey.Glide.Internals;
 
 internal static partial class Request
 {
-    /// <summary>
-    /// Adds GeoAddOptions to the argument list.
-    /// </summary>
-    /// <param name="args">The argument list to add options to.</param>
-    /// <param name="options">The options to add.</param>
-    private static void AddGeoAddOptions(List<GlideString> args, GeoAddOptions? options)
-    {
-        if (options?.ConditionalChange.HasValue == true)
-        {
-            args.Add(options.ConditionalChange.Value == ConditionalChange.ONLY_IF_DOES_NOT_EXIST
-                ? ValkeyLiterals.NX.ToGlideString()
-                : ValkeyLiterals.XX.ToGlideString());
-        }
-
-        if (options?.Changed == true)
-        {
-            args.Add(ValkeyLiterals.CH.ToGlideString());
-        }
-    }
-
-    /// <summary>
-    /// Creates a request for GEOADD command.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="value">The geospatial item to add.</param>
-    /// <param name="options">The options for the GEOADD command.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions? options = null)
+    public static Cmd<long, bool> GeoAddAsync(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default)
     {
         List<GlideString> args = [key.ToGlideString()];
-        AddGeoAddOptions(args, options);
-        args.Add(value.Longitude.ToGlideString());
-        args.Add(value.Latitude.ToGlideString());
-        args.Add(value.Member.ToGlideString());
+        args.AddRange(options.ToArgs());
+        args.Add(position.Longitude.ToGlideString());
+        args.Add(position.Latitude.ToGlideString());
+        args.Add(member.ToGlideString());
         return Boolean<long>(RequestType.GeoAdd, [.. args]);
     }
 
-    /// <summary>
-    /// Creates a request for GEOADD command with multiple values.
-    /// </summary>
-    /// <param name="key">The key of the sorted set.</param>
-    /// <param name="values">The geospatial items to add.</param>
-    /// <param name="options">The options for the GEOADD command.</param>
-    /// <returns>A <see cref="Cmd{T, R}"/> with the request.</returns>
-    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, GeoEntry[] values, GeoAddOptions? options = null)
+    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default)
     {
         List<GlideString> args = [key.ToGlideString()];
-        AddGeoAddOptions(args, options);
-        foreach (var value in values)
+        args.AddRange(options.ToArgs());
+        foreach (var (member, position) in members)
         {
-            args.Add(value.Longitude.ToGlideString());
-            args.Add(value.Latitude.ToGlideString());
-            args.Add(value.Member.ToGlideString());
+            args.Add(position.Longitude.ToGlideString());
+            args.Add(position.Latitude.ToGlideString());
+            args.Add(member.ToGlideString());
         }
         return Simple<long>(RequestType.GeoAdd, [.. args]);
     }
@@ -224,8 +190,6 @@ internal static partial class Request
     /// <returns>An array of GeoRadiusResult objects.</returns>
     private static GeoRadiusResult[] ProcessGeoSearchResponse(object[] response, GeoRadiusOptions options)
     {
-
-
         return [.. response.Select(item =>
         {
             // If no options are specified, Redis returns simple strings (member names)

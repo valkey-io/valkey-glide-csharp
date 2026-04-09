@@ -9,20 +9,11 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 public abstract partial class BaseBatch<T>
 {
-    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, double, double, ValkeyValue)" />
-    public T GeoAdd(ValkeyKey key, double longitude, double latitude, ValkeyValue member) => GeoAdd(key, new GeoEntry(longitude, latitude, member));
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" />
+    public T GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default) => AddCmd(GeoAddAsync(key, member, position, options));
 
-    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, GeoEntry)" />
-    public T GeoAdd(ValkeyKey key, GeoEntry value) => AddCmd(GeoAddAsync(key, value));
-
-    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, IEnumerable{GeoEntry})" />
-    public T GeoAdd(ValkeyKey key, IEnumerable<GeoEntry> values) => AddCmd(GeoAddAsync(key, [.. values]));
-
-    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, GeoEntry, GeoAddOptions)" />
-    public T GeoAdd(ValkeyKey key, GeoEntry value, GeoAddOptions options) => AddCmd(GeoAddAsync(key, value, options));
-
-    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, IEnumerable{GeoEntry}, GeoAddOptions)" />
-    public T GeoAdd(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options) => AddCmd(GeoAddAsync(key, [.. values], options));
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" />
+    public T GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default) => AddCmd(GeoAddAsync(key, members, options));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoDistance(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" />
     public T GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters) => AddCmd(GeoDistanceAsync(key, member1, member2, unit));
@@ -48,11 +39,8 @@ public abstract partial class BaseBatch<T>
 
 
     // Explicit interface implementations for IBatchGeospatialCommands
-    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, double longitude, double latitude, ValkeyValue member) => GeoAdd(key, longitude, latitude, member);
-    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry value) => GeoAdd(key, value);
-    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, IEnumerable<GeoEntry> values) => GeoAdd(key, values);
-    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, GeoEntry value, GeoAddOptions options) => GeoAdd(key, value, options);
-    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options) => GeoAdd(key, values, options);
+    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options) => GeoAdd(key, member, position, options);
+    IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options) => GeoAdd(key, members, options);
     IBatch IBatchGeospatialCommands.GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit) => GeoDistance(key, member1, member2, unit);
     IBatch IBatchGeospatialCommands.GeoHash(ValkeyKey key, ValkeyValue member) => GeoHash(key, member);
     IBatch IBatchGeospatialCommands.GeoHash(ValkeyKey key, IEnumerable<ValkeyValue> members) => GeoHash(key, members);

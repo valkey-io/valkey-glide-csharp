@@ -6,25 +6,13 @@ namespace Valkey.Glide.Pipeline;
 
 internal interface IBatchGeospatialCommands
 {
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, double, double, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, double, double, ValkeyValue)" /></returns>
-    IBatch GeoAdd(ValkeyKey key, double longitude, double latitude, ValkeyValue member);
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" /></returns>
+    IBatch GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, GeoEntry)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, GeoEntry)" /></returns>
-    IBatch GeoAdd(ValkeyKey key, GeoEntry value);
-
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry})" /></returns>
-    IBatch GeoAdd(ValkeyKey key, IEnumerable<GeoEntry> values);
-
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, GeoEntry, GeoAddOptions)" /></returns>
-    IBatch GeoAdd(ValkeyKey key, GeoEntry value, GeoAddOptions options);
-
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, GeoAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, GeoAddOptions)" /></returns>
-    IBatch GeoAdd(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options);
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" /></returns>
+    IBatch GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default);
 
     /// <inheritdoc cref="IGeospatialBaseCommands.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGeospatialBaseCommands.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" /></returns>

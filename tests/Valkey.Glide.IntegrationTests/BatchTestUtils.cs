@@ -1449,20 +1449,21 @@ internal partial class BatchTestUtils
         _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         // Test GeoAdd
-        _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"));
+        _ = batch.GeoAdd(key1, "Palermo", new GeoPosition(13.361389, 38.115556));
         testData.Add(new(1L, "GeoAdd(key1, Palermo)"));
 
-        _ = batch.GeoAdd(key1, [
-            new GeoEntry(15.087269, 37.502669, "Catania"),
-            new GeoEntry(12.496366, 41.902782, "Rome")
-        ]);
+        _ = batch.GeoAdd(key1, new Dictionary<ValkeyValue, GeoPosition>
+        {
+            ["Catania"] = new(15.087269, 37.502669),
+            ["Rome"] = new(12.496366, 41.902782),
+        });
         testData.Add(new(2L, "GeoAdd(key1, [Catania, Rome])"));
 
         // Test GeoAdd with options
-        _ = batch.GeoAdd(key1, new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoAddOptions(ConditionalChange.ONLY_IF_EXISTS));
+        _ = batch.GeoAdd(key1, "Palermo", new GeoPosition(13.361389, 38.115556), new GeoAddOptions { Condition = GeoAddCondition.OnlyIfExists });
         testData.Add(new(false, "GeoAdd(key1, Palermo, XX) - update existing"));
 
-        _ = batch.GeoAdd(key1, new GeoEntry(9.189982, 45.4642035, "Milan"), new GeoAddOptions(ConditionalChange.ONLY_IF_DOES_NOT_EXIST));
+        _ = batch.GeoAdd(key1, "Milan", new GeoPosition(9.189982, 45.4642035), new GeoAddOptions { Condition = GeoAddCondition.OnlyIfNotExists });
         testData.Add(new(true, "GeoAdd(key1, Milan, NX) - add new"));
 
         // Test GeoDistance

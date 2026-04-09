@@ -7,34 +7,12 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <inheritdoc/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member)
-    {
-        return await GeoAddAsync(key, new GeoEntry(longitude, latitude, member)).ConfigureAwait(false);
-    }
+    public async Task<bool> GeoAddAsync(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default)
+        => await Command(Request.GeoAddAsync(key, member, position, options));
 
     /// <inheritdoc/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value)
-    {
-        return await Command(Request.GeoAddAsync(key, value));
-    }
-
-    /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values)
-    {
-        return await Command(Request.GeoAddAsync(key, [.. values]));
-    }
-
-    /// <inheritdoc/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options)
-    {
-        return await Command(Request.GeoAddAsync(key, value, options));
-    }
-
-    /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options)
-    {
-        return await Command(Request.GeoAddAsync(key, [.. values], options));
-    }
+    public async Task<long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default)
+        => await Command(Request.GeoAddAsync(key, members, options));
 
     /// <inheritdoc/>
     public async Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters)
