@@ -241,12 +241,12 @@ public partial interface IDatabaseAsync
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace, CommandFlags flags);
 
     /// <inheritdoc cref="IBaseClient.RandomKeyAsync()"/>
-    Task<string?> KeyRandomAsync();
+    Task<ValkeyKey?> KeyRandomAsync();
 
     /// <inheritdoc cref="IBaseClient.RandomKeyAsync()"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<string?> KeyRandomAsync(CommandFlags flags);
+    Task<ValkeyKey?> KeyRandomAsync(CommandFlags flags);
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>

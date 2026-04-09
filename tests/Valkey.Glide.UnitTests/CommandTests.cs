@@ -526,7 +526,7 @@ public class CommandTests
             () => Assert.Null(Request.KeyIdleTimeAsync("key").Converter(-1L)),
             () => Assert.Equal(3L, Request.KeyRefCountAsync("key").Converter(3L)),
             () => Assert.Null(Request.KeyRefCountAsync("key").Converter(-1L)),
-            () => Assert.Equal("randomkey", Request.KeyRandomAsync().Converter(new GlideString("randomkey"))),
+            () => Assert.Equal(new ValkeyKey("randomkey"), Request.KeyRandomAsync().Converter(new GlideString("randomkey"))),
             () => Assert.Null(Request.KeyRandomAsync().Converter(null!)),
             () => Assert.True(Request.KeyMoveAsync("key", 1).Converter(true)),
             () => Assert.False(Request.KeyMoveAsync("key", 1).Converter(false)),

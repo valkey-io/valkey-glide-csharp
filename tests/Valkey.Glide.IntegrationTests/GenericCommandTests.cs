@@ -482,7 +482,7 @@ public class GenericCommandTests(TestConfiguration config)
     public async Task TestKeyRandom(BaseClient client)
     {
         // Test with empty database
-        _ = await client.KeyRandomAsync();
+        _ = await client.RandomKeyAsync();
         // May be null if database is empty, or return an existing key
 
         // Set some keys to ensure we have data
@@ -495,18 +495,18 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key3, "value3");
 
         // Now we should get a random key
-        string? randomKey = await client.KeyRandomAsync();
-        Assert.NotNull(randomKey);
-        Assert.True(await client.KeyExistsAsync(randomKey));
+        ValkeyKey? randomKey = await client.RandomKeyAsync();
+        _ = Assert.NotNull(randomKey);
+        Assert.True(await client.ExistsAsync(randomKey.Value));
 
         // Call multiple times to verify it can return different keys
         HashSet<string> seenKeys = [];
         for (int i = 0; i < 10; i++)
         {
-            string? key = await client.KeyRandomAsync();
-            if (key != null)
+            ValkeyKey? key = await client.RandomKeyAsync();
+            if (key.HasValue)
             {
-                _ = seenKeys.Add(key);
+                _ = seenKeys.Add(key.Value.ToString());
             }
         }
 

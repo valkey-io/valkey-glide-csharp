@@ -527,9 +527,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// string? randomKey = await client.RandomKeyAsync();
+    /// ValkeyKey? randomKey = await client.RandomKeyAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string?> RandomKeyAsync();
+    Task<ValkeyKey?> RandomKeyAsync();
 }

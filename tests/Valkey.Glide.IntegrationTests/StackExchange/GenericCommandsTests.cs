@@ -503,8 +503,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key = $"ser-random-{Guid.NewGuid()}";
 
         await db.StringSetAsync(key, "value");
-        string? randomKey = await db.KeyRandomAsync();
-        Assert.NotNull(randomKey);
+        ValkeyKey? randomKey = await db.KeyRandomAsync();
+        _ = Assert.NotNull(randomKey);
     }
 
     [Fact]
@@ -514,8 +514,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key = $"ser-random-flags-{Guid.NewGuid()}";
 
         await db.StringSetAsync(key, "value");
-        string? randomKey = await db.KeyRandomAsync(CommandFlags.None);
-        Assert.NotNull(randomKey);
+        ValkeyKey? randomKey = await db.KeyRandomAsync(CommandFlags.None);
+        _ = Assert.NotNull(randomKey);
     }
 
     [Fact]

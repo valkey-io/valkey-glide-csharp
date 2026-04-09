@@ -200,8 +200,8 @@ internal partial class Request
     public static Cmd<long, long?> KeyRefCountAsync(ValkeyKey key)
         => new(RequestType.ObjectRefCount, [key.ToGlideString()], true, response => response == -1 ? null : response);
 
-    public static Cmd<GlideString, string?> KeyRandomAsync()
-        => new(RequestType.RandomKey, [], true, response => response?.ToString());
+    public static Cmd<GlideString, ValkeyKey?> KeyRandomAsync()
+        => new(RequestType.RandomKey, [], true, response => response is null ? (ValkeyKey?)null : new ValkeyKey(response.ToString()));
 
     public static Cmd<object[], ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, Version? serverVersion = null)
     {

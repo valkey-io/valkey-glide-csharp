@@ -206,7 +206,7 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)"/>
-    public async Task<string?> KeyRandomAsync(CommandFlags flags)
+    public async Task<ValkeyKey?> KeyRandomAsync(CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await RandomKeyAsync();

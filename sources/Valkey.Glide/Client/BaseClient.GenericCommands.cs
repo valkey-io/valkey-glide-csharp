@@ -123,7 +123,7 @@ public abstract partial class BaseClient
         => await Command(Request.KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
 
     /// <inheritdoc/>
-    public async Task<string?> RandomKeyAsync()
+    public async Task<ValkeyKey?> RandomKeyAsync()
         => await Command(Request.KeyRandomAsync());
 
     /// <inheritdoc/>
@@ -253,6 +253,6 @@ public abstract partial class BaseClient
         => CopyAsync(sourceKey, destinationKey, destinationDatabase, replace);
 
     /// <inheritdoc/>
-    public Task<string?> KeyRandomAsync()
+    public Task<ValkeyKey?> KeyRandomAsync()
         => RandomKeyAsync();
 }
