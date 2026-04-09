@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
@@ -184,38 +185,38 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)"/>
-    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await KeyCopyAsync(sourceKey, destinationKey, replace);
+        return await CopyAsync(sourceKey, destinationKey, replace);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int, CommandFlags)"/>
     public async Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await KeyMoveAsync(key, database);
+        return await MoveAsync(key, database);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)"/>
-    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace);
+        return await CopyAsync(sourceKey, destinationKey, destinationDatabase, replace);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)"/>
     public async Task<string?> KeyRandomAsync(CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await KeyRandomAsync();
+        return await RandomKeyAsync();
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortAsync(key, skip, take, order, sortType, by, get);
+        return await ((IGenericBaseCommands)this).SortAsync(key, skip, take, order, sortType, by, get);
     }
 
 }
