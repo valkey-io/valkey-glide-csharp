@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// The condition for a command to the set the expiry for a key or field.
+/// The condition for an operation to set the expiry for a key or hash field.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/expire/"/>
 /// <seealso href="https://valkey.io/commands/expireat/"/>
@@ -16,27 +16,27 @@ namespace Valkey.Glide.Commands.Options;
 public enum ExpireCondition
 {
     /// <summary>
-    /// Always set the expiry.
+    /// Always set the expiry for the key or hash field.
     /// </summary>
     Always,
 
     /// <summary>
-    /// Set expiry only if the key or field has no existing expiry (NX).
+    /// Set the expiry only if the key or hash field has no existing expiry (NX).
     /// </summary>
     OnlyIfNotExists,
 
     /// <summary>
-    /// Set expiry only if the key or field has an existing expiry (XX).
+    /// Set the expiry only if the key or hash field has an existing expiry (XX).
     /// </summary>
     OnlyIfExists,
 
     /// <summary>
-    /// Set expiry only if the new expiry is greater than the current expiry (GT).
+    /// Set the expiry only if the new expiry is greater than the current expiry (GT).
     /// </summary>
     OnlyIfGreaterThan,
 
     /// <summary>
-    /// Set expiry only if the new expiry is less than the current expiry (LT).
+    /// Set the expiry only if the new expiry is less than the current expiry (LT).
     /// </summary>
     OnlyIfLessThan,
 }

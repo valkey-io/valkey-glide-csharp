@@ -17,7 +17,7 @@ public enum HashExpireResult
     ExpirySet = 1,
 
     /// <summary>
-    /// The expiry condition was not met.
+    /// The hash field exists, but the expiry condition was not met.
     /// </summary>
     ConditionNotMet = 0,
 

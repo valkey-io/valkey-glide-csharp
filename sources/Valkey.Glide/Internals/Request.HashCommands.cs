@@ -92,16 +92,16 @@ internal partial class Request
     }
 
     public static Cmd<object[], ValkeyValue[]> HashGetExpiryAsync(
-        ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)
+        ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOption option)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        if (options.Duration is { } duration)
+        if (option.Duration is { } duration)
         {
             args.Add(Constants.PxKeyword);
             args.Add(ToMilliseconds(duration).ToGlideString());
         }
-        else if (options.Timestamp is { } timestamp)
+        else if (option.Timestamp is { } timestamp)
         {
             args.Add(Constants.PxAtKeyword);
             args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());
@@ -119,7 +119,7 @@ internal partial class Request
 
     public static Cmd<long, bool> HashSetExpiryAsync(
         ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        SetExpiryOptions options, HashSetCondition condition)
+        SetExpiryOption option, HashSetCondition condition)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -132,12 +132,12 @@ internal partial class Request
             args.Add(Constants.FxxKeyword);
         }
 
-        if (options.Duration is { } duration)
+        if (option.Duration is { } duration)
         {
             args.Add(Constants.PxKeyword);
             args.Add(ToMilliseconds(duration).ToGlideString());
         }
-        else if (options.Timestamp is { } timestamp)
+        else if (option.Timestamp is { } timestamp)
         {
             args.Add(Constants.PxAtKeyword);
             args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());

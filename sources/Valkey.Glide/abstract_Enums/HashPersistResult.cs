@@ -1,7 +1,7 @@
 ﻿namespace Valkey.Glide;
 
 /// <summary>
-/// The result of an operation to clear the expiry for a hash field.
+/// The result of an operation to remove the expiry for a hash field.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/hpersist/"/>
 public enum HashPersistResult

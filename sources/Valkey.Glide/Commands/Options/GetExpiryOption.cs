@@ -3,11 +3,11 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Options for a command to get the value and set the expiry for a field or key.
+/// The option for an operation to get the value and set the expiry for a field or key.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/getex/"/>
 /// <seealso href="https://valkey.io/commands/hgetex/"/>
-public sealed class GetExpiryOptions
+public sealed class GetExpiryOption
 {
     /// <summary>
     /// The expiry duration to set, if specified.
@@ -19,7 +19,7 @@ public sealed class GetExpiryOptions
     /// </summary>
     internal DateTimeOffset? Timestamp { get; }
 
-    private GetExpiryOptions(TimeSpan? duration = null, DateTimeOffset? timestamp = null)
+    private GetExpiryOption(TimeSpan? duration = null, DateTimeOffset? timestamp = null)
     {
         Duration = duration;
         Timestamp = timestamp;
@@ -29,19 +29,19 @@ public sealed class GetExpiryOptions
     /// Set expiry to a duration from now (EX/PX).
     /// </summary>
     /// <param name="duration">The duration until expiry.</param>
-    /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions ExpireIn(TimeSpan duration) => new(duration: duration);
+    /// <returns>A new <see cref="GetExpiryOption"/> instance.</returns>
+    public static GetExpiryOption ExpireIn(TimeSpan duration) => new(duration: duration);
 
     /// <summary>
     /// Set expiry to a timestamp (EXAT/PXAT).
     /// </summary>
     /// <param name="timestamp">The expiry timestamp.</param>
-    /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions ExpireAt(DateTimeOffset timestamp) => new(timestamp: timestamp);
+    /// <returns>A new <see cref="GetExpiryOption"/> instance.</returns>
+    public static GetExpiryOption ExpireAt(DateTimeOffset timestamp) => new(timestamp: timestamp);
 
     /// <summary>
     /// Remove existing expiry (PERSIST).
     /// </summary>
-    /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions Persist() => new();
+    /// <returns>A new <see cref="GetExpiryOption"/> instance.</returns>
+    public static GetExpiryOption Persist() => new();
 }

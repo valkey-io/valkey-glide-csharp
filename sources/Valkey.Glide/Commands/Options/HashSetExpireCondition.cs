@@ -3,23 +3,23 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// The condition for a command to the set the values and expiry for hash fields.
+/// The condition for an operation to the set the values and expiry for hash fields.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/hsetex/"/>
 public enum HashSetExpireCondition
 {
     /// <summary>
-    /// Always set the expiry.
+    /// Always set the values and expiry for the hash fields.
     /// </summary>
     Always,
 
     /// <summary>
-    /// Only set the expiry if none of the specified keys or fields exist (FNX).
+    /// Only set the values and expiry if none of the hash fields exist (FNX).
     /// </summary>
     OnlyIfNoneExist,
 
     /// <summary>
-    /// Only set the expiry if all of the specified keys or fields exist (FXX).
+    /// Only set the values and expiry if all of the hash fields exist (FXX).
     /// </summary>
     OnlyIfAllExist,
 }

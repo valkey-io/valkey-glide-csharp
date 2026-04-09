@@ -84,22 +84,22 @@ public abstract partial class BaseClient
         => await Command(Request.HashRandomFieldsWithValuesAsync(key, count));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> HashGetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)
-        => await Command(Request.HashGetExpiryAsync(key, hashFields, options));
+    public async Task<ValkeyValue[]> HashGetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOption option)
+        => await Command(Request.HashGetExpiryAsync(key, hashFields, option));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> HashGetExpiryAsync(ValkeyKey key, ValkeyValue hashField, GetExpiryOptions options)
-        => (await Command(Request.HashGetExpiryAsync(key, [hashField], options))).First();
+    public async Task<ValkeyValue> HashGetExpiryAsync(ValkeyKey key, ValkeyValue hashField, GetExpiryOption option)
+        => (await Command(Request.HashGetExpiryAsync(key, [hashField], option))).First();
 
     /// <inheritdoc/>
     public async Task<bool> HashSetExpiryAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        SetExpiryOptions options, HashSetCondition condition = HashSetCondition.Always)
-        => await Command(Request.HashSetExpiryAsync(key, hashFieldsAndValues, options, condition));
+        SetExpiryOption option, HashSetCondition condition = HashSetCondition.Always)
+        => await Command(Request.HashSetExpiryAsync(key, hashFieldsAndValues, option, condition));
 
     /// <inheritdoc/>
     public async Task<bool> HashSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value,
-        SetExpiryOptions options, HashSetCondition condition = HashSetCondition.Always)
-        => await HashSetExpiryAsync(key, [new KeyValuePair<ValkeyValue, ValkeyValue>(hashField, value)], options, condition);
+        SetExpiryOption option, HashSetCondition condition = HashSetCondition.Always)
+        => await HashSetExpiryAsync(key, [new KeyValuePair<ValkeyValue, ValkeyValue>(hashField, value)], option, condition);
 
     /// <inheritdoc/>
     public async Task<HashPersistResult> HashPersistAsync(ValkeyKey key, ValkeyValue hashField)

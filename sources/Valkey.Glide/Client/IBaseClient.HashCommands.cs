@@ -163,20 +163,20 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/hgetex"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to retrieve and set the expiry for.</param>
-    /// <param name="options">The options for setting the expiry.</param>
+    /// <param name="option">The option for setting the expiry.</param>
     /// <returns>The <see cref="ValkeyValue"/> for the field.</returns>
     Task<ValkeyValue> HashGetExpiryAsync(
         ValkeyKey key,
         ValkeyValue hashField,
-        GetExpiryOptions options);
+        GetExpiryOption option);
 
-    /// <inheritdoc cref="HashGetExpiryAsync(ValkeyKey, ValkeyValue, GetExpiryOptions)"/>
+    /// <inheritdoc cref="HashGetExpiryAsync(ValkeyKey, ValkeyValue, GetExpiryOption)"/>
     /// <param name="hashFields">The fields to retrieve and set the expiry for.</param>
     /// <returns>A <see cref="ValkeyValue"/> array with one entry per field.</returns>
     Task<ValkeyValue[]> HashGetExpiryAsync(
         ValkeyKey key,
         IEnumerable<ValkeyValue> hashFields,
-        GetExpiryOptions options);
+        GetExpiryOption option);
 
     /// <summary>
     /// Sets the value and the expiry for the specified hash field(s).
@@ -186,22 +186,22 @@ public partial interface IBaseClient
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
-    /// <param name="options">The options for setting the expiry.</param>
+    /// <param name="option">The option for setting the expiry.</param>
     /// <param name="condition">The condition under which to set the field(s).</param>
     /// <returns><see langword="true"/> if the field was set, <see langword="false"/> otherwise.</returns>
     Task<bool> HashSetExpiryAsync(
         ValkeyKey key,
         ValkeyValue hashField,
         ValkeyValue value,
-        SetExpiryOptions options,
+        SetExpiryOption option,
         HashSetCondition condition = HashSetCondition.Always);
 
-    /// <inheritdoc cref="HashSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, SetExpiryOptions, HashSetCondition)"/>
+    /// <inheritdoc cref="HashSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, SetExpiryOption, HashSetCondition)"/>
     /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
     /// <returns><see langword="true"/> if the fields were set, <see langword="false"/> otherwise.</returns>
     Task<bool> HashSetExpiryAsync(
         ValkeyKey key,
         IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        SetExpiryOptions options,
+        SetExpiryOption option,
         HashSetCondition condition = HashSetCondition.Always);
 }

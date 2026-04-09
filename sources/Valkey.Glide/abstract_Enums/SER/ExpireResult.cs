@@ -7,7 +7,7 @@ namespace Valkey.Glide;
 public enum ExpireResult
 {
     /// <summary>
-    /// Field deleted because the specified expiration time is due.
+    /// The hash field was deleted because the expiry is in the past.
     /// </summary>
     Due = 2,
 
@@ -17,16 +17,12 @@ public enum ExpireResult
     Success = 1,
 
     /// <summary>
-    /// Field exists in the provided hash key, but the condition was not met.
+    /// The expiry condition was not met.
     /// </summary>
-    /// <remarks>
-    /// This name is inherited from StackExchange.Redis for compatibility,
-    /// even though it does not accurately describe this response.
-    /// </remarks>
     ConditionNotMet = 0,
 
     /// <summary>
-    /// No such field.
+    /// The hash field does not exist.
     /// </summary>
     NoSuchField = -2,
 }

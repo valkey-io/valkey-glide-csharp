@@ -1,7 +1,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// The result of an operation to set the expiry for a key or field.
+/// The result of an operation to get the expiry for a key or hash field.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/expiretime/"/>
 /// <seealso href="https://valkey.io/commands/pexpiretime/"/>
@@ -11,13 +11,17 @@ public readonly struct ExpireTimeResult
 {
     internal readonly long ExpireTimeMs;
 
-    /// <summary>
-    /// Whether the key or field exists.
-    /// </summary>
-    public bool Exists => ExpireTimeMs != -2L;
+    // Special expire time values.
+    internal const long DoesNotExist = -2;
+    internal const long NoExpiry = -1;
 
     /// <summary>
-    /// Whether the key or field has an expiry set.
+    /// Whether the key or hash field exists.
+    /// </summary>
+    public bool Exists => ExpireTimeMs != DoesNotExist;
+
+    /// <summary>
+    /// Whether the key or hash field has an expiry set.
     /// </summary>
     public bool HasExpiry => ExpireTimeMs >= 0;
 
@@ -25,7 +29,8 @@ public readonly struct ExpireTimeResult
     /// The expiry timestamp, or <see langword="null"/> if the key
     /// or field does not exist or does not have an expiry set.
     /// </summary>
-    public DateTimeOffset? Expiry => HasExpiry ? DateTimeOffset.FromUnixTimeMilliseconds(ExpireTimeMs) : null;
+    public DateTimeOffset? Expiry
+        => HasExpiry ? DateTimeOffset.FromUnixTimeMilliseconds(ExpireTimeMs) : null;
 
     /// <summary>
     /// Creates an <see cref="ExpireTimeResult"/> from the given value.
