@@ -804,7 +804,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await AddGeoEntriesAsync(client, sourceKey, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, storeDistances: true);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, new GeoSearchStoreOptions { StoreDistances = true });
 
         Assert.Equal(2, count);
 
@@ -905,7 +905,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await AddGeoEntriesAsync(client, sourceKey, entries);
 
         var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, count: 2);
+        long count = await client.GeoSearchAndStoreAsync(sourceKey, destinationKey, "Palermo", shape, new GeoSearchStoreOptions { Count = 2 });
 
         Assert.Equal(2, count);
 

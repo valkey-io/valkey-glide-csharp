@@ -36,7 +36,11 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearch(ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchOptions)" />
     public T GeoSearch(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default) => AddCmd(GeoSearchAsync(key, from, shape, options));
 
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchStoreOptions)" />
+    public T GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options = default) => AddCmd(GeoSearchAndStoreAsync(source, destination, from, shape, options));
 
+    /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey, ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchStoreOptions)" />
+    public T GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options = default) => AddCmd(GeoSearchAndStoreAsync(source, destination, from, shape, options));
 
     // Explicit interface implementations for IBatchGeospatialCommands
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options) => GeoAdd(key, member, position, options);
@@ -48,5 +52,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGeospatialCommands.GeoPosition(ValkeyKey key, IEnumerable<ValkeyValue> members) => GeoPosition(key, members);
     IBatch IBatchGeospatialCommands.GeoSearch(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options) => GeoSearch(key, from, shape, options);
     IBatch IBatchGeospatialCommands.GeoSearch(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options) => GeoSearch(key, from, shape, options);
+    IBatch IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options) => GeoSearchAndStore(source, destination, from, shape, options);
+    IBatch IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options) => GeoSearchAndStore(source, destination, from, shape, options);
 
 }

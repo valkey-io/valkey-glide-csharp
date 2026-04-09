@@ -85,13 +85,30 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, double longitude, double latitude, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, long, bool, Order?, bool)"/>
+    /// <inheritdoc cref="IBaseClient.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchStoreOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <param name="sourceKey">The source sorted set key.</param>
+    /// <param name="destinationKey">The destination sorted set key.</param>
+    /// <param name="member">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to store. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When <see langword="true"/>, stores the closest results.</param>
+    /// <param name="order">The sort order for results, or <see langword="null"/> for server default.</param>
+    /// <param name="storeDistances">When <see langword="true"/>, stores distances as scores instead of geohash values.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue member, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IGeospatialBaseCommands.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, GeoPosition, GeoSearchShape, long, bool, Order?, bool)"/>
+    /// <inheritdoc cref="IBaseClient.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchStoreOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <param name="sourceKey">The source sorted set key.</param>
+    /// <param name="destinationKey">The destination sorted set key.</param>
+    /// <param name="longitude">The longitude of the search origin.</param>
+    /// <param name="latitude">The latitude of the search origin.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="count">The maximum number of results to store. Use -1 for no limit.</param>
+    /// <param name="demandClosest">When <see langword="true"/>, stores the closest results.</param>
+    /// <param name="order">The sort order for results, or <see langword="null"/> for server default.</param>
+    /// <param name="storeDistances">When <see langword="true"/>, stores distances as scores instead of geohash values.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
+    Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, double longitude, double latitude, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
 }

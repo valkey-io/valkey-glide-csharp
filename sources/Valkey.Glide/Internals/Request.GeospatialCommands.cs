@@ -80,17 +80,19 @@ internal static partial class Request
         return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
     }
 
-    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
+    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options = default)
     {
         List<GlideString> args = [destination.ToGlideString(), source.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), from.ToGlideString()];
-        AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
+        args.AddRange(shape.ToArgs());
+        args.AddRange(options.ToArgs());
         return Simple<long>(RequestType.GeoSearchStore, [.. args]);
     }
 
-    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
+    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options = default)
     {
         List<GlideString> args = [destination.ToGlideString(), source.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), from.Longitude.ToGlideString(), from.Latitude.ToGlideString()];
-        AddGeoSearchAndStoreArgs(args, shape, count, demandClosest, order, storeDistances);
+        args.AddRange(shape.ToArgs());
+        args.AddRange(options.ToArgs());
         return Simple<long>(RequestType.GeoSearchStore, [.. args]);
     }
 
@@ -108,32 +110,6 @@ internal static partial class Request
         }
 
         return new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
-    }
-
-    private static void AddGeoSearchAndStoreArgs(List<GlideString> args, GeoSearchShape shape, long count, bool demandClosest, Order? order, bool storeDistances)
-    {
-        args.AddRange(shape.ToArgs());
-
-        if (count > 0)
-        {
-            args.Add(ValkeyLiterals.COUNT.ToGlideString());
-            args.Add(count.ToGlideString());
-
-            if (!demandClosest)
-            {
-                args.Add(ValkeyLiterals.ANY.ToGlideString());
-            }
-        }
-
-        if (order.HasValue)
-        {
-            args.Add(order.Value.ToLiteral().ToGlideString());
-        }
-
-        if (storeDistances)
-        {
-            args.Add(ValkeyLiterals.STOREDIST.ToGlideString());
-        }
     }
 
     private static GeoSearchResult[] ProcessGeoSearchResponse(object[] response, GeoSearchOptions options)

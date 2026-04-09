@@ -63,4 +63,40 @@ public partial interface IBaseClient
         GeoPosition from,
         GeoSearchShape shape,
         GeoSearchOptions options = default);
+
+    /// <summary>
+    /// Searches for geospatial members within an area centered on another
+    /// geospatial member and stores the results to a destination sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearchstore/"/>
+    /// <param name="source">The source sorted set key.</param>
+    /// <param name="destination">The destination sorted set key.</param>
+    /// <param name="from">The member to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="options">Optional search and store parameters.</param>
+    /// <returns>The number of elements stored.</returns>
+    Task<long> GeoSearchAndStoreAsync(
+        ValkeyKey source,
+        ValkeyKey destination,
+        ValkeyValue from,
+        GeoSearchShape shape,
+        GeoSearchStoreOptions options = default);
+
+    /// <summary>
+    /// Searches for geospatial members within an area centered on a geospatial
+    /// position and stores the results to a destination sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geosearchstore/"/>
+    /// <param name="source">The source sorted set key.</param>
+    /// <param name="destination">The destination sorted set key.</param>
+    /// <param name="from">The position to search from.</param>
+    /// <param name="shape">The search area shape.</param>
+    /// <param name="options">Optional search and store parameters.</param>
+    /// <returns>The number of elements stored.</returns>
+    Task<long> GeoSearchAndStoreAsync(
+        ValkeyKey source,
+        ValkeyKey destination,
+        GeoPosition from,
+        GeoSearchShape shape,
+        GeoSearchStoreOptions options = default);
 }

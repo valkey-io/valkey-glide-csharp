@@ -136,6 +136,53 @@ public class GeospatialCommandsTests(GeospatialCommandsFixture fixture) : IClass
     }
 
     #endregion
+
+    #region GeoSearchAndStoreAsync Tests
+
+    [Fact]
+    public async Task GeoSearchAndStoreAsync_FromMember_StoresResults()
+    {
+        var db = fixture.Database;
+        string key = $"ser-geostore-{Guid.NewGuid()}";
+        string dest = $"ser-geostore-dest-{Guid.NewGuid()}";
+
+        _ = await db.GeoAddAsync(key, [new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoEntry(15.087269, 37.502669, "Catania")]);
+
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        long count = await db.GeoSearchAndStoreAsync(key, dest, "Palermo", shape);
+
+        Assert.Equal(2, count);
+    }
+
+    [Fact]
+    public async Task GeoSearchAndStoreAsync_FromPosition_StoresResults()
+    {
+        var db = fixture.Database;
+        string key = $"ser-geostore-{Guid.NewGuid()}";
+        string dest = $"ser-geostore-dest-{Guid.NewGuid()}";
+
+        _ = await db.GeoAddAsync(key, [new GeoEntry(13.361389, 38.115556, "Palermo"), new GeoEntry(15.087269, 37.502669, "Catania")]);
+
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        long count = await db.GeoSearchAndStoreAsync(key, dest, 13.361389, 38.115556, shape);
+
+        Assert.True(count >= 1);
+    }
+
+    [Fact]
+    public async Task GeoSearchAndStoreAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
+    {
+        var db = fixture.Database;
+        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.GeoSearchAndStoreAsync("key", "dest", "member", shape, flags: UnsupportedCommandFlag));
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.GeoSearchAndStoreAsync("key", "dest", 0.0, 0.0, shape, flags: UnsupportedCommandFlag));
+    }
+
+    #endregion
 }
 
 /// <summary>
