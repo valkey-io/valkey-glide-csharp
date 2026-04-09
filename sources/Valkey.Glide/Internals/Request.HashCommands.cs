@@ -7,7 +7,6 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
 
-// TODO #280: Remove HashEntry and any other SER-specific methods.
 internal partial class Request
 {
     public static Cmd<GlideString, ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField)
@@ -20,8 +19,9 @@ internal partial class Request
             item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, HashEntry[]> HashGetAllAsync(ValkeyKey key)
-        => DictionaryToHashEntries(RequestType.HGetAll, [key.ToGlideString()]);
+    public static Cmd<Dictionary<GlideString, object>, IDictionary<ValkeyValue, ValkeyValue>> HashGetAllAsync(ValkeyKey key)
+        => new(RequestType.HGetAll, [key.ToGlideString()], false, dict =>
+            dict.ToDictionary(kvp => (ValkeyValue)kvp.Key, kvp => (ValkeyValue)(GlideString)kvp.Value));
 
     public static Cmd<long, long> HashSetAsync(ValkeyKey key, KeyValuePair<ValkeyValue, ValkeyValue>[] hashFieldsAndValues)
     {
@@ -51,8 +51,9 @@ internal partial class Request
     public static Cmd<double, double> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, double value)
         => Simple<double>(RequestType.HIncrByFloat, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
-    public static Cmd<object[], ValkeyValue[]> HashKeysAsync(ValkeyKey key)
-        => ObjectArrayToValkeyValueArray(RequestType.HKeys, [key.ToGlideString()]);
+    public static Cmd<object[], ISet<ValkeyValue>> HashKeysAsync(ValkeyKey key)
+        => new(RequestType.HKeys, [key.ToGlideString()], false, response =>
+            new HashSet<ValkeyValue>(response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)));
 
     public static Cmd<long, long> HashLengthAsync(ValkeyKey key)
         => Simple<long>(RequestType.HLen, [key.ToGlideString()]);
@@ -60,8 +61,9 @@ internal partial class Request
     public static Cmd<long, long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField)
         => Simple<long>(RequestType.HStrlen, [key.ToGlideString(), hashField.ToGlideString()]);
 
-    public static Cmd<object[], ValkeyValue[]> HashValuesAsync(ValkeyKey key)
-        => ObjectArrayToValkeyValueArray(RequestType.HVals, [key.ToGlideString()]);
+    public static Cmd<object[], ICollection<ValkeyValue>> HashValuesAsync(ValkeyKey key)
+        => new(RequestType.HVals, [key.ToGlideString()], false, response =>
+            [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
     public static Cmd<GlideString, ValkeyValue> HashRandomFieldAsync(ValkeyKey key)
         => ToValkeyValue(RequestType.HRandField, [key.ToGlideString()], isNullable: true);
@@ -69,7 +71,16 @@ internal partial class Request
     public static Cmd<object[], ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count)
         => ObjectArrayToValkeyValueArray(RequestType.HRandField, [key.ToGlideString(), count.ToGlideString()]);
 
-    public static Cmd<object[], KeyValuePair<ValkeyValue, ValkeyValue>[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
+    public static Cmd<object[], KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key)
+    {
+        GlideString[] args = [key.ToGlideString(), 1.ToGlideString(), Constants.WithValuesKeyword];
+        return new(RequestType.HRandField, args, false, response =>
+            response.Length > 0
+                ? new KeyValuePair<ValkeyValue, ValkeyValue>((GlideString)((object[])response[0])[0], (GlideString)((object[])response[0])[1])
+                : null);
+    }
+
+    public static Cmd<object[], ICollection<KeyValuePair<ValkeyValue, ValkeyValue>>> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
     {
         GlideString[] args = [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword];
         return new(RequestType.HRandField, args, false, response =>

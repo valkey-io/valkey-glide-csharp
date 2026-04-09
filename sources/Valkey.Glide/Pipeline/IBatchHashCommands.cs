@@ -15,8 +15,8 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashGetAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch HashGet(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashGetAllAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashGetAllAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IBaseClient.HashGetAllAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashGetAllAsync(ValkeyKey)" path="/returns" /></returns>
     IBatch HashGetAll(ValkeyKey key);
 
     /// <inheritdoc cref="IHashBaseCommands.HashSetAsync(ValkeyKey, IEnumerable{KeyValuePair{ValkeyValue, ValkeyValue}})" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -47,8 +47,8 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashIncrementByAsync(ValkeyKey, ValkeyValue, double)" /></returns>
     IBatch HashIncrement(ValkeyKey key, ValkeyValue hashField, double value);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashKeysAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashKeysAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IBaseClient.HashKeysAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashKeysAsync(ValkeyKey)" path="/returns" /></returns>
     IBatch HashKeys(ValkeyKey key);
 
     /// <inheritdoc cref="IHashBaseCommands.HashLengthAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -59,8 +59,8 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashStringLengthAsync(ValkeyKey, ValkeyValue)" /></returns>
     IBatch HashStringLength(ValkeyKey key, ValkeyValue hashField);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashValuesAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashValuesAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IBaseClient.HashValuesAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashValuesAsync(ValkeyKey)" path="/returns" /></returns>
     IBatch HashValues(ValkeyKey key);
 
     /// <inheritdoc cref="IHashBaseCommands.HashRandomFieldAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -71,8 +71,12 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashRandomFieldsAsync(ValkeyKey, long)" /></returns>
     IBatch HashRandomFields(ValkeyKey key, long count);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long)" /></returns>
+    /// <inheritdoc cref="IBaseClient.HashRandomFieldWithValueAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashRandomFieldWithValueAsync(ValkeyKey)" path="/returns" /></returns>
+    IBatch HashRandomFieldWithValue(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.HashRandomFieldsWithValuesAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashRandomFieldsWithValuesAsync(ValkeyKey, long)" path="/returns" /></returns>
     IBatch HashRandomFieldsWithValues(ValkeyKey key, long count);
 
     /// <inheritdoc cref="IBaseClient.HashGetExpiryAsync(ValkeyKey, IEnumerable{ValkeyValue}, GetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />

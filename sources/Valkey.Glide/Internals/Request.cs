@@ -65,10 +65,6 @@ internal partial class Request
     private static Cmd<object[], ValkeyValue[]> ObjectArrayToValkeyValueArray(RequestType request, GlideString[] args)
         => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
 
-    private static Cmd<Dictionary<GlideString, object>, HashEntry[]> DictionaryToHashEntries(RequestType request, GlideString[] args, bool isNullable = false)
-        => new(request, args, isNullable, dict => [.. dict.Select(he =>
-            new HashEntry(he.Key, (GlideString)he.Value))]);
-
     /// <summary>
     /// Converts an object array to a string set and returns the result.
     /// </summary>
@@ -77,7 +73,6 @@ internal partial class Request
     private static HashSet<string> ToStringSet(object[] objects)
         => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())];
 
-    // TODO #280: Return GlideString
     /// <summary>
     /// Converts the given time span to milliseconds.
     /// <param name="timeSpan">The time span to convert.</param>

@@ -7,6 +7,30 @@ namespace Valkey.Glide;
 public partial interface IBaseClient
 {
     /// <summary>
+    /// Returns all fields and values from the specified hash.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hgetall"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <returns>A dictionary of field-value pairs, or an empty dictionary if the key does not exist.</returns>
+    Task<IDictionary<ValkeyValue, ValkeyValue>> HashGetAllAsync(ValkeyKey key);
+
+    /// <summary>
+    /// Returns all field names in the hash stored at the given key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hkeys"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <returns>A set of field names, or an empty set if the key does not exist.</returns>
+    Task<ISet<ValkeyValue>> HashKeysAsync(ValkeyKey key);
+
+    /// <summary>
+    /// Returns all values in the hash stored at the given key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hvals"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <returns>A collection of values, or an empty collection if the key does not exist.</returns>
+    Task<ICollection<ValkeyValue>> HashValuesAsync(ValkeyKey key);
+
+    /// <summary>
     /// Sets the expiry duration for the specified hash field(s).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpire"/>
@@ -119,6 +143,19 @@ public partial interface IBaseClient
     /// <param name="key">The key of the hash.</param>
     /// <returns>A random field-value pair, or <see langword="null"/> if the hash does not exist or is empty.</returns>
     Task<KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key);
+
+    /// <summary>
+    /// Gets random field-value pairs from the specified hash.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hrandfield"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="count">
+    /// The number of field-value pairs to return.
+    /// If positive, returns up to <paramref name="count"/> distinct pairs.
+    /// If negative, allows duplicates and returns exactly <c>abs(count)</c> pairs.
+    /// </param>
+    /// <returns>A collection of field-value pairs, or an empty collection if the hash does not exist.</returns>
+    Task<ICollection<KeyValuePair<ValkeyValue, ValkeyValue>>> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
 
     /// <summary>
     /// Gets the value and sets the expiry for the specified hash field(s).

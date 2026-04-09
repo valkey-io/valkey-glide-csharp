@@ -21,8 +21,13 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashGetAllAsync(ValkeyKey)"/>
+    /// <summary>
+    /// Returns all fields and values of the hash stored at the given key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hgetall"/>
+    /// <param name="key">The key of the hash.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of <see cref="HashEntry"/>, or an empty array if the key does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<HashEntry[]> HashGetAllAsync(ValkeyKey key, CommandFlags flags);
 
@@ -64,8 +69,9 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashKeysAsync(ValkeyKey)"/>
+    /// <inheritdoc cref="IBaseClient.HashKeysAsync(ValkeyKey)" path="/*[not(self::returns)]"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of field names, or an empty array if the key does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key, CommandFlags flags);
 
@@ -79,8 +85,9 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashValuesAsync(ValkeyKey)"/>
+    /// <inheritdoc cref="IBaseClient.HashValuesAsync(ValkeyKey)" path="/*[not(self::returns)]"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of values, or an empty array if the key does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> HashValuesAsync(ValkeyKey key, CommandFlags flags);
 
@@ -94,8 +101,9 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count, CommandFlags flags);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long)"/>
+    /// <inheritdoc cref="IBaseClient.HashRandomFieldsWithValuesAsync(ValkeyKey, long)" path="/*[not(self::returns)]"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of <see cref="HashEntry"/>, or an empty array if the hash does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count, CommandFlags flags);
 

@@ -16,7 +16,7 @@ public abstract partial class BaseClient
         => await Command(Request.HashGetAsync(key, [.. hashFields]));
 
     /// <inheritdoc/>
-    public async Task<HashEntry[]> HashGetAllAsync(ValkeyKey key)
+    public async Task<IDictionary<ValkeyValue, ValkeyValue>> HashGetAllAsync(ValkeyKey key)
         => await Command(Request.HashGetAllAsync(key));
 
     /// <inheritdoc/>
@@ -52,7 +52,7 @@ public abstract partial class BaseClient
         => await Command(Request.HashIncrementByAsync(key, hashField, value));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key)
+    public async Task<ISet<ValkeyValue>> HashKeysAsync(ValkeyKey key)
         => await Command(Request.HashKeysAsync(key));
 
     /// <inheritdoc/>
@@ -64,7 +64,7 @@ public abstract partial class BaseClient
         => await Command(Request.HashStringLengthAsync(key, hashField));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> HashValuesAsync(ValkeyKey key)
+    public async Task<ICollection<ValkeyValue>> HashValuesAsync(ValkeyKey key)
         => await Command(Request.HashValuesAsync(key));
 
     /// <inheritdoc/>
@@ -77,13 +77,10 @@ public abstract partial class BaseClient
 
     /// <inheritdoc/>
     public async Task<KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key)
-    {
-        KeyValuePair<ValkeyValue, ValkeyValue>[] result = await Command(Request.HashRandomFieldsWithValuesAsync(key, 1));
-        return result.Length > 0 ? result[0] : null;
-    }
+        => await Command(Request.HashRandomFieldWithValueAsync(key));
 
     /// <inheritdoc/>
-    public async Task<KeyValuePair<ValkeyValue, ValkeyValue>[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
+    public async Task<ICollection<KeyValuePair<ValkeyValue, ValkeyValue>>> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
         => await Command(Request.HashRandomFieldsWithValuesAsync(key, count));
 
     /// <inheritdoc/>

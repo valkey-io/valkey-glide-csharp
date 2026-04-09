@@ -585,8 +585,8 @@ public class CommandTests
             () => Assert.Equal(15L, Request.HashIncrementByAsync("key", "field", 5L).Converter(15L)),
             () => Assert.Equal(10L, Request.HashIncrementByAsync("key", "field", 1L).Converter(10L)),
             () => Assert.Equal(12.5, Request.HashIncrementByAsync("key", "field", 2.5).Converter(12.5)),
-            () => Assert.Equal(["field1", "field2"], Request.HashKeysAsync("key").Converter([(gs)"field1", (gs)"field2"])),
-            () => Assert.Equal([], Request.HashKeysAsync("nonexistent").Converter([])),
+            () => Assert.Equal<ISet<ValkeyValue>>(new HashSet<ValkeyValue> { "field1", "field2" }, Request.HashKeysAsync("key").Converter([(gs)"field1", (gs)"field2"])),
+            () => Assert.Empty(Request.HashKeysAsync("nonexistent").Converter([])),
             () => Assert.Equal(5L, Request.HashLengthAsync("key").Converter(5L)),
             () => Assert.Equal(10L, Request.HashStringLengthAsync("key", "field").Converter(10L)),
 
@@ -809,23 +809,16 @@ public class CommandTests
             // Test HashGetAllAsync
             () =>
             {
-                HashEntry[] result = Request.HashGetAllAsync("key").Converter(testKvpList);
-                Assert.Equal(3, result.Length);
-                foreach (HashEntry entry in result)
-                {
-                    _ = Assert.IsType<HashEntry>(entry);
-                    _ = Assert.IsType<ValkeyValue>(entry.Name);
-                    _ = Assert.IsType<ValkeyValue>(entry.Value);
-                }
-                Assert.Equal("field1", result[0].Name);
-                Assert.Equal("value1", result[0].Value);
+                IDictionary<ValkeyValue, ValkeyValue> result = Request.HashGetAllAsync("key").Converter(testKvpList);
+                Assert.Equal(3, result.Count);
+                Assert.Equal("value1", result["field1"]);
             },
 
             // Test HashValuesAsync
             () =>
             {
-                ValkeyValue[] result = Request.HashValuesAsync("key").Converter(testObjectArray);
-                Assert.Equal(3, result.Length);
+                ICollection<ValkeyValue> result = Request.HashValuesAsync("key").Converter(testObjectArray);
+                Assert.Equal(3, result.Count);
                 foreach (ValkeyValue item in result) _ = Assert.IsType<ValkeyValue>(item);
             },
 
@@ -847,8 +840,8 @@ public class CommandTests
             // Test HashRandomFieldsWithValuesAsync
             () =>
             {
-                var result = Request.HashRandomFieldsWithValuesAsync("key", 3).Converter(testObjectNestedArray);
-                Assert.Equal(3, result.Length);
+                ICollection<KeyValuePair<ValkeyValue, ValkeyValue>> result = Request.HashRandomFieldsWithValuesAsync("key", 3).Converter(testObjectNestedArray);
+                Assert.Equal(3, result.Count);
                 foreach (var entry in result)
                 {
                     _ = Assert.IsType<ValkeyValue>(entry.Key);

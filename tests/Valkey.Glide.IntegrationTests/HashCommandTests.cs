@@ -91,18 +91,12 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        HashEntry[] result = await client.HashGetAllAsync(key);
-        Assert.Equal(3, result.Length);
+        IDictionary<ValkeyValue, ValkeyValue> result = await client.HashGetAllAsync(key);
+        Assert.Equal(3, result.Count);
 
-        // Sort the results for consistent testing
-        Array.Sort(result, (a, b) => string.Compare(a.Name.ToString(), b.Name.ToString()));
-
-        Assert.Equal("field1", result[0].Name);
-        Assert.Equal("value1", result[0].Value);
-        Assert.Equal("field2", result[1].Name);
-        Assert.Equal("value2", result[1].Value);
-        Assert.Equal("field3", result[2].Name);
-        Assert.Equal("value3", result[2].Value);
+        Assert.Equal("value1", result["field1"]);
+        Assert.Equal("value2", result["field2"]);
+        Assert.Equal("value3", result["field3"]);
     }
 
     #endregion
@@ -205,15 +199,11 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        ValkeyValue[] values = await client.HashValuesAsync(key);
-        Assert.Equal(3, values.Length);
-
-        // Sort the values for consistent testing
-        Array.Sort(values, (a, b) => string.Compare(a.ToString(), b.ToString()));
-
-        Assert.Equal("value1", values[0]);
-        Assert.Equal("value2", values[1]);
-        Assert.Equal("value3", values[2]);
+        ICollection<ValkeyValue> values = await client.HashValuesAsync(key);
+        Assert.Equal(3, values.Count);
+        Assert.Contains((ValkeyValue)"value1", values);
+        Assert.Contains((ValkeyValue)"value2", values);
+        Assert.Contains((ValkeyValue)"value3", values);
     }
 
     #endregion
@@ -226,7 +216,7 @@ public class HashCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existing key
-        ValkeyValue[] keys = await client.HashKeysAsync(key);
+        ISet<ValkeyValue> keys = await client.HashKeysAsync(key);
         Assert.Empty(keys);
 
         // Set up test data
@@ -240,11 +230,10 @@ public class HashCommandTests(TestConfiguration config)
 
         // Test getting all keys
         keys = await client.HashKeysAsync(key);
-        Assert.Equal(3, keys.Length);
-
-        // Sort the keys for consistent testing
-        string[] sortedKeys = [.. keys.Select(k => k.ToString()).OrderBy(k => k)];
-        Assert.Equal(["field1", "field2", "field3"], sortedKeys);
+        Assert.Equal(3, keys.Count);
+        Assert.Contains((ValkeyValue)"field1", keys);
+        Assert.Contains((ValkeyValue)"field2", keys);
+        Assert.Contains((ValkeyValue)"field3", keys);
     }
 
     #endregion
@@ -342,8 +331,8 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        var randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 2);
-        Assert.Equal(2, randomEntries.Length);
+        ICollection<KeyValuePair<ValkeyValue, ValkeyValue>> randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 2);
+        Assert.Equal(2, randomEntries.Count);
 
         foreach (var entry in randomEntries)
         {

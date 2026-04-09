@@ -66,10 +66,11 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashRandomFields(ValkeyKey, long)" />
     public T HashRandomFields(ValkeyKey key, long count) => AddCmd(HashRandomFieldsAsync(key, count));
 
+    /// <inheritdoc cref="IBatchHashCommands.HashRandomFieldWithValue(ValkeyKey)" />
+    public T HashRandomFieldWithValue(ValkeyKey key) => AddCmd(HashRandomFieldWithValueAsync(key));
+
     /// <inheritdoc cref="IBatchHashCommands.HashRandomFieldsWithValues(ValkeyKey, long)" />
     public T HashRandomFieldsWithValues(ValkeyKey key, long count) => AddCmd(HashRandomFieldsWithValuesAsync(key, count));
-
-    // Hash Field Expire Commands (Valkey 9.0+)
 
     /// <inheritdoc cref="IBatchHashCommands.HashGetExpiry(ValkeyKey, IEnumerable{ValkeyValue}, GetExpiryOptions)" />
     public T HashGetExpiry(ValkeyKey key, IEnumerable<ValkeyValue> fields, GetExpiryOptions options) => AddCmd(HashGetExpiryAsync(key, [.. fields], options));
@@ -111,6 +112,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchHashCommands.HashValues(ValkeyKey key) => HashValues(key);
     IBatch IBatchHashCommands.HashRandomField(ValkeyKey key) => HashRandomField(key);
     IBatch IBatchHashCommands.HashRandomFields(ValkeyKey key, long count) => HashRandomFields(key, count);
+    IBatch IBatchHashCommands.HashRandomFieldWithValue(ValkeyKey key) => HashRandomFieldWithValue(key);
     IBatch IBatchHashCommands.HashRandomFieldsWithValues(ValkeyKey key, long count) => HashRandomFieldsWithValues(key, count);
 
     // Hash Field Expire Commands explicit interface implementations

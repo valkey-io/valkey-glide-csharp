@@ -513,9 +513,9 @@ public class HashCommandTests(TestConfiguration config)
 
         string key = $"ser-hsetex-single-ts-{Guid.NewGuid()}";
 
-        // Field does not exist yet — previous value should be null
+        // Field does not exist yet.
         ValkeyValue result = await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60));
-        Assert.True(result.IsNull);
+        Assert.Equal(1, (int)result);
 
         // Verify field was set
         Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
@@ -559,15 +559,11 @@ public class HashCommandTests(TestConfiguration config)
 
         string key = $"ser-hsetex-keepttl-null-{Guid.NewGuid()}";
 
-        // Set field with an expiry first
-        Assert.Equal(
-            ValkeyValue.Null,
-            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60)));
+        // Set field with an expiry first.
+        Assert.Equal(1, (int)await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60)));
 
-        // Update with null TimeSpan — should keep existing TTL
-        Assert.Equal(
-            "value1",
-            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", expiry: null));
+        // Update without changing expiry.
+        Assert.Equal(1, (int)await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", expiry: null));
 
         // Verify value was updated
         Assert.Equal("updated", await db.HashGetAsync(key, "field1"));
@@ -585,8 +581,9 @@ public class HashCommandTests(TestConfiguration config)
 
         string key = $"ser-hsetex-single-dt-{Guid.NewGuid()}";
 
+        // HSETEX returns 1 when the field is newly created
         ValkeyValue result = await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", DateTime.UtcNow.AddMinutes(5));
-        Assert.True(result.IsNull);
+        Assert.Equal(1, (int)result);
 
         // Verify field was set
         Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
@@ -624,14 +621,10 @@ public class HashCommandTests(TestConfiguration config)
         string key = $"ser-hsetex-keepttl-{Guid.NewGuid()}";
 
         // Set field with an expiry first
-        Assert.Equal(
-            ValkeyValue.Null,
-            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60)));
+        Assert.Equal(1, (int)await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60)));
 
-        // Update with keepTtl=true — should preserve existing TTL
-        Assert.Equal(
-            "value1",
-            await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", keepTtl: true));
+        // Update with keepTtl=true
+        Assert.Equal(1, (int)await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", keepTtl: true));
 
         // Verify value was updated
         Assert.Equal("updated", await db.HashGetAsync(key, "field1"));

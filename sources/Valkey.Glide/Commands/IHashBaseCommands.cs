@@ -46,21 +46,6 @@ public interface IHashBaseCommands
     Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
-    /// Returns all fields and values of the hash stored at the given key.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hgetall"/>
-    /// <param name="key">The key of the hash to get all entries from.</param>
-    /// <returns>List of fields and their values stored in the hash, or an empty list when key does not exist.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// HashEntry[] entries = await client.HashGetAllAsync(key);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<HashEntry[]> HashGetAllAsync(ValkeyKey key);
-
-    /// <summary>
     /// Sets the specified field to its respective value in the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hset"/>
@@ -199,21 +184,6 @@ public interface IHashBaseCommands
     Task<double> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, double value);
 
     /// <summary>
-    /// Returns all field names in the hash stored at <paramref name="key"/>.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hkeys"/>
-    /// <param name="key">The key of the hash.</param>
-    /// <returns>An array containing all the field names in the hash, or an empty array when <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ValkeyValue[] fields = await client.HashKeysAsync(key);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key);
-
-    /// <summary>
     /// Returns the number of fields contained in the hash stored at the given key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hlen"/>
@@ -244,21 +214,6 @@ public interface IHashBaseCommands
     /// </example>
     /// </remarks>
     Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField);
-
-    /// <summary>
-    /// Returns all values in the hash stored at the given key.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hvals"/>
-    /// <param name="key">The key of the hash.</param>
-    /// <returns>List of values in the hash, or an empty list when key does not exist.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ValkeyValue[] values = await client.HashValuesAsync(key);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue[]> HashValuesAsync(ValkeyKey key);
 
     /// <summary>
     /// Gets a random field name from the specified hash.
@@ -305,29 +260,4 @@ public interface IHashBaseCommands
     /// </example>
     /// </remarks>
     Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count);
-
-    /// <summary>
-    /// Gets random field-value pairs from the specified hash.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hrandfield"/>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="count">
-    /// The number of field-value pairs to return.
-    /// If positive, returns up to <paramref name="count"/> distinct pairs.
-    /// If negative, allows duplicates and returns exactly <c>abs(count)</c> pairs.
-    /// </param>
-    /// <returns>An array of field-value pairs, or an empty array if the hash does not exist.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var distinctPairs = await client.HashRandomFieldsWithValuesAsync(key, 3);
-    /// </code>
-    /// </example>
-    /// <example>
-    /// <code>
-    /// var randomPairs = await client.HashRandomFieldsWithValuesAsync(key, -3);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<KeyValuePair<ValkeyValue, ValkeyValue>[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
 }
