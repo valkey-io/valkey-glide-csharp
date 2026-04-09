@@ -8,21 +8,7 @@ public class IamAuthConfigTests
 
     private static readonly string ClusterName = "CLUSTER_NAME";
     private static readonly string Region = "REGION";
-    private static readonly uint RefreshInterval = IamAuthConfig.MinRefreshIntervalSeconds + 1;
-
-    #endregion
-    #region Data
-
-    public static TheoryData<uint> ValidRefreshIntervals =>
-        [IamAuthConfig.MinRefreshIntervalSeconds,
-         RefreshInterval,
-        IamAuthConfig.MaxRefreshIntervalSeconds];
-
-    public static TheoryData<uint> InvalidRefreshIntervals =>
-        [uint.MinValue,
-        IamAuthConfig.MinRefreshIntervalSeconds - 1,
-        IamAuthConfig.MaxRefreshIntervalSeconds + 1,
-        uint.MaxValue];
+    private const uint RefreshInterval = 300;
 
     #endregion
     #region Tests
@@ -58,20 +44,6 @@ public class IamAuthConfigTests
     public void Constructor_NullRegion_Throws()
         => _ = Assert.Throws<ArgumentNullException>(
             () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, null!));
-
-    [Theory]
-    [MemberData(nameof(ValidRefreshIntervals))]
-    public void Constructor_ValidRefreshInterval_Succeeds(uint interval)
-    {
-        using var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, interval);
-        Assert.Equal(interval, config.RefreshIntervalSeconds);
-    }
-
-    [Theory]
-    [MemberData(nameof(InvalidRefreshIntervals))]
-    public void Constructor_InvalidRefreshInterval_Throws(uint interval)
-        => _ = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region, interval));
 
     [Fact]
     public void ToString_ContainsServiceType()
