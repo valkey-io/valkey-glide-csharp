@@ -538,4 +538,21 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task<ValkeyKey?> RandomKeyAsync();
+
+    /// <summary>
+    /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged by at least numreplicas replicas.
+    /// If the timeout is reached, the command returns even if the specified number of replicas were not yet reached.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/wait"/>
+    /// <param name="numreplicas">The number of replicas to wait for.</param>
+    /// <param name="timeout">The timeout to wait.</param>
+    /// <returns>The number of replicas that acknowledged the write commands.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long result = await client.WaitAsync(1, TimeSpan.FromSeconds(1));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> WaitAsync(long numreplicas, TimeSpan timeout);
 }

@@ -86,14 +86,14 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.KeyRefCount(ValkeyKey)" />
     public T KeyRefCount(ValkeyKey key) => AddCmd(KeyRefCountAsync(key));
 
-    /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, bool)" />
-    public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false) => AddCmd(KeyCopyAsync(sourceKey, destinationKey, replace));
+    /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, int, bool)" />
+    public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false)
+        => destinationDatabase == -1
+            ? AddCmd(KeyCopyAsync(sourceKey, destinationKey, replace))
+            : AddCmd(KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
 
     /// <inheritdoc cref="IBatchGenericCommands.KeyMove(ValkeyKey, int)" />
     public T KeyMove(ValkeyKey key, int database) => AddCmd(KeyMoveAsync(key, database));
-
-    /// <inheritdoc cref="IBatchGenericCommands.KeyCopy(ValkeyKey, ValkeyKey, int, bool)" />
-    public T KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false) => AddCmd(KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
 
     /// <inheritdoc cref="IBatchGenericCommands.KeyRandom()" />
     public T KeyRandom() => AddCmd(KeyRandomAsync());
@@ -130,9 +130,8 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.KeyFrequency(ValkeyKey key) => KeyFrequency(key);
     IBatch IBatchGenericCommands.KeyIdleTime(ValkeyKey key) => KeyIdleTime(key);
     IBatch IBatchGenericCommands.KeyRefCount(ValkeyKey key) => KeyRefCount(key);
-    IBatch IBatchGenericCommands.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => KeyCopy(sourceKey, destinationKey, replace);
-    IBatch IBatchGenericCommands.KeyMove(ValkeyKey key, int database) => KeyMove(key, database);
     IBatch IBatchGenericCommands.KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace) => KeyCopy(sourceKey, destinationKey, destinationDatabase, replace);
+    IBatch IBatchGenericCommands.KeyMove(ValkeyKey key, int database) => KeyMove(key, database);
     IBatch IBatchGenericCommands.KeyRandom() => KeyRandom();
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get) => Sort(key, skip, take, order, sortType, by, get);
     IBatch IBatchGenericCommands.Wait(long numreplicas, TimeSpan timeout) => Wait(numreplicas, timeout);

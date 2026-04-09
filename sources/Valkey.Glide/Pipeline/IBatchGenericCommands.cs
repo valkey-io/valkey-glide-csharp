@@ -107,27 +107,23 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRefCountAsync(ValkeyKey)" /></returns>
     IBatch KeyRefCount(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, bool)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, bool)" /></returns>
-    IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
+    /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" /></returns>
+    IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false);
 
     /// <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int)" /></returns>
     IBatch KeyMove(ValkeyKey key, int database);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool)" /></returns>
-    IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false);
-
-    /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRandomAsync()" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)" /></returns>
     IBatch KeyRandom();
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" /></returns>
     IBatch Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
 
-    /// <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.WaitAsync(long, TimeSpan)" /></returns>
+    /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" /></returns>
     IBatch Wait(long numreplicas, TimeSpan timeout);
 }

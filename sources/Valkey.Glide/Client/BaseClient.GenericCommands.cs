@@ -237,18 +237,22 @@ public abstract partial class BaseClient
         => ObjectRefCountAsync(key);
 
     /// <inheritdoc/>
-    public Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false)
-        => CopyAsync(sourceKey, destinationKey, replace);
+    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return destinationDatabase == -1
+            ? await CopyAsync(sourceKey, destinationKey, replace)
+            : await CopyAsync(sourceKey, destinationKey, destinationDatabase, replace);
+    }
 
     /// <inheritdoc/>
     public Task<bool> KeyMoveAsync(ValkeyKey key, int database)
         => MoveAsync(key, database);
 
     /// <inheritdoc/>
-    public Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false)
-        => CopyAsync(sourceKey, destinationKey, destinationDatabase, replace);
-
-    /// <inheritdoc/>
-    public Task<ValkeyKey?> KeyRandomAsync()
-        => RandomKeyAsync();
+    public async Task<ValkeyKey> KeyRandomAsync(CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await RandomKeyAsync() ?? default;
+    }
 }

@@ -209,11 +209,13 @@ internal partial class Database
         return await KeyRefCountAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, bool, CommandFlags)"/>
-    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace, CommandFlags flags)
+    /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)"/>
+    public new async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await CopyAsync(sourceKey, destinationKey, replace);
+        return destinationDatabase == -1
+            ? await CopyAsync(sourceKey, destinationKey, replace)
+            : await CopyAsync(sourceKey, destinationKey, destinationDatabase, replace);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int, CommandFlags)"/>
@@ -223,18 +225,11 @@ internal partial class Database
         return await MoveAsync(key, database);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)"/>
-    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await CopyAsync(sourceKey, destinationKey, destinationDatabase, replace);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)"/>
-    public async Task<ValkeyKey?> KeyRandomAsync(CommandFlags flags)
+    public new async Task<ValkeyKey> KeyRandomAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await RandomKeyAsync();
+        return await RandomKeyAsync() ?? default;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?, CommandFlags)"/>

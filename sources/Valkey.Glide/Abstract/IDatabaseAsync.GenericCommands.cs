@@ -344,13 +344,18 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long?> KeyRefCountAsync(ValkeyKey key, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)"/>
-    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
-
-    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)"/>
+    /// <summary>
+    /// Copies the value stored at the source to the destination key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/copy"/>
+    /// <param name="sourceKey">The key to the source value.</param>
+    /// <param name="destinationKey">The key where the value should be copied to.</param>
+    /// <param name="destinationDatabase">The database ID to store destinationKey in. A value of -1 means the current database.</param>
+    /// <param name="replace">Whether to overwrite an existing value at destinationKey.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if sourceKey was copied. <see langword="false"/> if sourceKey was not copied.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace, CommandFlags flags);
+    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.MoveAsync(ValkeyKey, int)"/>
     Task<bool> KeyMoveAsync(ValkeyKey key, int database);
@@ -360,21 +365,14 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)"/>
-    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false);
-
-    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)"/>
+    /// <summary>
+    /// Returns a random key from the database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/randomkey"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A random key, or default when the database is empty.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace, CommandFlags flags);
-
-    /// <inheritdoc cref="IBaseClient.RandomKeyAsync()"/>
-    Task<ValkeyKey?> KeyRandomAsync();
-
-    /// <inheritdoc cref="IBaseClient.RandomKeyAsync()"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyKey?> KeyRandomAsync(CommandFlags flags);
+    Task<ValkeyKey> KeyRandomAsync(CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>

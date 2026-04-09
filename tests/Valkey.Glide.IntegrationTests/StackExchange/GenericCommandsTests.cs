@@ -635,14 +635,14 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string destKey = $"ser-copy-flags-dst-{Guid.NewGuid()}";
 
         await db.StringSetAsync(sourceKey, "value");
-        bool result = await db.KeyCopyAsync(sourceKey, destKey, false, CommandFlags.None);
+        bool result = await db.KeyCopyAsync(sourceKey, destKey, -1, false, CommandFlags.None);
         Assert.True(result);
     }
 
     [Fact]
     public async Task KeyCopyAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyCopyAsync("src", "dst", false, UnsupportedCommandFlag));
+            () => fixture.Database.KeyCopyAsync("src", "dst", -1, false, UnsupportedCommandFlag));
 
     #endregion
 
@@ -697,8 +697,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key = $"ser-random-{Guid.NewGuid()}";
 
         await db.StringSetAsync(key, "value");
-        ValkeyKey? randomKey = await db.KeyRandomAsync();
-        _ = Assert.NotNull(randomKey);
+        ValkeyKey randomKey = await db.KeyRandomAsync();
+        Assert.False(randomKey.IsNull);
     }
 
     [Fact]
@@ -708,8 +708,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key = $"ser-random-flags-{Guid.NewGuid()}";
 
         await db.StringSetAsync(key, "value");
-        ValkeyKey? randomKey = await db.KeyRandomAsync(CommandFlags.None);
-        _ = Assert.NotNull(randomKey);
+        ValkeyKey randomKey = await db.KeyRandomAsync(CommandFlags.None);
+        Assert.False(randomKey.IsNull);
     }
 
     [Fact]
