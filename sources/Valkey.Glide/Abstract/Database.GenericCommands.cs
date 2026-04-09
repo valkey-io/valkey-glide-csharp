@@ -92,11 +92,22 @@ internal partial class Database
         return await KeyTypeAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, CommandFlags flags)
+    /// <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey, When, CommandFlags)"/>
+    public async Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await KeyRenameAsync(key, newKey);
+
+        if (when == When.Exists)
+        {
+            throw new ArgumentException("RENAME does not support When.Exists; use When.Always or When.NotExists", nameof(when));
+        }
+
+        if (when == When.NotExists)
+        {
+            return await KeyRenameNXAsync(key, newKey);
+        }
+
+        await RenameAsync(key, newKey);
         return true;
     }
 

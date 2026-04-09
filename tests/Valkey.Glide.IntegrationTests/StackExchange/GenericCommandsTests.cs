@@ -308,6 +308,55 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
+    public async Task KeyRenameAsync_WithWhenAlways_RenamesKey()
+    {
+        var db = fixture.Database;
+        string oldKey = $"ser-rename-when-always-old-{Guid.NewGuid()}";
+        string newKey = $"ser-rename-when-always-new-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(oldKey, "value");
+        bool result = await db.KeyRenameAsync(oldKey, newKey, When.Always);
+        Assert.True(result);
+        Assert.False(await db.KeyExistsAsync(oldKey));
+        Assert.True(await db.KeyExistsAsync(newKey));
+    }
+
+    [Fact]
+    public async Task KeyRenameAsync_WithWhenNotExists_RenamesKeyIfNotExists()
+    {
+        var db = fixture.Database;
+        string oldKey = $"ser-rename-when-notexists-old-{Guid.NewGuid()}";
+        string newKey = $"ser-rename-when-notexists-new-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(oldKey, "value");
+        bool result = await db.KeyRenameAsync(oldKey, newKey, When.NotExists);
+        Assert.True(result);
+        Assert.False(await db.KeyExistsAsync(oldKey));
+        Assert.True(await db.KeyExistsAsync(newKey));
+    }
+
+    [Fact]
+    public async Task KeyRenameAsync_WithWhenNotExists_ReturnsFalseIfExists()
+    {
+        var db = fixture.Database;
+        string oldKey = $"ser-rename-when-notexists-fail-old-{Guid.NewGuid()}";
+        string newKey = $"ser-rename-when-notexists-fail-new-{Guid.NewGuid()}";
+
+        await db.StringSetAsync(oldKey, "value1");
+        await db.StringSetAsync(newKey, "value2");
+        bool result = await db.KeyRenameAsync(oldKey, newKey, When.NotExists);
+        Assert.False(result);
+        // Both keys should still exist
+        Assert.True(await db.KeyExistsAsync(oldKey));
+        Assert.True(await db.KeyExistsAsync(newKey));
+    }
+
+    [Fact]
+    public async Task KeyRenameAsync_WithWhenExists_ThrowsArgumentException()
+        => _ = await Assert.ThrowsAsync<ArgumentException>(
+            () => fixture.Database.KeyRenameAsync("oldKey", "newKey", When.Exists));
+
+    [Fact]
     public async Task KeyRenameAsync_WithCommandFlagsNone_Succeeds()
     {
         var db = fixture.Database;
@@ -315,14 +364,14 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string newKey = $"ser-rename-flags-new-{Guid.NewGuid()}";
 
         await db.StringSetAsync(oldKey, "value");
-        bool result = await db.KeyRenameAsync(oldKey, newKey, CommandFlags.None);
+        bool result = await db.KeyRenameAsync(oldKey, newKey, When.Always, CommandFlags.None);
         Assert.True(result);
     }
 
     [Fact]
     public async Task KeyRenameAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyRenameAsync("oldKey", "newKey", UnsupportedCommandFlag));
+            () => fixture.Database.KeyRenameAsync("oldKey", "newKey", When.Always, UnsupportedCommandFlag));
 
     #endregion
 

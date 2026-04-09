@@ -114,11 +114,18 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)"/>
     Task KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
 
-    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)"/>
+    /// <summary>
+    /// Renames key to newKey.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/rename"/>
+    /// <param name="key">The key to rename.</param>
+    /// <param name="newKey">The new name of the key.</param>
+    /// <param name="when">Under what condition the key should be renamed. Only <see cref="When.Always"/> is supported.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> always (for SER compatibility).</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is <see cref="When.Exists"/>.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, CommandFlags flags);
+    Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.RenameNXAsync(ValkeyKey, ValkeyKey)"/>
     Task<bool> KeyRenameNXAsync(ValkeyKey key, ValkeyKey newKey);
