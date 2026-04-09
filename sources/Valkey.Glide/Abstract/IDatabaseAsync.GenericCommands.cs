@@ -14,35 +14,123 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/#generic">Valkey – Generic Commands</seealso>
 public partial interface IDatabaseAsync
 {
-    /// <inheritdoc cref="IBaseClient.DeleteAsync(ValkeyKey)"/>
+    /// <summary>
+    /// Removes the specified key from the database using the DEL command.
+    /// </summary>
+    /// <remarks>
+    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
+    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(ValkeyKey)"/> directly if you want
+    /// non-blocking deletion (UNLINK).
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/del"/>
+    /// <seealso cref="KeyUnlinkAsync(ValkeyKey)"/>
+    /// <param name="key">The key to delete.</param>
+    /// <returns><see langword="true"/> if the key was removed.</returns>
     Task<bool> KeyDeleteAsync(ValkeyKey key);
 
-    /// <inheritdoc cref="IBaseClient.DeleteAsync(ValkeyKey)"/>
+    /// <summary>
+    /// Removes the specified key from the database using the DEL command.
+    /// </summary>
+    /// <remarks>
+    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
+    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(ValkeyKey)"/> directly if you want
+    /// non-blocking deletion (UNLINK).
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/del"/>
+    /// <seealso cref="KeyUnlinkAsync(ValkeyKey)"/>
+    /// <param name="key">The key to delete.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the key was removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyDeleteAsync(ValkeyKey key, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.DeleteAsync(IEnumerable{ValkeyKey})"/>
+    /// <summary>
+    /// Removes the specified keys from the database using the DEL command.
+    /// </summary>
+    /// <remarks>
+    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
+    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(IEnumerable{ValkeyKey})"/> directly if you want
+    /// non-blocking deletion (UNLINK).
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/del"/>
+    /// <seealso cref="KeyUnlinkAsync(IEnumerable{ValkeyKey})"/>
+    /// <param name="keys">The keys to delete.</param>
+    /// <returns>The number of keys that were removed.</returns>
     Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IBaseClient.DeleteAsync(IEnumerable{ValkeyKey})"/>
+    /// <summary>
+    /// Removes the specified keys from the database using the DEL command.
+    /// </summary>
+    /// <remarks>
+    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
+    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(IEnumerable{ValkeyKey})"/> directly if you want
+    /// non-blocking deletion (UNLINK).
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/del"/>
+    /// <seealso cref="KeyUnlinkAsync(IEnumerable{ValkeyKey})"/>
+    /// <param name="keys">The keys to delete.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of keys that were removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(ValkeyKey)"/>
+    /// <summary>
+    /// Removes the specified key from the database using the UNLINK command (non-blocking).
+    /// </summary>
+    /// <remarks>
+    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
+    /// making it non-blocking. This is the command used by StackExchange.Redis when
+    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/unlink"/>
+    /// <seealso cref="KeyDeleteAsync(ValkeyKey)"/>
+    /// <param name="key">The key to unlink.</param>
+    /// <returns><see langword="true"/> if the key was unlinked.</returns>
     Task<bool> KeyUnlinkAsync(ValkeyKey key);
 
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(ValkeyKey)"/>
+    /// <summary>
+    /// Removes the specified key from the database using the UNLINK command (non-blocking).
+    /// </summary>
+    /// <remarks>
+    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
+    /// making it non-blocking. This is the command used by StackExchange.Redis when
+    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/unlink"/>
+    /// <seealso cref="KeyDeleteAsync(ValkeyKey)"/>
+    /// <param name="key">The key to unlink.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the key was unlinked.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyUnlinkAsync(ValkeyKey key, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(IEnumerable{ValkeyKey})"/>
+    /// <summary>
+    /// Removes the specified keys from the database using the UNLINK command (non-blocking).
+    /// </summary>
+    /// <remarks>
+    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
+    /// making it non-blocking. This is the command used by StackExchange.Redis when
+    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/unlink"/>
+    /// <seealso cref="KeyDeleteAsync(IEnumerable{ValkeyKey})"/>
+    /// <param name="keys">The keys to unlink.</param>
+    /// <returns>The number of keys that were unlinked.</returns>
     Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(IEnumerable{ValkeyKey})"/>
+    /// <summary>
+    /// Removes the specified keys from the database using the UNLINK command (non-blocking).
+    /// </summary>
+    /// <remarks>
+    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
+    /// making it non-blocking. This is the command used by StackExchange.Redis when
+    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/unlink"/>
+    /// <seealso cref="KeyDeleteAsync(IEnumerable{ValkeyKey})"/>
+    /// <param name="keys">The keys to unlink.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of keys that were unlinked.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
 
