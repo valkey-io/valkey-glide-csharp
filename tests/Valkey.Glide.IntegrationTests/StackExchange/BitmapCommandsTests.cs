@@ -6,6 +6,7 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
+// TODO currantw: cleanup once main merged
 /// <summary>
 /// SER compatibility tests for bitmap commands.
 /// Tests verify that String-prefixed methods work identically to SER equivalents
