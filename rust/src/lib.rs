@@ -539,6 +539,23 @@ pub unsafe extern "C-unwind" fn command(
 
     let route = unsafe { create_route(route_info, Some(&cmd)) };
 
+    let request_type = unsafe { (*cmd_ptr).request_type };
+
+    // Apply compression to command arguments if compression is enabled
+    if let Some(compression_manager) = core.client.compression_manager()
+        && let Err(err) = compress_cmd(&mut cmd, request_type, compression_manager.as_ref())
+    {
+        unsafe {
+            report_error(
+                core.failure_callback,
+                callback_index,
+                format!("Compression failed: {}", err),
+                RequestErrorType::Unspecified,
+            );
+        }
+        return;
+    }
+
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
             panicked: true,
@@ -549,6 +566,20 @@ pub unsafe extern "C-unwind" fn command(
         let result = core.client.clone().send_command(&mut cmd, route).await;
         match result {
             Ok(value) => {
+                // Decompress response if compression is enabled
+                let original = value.clone();
+                let value = glide_core::compression::process_response_for_decompression(
+                    value,
+                    request_type,
+                    core.client.compression_manager().as_deref(),
+                )
+                .unwrap_or_else(|e| {
+                    logger_core::log_warn(
+                        "response_decompression",
+                        format!("Failed to decompress response: {}", e),
+                    );
+                    original
+                });
                 let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
                 unsafe { (core.success_callback)(callback_index, ptr) };
             }
@@ -1639,6 +1670,46 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     Some(command_name.to_string())
 }
 
+/// Applies compression to command arguments if the command supports it.
+///
+/// Returns `Ok(())` if compression was applied or skipped, `Err` if compression failed.
+fn compress_cmd(
+    cmd: &mut redis::Cmd,
+    request_type: RequestType,
+    compression_manager: &glide_core::compression::CompressionManager,
+) -> Result<(), String> {
+    let all_args: Vec<Vec<u8>> = cmd
+        .args_iter()
+        .filter_map(|arg| match arg {
+            redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
+            redis::Arg::Cursor => None,
+        })
+        .collect();
+
+    if all_args.is_empty() {
+        return Ok(());
+    }
+
+    let command_name = &all_args[0];
+
+    let mut args: Vec<Vec<u8>> = all_args[1..].to_vec();
+    glide_core::compression::process_command_args_for_compression(
+        &mut args,
+        request_type,
+        Some(compression_manager),
+    )
+    .map_err(|err| err.to_string())?;
+
+    // Rebuild command with compressed arguments
+    *cmd = redis::Cmd::new();
+    cmd.arg(command_name);
+    for arg in args {
+        cmd.arg(arg);
+    }
+
+    Ok(())
+}
+
 /// Returns a new span for the given command name.
 fn create_span(command_name: &str) -> *const c_void {
     let span = GlideOpenTelemetry::new_span(command_name);
@@ -1653,4 +1724,62 @@ fn create_span(command_name: &str) -> *const c_void {
     );
 
     span_ptr
+}
+
+// ========================================================================================
+// Compression Statistics
+// ========================================================================================
+
+/// Statistics structure containing telemetry data.
+///
+/// This struct provides compression and connection statistics for the client.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct Statistics {
+    /// Total number of connections opened to Valkey
+    pub total_connections: u64,
+    /// Total number of GLIDE clients
+    pub total_clients: u64,
+    /// Total number of values compressed
+    pub total_values_compressed: u64,
+    /// Total number of values decompressed
+    pub total_values_decompressed: u64,
+    /// Total original bytes before compression
+    pub total_original_bytes: u64,
+    /// Total bytes after compression
+    pub total_bytes_compressed: u64,
+    /// Total bytes after decompression
+    pub total_bytes_decompressed: u64,
+    /// Number of times compression was skipped
+    pub compression_skipped_count: u64,
+    /// Number of subscriptions that are out of sync
+    pub subscription_out_of_sync_count: u64,
+    /// Timestamp of the last subscription synchronization
+    pub subscription_last_sync_timestamp: u64,
+}
+
+/// Get compression and connection statistics.
+///
+/// Returns a `Statistics` struct containing current telemetry data.
+/// This function is thread-safe and can be called at any time.
+///
+/// # Returns
+///
+/// A `Statistics` struct with the current statistics values.
+#[unsafe(no_mangle)]
+pub extern "C" fn get_statistics() -> Statistics {
+    use glide_core::Telemetry;
+
+    Statistics {
+        total_connections: Telemetry::total_connections() as u64,
+        total_clients: Telemetry::total_clients() as u64,
+        total_values_compressed: Telemetry::total_values_compressed() as u64,
+        total_values_decompressed: Telemetry::total_values_decompressed() as u64,
+        total_original_bytes: Telemetry::total_original_bytes() as u64,
+        total_bytes_compressed: Telemetry::total_bytes_compressed() as u64,
+        total_bytes_decompressed: Telemetry::total_bytes_decompressed() as u64,
+        compression_skipped_count: Telemetry::compression_skipped_count() as u64,
+        subscription_out_of_sync_count: Telemetry::subscription_out_of_sync_count() as u64,
+        subscription_last_sync_timestamp: Telemetry::subscription_last_sync_timestamp(),
+    }
 }
