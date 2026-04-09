@@ -2,6 +2,8 @@
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Client;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class IamAuthTests
@@ -36,7 +38,7 @@ public class IamAuthTests
         await AssertConnected(client);
         
         // Verify connection after token refresh
-        await Task.Delay(refreshInterval);
+        await Task.Delay(TimeSpan.FromSeconds(5));
         await AssertConnected(client);
     }
 
@@ -63,8 +65,8 @@ public class IamAuthTests
 
         await using var client = await GlideClusterClient.CreateClient(config);
 
-        // Verify connection with PING
-        await client.PingAsync();
+        // Verify connection
+        await AssertConnected(client);
 
         // Verify RefreshIamTokenAsync()
         await client.RefreshIamTokenAsync();
@@ -103,8 +105,8 @@ public class IamAuthTests
 
         await using var client = await GlideClient.CreateClient(config);
 
-        // Verify initial connection with PING
-        await client.PingAsync();
+        // Verify initial connection
+        await AssertConnected(client);
 
         // Verify RefreshIamTokenAsync()
         await client.RefreshIamTokenAsync();
@@ -142,8 +144,8 @@ public class IamAuthTests
 
         await using var client = await GlideClusterClient.CreateClient(config);
 
-        // Verify initial connection with PING
-        await client.PingAsync();
+        // Verify initial connection
+        await AssertConnected(client);
 
         // Wait for automatic token refresh (3 seconds to ensure refresh happens)
         await Task.Delay(TimeSpan.FromSeconds(3));
