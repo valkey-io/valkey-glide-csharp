@@ -1492,10 +1492,10 @@ internal partial class BatchTestUtils
 
         // Test GeoSearch
         _ = batch.GeoSearch(key1, "Palermo", new GeoSearchCircle(200, GeoUnit.Kilometers));
-        testData.Add(new(Array.Empty<GeoRadiusResult>(), "GeoSearch(key1, Palermo, 200km circle)", true));
+        testData.Add(new(Array.Empty<GeoSearchResult>(), "GeoSearch(key1, Palermo, 200km circle)", true));
 
         _ = batch.GeoSearch(key1, new GeoPosition(15, 37), new GeoSearchBox(400, 400, GeoUnit.Kilometers));
-        testData.Add(new(Array.Empty<GeoRadiusResult>(), "GeoSearch(key1, position, 400x400km box)", true));
+        testData.Add(new(Array.Empty<GeoSearchResult>(), "GeoSearch(key1, position, 400x400km box)", true));
 
         // Note: GeoSearchAndStore is not available in batch interface
 
