@@ -43,6 +43,11 @@ public readonly struct GeoSearchOptions
     /// </summary>
     internal readonly GlideString[] ToArgs()
     {
+        if (Any && !Count.HasValue)
+        {
+            throw new ArgumentException($"{nameof(Any)} requires {nameof(Count)} to be set.");
+        }
+
         List<GlideString> args = [];
 
         if (Order.HasValue)
