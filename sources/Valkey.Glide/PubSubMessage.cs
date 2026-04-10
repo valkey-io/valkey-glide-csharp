@@ -36,9 +36,7 @@ public sealed class PubSubMessage
     /// <param name="channel">The channel on which the message was received.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
     public static PubSubMessage FromChannel(string message, string channel)
-    {
-        return new(PubSubChannelMode.Exact, message, channel, null);
-    }
+        => new(PubSubChannelMode.Exact, message, channel, null);
 
     /// <summary>
     /// Creates a new <see cref="PubSubMessage"/> for a pattern-based subscription.
@@ -49,7 +47,7 @@ public sealed class PubSubMessage
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
     public static PubSubMessage FromPattern(string message, string channel, string pattern)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(pattern, nameof(pattern));
+        ArgumentException.ThrowIfNullOrWhiteSpace(pattern, nameof(pattern));
         return new(PubSubChannelMode.Pattern, message, channel, pattern);
     }
 
@@ -60,9 +58,7 @@ public sealed class PubSubMessage
     /// <param name="channel">The channel on which the message was received.</param>
     /// <returns>A new <see cref="PubSubMessage"/> instance.</returns>
     public static PubSubMessage FromShardedChannel(string message, string channel)
-    {
-        return new(PubSubChannelMode.Sharded, message, channel, null);
-    }
+        => new(PubSubChannelMode.Sharded, message, channel, null);
 
     /// <summary>
     /// Returns a JSON string representation of the PubSub message for debugging purposes.
@@ -107,8 +103,8 @@ public sealed class PubSubMessage
     /// </summary>
     private PubSubMessage(PubSubChannelMode channelMode, string message, string channel, string? pattern)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(message, nameof(message));
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
+        ArgumentException.ThrowIfNullOrWhiteSpace(message, nameof(message));
+        ArgumentException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
 
         ChannelMode = channelMode;
         Message = message;
