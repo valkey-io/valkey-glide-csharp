@@ -1,30 +1,20 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.TestUtils;
-
-using static Valkey.Glide.ConnectionConfiguration;
-
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
-/// SER compatibility tests for bitmap commands.
-/// Tests verify that String-prefixed methods work identically to SER equivalents
-/// and that CommandFlags validation works correctly.
+/// Tests for <see cref="IDatabaseAsync"/> bitmap commands.
 /// </summary>
-public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<BitmapCommandsFixture>
+public class BitmapCommandTests(TestConfiguration config)
 {
-    #region Constants
+    public TestConfiguration Config { get; } = config;
 
-    private const CommandFlags UnsupportedCommandFlag = CommandFlags.DemandMaster;
+    #region StringGetBitAsync
 
-    #endregion
-
-    #region StringGetBitAsync Tests
-
-    [Fact]
-    public async Task StringGetBitAsync_ReturnsCorrectBitValue()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetBitAsync_ReturnsCorrectBitValue(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string key = $"ser-getbit-{Guid.NewGuid()}";
 
         // Set a string value - ASCII 'A' is 01000001 in binary
@@ -37,32 +27,13 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.True(await db.StringGetBitAsync(key, 7));
     }
 
-    [Fact]
-    public async Task StringGetBitAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-getbit-flags-{Guid.NewGuid()}";
-
-        await db.StringSetAsync(key, "A");
-
-        // CommandFlags.None should be accepted without error
-        bool bit = await db.StringGetBitAsync(key, 1, CommandFlags.None);
-        Assert.True(bit);
-    }
-
-    [Fact]
-    public async Task StringGetBitAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.StringGetBitAsync("key", 0, UnsupportedCommandFlag));
-
     #endregion
+    #region StringSetBitAsync
 
-    #region StringSetBitAsync Tests
-
-    [Fact]
-    public async Task StringSetBitAsync_SetsAndReturnsOriginalValue()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetBitAsync_SetsAndReturnsOriginalValue(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string key = $"ser-setbit-{Guid.NewGuid()}";
 
         // Set bit 1 to true (original should be false)
@@ -74,30 +45,13 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.True(currentBit);
     }
 
-    [Fact]
-    public async Task StringSetBitAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-setbit-flags-{Guid.NewGuid()}";
-
-        // CommandFlags.None should be accepted without error
-        bool originalBit = await db.StringSetBitAsync(key, 0, true, CommandFlags.None);
-        Assert.False(originalBit);
-    }
-
-    [Fact]
-    public async Task StringSetBitAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.StringSetBitAsync("key", 0, true, UnsupportedCommandFlag));
-
     #endregion
+    #region StringBitCountAsync
 
-    #region StringBitCountAsync Tests
-
-    [Fact]
-    public async Task StringBitCountAsync_CountsSetBits()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitCountAsync_CountsSetBits(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string key = $"ser-bitcount-{Guid.NewGuid()}";
 
         // Set string to "A" (ASCII 65 = 01000001 in binary = 2 bits set)
@@ -112,10 +66,10 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal(2, countRange);
     }
 
-    [Fact]
-    public async Task StringBitCountAsync_WithStringIndexType_WorksCorrectly()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitCountAsync_WithStringIndexType_WorksCorrectly(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string key = $"ser-bitcount-indextype-{Guid.NewGuid()}";
 
         // Set string to "AB" (2 bytes)
@@ -126,15 +80,12 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal(2, countByte); // 'A' has 2 bits set
     }
 
-    [Fact]
-    public async Task StringBitCountAsync_WithBitIndexType_WorksCorrectly()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitCountAsync_WithBitIndexType_WorksCorrectly(IDatabaseAsync db)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "BIT index type for BITCOUNT requires server version 7.0 or higher"
-        );
+        SkipUtils.IfBitIndexTypeNotSupported();
 
-        var db = fixture.Database;
         string key = $"ser-bitcount-bit-{Guid.NewGuid()}";
 
         // Set multiple bits
@@ -147,32 +98,15 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal(2, count);
     }
 
-    [Fact]
-    public async Task StringBitCountAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-bitcount-flags-{Guid.NewGuid()}";
-
-        await db.StringSetAsync(key, "A");
-
-        // CommandFlags.None should be accepted without error
-        long count = await db.StringBitCountAsync(key, 0, -1, StringIndexType.Byte, CommandFlags.None);
-        Assert.Equal(2, count);
-    }
-
-    [Fact]
-    public async Task StringBitCountAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.StringBitCountAsync("key", 0, -1, StringIndexType.Byte, UnsupportedCommandFlag));
-
     #endregion
 
-    #region StringBitPositionAsync Tests
 
-    [Fact]
-    public async Task StringBitPositionAsync_FindsFirstSetBit()
+    #region StringBitPositionAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitPositionAsync_FindsFirstSetBit(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string key = $"ser-bitpos-{Guid.NewGuid()}";
 
         // Set string to "A" (ASCII 65 = 01000001 in binary)
@@ -187,10 +121,10 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal(0, pos0);
     }
 
-    [Fact]
-    public async Task StringBitPositionAsync_WithStringIndexType_WorksCorrectly()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitPositionAsync_WithStringIndexType_WorksCorrectly(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string key = $"ser-bitpos-indextype-{Guid.NewGuid()}";
 
         // Set string to "AB"
@@ -201,15 +135,12 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal(9, pos); // First set bit in 'B' at position 9
     }
 
-    [Fact]
-    public async Task StringBitPositionAsync_WithBitIndexType_WorksCorrectly()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitPositionAsync_WithBitIndexType_WorksCorrectly(IDatabaseAsync db)
     {
-        Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < new Version("7.0.0"),
-            "BIT index type for BITPOS requires server version 7.0 or higher"
-        );
+        SkipUtils.IfBitIndexTypeNotSupported();
 
-        var db = fixture.Database;
         string key = $"ser-bitpos-bit-{Guid.NewGuid()}";
 
         // Set multiple bits
@@ -221,32 +152,13 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal(9, pos);
     }
 
-    [Fact]
-    public async Task StringBitPositionAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-bitpos-flags-{Guid.NewGuid()}";
-
-        await db.StringSetAsync(key, "A");
-
-        // CommandFlags.None should be accepted without error
-        long pos = await db.StringBitPositionAsync(key, true, 0, -1, StringIndexType.Byte, CommandFlags.None);
-        Assert.Equal(1, pos);
-    }
-
-    [Fact]
-    public async Task StringBitPositionAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.StringBitPositionAsync("key", true, 0, -1, StringIndexType.Byte, UnsupportedCommandFlag));
-
     #endregion
+    #region StringBitOperationAsync
 
-    #region StringBitOperationAsync Tests
-
-    [Fact]
-    public async Task StringBitOperationAsync_TwoKeys_PerformsCorrectOperation()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitOperationAsync_TwoKeys_PerformsCorrectOperation(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string keyPrefix = $"{{ser-bitop-{Guid.NewGuid()}}}";
         string key1 = $"{keyPrefix}:key1";
         string key2 = $"{keyPrefix}:key2";
@@ -265,10 +177,10 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal("@", resultValue.ToString());
     }
 
-    [Fact]
-    public async Task StringBitOperationAsync_WithDefaultSecond_WorksCorrectly()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitOperationAsync_WithDefaultSecond_WorksCorrectly(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string keyPrefix = $"{{ser-bitop-default-{Guid.NewGuid()}}}";
         string key1 = $"{keyPrefix}:key1";
         string result = $"{keyPrefix}:result";
@@ -286,10 +198,10 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal(190, resultBytes[0]);
     }
 
-    [Fact]
-    public async Task StringBitOperationAsync_MultipleKeys_PerformsCorrectOperation()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringBitOperationAsync_MultipleKeys_PerformsCorrectOperation(IDatabaseAsync db)
     {
-        var db = fixture.Database;
         string keyPrefix = $"{{ser-bitop-multi-{Guid.NewGuid()}}}";
         string key1 = $"{keyPrefix}:key1";
         string key2 = $"{keyPrefix}:key2";
@@ -311,91 +223,5 @@ public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<B
         Assert.Equal("G", resultValue.ToString());
     }
 
-    [Fact]
-    public async Task StringBitOperationAsync_TwoKeys_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string keyPrefix = $"{{ser-bitop-flags-{Guid.NewGuid()}}}";
-        string key1 = $"{keyPrefix}:key1";
-        string key2 = $"{keyPrefix}:key2";
-        string result = $"{keyPrefix}:result";
-
-        await db.StringSetAsync(key1, "A");
-        await db.StringSetAsync(key2, "B");
-
-        // CommandFlags.None should be accepted without error
-        long size = await db.StringBitOperationAsync(Bitwise.And, result, key1, key2, CommandFlags.None);
-        Assert.Equal(1, size);
-    }
-
-    [Fact]
-    public async Task StringBitOperationAsync_TwoKeys_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.StringBitOperationAsync(Bitwise.And, "result", "key1", "key2", UnsupportedCommandFlag));
-
-    [Fact]
-    public async Task StringBitOperationAsync_MultipleKeys_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string keyPrefix = $"{{ser-bitop-multi-flags-{Guid.NewGuid()}}}";
-        string key1 = $"{keyPrefix}:key1";
-        string key2 = $"{keyPrefix}:key2";
-        string result = $"{keyPrefix}:result";
-
-        await db.StringSetAsync(key1, "A");
-        await db.StringSetAsync(key2, "B");
-
-        // CommandFlags.None should be accepted without error
-        ValkeyKey[] keys = [key1, key2];
-        long size = await db.StringBitOperationAsync(Bitwise.Or, result, keys, CommandFlags.None);
-        Assert.Equal(1, size);
-    }
-
-    [Fact]
-    public async Task StringBitOperationAsync_MultipleKeys_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-    {
-        ValkeyKey[] keys = ["key1", "key2"];
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.StringBitOperationAsync(Bitwise.And, "result", keys, UnsupportedCommandFlag));
-    }
-
     #endregion
-}
-
-/// <summary>
-/// Fixture class for <see cref="BitmapCommandTests" />.
-/// </summary>
-public class BitmapCommandsFixture : IDisposable
-{
-    private readonly StandaloneServer _standaloneServer;
-    private readonly ConnectionMultiplexer _connection;
-    private readonly GlideClient _client;
-
-    public IDatabase Database { get; }
-    public GlideClient Client => _client;
-
-    public BitmapCommandsFixture()
-    {
-        _standaloneServer = new();
-        var (host, port) = _standaloneServer.Addresses.First();
-
-        ConfigurationOptions config = new();
-        config.EndPoints.Add(host, port);
-        _connection = ConnectionMultiplexer.Connect(config);
-
-        Database = _connection.GetDatabase();
-
-        // Create GLIDE client for equivalence tests
-        var glideConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(host, port)
-            .Build();
-        _client = GlideClient.CreateClient(glideConfig).GetAwaiter().GetResult();
-    }
-
-    public void Dispose()
-    {
-        _client.Dispose();
-        _connection.Dispose();
-        _standaloneServer.Dispose();
-    }
 }

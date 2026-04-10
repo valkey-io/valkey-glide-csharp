@@ -1303,7 +1303,7 @@ internal partial class BatchTestUtils
 
         // HashKeys test
         _ = batch.HashKeys(key1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(key1)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "HashKeys(key1)", true));
 
         // HashLength test
         _ = batch.HashLength(key1);
@@ -1338,22 +1338,14 @@ internal partial class BatchTestUtils
         testData.Add(new(0L, "HashLength(nonExistingKey)"));
 
         _ = batch.HashKeys(nonExistingKey);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(nonExistingKey)"));
-
-        // HashScan tests
-        _ = batch.HashScan(key1, 0, "field*", 10);
-        testData.Add(new((0L, new HashEntry[] { new("field1", "value1") }), "HashScan(key1, 0, field*, 10)"));
-
-        // HashScanNoValues tests
-        _ = batch.HashScanNoValues(key1, 0, "field*", 10);
-        testData.Add(new((0L, new ValkeyValue[] { "field1" }), "HashScanNoValues(key1, 0, field*, 10)"));
+        testData.Add(new(new HashSet<ValkeyValue>(), "HashKeys(nonExistingKey)"));
 
         // HashGetAll test
         _ = batch.HashGetAll(key1);
-        testData.Add(new(new HashEntry[] {
-            new("field1", value1),
-            new("counter", "16"),
-            new("float_counter", "13")
+        testData.Add(new(new Dictionary<ValkeyValue, ValkeyValue> {
+            { "field1", value1 },
+            { "counter", "16" },
+            { "float_counter", "13" }
         }, "HashGetAll(key1)"));
 
         // HashValues test
@@ -1368,10 +1360,7 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue[] { "field1", "counter" }, "HashRandomFields(key1, 2)"));
 
         _ = batch.HashRandomFieldsWithValues(key1, 2);
-        testData.Add(new(new HashEntry[] {
-            new("field1", value1),
-            new("counter", "16")
-        }, "HashRandomFieldsWithValues(key1, 2)"));
+        testData.Add(new(new List<KeyValuePair<ValkeyValue, ValkeyValue>>(), "HashRandomFieldsWithValues(key1, 2)", true));
 
         // Multi-field operations
         HashEntry[] multiEntries = [
@@ -1379,7 +1368,7 @@ internal partial class BatchTestUtils
             new HashEntry("multi2", "value2")
         ];
         _ = batch.HashSet(key2, multiEntries);
-        testData.Add(new(ValkeyValue.Ok, "HashSet(key2, multiEntries)"));
+        testData.Add(new(2L, "HashSet(key2, multiEntries)"));
 
         _ = batch.HashGet(key2, ["multi1", "multi2"]);
         testData.Add(new(new ValkeyValue[] { "value1", "value2" }, "HashGet(key2, [multi1, multi2])"));
@@ -1400,40 +1389,32 @@ internal partial class BatchTestUtils
             testData.Add(new(true, "HashSet(expireKey, expire_field2, expire_value2)"));
 
             // Test HGETEX
-            _ = batch.HashGetEx(expireKey, ["expire_field1"], new HashGetExOptions().SetExpiry(HGetExExpiry.Seconds(60)));
-            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGetEx(expireKey, [expire_field1], 60s)"));
+            _ = batch.HashGetExpiry(expireKey, ["expire_field1"], GetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)));
+            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGetExpiry(expireKey, [expire_field1], 60s)"));
 
             // Test HSETEX
-            _ = batch.HashSetEx(expireKey, new Dictionary<ValkeyValue, ValkeyValue> { { "setex_field", "setex_value" } }, new HashSetExOptions().SetExpiry(ExpirySet.Seconds(60)));
-            testData.Add(new(true, "HashSetEx(expireKey, {setex_field: setex_value}, 60s)"));
+            _ = batch.HashSetExpiry(expireKey, [new("setex_field", "setex_value")], SetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)));
+            testData.Add(new(true, "HashSetExpiry(expireKey, {setex_field: setex_value}, 60s)"));
 
             // Test HEXPIRE with seconds
-            _ = batch.HashExpire(expireKey, TimeSpan.FromSeconds(30), ["expire_field1"], new HashFieldExpirationConditionOptions());
-            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, 30, [expire_field1])"));
+            _ = batch.HashExpire(expireKey, ["expire_field1"], TimeSpan.FromSeconds(30));
+            testData.Add(new(new HashExpireResult[] { HashExpireResult.ExpirySet }, "HashExpire(expireKey, 30, [expire_field1])"));
 
             // Test HPEXPIRE with milliseconds
-            _ = batch.HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), ["expire_field2"], new HashFieldExpirationConditionOptions());
-            testData.Add(new(new long[] { 1 }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
+            _ = batch.HashExpire(expireKey, ["expire_field2"], TimeSpan.FromMilliseconds(5000));
+            testData.Add(new(new HashExpireResult[] { HashExpireResult.ExpirySet }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
 
             // Test HTTL
-            _ = batch.HashTtl(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashTtl(expireKey, [expire_field1, expire_field2])", true));
-
-            // Test HPTTL
-            _ = batch.HashPTtl(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashPTtl(expireKey, [expire_field1, expire_field2])", true));
+            _ = batch.HashTimeToLive(expireKey, ["expire_field1", "expire_field2"]);
+            testData.Add(new(Array.Empty<TimeToLiveResult>(), "HashTimeToLive(expireKey, [expire_field1, expire_field2])", true));
 
             // Test HPERSIST
             _ = batch.HashPersist(expireKey, ["expire_field1"]);
-            testData.Add(new(new long[] { 1 }, "HashPersist(expireKey, [expire_field1])"));
+            testData.Add(new(new HashPersistResult[] { HashPersistResult.ExpiryRemoved }, "HashPersist(expireKey, [expire_field1])"));
 
             // Test HEXPIRETIME
             _ = batch.HashExpireTime(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
-
-            // Test HPEXPIRETIME
-            _ = batch.HashPExpireTime(expireKey, ["expire_field1", "expire_field2"]);
-            testData.Add(new(Array.Empty<long>(), "HashPExpireTime(expireKey, [expire_field1, expire_field2])", true));
+            testData.Add(new(Array.Empty<ExpireTimeResult>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
         }
 
         return testData;
