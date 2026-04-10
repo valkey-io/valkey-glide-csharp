@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Pub/sub commands shared between Valkey GLIDE client and StackExchange.Redis-compatible database interfaces.
+/// Pub/sub commands shared between <see cref="IBaseClient"/> and <see cref="IDatabaseAsync"/>.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
 /// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>

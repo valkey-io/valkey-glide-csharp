@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands;
 
 /// <summary>
-/// Bitmap commands shared between Valkey GLIDE client and StackExchange.Redis-compatible database interfaces.
+/// Bitmap commands shared between <see cref="IBaseClient"/> and <see cref="IDatabaseAsync"/>.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
 public interface IBitmapBaseCommands

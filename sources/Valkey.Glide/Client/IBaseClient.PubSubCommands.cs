@@ -3,8 +3,8 @@
 namespace Valkey.Glide.Commands;
 
 /// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
-/// by both should be added to <see cref="IPubSubClusterCommands"/> instead.
+/// by <see cref="IBaseClient"/> but NOT by <see cref="IDatabaseAsync"/>. Methods
+/// implemented by both should be added to <see cref="IPubSubClusterCommands"/> instead.
 
 /// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
 /// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>

@@ -10,7 +10,7 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
-internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
+internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 {
     private readonly Database _conn = conn;
 
@@ -273,36 +273,5 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             }
 
         } while (currentCursor != "0");
-    }
-
-    /// <inheritdoc />
-    public async Task<ValkeyChannel[]> SubscriptionChannelsAsync(
-        ValkeyChannel pattern = default,
-        CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
-        ISet<string> channels = pattern.IsNullOrEmpty
-            ? await _conn.PubSubChannelsAsync()
-            : await _conn.PubSubChannelsAsync(pattern.ToString());
-
-        return [.. channels.Select(ValkeyChannel.Literal)];
-    }
-
-    /// <inheritdoc />
-    public async Task<long> SubscriptionPatternCountAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.PubSubNumPatAsync();
-    }
-
-    /// <inheritdoc />
-    public async Task<long> SubscriptionSubscriberCountAsync(
-        ValkeyChannel channel,
-        CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        Dictionary<string, long> result = await _conn.PubSubNumSubAsync([channel.ToString()]);
-        return result.TryGetValue(channel.ToString(), out long count) ? count : 0;
     }
 }

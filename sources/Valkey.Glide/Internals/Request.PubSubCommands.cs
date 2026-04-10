@@ -162,7 +162,7 @@ internal partial class Request
     /// Lists the number of subscribers for the specified channels.
     /// </summary>
     /// <param name="channels">The channels to query.</param>
-    /// <returns>Command that returns a dictionary mapping channel to subscriber counts.</returns>
+    /// <returns>Command that returns a dictionary mapping channels to subscriber counts.</returns>
     public static Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> PubSubNumSub(GlideString[] channels)
         => new(RequestType.PubSubNumSub, channels, false, dict =>
             {
