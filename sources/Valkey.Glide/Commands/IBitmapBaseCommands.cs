@@ -2,16 +2,13 @@
 
 namespace Valkey.Glide.Commands;
 
-// ATTENTION: Methods should only be added to this interface if they are implemented
-// by both Valkey GLIDE clients and StackExchange.Redis databases.
-
 /// <summary>
-/// Bitmap commands shared between Valkey GLIDE clients and StackExchange.Redis-compatible interfaces.
+/// Bitmap commands shared between Valkey GLIDE client and StackExchange.Redis-compatible database interfaces.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
 public interface IBitmapBaseCommands
 {
-    // Intentionally empty - no shared methods between GLIDE and SER naming for bitmap commands.
-    // GLIDE-style methods (GetBitAsync, SetBitAsync, etc.) are in IBaseClient.
-    // SER-style methods (StringGetBitAsync, StringSetBitAsync, etc.) are in IDatabaseAsync.
+    /// Intentionally empty - no shared methods for bitmap commands.
+    /// GLIDE-style methods are in <see cref="IBaseClient.BitmapCommands"/>.
+    /// StackExchange.Redis-style methods are in <see cref="IDatabaseAsync.BitmapCommands"/>.
 }
