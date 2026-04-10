@@ -282,35 +282,18 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        List<object> args = ["CHANNELS"];
-        if (!pattern.IsNullOrEmpty)
-        {
-            args.Add(pattern.ToString());
-        }
+        ISet<string> channels = pattern.IsNullOrEmpty
+            ? await _conn.PubSubChannelsAsync()
+            : await _conn.PubSubChannelsAsync(pattern.ToString());
 
-        ValkeyResult result = await ExecuteAsync("PUBSUB", args);
-
-        int length = result.Length;
-        if (length <= 0)
-        {
-            return [];
-        }
-
-        var channels = new ValkeyChannel[length];
-        for (int i = 0; i < length; i++)
-        {
-            channels[i] = ValkeyChannel.Literal((string?)result[i] ?? "");
-        }
-
-        return channels;
+        return [.. channels.Select(ValkeyChannel.Literal)];
     }
 
     /// <inheritdoc />
     public async Task<long> SubscriptionPatternCountAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        ValkeyResult result = await ExecuteAsync("PUBSUB", ["NUMPAT"]);
-        return (long)result;
+        return await _conn.PubSubNumPatAsync();
     }
 
     /// <inheritdoc />
@@ -319,7 +302,7 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        ValkeyResult result = await ExecuteAsync("PUBSUB", ["NUMSUB", channel.ToString()]);
-        return (long)result[1];
+        Dictionary<string, long> result = await _conn.PubSubNumSubAsync([channel.ToString()]);
+        return result.TryGetValue(channel.ToString(), out long count) ? count : 0;
     }
 }
