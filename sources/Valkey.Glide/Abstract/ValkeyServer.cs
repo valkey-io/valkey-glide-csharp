@@ -274,4 +274,52 @@ internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
         } while (currentCursor != "0");
     }
+
+    /// <inheritdoc />
+    public async Task<ValkeyChannel[]> SubscriptionChannelsAsync(
+        ValkeyChannel pattern = default,
+        CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        List<object> args = ["CHANNELS"];
+        if (!pattern.IsNullOrEmpty)
+        {
+            args.Add(pattern.ToString());
+        }
+
+        ValkeyResult result = await ExecuteAsync("PUBSUB", args);
+
+        int length = result.Length;
+        if (length <= 0)
+        {
+            return [];
+        }
+
+        var channels = new ValkeyChannel[length];
+        for (int i = 0; i < length; i++)
+        {
+            channels[i] = ValkeyChannel.Literal((string?)result[i] ?? "");
+        }
+
+        return channels;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> SubscriptionPatternCountAsync(CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        ValkeyResult result = await ExecuteAsync("PUBSUB", ["NUMPAT"]);
+        return (long)result;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> SubscriptionSubscriberCountAsync(
+        ValkeyChannel channel,
+        CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        ValkeyResult result = await ExecuteAsync("PUBSUB", ["NUMSUB", channel.ToString()]);
+        return (long)result[1];
+    }
 }
