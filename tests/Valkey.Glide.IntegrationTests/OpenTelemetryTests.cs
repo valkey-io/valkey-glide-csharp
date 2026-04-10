@@ -86,7 +86,7 @@ public class OpenTelemetryTests : IDisposable
 
         await client.StringSetAsync(key, "value");
         _ = await client.StringGetAsync(key);
-        _ = await client.KeyDeleteAsync(key);
+        _ = await client.DeleteAsync(key);
 
         await Task.Delay(WaitInterval);
     }

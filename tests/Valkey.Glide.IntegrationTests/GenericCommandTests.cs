@@ -17,14 +17,14 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Set a key first
         await client.StringSetAsync(key, value);
-        Assert.True(await client.KeyExistsAsync(key));
+        Assert.True(await client.ExistsAsync(key));
 
         // Delete the key
-        Assert.True(await client.KeyDeleteAsync(key));
-        Assert.False(await client.KeyExistsAsync(key));
+        Assert.True(await client.DeleteAsync(key));
+        Assert.False(await client.ExistsAsync(key));
 
         // Try to delete non-existent key
-        Assert.False(await client.KeyDeleteAsync(key));
+        Assert.False(await client.DeleteAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -40,11 +40,11 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key2, "value2");
 
         // Delete multiple keys (including non-existent)
-        long deletedCount = await client.KeyDeleteAsync([key1, key2, key3]);
+        long deletedCount = await client.DeleteAsync([key1, key2, key3]);
         Assert.Equal(2, deletedCount);
 
-        Assert.False(await client.KeyExistsAsync(key1));
-        Assert.False(await client.KeyExistsAsync(key2));
+        Assert.False(await client.ExistsAsync(key1));
+        Assert.False(await client.ExistsAsync(key2));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -56,14 +56,14 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Set a key first
         await client.StringSetAsync(key, value);
-        Assert.True(await client.KeyExistsAsync(key));
+        Assert.True(await client.ExistsAsync(key));
 
         // Unlink the key
-        Assert.True(await client.KeyUnlinkAsync(key));
-        Assert.False(await client.KeyExistsAsync(key));
+        Assert.True(await client.UnlinkAsync(key));
+        Assert.False(await client.ExistsAsync(key));
 
         // Try to unlink non-existent key
-        Assert.False(await client.KeyUnlinkAsync(key));
+        Assert.False(await client.UnlinkAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -79,7 +79,7 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key2, "value2");
 
         // Check existence
-        long existingCount = await client.KeyExistsAsync([key1, key2, key3]);
+        long existingCount = await client.ExistsAsync([key1, key2, key3]);
         Assert.Equal(2, existingCount);
     }
 
@@ -152,21 +152,21 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Key without expiry should return null
-        DateTime? expireTime = await client.KeyExpireTimeAsync(key);
+        DateTime? expireTime = await client.ExpireTimeAsync(key);
         Assert.Null(expireTime);
 
         // Set expiry and check expire time
         DateTime futureTime = DateTime.UtcNow.AddSeconds(30);
-        Assert.True(await client.KeyExpireAsync(key, futureTime));
+        Assert.True(await client.ExpireAsync(key, futureTime));
 
-        expireTime = await client.KeyExpireTimeAsync(key);
+        expireTime = await client.ExpireTimeAsync(key);
         _ = Assert.NotNull(expireTime);
         // Should be close to the set time (within a few seconds tolerance)
         Assert.True(Math.Abs((expireTime.Value - futureTime).TotalSeconds) < 5);
 
         // Non-existent key should return null
         string nonExistentKey = Guid.NewGuid().ToString();
-        expireTime = await client.KeyExpireTimeAsync(nonExistentKey);
+        expireTime = await client.ExpireTimeAsync(nonExistentKey);
         Assert.Null(expireTime);
     }
 
@@ -181,7 +181,7 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Get encoding for string key
-        string? encoding = await client.KeyEncodingAsync(key);
+        string? encoding = await client.ObjectEncodingAsync(key);
         Assert.NotNull(encoding);
         // String encoding can be "raw", "embstr", or "int" depending on the value
         Assert.Contains(encoding, new[] { "raw", "embstr", "int" });
@@ -189,17 +189,17 @@ public class GenericCommandTests(TestConfiguration config)
         // Test with different data types
         string listKey = Guid.NewGuid().ToString();
         _ = await client.ListLeftPushAsync(listKey, "item");
-        string? listEncoding = await client.KeyEncodingAsync(listKey);
+        string? listEncoding = await client.ObjectEncodingAsync(listKey);
         Assert.NotNull(listEncoding);
 
         string setKey = Guid.NewGuid().ToString();
         _ = await client.SetAddAsync(setKey, "member");
-        string? setEncoding = await client.KeyEncodingAsync(setKey);
+        string? setEncoding = await client.ObjectEncodingAsync(setKey);
         Assert.NotNull(setEncoding);
 
         // Non-existent key should return null
         string nonExistentKey = Guid.NewGuid().ToString();
-        string? nonExistentEncoding = await client.KeyEncodingAsync(nonExistentKey);
+        string? nonExistentEncoding = await client.ObjectEncodingAsync(nonExistentKey);
         Assert.Null(nonExistentEncoding);
     }
 
@@ -216,13 +216,13 @@ public class GenericCommandTests(TestConfiguration config)
         try
         {
             // Get frequency for string key
-            long? frequency = await client.KeyFrequencyAsync(key);
+            long? frequency = await client.ObjectFrequencyAsync(key);
             _ = Assert.NotNull(frequency);
             Assert.True(frequency >= 0);
 
             // Non-existent key should return null
             string nonExistentKey = Guid.NewGuid().ToString();
-            long? nonExistentFrequency = await client.KeyFrequencyAsync(nonExistentKey);
+            long? nonExistentFrequency = await client.ObjectFrequencyAsync(nonExistentKey);
             Assert.Null(nonExistentFrequency);
         }
         catch (Errors.RequestException ex) when (ex.Message.Contains("LFU maxmemory policy is not selected"))
@@ -243,25 +243,25 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Get idle time for string key
-        TimeSpan? idleTime = await client.KeyIdleTimeAsync(key);
+        TimeSpan? idleTime = await client.ObjectIdleTimeAsync(key);
         _ = Assert.NotNull(idleTime);
         Assert.True(idleTime.Value.TotalSeconds >= 0);
 
         // Wait a bit and check that idle time increases
         await Task.Delay(1000);
-        TimeSpan? idleTime2 = await client.KeyIdleTimeAsync(key);
+        TimeSpan? idleTime2 = await client.ObjectIdleTimeAsync(key);
         _ = Assert.NotNull(idleTime2);
         Assert.True(idleTime2.Value.TotalSeconds >= idleTime.Value.TotalSeconds);
 
         // Access the key to reset idle time
         _ = await client.StringGetAsync(key);
-        TimeSpan? idleTimeAfterAccess = await client.KeyIdleTimeAsync(key);
+        TimeSpan? idleTimeAfterAccess = await client.ObjectIdleTimeAsync(key);
         _ = Assert.NotNull(idleTimeAfterAccess);
         Assert.True(idleTimeAfterAccess.Value.TotalSeconds < idleTime2.Value.TotalSeconds);
 
         // Non-existent key should return null
         string nonExistentKey = Guid.NewGuid().ToString();
-        TimeSpan? nonExistentIdleTime = await client.KeyIdleTimeAsync(nonExistentKey);
+        TimeSpan? nonExistentIdleTime = await client.ObjectIdleTimeAsync(nonExistentKey);
         Assert.Null(nonExistentIdleTime);
     }
 
@@ -276,13 +276,13 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Get reference count for string key
-        long? refCount = await client.KeyRefCountAsync(key);
+        long? refCount = await client.ObjectRefCountAsync(key);
         _ = Assert.NotNull(refCount);
         Assert.True(refCount >= 1);
 
         // Non-existent key should return null
         string nonExistentKey = Guid.NewGuid().ToString();
-        long? nonExistentRefCount = await client.KeyRefCountAsync(nonExistentKey);
+        long? nonExistentRefCount = await client.ObjectRefCountAsync(nonExistentKey);
         Assert.Null(nonExistentRefCount);
     }
 
@@ -295,17 +295,17 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Test string type
         await client.StringSetAsync(stringKey, "value");
-        ValkeyType stringType = await client.KeyTypeAsync(stringKey);
+        ValkeyType stringType = await client.TypeAsync(stringKey);
         Assert.Equal(ValkeyType.String, stringType);
 
         // Test set type
         _ = await client.SetAddAsync(setKey, "member");
-        ValkeyType setType = await client.KeyTypeAsync(setKey);
+        ValkeyType setType = await client.TypeAsync(setKey);
         Assert.Equal(ValkeyType.Set, setType);
 
         // Test non-existent key
         string nonExistentKey = Guid.NewGuid().ToString();
-        ValkeyType noneType = await client.KeyTypeAsync(nonExistentKey);
+        ValkeyType noneType = await client.TypeAsync(nonExistentKey);
         Assert.Equal(ValkeyType.None, noneType);
     }
 
@@ -321,11 +321,11 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(oldKey, value);
 
         // Rename the key
-        await client.KeyRenameAsync(oldKey, newKey);
+        await client.RenameAsync(oldKey, newKey);
 
         // Check that old key doesn't exist and new key exists
-        Assert.False(await client.KeyExistsAsync(oldKey));
-        Assert.True(await client.KeyExistsAsync(newKey));
+        Assert.False(await client.ExistsAsync(oldKey));
+        Assert.True(await client.ExistsAsync(newKey));
         Assert.Equal(value, await client.StringGetAsync(newKey));
     }
 
@@ -344,19 +344,19 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(existingKey, existingValue);
 
         // Rename to non-existing key should succeed
-        Assert.True(await client.KeyRenameNXAsync(oldKey, newKey));
+        Assert.True(await client.RenameNXAsync(oldKey, newKey));
 
         // Check that old key doesn't exist and new key exists
-        Assert.False(await client.KeyExistsAsync(oldKey));
-        Assert.True(await client.KeyExistsAsync(newKey));
+        Assert.False(await client.ExistsAsync(oldKey));
+        Assert.True(await client.ExistsAsync(newKey));
         Assert.Equal(value, await client.StringGetAsync(newKey));
 
         // Try to rename to existing key should fail
-        Assert.False(await client.KeyRenameNXAsync(newKey, existingKey));
+        Assert.False(await client.RenameNXAsync(newKey, existingKey));
 
         // Both keys should still exist with original values
-        Assert.True(await client.KeyExistsAsync(newKey));
-        Assert.True(await client.KeyExistsAsync(existingKey));
+        Assert.True(await client.ExistsAsync(newKey));
+        Assert.True(await client.ExistsAsync(existingKey));
         Assert.Equal(value, await client.StringGetAsync(newKey));
         Assert.Equal(existingValue, await client.StringGetAsync(existingKey));
     }
@@ -398,12 +398,12 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(sourceKey, value);
 
         // Dump the key
-        byte[]? dumpData = await client.KeyDumpAsync(sourceKey);
+        byte[]? dumpData = await client.DumpAsync(sourceKey);
         Assert.NotNull(dumpData);
         Assert.NotEmpty(dumpData);
 
         // Restore to a new key
-        await client.KeyRestoreAsync(destKey, dumpData);
+        await client.RestoreAsync(destKey, dumpData);
 
         // Verify the restored key
         Assert.Equal(value, await client.StringGetAsync(destKey));
@@ -412,9 +412,9 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(replaceKey, "old_value");
         await client.StringSetAsync(replaceDateTimeKey, "old_value");
         RestoreOptions replaceOptions = new RestoreOptions().Replace();
-        await client.KeyRestoreAsync(replaceKey, dumpData, restoreOptions: replaceOptions);
+        await client.RestoreAsync(replaceKey, dumpData, restoreOptions: replaceOptions);
         Assert.Equal(value, await client.StringGetAsync(replaceKey));
-        await client.KeyRestoreDateTimeAsync(replaceDateTimeKey, dumpData, restoreOptions: replaceOptions);
+        await client.RestoreDateTimeAsync(replaceDateTimeKey, dumpData, restoreOptions: replaceOptions);
         Assert.Equal(value, await client.StringGetAsync(replaceDateTimeKey));
 
         // Test RestoreOptions with TTL
@@ -422,8 +422,8 @@ public class GenericCommandTests(TestConfiguration config)
         string ttlDateTimeKey = Guid.NewGuid().ToString();
         TimeSpan ts = TimeSpan.FromSeconds(30);
         DateTime dt = new DateTime(2042, 12, 31);
-        await client.KeyRestoreAsync(ttlKey, dumpData, expiry: ts);
-        await client.KeyRestoreDateTimeAsync(ttlDateTimeKey, dumpData, expiry: dt);
+        await client.RestoreAsync(ttlKey, dumpData, expiry: ts);
+        await client.RestoreDateTimeAsync(ttlDateTimeKey, dumpData, expiry: dt);
 
         // Verify key exists and has TTL
         Assert.True(await client.ExistsAsync(ttlKey));
@@ -437,8 +437,8 @@ public class GenericCommandTests(TestConfiguration config)
         string idletimeKey = Guid.NewGuid().ToString();
         string idletimeDateTimeKey = Guid.NewGuid().ToString();
         RestoreOptions idletimeOptions = new RestoreOptions().SetIdletime(1000);
-        await client.KeyRestoreAsync(idletimeKey, dumpData, restoreOptions: idletimeOptions);
-        await client.KeyRestoreDateTimeAsync(idletimeDateTimeKey, dumpData, restoreOptions: idletimeOptions);
+        await client.RestoreAsync(idletimeKey, dumpData, restoreOptions: idletimeOptions);
+        await client.RestoreDateTimeAsync(idletimeDateTimeKey, dumpData, restoreOptions: idletimeOptions);
         Assert.Equal(value, await client.StringGetAsync(idletimeKey));
         Assert.Equal(value, await client.StringGetAsync(idletimeDateTimeKey));
 
@@ -446,8 +446,8 @@ public class GenericCommandTests(TestConfiguration config)
         string freqKey = Guid.NewGuid().ToString();
         string freqDateTimeKey = Guid.NewGuid().ToString();
         RestoreOptions freqOptions = new RestoreOptions().SetFrequency(5);
-        await client.KeyRestoreAsync(freqKey, dumpData, restoreOptions: freqOptions);
-        await client.KeyRestoreDateTimeAsync(freqDateTimeKey, dumpData, restoreOptions: freqOptions);
+        await client.RestoreAsync(freqKey, dumpData, restoreOptions: freqOptions);
+        await client.RestoreDateTimeAsync(freqDateTimeKey, dumpData, restoreOptions: freqOptions);
         Assert.Equal(value, await client.StringGetAsync(freqKey));
         Assert.Equal(value, await client.StringGetAsync(freqDateTimeKey));
     }
@@ -465,10 +465,10 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key2, "value2");
 
         // Touch single key
-        Assert.True(await client.KeyTouchAsync(key1));
+        Assert.True(await client.TouchAsync(key1));
 
         // Touch multiple keys (including non-existent)
-        long touchedCount = await client.KeyTouchAsync([key1, key2, key3]);
+        long touchedCount = await client.TouchAsync([key1, key2, key3]);
         Assert.Equal(2, touchedCount);
     }
 
@@ -484,7 +484,7 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(sourceKey, value);
 
         // Copy the key
-        Assert.True(await client.KeyCopyAsync(sourceKey, destKey));
+        Assert.True(await client.CopyAsync(sourceKey, destKey));
 
         // Verify both keys exist with same value
         Assert.Equal(value, await client.StringGetAsync(sourceKey));
@@ -492,7 +492,7 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Test copy with replace
         await client.StringSetAsync(destKey, "new_value");
-        Assert.True(await client.KeyCopyAsync(sourceKey, destKey, replace: true));
+        Assert.True(await client.CopyAsync(sourceKey, destKey, replace: true));
         Assert.Equal(value, await client.StringGetAsync(destKey));
     }
 
@@ -624,7 +624,7 @@ public class GenericCommandTests(TestConfiguration config)
         count = await client.SortAndStoreAsync(destKey, sourceKey);
         Assert.Equal(3, count);
         // Destination should now be a list, not a string
-        Assert.Equal(ValkeyType.List, await client.KeyTypeAsync(destKey));
+        Assert.Equal(ValkeyType.List, await client.TypeAsync(destKey));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

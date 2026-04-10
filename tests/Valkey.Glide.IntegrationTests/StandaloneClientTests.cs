@@ -220,8 +220,8 @@ public class StandaloneClientTests(TestConfiguration config)
         string key2 = Guid.NewGuid().ToString();
 
         await client.StringSetAsync(key, "val");
-        Assert.True(await client.KeyCopyAsync(key, key2, 1));
-        Assert.True(await client.KeyMoveAsync(key, 2));
+        Assert.True(await client.CopyAsync(key, key2, 1));
+        Assert.True(await client.MoveAsync(key, 2));
     }
 
     [Theory]
@@ -394,7 +394,7 @@ public class StandaloneClientTests(TestConfiguration config)
         }
         finally
         {
-            _ = await client.KeyDeleteAsync(key);
+            _ = await client.DeleteAsync(key);
         }
     }
 
