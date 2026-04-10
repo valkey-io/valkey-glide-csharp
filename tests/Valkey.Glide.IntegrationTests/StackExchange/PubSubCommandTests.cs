@@ -2,85 +2,124 @@
 
 using System.Collections.Concurrent;
 
-using Valkey.Glide.TestUtils;
-
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
-using static Valkey.Glide.TestUtils.Data;
+
+using Valkey.Glide.TestUtils;
 // Type alias for readability.
 using MessageInfo = (Valkey.Glide.ValkeyChannel Channel, Valkey.Glide.ValkeyValue Message);
 
-namespace Valkey.Glide.IntegrationTests;
+namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
-/// Integration tests for ISubscriber compatibility with <c>StackExchange.Redis</c>.
-/// These tests mirror key scenarios from <c>StackExchange.Redis.Tests.PubSubTests</c>.
+/// Tests for StackExchange.Redis pub/sub commands including
+/// <see cref="ISubscriber"/> subscribe/unsubscribe operations, and
+/// <see cref="IServer"/> pub/sub introspection commands.
+/// <see cref="IDatabaseAsync.PublishAsync(ValkeyChannel, ValkeyValue, CommandFlags)"/>,
 /// </summary>
-[Collection(typeof(ISubscriberCompatibilityTests))]
+[Collection(typeof(PubSubCommandTests))]
 [CollectionDefinition(DisableParallelization = true)]
-public class ISubscriberCompatibilityTests
+public class PubSubCommandTests(TestConfiguration config)
 {
-    // Skip tests if Valkey GLIDE version is less than 7.0.0
+    public TestConfiguration Config { get; } = config;
+
+    #region Constants
+
     private static readonly bool IsSharedPubSubSupported = TestConfiguration.IsVersionAtLeast("7.0.0");
     private static readonly string SkipSharedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
 
-    // Messages for testing.
     private static readonly ValkeyValue Message1 = "message1";
     private static readonly ValkeyValue Message2 = "message2";
 
-    // Durations for testing.
     private static readonly TimeSpan AssertRetryInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan AssertTimeout = TimeSpan.FromSeconds(5);
 
+    #endregion
+    #region PublishAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task PublishAsync_NoSubscribers_ReturnsZero(IDatabaseAsync db)
+    {
+        var channel = ValkeyChannel.Literal($"test-channel-{Guid.NewGuid()}");
+        Assert.Equal(0, await db.PublishAsync(channel, "hello"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task PublishAsync_WithSubscriber_ReturnsOne(IDatabaseAsync db)
+    {
+        var channel = ValkeyChannel.Literal($"test-channel-{Guid.NewGuid()}");
+
+        using var subscriberConnection = TestConfiguration.DefaultCompatibleConnection();
+        var subscriber = subscriberConnection.GetSubscriber();
+        var queue = await subscriber.SubscribeAsync(channel);
+
+        try
+        {
+            long result = await db.PublishAsync(channel, "hello");
+            Assert.Equal(1, result);
+        }
+        finally
+        {
+            await queue.UnsubscribeAsync();
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task PublishAsync_NullOrEmptyChannel_Throws(IDatabaseAsync db)
+    {
+        var emptyChannel = new ValkeyChannel((byte[]?)null, ValkeyChannel.PatternMode.Literal);
+
+        _ = await Assert.ThrowsAsync<ArgumentException>(
+            () => db.PublishAsync(emptyChannel, "hello"));
+    }
+
+    #endregion
+    #region SubscribeAsync
+
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task Literal_Subscribe_Handler(bool isCluster)
     {
         var literal = BuildLiteral();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with handler.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(literal, handler);
 
-        // Publish to channel and verify receipt.
         _ = await publisher.PublishAsync(literal, Message1);
         await AssertHandlerReceives(received, [(literal, Message1)]);
 
-        // Unsubscribe handler.
         await subscriber.UnsubscribeAsync(literal, handler);
 
-        // Publish and verify no messages received.
         _ = await publisher.PublishAsync(literal, Message2);
         await AssertHandlerReceives(received, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task Literal_Subscribe_Queue(bool isCluster)
     {
         var literal = BuildLiteral();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with queue.
         var queue = await subscriber.SubscribeAsync(literal);
 
-        // Publish to channel and verify receipt.
         _ = await publisher.PublishAsync(literal, Message1);
         await AssertQueueReceives(queue, [(literal, Message1)]);
 
-        // Unsubscribe queue.
         await queue.UnsubscribeAsync();
 
-        // Publish and verify no messages received.
         _ = await publisher.PublishAsync(literal, Message2);
         await AssertQueueReceives(queue, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task Pattern_Subscribe_Handler(bool isCluster)
     {
         var pattern = BuildPattern();
@@ -88,25 +127,21 @@ public class ISubscriberCompatibilityTests
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with handler.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(pattern, handler);
 
-        // Publish to matching channel and verify receipt.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(pattern, Message1)]);
 
-        // Unsubscribe handler.
         await subscriber.UnsubscribeAsync(pattern, handler);
 
-        // Publish and verify no messages received.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task Pattern_Subscribe_Queue(bool isCluster)
     {
         var pattern = BuildPattern();
@@ -114,17 +149,13 @@ public class ISubscriberCompatibilityTests
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with queue.
         var queue = await subscriber.SubscribeAsync(pattern);
 
-        // Publish to matching channel and verify receipt.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue, [(pattern, Message1)]);
 
-        // Unsubscribe queue.
         await queue.UnsubscribeAsync();
 
-        // Publish and verify no messages received.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertQueueReceives(queue, []);
     }
@@ -134,26 +165,21 @@ public class ISubscriberCompatibilityTests
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
 
-        // Only supported in cluster mode.
         bool isCluster = true;
 
         var channel = BuildSharded();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with handler.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
 
-        // Publish to channel and verify receipt.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
 
-        // Unsubscribe handler.
         await subscriber.UnsubscribeAsync(channel, handler);
 
-        // Publish and verify no messages received.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
     }
@@ -163,37 +189,31 @@ public class ISubscriberCompatibilityTests
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
 
-        // Only supported in cluster mode.
         bool isCluster = true;
 
         var channel = BuildSharded();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with queue.
         var queue = await subscriber.SubscribeAsync(channel);
 
-        // Publish to channel and verify receipt.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
-        // Unsubscribe queue.
         await queue.UnsubscribeAsync();
 
-        // Publish and verify no messages received.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertQueueReceives(queue, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task MultipleHandlers(bool isCluster)
     {
         var channel = BuildLiteral();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with multiple handlers.
         var received1 = new ConcurrentBag<MessageInfo>();
         var handler1 = BuildHandler(received1);
         await subscriber.SubscribeAsync(channel, handler1);
@@ -202,164 +222,140 @@ public class ISubscriberCompatibilityTests
         var handler2 = BuildHandler(received2);
         await subscriber.SubscribeAsync(channel, handler2);
 
-        // Publish to channel and verify both handlers receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received1, [(channel, Message1)]);
         await AssertHandlerReceives(received2, [(channel, Message1)]);
 
-        // Unsubscribe first handler.
         await subscriber.UnsubscribeAsync(channel, handler1);
 
-        // Publish and verify only second handler receives.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received1, []);
         await AssertHandlerReceives(received2, [(channel, Message2)]);
 
-        // Unsubscribe second handler.
         await subscriber.UnsubscribeAsync(channel, handler2);
 
-        // Publish and verify no handlers receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received1, []);
         await AssertHandlerReceives(received2, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task MultipleQueues(bool isCluster)
     {
         var channel = BuildLiteral();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with multiple queues.
         var queue1 = await subscriber.SubscribeAsync(channel);
         var queue2 = await subscriber.SubscribeAsync(channel);
 
-        // Publish to channel and verify both queues receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue1, [(channel, Message1)]);
         await AssertQueueReceives(queue2, [(channel, Message1)]);
 
-        // Unsubscribe first queue.
         await queue1.UnsubscribeAsync();
 
-        // Publish and verify only second queue receives.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertQueueReceives(queue1, []);
         await AssertQueueReceives(queue2, [(channel, Message2)]);
 
-        // Unsubscribe second queue.
         await queue2.UnsubscribeAsync();
 
-        // Publish and verify no queues receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertQueueReceives(queue1, []);
         await AssertQueueReceives(queue2, []);
     }
 
+    #endregion
+    #region UnsubscribeAsync
+
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task QueueAndHandler_UnsubscribeHandler(bool isCluster)
     {
         var channel = BuildLiteral();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with handler and queue.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
 
-        // Publish to channel and verify both receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
-        // Unsubscribe the handler.
         await subscriber.UnsubscribeAsync(channel, handler);
 
-        // Publish and verify only queue receives.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, [(channel, Message2)]);
 
-        // Unsubscribe the queue.
         await queue.UnsubscribeAsync();
 
-        // Publish and verify neither receives.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task QueueAndHandler_UnsubscribeQueue(bool isCluster)
     {
         var channel = BuildLiteral();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with handler and queue.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
 
-        // Publish to channel and verify both receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
-        // Unsubscribe the queue.
         await queue.UnsubscribeAsync();
 
-        // Publish and verify only handler receives.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, [(channel, Message2)]);
         await AssertQueueReceives(queue, []);
 
-        // Unsubscribe the handler.
         await subscriber.UnsubscribeAsync(channel, handler);
 
-        // Publish and verify neither receives.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task QueueAndHandler_UnsubscribeChannel(bool isCluster)
     {
         var channel = BuildLiteral();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe with handler and queue.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
 
-        // Publish to channel and verify both receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
-        // Unsubscribe all subscriptions on the channel.
         await subscriber.UnsubscribeAsync(channel);
 
-        // Publish and verify neither receives.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task QueueAndHandler_UnsubscribePattern(bool isCluster)
     {
         var pattern = BuildPattern();
@@ -367,21 +363,17 @@ public class ISubscriberCompatibilityTests
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe to pattern with handler and queue.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(pattern, handler);
         var queue = await subscriber.SubscribeAsync(pattern);
 
-        // Publish to matching channel and verify both receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(pattern, Message1)]);
         await AssertQueueReceives(queue, [(pattern, Message1)]);
 
-        // Unsubscribe all subscriptions on the pattern.
         await subscriber.UnsubscribeAsync(pattern);
 
-        // Publish and verify neither receives.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
@@ -392,35 +384,30 @@ public class ISubscriberCompatibilityTests
     {
         Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
 
-        // Only supported in cluster mode.
         bool isCluster = true;
 
         var channel = BuildSharded();
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe to sharded channel with handler and queue.
         var received = new ConcurrentBag<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
 
-        // Publish to channel and verify both receive.
         _ = await publisher.PublishAsync(channel, Message1);
         await AssertHandlerReceives(received, [(channel, Message1)]);
         await AssertQueueReceives(queue, [(channel, Message1)]);
 
-        // Unsubscribe all subscriptions on the sharded channel.
         await subscriber.UnsubscribeAsync(channel);
 
-        // Publish and verify neither receives.
         _ = await publisher.PublishAsync(channel, Message2);
         await AssertHandlerReceives(received, []);
         await AssertQueueReceives(queue, []);
     }
 
     [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task QueueAndHandler_UnsubscribeAll(bool isCluster)
     {
         var isSharded = IsShardedSupported(isCluster);
@@ -432,19 +419,16 @@ public class ISubscriberCompatibilityTests
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        // Subscribe to channel with handler and queue.
         var literalReceived = new ConcurrentBag<MessageInfo>();
         var literalHandler = BuildHandler(literalReceived);
         await subscriber.SubscribeAsync(literalChannel, literalHandler);
         var literalQueue = await subscriber.SubscribeAsync(literalChannel);
 
-        // Subscribe to pattern with handler and queue.
         var patternReceived = new ConcurrentBag<MessageInfo>();
         var patternHandler = BuildHandler(patternReceived);
         await subscriber.SubscribeAsync(pattern, patternHandler);
         var patternQueue = await subscriber.SubscribeAsync(pattern);
 
-        // Subscribe to sharded channel with handler and queue (cluster only).
         ConcurrentBag<MessageInfo> shardedReceived = [];
         var shardedHandler = BuildHandler(shardedReceived);
         ChannelMessageQueue? shardedQueue = null;
@@ -455,7 +439,6 @@ public class ISubscriberCompatibilityTests
             shardedQueue = await subscriber.SubscribeAsync(shardedChannel);
         }
 
-        // Publish to channels and verify all receive.
         _ = await publisher.PublishAsync(literalChannel, Message1);
         await AssertHandlerReceives(literalReceived, [(literalChannel, Message1)]);
         await AssertQueueReceives(literalQueue, [(literalChannel, Message1)]);
@@ -471,10 +454,8 @@ public class ISubscriberCompatibilityTests
             await AssertQueueReceives(shardedQueue!, [(shardedChannel, Message1)]);
         }
 
-        // Unsubscribe all subscriptions.
         await subscriber.UnsubscribeAllAsync();
 
-        // Publish and verify none receive.
         _ = await publisher.PublishAsync(literalChannel, Message2);
         await AssertHandlerReceives(literalReceived, []);
         await AssertQueueReceives(literalQueue, []);
@@ -491,9 +472,95 @@ public class ISubscriberCompatibilityTests
         }
     }
 
-    /// <summary>
-    /// Builds and returns two new subscribers for testing.
-    /// </summary>
+    #endregion
+    #region SubscriptionChannelsAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionChannelsAsync_NoSubscribers_ReturnsEmpty(IServer server)
+        => Assert.Empty(await server.SubscriptionChannelsAsync());
+
+    [Fact]
+    public async Task SubscriptionChannelsAsync_WithSubscriber_ReturnsChannel()
+    {
+        using var connection = TestConfiguration.DefaultCompatibleConnection();
+        var server = connection.GetServers().First();
+        var subscriber = connection.GetSubscriber();
+
+        var channelName = $"test-pubsub-channels-{Guid.NewGuid()}";
+        var channel = ValkeyChannel.Literal(channelName);
+
+        await subscriber.SubscribeAsync(channel, (_, _) => { });
+        try
+        {
+            await Task.Delay(500, TestContext.Current.CancellationToken);
+            ValkeyChannel[] channels = await server.SubscriptionChannelsAsync();
+            Assert.Contains(channels, c => c.ToString() == channelName);
+        }
+        finally
+        {
+            await subscriber.UnsubscribeAsync(channel);
+            await Task.Delay(500, TestContext.Current.CancellationToken);
+        }
+    }
+
+    [Fact]
+    public async Task SubscriptionChannelsAsync_WithPattern_FiltersChannels()
+    {
+        using var connection = TestConfiguration.DefaultCompatibleConnection();
+        var server = connection.GetServers().First();
+        var subscriber = connection.GetSubscriber();
+
+        var prefix = $"pubsub-filter-{Guid.NewGuid():N}";
+        var channel1 = ValkeyChannel.Literal($"{prefix}-a");
+        var channel2 = ValkeyChannel.Literal($"{prefix}-b");
+        var otherChannel = ValkeyChannel.Literal($"other-{Guid.NewGuid()}");
+
+        await subscriber.SubscribeAsync(channel1, (_, _) => { });
+        await subscriber.SubscribeAsync(channel2, (_, _) => { });
+        await subscriber.SubscribeAsync(otherChannel, (_, _) => { });
+        try
+        {
+            await Task.Delay(500, TestContext.Current.CancellationToken);
+
+            var pattern = ValkeyChannel.Literal($"{prefix}-*");
+            ValkeyChannel[] channels = await server.SubscriptionChannelsAsync(pattern);
+
+            Assert.Equal(2, channels.Length);
+            Assert.Contains(channels, c => c.ToString() == $"{prefix}-a");
+            Assert.Contains(channels, c => c.ToString() == $"{prefix}-b");
+        }
+        finally
+        {
+            await subscriber.UnsubscribeAsync(channel1);
+            await subscriber.UnsubscribeAsync(channel2);
+            await subscriber.UnsubscribeAsync(otherChannel);
+            await Task.Delay(500, TestContext.Current.CancellationToken);
+        }
+    }
+
+    #endregion
+    #region SubscriptionPatternCountAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionPatternCountAsync_NoPatterns_ReturnsZero(IServer server)
+        => Assert.Equal(0, await server.SubscriptionPatternCountAsync());
+
+    #endregion
+    #region SubscriptionSubscriberCountAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionSubscriberCountAsync_NoSubscribers_ReturnsZero(IServer server)
+    {
+        var channel = ValkeyChannel.Literal($"numsub-empty-{Guid.NewGuid()}");
+        Assert.Equal(0, await server.SubscriptionSubscriberCountAsync(channel));
+    }
+
+    #endregion
+    #region Helpers
+
     private static ISubscriber BuildSubscriber(bool isCluster)
     {
         ConnectionMultiplexer connection = isCluster
@@ -502,51 +569,28 @@ public class ISubscriberCompatibilityTests
         return connection.GetSubscriber();
     }
 
-    /// <summary>
-    /// Builds and returns a literal channel for testing.
-    /// </summary>
     private static ValkeyChannel BuildLiteral()
         => ValkeyChannel.Literal($"test-{Guid.NewGuid()}-channel");
 
-    /// <summary>
-    /// Builds and returns a pattern channel for testing.
-    /// </summary>
     private static ValkeyChannel BuildPattern()
         => ValkeyChannel.Pattern($"test-{Guid.NewGuid()}-*");
 
-    /// <summary>
-    /// Builds and returns a sharded channel for testing (cluster only).
-    /// </summary>
     private static ValkeyChannel BuildSharded()
         => ValkeyChannel.Sharded($"test-{Guid.NewGuid()}-shard-channel");
 
-    /// <summary>
-    /// Builds and returns a literal channel for testing that matches the specified pattern.
-    /// </summary>
     private static ValkeyChannel BuildLiteralForPattern(ValkeyChannel pattern)
     {
         Assert.True(pattern.IsPattern);
-
-        // Replace '*' in pattern with random digits to create a matching literal channel.
         var patternStr = pattern.ToString();
         var literalStr = patternStr.Replace("*", Random.Shared.Next(1000, 9999).ToString());
-
         return ValkeyChannel.Literal(literalStr);
     }
 
-    /// <summary>
-    /// Builds and returns a message handler that adds received messages to the specified bag.
-    /// </summary>
-    /// <param name="bag"></param>
-    public Action<ValkeyChannel, ValkeyValue> BuildHandler(ConcurrentBag<MessageInfo> bag)
+    private static Action<ValkeyChannel, ValkeyValue> BuildHandler(ConcurrentBag<MessageInfo> bag)
         => (channel, message) => bag.Add((channel, message));
 
-    /// <summary>
-    /// Asserts that the messages with the given channels and values are received by the specified queue.
-    /// </summary>
     private static async Task AssertQueueReceives(ChannelMessageQueue queue, List<MessageInfo> expected)
     {
-        // If no messages are expected, wait a short duration to ensure no messages are received.
         if (expected.Count == 0)
         {
             await Task.Delay(500);
@@ -554,7 +598,6 @@ public class ISubscriberCompatibilityTests
             return;
         }
 
-        // Collect received messages until all expected are received or timeout occurs.
         using var cts = new CancellationTokenSource(AssertTimeout);
 
         List<MessageInfo> received = [];
@@ -575,12 +618,8 @@ public class ISubscriberCompatibilityTests
         Assert.Fail("Expected messages not received within the timeout period.");
     }
 
-    /// <summary>
-    /// Asserts that messages with the given channel and value are received by the specified bag.
-    /// </summary>
     private static async Task AssertHandlerReceives(ConcurrentBag<MessageInfo> actual, List<MessageInfo> expected)
     {
-        // If no messages are expected, wait a short duration to ensure no messages are received.
         if (expected.Count == 0)
         {
             await Task.Delay(500);
@@ -588,7 +627,6 @@ public class ISubscriberCompatibilityTests
             return;
         }
 
-        // Check received messages until all expected are received or timeout occurs.
         using var cts = new CancellationTokenSource(AssertTimeout);
 
         while (!cts.Token.IsCancellationRequested)
@@ -596,10 +634,7 @@ public class ISubscriberCompatibilityTests
             if (actual.Count >= expected.Count)
             {
                 Assert.Equivalent(expected, actual);
-
-                // Clear actual messages that have been asserted.
                 actual.Clear();
-
                 return;
             }
 
@@ -608,4 +643,6 @@ public class ISubscriberCompatibilityTests
 
         Assert.Fail("Expected messages not received within the timeout period.");
     }
+
+    #endregion
 }
