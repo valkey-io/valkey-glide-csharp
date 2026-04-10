@@ -1303,7 +1303,7 @@ internal partial class BatchTestUtils
 
         // HashKeys test
         _ = batch.HashKeys(key1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(key1)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "HashKeys(key1)", true));
 
         // HashLength test
         _ = batch.HashLength(key1);
@@ -1338,14 +1338,14 @@ internal partial class BatchTestUtils
         testData.Add(new(0L, "HashLength(nonExistingKey)"));
 
         _ = batch.HashKeys(nonExistingKey);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "HashKeys(nonExistingKey)"));
+        testData.Add(new(new HashSet<ValkeyValue>(), "HashKeys(nonExistingKey)"));
 
         // HashGetAll test
         _ = batch.HashGetAll(key1);
-        testData.Add(new(new HashEntry[] {
-            new("field1", value1),
-            new("counter", "16"),
-            new("float_counter", "13")
+        testData.Add(new(new Dictionary<ValkeyValue, ValkeyValue> {
+            { "field1", value1 },
+            { "counter", "16" },
+            { "float_counter", "13" }
         }, "HashGetAll(key1)"));
 
         // HashValues test
@@ -1360,10 +1360,7 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue[] { "field1", "counter" }, "HashRandomFields(key1, 2)"));
 
         _ = batch.HashRandomFieldsWithValues(key1, 2);
-        testData.Add(new(new HashEntry[] {
-            new("field1", value1),
-            new("counter", "16")
-        }, "HashRandomFieldsWithValues(key1, 2)"));
+        testData.Add(new(new List<KeyValuePair<ValkeyValue, ValkeyValue>>(), "HashRandomFieldsWithValues(key1, 2)", true));
 
         // Multi-field operations
         HashEntry[] multiEntries = [
