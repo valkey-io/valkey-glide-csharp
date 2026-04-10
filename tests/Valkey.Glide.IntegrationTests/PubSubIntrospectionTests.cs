@@ -137,6 +137,24 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
 
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_SingleChannel_WithNoSubscribers_ReturnsZero(bool isCluster)
+    {
+        string channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        Assert.Equal(0L, await client.PubSubNumSubAsync(channel));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_SingleChannel_WithSubscribers_ReturnsCount(bool isCluster)
+    {
+        string channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Equal(1L, await client.PubSubNumSubAsync(channel));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
     {
         BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;

@@ -150,6 +150,13 @@ public abstract partial class BaseClient
         => await Command(Request.PubSubChannels(pattern));
 
     /// <inheritdoc/>
+    public async Task<long> PubSubNumSubAsync(string channel)
+    {
+        Dictionary<string, long> result = await Command(Request.PubSubNumSub([channel]));
+        return result.GetValueOrDefault(channel, 0L);
+    }
+
+    /// <inheritdoc/>
     public async Task<Dictionary<string, long>> PubSubNumSubAsync(IEnumerable<string> channels)
         => await Command(Request.PubSubNumSub(channels.ToGlideStrings()));
 

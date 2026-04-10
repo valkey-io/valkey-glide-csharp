@@ -162,21 +162,19 @@ internal partial class Request
     /// Lists the number of subscribers for the specified channels.
     /// </summary>
     /// <param name="channels">The channels to query.</param>
-    /// <returns>Command that returns a dictionary mapping channel names to subscriber counts.</returns>
+    /// <returns>Command that returns a dictionary mapping channel to subscriber counts.</returns>
     public static Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> PubSubNumSub(GlideString[] channels)
-    {
-        return new(RequestType.PubSubNumSub, channels, false, dict =>
-        {
-            Dictionary<string, long> result = [];
-            foreach (var kvp in dict)
+        => new(RequestType.PubSubNumSub, channels, false, dict =>
             {
-                string channel = kvp.Key.ToString();
-                long count = Convert.ToInt64(kvp.Value);
-                result[channel] = count;
-            }
-            return result;
-        });
-    }
+                Dictionary<string, long> result = [];
+                foreach (var kvp in dict)
+                {
+                    string channel = kvp.Key.ToString();
+                    long count = Convert.ToInt64(kvp.Value);
+                    result[channel] = count;
+                }
+                return result;
+            });
 
     /// <summary>
     /// Gets the number of active pattern subscriptions.

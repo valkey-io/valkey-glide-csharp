@@ -380,6 +380,22 @@ public partial interface IBaseClient : IPubSubBaseCommands
     abstract Task<ISet<string>> PubSubChannelsAsync(string pattern);
 
     /// <summary>
+    /// Returns the number of subscribers for the specified channel.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pubsub-numsub/">valkey.io</seealso>
+    /// <param name="channel">The channel name to query.</param>
+    /// <returns>The number of subscribers for the channel.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long count = await client.PubSubNumSubAsync("news");
+    /// Console.WriteLine($"news: {count} subscribers");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    abstract Task<long> PubSubNumSubAsync(string channel);
+
+    /// <summary>
     /// Returns the number of subscribers for the specified channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-numsub/">valkey.io</seealso>
