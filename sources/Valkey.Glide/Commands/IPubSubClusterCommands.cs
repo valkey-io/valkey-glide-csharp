@@ -10,5 +10,6 @@ public interface IPubSubClusterCommands
 {
     /// Intentionally empty - no shared methods for pub/sub cluster commands.
     /// GLIDE-style methods are in <see cref="IBaseClient.PubSubClusterCommands"/>.
-    /// StackExchange.Redis-style does not supported sharded pub/sub.
+    /// StackExchange.Redis-style methods are in <see cref="ISubscriber"/> and <see cref="IDatabaseAsync.PubSubCommands"/>.
+    /// (StackExchange.Redis does not have any cluster-specific pub/sub methods).
 }

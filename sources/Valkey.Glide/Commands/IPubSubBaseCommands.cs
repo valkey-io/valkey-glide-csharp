@@ -11,5 +11,5 @@ public interface IPubSubBaseCommands
 {
     /// Intentionally empty - no shared methods for pub/sub commands.
     /// GLIDE-style methods are in <see cref="IBaseClient.PubSubCommands"/>.
-    /// StackExchange.Redis-style methods are in <see cref="ISubscriber.BitmapCommands"/> and <see cref="IDatabaseAsync.PubSubCommands"/>.
+    /// StackExchange.Redis-style methods are in <see cref="ISubscriber"/> and <see cref="IDatabaseAsync.PubSubCommands"/>.
 }
