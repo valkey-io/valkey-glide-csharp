@@ -36,7 +36,7 @@ public interface IGeospatialBaseCommands
     /// <inheritdoc cref="GeoHashAsync(ValkeyKey, ValkeyValue)"/>
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">The members to get the geohashes for.</param>
-    /// <returns>An array with one geohash string per member,or <see langword="null"/> if the member does not exist.</returns>
+    /// <returns>An array with one geohash string per member, or <see langword="null"/> if the member does not exist.</returns>
     Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
     /// <summary>
