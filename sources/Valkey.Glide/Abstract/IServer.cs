@@ -331,4 +331,33 @@ public interface IServer : IRedisAsync
         long cursor = 0,
         int pageOffset = 0,
         CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Lists the currently active channels.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pubsub-channels"/>
+    /// <param name="pattern">A glob-style pattern to filter channels. If default, all active channels are returned.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>An array of active channel names matching the pattern.</returns>
+    Task<ValkeyChannel[]> SubscriptionChannelsAsync(ValkeyChannel pattern = default, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the number of unique patterns that are subscribed to by clients.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pubsub-numpat"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>The number of patterns all the clients are subscribed to.</returns>
+    Task<long> SubscriptionPatternCountAsync(CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Returns the number of subscribers for the specified channel.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/pubsub-numsub"/>
+    /// <param name="channel">The channel to check.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>The number of subscribers for the specified channel.</returns>
+    Task<long> SubscriptionSubscriberCountAsync(ValkeyChannel channel, CommandFlags flags = CommandFlags.None);
 }
