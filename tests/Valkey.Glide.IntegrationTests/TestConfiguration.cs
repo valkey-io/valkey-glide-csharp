@@ -262,9 +262,29 @@ public class TestConfiguration : IDisposable
     {
         TestConnections.ForEach(test => test.Data.Item1.Dispose());
         TestConnections = [];
+        TestDatabases = [];
         TestClusterConnections = [];
         TestStandaloneConnections = [];
     }
+
+    public static TheoryData<IDatabaseAsync> TestDatabases
+    {
+        get
+        {
+            lock (LockObject)
+            {
+                if (field.Count == 0)
+                {
+#pragma warning disable xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
+                    field = [.. TestStandaloneConnections.Select(d => new TheoryDataRow<IDatabaseAsync>(d.Data.GetDatabase()))];
+#pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
+                }
+            }
+            return field;
+        }
+
+        private set;
+    } = [];
     #endregion
 
     public TestConfiguration()

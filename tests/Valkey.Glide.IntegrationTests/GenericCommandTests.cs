@@ -546,15 +546,15 @@ public class GenericCommandTests(TestConfiguration config)
         // Test with BY pattern (skip for cluster clients as BY option is denied in cluster mode)
         if (client is not GlideClusterClient)
         {
-            await client.HashSetAsync("user:1", [new HashEntry("age", "30")]);
-            await client.HashSetAsync("user:2", [new HashEntry("age", "25")]);
+            _ = await client.HashSetAsync("user:1", [new HashEntry("age", "30")]);
+            _ = await client.HashSetAsync("user:2", [new HashEntry("age", "25")]);
             _ = await client.ListLeftPushAsync(userKey, ["2", "1"]);
             result = await client.SortAsync(userKey, by: "user:*->age");
             Assert.Equal(["2", "1"], [.. result.Select(v => v.ToString())]);
 
             // Test with GET pattern
-            await client.HashSetAsync("user:1", [new HashEntry("name", "Alice")]);
-            await client.HashSetAsync("user:2", [new HashEntry("name", "Bob")]);
+            _ = await client.HashSetAsync("user:1", [new HashEntry("name", "Alice")]);
+            _ = await client.HashSetAsync("user:2", [new HashEntry("name", "Bob")]);
             result = await client.SortAsync(userKey, by: "user:*->age", get: ["user:*->name"]);
             Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
         }
@@ -657,8 +657,8 @@ public class GenericCommandTests(TestConfiguration config)
         string destKey = "{prefix}-" + Guid.NewGuid().ToString();
 
         // Set up test data
-        await client.HashSetAsync("user:1", [new HashEntry("age", "30"), new HashEntry("name", "Alice")]);
-        await client.HashSetAsync("user:2", [new HashEntry("age", "25"), new HashEntry("name", "Bob")]);
+        _ = await client.HashSetAsync("user:1", [new HashEntry("age", "30"), new HashEntry("name", "Alice")]);
+        _ = await client.HashSetAsync("user:2", [new HashEntry("age", "25"), new HashEntry("name", "Bob")]);
         _ = await client.ListLeftPushAsync(userKey, ["2", "1"]);
 
         // Test with BY pattern
