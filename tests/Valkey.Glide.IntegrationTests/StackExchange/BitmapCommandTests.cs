@@ -11,7 +11,7 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 /// Tests verify that String-prefixed methods work identically to SER equivalents
 /// and that CommandFlags validation works correctly.
 /// </summary>
-public class BitmapCommandsTests(BitmapCommandsFixture fixture) : IClassFixture<BitmapCommandsFixture>
+public class BitmapCommandTests(BitmapCommandsFixture fixture) : IClassFixture<BitmapCommandsFixture>
 {
     #region Constants
 
@@ -363,7 +363,7 @@ public class BitmapCommandsTests(BitmapCommandsFixture fixture) : IClassFixture<
 }
 
 /// <summary>
-/// Fixture class for <see cref="BitmapCommandsTests" />.
+/// Fixture class for <see cref="BitmapCommandTests" />.
 /// </summary>
 public class BitmapCommandsFixture : IDisposable
 {
