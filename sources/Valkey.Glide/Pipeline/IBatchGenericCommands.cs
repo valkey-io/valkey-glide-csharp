@@ -7,68 +7,68 @@ namespace Valkey.Glide.Pipeline;
 
 internal interface IBatchGenericCommands
 {
-    /// <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyDelete(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(IEnumerable{ValkeyKey})" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
     IBatch KeyDelete(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyUnlink(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(IEnumerable{ValkeyKey})" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
     IBatch KeyUnlink(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyExists(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(IEnumerable{ValkeyKey})" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
     IBatch KeyExists(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" /></returns>
     IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" /></returns>
     IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" /></returns>
     IBatch KeyExpire(ValkeyKey key, DateTime? expiry);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" /></returns>
     IBatch KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyTimeToLive(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTypeAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTypeAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyTypeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTypeAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyType(ValkeyKey key);
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey)" /></returns>
     IBatch KeyRename(ValkeyKey key, ValkeyKey newKey);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRenameNXAsync(ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRenameNXAsync(ValkeyKey, ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyRenameNXAsync(ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRenameNXAsync(ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyRenameNX(ValkeyKey key, ValkeyKey newKey);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyPersistAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyPersistAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyPersistAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyPersistAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyPersist(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyDumpAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDumpAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyDumpAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDumpAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyDump(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -79,40 +79,40 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" /></returns>
     IBatch KeyRestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyTouch(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(IEnumerable{ValkeyKey})" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
     IBatch KeyTouch(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireTimeAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireTimeAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyExpireTime(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyEncodingAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyEncodingAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyEncodingAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyEncodingAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyEncoding(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyFrequencyAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyFrequencyAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyFrequencyAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyFrequencyAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyFrequency(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyIdleTimeAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyIdleTimeAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyIdleTime(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRefCountAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRefCountAsync(ValkeyKey)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyRefCountAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRefCountAsync(ValkeyKey, CommandFlags)" /></returns>
     IBatch KeyRefCount(ValkeyKey key);
 
     /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" /></returns>
     IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int)" /></returns>
+    /// <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int, CommandFlags)" /></returns>
     IBatch KeyMove(ValkeyKey key, int database);
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
