@@ -10,10 +10,7 @@ namespace Valkey.Glide.Internals;
 internal partial class Request
 {
     public static Cmd<GlideString, ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField)
-    {
-        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString()];
-        return ToValkeyValue(RequestType.HGet, args, true);
-    }
+        => ToValkeyValue(RequestType.HGet, [key.ToGlideString(), hashField.ToGlideString()], isNullable: true);
 
     public static Cmd<object[], ValkeyValue[]> HashGetAsync(ValkeyKey key, ValkeyValue[] hashFields)
     {
@@ -22,395 +19,232 @@ internal partial class Request
             item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, HashEntry[]> HashGetAllAsync(ValkeyKey key)
-    {
-        GlideString[] args = [key.ToGlideString()];
-        return DictionaryToHashEntries(RequestType.HGetAll, args);
-    }
+    public static Cmd<Dictionary<GlideString, object>, IDictionary<ValkeyValue, ValkeyValue>> HashGetAllAsync(ValkeyKey key)
+        => new(RequestType.HGetAll, [key.ToGlideString()], false, dict =>
+            dict.ToDictionary(kvp => (ValkeyValue)kvp.Key, kvp => (ValkeyValue)(GlideString)kvp.Value));
 
-    public static Cmd<string, ValkeyValue> HashSetAsync(ValkeyKey key, HashEntry[] hashFields)
+    public static Cmd<long, long> HashSetAsync(ValkeyKey key, KeyValuePair<ValkeyValue, ValkeyValue>[] hashFieldsAndValues)
     {
         List<GlideString> args = [key.ToGlideString()];
-        foreach (HashEntry entry in hashFields)
-        {
-            args.Add(entry.Name.ToGlideString());
-            args.Add(entry.Value.ToGlideString());
-        }
-        return Ok(RequestType.HMSet, [.. args]);
+        AddPairs(args, hashFieldsAndValues);
+        return Simple<long>(RequestType.HSet, [.. args]);
     }
 
-    public static Cmd<object, bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when)
-    {
-        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()];
+    public static Cmd<long, bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
+        => Boolean<long>(RequestType.HSet, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
-        GuardClauses.WhenAlwaysOrNotExists(when);
-        return value.IsNull
-            ? Boolean<object>(RequestType.HDel, args[..2])
-            : when == When.Always
-                ? Boolean<object>(RequestType.HSet, args)
-                : Boolean<object>(RequestType.HSetNX, args);
-    }
+    public static Cmd<bool, bool> HashSetNotExistsAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
+        => Boolean<bool>(RequestType.HSetNX, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
     public static Cmd<long, bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField)
-    {
-        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString()];
-        return Boolean<long>(RequestType.HDel, args);
-    }
+        => Boolean<long>(RequestType.HDel, [key.ToGlideString(), hashField.ToGlideString()]);
 
     public static Cmd<long, long> HashDeleteAsync(ValkeyKey key, ValkeyValue[] hashFields)
-    {
-        GlideString[] args = [key.ToGlideString(), .. hashFields.ToGlideStrings()];
-        return Simple<long>(RequestType.HDel, args);
-    }
+        => Simple<long>(RequestType.HDel, [key.ToGlideString(), .. hashFields.ToGlideStrings()]);
 
     public static Cmd<bool, bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField)
-    {
-        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString()];
-        return Boolean<bool>(RequestType.HExists, args);
-    }
+        => Boolean<bool>(RequestType.HExists, [key.ToGlideString(), hashField.ToGlideString()]);
 
-    public static Cmd<long, long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value)
-    {
-        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()];
-        return Simple<long>(RequestType.HIncrBy, args);
-    }
+    public static Cmd<long, long> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, long value)
+        => Simple<long>(RequestType.HIncrBy, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
-    public static Cmd<double, double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value)
-    {
-        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()];
-        return Simple<double>(RequestType.HIncrByFloat, args);
-    }
+    public static Cmd<double, double> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, double value)
+        => Simple<double>(RequestType.HIncrByFloat, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
-    public static Cmd<object[], ValkeyValue[]> HashKeysAsync(ValkeyKey key)
-    {
-        GlideString[] args = [key.ToGlideString()];
-        return ObjectArrayToValkeyValueArray(RequestType.HKeys, args);
-    }
+    public static Cmd<object[], ISet<ValkeyValue>> HashKeysAsync(ValkeyKey key)
+        => new(RequestType.HKeys, [key.ToGlideString()], false, response =>
+            new HashSet<ValkeyValue>(response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)));
 
     public static Cmd<long, long> HashLengthAsync(ValkeyKey key)
-    {
-        GlideString[] args = [key.ToGlideString()];
-        return Simple<long>(RequestType.HLen, args);
-    }
-
-    public static Cmd<object[], (long, T)> HashScanAsync<T>(ValkeyKey key, long cursor, ValkeyValue pattern, long count, bool includeValues = true)
-    {
-        List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
-
-        if (!pattern.IsNull)
-        {
-            args.AddRange([Constants.MatchKeyword.ToGlideString(), pattern.ToGlideString()]);
-        }
-
-        if (count > 0)
-        {
-            args.AddRange([Constants.CountKeyword.ToGlideString(), count.ToGlideString()]);
-        }
-
-        return new(RequestType.HScan, [.. args], false, arr =>
-        {
-            object[] scanArray = arr;
-            long nextCursor = long.Parse(((GlideString)scanArray[0]).ToString());
-            object[] items = (object[])scanArray[1]; // This array will always have an even-length
-
-            if (includeValues)
-            {
-                // Return HashEntry[] with both field names and values
-                HashEntry[] entries = new HashEntry[items.Length / 2];
-                for (int i = 0; i < items.Length; i += 2)
-                {
-                    ValkeyValue field = (GlideString)items[i];
-                    ValkeyValue value = (GlideString)items[i + 1];
-                    entries[i / 2] = new HashEntry(field, value);
-                }
-                return (nextCursor, (T)(object)entries);
-            }
-            else
-            {
-                // Return ValkeyValue[] with only field names
-                ValkeyValue[] fields = new ValkeyValue[items.Length / 2];
-                for (int i = 0; i < items.Length; i += 2)
-                {
-                    fields[i / 2] = (GlideString)items[i];
-                }
-                return (nextCursor, (T)(object)fields);
-            }
-        });
-    }
+        => Simple<long>(RequestType.HLen, [key.ToGlideString()]);
 
     public static Cmd<long, long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField)
-    {
-        GlideString[] args = [key.ToGlideString(), hashField.ToGlideString()];
-        return Simple<long>(RequestType.HStrlen, args);
-    }
+        => Simple<long>(RequestType.HStrlen, [key.ToGlideString(), hashField.ToGlideString()]);
 
-    public static Cmd<object[], ValkeyValue[]> HashValuesAsync(ValkeyKey key)
-    {
-        GlideString[] args = [key.ToGlideString()];
-        return ObjectArrayToValkeyValueArray(RequestType.HVals, args);
-    }
+    public static Cmd<object[], ICollection<ValkeyValue>> HashValuesAsync(ValkeyKey key)
+        => new(RequestType.HVals, [key.ToGlideString()], false, response =>
+            [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
     public static Cmd<GlideString, ValkeyValue> HashRandomFieldAsync(ValkeyKey key)
-    {
-        GlideString[] args = [key.ToGlideString()];
-        return ToValkeyValue(RequestType.HRandField, args, true);
-    }
+        => ToValkeyValue(RequestType.HRandField, [key.ToGlideString()], isNullable: true);
 
     public static Cmd<object[], ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count)
+        => ObjectArrayToValkeyValueArray(RequestType.HRandField, [key.ToGlideString(), count.ToGlideString()]);
+
+    public static Cmd<object[], KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key)
     {
-        GlideString[] args = [key.ToGlideString(), count.ToGlideString()];
-        return ObjectArrayToValkeyValueArray(RequestType.HRandField, args);
+        GlideString[] args = [key.ToGlideString(), 1.ToGlideString(), Constants.WithValuesKeyword];
+        return new(RequestType.HRandField, args, false, response =>
+            response.Length > 0
+                ? new KeyValuePair<ValkeyValue, ValkeyValue>((GlideString)((object[])response[0])[0], (GlideString)((object[])response[0])[1])
+                : null);
     }
 
-    public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
+    public static Cmd<object[], ICollection<KeyValuePair<ValkeyValue, ValkeyValue>>> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
     {
         GlideString[] args = [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword];
-        return ObjectArrayToHashEntries(RequestType.HRandField, args);
+        return new(RequestType.HRandField, args, false, response =>
+            [.. response.Select(item =>
+            {
+                object[] arr = (object[])item;
+                return new KeyValuePair<ValkeyValue, ValkeyValue>((GlideString)arr[0], (GlideString)arr[1]);
+            })]);
     }
 
-    public static Cmd<object[], ValkeyValue[]?> HashGetExAsync(ValkeyKey key, ValkeyValue[] fields, HashGetExOptions options)
+    public static Cmd<object[], ValkeyValue[]> HashGetExpiryAsync(
+        ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOption option)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        // Add expiry options before FIELDS keyword
-        if (options.Expiry != null)
+        if (option.Duration is { } duration)
         {
-            switch (options.Expiry.Type)
-            {
-                case HGetExExpiryType.Seconds:
-                    args.AddRange([Constants.ExKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.Milliseconds:
-                    args.AddRange([Constants.PxKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.UnixSeconds:
-                    args.AddRange([Constants.ExAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.UnixMilliseconds:
-                    args.AddRange([Constants.PxAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case HGetExExpiryType.Persist:
-                    args.Add(Constants.PersistKeyword);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            args.Add(Constants.PxKeyword);
+            args.Add(ToMilliseconds(duration).ToGlideString());
+        }
+        else if (option.Timestamp is { } timestamp)
+        {
+            args.Add(Constants.PxAtKeyword);
+            args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());
+        }
+        else
+        {
+            args.Add(Constants.PersistKeyword);
         }
 
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
+        AddFields(args, [.. hashFields]);
 
         return new(RequestType.HGetEx, [.. args], true, response =>
-            response == null ? null : [.. response.Select(item =>
-                item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)], allowConverterToHandleNull: true);
+            [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
     }
 
-    public static Cmd<long, long> HashSetExAsync(ValkeyKey key, IDictionary<ValkeyValue, ValkeyValue> fieldValueMap, HashSetExOptions options)
+    public static Cmd<long, bool> HashSetExpiryAsync(
+        ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        SetExpiryOption option, HashSetCondition condition)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        // Add field existence condition options first (FNX/FXX)
-        if (options.OnlyIfNoneExist)
+        if (condition == HashSetCondition.OnlyIfNoneExist)
         {
             args.Add(Constants.FnxKeyword);
         }
-        else if (options.OnlyIfAllExist)
+        else if (condition == HashSetCondition.OnlyIfAllExist)
         {
             args.Add(Constants.FxxKeyword);
         }
 
-        // Add expiry options after conditional options
-        if (options.Expiry != null)
+        if (option.Duration is { } duration)
         {
-            switch (options.Expiry.Type)
-            {
-                case ExpiryType.Seconds:
-                    args.AddRange([Constants.ExKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case ExpiryType.Milliseconds:
-                    args.AddRange([Constants.PxKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case ExpiryType.UnixSeconds:
-                    args.AddRange([Constants.ExAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case ExpiryType.UnixMilliseconds:
-                    args.AddRange([Constants.PxAtKeyword, options.Expiry.Value!.Value.ToGlideString()]);
-                    break;
-                case ExpiryType.KeepExisting:
-                    args.Add(Constants.KeepTtlKeyword);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            args.Add(Constants.PxKeyword);
+            args.Add(ToMilliseconds(duration).ToGlideString());
+        }
+        else if (option.Timestamp is { } timestamp)
+        {
+            args.Add(Constants.PxAtKeyword);
+            args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());
+        }
+        else
+        {
+            args.Add(Constants.KeepTtlKeyword);
         }
 
-        // Add FIELDS keyword and field count
         args.Add(Constants.FieldsKeyword);
-        args.Add(fieldValueMap.Count.ToGlideString());
+        args.Add(hashFieldsAndValues.Count().ToGlideString());
+        AddPairs(args, hashFieldsAndValues);
 
-#pragma warning disable IDE0008 // Use explicit type
-        // Add field-value pairs
-        foreach (var kvp in fieldValueMap)
+        return Boolean<long>(RequestType.HSetEx, [.. args]);
+    }
+
+    public static Cmd<object[], HashPersistResult[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] hashFields)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        AddFields(args, hashFields);
+        return new(RequestType.HPersist, [.. args], false, response =>
+            [.. response.Select(item => (HashPersistResult)(long)item)]);
+    }
+
+    public static Cmd<object[], HashExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
+    {
+        List<GlideString> args = [key, ToMilliseconds(expiry).ToGlideString()];
+
+        AddExpireCondition(args, condition);
+        AddFields(args, hashFields);
+
+        return new(RequestType.HPExpire, [.. args], false, response =>
+            [.. response.Select(item => (HashExpireResult)(long)item)]);
+    }
+
+    public static Cmd<object[], HashExpireResult[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, ValkeyValue[] hashFields, ExpireCondition condition)
+    {
+        List<GlideString> args = [key.ToGlideString(), expiry.ToUnixTimeMilliseconds().ToGlideString()];
+
+        AddExpireCondition(args, condition);
+        AddFields(args, hashFields);
+
+        return new(RequestType.HPExpireAt, [.. args], false, response =>
+            [.. response.Select(item => (HashExpireResult)(long)item)]);
+    }
+
+    public static Cmd<object[], ExpireTimeResult[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] hashFields)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        AddFields(args, hashFields);
+        return new(RequestType.HPExpireTime, [.. args], false, response =>
+            [.. response.Select(item => new ExpireTimeResult((long)item))]);
+    }
+
+    public static Cmd<object[], TimeToLiveResult[]> HashTimeToLiveAsync(ValkeyKey key, ValkeyValue[] hashFields)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        AddFields(args, hashFields);
+        return new(RequestType.HPTtl, [.. args], false, response =>
+            [.. response.Select(item => new TimeToLiveResult((long)item))]);
+    }
+
+    /// <summary>
+    /// Adds the given fields to the arguments list.
+    /// </summary>
+    private static void AddFields(List<GlideString> args, ValkeyValue[] fields)
+    {
+        args.Add(Constants.FieldsKeyword);
+        args.Add(fields.Length.ToGlideString());
+        args.AddRange(fields.ToGlideStrings());
+    }
+
+    /// <summary>
+    /// Adds the given key-value pairs to the arguments list.
+    /// </summary>
+    private static void AddPairs(List<GlideString> args, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
+    {
+        foreach (var kvp in pairs)
         {
             args.Add(kvp.Key.ToGlideString());
             args.Add(kvp.Value.ToGlideString());
         }
-#pragma warning restore IDE0008 // Use explicit type
-
-        return Simple<long>(RequestType.HSetEx, [.. args]);
     }
 
-    public static Cmd<object[], long[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] fields)
+    /// <summary>
+    /// Adds the given expire condition to the arguments list.
+    /// </summary>
+    private static void AddExpireCondition(List<GlideString> args, ExpireCondition condition)
     {
-        List<GlideString> args = [key.ToGlideString()];
-
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HPersist, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
-    public static Cmd<object[], long[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] fields, HashFieldExpirationConditionOptions options)
-    {
-        List<GlideString> args = [key, ToMilliseconds(expiry).ToGlideString()];
-
-        // Add condition options before FIELDS keyword
-        if (options.Condition != null)
+        switch (condition)
         {
-            switch (options.Condition)
-            {
-                case ExpireOptions.HasNoExpiry:
-                    args.Add(Constants.NxKeyword);
-                    break;
-                case ExpireOptions.HasExistingExpiry:
-                    args.Add(Constants.XxKeyword);
-                    break;
-                case ExpireOptions.NewExpiryGreaterThanCurrent:
-                    args.Add(Constants.GtKeyword);
-                    break;
-                case ExpireOptions.NewExpiryLessThanCurrent:
-                    args.Add(Constants.LtKeyword);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            case ExpireCondition.Always:
+                break;
+            case ExpireCondition.OnlyIfNotExists:
+                args.Add(Constants.NxKeyword);
+                break;
+            case ExpireCondition.OnlyIfExists:
+                args.Add(Constants.XxKeyword);
+                break;
+            case ExpireCondition.OnlyIfGreaterThan:
+                args.Add(Constants.GtKeyword);
+                break;
+            case ExpireCondition.OnlyIfLessThan:
+                args.Add(Constants.LtKeyword);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(condition));
         }
-
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HPExpire, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
     }
-
-    public static Cmd<object[], long[]> HashExpireAtAsync(ValkeyKey key, DateTimeOffset expiry, ValkeyValue[] fields, HashFieldExpirationConditionOptions options)
-    {
-        List<GlideString> args = [key.ToGlideString(), expiry.ToUnixTimeMilliseconds().ToGlideString()];
-
-        // Add condition options before FIELDS keyword
-        if (options.Condition != null)
-        {
-            switch (options.Condition)
-            {
-                case ExpireOptions.HasNoExpiry:
-                    args.Add(Constants.NxKeyword);
-                    break;
-                case ExpireOptions.HasExistingExpiry:
-                    args.Add(Constants.XxKeyword);
-                    break;
-                case ExpireOptions.NewExpiryGreaterThanCurrent:
-                    args.Add(Constants.GtKeyword);
-                    break;
-                case ExpireOptions.NewExpiryLessThanCurrent:
-                    args.Add(Constants.LtKeyword);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HPExpireAt, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
-    public static Cmd<object[], long[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HExpireTime, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
-    public static Cmd<object[], long[]> HashPExpireTimeAsync(ValkeyKey key, ValkeyValue[] fields)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HPExpireTime, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
-    public static Cmd<object[], long[]> HashTtlAsync(ValkeyKey key, ValkeyValue[] fields)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HTtl, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
-    public static Cmd<object[], long[]> HashPTtlAsync(ValkeyKey key, ValkeyValue[] fields)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        // Add FIELDS keyword and field count
-        args.Add(Constants.FieldsKeyword);
-        args.Add(fields.Length.ToGlideString());
-
-        // Add field names
-        args.AddRange(fields.ToGlideStrings());
-
-        return new(RequestType.HPTtl, [.. args], false, response =>
-            [.. response.Select(item => (long)item)]);
-    }
-
 }
