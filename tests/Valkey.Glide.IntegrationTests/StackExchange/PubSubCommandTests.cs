@@ -2,9 +2,9 @@
 
 using System.Collections.Concurrent;
 
-using static Valkey.Glide.IntegrationTests.PubSubUtils;
-
 using Valkey.Glide.TestUtils;
+
+using static Valkey.Glide.IntegrationTests.PubSubUtils;
 // Type alias for readability.
 using MessageInfo = (Valkey.Glide.ValkeyChannel Channel, Valkey.Glide.ValkeyValue Message);
 
