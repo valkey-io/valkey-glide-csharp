@@ -5,10 +5,10 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
-/// <summary>
-/// Hash commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
-/// </summary>
-/// <seealso cref="IHashBaseCommands" />
+/// ATTENTION: Methods should only be added to this interface if they are implemented
+/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+/// by both should be added to <see cref="IHashBaseCommands"/> instead.
+
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IHashBaseCommands.HashGetAsync(ValkeyKey, ValkeyValue)"/>

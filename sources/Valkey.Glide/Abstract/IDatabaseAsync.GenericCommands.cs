@@ -5,10 +5,10 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
-/// <summary>
-/// Generic commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
-/// </summary>
-/// <seealso cref="IGenericBaseCommands" />
+/// ATTENTION: Methods should only be added to this interface if they are implemented
+/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+/// by both should be added to <see cref="IGenericBaseCommands"/> instead.
+
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IGenericBaseCommands.KeyDeleteAsync(ValkeyKey)"/>
