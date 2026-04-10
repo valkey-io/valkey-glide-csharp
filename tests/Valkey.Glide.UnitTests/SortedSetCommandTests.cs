@@ -249,7 +249,7 @@ public class SortedSetCommandTests
             () => Assert.Equal(0L, Request.SortedSetCountAsync("key").Converter(0L)),
 
             // Type converter test
-            () => Assert.Equal(ValkeyType.SortedSet, Request.KeyTypeAsync("key").Converter("zset"))
+            () => Assert.Equal(ValkeyType.SortedSet, Request.TypeAsync("key").Converter("zset"))
         );
 
     [Fact]

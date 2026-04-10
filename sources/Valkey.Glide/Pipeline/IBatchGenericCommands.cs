@@ -7,123 +7,123 @@ namespace Valkey.Glide.Pipeline;
 
 internal interface IBatchGenericCommands
 {
-    /// <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyDelete(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.DeleteAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was removed.</returns>
+    IBatch Delete(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch KeyDelete(IEnumerable<ValkeyKey> keys);
+    /// <inheritdoc cref="IBaseClient.DeleteAsync(IEnumerable{ValkeyKey})" />
+    /// <returns>Command Response - The number of keys that were removed.</returns>
+    IBatch Delete(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyUnlink(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.UnlinkAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was unlinked.</returns>
+    IBatch Unlink(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch KeyUnlink(IEnumerable<ValkeyKey> keys);
+    /// <inheritdoc cref="IBaseClient.UnlinkAsync(IEnumerable{ValkeyKey})" />
+    /// <returns>Command Response - The number of keys that were unlinked.</returns>
+    IBatch Unlink(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyExists(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.ExistsAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key exists.</returns>
+    IBatch Exists(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExistsAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch KeyExists(IEnumerable<ValkeyKey> keys);
+    /// <inheritdoc cref="IBaseClient.ExistsAsync(IEnumerable{ValkeyKey})" />
+    /// <returns>Command Response - The number of existing keys.</returns>
+    IBatch Exists(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry);
+    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, TimeSpan?)" />
+    /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
+    IBatch Expire(ValkeyKey key, TimeSpan? expiry);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when);
+    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen)" />
+    /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
+    IBatch Expire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, DateTime? expiry);
+    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, DateTime?)" />
+    /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
+    IBatch Expire(ValkeyKey key, DateTime? expiry);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)" /></returns>
-    IBatch KeyExpire(ValkeyKey key, DateTime? expiry, ExpireWhen when);
+    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, DateTime?, ExpireWhen)" />
+    /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
+    IBatch Expire(ValkeyKey key, DateTime? expiry, ExpireWhen when);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyTimeToLive(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)" />
+    /// <returns>Command Response - TTL in milliseconds, or -1 if no expiry, or -2 if key does not exist.</returns>
+    IBatch TimeToLive(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTypeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTypeAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyType(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)" />
+    /// <returns>Command Response - Type of key, or none when key does not exist.</returns>
+    IBatch Type(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey)" /></returns>
-    IBatch KeyRename(ValkeyKey key, ValkeyKey newKey);
+    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" />
+    /// <returns>Command Response - A task that completes when the rename succeeds.</returns>
+    IBatch Rename(ValkeyKey key, ValkeyKey newKey);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRenameNXAsync(ValkeyKey, ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRenameNXAsync(ValkeyKey, ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyRenameNX(ValkeyKey key, ValkeyKey newKey);
+    /// <inheritdoc cref="IBaseClient.RenameNXAsync(ValkeyKey, ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was renamed.</returns>
+    IBatch RenameNX(ValkeyKey key, ValkeyKey newKey);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyPersistAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyPersistAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyPersist(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.PersistAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the timeout was removed.</returns>
+    IBatch Persist(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyDumpAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyDumpAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyDump(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.DumpAsync(ValkeyKey)" />
+    /// <returns>Command Response - The serialized value, or <see langword="null"/> if key does not exist.</returns>
+    IBatch Dump(ValkeyKey key);
 
-    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" /></returns>
-    IBatch KeyRestore(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
+    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" />
+    /// <returns>Command Response - A task that completes when the restore succeeds.</returns>
+    IBatch Restore(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
 
-    /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" /></returns>
-    IBatch KeyRestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
+    /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" />
+    /// <returns>Command Response - A task that completes when the restore succeeds.</returns>
+    IBatch RestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyTouch(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was touched.</returns>
+    IBatch Touch(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(IEnumerable{ValkeyKey}, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(IEnumerable{ValkeyKey}, CommandFlags)" /></returns>
-    IBatch KeyTouch(IEnumerable<ValkeyKey> keys);
+    /// <inheritdoc cref="IBaseClient.TouchAsync(IEnumerable{ValkeyKey})" />
+    /// <returns>Command Response - The number of keys that were updated.</returns>
+    IBatch Touch(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyExpireTimeAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyExpireTime(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.ExpireTimeAsync(ValkeyKey)" />
+    /// <returns>Command Response - The expiration time, or <see langword="null"/> if no expiry or key does not exist.</returns>
+    IBatch ExpireTime(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyEncodingAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyEncodingAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyEncoding(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.ObjectEncodingAsync(ValkeyKey)" />
+    /// <returns>Command Response - The encoding of the object, or <see langword="null"/> if key does not exist.</returns>
+    IBatch ObjectEncoding(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyFrequencyAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyFrequencyAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyFrequency(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.ObjectFrequencyAsync(ValkeyKey)" />
+    /// <returns>Command Response - The frequency counter, or <see langword="null"/> if key does not exist.</returns>
+    IBatch ObjectFrequency(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyIdleTimeAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyIdleTime(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.ObjectIdleTimeAsync(ValkeyKey)" />
+    /// <returns>Command Response - The idle time, or <see langword="null"/> if key does not exist.</returns>
+    IBatch ObjectIdleTime(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRefCountAsync(ValkeyKey, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRefCountAsync(ValkeyKey, CommandFlags)" /></returns>
-    IBatch KeyRefCount(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.ObjectRefCountAsync(ValkeyKey)" />
+    /// <returns>Command Response - The reference count, or <see langword="null"/> if key does not exist.</returns>
+    IBatch ObjectRefCount(ValkeyKey key);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyCopyAsync(ValkeyKey, ValkeyKey, int, bool, CommandFlags)" /></returns>
-    IBatch KeyCopy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false);
+    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
+    IBatch Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyMoveAsync(ValkeyKey, int, CommandFlags)" /></returns>
-    IBatch KeyMove(ValkeyKey key, int database);
+    /// <inheritdoc cref="IBaseClient.MoveAsync(ValkeyKey, int)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was moved.</returns>
+    IBatch Move(ValkeyKey key, int database);
 
-    /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)" /></returns>
-    IBatch KeyRandom();
+    /// <inheritdoc cref="IBaseClient.RandomKeyAsync()" />
+    /// <returns>Command Response - A random key, or <see langword="null"/> when the database is empty.</returns>
+    IBatch RandomKey();
 
-    /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" /></returns>
+    /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
+    /// <returns>Command Response - The sorted elements.</returns>
     IBatch Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
 
-    /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" /></returns>
+    /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" />
+    /// <returns>Command Response - The number of replicas that acknowledged the write commands.</returns>
     IBatch Wait(long numreplicas, TimeSpan timeout);
 }

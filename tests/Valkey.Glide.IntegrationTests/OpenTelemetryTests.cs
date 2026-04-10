@@ -100,7 +100,7 @@ public class OpenTelemetryTests : IDisposable
             var batch = new Batch(isAtomic: false);
             _ = batch.StringSetAsync(key, "value");
             _ = batch.StringGetAsync(key);
-            _ = batch.KeyDelete(key);
+            _ = batch.Delete(key);
 
             _ = await standaloneClient.Exec(batch, raiseOnError: true);
         }
@@ -109,7 +109,7 @@ public class OpenTelemetryTests : IDisposable
             var batch = new ClusterBatch(isAtomic: false);
             _ = batch.StringSetAsync(key, "value");
             _ = batch.StringGetAsync(key);
-            _ = batch.KeyDelete(key);
+            _ = batch.Delete(key);
 
             _ = await clusterClient.Exec(batch, raiseOnError: true);
         }

@@ -60,7 +60,7 @@ public class SharedBatchTests
         string key2 = "{DumpRestore}" + Guid.NewGuid();
 
         Pipeline.IBatch batch = isCluster ? new ClusterBatch(isAtomic) : new Batch(isAtomic);
-        _ = batch.StringSet(key1, "hello").KeyDump(key1);
+        _ = batch.StringSet(key1, "hello").Dump(key1);
 
         object?[] res = isCluster
             ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch, false))!
@@ -73,7 +73,7 @@ public class SharedBatchTests
         );
 
         Pipeline.IBatch batch2 = isCluster ? new ClusterBatch(isAtomic) : new Batch(isAtomic);
-        _ = batch2.KeyDelete([key1, key2]).KeyRestore(key1, (byte[])res[1]!).KeyRestoreDateTime(key2, (byte[])res[1]!);
+        _ = batch2.Delete([key1, key2]).Restore(key1, (byte[])res[1]!).RestoreDateTime(key2, (byte[])res[1]!);
 
         res = isCluster
             ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch2, false))!

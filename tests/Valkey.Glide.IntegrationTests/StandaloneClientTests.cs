@@ -245,10 +245,10 @@ public class StandaloneClientTests(TestConfiguration config)
         Batch batch2 = new(isAtomic);
 
         // Test KeyCopy with database parameter
-        _ = batch2.KeyCopy(sourceKey, destKey, 1, false);
+        _ = batch2.Copy(sourceKey, destKey, 1, false);
 
         // Test KeyMove
-        _ = batch2.KeyMove(moveKey, 2);
+        _ = batch2.Move(moveKey, 2);
 
         object?[] results = (await client.Exec((Batch)batch, false))!;
         object?[] results2 = (await client.Exec(batch2, false))!;
