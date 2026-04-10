@@ -24,7 +24,14 @@ internal partial class Database
     public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var members = values.ToDictionary(e => e.Member, e => new GeoPosition(e.Longitude, e.Latitude));
+
+        // Map values to a dictionary with last-wins semantics.
+        var members = new Dictionary<ValkeyValue, GeoPosition>();
+        foreach (var entry in values)
+        {
+            members[entry.Member] = new GeoPosition(entry.Longitude, entry.Latitude);
+        }
+
         return await GeoAddAsync(key, members);
     }
 
