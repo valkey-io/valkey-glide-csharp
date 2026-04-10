@@ -29,5 +29,7 @@ public class PubSubState
     internal PubSubState(
         IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>> desired,
         IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>> actual)
-        => (Desired, Actual) = (desired, actual);
+    {
+        (Desired, Actual) = (desired, actual);
+    }
 }
