@@ -1494,81 +1494,81 @@ internal partial class BatchTestUtils
         _ = $"{atomicPrefix}2-{Guid.NewGuid()}";
         _ = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
-        // Test StringSetBit and StringGetBit
-        _ = batch.StringSetBit(key1, 7, true);
-        testData.Add(new(false, "StringSetBit(key1, 7, true)"));
+        // Test SetBit and GetBit
+        _ = batch.SetBit(key1, 7, true);
+        testData.Add(new(false, "SetBit(key1, 7, true)"));
 
-        _ = batch.StringGetBit(key1, 7);
-        testData.Add(new(true, "StringGetBit(key1, 7)"));
+        _ = batch.GetBit(key1, 7);
+        testData.Add(new(true, "GetBit(key1, 7)"));
 
-        _ = batch.StringSetBit(key1, 15, true);
-        testData.Add(new(false, "StringSetBit(key1, 15, true)"));
+        _ = batch.SetBit(key1, 15, true);
+        testData.Add(new(false, "SetBit(key1, 15, true)"));
 
-        _ = batch.StringGetBit(key1, 0);
-        testData.Add(new(false, "StringGetBit(key1, 0)"));
+        _ = batch.GetBit(key1, 0);
+        testData.Add(new(false, "GetBit(key1, 0)"));
 
-        // Test StringBitCount
-        _ = batch.StringBitCount(key1);
-        testData.Add(new(2L, "StringBitCount(key1)"));
+        // Test BitCount
+        _ = batch.BitCount(key1);
+        testData.Add(new(2L, "BitCount(key1)"));
 
-        _ = batch.StringBitCount(key1, 0, 1);
-        testData.Add(new(2L, "StringBitCount(key1, 0, 1)"));
+        _ = batch.BitCount(key1, 0, 1);
+        testData.Add(new(2L, "BitCount(key1, 0, 1)"));
 
-        // Test StringBitPosition
-        _ = batch.StringBitPosition(key1, true);
-        testData.Add(new(7L, "StringBitPosition(key1, true)"));
+        // Test BitPos
+        _ = batch.BitPos(key1, true);
+        testData.Add(new(7L, "BitPos(key1, true)"));
 
-        _ = batch.StringBitPosition(key1, false);
-        testData.Add(new(0L, "StringBitPosition(key1, false)"));
+        _ = batch.BitPos(key1, false);
+        testData.Add(new(0L, "BitPos(key1, false)"));
 
-        // Test StringBitOperation - use explicit prefix for cluster mode
+        // Test BitOp - use explicit prefix for cluster mode
         string bitOpKey1 = $"{prefix}bitop1-{Guid.NewGuid()}";
         string bitOpKey2 = $"{prefix}bitop2-{Guid.NewGuid()}";
         string bitOpDest = $"{prefix}bitopdest-{Guid.NewGuid()}";
 
-        _ = batch.StringSetBit(bitOpKey1, 7, true);
-        testData.Add(new(false, "StringSetBit(bitOpKey1, 7, true)"));
+        _ = batch.SetBit(bitOpKey1, 7, true);
+        testData.Add(new(false, "SetBit(bitOpKey1, 7, true)"));
 
-        _ = batch.StringSetBit(bitOpKey1, 15, true);
-        testData.Add(new(false, "StringSetBit(bitOpKey1, 15, true)"));
+        _ = batch.SetBit(bitOpKey1, 15, true);
+        testData.Add(new(false, "SetBit(bitOpKey1, 15, true)"));
 
-        _ = batch.StringSetBit(bitOpKey2, 3, true);
-        testData.Add(new(false, "StringSetBit(bitOpKey2, 3, true)"));
+        _ = batch.SetBit(bitOpKey2, 3, true);
+        testData.Add(new(false, "SetBit(bitOpKey2, 3, true)"));
 
-        _ = batch.StringBitOperation(Bitwise.And, bitOpDest, bitOpKey1, bitOpKey2);
-        testData.Add(new(2L, "StringBitOperation(AND, bitOpDest, bitOpKey1, bitOpKey2)"));
+        _ = batch.BitOp(Bitwise.And, bitOpDest, bitOpKey1, bitOpKey2);
+        testData.Add(new(2L, "BitOp(AND, bitOpDest, bitOpKey1, bitOpKey2)"));
 
-        _ = batch.StringBitCount(bitOpDest);
-        testData.Add(new(0L, "StringBitCount(bitOpDest) after AND"));
+        _ = batch.BitCount(bitOpDest);
+        testData.Add(new(0L, "BitCount(bitOpDest) after AND"));
 
-        _ = batch.StringBitOperation(Bitwise.Or, bitOpDest, bitOpKey1, bitOpKey2);
-        testData.Add(new(2L, "StringBitOperation(OR, bitOpDest, bitOpKey1, bitOpKey2)"));
+        _ = batch.BitOp(Bitwise.Or, bitOpDest, bitOpKey1, bitOpKey2);
+        testData.Add(new(2L, "BitOp(OR, bitOpDest, bitOpKey1, bitOpKey2)"));
 
-        _ = batch.StringBitCount(bitOpDest);
-        testData.Add(new(3L, "StringBitCount(bitOpDest) after OR"));
+        _ = batch.BitCount(bitOpDest);
+        testData.Add(new(3L, "BitCount(bitOpDest) after OR"));
 
-        // Test StringBitField - bit 7 set = value 1 in first byte
-        _ = batch.StringBitField(key1, [
+        // Test BitField - bit 7 set = value 1 in first byte
+        _ = batch.BitField(key1, [
             new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0))
         ]);
-        testData.Add(new(new long[] { 1L }, "StringBitField(key1, GET u8 0)"));
+        testData.Add(new(new long[] { 1L }, "BitField(key1, GET u8 0)"));
 
-        _ = batch.StringBitField(key1, [
+        _ = batch.BitField(key1, [
             new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 255)
         ]);
-        testData.Add(new(new long[] { 1L }, "StringBitField(key1, SET u8 8 255)"));
+        testData.Add(new(new long[] { 1L }, "BitField(key1, SET u8 8 255)"));
 
-        _ = batch.StringBitField(key1, [
+        _ = batch.BitField(key1, [
             new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 1)
         ]);
-        testData.Add(new(new long[] { 0L }, "StringBitField(key1, INCRBY u8 8 1)"));
+        testData.Add(new(new long[] { 0L }, "BitField(key1, INCRBY u8 8 1)"));
 
-        // Test StringBitFieldReadOnly
-        _ = batch.StringBitFieldReadOnly(key1, [
+        // Test BitFieldReadOnly
+        _ = batch.BitFieldReadOnly(key1, [
             new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
             new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8))
         ]);
-        testData.Add(new(new long[] { 1L, 0L }, "StringBitFieldReadOnly(key1, GET u8 0, GET u8 8)"));
+        testData.Add(new(new long[] { 1L, 0L }, "BitFieldReadOnly(key1, GET u8 0, GET u8 8)"));
 
         return testData;
     }

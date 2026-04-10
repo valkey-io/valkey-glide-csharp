@@ -40,6 +40,7 @@ public abstract class ConnectionConfiguration
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
         public readonly List<byte[]> RootCertificates = [];
         public TimeSpan? PubSubReconciliationInterval;
+        public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
 
         internal FFI.ConnectionConfig ToFfi() =>
@@ -60,6 +61,7 @@ public abstract class ConnectionConfiguration
                 PubSubSubscriptions,
                 RootCertificates,
                 (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
+                CompressionConfig?.ToFfi(),
                 ReadOnly
             );
     }
@@ -823,6 +825,27 @@ public abstract class ConnectionConfiguration
         public T WithPubSubReconciliationInterval(TimeSpan interval)
         {
             PubSubReconciliationInterval = interval;
+            return (T)this;
+        }
+
+        #endregion
+        #region Compression
+
+        /// <summary>
+        /// Compression configuration for transparent value compression.
+        /// When enabled, values are automatically compressed before sending to the server
+        /// and decompressed when receiving from the server.
+        /// </summary>
+        public CompressionConfig? CompressionConfig
+        {
+            get => Config.CompressionConfig;
+            set => Config.CompressionConfig = value;
+        }
+
+        /// <inheritdoc cref="CompressionConfig" />
+        public T WithCompression(CompressionConfig compressionConfig)
+        {
+            CompressionConfig = compressionConfig;
             return (T)this;
         }
 
