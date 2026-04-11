@@ -12,26 +12,33 @@ public class IamAuthTests
     private const string TestRegion = "us-east-1";
     private const string DefaultUsername = "default";
 
-    [Fact]
-    public async Task IamAuthenticationWithMockCredentials_Standalone()
-    {
-        // Create IAM configuration with 5 second refresh interval
-        var iamConfig = new IamAuthConfig(
-            TestClusterName,
-            ServiceType.ElastiCache,
-            TestRegion,
-            refreshIntervalSeconds: 5
-        );
+    private static IamAuthConfig CreateIamConfig(uint refreshIntervalSeconds) =>
+        new(TestClusterName, ServiceType.ElastiCache, TestRegion, refreshIntervalSeconds);
 
-        // Create server credentials with IAM config
-        var credentials = new ServerCredentials(DefaultUsername, iamConfig);
+    private static ServerCredentials CreateCredentials(uint refreshIntervalSeconds) =>
+        new(DefaultUsername, CreateIamConfig(refreshIntervalSeconds));
 
-        // Start server and create client with IAM authentication
-        using var server = new StandaloneServer();
-        var config = server.CreateConfigBuilder()
+    private static ConnectionConfiguration.StandaloneClientConfiguration CreateStandaloneConfig(
+        StandaloneServer server, ServerCredentials credentials) =>
+        server.CreateConfigBuilder()
             .WithCredentials(credentials)
             .WithTls(false)
             .Build();
+
+    private static ConnectionConfiguration.ClusterClientConfiguration CreateClusterConfig(
+        ClusterServer server, ServerCredentials credentials) =>
+        server.CreateConfigBuilder()
+            .WithCredentials(credentials)
+            .WithTls(false)
+            .Build();
+
+    [Fact]
+    public async Task IamAuthenticationWithMockCredentials_Standalone()
+    {
+        var credentials = CreateCredentials(refreshIntervalSeconds: 5);
+
+        using var server = new StandaloneServer();
+        var config = CreateStandaloneConfig(server, credentials);
 
         await using var client = await GlideClient.CreateClient(config);
 
@@ -45,23 +52,10 @@ public class IamAuthTests
     [Fact]
     public async Task IamAuthenticationWithMockCredentials_Cluster()
     {
-        // Create IAM configuration with 5 second refresh interval
-        var iamConfig = new IamAuthConfig(
-            TestClusterName,
-            ServiceType.ElastiCache,
-            TestRegion,
-            refreshIntervalSeconds: 5
-        );
+        var credentials = CreateCredentials(refreshIntervalSeconds: 5);
 
-        // Create server credentials with IAM config
-        var credentials = new ServerCredentials(DefaultUsername, iamConfig);
-
-        // Start cluster and create client with IAM authentication
         using var server = new ClusterServer();
-        var config = server.CreateConfigBuilder()
-            .WithCredentials(credentials)
-            .WithTls(false)
-            .Build();
+        var config = CreateClusterConfig(server, credentials);
 
         await using var client = await GlideClusterClient.CreateClient(config);
 
@@ -85,23 +79,10 @@ public class IamAuthTests
     [Fact]
     public async Task AutomaticIamTokenRefresh_Standalone()
     {
-        // Create IAM configuration with very short refresh interval (2 seconds)
-        var iamConfig = new IamAuthConfig(
-            TestClusterName,
-            ServiceType.ElastiCache,
-            TestRegion,
-            refreshIntervalSeconds: 2
-        );
+        var credentials = CreateCredentials(refreshIntervalSeconds: 2);
 
-        // Create server credentials with IAM config
-        var credentials = new ServerCredentials(DefaultUsername, iamConfig);
-
-        // Start server and create client with IAM authentication
         using var server = new StandaloneServer();
-        var config = server.CreateConfigBuilder()
-            .WithCredentials(credentials)
-            .WithTls(false)
-            .Build();
+        var config = CreateStandaloneConfig(server, credentials);
 
         await using var client = await GlideClient.CreateClient(config);
 
@@ -123,24 +104,10 @@ public class IamAuthTests
     [Fact]
     public async Task AutomaticIamTokenRefresh_Cluster()
     {
+        var credentials = CreateCredentials(refreshIntervalSeconds: 2);
 
-        // Create IAM configuration with very short refresh interval (2 seconds)
-        var iamConfig = new IamAuthConfig(
-            TestClusterName,
-            ServiceType.ElastiCache,
-            TestRegion,
-            refreshIntervalSeconds: 2
-        );
-
-        // Create server credentials with IAM config
-        var credentials = new ServerCredentials(DefaultUsername, iamConfig);
-
-        // Start cluster and create client with IAM authentication
         using var server = new ClusterServer();
-        var config = server.CreateConfigBuilder()
-            .WithCredentials(credentials)
-            .WithTls(false)
-            .Build();
+        var config = CreateClusterConfig(server, credentials);
 
         await using var client = await GlideClusterClient.CreateClient(config);
 
