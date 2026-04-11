@@ -4,6 +4,7 @@ namespace Valkey.Glide.UnitTests;
 
 public class PubSubSubscriptionConfigTests
 {
+    // TODO - update
     // Test constants
     private static readonly string TestChannel = "test-channel";
     private static readonly string TestPattern = "test-*";
@@ -247,6 +248,23 @@ public class PubSubSubscriptionConfigTests
         Assert.True(config.Subscriptions.ContainsKey(PubSubChannelMode.Sharded));
         Assert.Equal(Callback, config.Callback);
         Assert.Equal(Context, config.Context);
+    }
+
+    [Fact]
+    public void ClusterConfig_AcceptsBinary()
+    {
+        // TODO - update
+        byte[] invalidUtf8Bytes = [0xC0, 0xAF, 0xE0, 0x80, 0xBF];
+        ValkeyKey binaryKey = invalidUtf8Bytes;
+        var config = new ClusterPubSubSubscriptionConfig();
+
+        _ = config.WithChannel(binaryKey);
+        _ = config.WithPattern(binaryKey);
+        _ = config.WithShardedChannel(binaryKey);
+
+        Assert.Contains(binaryKey, config.Subscriptions[PubSubChannelMode.Exact]);
+        Assert.Contains(binaryKey, config.Subscriptions[PubSubChannelMode.Pattern]);
+        Assert.Contains(binaryKey, config.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
     #endregion

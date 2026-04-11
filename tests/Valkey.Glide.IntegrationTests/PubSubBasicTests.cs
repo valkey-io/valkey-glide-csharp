@@ -133,4 +133,28 @@ public class PubSubBasicTests
 
         await AssertReceivedAsync(subscriber, expected);
     }
+
+    [Theory]
+    [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
+    public static async Task BinaryChannel_PublishAndReceive_PreservesBytes(bool isCluster, PubSubChannelMode channelMode)
+    {
+        // TODO - update
+        byte[] invalidUtf8Bytes = [0x74, 0x65, 0x73, 0x74, 0xC0, 0xAF];
+
+        PubSubMessage expected = channelMode switch
+        {
+            PubSubChannelMode.Exact => PubSubMessage.FromChannel(invalidUtf8Bytes, invalidUtf8Bytes),
+            PubSubChannelMode.Pattern => PubSubMessage.FromPattern(invalidUtf8Bytes, invalidUtf8Bytes, [.. invalidUtf8Bytes, (byte)'*']),
+            PubSubChannelMode.Sharded => PubSubMessage.FromShardedChannel(invalidUtf8Bytes, invalidUtf8Bytes),
+            _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
+        };
+
+        using var subscriber = await BuildSubscriber(isCluster, expected, SubscribeMode.Blocking);
+        await AssertSubscribedAsync(subscriber, expected, SubscribeMode.Blocking);
+
+        using var publisher = BuildPublisher(isCluster);
+        await PublishAsync(publisher, expected);
+
+        await AssertReceivedAsync(subscriber, expected);
+    }
 }
