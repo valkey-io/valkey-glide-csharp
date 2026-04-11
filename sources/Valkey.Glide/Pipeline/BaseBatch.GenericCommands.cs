@@ -53,11 +53,8 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.Dump(ValkeyKey)" />
     public T Dump(ValkeyKey key) => AddCmd(DumpAsync(key));
 
-    /// <inheritdoc cref="IBatchGenericCommands.Restore(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" />
-    public T Restore(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null) => AddCmd(RestoreAsync(key, value, expiry, restoreOptions));
-
-    /// <inheritdoc cref="IBatchGenericCommands.RestoreDateTime(ValkeyKey, byte[], DateTime?, RestoreOptions?)" />
-    public T RestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null) => AddCmd(RestoreDateTimeAsync(key, value, expiry, restoreOptions));
+    /// <inheritdoc cref="IBatchGenericCommands.Restore(ValkeyKey, byte[], RestoreOptions?)" />
+    public T Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null) => AddCmd(RestoreAsync(key, value, options));
 
     /// <inheritdoc cref="IBatchGenericCommands.Touch(ValkeyKey)" />
     public T Touch(ValkeyKey key) => AddCmd(TouchAsync(key));
@@ -139,8 +136,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => RenameIfNotExists(key, newKey);
     IBatch IBatchGenericCommands.Persist(ValkeyKey key) => Persist(key);
     IBatch IBatchGenericCommands.Dump(ValkeyKey key) => Dump(key);
-    IBatch IBatchGenericCommands.Restore(ValkeyKey key, byte[] value, TimeSpan? expiry, RestoreOptions? restoreOptions) => Restore(key, value, expiry, restoreOptions);
-    IBatch IBatchGenericCommands.RestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry, RestoreOptions? restoreOptions) => RestoreDateTime(key, value, expiry, restoreOptions);
+    IBatch IBatchGenericCommands.Restore(ValkeyKey key, byte[] value, RestoreOptions? options) => Restore(key, value, options);
     IBatch IBatchGenericCommands.Touch(ValkeyKey key) => Touch(key);
     IBatch IBatchGenericCommands.Touch(IEnumerable<ValkeyKey> keys) => Touch(keys);
     IBatch IBatchGenericCommands.ExpireTime(ValkeyKey key) => ExpireTime(key);

@@ -1,5 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Pipeline;
 
 using static Valkey.Glide.Errors;
@@ -73,7 +74,7 @@ public class SharedBatchTests
         );
 
         Pipeline.IBatch batch2 = isCluster ? new ClusterBatch(isAtomic) : new Batch(isAtomic);
-        _ = batch2.Delete([key1, key2]).Restore(key1, (byte[])res[1]!).RestoreDateTime(key2, (byte[])res[1]!);
+        _ = batch2.Delete([key1, key2]).Restore(key1, (byte[])res[1]!).Restore(key2, (byte[])res[1]!, new RestoreOptions { ExpireAt = DateTimeOffset.UtcNow.AddHours(1) });
 
         res = isCluster
             ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch2, false))!

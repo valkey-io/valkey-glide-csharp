@@ -276,43 +276,30 @@ public partial interface IBaseClient
     /// <summary>
     /// Creates a key associated with a value that is obtained by
     /// deserializing the provided serialized value (obtained via <seealso cref="DumpAsync"/>).
-    /// This method takes a duration for the expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/restore"/>
     /// <note>When in cluster mode, both source and destination must map to the same hash slot.</note>
     /// <param name="key">The key to create.</param>
     /// <param name="value">The serialized value to deserialize and assign to key.</param>
-    /// <param name="expiry">The expiry to set as a duration. Default value is set to persist.</param>
-    /// <param name="restoreOptions">Set restore options with replace and absolute TTL modifiers, object idletime and frequency.</param>
+    /// <param name="options">Optional restore options including TTL, replace, idle time, and frequency.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.RestoreAsync(key, serializedValue, TimeSpan.FromMinutes(5));
+    /// // Restore with no expiry (persist indefinitely)
+    /// await client.RestoreAsync(key, serializedValue);
+    ///
+    /// // Restore with TTL
+    /// await client.RestoreAsync(key, serializedValue, new RestoreOptions { Ttl = TimeSpan.FromMinutes(5) });
+    ///
+    /// // Restore with absolute expiry
+    /// await client.RestoreAsync(key, serializedValue, new RestoreOptions { ExpireAt = DateTimeOffset.UtcNow.AddHours(1) });
+    ///
+    /// // Restore with replace option
+    /// await client.RestoreAsync(key, serializedValue, new RestoreOptions { Replace = true, Ttl = TimeSpan.FromMinutes(5) });
     /// </code>
     /// </example>
     /// </remarks>
-    Task RestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
-
-    /// <summary>
-    /// Creates a key associated with a value that is obtained by
-    /// deserializing the provided serialized value (obtained via <seealso cref="DumpAsync"/>).
-    /// This method takes an exact date and time for the expiry.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/restore"/>
-    /// <note>When in cluster mode, both source and destination must map to the same hash slot.</note>
-    /// <param name="key">The key to create.</param>
-    /// <param name="value">The serialized value to deserialize and assign to key.</param>
-    /// <param name="expiry">The expiry to set as a date and time. Default value is set to persist.</param>
-    /// <param name="restoreOptions">Set restore options with replace and absolute TTL modifiers, object idletime and frequency.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.RestoreDateTimeAsync(key, serializedValue, DateTime.UtcNow.AddMinutes(5));
-    /// </code>
-    /// </example>
-    /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task RestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
+    Task RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null);
 
     /// <summary>
     /// Alters the last access time of a key(s). A key is ignored if it does not exist.

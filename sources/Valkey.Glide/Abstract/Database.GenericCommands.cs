@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -146,14 +147,14 @@ internal partial class Database
     public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await RestoreAsync(key, value, expiry);
+        await RestoreAsync(key, value, expiry.HasValue ? new RestoreOptions { Ttl = expiry } : null);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRestoreAsync(ValkeyKey, byte[], DateTime?, CommandFlags)"/>
     public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await RestoreDateTimeAsync(key, value, expiry);
+        await RestoreAsync(key, value, expiry.HasValue ? new RestoreOptions { ExpireAt = new DateTimeOffset(expiry.Value) } : null);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyTouchAsync(ValkeyKey, CommandFlags)"/>

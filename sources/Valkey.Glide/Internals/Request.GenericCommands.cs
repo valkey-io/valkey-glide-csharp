@@ -94,13 +94,14 @@ internal partial class Request
     public static Cmd<GlideString, byte[]?> DumpAsync(ValkeyKey key)
         => new(RequestType.Dump, [key.ToGlideString()], true, response => response?.Bytes);
 
-    public static Cmd<string, ValkeyValue> RestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null)
+    public static Cmd<string, ValkeyValue> RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        if (expiry.HasValue)
+        if (options != null)
         {
-            args.Add(ToMilliseconds(expiry.Value).ToGlideString());
+            var (ttlMs, _) = options.GetTtlArgs();
+            args.Add(ttlMs.ToGlideString());
         }
         else
         {
@@ -109,34 +110,9 @@ internal partial class Request
 
         args.Add(value.ToGlideString());
 
-        if (restoreOptions != null)
+        if (options != null)
         {
-            args.AddRange(restoreOptions.ToArgs());
-        }
-
-        return Ok(RequestType.Restore, [.. args]);
-    }
-
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    public static Cmd<string, ValkeyValue> RestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null)
-    {
-        List<GlideString> args = [key.ToGlideString()];
-
-        if (expiry.HasValue)
-        {
-            args.Add(((DateTimeOffset)expiry).ToUnixTimeMilliseconds().ToGlideString());
-        }
-        else
-        {
-            args.Add(0.ToGlideString());
-        }
-
-        args.Add(value.ToGlideString());
-        args.Add(Constants.AbsttlKeyword); // By default needs to be added here
-
-        if (restoreOptions != null)
-        {
-            args.AddRange(restoreOptions.ToArgs());
+            args.AddRange(options.ToArgs());
         }
 
         return Ok(RequestType.Restore, [.. args]);

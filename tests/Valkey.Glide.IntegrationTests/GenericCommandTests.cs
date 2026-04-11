@@ -395,7 +395,6 @@ public class GenericCommandTests(TestConfiguration config)
         string sourceKey = Guid.NewGuid().ToString();
         string destKey = Guid.NewGuid().ToString();
         string replaceKey = Guid.NewGuid().ToString();
-        string replaceDateTimeKey = Guid.NewGuid().ToString();
         string value = "test_value";
 
         // Set a key
@@ -414,46 +413,41 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Test RestoreOptions with Replace
         await client.StringSetAsync(replaceKey, "old_value");
-        await client.StringSetAsync(replaceDateTimeKey, "old_value");
-        RestoreOptions replaceOptions = new RestoreOptions().Replace();
-        await client.RestoreAsync(replaceKey, dumpData, restoreOptions: replaceOptions);
+        await client.RestoreAsync(replaceKey, dumpData, new RestoreOptions { Replace = true });
         Assert.Equal(value, await client.StringGetAsync(replaceKey));
-        await client.RestoreDateTimeAsync(replaceDateTimeKey, dumpData, restoreOptions: replaceOptions);
-        Assert.Equal(value, await client.StringGetAsync(replaceDateTimeKey));
 
         // Test RestoreOptions with TTL
         string ttlKey = Guid.NewGuid().ToString();
-        string ttlDateTimeKey = Guid.NewGuid().ToString();
-        TimeSpan ts = TimeSpan.FromSeconds(30);
-        DateTime dt = new DateTime(2042, 12, 31);
-        await client.RestoreAsync(ttlKey, dumpData, expiry: ts);
-        await client.RestoreDateTimeAsync(ttlDateTimeKey, dumpData, expiry: dt);
+        await client.RestoreAsync(ttlKey, dumpData, new RestoreOptions { Ttl = TimeSpan.FromSeconds(30) });
 
         // Verify key exists and has TTL
         Assert.True(await client.ExistsAsync(ttlKey));
-        Assert.True(await client.ExistsAsync(ttlDateTimeKey));
         var ttl = await client.TimeToLiveAsync(ttlKey);
-        var ttlDateTime = await client.TimeToLiveAsync(ttlDateTimeKey);
         Assert.True(ttl.HasTimeToLive);
-        Assert.True(ttlDateTime.HasTimeToLive);
+
+        // Test RestoreOptions with ExpireAt
+        string expireAtKey = Guid.NewGuid().ToString();
+        await client.RestoreAsync(expireAtKey, dumpData, new RestoreOptions { ExpireAt = DateTimeOffset.UtcNow.AddYears(10) });
+
+        // Verify key exists and has TTL
+        Assert.True(await client.ExistsAsync(expireAtKey));
+        var expireAtTtl = await client.TimeToLiveAsync(expireAtKey);
+        Assert.True(expireAtTtl.HasTimeToLive);
 
         // Test RestoreOptions with IDLETIME
         string idletimeKey = Guid.NewGuid().ToString();
-        string idletimeDateTimeKey = Guid.NewGuid().ToString();
-        RestoreOptions idletimeOptions = new RestoreOptions().SetIdletime(1000);
-        await client.RestoreAsync(idletimeKey, dumpData, restoreOptions: idletimeOptions);
-        await client.RestoreDateTimeAsync(idletimeDateTimeKey, dumpData, restoreOptions: idletimeOptions);
+        await client.RestoreAsync(idletimeKey, dumpData, new RestoreOptions { IdleTime = 1000 });
         Assert.Equal(value, await client.StringGetAsync(idletimeKey));
-        Assert.Equal(value, await client.StringGetAsync(idletimeDateTimeKey));
 
         // Test RestoreOptions with FREQ
         string freqKey = Guid.NewGuid().ToString();
-        string freqDateTimeKey = Guid.NewGuid().ToString();
-        RestoreOptions freqOptions = new RestoreOptions().SetFrequency(5);
-        await client.RestoreAsync(freqKey, dumpData, restoreOptions: freqOptions);
-        await client.RestoreDateTimeAsync(freqDateTimeKey, dumpData, restoreOptions: freqOptions);
+        await client.RestoreAsync(freqKey, dumpData, new RestoreOptions { Frequency = 5 });
         Assert.Equal(value, await client.StringGetAsync(freqKey));
-        Assert.Equal(value, await client.StringGetAsync(freqDateTimeKey));
+
+        // Test combined options
+        string combinedKey = Guid.NewGuid().ToString();
+        await client.RestoreAsync(combinedKey, dumpData, new RestoreOptions { Ttl = TimeSpan.FromMinutes(5), Replace = false, IdleTime = 500 });
+        Assert.Equal(value, await client.StringGetAsync(combinedKey));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

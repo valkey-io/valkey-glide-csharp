@@ -65,12 +65,8 @@ public abstract partial class BaseClient
         => await Command(Request.DumpAsync(key));
 
     /// <inheritdoc/>
-    public async Task RestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null)
-        => _ = await Command(Request.RestoreAsync(key, value, expiry, restoreOptions));
-
-    /// <inheritdoc/>
-    public async Task RestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null)
-        => _ = await Command(Request.RestoreDateTimeAsync(key, value, expiry, restoreOptions));
+    public async Task RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null)
+        => _ = await Command(Request.RestoreAsync(key, value, options));
 
     /// <inheritdoc/>
     public async Task<bool> TouchAsync(ValkeyKey key)

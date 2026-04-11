@@ -63,13 +63,9 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - The serialized value, or <see langword="null"/> if key does not exist.</returns>
     IBatch Dump(ValkeyKey key);
 
-    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" />
+    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], RestoreOptions?)" />
     /// <returns>Command Response - No value is returned (void command).</returns>
-    IBatch Restore(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
-
-    /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" />
-    /// <returns>Command Response - No value is returned (void command).</returns>
-    IBatch RestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
+    IBatch Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null);
 
     /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)" />
     /// <returns>Command Response - <see langword="true"/> if the key was touched.</returns>
