@@ -56,7 +56,7 @@ internal interface IBatchGenericCommands
     IBatch Type(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" />
-    /// <returns>Command Response - A task that completes when the rename succeeds.</returns>
+    /// <returns>Command Response - No value is returned (void command).</returns>
     IBatch Rename(ValkeyKey key, ValkeyKey newKey);
 
     /// <inheritdoc cref="IBaseClient.RenameNXAsync(ValkeyKey, ValkeyKey)" />
@@ -72,11 +72,11 @@ internal interface IBatchGenericCommands
     IBatch Dump(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], TimeSpan?, RestoreOptions?)" />
-    /// <returns>Command Response - A task that completes when the restore succeeds.</returns>
+    /// <returns>Command Response - No value is returned (void command).</returns>
     IBatch Restore(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null);
 
     /// <inheritdoc cref="IBaseClient.RestoreDateTimeAsync(ValkeyKey, byte[], DateTime?, RestoreOptions?)" />
-    /// <returns>Command Response - A task that completes when the restore succeeds.</returns>
+    /// <returns>Command Response - No value is returned (void command).</returns>
     IBatch RestoreDateTime(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null);
 
     /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)" />
