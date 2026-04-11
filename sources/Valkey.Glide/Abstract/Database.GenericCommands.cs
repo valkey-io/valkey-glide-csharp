@@ -114,7 +114,7 @@ internal partial class Database
 
         if (when == When.NotExists)
         {
-            return await RenameNXAsync(key, newKey);
+            return await RenameIfNotExistsAsync(key, newKey);
         }
 
         await RenameAsync(key, newKey);
@@ -125,7 +125,7 @@ internal partial class Database
     public async Task<bool> KeyRenameNXAsync(ValkeyKey key, ValkeyKey newKey, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await RenameNXAsync(key, newKey);
+        return await RenameIfNotExistsAsync(key, newKey);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyPersistAsync(ValkeyKey, CommandFlags)"/>

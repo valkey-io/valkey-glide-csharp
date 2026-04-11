@@ -59,9 +59,9 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - No value is returned (void command).</returns>
     IBatch Rename(ValkeyKey key, ValkeyKey newKey);
 
-    /// <inheritdoc cref="IBaseClient.RenameNXAsync(ValkeyKey, ValkeyKey)" />
+    /// <inheritdoc cref="IBaseClient.RenameIfNotExistsAsync(ValkeyKey, ValkeyKey)" />
     /// <returns>Command Response - <see langword="true"/> if the key was renamed.</returns>
-    IBatch RenameNX(ValkeyKey key, ValkeyKey newKey);
+    IBatch RenameIfNotExists(ValkeyKey key, ValkeyKey newKey);
 
     /// <inheritdoc cref="IBaseClient.PersistAsync(ValkeyKey)" />
     /// <returns>Command Response - <see langword="true"/> if the timeout was removed.</returns>

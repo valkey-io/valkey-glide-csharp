@@ -50,8 +50,8 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.Rename(ValkeyKey, ValkeyKey)" />
     public T Rename(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameAsync(key, newKey));
 
-    /// <inheritdoc cref="IBatchGenericCommands.RenameNX(ValkeyKey, ValkeyKey)" />
-    public T RenameNX(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameNXAsync(key, newKey));
+    /// <inheritdoc cref="IBatchGenericCommands.RenameIfNotExists(ValkeyKey, ValkeyKey)" />
+    public T RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameIfNotExistsAsync(key, newKey));
 
     /// <inheritdoc cref="IBatchGenericCommands.Persist(ValkeyKey)" />
     public T Persist(ValkeyKey key) => AddCmd(PersistAsync(key));
@@ -107,14 +107,14 @@ public abstract partial class BaseBatch<T>
     public T Sort(ValkeyKey key, SortOptions? options)
     {
         var opts = options ?? new SortOptions();
-        return Sort(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+        return Sort(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
 
     /// <inheritdoc cref="IBatchGenericCommands.SortAndStore(ValkeyKey, ValkeyKey, SortOptions?)" />
     public T SortAndStore(ValkeyKey destination, ValkeyKey key, SortOptions? options)
     {
         var opts = options ?? new SortOptions();
-        return AddCmd(SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get is null ? null : [.. opts.Get]));
+        return AddCmd(SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get is null ? null : [.. opts.Get]));
     }
 
     /// <inheritdoc cref="IBatchGenericCommands.SortReadOnly(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
@@ -124,7 +124,7 @@ public abstract partial class BaseBatch<T>
     public T SortReadOnly(ValkeyKey key, SortOptions? options)
     {
         var opts = options ?? new SortOptions();
-        return SortReadOnly(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+        return SortReadOnly(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
 
     /// <inheritdoc cref="IBatchGenericCommands.Wait(long, TimeSpan)" />
@@ -144,7 +144,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.TimeToLive(ValkeyKey key) => TimeToLive(key);
     IBatch IBatchGenericCommands.Type(ValkeyKey key) => Type(key);
     IBatch IBatchGenericCommands.Rename(ValkeyKey key, ValkeyKey newKey) => Rename(key, newKey);
-    IBatch IBatchGenericCommands.RenameNX(ValkeyKey key, ValkeyKey newKey) => RenameNX(key, newKey);
+    IBatch IBatchGenericCommands.RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => RenameIfNotExists(key, newKey);
     IBatch IBatchGenericCommands.Persist(ValkeyKey key) => Persist(key);
     IBatch IBatchGenericCommands.Dump(ValkeyKey key) => Dump(key);
     IBatch IBatchGenericCommands.Restore(ValkeyKey key, byte[] value, TimeSpan? expiry, RestoreOptions? restoreOptions) => Restore(key, value, expiry, restoreOptions);

@@ -63,8 +63,8 @@ public abstract partial class BaseClient
         => _ = await Command(Request.RenameAsync(key, newKey));
 
     /// <inheritdoc/>
-    public async Task<bool> RenameNXAsync(ValkeyKey key, ValkeyKey newKey)
-        => await Command(Request.RenameNXAsync(key, newKey));
+    public async Task<bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
+        => await Command(Request.RenameIfNotExistsAsync(key, newKey));
 
     /// <inheritdoc/>
     public async Task<bool> PersistAsync(ValkeyKey key)
@@ -142,14 +142,14 @@ public abstract partial class BaseClient
     public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, SortOptions? options)
     {
         var opts = options ?? new SortOptions();
-        return await SortAsync(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+        return await SortAsync(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
 
     /// <inheritdoc/>
     public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, SortOptions? options)
     {
         var opts = options ?? new SortOptions();
-        return await SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+        return await SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
 
     /// <inheritdoc/>
@@ -160,6 +160,6 @@ public abstract partial class BaseClient
     public async Task<ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, SortOptions? options)
     {
         var opts = options ?? new SortOptions();
-        return await SortReadOnlyAsync(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+        return await SortReadOnlyAsync(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
 }

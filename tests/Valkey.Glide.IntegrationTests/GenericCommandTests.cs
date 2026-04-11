@@ -331,7 +331,7 @@ public class GenericCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestKeyRenameNX(BaseClient client)
+    public async Task TestKeyRenameIfNotExists(BaseClient client)
     {
         string oldKey = "{prefix}-" + Guid.NewGuid().ToString();
         string newKey = "{prefix}-" + Guid.NewGuid().ToString();
@@ -344,7 +344,7 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(existingKey, existingValue);
 
         // Rename to non-existing key should succeed
-        Assert.True(await client.RenameNXAsync(oldKey, newKey));
+        Assert.True(await client.RenameIfNotExistsAsync(oldKey, newKey));
 
         // Check that old key doesn't exist and new key exists
         Assert.False(await client.ExistsAsync(oldKey));
@@ -352,7 +352,7 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(value, await client.StringGetAsync(newKey));
 
         // Try to rename to existing key should fail
-        Assert.False(await client.RenameNXAsync(newKey, existingKey));
+        Assert.False(await client.RenameIfNotExistsAsync(newKey, existingKey));
 
         // Both keys should still exist with original values
         Assert.True(await client.ExistsAsync(newKey));
@@ -706,8 +706,16 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
 
         // Test with descending order
-        result = await client.SortAsync(key, new SortOptions { Order = Order.Descending });
+        result = await client.SortAsync(key, new SortOptions { Order = SortOrder.Descending });
         Assert.Equal(["3", "2", "1"], [.. result.Select(v => v.ToString())]);
+
+        // Test with explicit ascending order
+        result = await client.SortAsync(key, new SortOptions { Order = SortOrder.Ascending });
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
+
+        // Test with default order (should behave same as ascending - server default)
+        result = await client.SortAsync(key, new SortOptions { Order = SortOrder.Default });
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
 
         // Test with limit
         result = await client.SortAsync(key, new SortOptions { Skip = 1, Take = 1 });
@@ -727,7 +735,7 @@ public class GenericCommandTests(TestConfiguration config)
         // Test combined options
         result = await client.SortAsync(key, new SortOptions
         {
-            Order = Order.Descending,
+            Order = SortOrder.Descending,
             Skip = 1,
             Take = 2
         });
@@ -753,7 +761,7 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Test with descending order
         string destKey2 = "{prefix}-" + Guid.NewGuid().ToString();
-        count = await client.SortAndStoreAsync(destKey2, sourceKey, new SortOptions { Order = Order.Descending });
+        count = await client.SortAndStoreAsync(destKey2, sourceKey, new SortOptions { Order = SortOrder.Descending });
         Assert.Equal(3, count);
         result = await client.ListRangeAsync(destKey2);
         Assert.Equal(["3", "2", "1"], [.. result.Select(v => v.ToString())]);

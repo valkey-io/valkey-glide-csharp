@@ -93,7 +93,7 @@ internal partial class Request
     public static Cmd<string, bool> RenameAsync(ValkeyKey key, ValkeyKey newKey)
         => OKToBool(RequestType.Rename, [key.ToGlideString(), newKey.ToGlideString()]);
 
-    public static Cmd<bool, bool> RenameNXAsync(ValkeyKey key, ValkeyKey newKey)
+    public static Cmd<bool, bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
         => Simple<bool>(RequestType.RenameNX, [key.ToGlideString(), newKey.ToGlideString()]);
 
     public static Cmd<bool, bool> PersistAsync(ValkeyKey key)

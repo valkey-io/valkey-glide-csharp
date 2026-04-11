@@ -272,11 +272,11 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.RenameNXAsync(oldKey, newKey);
+    /// bool result = await client.RenameIfNotExistsAsync(oldKey, newKey);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> RenameNXAsync(ValkeyKey key, ValkeyKey newKey);
+    Task<bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey);
 
     /// <summary>
     /// Removes the existing timeout on key, turning the key from volatile

@@ -558,15 +558,15 @@ internal partial class BatchTestUtils
         _ = batch.Exists(renamedKey);
         testData.Add(new(true, "KeyExists(renamedKey) after rename"));
 
-        string renameNXKey = $"{prefix}renamenx-{Guid.NewGuid()}";
-        _ = batch.RenameNX(renamedKey, renameNXKey);
-        testData.Add(new(true, "KeyRenameNX(renamedKey, renameNXKey)"));
+        string renameIfNotExistsKey = $"{prefix}renameifnotexists-{Guid.NewGuid()}";
+        _ = batch.RenameIfNotExists(renamedKey, renameIfNotExistsKey);
+        testData.Add(new(true, "RenameIfNotExists(renamedKey, renameIfNotExistsKey)"));
 
         _ = batch.Exists(renamedKey);
-        testData.Add(new(false, "KeyExists(renamedKey) after renamenx"));
+        testData.Add(new(false, "KeyExists(renamedKey) after RenameIfNotExists"));
 
-        _ = batch.Exists(renameNXKey);
-        testData.Add(new(true, "KeyExists(renameNXKey) after renamenx"));
+        _ = batch.Exists(renameIfNotExistsKey);
+        testData.Add(new(true, "KeyExists(renameIfNotExistsKey) after RenameIfNotExists"));
 
         _ = batch.StringSet(prefix + genericKey1, "value1");
         testData.Add(new(true, "StringSet(prefix + genericKey1, value1)"));

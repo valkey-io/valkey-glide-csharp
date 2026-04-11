@@ -21,9 +21,9 @@ public class SortOptions
     public long Take { get; set; } = -1;
 
     /// <summary>
-    /// The sort order (ASC or DESC).
+    /// The sort order (ASC, DESC, or Default to omit and use server default).
     /// </summary>
-    public Order Order { get; set; } = Order.Ascending;
+    public SortOrder Order { get; set; } = SortOrder.Default;
 
     /// <summary>
     /// The sort type (Numeric or Alphabetic).
@@ -34,7 +34,8 @@ public class SortOptions
     /// A pattern to sort by external keys instead of by the elements stored at the key themselves.
     /// </summary>
     /// <remarks>
-    /// Supported in cluster mode since Valkey version 8.0 and above.
+    /// In cluster mode, BY is only supported since Valkey 8.0 and requires the pattern to contain
+    /// a hash tag that maps to the same slot as the key being sorted.
     /// </remarks>
     public ValkeyValue By { get; set; }
 
@@ -42,7 +43,8 @@ public class SortOptions
     /// Patterns to retrieve external keys' values.
     /// </summary>
     /// <remarks>
-    /// Supported in cluster mode since Valkey version 8.0 and above.
+    /// In cluster mode, GET is only supported since Valkey 8.0 and requires the pattern to contain
+    /// a hash tag that maps to the same slot as the key being sorted.
     /// </remarks>
     public IEnumerable<ValkeyValue>? Get { get; set; }
 }

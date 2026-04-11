@@ -323,7 +323,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string newKey = $"ser-rename-new-{Guid.NewGuid()}";
 
         await db.StringSetAsync(oldKey, "value");
-        await db.KeyRenameAsync(oldKey, newKey);
+        _ = await db.KeyRenameAsync(oldKey, newKey);
 
         Assert.False(await db.KeyExistsAsync(oldKey));
         Assert.True(await db.KeyExistsAsync(newKey));
