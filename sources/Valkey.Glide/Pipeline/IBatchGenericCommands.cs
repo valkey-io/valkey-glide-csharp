@@ -107,9 +107,13 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - The reference count, or <see langword="null"/> if key does not exist.</returns>
     IBatch ObjectRefCount(ValkeyKey key);
 
+    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
+    IBatch Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
+
     /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)" />
     /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
-    IBatch Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false);
+    IBatch Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false);
 
     /// <inheritdoc cref="IBaseClient.MoveAsync(ValkeyKey, int)" />
     /// <returns>Command Response - <see langword="true"/> if the key was moved.</returns>
@@ -122,6 +126,22 @@ internal interface IBatchGenericCommands
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
     /// <returns>Command Response - The sorted elements.</returns>
     IBatch Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
+
+    /// <inheritdoc cref="IBaseClient.SortAsync(ValkeyKey, SortOptions?)" />
+    /// <returns>Command Response - The sorted elements.</returns>
+    IBatch Sort(ValkeyKey key, SortOptions? options);
+
+    /// <inheritdoc cref="IBaseClient.SortAndStoreAsync(ValkeyKey, ValkeyKey, SortOptions?)" />
+    /// <returns>Command Response - The number of elements stored in destination.</returns>
+    IBatch SortAndStore(ValkeyKey destination, ValkeyKey key, SortOptions? options);
+
+    /// <inheritdoc cref="IBaseClient.SortReadOnlyAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
+    /// <returns>Command Response - The sorted elements.</returns>
+    IBatch SortReadOnly(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
+
+    /// <inheritdoc cref="IBaseClient.SortReadOnlyAsync(ValkeyKey, SortOptions?)" />
+    /// <returns>Command Response - The sorted elements.</returns>
+    IBatch SortReadOnly(ValkeyKey key, SortOptions? options);
 
     /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" />
     /// <returns>Command Response - The number of replicas that acknowledged the write commands.</returns>

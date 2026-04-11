@@ -137,4 +137,29 @@ public abstract partial class BaseClient
     /// <inheritdoc/>
     public async Task<long> WaitAsync(long numreplicas, TimeSpan timeout)
         => await Command(Request.WaitAsync(numreplicas, timeout));
+
+    /// <inheritdoc/>
+    public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return await SortAsync(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return await SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null)
+        => await Command(Request.SortReadOnlyAsync(key, skip, take, order, sortType, by, get?.ToArray()));
+
+    /// <inheritdoc/>
+    public async Task<ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return await SortReadOnlyAsync(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+    }
 }

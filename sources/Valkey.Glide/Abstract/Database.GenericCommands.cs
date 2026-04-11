@@ -96,8 +96,11 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey)"/>
-    public Task KeyRenameAsync(ValkeyKey key, ValkeyKey newKey)
-        => RenameAsync(key, newKey);
+    public async Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey)
+    {
+        await RenameAsync(key, newKey);
+        return true;
+    }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRenameAsync(ValkeyKey, ValkeyKey, When, CommandFlags)"/>
     public async Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None)

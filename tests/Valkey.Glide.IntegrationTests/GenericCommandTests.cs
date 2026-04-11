@@ -693,4 +693,118 @@ public class GenericCommandTests(TestConfiguration config)
         result = await client.ListRangeAsync(destKey2);
         Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortWithOptions(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test with list using SortOptions
+        _ = await client.ListLeftPushAsync(key, ["3", "1", "2"]);
+        ValkeyValue[] result = await client.SortAsync(key, new SortOptions());
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
+
+        // Test with descending order
+        result = await client.SortAsync(key, new SortOptions { Order = Order.Descending });
+        Assert.Equal(["3", "2", "1"], [.. result.Select(v => v.ToString())]);
+
+        // Test with limit
+        result = await client.SortAsync(key, new SortOptions { Skip = 1, Take = 1 });
+        _ = Assert.Single(result);
+        Assert.Equal("2", result[0].ToString());
+
+        // Test alphabetic sort
+        string alphaKey = Guid.NewGuid().ToString();
+        _ = await client.ListLeftPushAsync(alphaKey, ["b", "a", "c"]);
+        result = await client.SortAsync(alphaKey, new SortOptions { SortType = SortType.Alphabetic });
+        Assert.Equal(["a", "b", "c"], [.. result.Select(v => v.ToString())]);
+
+        // Test with null options (should use defaults)
+        result = await client.SortAsync(key, null);
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
+
+        // Test combined options
+        result = await client.SortAsync(key, new SortOptions
+        {
+            Order = Order.Descending,
+            Skip = 1,
+            Take = 2
+        });
+        Assert.Equal(2, result.Length);
+        Assert.Equal(["2", "1"], [.. result.Select(v => v.ToString())]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortAndStoreWithOptions(BaseClient client)
+    {
+        string sourceKey = "{prefix}-" + Guid.NewGuid().ToString();
+        string destKey = "{prefix}-" + Guid.NewGuid().ToString();
+
+        // Test basic sort and store with SortOptions
+        _ = await client.ListLeftPushAsync(sourceKey, ["3", "1", "2"]);
+        long count = await client.SortAndStoreAsync(destKey, sourceKey, new SortOptions());
+        Assert.Equal(3, count);
+
+        // Verify destination contains sorted values
+        ValkeyValue[] result = await client.ListRangeAsync(destKey);
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
+
+        // Test with descending order
+        string destKey2 = "{prefix}-" + Guid.NewGuid().ToString();
+        count = await client.SortAndStoreAsync(destKey2, sourceKey, new SortOptions { Order = Order.Descending });
+        Assert.Equal(3, count);
+        result = await client.ListRangeAsync(destKey2);
+        Assert.Equal(["3", "2", "1"], [.. result.Select(v => v.ToString())]);
+
+        // Test with limit
+        string destKey3 = "{prefix}-" + Guid.NewGuid().ToString();
+        count = await client.SortAndStoreAsync(destKey3, sourceKey, new SortOptions { Skip = 1, Take = 1 });
+        Assert.Equal(1, count);
+        result = await client.ListRangeAsync(destKey3);
+        _ = Assert.Single(result);
+        Assert.Equal("2", result[0].ToString());
+
+        // Test alphabetic sort
+        string alphaKey = "{prefix}-" + Guid.NewGuid().ToString();
+        string alphaDestKey = "{prefix}-" + Guid.NewGuid().ToString();
+        _ = await client.ListLeftPushAsync(alphaKey, ["b", "a", "c"]);
+        count = await client.SortAndStoreAsync(alphaDestKey, alphaKey, new SortOptions { SortType = SortType.Alphabetic });
+        Assert.Equal(3, count);
+        result = await client.ListRangeAsync(alphaDestKey);
+        Assert.Equal(["a", "b", "c"], [.. result.Select(v => v.ToString())]);
+
+        // Test with null options (should use defaults)
+        string destKey4 = "{prefix}-" + Guid.NewGuid().ToString();
+        count = await client.SortAndStoreAsync(destKey4, sourceKey, null);
+        Assert.Equal(3, count);
+        result = await client.ListRangeAsync(destKey4);
+        Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortWithOptions_WithPatterns(GlideClient client)
+    {
+        // Test with BY and GET patterns (only for standalone clients)
+        string userKey = Guid.NewGuid().ToString();
+
+        // Set up test data
+        await client.HashSetAsync("user:1", [new HashEntry("age", "30"), new HashEntry("name", "Alice")]);
+        await client.HashSetAsync("user:2", [new HashEntry("age", "25"), new HashEntry("name", "Bob")]);
+        _ = await client.ListLeftPushAsync(userKey, ["2", "1"]);
+
+        // Test with BY pattern using SortOptions
+        ValkeyValue[] result = await client.SortAsync(userKey, new SortOptions { By = "user:*->age" });
+        Assert.Equal(["2", "1"], [.. result.Select(v => v.ToString())]);
+
+        // Test with GET pattern using SortOptions
+        result = await client.SortAsync(userKey, new SortOptions
+        {
+            By = "user:*->age",
+            Get = ["user:*->name"]
+        });
+        Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
+    }
 }

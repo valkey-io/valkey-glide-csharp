@@ -124,8 +124,14 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyType> KeyTypeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)"/>
-    Task KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
+    /// <summary>
+    /// Renames key to newKey.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/rename"/>
+    /// <param name="key">The key to rename.</param>
+    /// <param name="newKey">The new name of the key.</param>
+    /// <returns><see langword="true"/> if the key was renamed (always true on success, throws on failure).</returns>
+    Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
 
     /// <summary>
     /// Renames key to newKey.

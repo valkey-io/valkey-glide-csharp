@@ -504,13 +504,13 @@ internal partial class BatchTestUtils
         testData.Add(new(true, "KeyExpire(genericKey1, 60s)"));
 
         _ = batch.TimeToLive(genericKey1);
-        testData.Add(new(TimeSpan.FromSeconds(60), "KeyTimeToLive(genericKey1)", true));
+        testData.Add(new(60000L, "TimeToLive(genericKey1)", true)); // Returns milliseconds
 
         _ = batch.Persist(genericKey1);
-        testData.Add(new(true, "KeyPersist(genericKey1)"));
+        testData.Add(new(true, "Persist(genericKey1)"));
 
         _ = batch.TimeToLive(genericKey1);
-        testData.Add(new(null, "KeyTimeToLive(genericKey1) after persist"));
+        testData.Add(new(-1L, "TimeToLive(genericKey1) after persist")); // -1 means no expiry
 
         _ = batch.Expire(genericKey1, TimeSpan.FromSeconds(120));
         testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
@@ -531,13 +531,13 @@ internal partial class BatchTestUtils
         // testData.Add(new(1L, "KeyFrequency(genericKey1)", true));
 
         _ = batch.ObjectIdleTime(genericKey1);
-        testData.Add(new(0L, "KeyIdleTime(genericKey1)", true));
+        testData.Add(new(TimeSpan.Zero, "ObjectIdleTime(genericKey1)", true)); // Returns TimeSpan?
 
         _ = batch.ObjectRefCount(genericKey1);
-        testData.Add(new(1L, "KeyRefCount(genericKey1)", true));
+        testData.Add(new(1L, "ObjectRefCount(genericKey1)", true));
 
         _ = batch.RandomKey();
-        testData.Add(new(genericKey1, "KeyRandom()", true));
+        testData.Add(new(new ValkeyKey(genericKey1), "RandomKey()", true)); // Returns ValkeyKey?
 
         _ = batch.Touch(genericKey1);
         testData.Add(new(true, "KeyTouch(genericKey1)"));

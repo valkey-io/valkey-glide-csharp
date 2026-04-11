@@ -86,11 +86,13 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.ObjectRefCount(ValkeyKey)" />
     public T ObjectRefCount(ValkeyKey key) => AddCmd(ObjectRefCountAsync(key));
 
+    /// <inheritdoc cref="IBatchGenericCommands.Copy(ValkeyKey, ValkeyKey, bool)" />
+    public T Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false)
+        => AddCmd(CopyAsync(sourceKey, destinationKey, replace));
+
     /// <inheritdoc cref="IBatchGenericCommands.Copy(ValkeyKey, ValkeyKey, int, bool)" />
-    public T Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false)
-        => destinationDatabase == -1
-            ? AddCmd(CopyAsync(sourceKey, destinationKey, replace))
-            : AddCmd(CopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
+    public T Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false)
+        => AddCmd(CopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
 
     /// <inheritdoc cref="IBatchGenericCommands.Move(ValkeyKey, int)" />
     public T Move(ValkeyKey key, int database) => AddCmd(MoveAsync(key, database));
@@ -100,6 +102,30 @@ public abstract partial class BaseBatch<T>
 
     /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
     public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null) => AddCmd(SortAsync(key, skip, take, order, sortType, by, get is null ? null : [.. get], null));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, SortOptions?)" />
+    public T Sort(ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return Sort(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+    }
+
+    /// <inheritdoc cref="IBatchGenericCommands.SortAndStore(ValkeyKey, ValkeyKey, SortOptions?)" />
+    public T SortAndStore(ValkeyKey destination, ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return AddCmd(SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get is null ? null : [.. opts.Get]));
+    }
+
+    /// <inheritdoc cref="IBatchGenericCommands.SortReadOnly(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
+    public T SortReadOnly(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null) => AddCmd(SortReadOnlyAsync(key, skip, take, order, sortType, by, get is null ? null : [.. get]));
+
+    /// <inheritdoc cref="IBatchGenericCommands.SortReadOnly(ValkeyKey, SortOptions?)" />
+    public T SortReadOnly(ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return SortReadOnly(key, opts.Skip, opts.Take, opts.Order, opts.SortType, opts.By, opts.Get);
+    }
 
     /// <inheritdoc cref="IBatchGenericCommands.Wait(long, TimeSpan)" />
     public T Wait(long numreplicas, TimeSpan timeout) => AddCmd(WaitAsync(numreplicas, timeout));
@@ -130,9 +156,14 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.ObjectFrequency(ValkeyKey key) => ObjectFrequency(key);
     IBatch IBatchGenericCommands.ObjectIdleTime(ValkeyKey key) => ObjectIdleTime(key);
     IBatch IBatchGenericCommands.ObjectRefCount(ValkeyKey key) => ObjectRefCount(key);
+    IBatch IBatchGenericCommands.Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => Copy(sourceKey, destinationKey, replace);
     IBatch IBatchGenericCommands.Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace) => Copy(sourceKey, destinationKey, destinationDatabase, replace);
     IBatch IBatchGenericCommands.Move(ValkeyKey key, int database) => Move(key, database);
     IBatch IBatchGenericCommands.RandomKey() => RandomKey();
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get) => Sort(key, skip, take, order, sortType, by, get);
+    IBatch IBatchGenericCommands.Sort(ValkeyKey key, SortOptions? options) => Sort(key, options);
+    IBatch IBatchGenericCommands.SortAndStore(ValkeyKey destination, ValkeyKey key, SortOptions? options) => SortAndStore(destination, key, options);
+    IBatch IBatchGenericCommands.SortReadOnly(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get) => SortReadOnly(key, skip, take, order, sortType, by, get);
+    IBatch IBatchGenericCommands.SortReadOnly(ValkeyKey key, SortOptions? options) => SortReadOnly(key, options);
     IBatch IBatchGenericCommands.Wait(long numreplicas, TimeSpan timeout) => Wait(numreplicas, timeout);
 }
