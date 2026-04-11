@@ -138,13 +138,12 @@ public class PubSubBasicTests
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task BinaryChannel_PublishAndReceive_PreservesBytes(bool isCluster, PubSubChannelMode channelMode)
     {
-        // TODO - update
         byte[] invalidUtf8Bytes = [0x74, 0x65, 0x73, 0x74, 0xC0, 0xAF];
 
         PubSubMessage expected = channelMode switch
         {
             PubSubChannelMode.Exact => PubSubMessage.FromChannel(invalidUtf8Bytes, invalidUtf8Bytes),
-            PubSubChannelMode.Pattern => PubSubMessage.FromPattern(invalidUtf8Bytes, invalidUtf8Bytes, [.. invalidUtf8Bytes, (byte)'*']),
+            PubSubChannelMode.Pattern => PubSubMessage.FromPattern(invalidUtf8Bytes, invalidUtf8Bytes, (byte[])[.. invalidUtf8Bytes, (byte)'*']),
             PubSubChannelMode.Sharded => PubSubMessage.FromShardedChannel(invalidUtf8Bytes, invalidUtf8Bytes),
             _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
         };

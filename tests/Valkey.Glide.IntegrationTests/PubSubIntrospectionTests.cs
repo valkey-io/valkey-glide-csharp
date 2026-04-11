@@ -119,7 +119,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
 
         Assert.Equivalent(
-            new Dictionary<string, long> { { channel, 0L } },
+            new Dictionary<ValkeyKey, long> { { channel, 0L } },
             await client.PubSubNumSubAsync([channel]));
     }
 
@@ -131,7 +131,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
 
         Assert.Equivalent(
-            new Dictionary<string, long> { { channel, 1L } },
+            new Dictionary<ValkeyKey, long> { { channel, 1L } },
             await client.PubSubNumSubAsync([channel]));
     }
 
@@ -209,7 +209,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         GlideClusterClient client = fixture.EmptyClusterClient!;
 
         Assert.Equivalent(
-            new Dictionary<string, long> { { channel, 0L } },
+            new Dictionary<ValkeyKey, long> { { channel, 0L } },
             await client.PubSubShardNumSubAsync([channel]));
     }
 
@@ -222,7 +222,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         GlideClusterClient client = fixture.ClusterClient!;
 
         Assert.Equivalent(
-            new Dictionary<string, long> { { shardChannel, 1L } },
+            new Dictionary<ValkeyKey, long> { { shardChannel, 1L } },
             await client.PubSubShardNumSubAsync([shardChannel]));
     }
 
@@ -234,7 +234,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         PubSubState state = await client.GetSubscriptionsAsync();
 
         // Verify subscriptions.
-        foreach (IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>>? subscriptions in new[] { state.Desired, state.Actual })
+        foreach (var subscriptions in new[] { state.Desired, state.Actual })
         {
             foreach (PubSubChannelMode mode in Enum.GetValues<PubSubChannelMode>())
             {
@@ -250,7 +250,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
         PubSubState state = await client.GetSubscriptionsAsync();
 
-        Dictionary<PubSubChannelMode, HashSet<string>> expected = new()
+        var expected = new Dictionary<PubSubChannelMode, HashSet<ValkeyKey>>()
         {
             [PubSubChannelMode.Exact] = [fixture.Channel],
             [PubSubChannelMode.Pattern] = [fixture.Pattern],

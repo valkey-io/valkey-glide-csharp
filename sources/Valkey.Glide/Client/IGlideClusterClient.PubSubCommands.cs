@@ -28,7 +28,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<long> SPublishAsync(string shardedChannel, string message);
+    abstract Task<long> SPublishAsync(ValkeyKey shardedChannel, ValkeyValue message);
 
     #endregion
     #region SubscribeCommands
@@ -41,7 +41,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SSubscribeAsync(string shardedChannel, TimeSpan timeout = default);
+    abstract Task SSubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channels and waits for server confirmation.
@@ -51,7 +51,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SSubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
+    abstract Task SSubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channel and returns without waiting for server confirmation.
@@ -70,7 +70,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SSubscribeLazyAsync(string shardedChannel);
+    abstract Task SSubscribeLazyAsync(ValkeyKey shardedChannel);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channels and returns without waiting for server confirmation.
@@ -84,13 +84,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardedChannels = new string[] { "shard-news", "shard-updates" };
+    /// var shardedChannels = new ValkeyKey[] { "shard-news", "shard-updates" };
     /// await clusterClient.SSubscribeLazyAsync(shardedChannels);
     /// Console.WriteLine("Subscribed to 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SSubscribeLazyAsync(IEnumerable<string> shardedChannels);
+    abstract Task SSubscribeLazyAsync(IEnumerable<ValkeyKey> shardedChannels);
 
     #endregion
     #region UnsubscribeCommands
@@ -112,7 +112,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SUnsubscribeAsync(string shardedChannel, TimeSpan timeout = default);
+    abstract Task SUnsubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from the specified sharded channels and waits for server confirmation.
@@ -122,7 +122,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SUnsubscribeAsync(IEnumerable<string> shardedChannels, TimeSpan timeout = default);
+    abstract Task SUnsubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from all sharded channels and returns without waiting for server confirmation.
@@ -158,7 +158,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SUnsubscribeLazyAsync(string shardedChannel);
+    abstract Task SUnsubscribeLazyAsync(ValkeyKey shardedChannel);
 
     /// <summary>
     /// Unsubscribes the client from the specified sharded channels and returns without waiting for server confirmation.
@@ -173,7 +173,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardedChannels = new string[] { "shard-news", "shard-updates" };
+    /// var shardedChannels = new ValkeyKey[] { "shard-news", "shard-updates" };
     /// await clusterClient.SUnsubscribeLazyAsync(shardedChannels);
     /// Console.WriteLine("Unsubscribed from 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
@@ -185,7 +185,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SUnsubscribeLazyAsync(IEnumerable<string> shardedChannels);
+    abstract Task SUnsubscribeLazyAsync(IEnumerable<ValkeyKey> shardedChannels);
 
     #endregion
     #region IntrospectionCommands
@@ -203,7 +203,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<ISet<string>> PubSubShardChannelsAsync();
+    abstract Task<ISet<ValkeyKey>> PubSubShardChannelsAsync();
 
     /// <summary>
     /// Lists the currently active sharded channels matching the specified pattern.
@@ -219,7 +219,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<ISet<string>> PubSubShardChannelsAsync(string pattern);
+    abstract Task<ISet<ValkeyKey>> PubSubShardChannelsAsync(ValkeyKey pattern);
 
     /// <summary>
     /// Returns the number of subscribers for the specified sharded channels.
@@ -230,8 +230,8 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var shardedChannels = new string[] { "shard-news", "shard-updates" };
-    /// Dictionary&lt;string, long&gt; counts = await clusterClient.PubSubShardNumSubAsync(shardedChannels);
+    /// var shardedChannels = new ValkeyKey[] { "shard-news", "shard-updates" };
+    /// var counts = await clusterClient.PubSubShardNumSubAsync(shardedChannels);
     /// foreach (var kvp in counts)
     /// {
     ///     Console.WriteLine($"{kvp.Key}: {kvp.Value} subscribers");
@@ -239,7 +239,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<Dictionary<string, long>> PubSubShardNumSubAsync(IEnumerable<string> shardedChannels);
+    abstract Task<Dictionary<ValkeyKey, long>> PubSubShardNumSubAsync(IEnumerable<ValkeyKey> shardedChannels);
 
     #endregion
 }

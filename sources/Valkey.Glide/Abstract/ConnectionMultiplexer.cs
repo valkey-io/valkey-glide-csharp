@@ -401,17 +401,13 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     private static ValkeyChannel ToValkeyChannel(PubSubMessage message)
     {
         var channelMode = message.ChannelMode;
-        switch (channelMode)
+        return channelMode switch
         {
-            case PubSubChannelMode.Exact:
-                return ValkeyChannel.Literal(message.Channel);
-            case PubSubChannelMode.Pattern:
-                return ValkeyChannel.Pattern(message.Pattern!);
-            case PubSubChannelMode.Sharded:
-                return ValkeyChannel.Sharded(message.Channel);
-            default:
-                throw new InvalidOperationException($"Unknown channel mode: {channelMode}");
-        }
+            PubSubChannelMode.Exact => ValkeyChannel.Literal(message.Channel),
+            PubSubChannelMode.Pattern => ValkeyChannel.Pattern(message.Pattern!.Value),
+            PubSubChannelMode.Sharded => ValkeyChannel.Sharded(message.Channel),
+            _ => throw new InvalidOperationException($"Unknown channel mode: {channelMode}"),
+        };
     }
 
     #endregion

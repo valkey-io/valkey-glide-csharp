@@ -27,7 +27,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<long> PublishAsync(string channel, string message);
+    abstract Task<long> PublishAsync(ValkeyKey channel, ValkeyValue message);
 
     #endregion
     #region SubscribeCommands
@@ -40,7 +40,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SubscribeAsync(string channel, TimeSpan timeout = default);
+    abstract Task SubscribeAsync(ValkeyKey channel, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified channels and waits for server confirmation.
@@ -52,12 +52,12 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
+    abstract Task SubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified channel and returns without waiting for server confirmation.
     /// <para />
-    /// See <see cref="SubscribeAsync(string, TimeSpan)"/> for the blocking version.
+    /// See <see cref="SubscribeAsync(ValkeyKey, TimeSpan)"/> for the blocking version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channel">The channel to subscribe to.</param>
@@ -71,12 +71,12 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SubscribeLazyAsync(string channel);
+    abstract Task SubscribeLazyAsync(ValkeyKey channel);
 
     /// <summary>
     /// Subscribes the client to the specified channels and returns without waiting for server confirmation.
     /// <para />
-    /// See <see cref="SubscribeAsync(IEnumerable{string}, TimeSpan)"/> for the blocking version.
+    /// See <see cref="SubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/> for the blocking version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/subscribe/">valkey.io</seealso>
     /// <param name="channels">A collection of channels to subscribe to.</param>
@@ -91,7 +91,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task SubscribeLazyAsync(IEnumerable<string> channels);
+    abstract Task SubscribeLazyAsync(IEnumerable<ValkeyKey> channels);
 
     /// <summary>
     /// Subscribes the client to the specified pattern and waits for server confirmation.
@@ -101,7 +101,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task PSubscribeAsync(string pattern, TimeSpan timeout = default);
+    abstract Task PSubscribeAsync(ValkeyKey pattern, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified patterns and waits for server confirmation.
@@ -111,7 +111,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task PSubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
+    abstract Task PSubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout = default);
 
     /// <summary>
     /// Subscribes the client to the specified pattern and returns without waiting for server confirmation.
@@ -130,7 +130,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PSubscribeLazyAsync(string pattern);
+    abstract Task PSubscribeLazyAsync(ValkeyKey pattern);
 
     /// <summary>
     /// Subscribes the client to the specified patterns and returns without waiting for server confirmation.
@@ -150,7 +150,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PSubscribeLazyAsync(IEnumerable<string> patterns);
+    abstract Task PSubscribeLazyAsync(IEnumerable<ValkeyKey> patterns);
 
     #endregion
     #region UnsubscribeCommands
@@ -172,7 +172,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task UnsubscribeAsync(string channel, TimeSpan timeout = default);
+    abstract Task UnsubscribeAsync(ValkeyKey channel, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from the specified channels and waits for server confirmation.
@@ -184,7 +184,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task UnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default);
+    abstract Task UnsubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from all channels and returns without waiting for server confirmation.
@@ -221,7 +221,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task UnsubscribeLazyAsync(string channel);
+    abstract Task UnsubscribeLazyAsync(ValkeyKey channel);
 
     /// <summary>
     /// Unsubscribes the client from the specified channels and returns without waiting for server confirmation.
@@ -249,7 +249,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task UnsubscribeLazyAsync(IEnumerable<string> channels);
+    abstract Task UnsubscribeLazyAsync(IEnumerable<ValkeyKey> channels);
 
     /// <summary>
     /// Unsubscribes the client from all patterns and waits for server confirmation.
@@ -268,7 +268,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task PUnsubscribeAsync(string pattern, TimeSpan timeout = default);
+    abstract Task PUnsubscribeAsync(ValkeyKey pattern, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from the specified patterns and waits for server confirmation.
@@ -278,7 +278,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default);
+    abstract Task PUnsubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout = default);
 
     /// <summary>
     /// Unsubscribes the client from all patterns and returns without waiting for server confirmation.
@@ -315,7 +315,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PUnsubscribeLazyAsync(string pattern);
+    abstract Task PUnsubscribeLazyAsync(ValkeyKey pattern);
 
     /// <summary>
     /// Unsubscribes the client from the specified patterns and returns without waiting for server confirmation.
@@ -343,7 +343,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task PUnsubscribeLazyAsync(IEnumerable<string> patterns);
+    abstract Task PUnsubscribeLazyAsync(IEnumerable<ValkeyKey> patterns);
 
     #endregion
     #region IntrospectionCommands
@@ -361,7 +361,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<ISet<string>> PubSubChannelsAsync();
+    abstract Task<ISet<ValkeyKey>> PubSubChannelsAsync();
 
     /// <summary>
     /// Lists the currently active channels matching the specified pattern.
@@ -377,7 +377,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<ISet<string>> PubSubChannelsAsync(string pattern);
+    abstract Task<ISet<ValkeyKey>> PubSubChannelsAsync(ValkeyKey pattern);
 
     /// <summary>
     /// Returns the number of subscribers for the specified channel.
@@ -393,7 +393,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<long> PubSubNumSubAsync(string channel);
+    abstract Task<long> PubSubNumSubAsync(ValkeyKey channel);
 
     /// <summary>
     /// Returns the number of subscribers for the specified channels.
@@ -405,7 +405,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <example>
     /// <code>
     /// var channels = new string[] { "news", "updates" };
-    /// Dictionary&lt;string, long&gt; counts = await client.PubSubNumSubAsync(channels);
+    /// var counts = await client.PubSubNumSubAsync(channels);
     /// foreach (var kvp in counts)
     /// {
     ///     Console.WriteLine($"{kvp.Key}: {kvp.Value} subscribers");
@@ -413,7 +413,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    abstract Task<Dictionary<string, long>> PubSubNumSubAsync(IEnumerable<string> channels);
+    abstract Task<Dictionary<ValkeyKey, long>> PubSubNumSubAsync(IEnumerable<ValkeyKey> channels);
 
     /// <summary>
     /// Returns the number of active pattern subscriptions.

@@ -307,9 +307,7 @@ internal partial class FFI
         }
 
         protected override IntPtr AllocateAndCopy()
-        {
-            return StructToPtr(_request);
-        }
+            => StructToPtr(_request);
 
         /// <summary>
         /// Marshals the node addresses.
@@ -379,7 +377,7 @@ internal partial class FFI
             {
                 // Note: IntPtr and Rust's usize are the same size (pointer-sized integer).
                 // We use IntPtr here to represent the numeric length value that Rust expects as usize.
-                IntPtr certLen = new IntPtr(rootCerts[i].Length);
+                IntPtr certLen = new(rootCerts[i].Length);
                 Marshal.WriteIntPtr(certsLengthsPtr, i * IntPtr.Size, certLen);
             }
 
@@ -403,23 +401,23 @@ internal partial class FFI
             var subscriptions = config.Subscriptions;
 
             // Marshal exact channels.
-            if (subscriptions.TryGetValue(PubSubChannelMode.Exact, out ISet<string>? channels) && channels.Count > 0)
+            if (subscriptions.TryGetValue(PubSubChannelMode.Exact, out ISet<ValkeyKey>? channels) && channels.Count > 0)
             {
-                pubSubConfig.ChannelsPtr = MarshalStringArray(channels);
+                pubSubConfig.ChannelsPtr = MarshalGlideStringArray(channels.ToGlideStrings());
                 pubSubConfig.ChannelCount = (uint)channels.Count;
             }
 
             // Marshal patterns.
-            if (subscriptions.TryGetValue(PubSubChannelMode.Pattern, out ISet<string>? patterns) && patterns.Count > 0)
+            if (subscriptions.TryGetValue(PubSubChannelMode.Pattern, out ISet<ValkeyKey>? patterns) && patterns.Count > 0)
             {
-                pubSubConfig.PatternsPtr = MarshalStringArray(patterns);
+                pubSubConfig.PatternsPtr = MarshalGlideStringArray(patterns.ToGlideStrings());
                 pubSubConfig.PatternCount = (uint)patterns.Count;
             }
 
             // Marshal sharded channels - only for cluster clients.
-            if (subscriptions.TryGetValue(PubSubChannelMode.Sharded, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
+            if (subscriptions.TryGetValue(PubSubChannelMode.Sharded, out ISet<ValkeyKey>? shardedChannels) && shardedChannels.Count > 0)
             {
-                pubSubConfig.ShardedChannelsPtr = MarshalStringArray(shardedChannels);
+                pubSubConfig.ShardedChannelsPtr = MarshalGlideStringArray(shardedChannels.ToGlideStrings());
                 pubSubConfig.ShardedChannelCount = (uint)shardedChannels.Count;
             }
 
@@ -431,7 +429,7 @@ internal partial class FFI
         /// </summary>
         /// <param name="strings">The collection of strings to marshal.</param>
         /// <returns>Pointer to the array of string pointers in unmanaged memory.</returns>
-        private static IntPtr MarshalStringArray(ICollection<string> strings)
+        private static IntPtr MarshalGlideStringArray(ICollection<GlideString> strings)
         {
             if (strings.Count == 0)
             {
@@ -442,7 +440,7 @@ internal partial class FFI
             IntPtr arrayPtr = Marshal.AllocHGlobal(IntPtr.Size * strings.Count);
 
             int i = 0;
-            foreach (string str in strings)
+            foreach (var str in strings)
             {
                 // Allocate and copy each string
                 IntPtr stringPtr = Marshal.StringToHGlobalAnsi(str);

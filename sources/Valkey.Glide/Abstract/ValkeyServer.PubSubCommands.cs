@@ -13,9 +13,9 @@ internal partial class ValkeyServer
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        ISet<string> channels = pattern.IsNullOrEmpty
+        ISet<ValkeyKey> channels = pattern.IsNullOrEmpty
             ? await _conn.PubSubChannelsAsync()
-            : await _conn.PubSubChannelsAsync(pattern.ToString());
+            : await _conn.PubSubChannelsAsync(pattern.ToValkeyKey());
 
         return [.. channels.Select(ValkeyChannel.Literal)];
     }
@@ -33,6 +33,6 @@ internal partial class ValkeyServer
         CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.PubSubNumSubAsync(channel.ToString());
+        return await _conn.PubSubNumSubAsync(channel.ToValkeyKey());
     }
 }

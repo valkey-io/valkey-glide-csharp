@@ -4,7 +4,6 @@ namespace Valkey.Glide.UnitTests;
 
 public class PubSubMessageTests
 {
-    // TODO - UPDATE
     private static readonly string Message = "test message";
     private static readonly string Channel = "test-channel";
     private static readonly string Pattern = "test-*";
@@ -106,12 +105,11 @@ public class PubSubMessageTests
     [Fact]
     public void PubSubMessage_BinaryArgs_PreservesExactBytes()
     {
-        // TODO - update
         byte[] invalidUtf8Bytes = [0xC0, 0xAF, 0xE0, 0x80, 0xBF];
         PubSubMessage msg = PubSubMessage.FromPattern(invalidUtf8Bytes, invalidUtf8Bytes, invalidUtf8Bytes);
 
-        Assert.Equal(invalidUtf8Bytes, (byte[]?)msg.Message);
-        Assert.Equal(invalidUtf8Bytes, (byte[]?)msg.Channel);
-        Assert.Equal(invalidUtf8Bytes, (byte[]?)msg.Pattern.Value);
+        Assert.Equal(invalidUtf8Bytes, msg.Message);
+        Assert.Equal(invalidUtf8Bytes, msg.Channel);
+        Assert.Equal(invalidUtf8Bytes, msg.Pattern!.Value);
     }
 }

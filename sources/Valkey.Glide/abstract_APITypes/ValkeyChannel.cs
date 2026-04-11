@@ -61,6 +61,11 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     public static ValkeyChannel Literal(byte[] value) => new(value, ValkeyChannelOptions.None);
 
     /// <summary>
+    /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
+    /// </summary>
+    internal static ValkeyChannel Literal(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.None);
+
+    /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
     /// </summary>
     public static ValkeyChannel Pattern(string value) => new(value, ValkeyChannelOptions.Pattern);
@@ -69,6 +74,11 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
     /// </summary>
     public static ValkeyChannel Pattern(byte[] value) => new(value, ValkeyChannelOptions.Pattern);
+
+    /// <summary>
+    /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
+    /// </summary>
+    internal static ValkeyChannel Pattern(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Pattern);
 
     /// <summary>
     /// Create a new channel from a buffer, explicitly controlling the pattern mode.
@@ -93,6 +103,11 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// Create a new channel from a string, representing a sharded channel.
     /// </summary>
     public static ValkeyChannel Sharded(string value) => new(value, ValkeyChannelOptions.Sharded);
+
+    /// <summary>
+    /// Create a new channel from a <see cref="ValkeyKey"/>, representing a sharded channel.
+    /// </summary>
+    internal static ValkeyChannel Sharded(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Sharded);
 
     internal ValkeyChannel(byte[]? value, ValkeyChannelOptions options)
     {
@@ -185,7 +200,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         && ValkeyValue.Equals(Value, other.Value);
 
     /// <inheritdoc/>
-    public override int GetHashCode() => ValkeyValue.GetHashCode(Value) ^ (int)(Options);
+    public override int GetHashCode() => ValkeyValue.GetHashCode(Value) ^ (int)Options;
 
     /// <summary>
     /// Obtains a string representation of the channel name.
@@ -196,6 +211,12 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     {
         if (IsNull) throw new ArgumentException("A null channel is not valid in this context");
     }
+
+    /// <summary>
+    /// Converts this channel to a <see cref="ValkeyKey"/>.
+    /// </summary>
+    internal ValkeyKey ToValkeyKey()
+        => Value is null ? ValkeyKey.Null : (ValkeyKey)Value;
 
     internal ValkeyChannel Clone()
     {

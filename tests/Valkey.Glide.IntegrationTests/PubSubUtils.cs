@@ -280,9 +280,9 @@ public static class PubSubUtils
     /// <summary>
     /// Builds and returns the expected subscriptions for the given messages, indexed by channel mode.
     /// </summary>
-    public static Dictionary<PubSubChannelMode, HashSet<string>> BuildSubscriptions(IEnumerable<PubSubMessage> messages)
+    public static Dictionary<PubSubChannelMode, HashSet<ValkeyKey>> BuildSubscriptions(IEnumerable<PubSubMessage> messages)
     {
-        Dictionary<PubSubChannelMode, HashSet<string>> targets = [];
+        var targets = new Dictionary<PubSubChannelMode, HashSet<ValkeyKey>>();
 
         foreach (PubSubChannelMode mode in Enum.GetValues<PubSubChannelMode>())
         {
@@ -291,7 +291,11 @@ public static class PubSubUtils
 
         foreach (PubSubMessage message in messages)
         {
-            string target = message.ChannelMode == PubSubChannelMode.Pattern ? message.Pattern! : message.Channel;
+            ValkeyKey target =
+                message.ChannelMode == PubSubChannelMode.Pattern
+                ? message.Pattern!.Value
+                : message.Channel;
+
             _ = targets[message.ChannelMode].Add(target);
         }
         return targets;
@@ -348,10 +352,10 @@ public static class PubSubUtils
     )
     {
         // Get channels, patterns, and sharded channels.
-        Dictionary<PubSubChannelMode, HashSet<string>> targets = BuildSubscriptions(messages);
-        HashSet<string> channels = targets[PubSubChannelMode.Exact];
-        HashSet<string> patterns = targets[PubSubChannelMode.Pattern];
-        HashSet<string> shardedChannels = targets[PubSubChannelMode.Sharded];
+        var targets = BuildSubscriptions(messages);
+        var channels = targets[PubSubChannelMode.Exact];
+        var patterns = targets[PubSubChannelMode.Pattern];
+        var shardedChannels = targets[PubSubChannelMode.Sharded];
 
         // Build configuration.
         ConnectionConfiguration.ClusterClientConfigurationBuilder configBuilder = TestConfiguration.DefaultClusterClientConfig();
@@ -360,17 +364,17 @@ public static class PubSubUtils
         {
             ClusterPubSubSubscriptionConfig pubSubConfig = new();
 
-            foreach (string ch in channels)
+            foreach (var ch in channels)
             {
                 _ = pubSubConfig.WithChannel(ch);
             }
 
-            foreach (string p in patterns)
+            foreach (var p in patterns)
             {
                 _ = pubSubConfig.WithPattern(p);
             }
 
-            foreach (string sc in shardedChannels)
+            foreach (var sc in shardedChannels)
             {
                 _ = pubSubConfig.WithShardedChannel(sc);
             }
@@ -444,15 +448,15 @@ public static class PubSubUtils
         TimeSpan? timeout = null)
     {
         // Get channels and patterns.
-        Dictionary<PubSubChannelMode, HashSet<string>> targets = BuildSubscriptions(messages);
+        var targets = BuildSubscriptions(messages);
 
         if (targets[PubSubChannelMode.Sharded].Count > 0)
         {
             throw new ArgumentException("Standalone clients do not support sharded channel subscriptions.");
         }
 
-        HashSet<string> channels = targets[PubSubChannelMode.Exact];
-        HashSet<string> patterns = targets[PubSubChannelMode.Pattern];
+        var channels = targets[PubSubChannelMode.Exact];
+        var patterns = targets[PubSubChannelMode.Pattern];
 
         // Build configuration.
         ConnectionConfiguration.StandaloneClientConfigurationBuilder configBuilder = TestConfiguration.DefaultClientConfig();
@@ -461,12 +465,12 @@ public static class PubSubUtils
         {
             StandalonePubSubSubscriptionConfig pubSubConfig = new();
 
-            foreach (string ch in channels)
+            foreach (var ch in channels)
             {
                 _ = pubSubConfig.WithChannel(ch);
             }
 
-            foreach (string p in patterns)
+            foreach (var p in patterns)
             {
                 _ = pubSubConfig.WithPattern(p);
             }
@@ -565,7 +569,7 @@ public static class PubSubUtils
     /// </summary>
     public static async Task SubscribeAsync(BaseClient subscriber, IEnumerable<PubSubMessage> messages)
     {
-        Dictionary<PubSubChannelMode, HashSet<string>> subscriptions = BuildSubscriptions(messages);
+        var subscriptions = BuildSubscriptions(messages);
 
         if (subscriptions[PubSubChannelMode.Exact].Count > 0)
         {
@@ -594,7 +598,7 @@ public static class PubSubUtils
     /// </summary>
     public static async Task SubscribeLazyAsync(BaseClient subscriber, IEnumerable<PubSubMessage> messages)
     {
-        Dictionary<PubSubChannelMode, HashSet<string>> subscriptions = BuildSubscriptions(messages);
+        var subscriptions = BuildSubscriptions(messages);
 
         if (subscriptions[PubSubChannelMode.Exact].Count > 0)
         {
@@ -626,12 +630,12 @@ public static class PubSubUtils
     /// </summary>
     public static async Task UnsubscribeAsync(BaseClient subscriber, IEnumerable<PubSubMessage> messages, UnsubscribeMode unsubscribeMode)
     {
-        Dictionary<PubSubChannelMode, HashSet<string>> unsubscriptionTargets = BuildSubscriptions(messages);
+        var unsubscriptionTargets = BuildSubscriptions(messages);
 
         // Unsubscribe from channels by mode.
-        foreach (KeyValuePair<PubSubChannelMode, HashSet<string>> item in unsubscriptionTargets)
+        foreach (var item in unsubscriptionTargets)
         {
-            HashSet<string> channels = item.Value;
+            var channels = item.Value;
 
             // Skip if no channels/patterns for this mode,
             // since an empty collection will unsuscribe from all.
@@ -677,7 +681,7 @@ public static class PubSubUtils
     /// </summary>
     public static async Task AssertSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages, SubscribeMode? mode = null)
     {
-        Dictionary<PubSubChannelMode, HashSet<string>> expectedSubscriptions = BuildSubscriptions(messages);
+        var expectedSubscriptions = BuildSubscriptions(messages);
 
         // If subscribe mode is not specified, blocking, or config, expect subscription on first attempt (no retries).
         if (mode is null or SubscribeMode.Blocking or SubscribeMode.Config)
@@ -717,7 +721,7 @@ public static class PubSubUtils
     /// </summary>
     public static async Task AssertNotSubscribedAsync(BaseClient client, IEnumerable<PubSubMessage> messages, UnsubscribeMode mode)
     {
-        Dictionary<PubSubChannelMode, HashSet<string>> notExpected = BuildSubscriptions(messages);
+        var notExpected = BuildSubscriptions(messages);
 
         // If unsubscribe mode is blocking, expect unsubscription on first attempt (no retries).
         if (mode == UnsubscribeMode.Blocking)
@@ -812,18 +816,23 @@ public static class PubSubUtils
     /// <summary>
     /// Returns true if the client is subscribed to the specified channels, patterns, and sharded channels.
     /// </summary>
-    private static async Task<bool> IsSubscribedAsync(BaseClient client, Dictionary<PubSubChannelMode, HashSet<string>> expected)
+    private static async Task<bool> IsSubscribedAsync(BaseClient client, Dictionary<PubSubChannelMode, HashSet<ValkeyKey>> expected)
     {
-        IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>> actual = (await client.GetSubscriptionsAsync()).Actual;
+        var actual = (await client.GetSubscriptionsAsync()).Actual;
 
-        foreach (KeyValuePair<PubSubChannelMode, HashSet<string>> item in expected)
+        foreach (var item in expected)
         {
-            PubSubChannelMode channelMode = item.Key;
-            HashSet<string> expectedChannels = item.Value;
+            var channelMode = item.Key;
+            var expectedChannels = item.Value;
+            var actualChannels = actual[channelMode];
 
-            if (!expectedChannels.IsSubsetOf(actual[channelMode]))
+            // Check that all expected channels are present in the actual set.
+            foreach (var ch in expectedChannels)
             {
-                return false;
+                if (!actualChannels.Contains(ch))
+                {
+                    return false;
+                }
             }
         }
 
@@ -833,18 +842,23 @@ public static class PubSubUtils
     /// <summary>
     /// Returns true if the client is not subscribed to the specified channels, patterns, and sharded channels.
     /// </summary>
-    private static async Task<bool> IsNotSubscribedAsync(BaseClient client, Dictionary<PubSubChannelMode, HashSet<string>> notExpected)
+    private static async Task<bool> IsNotSubscribedAsync(BaseClient client, Dictionary<PubSubChannelMode, HashSet<ValkeyKey>> notExpected)
     {
-        IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>> actual = (await client.GetSubscriptionsAsync()).Actual;
+        var actual = (await client.GetSubscriptionsAsync()).Actual;
 
-        foreach (KeyValuePair<PubSubChannelMode, HashSet<string>> item in notExpected)
+        foreach (var item in notExpected)
         {
-            PubSubChannelMode channelMode = item.Key;
-            HashSet<string> notExpectedChannels = item.Value;
+            var channelMode = item.Key;
+            var notExpectedChannels = item.Value;
+            var actualChannels = actual[channelMode];
 
-            if (notExpectedChannels.Overlaps(actual[channelMode]))
+            // Check that none of the not-expected channels are present in the actual set.
+            foreach (var ch in notExpectedChannels)
             {
-                return false;
+                if (actualChannels.Contains(ch))
+                {
+                    return false;
+                }
             }
         }
 

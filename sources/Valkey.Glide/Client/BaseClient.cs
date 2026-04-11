@@ -453,20 +453,23 @@ public abstract partial class BaseClient : IBaseClient
             Marshal.Copy(patternPtr, patternBytes, 0, (int)patternLen);
         }
 
-        // Convert to strings (assuming UTF-8 encoding)
-        string message = System.Text.Encoding.UTF8.GetString(messageBytes);
-        string channel = System.Text.Encoding.UTF8.GetString(channelBytes);
-        string? pattern = patternBytes != null ? System.Text.Encoding.UTF8.GetString(patternBytes) : null;
-
         // Create the appropriate PubSubMessage based on whether pattern is present
         if (pushKind == PushKind.PushMessage)
-            return PubSubMessage.FromChannel(message, channel);
+        {
+            return PubSubMessage.FromChannel(messageBytes, channelBytes);
+        }
         else if (pushKind == PushKind.PushPMessage)
-            return PubSubMessage.FromPattern(message, channel, pattern!);
+        {
+            return PubSubMessage.FromPattern(messageBytes, channelBytes, patternBytes);
+        }
         else if (pushKind == PushKind.PushSMessage)
-            return PubSubMessage.FromShardedChannel(message, channel);
+        {
+            return PubSubMessage.FromShardedChannel(messageBytes, channelBytes);
+        }
         else
+        {
             throw new ArgumentOutOfRangeException(nameof(pushKind), $"Unsupported PushKind: {pushKind}");
+        }
     }
 
     /// <summary>

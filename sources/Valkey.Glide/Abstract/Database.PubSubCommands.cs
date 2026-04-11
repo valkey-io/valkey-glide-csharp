@@ -20,8 +20,7 @@ internal partial class Database
             throw new ArgumentException("Channel cannot be null or empty");
         }
 
-        var channelStr = channel.ToString();
-        var messageStr = message.ToString();
+        ValkeyKey channelKey = channel.ToValkeyKey();
 
         if (channel.IsSharded)
         {
@@ -31,10 +30,10 @@ internal partial class Database
             }
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            var result = await Command(Request.CustomCommand(["SPUBLISH", channelStr, messageStr]), Route.Random);
+            var result = await Command(Request.CustomCommand(["SPUBLISH", channelKey, message]), Route.Random);
             return Convert.ToInt64(result);
         }
 
-        return await PublishAsync(channelStr, messageStr);
+        return await PublishAsync(channelKey, message);
     }
 }

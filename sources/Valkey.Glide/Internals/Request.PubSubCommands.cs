@@ -147,34 +147,24 @@ internal partial class Request
     /// Lists all active channels.
     /// </summary>
     /// <returns>Command that returns a set of active channel names.</returns>
-    public static Cmd<object[], ISet<string>> PubSubChannels()
-        => new(RequestType.PubSubChannels, [], false, ToStringSet);
+    public static Cmd<object[], ISet<ValkeyKey>> PubSubChannels()
+        => new(RequestType.PubSubChannels, [], false, ToValkeyKeySet);
 
     /// <summary>
     /// Lists active channels matching the specified pattern.
     /// </summary>
     /// <param name="pattern">The pattern to match channel names against.</param>
     /// <returns>Command that returns a set of matching channel names.</returns>
-    public static Cmd<object[], ISet<string>> PubSubChannels(GlideString pattern)
-        => new(RequestType.PubSubChannels, [pattern], false, ToStringSet);
+    public static Cmd<object[], ISet<ValkeyKey>> PubSubChannels(GlideString pattern)
+        => new(RequestType.PubSubChannels, [pattern], false, ToValkeyKeySet);
 
     /// <summary>
     /// Lists the number of subscribers for the specified channels.
     /// </summary>
     /// <param name="channels">The channels to query.</param>
     /// <returns>Command that returns a dictionary mapping channels to subscriber counts.</returns>
-    public static Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> PubSubNumSub(GlideString[] channels)
-        => new(RequestType.PubSubNumSub, channels, false, dict =>
-            {
-                Dictionary<string, long> result = [];
-                foreach (var kvp in dict)
-                {
-                    string channel = kvp.Key.ToString();
-                    long count = Convert.ToInt64(kvp.Value);
-                    result[channel] = count;
-                }
-                return result;
-            });
+    public static Cmd<Dictionary<GlideString, object>, Dictionary<ValkeyKey, long>> PubSubNumSub(GlideString[] channels)
+        => new(RequestType.PubSubNumSub, channels, false, ToValkeyKeyLongDict);
 
     /// <summary>
     /// Gets the number of active pattern subscriptions.
@@ -187,66 +177,52 @@ internal partial class Request
     /// Lists all active sharded channels (cluster mode).
     /// </summary>
     /// <returns>Command that returns a set of active sharded channel names.</returns>
-    public static Cmd<object[], ISet<string>> PubSubShardChannels()
-        => new(RequestType.PubSubShardChannels, [], false, ToStringSet);
+    public static Cmd<object[], ISet<ValkeyKey>> PubSubShardChannels()
+        => new(RequestType.PubSubShardChannels, [], false, ToValkeyKeySet);
 
     /// <summary>
     /// Lists active sharded channels matching the specified pattern (cluster mode).
     /// </summary>
     /// <param name="pattern">The pattern to match channel names against.</param>
     /// <returns>Command that returns a set of matching sharded channel names.</returns>
-    public static Cmd<object[], ISet<string>> PubSubShardChannels(GlideString pattern)
-        => new(RequestType.PubSubShardChannels, [pattern], false, ToStringSet);
+    public static Cmd<object[], ISet<ValkeyKey>> PubSubShardChannels(GlideString pattern)
+        => new(RequestType.PubSubShardChannels, [pattern], false, ToValkeyKeySet);
 
     /// <summary>
     /// Lists the number of subscribers for the specified sharded channels (cluster mode).
     /// </summary>
     /// <param name="channels">The sharded channels to query.</param>
     /// <returns>Command that returns a dictionary mapping sharded channel names to subscriber counts.</returns>
-    public static Cmd<Dictionary<GlideString, object>, Dictionary<string, long>> PubSubShardNumSub(GlideString[] channels)
-    {
-        return new(RequestType.PubSubShardNumSub, channels, false, dict =>
-        {
-            Dictionary<string, long> result = [];
-            foreach (var kvp in dict)
-            {
-                string channel = kvp.Key.ToString();
-                long count = Convert.ToInt64(kvp.Value);
-                result[channel] = count;
-            }
-            return result;
-        });
-    }
+    public static Cmd<Dictionary<GlideString, object>, Dictionary<ValkeyKey, long>> PubSubShardNumSub(GlideString[] channels)
+        => new(RequestType.PubSubShardNumSub, channels, false, ToValkeyKeyLongDict);
 
     /// <summary>
     /// Gets the current pub/sub subscription state.
     /// </summary>
     /// <returns>Command that returns a tuple of desired and actual pub/sub subscription dictionaries.</returns>
-    public static Cmd<object[], (Dictionary<string, IReadOnlySet<string>>, Dictionary<string, IReadOnlySet<string>>)> GetSubscriptions()
-    {
-        return new(RequestType.GetSubscriptions, [], false, objects =>
-        {
-            // Parse desired and actual pub/sub subscription dictionaries from the response.
-            var desiredDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[1]);
-            var actualDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[3]);
+    public static Cmd<object[], (Dictionary<string, IReadOnlySet<ValkeyKey>>, Dictionary<string, IReadOnlySet<ValkeyKey>>)> GetSubscriptions()
+        => new(RequestType.GetSubscriptions, [], false, objects =>
+            {
+                // Parse desired and actual pub/sub subscription dictionaries from the response.
+                var desiredDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[1]);
+                var actualDict = ParseGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[3]);
 
-            return (desiredDict, actualDict);
-        });
-    }
+                return (desiredDict, actualDict);
+            });
 
     #endregion
 
     /// <summary>
     /// Parses and returns a dictionary from the given <see cref="GetSubscriptions"/> response dictionary.
     /// </summary>
-    private static Dictionary<string, IReadOnlySet<string>> ParseGetSubscriptionsResponse(Dictionary<GlideString, object> response)
+    private static Dictionary<string, IReadOnlySet<ValkeyKey>> ParseGetSubscriptionsResponse(Dictionary<GlideString, object> response)
     {
-        Dictionary<string, IReadOnlySet<string>> resultDict = [];
+        Dictionary<string, IReadOnlySet<ValkeyKey>> resultDict = [];
 
         foreach (var entry in response)
         {
             string channelMode = entry.Key.ToString();
-            IReadOnlySet<string> channels = ((object[])entry.Value).Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet();
+            IReadOnlySet<ValkeyKey> channels = ((object[])entry.Value).Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes).ToHashSet();
 
             resultDict[channelMode] = channels;
         }
