@@ -27,7 +27,7 @@ internal partial class Request
     public static Cmd<long, long> ExistsAsync(ValkeyKey[] keys)
         => Simple<long>(RequestType.Exists, keys.ToGlideStrings());
 
-    public static Cmd<bool, bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when = ExpireWhen.Always)
+    public static Cmd<bool, bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -40,39 +40,31 @@ internal partial class Request
             args.Add((-1).ToGlideString()); // Instant expiry
         }
 
-        if (when != ExpireWhen.Always)
-        {
-            args.Add(when.ToLiteral().ToGlideString());
-        }
+        AddExpireCondition(args, condition);
 
         return Simple<bool>(RequestType.PExpire, [.. args]);
     }
 
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    public static Cmd<bool, bool> ExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when = ExpireWhen.Always)
+    public static Cmd<bool, bool> ExpireAsync(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always)
     {
         List<GlideString> args = [key.ToGlideString()];
 
         if (expiry.HasValue)
         {
-            // TODO #269: Remove implicit DateTime-to-DateTimeOffset cast once this method accepts DateTimeOffset.
-            args.Add(((DateTimeOffset)expiry.Value).ToUnixTimeMilliseconds().ToGlideString());
+            args.Add(expiry.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
         else
         {
             args.Add((-1).ToGlideString()); // Instant expiry
         }
 
-        if (when != ExpireWhen.Always)
-        {
-            args.Add(when.ToLiteral().ToGlideString());
-        }
+        AddExpireCondition(args, condition);
 
         return Simple<bool>(RequestType.PExpireAt, [.. args]);
     }
 
-    public static Cmd<long, long> TimeToLiveAsync(ValkeyKey key)
-        => new(RequestType.PTTL, [key.ToGlideString()], true, response => response);
+    public static Cmd<long, TimeToLiveResult> TimeToLiveAsync(ValkeyKey key)
+        => new(RequestType.PTTL, [key.ToGlideString()], true, response => new TimeToLiveResult(response));
 
     public static Cmd<GlideString, ValkeyType> TypeAsync(ValkeyKey key)
         => new(RequestType.Type, [key.ToGlideString()], false, response =>
@@ -156,9 +148,9 @@ internal partial class Request
     public static Cmd<long, long> TouchAsync(ValkeyKey[] keys)
         => Simple<long>(RequestType.Touch, keys.ToGlideStrings());
 
-    public static Cmd<bool, bool> CopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false)
+    public static Cmd<bool, bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false)
     {
-        List<GlideString> args = [sourceKey.ToGlideString(), destinationKey.ToGlideString()];
+        List<GlideString> args = [source.ToGlideString(), destination.ToGlideString()];
 
         if (replace)
         {
@@ -168,9 +160,9 @@ internal partial class Request
         return Simple<bool>(RequestType.Copy, [.. args]);
     }
 
-    public static Cmd<bool, bool> CopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false)
+    public static Cmd<bool, bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
     {
-        List<GlideString> args = [sourceKey.ToGlideString(), destinationKey.ToGlideString()];
+        List<GlideString> args = [source.ToGlideString(), destination.ToGlideString()];
 
         args.AddRange([Constants.DbKeyword, destinationDatabase.ToGlideString()]);
 
@@ -182,10 +174,9 @@ internal partial class Request
         return Simple<bool>(RequestType.Copy, [.. args]);
     }
 
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    public static Cmd<long, DateTime?> ExpireTimeAsync(ValkeyKey key)
+    public static Cmd<long, DateTimeOffset?> ExpireTimeAsync(ValkeyKey key)
         => new(RequestType.PExpireTime, [key.ToGlideString()], true, response =>
-            response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response).DateTime);
+            response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response));
 
     public static Cmd<GlideString, string?> ObjectEncodingAsync(ValkeyKey key)
         => new(RequestType.ObjectEncoding, [key.ToGlideString()], true, response => response?.ToString());

@@ -93,18 +93,20 @@ public class GenericCommandTests(TestConfiguration config)
         // Set a key without expiry
         await client.StringSetAsync(key, "value");
 
-        // Key exists but has no expiry -> returns -1
-        long ttl = await client.TimeToLiveAsync(key);
-        Assert.Equal(-1, ttl);
+        // Key exists but has no expiry -> HasTimeToLive is false
+        var ttl = await client.TimeToLiveAsync(key);
+        Assert.True(ttl.Exists);
+        Assert.False(ttl.HasTimeToLive);
 
-        // Non-existent key -> returns -2
+        // Non-existent key -> Exists is false
         ttl = await client.TimeToLiveAsync(nonExistentKey);
-        Assert.Equal(-2, ttl);
+        Assert.False(ttl.Exists);
 
         // Set expiry and verify positive TTL
         Assert.True(await client.ExpireAsync(key, TimeSpan.FromSeconds(10)));
         ttl = await client.TimeToLiveAsync(key);
-        Assert.True(ttl > 0 && ttl <= 10000); // TTL in milliseconds
+        Assert.True(ttl.HasTimeToLive);
+        Assert.True(ttl.TimeToLive!.Value.TotalMilliseconds > 0 && ttl.TimeToLive.Value.TotalMilliseconds <= 10000);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -120,30 +122,32 @@ public class GenericCommandTests(TestConfiguration config)
         // Set expiry with seconds precision (should use EXPIRE)
         Assert.True(await client.ExpireAsync(key, TimeSpan.FromSeconds(10)));
 
-        // Check TTL - GLIDE-style returns milliseconds as long
-        long ttl = await client.TimeToLiveAsync(key);
-        Assert.True(ttl > 0 && ttl <= 10000);
+        // Check TTL - GLIDE-style returns TimeToLiveResult
+        var ttl = await client.TimeToLiveAsync(key);
+        Assert.True(ttl.HasTimeToLive);
+        Assert.True(ttl.TimeToLive!.Value.TotalMilliseconds > 0 && ttl.TimeToLive.Value.TotalMilliseconds <= 10000);
 
         // Test with millisecond precision (should use PEXPIRE)
         Assert.True(await client.ExpireAsync(key, TimeSpan.FromMilliseconds(5500)));
 
         ttl = await client.TimeToLiveAsync(key);
         // Now with PTTL support, we should get millisecond precision
-        Assert.True(ttl > 0 && ttl <= 5500);
+        Assert.True(ttl.HasTimeToLive);
+        Assert.True(ttl.TimeToLive!.Value.TotalMilliseconds > 0 && ttl.TimeToLive.Value.TotalMilliseconds <= 5500);
 
-        // Test with DateTime (should use EXPIREAT or PEXPIREAT based on precision)
-        DateTime expireTime = DateTime.UtcNow.AddSeconds(15);
+        // Test with DateTimeOffset (should use EXPIREAT or PEXPIREAT based on precision)
+        DateTimeOffset expireTime = DateTimeOffset.UtcNow.AddSeconds(15);
         Assert.True(await client.ExpireAsync(key, expireTime));
 
         ttl = await client.TimeToLiveAsync(key);
-        Assert.True(ttl > 10000);
+        Assert.True(ttl.TimeToLive!.Value.TotalMilliseconds > 10000);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyExpireTime(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "SetIntersectionLength is supported since 7.0.0"
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "PEXPIRETIME is supported since 7.0.0"
         );
         string key = Guid.NewGuid().ToString();
         string value = "test_value";
@@ -152,11 +156,11 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Key without expiry should return null
-        DateTime? expireTime = await client.ExpireTimeAsync(key);
+        DateTimeOffset? expireTime = await client.ExpireTimeAsync(key);
         Assert.Null(expireTime);
 
         // Set expiry and check expire time
-        DateTime futureTime = DateTime.UtcNow.AddSeconds(30);
+        DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(30);
         Assert.True(await client.ExpireAsync(key, futureTime));
 
         expireTime = await client.ExpireTimeAsync(key);
@@ -372,16 +376,16 @@ public class GenericCommandTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
         _ = await client.ExpireAsync(key, TimeSpan.FromSeconds(10));
 
-        // Verify it has TTL (positive value means has expiry)
-        long ttl = await client.TimeToLiveAsync(key);
-        Assert.True(ttl > 0);
+        // Verify it has TTL (HasTimeToLive means has expiry)
+        var ttl = await client.TimeToLiveAsync(key);
+        Assert.True(ttl.HasTimeToLive);
 
         // Persist the key
         Assert.True(await client.PersistAsync(key));
 
-        // Verify TTL is removed (-1 means no expiry)
+        // Verify TTL is removed (HasTimeToLive = false means no expiry)
         ttl = await client.TimeToLiveAsync(key);
-        Assert.Equal(-1, ttl);
+        Assert.False(ttl.HasTimeToLive);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -428,10 +432,10 @@ public class GenericCommandTests(TestConfiguration config)
         // Verify key exists and has TTL
         Assert.True(await client.ExistsAsync(ttlKey));
         Assert.True(await client.ExistsAsync(ttlDateTimeKey));
-        long ttl = await client.TimeToLiveAsync(ttlKey);
-        long ttlDateTime = await client.TimeToLiveAsync(ttlDateTimeKey);
-        Assert.True(ttl > 0);
-        Assert.True(ttlDateTime > 0);
+        var ttl = await client.TimeToLiveAsync(ttlKey);
+        var ttlDateTime = await client.TimeToLiveAsync(ttlDateTimeKey);
+        Assert.True(ttl.HasTimeToLive);
+        Assert.True(ttlDateTime.HasTimeToLive);
 
         // Test RestoreOptions with IDLETIME
         string idletimeKey = Guid.NewGuid().ToString();

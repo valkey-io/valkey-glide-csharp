@@ -8,8 +8,6 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    // ==================== GLIDE-style methods (primary implementations) ====================
-
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(ValkeyKey key)
         => await Command(Request.DeleteAsync(key));
@@ -35,23 +33,15 @@ public abstract partial class BaseClient
         => await Command(Request.ExistsAsync([.. keys]));
 
     /// <inheritdoc/>
-    public async Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry)
-        => await ExpireAsync(key, expiry, ExpireWhen.Always);
+    public async Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.ExpireAsync(key, expiry, condition));
 
     /// <inheritdoc/>
-    public async Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when)
-        => await Command(Request.ExpireAsync(key, expiry, when));
+    public async Task<bool> ExpireAsync(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.ExpireAsync(key, expiry, condition));
 
     /// <inheritdoc/>
-    public async Task<bool> ExpireAsync(ValkeyKey key, DateTime? expiry)
-        => await ExpireAsync(key, expiry, ExpireWhen.Always);
-
-    /// <inheritdoc/>
-    public async Task<bool> ExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when)
-        => await Command(Request.ExpireAsync(key, expiry, when));
-
-    /// <inheritdoc/>
-    public async Task<long> TimeToLiveAsync(ValkeyKey key)
+    public async Task<TimeToLiveResult> TimeToLiveAsync(ValkeyKey key)
         => await Command(Request.TimeToLiveAsync(key));
 
     /// <inheritdoc/>
@@ -91,7 +81,7 @@ public abstract partial class BaseClient
         => await Command(Request.TouchAsync([.. keys]));
 
     /// <inheritdoc/>
-    public async Task<DateTime?> ExpireTimeAsync(ValkeyKey key)
+    public async Task<DateTimeOffset?> ExpireTimeAsync(ValkeyKey key)
         => await Command(Request.ExpireTimeAsync(key));
 
     /// <inheritdoc/>
@@ -111,16 +101,16 @@ public abstract partial class BaseClient
         => await Command(Request.ObjectRefCountAsync(key));
 
     /// <inheritdoc/>
-    public async Task<bool> CopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false)
-        => await Command(Request.CopyAsync(sourceKey, destinationKey, replace));
+    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false)
+        => await Command(Request.CopyAsync(source, destination, replace));
 
     /// <inheritdoc/>
     public async Task<bool> MoveAsync(ValkeyKey key, int database)
         => await Command(Request.MoveAsync(key, database));
 
     /// <inheritdoc/>
-    public async Task<bool> CopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false)
-        => await Command(Request.CopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
+    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
+        => await Command(Request.CopyAsync(source, destination, destinationDatabase, replace));
 
     /// <inheritdoc/>
     public async Task<ValkeyKey?> RandomKeyAsync()

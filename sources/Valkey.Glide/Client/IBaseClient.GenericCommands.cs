@@ -133,6 +133,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/expire"/>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">Duration for the key to expire.</param>
+    /// <param name="condition">The condition for setting the expiry.</param>
     /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
     /// <remarks>
     /// <example>
@@ -141,27 +142,7 @@ public partial interface IBaseClient
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry);
-
-    /// <summary>
-    /// Set a timeout on key. After the timeout has expired, the key will automatically be deleted.<br/>
-    /// If key already has an existing expire set, the time to live is updated to the new value.
-    /// If expiry is a non-positive value, the key will be deleted rather than expired.
-    /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/expire"/>
-    /// <param name="key">The key to expire.</param>
-    /// <param name="expiry">Duration for the key to expire.</param>
-    /// <param name="when">The option to set expiry.</param>
-    /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// bool result = await client.ExpireAsync(key, TimeSpan.FromSeconds(10), ExpireWhen.HasNoExpiry);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when);
+    Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always);
 
     /// <summary>
     /// Sets a timeout on key. It takes an absolute Unix timestamp (seconds since January 1, 1970) instead of
@@ -173,59 +154,39 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/expireat"/>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">The timestamp for expiry.</param>
+    /// <param name="condition">The condition for setting the expiry.</param>
     /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.ExpireAsync(key, DateTime.UtcNow.AddMinutes(5));
+    /// bool result = await client.ExpireAsync(key, DateTimeOffset.UtcNow.AddMinutes(5));
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<bool> ExpireAsync(ValkeyKey key, DateTime? expiry);
+    Task<bool> ExpireAsync(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always);
 
     /// <summary>
-    /// Sets a timeout on key. It takes an absolute Unix timestamp (seconds since January 1, 1970) instead of
-    /// specifying the duration. A timestamp in the past will delete the key immediately. After the timeout has
-    /// expired, the key will automatically be deleted.<br/>
-    /// If key already has an existing expire set, the time to live is updated to the new value.
-    /// The timeout will only be cleared by commands that delete or overwrite the contents of key.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/expireat"/>
-    /// <param name="key">The key to expire.</param>
-    /// <param name="expiry">The timestamp for expiry.</param>
-    /// <param name="when">In Valkey 7+, the option to set expiry.</param>
-    /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if key does not exist or the timeout could not be set.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// bool result = await client.ExpireAsync(key, DateTime.UtcNow.AddMinutes(5), ExpireWhen.HasNoExpiry);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<bool> ExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when);
-
-    /// <summary>
-    /// Returns the remaining time to live of a key that has a timeout, in milliseconds.
+    /// Returns the remaining time to live of a key that has a timeout.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pttl"/>
     /// <param name="key">The key to return its timeout.</param>
     /// <returns>
-    /// TTL in milliseconds, or -1 if the key exists but has no associated expiration,
-    /// or -2 if the key does not exist.
+    /// A <see cref="TimeToLiveResult"/> containing the TTL information.
+    /// Use <see cref="TimeToLiveResult.Exists"/> to check if the key exists,
+    /// <see cref="TimeToLiveResult.HasTimeToLive"/> to check if it has an expiry,
+    /// and <see cref="TimeToLiveResult.TimeToLive"/> to get the remaining time.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long ttl = await client.TimeToLiveAsync(key);
-    /// if (ttl == -2) Console.WriteLine("Key does not exist");
-    /// else if (ttl == -1) Console.WriteLine("Key has no expiry");
-    /// else Console.WriteLine($"TTL: {ttl}ms");
+    /// var ttl = await client.TimeToLiveAsync(key);
+    /// if (!ttl.Exists) Console.WriteLine("Key does not exist");
+    /// else if (!ttl.HasTimeToLive) Console.WriteLine("Key has no expiry");
+    /// else Console.WriteLine($"TTL: {ttl.TimeToLive}");
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> TimeToLiveAsync(ValkeyKey key);
+    Task<TimeToLiveResult> TimeToLiveAsync(ValkeyKey key);
 
     /// <summary>
     /// Returns the ValkeyType of the value stored at key.
@@ -394,16 +355,20 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pexpiretime"/>
     /// <param name="key">The key to determine the expiration value of.</param>
-    /// <returns>The expiration time, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
+    /// <returns>
+    /// The expiration time as a <see cref="DateTimeOffset"/>, or <see langword="null"/> if the key
+    /// does not exist or has no associated expiration.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// DateTime? expiration = await client.ExpireTimeAsync(key);
+    /// DateTimeOffset? expiration = await client.ExpireTimeAsync(key);
+    /// if (expiration is null) Console.WriteLine("Key does not exist or has no expiry");
+    /// else Console.WriteLine($"Expires at: {expiration}");
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<DateTime?> ExpireTimeAsync(ValkeyKey key);
+    Task<DateTimeOffset?> ExpireTimeAsync(ValkeyKey key);
 
     /// <summary>
     /// Returns the internal encoding for the object stored at key.
@@ -473,18 +438,18 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/copy"/>
     /// <note>Since Valkey 6.2.0 and above.</note>
     /// <note>When in cluster mode, both sourceKey and destinationKey must map to the same hash slot.</note>
-    /// <param name="sourceKey">The key to the source value.</param>
-    /// <param name="destinationKey">The key where the value should be copied to.</param>
-    /// <param name="replace">Whether to overwrite an existing values at destinationKey.</param>
-    /// <returns><see langword="true"/> if sourceKey was copied. <see langword="false"/> if sourceKey was not copied.</returns>
+    /// <param name="source">The key to the source value.</param>
+    /// <param name="destination">The key where the value should be copied to.</param>
+    /// <param name="replace">Whether to overwrite an existing values at destination.</param>
+    /// <returns><see langword="true"/> if source was copied. <see langword="false"/> if source was not copied.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.CopyAsync(sourceKey, destKey, replace: true);
+    /// bool result = await client.CopyAsync(source, dest, replace: true);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> CopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
+    Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false);
 
     /// <summary>
     /// Returns a random key from the database.

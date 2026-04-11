@@ -31,24 +31,16 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - The number of existing keys.</returns>
     IBatch Exists(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, TimeSpan?)" />
+    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, TimeSpan?, ExpireCondition)" />
     /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
-    IBatch Expire(ValkeyKey key, TimeSpan? expiry);
+    IBatch Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always);
 
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen)" />
+    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, DateTimeOffset?, ExpireCondition)" />
     /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
-    IBatch Expire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when);
-
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, DateTime?)" />
-    /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
-    IBatch Expire(ValkeyKey key, DateTime? expiry);
-
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, DateTime?, ExpireWhen)" />
-    /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
-    IBatch Expire(ValkeyKey key, DateTime? expiry, ExpireWhen when);
+    IBatch Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always);
 
     /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)" />
-    /// <returns>Command Response - TTL in milliseconds, or -1 if no expiry, or -2 if key does not exist.</returns>
+    /// <returns>Command Response - A <see cref="TimeToLiveResult"/> with TTL information.</returns>
     IBatch TimeToLive(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)" />
@@ -88,7 +80,7 @@ internal interface IBatchGenericCommands
     IBatch Touch(IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="IBaseClient.ExpireTimeAsync(ValkeyKey)" />
-    /// <returns>Command Response - The expiration time, or <see langword="null"/> if no expiry or key does not exist.</returns>
+    /// <returns>Command Response - A <see cref="DateTimeOffset"/> with the expiry time, or <see langword="null"/> if the key does not exist or has no expiry.</returns>
     IBatch ExpireTime(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.ObjectEncodingAsync(ValkeyKey)" />
@@ -109,7 +101,7 @@ internal interface IBatchGenericCommands
 
     /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)" />
     /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
-    IBatch Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
+    IBatch Copy(ValkeyKey source, ValkeyKey destination, bool replace = false);
 
     /// <inheritdoc cref="IBaseClient.RandomKeyAsync()" />
     /// <returns>Command Response - A random key, or <see langword="null"/> when the database is empty.</returns>

@@ -29,17 +29,11 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.Exists(IEnumerable{ValkeyKey})" />
     public T Exists(IEnumerable<ValkeyKey> keys) => AddCmd(ExistsAsync([.. keys]));
 
-    /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, TimeSpan?)" />
-    public T Expire(ValkeyKey key, TimeSpan? expiry) => AddCmd(ExpireAsync(key, expiry));
+    /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, TimeSpan?, ExpireCondition)" />
+    public T Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(ExpireAsync(key, expiry, condition));
 
-    /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, TimeSpan?, ExpireWhen)" />
-    public T Expire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when) => AddCmd(ExpireAsync(key, expiry, when));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, DateTime?)" />
-    public T Expire(ValkeyKey key, DateTime? expiry) => AddCmd(ExpireAsync(key, expiry));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, DateTime?, ExpireWhen)" />
-    public T Expire(ValkeyKey key, DateTime? expiry, ExpireWhen when) => AddCmd(ExpireAsync(key, expiry, when));
+    /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, DateTimeOffset?, ExpireCondition)" />
+    public T Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(ExpireAsync(key, expiry, condition));
 
     /// <inheritdoc cref="IBatchGenericCommands.TimeToLive(ValkeyKey)" />
     public T TimeToLive(ValkeyKey key) => AddCmd(TimeToLiveAsync(key));
@@ -87,12 +81,12 @@ public abstract partial class BaseBatch<T>
     public T ObjectRefCount(ValkeyKey key) => AddCmd(ObjectRefCountAsync(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Copy(ValkeyKey, ValkeyKey, bool)" />
-    public T Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false)
-        => AddCmd(CopyAsync(sourceKey, destinationKey, replace));
+    public T Copy(ValkeyKey source, ValkeyKey destination, bool replace = false)
+        => AddCmd(CopyAsync(source, destination, replace));
 
     /// <inheritdoc cref="IBatchStandalone.Copy(ValkeyKey, ValkeyKey, int, bool)" />
-    public T Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false)
-        => AddCmd(CopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
+    public T Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
+        => AddCmd(CopyAsync(source, destination, destinationDatabase, replace));
 
     /// <inheritdoc cref="IBatchStandalone.Move(ValkeyKey, int)" />
     public T Move(ValkeyKey key, int database) => AddCmd(MoveAsync(key, database));
@@ -137,10 +131,8 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.Unlink(IEnumerable<ValkeyKey> keys) => Unlink(keys);
     IBatch IBatchGenericCommands.Exists(ValkeyKey key) => Exists(key);
     IBatch IBatchGenericCommands.Exists(IEnumerable<ValkeyKey> keys) => Exists(keys);
-    IBatch IBatchGenericCommands.Expire(ValkeyKey key, TimeSpan? expiry) => Expire(key, expiry);
-    IBatch IBatchGenericCommands.Expire(ValkeyKey key, TimeSpan? expiry, ExpireWhen when) => Expire(key, expiry, when);
-    IBatch IBatchGenericCommands.Expire(ValkeyKey key, DateTime? expiry) => Expire(key, expiry);
-    IBatch IBatchGenericCommands.Expire(ValkeyKey key, DateTime? expiry, ExpireWhen when) => Expire(key, expiry, when);
+    IBatch IBatchGenericCommands.Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition) => Expire(key, expiry, condition);
+    IBatch IBatchGenericCommands.Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition) => Expire(key, expiry, condition);
     IBatch IBatchGenericCommands.TimeToLive(ValkeyKey key) => TimeToLive(key);
     IBatch IBatchGenericCommands.Type(ValkeyKey key) => Type(key);
     IBatch IBatchGenericCommands.Rename(ValkeyKey key, ValkeyKey newKey) => Rename(key, newKey);
@@ -156,7 +148,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.ObjectFrequency(ValkeyKey key) => ObjectFrequency(key);
     IBatch IBatchGenericCommands.ObjectIdleTime(ValkeyKey key) => ObjectIdleTime(key);
     IBatch IBatchGenericCommands.ObjectRefCount(ValkeyKey key) => ObjectRefCount(key);
-    IBatch IBatchGenericCommands.Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => Copy(sourceKey, destinationKey, replace);
+    IBatch IBatchGenericCommands.Copy(ValkeyKey source, ValkeyKey destination, bool replace) => Copy(source, destination, replace);
     IBatch IBatchGenericCommands.RandomKey() => RandomKey();
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get) => Sort(key, skip, take, order, sortType, by, get);
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, SortOptions? options) => Sort(key, options);

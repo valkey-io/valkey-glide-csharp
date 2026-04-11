@@ -88,24 +88,34 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, TimeSpan?)"/>
+    /// <summary>
+    /// Set a timeout on key. After the timeout has expired, the key will automatically be deleted.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/expire"/>
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">Duration for the key to expire.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the timeout was set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, TimeSpan?, ExpireWhen)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)"/>
+    /// <param name="when">The condition for setting the expiry.</param>
     Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, DateTime?)"/>
+    /// <summary>
+    /// Sets a timeout on key using an absolute timestamp.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/expireat"/>
+    /// <param name="key">The key to expire.</param>
+    /// <param name="expiry">The timestamp for expiry.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the timeout was set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.ExpireAsync(ValkeyKey, DateTime?, ExpireWhen)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)"/>
+    /// <param name="when">The condition for setting the expiry.</param>
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
 

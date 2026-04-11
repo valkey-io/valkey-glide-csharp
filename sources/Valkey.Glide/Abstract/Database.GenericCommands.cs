@@ -63,29 +63,29 @@ internal partial class Database
     public async Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ExpireAsync(key, expiry, when);
+        return await ExpireAsync(key, expiry, when.ToExpireCondition());
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)"/>
     public async Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ExpireAsync(key, expiry);
+        return await ExpireAsync(key, expiry.HasValue ? new DateTimeOffset(expiry.Value) : null);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, DateTime?, ExpireWhen, CommandFlags)"/>
     public async Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ExpireAsync(key, expiry, when);
+        return await ExpireAsync(key, expiry.HasValue ? new DateTimeOffset(expiry.Value) : null, when.ToExpireCondition());
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyTimeToLiveAsync(ValkeyKey, CommandFlags)"/>
     public async Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        long ttl = await TimeToLiveAsync(key);
-        return ttl is -1 or -2 ? null : TimeSpan.FromMilliseconds(ttl);
+        var result = await TimeToLiveAsync(key);
+        return result.TimeToLive;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyTypeAsync(ValkeyKey, CommandFlags)"/>
@@ -174,7 +174,8 @@ internal partial class Database
     public async Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ExpireTimeAsync(key);
+        var result = await ExpireTimeAsync(key);
+        return result?.DateTime;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyEncodingAsync(ValkeyKey, CommandFlags)"/>

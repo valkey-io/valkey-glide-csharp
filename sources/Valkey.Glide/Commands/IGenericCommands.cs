@@ -200,19 +200,19 @@ public interface IGenericCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/copy"/>
     /// <note>Since Valkey 6.2.0 and above.</note>
-    /// <param name="sourceKey">The key to the source value.</param>
-    /// <param name="destinationKey">The key where the value should be copied to.</param>
-    /// <param name="destinationDatabase">The database ID to store destinationKey in.</param>
-    /// <param name="replace">Whether to overwrite an existing values at destinationKey.</param>
-    /// <returns><see langword="true"/> if sourceKey was copied. <see langword="false"/> if sourceKey was not copied.</returns>
+    /// <param name="source">The key to the source value.</param>
+    /// <param name="destination">The key where the value should be copied to.</param>
+    /// <param name="destinationDatabase">The database ID to store destination in.</param>
+    /// <param name="replace">Whether to overwrite an existing values at destination.</param>
+    /// <returns><see langword="true"/> if source was copied. <see langword="false"/> if source was not copied.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.CopyAsync(sourceKey, destKey, 1, replace: true);
+    /// bool result = await client.CopyAsync(source, dest, 1, replace: true);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<bool> CopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false);
+    Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false);
 
     /// <summary>
     /// Incrementally iterates over the matching keys in the database.

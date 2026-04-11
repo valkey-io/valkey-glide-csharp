@@ -26,7 +26,7 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
 {
     // Explicit interface implementations for IBatchStandalone
     IBatch IBatchStandalone.Move(ValkeyKey key, int database) => Move(key, database);
-    IBatch IBatchStandalone.Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace) => Copy(sourceKey, destinationKey, destinationDatabase, replace);
+    IBatch IBatchStandalone.Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace) => Copy(source, destination, destinationDatabase, replace);
     IBatch IBatchStandalone.SelectAsync(long index) => SelectAsync(index);
 
     // Explicit interface implementations for IBatchStreamCommands
