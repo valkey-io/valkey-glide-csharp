@@ -90,11 +90,11 @@ public abstract partial class BaseBatch<T>
     public T Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false)
         => AddCmd(CopyAsync(sourceKey, destinationKey, replace));
 
-    /// <inheritdoc cref="IBatchGenericCommands.Copy(ValkeyKey, ValkeyKey, int, bool)" />
+    /// <inheritdoc cref="IBatchStandalone.Copy(ValkeyKey, ValkeyKey, int, bool)" />
     public T Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false)
         => AddCmd(CopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
 
-    /// <inheritdoc cref="IBatchGenericCommands.Move(ValkeyKey, int)" />
+    /// <inheritdoc cref="IBatchStandalone.Move(ValkeyKey, int)" />
     public T Move(ValkeyKey key, int database) => AddCmd(MoveAsync(key, database));
 
     /// <inheritdoc cref="IBatchGenericCommands.RandomKey()" />
@@ -157,8 +157,6 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGenericCommands.ObjectIdleTime(ValkeyKey key) => ObjectIdleTime(key);
     IBatch IBatchGenericCommands.ObjectRefCount(ValkeyKey key) => ObjectRefCount(key);
     IBatch IBatchGenericCommands.Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace) => Copy(sourceKey, destinationKey, replace);
-    IBatch IBatchGenericCommands.Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace) => Copy(sourceKey, destinationKey, destinationDatabase, replace);
-    IBatch IBatchGenericCommands.Move(ValkeyKey key, int database) => Move(key, database);
     IBatch IBatchGenericCommands.RandomKey() => RandomKey();
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get) => Sort(key, skip, take, order, sortType, by, get);
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, SortOptions? options) => Sort(key, options);

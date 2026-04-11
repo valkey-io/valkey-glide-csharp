@@ -111,14 +111,6 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
     IBatch Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false);
 
-    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)" />
-    /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
-    IBatch Copy(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false);
-
-    /// <inheritdoc cref="IBaseClient.MoveAsync(ValkeyKey, int)" />
-    /// <returns>Command Response - <see langword="true"/> if the key was moved.</returns>
-    IBatch Move(ValkeyKey key, int database);
-
     /// <inheritdoc cref="IBaseClient.RandomKeyAsync()" />
     /// <returns>Command Response - A random key, or <see langword="null"/> when the database is empty.</returns>
     IBatch RandomKey();

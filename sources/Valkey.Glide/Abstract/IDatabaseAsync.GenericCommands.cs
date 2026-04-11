@@ -124,19 +124,15 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyType> KeyTypeAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
-    /// <summary>
-    /// Renames key to newKey.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/rename"/>
+    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" path="/summary"/>
+    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" path="/seealso"/>
     /// <param name="key">The key to rename.</param>
     /// <param name="newKey">The new name of the key.</param>
     /// <returns><see langword="true"/> if the key was renamed (always true on success, throws on failure).</returns>
     Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
 
-    /// <summary>
-    /// Renames key to newKey.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/rename"/>
+    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" path="/summary"/>
+    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" path="/seealso"/>
     /// <param name="key">The key to rename.</param>
     /// <param name="newKey">The new name of the key.</param>
     /// <param name="when">Under what condition the key should be renamed. Only <see cref="When.Always"/> and <see cref="When.NotExists"/> are supported.</param>
@@ -231,7 +227,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.MoveAsync(ValkeyKey, int)"/>
+    /// <inheritdoc cref="IGenericCommands.MoveAsync(ValkeyKey, int)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags = CommandFlags.None);
