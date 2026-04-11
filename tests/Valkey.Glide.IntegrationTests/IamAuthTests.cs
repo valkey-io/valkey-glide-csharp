@@ -36,7 +36,7 @@ public class IamAuthTests
         await using var client = await GlideClient.CreateClient(config);
 
         await AssertConnected(client);
-        
+
         // Verify connection after token refresh
         await Task.Delay(TimeSpan.FromSeconds(5));
         await AssertConnected(client);
