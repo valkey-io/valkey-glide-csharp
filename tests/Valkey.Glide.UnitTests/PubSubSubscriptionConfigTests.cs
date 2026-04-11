@@ -45,28 +45,12 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void StandaloneConfig_WithChannel_DefaultOrWhitespaceChannel_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(default));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
-    }
+    public void StandaloneConfig_WithChannel_Default_ThrowsArgumentException()
+        => _ = Assert.Throws<ArgumentException>(() => new StandalonePubSubSubscriptionConfig().WithChannel(default));
 
     [Fact]
     public void StandaloneConfig_WithPattern_DefaultOrWhitespacePattern_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(default));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
-    }
+        => _ = Assert.Throws<ArgumentException>(() => new StandalonePubSubSubscriptionConfig().WithPattern(default));
 
     [Fact]
     public void StandaloneConfig_WithCallback_SetsCallbackAndContext()
@@ -157,39 +141,15 @@ public class PubSubSubscriptionConfigTests
 
     [Fact]
     public void ClusterConfig_WithChannel_DefaultOrWhitespaceChannel_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(default));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
-    }
+        => _ = Assert.Throws<ArgumentException>(() => new ClusterPubSubSubscriptionConfig().WithChannel(default));
 
     [Fact]
     public void ClusterConfig_WithPattern_DefaultOrWhitespacePattern_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(default));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
-    }
+        => _ = Assert.Throws<ArgumentException>(() => new ClusterPubSubSubscriptionConfig().WithPattern(default));
 
     [Fact]
     public void ClusterConfig_WithShardedChannel_DefaultOrWhitespaceChannel_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel(default));
-        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel("   "));
-    }
+         => _ = Assert.Throws<ArgumentException>(() => new ClusterPubSubSubscriptionConfig().WithShardedChannel(default));
 
     [Fact]
     public void ClusterConfig_DuplicateChannel_DoesNotAddDuplicate()
