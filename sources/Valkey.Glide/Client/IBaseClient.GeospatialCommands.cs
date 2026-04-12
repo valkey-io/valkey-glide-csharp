@@ -35,6 +35,22 @@ public partial interface IBaseClient
         GeoAddOptions options = default);
 
     /// <summary>
+    /// Returns the distance between two geospatial members.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geodist/"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="member1">The first member.</param>
+    /// <param name="member2">The second member.</param>
+    /// <param name="unit">The unit of distance measurement.</param>
+    /// <returns>The distance between the two members in the specified unit,
+    /// or <see langword="null"/> if one or both members does not exist.</returns>
+    Task<double?> GeoDistanceAsync(
+        ValkeyKey key,
+        ValkeyValue member1,
+        ValkeyValue member2,
+        GeoUnit unit = GeoUnit.Meters);
+
+    /// <summary>
     /// Searches for geospatial members within an area centered on another geospatial member.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geosearch/"/>
