@@ -504,13 +504,13 @@ internal partial class BatchTestUtils
         testData.Add(new(true, "KeyExpire(genericKey1, 60s)"));
 
         _ = batch.TimeToLive(genericKey1);
-        testData.Add(new(60000L, "TimeToLive(genericKey1)", true)); // Returns milliseconds
+        testData.Add(new(new TimeToLiveResult(60000L), "TimeToLive(genericKey1)", true)); // Returns TimeToLiveResult with ~60s TTL
 
         _ = batch.Persist(genericKey1);
         testData.Add(new(true, "Persist(genericKey1)"));
 
         _ = batch.TimeToLive(genericKey1);
-        testData.Add(new(-1L, "TimeToLive(genericKey1) after persist")); // -1 means no expiry
+        testData.Add(new(new TimeToLiveResult(-1L), "TimeToLive(genericKey1) after persist", true)); // No expiry
 
         _ = batch.Expire(genericKey1, TimeSpan.FromSeconds(120));
         testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
@@ -518,7 +518,7 @@ internal partial class BatchTestUtils
         if (TestConfiguration.SERVER_VERSION > new Version("7.0.0")) // KeyExpireTime added in 7.0.0
         {
             _ = batch.ExpireTime(genericKey1);
-            testData.Add(new(DateTime.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
+            testData.Add(new(DateTimeOffset.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
         }
 
         _ = batch.ObjectEncoding(genericKey1);
