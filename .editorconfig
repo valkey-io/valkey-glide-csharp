@@ -559,3 +559,11 @@ dotnet_diagnostic.xUnit3002.severity = error
 [sources/Valkey.Glide/{Abstract,Client}/*.cs]
 dotnet_style_namespace_match_folder = false
 dotnet_diagnostic.IDE0130.severity = none
+
+# IDE0005: Using directive is unnecessary - false positive with ImplicitUsings for Commands.Options namespace
+# Scoped to specific files that use Commands.Options and trigger false positives
+[sources/Valkey.Glide/Abstract/{Database,Database.HashCommands,Database.GenericCommands,IDatabaseAsync.HashCommands,IDatabaseAsync.GenericCommands,ValkeyServer}.cs]
+dotnet_diagnostic.IDE0005.severity = none
+
+[sources/Valkey.Glide/Client/{BaseClient.BitmapCommands,BaseClient.HashCommands,BaseClient.GenericCommands,GlideClient,GlideClusterClient,IBaseClient.BitmapCommands,IBaseClient.GenericCommands,IBaseClient.HashCommands}.cs]
+dotnet_diagnostic.IDE0005.severity = none

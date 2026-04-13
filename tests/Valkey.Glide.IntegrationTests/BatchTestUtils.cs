@@ -491,97 +491,97 @@ internal partial class BatchTestUtils
         _ = batch.StringSet(genericKey2, "value2");
         testData.Add(new(true, "StringSet(genericKey2, value2)"));
 
-        _ = batch.KeyExists(genericKey1);
+        _ = batch.Exists(genericKey1);
         testData.Add(new(true, "KeyExists(genericKey1)"));
 
-        _ = batch.KeyExists([genericKey1, genericKey2, genericKey3]);
+        _ = batch.Exists([genericKey1, genericKey2, genericKey3]);
         testData.Add(new(2L, "KeyExists([genericKey1, genericKey2, genericKey3])"));
 
-        _ = batch.KeyType(genericKey1);
+        _ = batch.Type(genericKey1);
         testData.Add(new(ValkeyType.String, "KeyType(genericKey1)"));
 
-        _ = batch.KeyExpire(genericKey1, TimeSpan.FromSeconds(60));
+        _ = batch.Expire(genericKey1, TimeSpan.FromSeconds(60));
         testData.Add(new(true, "KeyExpire(genericKey1, 60s)"));
 
-        _ = batch.KeyTimeToLive(genericKey1);
-        testData.Add(new(TimeSpan.FromSeconds(60), "KeyTimeToLive(genericKey1)", true));
+        _ = batch.TimeToLive(genericKey1);
+        testData.Add(new(new TimeToLiveResult(60000L), "TimeToLive(genericKey1)", true)); // Returns TimeToLiveResult with ~60s TTL
 
-        _ = batch.KeyPersist(genericKey1);
-        testData.Add(new(true, "KeyPersist(genericKey1)"));
+        _ = batch.Persist(genericKey1);
+        testData.Add(new(true, "Persist(genericKey1)"));
 
-        _ = batch.KeyTimeToLive(genericKey1);
-        testData.Add(new(null, "KeyTimeToLive(genericKey1) after persist"));
+        _ = batch.TimeToLive(genericKey1);
+        testData.Add(new(new TimeToLiveResult(-1L), "TimeToLive(genericKey1) after persist", true)); // No expiry
 
-        _ = batch.KeyExpire(genericKey1, TimeSpan.FromSeconds(120));
+        _ = batch.Expire(genericKey1, TimeSpan.FromSeconds(120));
         testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
 
         if (TestConfiguration.SERVER_VERSION > new Version("7.0.0")) // KeyExpireTime added in 7.0.0
         {
-            _ = batch.KeyExpireTime(genericKey1);
-            testData.Add(new(DateTime.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
+            _ = batch.ExpireTime(genericKey1);
+            testData.Add(new(DateTimeOffset.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
         }
 
-        _ = batch.KeyEncoding(genericKey1);
+        _ = batch.ObjectEncoding(genericKey1);
         testData.Add(new("embstr", "KeyEncoding(genericKey1)", true));
 
         // KeyFrequency requires LFU maxmemory policy to be configured
         // Since we can't guarantee this in test environment, we skip this test in batch mode
         // The functionality is tested in integration tests with proper exception handling
-        // _ = batch.KeyFrequency(genericKey1);
+        // _ = batch.ObjectFrequency(genericKey1);
         // testData.Add(new(1L, "KeyFrequency(genericKey1)", true));
 
-        _ = batch.KeyIdleTime(genericKey1);
-        testData.Add(new(0L, "KeyIdleTime(genericKey1)", true));
+        _ = batch.ObjectIdleTime(genericKey1);
+        testData.Add(new(TimeSpan.Zero, "ObjectIdleTime(genericKey1)", true)); // Returns TimeSpan?
 
-        _ = batch.KeyRefCount(genericKey1);
-        testData.Add(new(1L, "KeyRefCount(genericKey1)", true));
+        _ = batch.ObjectRefCount(genericKey1);
+        testData.Add(new(1L, "ObjectRefCount(genericKey1)", true));
 
-        _ = batch.KeyRandom();
-        testData.Add(new(genericKey1, "KeyRandom()", true));
+        _ = batch.RandomKey();
+        testData.Add(new(new ValkeyKey(genericKey1), "RandomKey()", true)); // Returns ValkeyKey?
 
-        _ = batch.KeyTouch(genericKey1);
+        _ = batch.Touch(genericKey1);
         testData.Add(new(true, "KeyTouch(genericKey1)"));
 
-        _ = batch.KeyTouch([genericKey1, genericKey2, genericKey3]);
+        _ = batch.Touch([genericKey1, genericKey2, genericKey3]);
         testData.Add(new(2L, "KeyTouch([genericKey1, genericKey2, genericKey3])"));
 
         _ = batch.StringSet(prefix + genericKey2, "value2");
         testData.Add(new(true, "StringSet(prefix + genericKey2, value2)"));
 
         string renamedKey = $"{prefix}renamed-{Guid.NewGuid()}";
-        _ = batch.KeyRename(prefix + genericKey2, renamedKey);
+        _ = batch.Rename(prefix + genericKey2, renamedKey);
         testData.Add(new(true, "KeyRename(prefix + genericKey2, renamedKey)"));
 
-        _ = batch.KeyExists(prefix + genericKey2);
+        _ = batch.Exists(prefix + genericKey2);
         testData.Add(new(false, "KeyExists(prefix + genericKey2) after rename"));
 
-        _ = batch.KeyExists(renamedKey);
+        _ = batch.Exists(renamedKey);
         testData.Add(new(true, "KeyExists(renamedKey) after rename"));
 
-        string renameNXKey = $"{prefix}renamenx-{Guid.NewGuid()}";
-        _ = batch.KeyRenameNX(renamedKey, renameNXKey);
-        testData.Add(new(true, "KeyRenameNX(renamedKey, renameNXKey)"));
+        string renameIfNotExistsKey = $"{prefix}renameifnotexists-{Guid.NewGuid()}";
+        _ = batch.RenameIfNotExists(renamedKey, renameIfNotExistsKey);
+        testData.Add(new(true, "RenameIfNotExists(renamedKey, renameIfNotExistsKey)"));
 
-        _ = batch.KeyExists(renamedKey);
-        testData.Add(new(false, "KeyExists(renamedKey) after renamenx"));
+        _ = batch.Exists(renamedKey);
+        testData.Add(new(false, "KeyExists(renamedKey) after RenameIfNotExists"));
 
-        _ = batch.KeyExists(renameNXKey);
-        testData.Add(new(true, "KeyExists(renameNXKey) after renamenx"));
+        _ = batch.Exists(renameIfNotExistsKey);
+        testData.Add(new(true, "KeyExists(renameIfNotExistsKey) after RenameIfNotExists"));
 
         _ = batch.StringSet(prefix + genericKey1, "value1");
         testData.Add(new(true, "StringSet(prefix + genericKey1, value1)"));
 
         string copiedKey = $"{prefix}copied-{Guid.NewGuid()}";
-        _ = batch.KeyCopy(prefix + genericKey1, copiedKey);
+        _ = batch.Copy(prefix + genericKey1, copiedKey);
         testData.Add(new(true, "KeyCopy(genericKey1, copiedKey)"));
 
-        _ = batch.KeyExists(copiedKey);
+        _ = batch.Exists(copiedKey);
         testData.Add(new(true, "KeyExists(copiedKey) after copy"));
 
-        _ = batch.KeyDelete(copiedKey);
+        _ = batch.Delete(copiedKey);
         testData.Add(new(true, "KeyDelete(copiedKey)"));
 
-        _ = batch.KeyUnlink([genericKey1, renamedKey, genericKey3]);
+        _ = batch.Unlink([genericKey1, renamedKey, genericKey3]);
         testData.Add(new(1L, "KeyUnlink([genericKey1, renamedKey, genericKey3])"));
 
         // WAIT command tests
