@@ -236,26 +236,26 @@ public static class PubSubUtils
     /// <summary>
     /// Builds and returns a unique channel for testing.
     /// </summary>
-    public static string BuildChannel()
+    public static ValkeyKey BuildChannel()
         => BuildChannel(Guid.NewGuid().ToString());
 
     /// <summary>
     /// Builds and returns a unique channel for testing from the given ID.
     /// </summary>
-    private static string BuildChannel(string id)
-        => $"test:{{{id}}}:channel";
+    private static ValkeyKey BuildChannel(string id)
+        => (ValkeyKey)$"test:{{{id}}}:channel";
 
     /// <summary>
     /// Builds and returns a unique pattern for testing.
     /// </summary>
-    public static string BuildPattern()
+    public static ValkeyKey BuildPattern()
         => BuildPattern(Guid.NewGuid().ToString());
 
     /// <summary>
     /// Builds and returns a unique pattern for testing from the given ID.
     /// </summary>
-    private static string BuildPattern(string id)
-        => $"test:{{{id}}}:*";
+    private static ValkeyKey BuildPattern(string id)
+        => (ValkeyKey)$"test:{{{id}}}:*";
 
     /// <summary>
     /// Returns a message appropriate for the given channel mode.
@@ -264,8 +264,8 @@ public static class PubSubUtils
     {
         Guid id = Guid.NewGuid();
 
-        string channel = $"{BuildChannel(id.ToString())}";
-        string pattern = $"{BuildPattern(id.ToString())}";
+        ValkeyKey channel = BuildChannel(id.ToString());
+        ValkeyKey pattern = BuildPattern(id.ToString());
         string message = $"{{test:{id}}}:message";
 
         return channelMode switch
