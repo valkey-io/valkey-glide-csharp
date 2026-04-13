@@ -173,7 +173,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(3, await client.ListLengthAsync(key)); // Should have [b, c, b]
 
         // Reset list
-        _ = await client.KeyDeleteAsync(key);
+        _ = await client.DeleteAsync(key);
         _ = await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
 
         // Test removing from head to tail (count > 0)
@@ -181,7 +181,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(4, await client.ListLengthAsync(key)); // Should have [b, c, a, b]
 
         // Reset list
-        _ = await client.KeyDeleteAsync(key);
+        _ = await client.DeleteAsync(key);
         _ = await client.ListRightPushAsync(key, ["a", "b", "a", "c", "a", "b"]);
 
         // Test removing from tail to head (count < 0)
@@ -213,7 +213,7 @@ public class ListCommandTests(TestConfiguration config)
         Assert.Equal(["1", "2", "3"], remaining.ToGlideStrings());
 
         // Test trim with negative indices
-        _ = await client.KeyDeleteAsync(key);
+        _ = await client.DeleteAsync(key);
         _ = await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
 
         // Keep last 3 elements
