@@ -187,39 +187,4 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
         await ListSetByIndexAsync(key, index, value);
     }
-
-    /// <inheritdoc cref="IDatabaseAsync.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan, CommandFlags)"/>
-    public async Task<ValkeyValue[]?> ListBlockingLeftPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingLeftPopAsync(keys, timeout);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan, CommandFlags)"/>
-    public async Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingRightPopAsync(keys, timeout);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan, CommandFlags)"/>
-    public async Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingMoveAsync(source, destination, sourceSide, destinationSide, timeout);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan, CommandFlags)"/>
-    public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingPopAsync(keys, side, timeout);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan, CommandFlags)"/>
-    public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingPopAsync(keys, side, count, timeout);
-    }
 }
