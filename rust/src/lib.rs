@@ -703,7 +703,10 @@ pub unsafe extern "C-unwind" fn batch(
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn free_response(ptr: *mut ResponseValue) {
     unsafe {
-        Box::leak(Box::from_raw(ptr)).free_memory();
+        // Take ownership of ptr in the Box.
+        let boxed = Box::from_raw(ptr);
+        boxed.free_memory(); // This releases the contents of ResponseValue, but not the memory used by ResponseValue itself. This must be done explicitly.
+        // boxed is dropped here, releasing the memory used directly by ResponseValue itself.
     }
 }
 
@@ -861,12 +864,12 @@ pub unsafe extern "C" fn free_script_hash_buffer(buffer: *mut ScriptHashBuffer) 
 /// # Returns
 ///
 /// A null pointer on success, or a pointer to a C string error message on failure.
-/// The caller is responsible for freeing the error message using `free_drop_script_error`.
+/// The caller is responsible for freeing the error message using `free_string`.
 ///
 /// # Safety
 ///
 /// * `hash` must be a valid pointer to a UTF-8 string.
-/// * The returned error pointer (if not null) must be freed using `free_drop_script_error`.
+/// * The returned error pointer (if not null) must be freed using `free_string`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn drop_script(hash: *mut u8, len: usize) -> *mut c_char {
     if hash.is_null() {
