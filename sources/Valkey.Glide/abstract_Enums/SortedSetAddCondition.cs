@@ -1,7 +1,9 @@
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
 namespace Valkey.Glide;
 
 /// <summary>
-/// The condition for an operation to add or change sorted set members.
+/// The condition for an operation to add or update  sorted set members.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/zadd/"/>
 public enum SortedSetAddCondition
@@ -40,4 +42,23 @@ public enum SortedSetAddCondition
     /// Only update existing members when the new score is less than the current score (XX + LT).
     /// </summary>
     OnlyIfLessThan,
+}
+
+internal static class SortedSetAddConditionExtensions
+{
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal static GlideString[] ToArgs(this SortedSetAddCondition condition)
+        => condition switch
+        {
+            SortedSetAddCondition.Always => [],
+            SortedSetAddCondition.OnlyIfNotExists => [ValkeyLiterals.NX],
+            SortedSetAddCondition.OnlyIfExists => [ValkeyLiterals.XX],
+            SortedSetAddCondition.OnlyIfNotExistsOrGreaterThan => [ValkeyLiterals.GT],
+            SortedSetAddCondition.OnlyIfNotExistsOrLessThan => [ValkeyLiterals.LT],
+            SortedSetAddCondition.OnlyIfGreaterThan => [ValkeyLiterals.XX, ValkeyLiterals.GT],
+            SortedSetAddCondition.OnlyIfLessThan => [ValkeyLiterals.XX, ValkeyLiterals.LT],
+            _ => throw new ArgumentOutOfRangeException(nameof(condition)),
+        };
 }
