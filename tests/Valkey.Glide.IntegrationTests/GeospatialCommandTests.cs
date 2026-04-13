@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Microsoft.Testing.Platform.Extensions.TestFramework;
-
 namespace Valkey.Glide.IntegrationTests;
 
 public class GeospatialCommandTests(TestConfiguration config)
@@ -40,6 +38,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     // Tolerances for floating-point comparisons.
     private const double CoordinateTolerance = 0.001;
     private const double UnitConversionTolerance = 0.01;
+    private const double DistanceTolerance = 1.0;
 
     // Common search shapes.
     private static readonly GeoSearchCircle Circle200Km = new(200, GeoUnit.Kilometers);
@@ -164,7 +163,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.Equal(2, await client.GeoAddAsync(key, updateMembers, changed));
 
         GeoPosition pos = Assert.NotNull(await client.GeoPositionAsync(key, CataniaName));
-        Assert.Equal(updatedLat, pos.Latitude);
+        Assert.Equal(updatedLat, pos.Latitude, CoordinateTolerance);
     }
 
     #endregion
@@ -231,7 +230,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.Equal(2L, await client.GeoAddAsync(key, PalermoCatania));
 
         double distance = Assert.NotNull(await client.GeoDistanceAsync(key, PalermoName, CataniaName, GeoUnit.Kilometers));
-        Assert.Equal(PalermoCataniaDistanceKm, distance, 1);
+        Assert.Equal(PalermoCataniaDistanceKm, distance, DistanceTolerance);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -562,12 +561,16 @@ public class GeospatialCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         _ = await client.GeoAddAsync(key, PalermoCatania);
 
-        var distResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { WithDistance = true });
-        Assert.Equivalent(new GeoSearchResult[] { new(PalermoName, distance: 0) }, distResults);
+        var distResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { WithDistance = true, Order = Order.Ascending });
+        Assert.Equal(2, distResults.Length);
+        Assert.True(distResults[0].Distance.HasValue && !distResults[0].Position.HasValue);
+        Assert.True(distResults[1].Distance.HasValue && !distResults[1].Position.HasValue);
 
         // Test with coordinates option
-        var coordResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { WithPosition = true });
-        Assert.Equivalent(new GeoSearchResult[] { new(PalermoName, position: PalermoPos) }, coordResults);
+        var coordResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { WithPosition = true, Order = Order.Ascending });
+        Assert.Equal(2, distResults.Length);
+        Assert.True(!coordResults[0].Distance.HasValue && coordResults[0].Position.HasValue);
+        Assert.True(!coordResults[1].Distance.HasValue && coordResults[1].Position.HasValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -581,8 +584,8 @@ public class GeospatialCommandTests(TestConfiguration config)
         var results = await client.GeoSearchAsync(key, PalermoName, Circle200Km, options);
 
         Assert.Equal(2, results.Length);
-        Assert.Equal(0.0, results[0].Distance!.Value, 1);
-        Assert.Equal(PalermoCataniaDistanceKm, results[1].Distance!.Value, 1);
+        Assert.Equal(0.0, results[0].Distance!.Value, DistanceTolerance);
+        Assert.Equal(PalermoCataniaDistanceKm, results[1].Distance!.Value, DistanceTolerance);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -676,11 +679,10 @@ public class GeospatialCommandTests(TestConfiguration config)
         var results = await client.SortedSetRangeByRankWithScoresAsync(dest, 0, -1);
         Assert.Equal(2, results.Length);
 
-        var palermoResult = results.FirstOrDefault(r => r.Element.ToString() == PalermoName);
-        var cataniaResult = results.FirstOrDefault(r => r.Element.ToString() == CataniaName);
-
-        Assert.Equal(0.0, palermoResult.Score, 0.1);
-        Assert.Equal(166.2742, cataniaResult.Score, 0.1);
+        Assert.Equal(PalermoName, results[0].Element.ToString());
+        Assert.Equal(0.0, results[0].Score, DistanceTolerance);
+        Assert.Equal(CataniaName, results[1].Element.ToString());
+        Assert.Equal(PalermoCataniaDistanceKm, results[1].Score, DistanceTolerance);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

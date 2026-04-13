@@ -39,7 +39,7 @@ internal partial class Database
     public async Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoDistanceAsync(key, member1, member2, unit);
+        return await base.GeoDistanceAsync(key, member1, member2, unit); // Use 'base' to ensure correct resolution due to defaults.
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoHashAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>

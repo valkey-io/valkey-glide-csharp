@@ -6,7 +6,7 @@ namespace Valkey.Glide;
 /// The result of a geospatial search operation corresponding to a matched geospatial member.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/geosearch/"/>
-public readonly struct GeoSearchResult
+public readonly struct GeoSearchResult : IEquatable<GeoSearchResult>
 {
     /// <summary>
     /// The member name.
@@ -44,5 +44,29 @@ public readonly struct GeoSearchResult
     }
 
     /// <inheritdoc/>
-    public override string ToString() => Member.ToString();
+    public override string ToString()
+        => Member.ToString();
+
+    /// <inheritdoc/>
+    public bool Equals(GeoSearchResult other)
+        => Member == other.Member
+        && Position.Equals(other.Position)
+        && Distance.Equals(other.Distance)
+        && Hash.Equals(other.Hash);
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+        => obj is GeoSearchResult other && Equals(other);
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+        => HashCode.Combine(Member, Position, Distance, Hash);
+
+    /// <summary>Equality operator.</summary>
+    public static bool operator ==(GeoSearchResult left, GeoSearchResult right)
+        => left.Equals(right);
+
+    /// <summary>Inequality operator.</summary>
+    public static bool operator !=(GeoSearchResult left, GeoSearchResult right)
+        => !left.Equals(right);
 }
