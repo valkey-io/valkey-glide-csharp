@@ -797,8 +797,8 @@ public class GenericCommandTests(TestConfiguration config)
         string userKey = Guid.NewGuid().ToString();
 
         // Set up test data
-        await client.HashSetAsync("user:1", [new HashEntry("age", "30"), new HashEntry("name", "Alice")]);
-        await client.HashSetAsync("user:2", [new HashEntry("age", "25"), new HashEntry("name", "Bob")]);
+        _ = await client.HashSetAsync("user:1", [new HashEntry("age", "30"), new HashEntry("name", "Alice")]);
+        _ = await client.HashSetAsync("user:2", [new HashEntry("age", "25"), new HashEntry("name", "Bob")]);
         _ = await client.ListLeftPushAsync(userKey, ["2", "1"]);
 
         // Test with BY pattern using SortOptions
