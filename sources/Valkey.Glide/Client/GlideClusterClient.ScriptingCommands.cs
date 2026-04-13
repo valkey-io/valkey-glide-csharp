@@ -142,6 +142,13 @@ public sealed partial class GlideClusterClient
 
     /// <inheritdoc/>
     public async Task FunctionKillAsync(
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionKillAsync(), Route.AllPrimaries);
+    }
+
+    /// <inheritdoc/>
+    public async Task FunctionKillAsync(
         Route route,
         CancellationToken cancellationToken = default)
     {
@@ -149,6 +156,14 @@ public sealed partial class GlideClusterClient
     }
 
     // ===== Function Inspection with Routing =====
+
+    /// <inheritdoc/>
+    public async Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
+        FunctionListQuery? query = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await Command(Request.FunctionListAsync(query).ToClusterValue(Route.AllPrimaries), Route.AllPrimaries);
+    }
 
     /// <inheritdoc/>
     public async Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
@@ -170,6 +185,13 @@ public sealed partial class GlideClusterClient
     // ===== Function Persistence with Routing =====
 
     /// <inheritdoc/>
+    public async Task<byte[]> FunctionDumpAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await Command(Request.FunctionDumpAsync());
+    }
+
+    /// <inheritdoc/>
     public async Task<ClusterValue<byte[]>> FunctionDumpAsync(
         Route route,
         CancellationToken cancellationToken = default)
@@ -180,10 +202,27 @@ public sealed partial class GlideClusterClient
     /// <inheritdoc/>
     public async Task FunctionRestoreAsync(
         byte[] payload,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionRestoreAsync(payload, null), Route.AllPrimaries);
+    }
+
+    /// <inheritdoc/>
+    public async Task FunctionRestoreAsync(
+        byte[] payload,
         Route route,
         CancellationToken cancellationToken = default)
     {
         _ = await Command(Request.FunctionRestoreAsync(payload, null), route);
+    }
+
+    /// <inheritdoc/>
+    public async Task FunctionRestoreAsync(
+        byte[] payload,
+        FunctionRestorePolicy policy,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionRestoreAsync(payload, policy), Route.AllPrimaries);
     }
 
     /// <inheritdoc/>

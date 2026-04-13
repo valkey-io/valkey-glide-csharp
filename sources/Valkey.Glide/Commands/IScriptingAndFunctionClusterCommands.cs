@@ -285,6 +285,21 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Terminates currently executing functions on all primary nodes.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <remarks>
+    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
+    /// <example>
+    /// <code>
+    /// await client.FunctionKillAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FunctionKillAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Terminates currently executing functions on specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to target.</param>
@@ -301,6 +316,24 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         CancellationToken cancellationToken = default);
 
     // ===== Function Inspection with Routing =====
+
+    /// <summary>
+    /// Lists loaded function libraries from all primary nodes.
+    /// </summary>
+    /// <param name="query">Optional query parameters to filter results.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A ClusterValue containing library information from nodes.</returns>
+    /// <remarks>
+    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
+        FunctionListQuery? query = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Lists loaded function libraries from specified nodes.
@@ -348,6 +381,22 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     // ===== Function Persistence with Routing =====
 
     /// <summary>
+    /// Creates a binary backup of loaded functions from a random node.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The binary payload containing the function backup.</returns>
+    /// <remarks>
+    /// Uses <see cref="Route.RandomRoute"/> as the default route.
+    /// <example>
+    /// <code>
+    /// byte[] backup = await client.FunctionDumpAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<byte[]> FunctionDumpAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates a binary backup of loaded functions from specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to backup from.</param>
@@ -362,6 +411,23 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </remarks>
     Task<ClusterValue<byte[]>> FunctionDumpAsync(
         Route route,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Restores functions from a binary backup on all primary nodes using default policy.
+    /// </summary>
+    /// <param name="payload">The binary payload from FunctionDump.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <remarks>
+    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
+    /// <example>
+    /// <code>
+    /// await client.FunctionRestoreAsync(backup);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FunctionRestoreAsync(
+        byte[] payload,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -380,6 +446,25 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     Task FunctionRestoreAsync(
         byte[] payload,
         Route route,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Restores functions from a binary backup on all primary nodes with specified policy.
+    /// </summary>
+    /// <param name="payload">The binary payload from FunctionDump.</param>
+    /// <param name="policy">The restore policy (APPEND, FLUSH, or REPLACE).</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <remarks>
+    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
+    /// <example>
+    /// <code>
+    /// await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FunctionRestoreAsync(
+        byte[] payload,
+        FunctionRestorePolicy policy,
         CancellationToken cancellationToken = default);
 
     /// <summary>
