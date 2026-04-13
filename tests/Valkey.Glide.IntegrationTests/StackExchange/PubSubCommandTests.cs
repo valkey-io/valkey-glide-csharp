@@ -75,6 +75,27 @@ public class PubSubCommandTests(TestConfiguration config)
             () => db.PublishAsync(emptyChannel, "hello"));
     }
 
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task PublishAsync_BinaryPayload_PreservesBytes(bool isCluster)
+    {
+        // Use bytes that are invalid UTF-8 and would be corrupted by ANSI marshaling.
+        byte[] bytes = [0x74, 0x65, 0x73, 0x74, 0xC0, 0xAF];
+        var channel = ValkeyChannel.Literal($"test-binary-{Guid.NewGuid()}");
+
+        var subscriber = BuildSubscriber(isCluster);
+        var publisher = BuildSubscriber(isCluster);
+
+        var received = new ConcurrentBag<MessageInfo>();
+        var handler = BuildHandler(received);
+        await subscriber.SubscribeAsync(channel, handler);
+
+        _ = await publisher.PublishAsync(channel, bytes);
+        await AssertHandlerReceives(received, [(channel, bytes)]);
+
+        await subscriber.UnsubscribeAsync(channel, handler);
+    }
+
     #endregion
     #region SubscribeAsync
 
