@@ -16,14 +16,14 @@ public partial class GlideClusterClient
     #region SubscribeCommands
 
     /// <inheritdoc/>
-    public async Task SSubscribeAsync(string channel, TimeSpan timeout = default)
+    public async Task SSubscribeAsync(string channel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SSubscribeBlocking([channel], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task SSubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    public async Task SSubscribeAsync(IEnumerable<string> channels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SSubscribeBlocking(channels.ToGlideStrings(), timeout));
@@ -41,21 +41,21 @@ public partial class GlideClusterClient
     #region UnsubscribeCommands
 
     /// <inheritdoc/>
-    public async Task SUnsubscribeAsync(TimeSpan timeout = default)
+    public async Task SUnsubscribeAsync(TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SUnsubscribeBlocking([], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task SUnsubscribeAsync(string channel, TimeSpan timeout = default)
+    public async Task SUnsubscribeAsync(string channel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SUnsubscribeBlocking([channel], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task SUnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    public async Task SUnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SUnsubscribeBlocking(channels.ToGlideStrings(), timeout));

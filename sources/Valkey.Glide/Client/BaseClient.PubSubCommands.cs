@@ -26,14 +26,14 @@ public abstract partial class BaseClient
     #region SubscribeCommands
 
     /// <inheritdoc/>
-    public async Task SubscribeAsync(string channel, TimeSpan timeout = default)
+    public async Task SubscribeAsync(string channel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SubscribeBlocking([channel], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task SubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    public async Task SubscribeAsync(IEnumerable<string> channels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SubscribeBlocking(channels.ToGlideStrings(), timeout));
@@ -48,14 +48,14 @@ public abstract partial class BaseClient
         => await Command(Request.Subscribe(channels.ToGlideStrings()));
 
     /// <inheritdoc/>
-    public async Task PSubscribeAsync(string pattern, TimeSpan timeout = default)
+    public async Task PSubscribeAsync(string pattern, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PSubscribeBlocking([pattern], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task PSubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default)
+    public async Task PSubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PSubscribeBlocking(patterns.ToGlideStrings(), timeout));
@@ -73,21 +73,21 @@ public abstract partial class BaseClient
     #region UnsubscribeCommands
 
     /// <inheritdoc/>
-    public async Task UnsubscribeAsync(TimeSpan timeout = default)
+    public async Task UnsubscribeAsync(TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.UnsubscribeBlocking([], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task UnsubscribeAsync(string channel, TimeSpan timeout = default)
+    public async Task UnsubscribeAsync(string channel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.UnsubscribeBlocking([channel], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task UnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout = default)
+    public async Task UnsubscribeAsync(IEnumerable<string> channels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.UnsubscribeBlocking(channels.ToGlideStrings(), timeout));
@@ -106,21 +106,21 @@ public abstract partial class BaseClient
         => await Command(Request.Unsubscribe(channels.ToGlideStrings()));
 
     /// <inheritdoc/>
-    public async Task PUnsubscribeAsync(TimeSpan timeout = default)
+    public async Task PUnsubscribeAsync(TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PUnsubscribeBlocking([], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task PUnsubscribeAsync(string pattern, TimeSpan timeout = default)
+    public async Task PUnsubscribeAsync(string pattern, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PUnsubscribeBlocking([pattern], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout = default)
+    public async Task PUnsubscribeAsync(IEnumerable<string> patterns, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PUnsubscribeBlocking(patterns.ToGlideStrings(), timeout));
