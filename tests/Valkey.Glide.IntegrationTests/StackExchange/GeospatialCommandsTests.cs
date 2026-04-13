@@ -483,7 +483,7 @@ public class GeospatialCommandsTests(TestConfiguration config)
 
         if (expected.Distance.HasValue)
         {
-            Assert.Equal(expected.Distance!.Value, Assert.NotNull(actual.Distance), DistanceTolerance);
+            Assert.Equal(expected.Distance.Value, Assert.NotNull(actual.Distance), DistanceTolerance);
         }
 
         if (expected.Hash.HasValue)
@@ -494,8 +494,8 @@ public class GeospatialCommandsTests(TestConfiguration config)
         if (expected.Position.HasValue)
         {
             GeoPosition actualPos = Assert.NotNull(actual.Position);
-            Assert.Equal(expected.Position!.Value.Longitude, actualPos.Longitude, CoordinateTolerance);
-            Assert.Equal(expected.Position!.Value.Latitude, actualPos.Latitude, CoordinateTolerance);
+            Assert.Equal(expected.Position.Value.Longitude, actualPos.Longitude, CoordinateTolerance);
+            Assert.Equal(expected.Position.Value.Latitude, actualPos.Latitude, CoordinateTolerance);
         }
     }
 
