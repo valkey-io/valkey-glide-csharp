@@ -110,23 +110,23 @@ internal interface IBatchListCommands
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)" /></returns>
     IBatch ListSetByIndex(ValkeyKey key, long index, ValkeyValue value);
 
-    /// <inheritdoc cref="IListBaseCommands.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" /></returns>
+    /// <inheritdoc cref="IBaseClient.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" /></returns>
     IBatch ListBlockingLeftPop(IEnumerable<ValkeyKey> keys, TimeSpan timeout);
 
-    /// <inheritdoc cref="IListBaseCommands.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" /></returns>
+    /// <inheritdoc cref="IBaseClient.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" /></returns>
     IBatch ListBlockingRightPop(IEnumerable<ValkeyKey> keys, TimeSpan timeout);
 
-    /// <inheritdoc cref="IListBaseCommands.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan)" /></returns>
+    /// <inheritdoc cref="IBaseClient.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan)" /></returns>
     IBatch ListBlockingMove(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout);
 
-    /// <inheritdoc cref="IListBaseCommands.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan)" /></returns>
+    /// <inheritdoc cref="IBaseClient.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan)" /></returns>
     IBatch ListBlockingPop(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout);
 
-    /// <inheritdoc cref="IListBaseCommands.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan)" /></returns>
+    /// <inheritdoc cref="IBaseClient.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan)" /></returns>
     IBatch ListBlockingPop(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout);
 }
