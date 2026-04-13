@@ -36,32 +36,34 @@ public class GeospatialCommandsTests(TestConfiguration config)
     private const double CoordinateTolerance = 0.001;
     private const double UnitConversionTolerance = 0.01;
 
+    // Common search shapes.
+    private static readonly GeoSearchCircle Circle200Km = new(200, GeoUnit.Kilometers);
+    private static readonly GeoSearchBox Box400Km = new(400, 400, GeoUnit.Kilometers);
+
+    // Common expected results.
+    private static readonly GeoRadiusResult PalermoResult = new(PalermoName, null, null, null);
+    private static readonly GeoRadiusResult CataniaResults = new(CataniaName, null, null, null);
+    private static readonly GeoRadiusResult TrapaniResult = new(TrapaniName, null, null, null);
+
+    private static readonly GeoRadiusResult[] PalermoCataniaRadiusResults = [PalermoResult, CataniaResults];
+
     #endregion
     #region GeoAddAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task GeoAddAsync_SingleEntry_ReturnsTrue(IDatabaseAsync db)
-    {
-        string key = $"ser-geoadd-{Guid.NewGuid()}";
-        Assert.True(await db.GeoAddAsync(key, PalermoLng, PalermoLat, PalermoName));
-    }
+        => Assert.True(await db.GeoAddAsync(Guid.NewGuid().ToString(), PalermoLng, PalermoLat, PalermoName));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task GeoAddAsync_GeoEntry_ReturnsTrue(IDatabaseAsync db)
-    {
-        string key = $"ser-geoadd-entry-{Guid.NewGuid()}";
-        Assert.True(await db.GeoAddAsync(key, Palermo));
-    }
+        => Assert.True(await db.GeoAddAsync(Guid.NewGuid().ToString(), Palermo));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task GeoAddAsync_MultipleEntries_ReturnsCount(IDatabaseAsync db)
-    {
-        string key = $"ser-geoadd-multi-{Guid.NewGuid()}";
-        Assert.Equal(2, await db.GeoAddAsync(key, [Palermo, Catania]));
-    }
+        => Assert.Equal(2, await db.GeoAddAsync(Guid.NewGuid().ToString(), [Palermo, Catania]));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -194,7 +196,7 @@ public class GeospatialCommandsTests(TestConfiguration config)
         _ = await db.GeoAddAsync(key, [Palermo, Catania]);
 
         ValkeyValue[] members = [PalermoName, CataniaName, "NonExistent"];
-        GeoPosition?[] positions = await db.GeoPositionAsync(key, members);
+        var positions = await db.GeoPositionAsync(key, members);
 
         Assert.Equal(3, positions.Length);
 
@@ -227,11 +229,8 @@ public class GeospatialCommandsTests(TestConfiguration config)
         string key = $"ser-geosearch-member-{Guid.NewGuid()}";
         _ = await db.GeoAddAsync(key, [Palermo, Catania, Trapani]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await db.GeoSearchAsync(key, PalermoName, shape);
-
-        string[] memberNames = [.. results.Select(r => r.Member.ToString())];
-        Assert.Equivalent(new[] { PalermoName, CataniaName }, memberNames);
+        var results = await db.GeoSearchAsync(key, PalermoName, Circle200Km);
+        Assert.Equivalent(PalermoCataniaRadiusResults, results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -241,11 +240,8 @@ public class GeospatialCommandsTests(TestConfiguration config)
         string key = $"ser-geosearch-pos-{Guid.NewGuid()}";
         _ = await db.GeoAddAsync(key, [Palermo, Catania]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await db.GeoSearchAsync(key, PalermoLng, PalermoLat, shape);
-
-        string[] memberNames = [.. results.Select(r => r.Member.ToString())];
-        Assert.Equivalent(new[] { PalermoName, CataniaName }, memberNames);
+        var results = await db.GeoSearchAsync(key, PalermoName, Circle200Km);
+        Assert.Equivalent(PalermoCataniaRadiusResults, results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -255,11 +251,8 @@ public class GeospatialCommandsTests(TestConfiguration config)
         string key = $"ser-geosearch-box-{Guid.NewGuid()}";
         _ = await db.GeoAddAsync(key, [Palermo, Catania]);
 
-        var shape = new GeoSearchBox(400, 400, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await db.GeoSearchAsync(key, PalermoName, shape);
-
-        string[] memberNames = [.. results.Select(r => r.Member.ToString())];
-        Assert.Equivalent(new[] { PalermoName, CataniaName }, memberNames);
+        var results = await db.GeoSearchAsync(key, PalermoName, Box400Km);
+        Assert.Equivalent(PalermoCataniaRadiusResults, results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -269,11 +262,8 @@ public class GeospatialCommandsTests(TestConfiguration config)
         string key = $"ser-geosearch-count-{Guid.NewGuid()}";
         _ = await db.GeoAddAsync(key, [Palermo, Catania, Trapani, Enna]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await db.GeoSearchAsync(key, PalermoName, shape);
-
-        string[] memberNames = [.. results.Select(r => r.Member.ToString())];
-        Assert.Equivalent(new[] { PalermoName, CataniaName }, memberNames);
+        var results = await db.GeoSearchAsync(key, PalermoName, Circle200Km);
+        Assert.Equivalent(PalermoCataniaRadiusResults, results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -283,12 +273,11 @@ public class GeospatialCommandsTests(TestConfiguration config)
         string key = $"ser-geosearch-order-{Guid.NewGuid()}";
         _ = await db.GeoAddAsync(key, [Palermo, Catania, Trapani]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] ascResults = await db.GeoSearchAsync(key, PalermoName, shape, order: Order.Ascending);
-        GeoRadiusResult[] descResults = await db.GeoSearchAsync(key, PalermoName, shape, order: Order.Descending);
+        var ascResults = await db.GeoSearchAsync(key, PalermoName, Circle200Km, order: Order.Ascending);
+        Assert.Equal([PalermoResult, TrapaniResult, CataniaResults], ascResults);
 
-        Assert.Equal(ascResults.Length, descResults.Length);
-        Assert.NotEmpty(ascResults);
+        var descResults = await db.GeoSearchAsync(key, PalermoName, Circle200Km, order: Order.Descending);
+        Assert.Equal([CataniaResults, TrapaniResult, PalermoResult], descResults);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -298,16 +287,14 @@ public class GeospatialCommandsTests(TestConfiguration config)
         string key = $"ser-geosearch-dist-{Guid.NewGuid()}";
         _ = await db.GeoAddAsync(key, [Palermo, Catania]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await db.GeoSearchAsync(key, PalermoName, shape, options: GeoRadiusOptions.WithDistance);
+        var results = await db.GeoSearchAsync(key, PalermoName, Circle200Km, options: GeoRadiusOptions.WithDistance);
 
-        var palermo = results.First(r => r.Member.ToString() == PalermoName);
-        var catania = results.First(r => r.Member.ToString() == CataniaName);
-
-        _ = Assert.NotNull(palermo.Distance);
-        _ = Assert.NotNull(catania.Distance);
-        Assert.Equal(0.0, palermo.Distance.Value, 1);
-        Assert.Equal(PalermoCataniaDistanceKm, catania.Distance.Value, 1);
+        GeoRadiusResult[] expected =
+        [
+            new(PalermoName, distance: 0.0, hash: null, position: null),
+            new(CataniaName, distance: PalermoCataniaDistanceKm, hash: null, position: null),
+        ];
+        Assert.Equivalent(expected, results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -317,13 +304,14 @@ public class GeospatialCommandsTests(TestConfiguration config)
         string key = $"ser-geosearch-coord-{Guid.NewGuid()}";
         _ = await db.GeoAddAsync(key, [Palermo, Catania]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        GeoRadiusResult[] results = await db.GeoSearchAsync(key, PalermoName, shape, options: GeoRadiusOptions.WithCoordinates);
+        var results = await db.GeoSearchAsync(key, PalermoName, Circle200Km, options: GeoRadiusOptions.WithCoordinates);
 
-        var palermo = results.First(r => r.Member.ToString() == PalermoName);
-        _ = Assert.NotNull(palermo.Position);
-        Assert.True(Math.Abs(palermo.Position.Value.Longitude - PalermoLng) < CoordinateTolerance);
-        Assert.True(Math.Abs(palermo.Position.Value.Latitude - PalermoLat) < CoordinateTolerance);
+        GeoRadiusResult[] expected =
+        [
+            new(PalermoName, distance: null, hash: null, position: new GeoPosition(PalermoLng, PalermoLat)),
+            new(CataniaName, distance: null, hash: null, position: new GeoPosition(CataniaLng, CataniaLat)),
+        ];
+        Assert.Equivalent(expected, results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -340,15 +328,13 @@ public class GeospatialCommandsTests(TestConfiguration config)
             Enna,
         ]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
+        var closestResults = await db.GeoSearchAsync(key, PalermoName, Circle200Km, count: 3, demandClosest: true);
+        GeoRadiusResult[] expectedClosest = [PalermoResult, new("Close", null, null, null), TrapaniResult];
+        Assert.Equivalent(expectedClosest, closestResults);
 
-        GeoRadiusResult[] closestResults = await db.GeoSearchAsync(key, PalermoName, shape, count: 3, demandClosest: true);
-        Assert.Equal(3, closestResults.Length);
-        string[] closestMembers = [.. closestResults.Select(r => r.Member.ToString())];
-        Assert.Equivalent((string[])[PalermoName, "Close"], closestMembers.Intersect([PalermoName, "Close"]));
-
-        GeoRadiusResult[] anyResults = await db.GeoSearchAsync(key, PalermoName, shape, count: 3, demandClosest: false);
-        Assert.Equal(3, anyResults.Length);
+        var anyResults = await db.GeoSearchAsync(key, PalermoName, Circle200Km, count: 3, demandClosest: false, order: Order.Ascending);
+        GeoRadiusResult[] expectedAny = [PalermoResult, new("Close", null, null, null), TrapaniResult];
+        Assert.Equivalent(expectedAny, anyResults);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -382,11 +368,16 @@ public class GeospatialCommandsTests(TestConfiguration config)
 
         _ = await db.GeoAddAsync(source, [Palermo, Catania, Trapani]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        Assert.Equal(3, await db.GeoSearchAndStoreAsync(source, dest, PalermoName, shape));
+        Assert.Equal(3, await db.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km));
 
-        ValkeyValue[] stored = await db.SortedSetRangeByRankAsync(dest);
-        Assert.Equivalent((string[])[PalermoName, CataniaName, TrapaniName], stored.Select(m => m.ToString()));
+        var stored = await db.GeoSearchAsync(dest, PalermoName, Circle200Km);
+        GeoRadiusResult[] expected =
+        [
+            new(PalermoName, null, null, null),
+            new(CataniaName, null, null, null),
+            new(TrapaniName, null, null, null)
+        ];
+        Assert.Equivalent(expected, stored);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -398,11 +389,10 @@ public class GeospatialCommandsTests(TestConfiguration config)
 
         _ = await db.GeoAddAsync(source, [Palermo, Catania]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        long count = await db.GeoSearchAndStoreAsync(source, dest, PalermoLng, PalermoLat, shape);
+        Assert.Equal(1, await db.GeoSearchAndStoreAsync(source, dest, PalermoLng, PalermoLat, Circle200Km));
 
-        Assert.True(count >= 1);
-        Assert.Contains(PalermoName, (await db.SortedSetRangeByRankAsync(dest)).Select(m => m.ToString()));
+        var stored = await db.GeoSearchAsync(dest, PalermoLng, PalermoLat, Circle200Km);
+        Assert.Contains(new GeoRadiusResult(PalermoName, null, null, null), stored);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -414,8 +404,7 @@ public class GeospatialCommandsTests(TestConfiguration config)
 
         _ = await db.GeoAddAsync(source, [Palermo, Catania]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        long count = await db.GeoSearchAndStoreAsync(source, dest, PalermoName, shape, storeDistances: true);
+        long count = await db.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km, storeDistances: true);
 
         Assert.Equal(2, count);
 
@@ -438,11 +427,10 @@ public class GeospatialCommandsTests(TestConfiguration config)
 
         _ = await db.GeoAddAsync(source, [Palermo, Catania, Trapani, Enna]);
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        long count = await db.GeoSearchAndStoreAsync(source, dest, PalermoName, shape, count: 2);
+        Assert.Equal(2, await db.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km, count: 2));
 
-        Assert.Equal(2, count);
-        Assert.Equal(2, (await db.SortedSetRangeByRankAsync(dest)).Length);
+        var stored = await db.GeoSearchAsync(dest, PalermoName, Circle200Km);
+        Assert.Equal(2, stored.Length);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -458,13 +446,10 @@ public class GeospatialCommandsTests(TestConfiguration config)
         _ = await db.SortedSetAddAsync(dest, [new SortedSetEntry("OldMember", 100)]);
         _ = Assert.Single(await db.SortedSetRangeByRankAsync(dest));
 
-        var shape = new GeoSearchCircle(200, GeoUnit.Kilometers);
-        long count = await db.GeoSearchAndStoreAsync(source, dest, PalermoName, shape);
+        Assert.Equal(2, await db.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km));
 
-        Assert.Equal(2, count);
-        ValkeyValue[] stored = await db.SortedSetRangeByRankAsync(dest);
-        Assert.Equal(2, stored.Length);
-        Assert.DoesNotContain("OldMember", stored.Select(m => m.ToString()));
+        var stored = await db.GeoSearchAsync(dest, PalermoName, Circle200Km);
+        Assert.Equivalent(PalermoCataniaRadiusResults, stored);
     }
 
     #endregion
