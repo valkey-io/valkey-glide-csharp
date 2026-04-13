@@ -140,6 +140,10 @@ jobs:
                   key: rust-${{ matrix.host.TARGET }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
+              env:
+                  AWS_ACCESS_KEY_ID: test_secret_key
+                  AWS_SECRET_ACCESS_KEY: test_access_key
+                  AWS_SESSION_TOKEN: test_session_token
               run: dotnet test --configuration Debug --framework net${{ matrix.dotnet }} --logger "html;LogFileName=TestReport.html" --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=detailed" --results-directory .
 
             - name: Derive failures.json (from TRX)

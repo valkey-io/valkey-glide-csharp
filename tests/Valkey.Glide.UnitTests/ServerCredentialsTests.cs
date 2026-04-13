@@ -8,6 +8,7 @@ public class ServerCredentialsTests
 
     private static readonly string Username = "USERNAME";
     private static readonly string Password = "PASSWORD";
+    private const uint RefreshInterval = 300;
 
     #endregion
     #region Tests
@@ -74,8 +75,7 @@ public class ServerCredentialsTests
     [Fact]
     public void ToString_UsernameIamAuthConfig_OmitsSensitiveInfo()
     {
-        var refreshInterval = IamAuthConfig.MinRefreshIntervalSeconds;
-        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: refreshInterval);
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: RefreshInterval);
         using var credentials = new ServerCredentials(Username, iamAuthConfig);
         string result = credentials.ToString();
 

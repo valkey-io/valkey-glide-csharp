@@ -13,19 +13,6 @@ public sealed class IamAuthConfig : IDisposable
     private bool _disposed;
 
     #endregion
-    #region Constants
-
-    /// <summary>
-    /// Minimum refresh interval in seconds.
-    /// </summary>
-    public const uint MinRefreshIntervalSeconds = 15 * 60; // 15 minutes
-
-    /// <summary>
-    /// Maximum refresh interval in seconds.
-    /// </summary>
-    public const uint MaxRefreshIntervalSeconds = 12 * 60 * 60; // 12 hours
-
-    #endregion
     #region Public Properties
 
     /// <summary>
@@ -56,7 +43,6 @@ public sealed class IamAuthConfig : IDisposable
 
     /// <summary>
     /// Optional refresh interval in seconds.
-    /// Must be between <see cref="MinRefreshIntervalSeconds"/> and <see cref="MaxRefreshIntervalSeconds"/> inclusive if specified.
     /// </summary>
     public uint? RefreshIntervalSeconds
     {
@@ -82,13 +68,6 @@ public sealed class IamAuthConfig : IDisposable
     {
         ArgumentNullException.ThrowIfNull(clusterName, nameof(clusterName));
         ArgumentNullException.ThrowIfNull(region, nameof(region));
-
-        if (refreshIntervalSeconds.HasValue &&
-            (refreshIntervalSeconds.Value < MinRefreshIntervalSeconds || refreshIntervalSeconds.Value > MaxRefreshIntervalSeconds))
-        {
-            var msg = $"Refresh interval must be between {MinRefreshIntervalSeconds} and {MaxRefreshIntervalSeconds} seconds.";
-            throw new ArgumentOutOfRangeException(nameof(refreshIntervalSeconds), refreshIntervalSeconds, msg);
-        }
 
         ClusterName = clusterName;
         ServiceType = serviceType;
