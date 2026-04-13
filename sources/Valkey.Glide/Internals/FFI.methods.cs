@@ -145,9 +145,6 @@ internal partial class FFI
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_script_hash_buffer")]
     public static extern void FreeScriptHashBuffer(IntPtr hashBuffer);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_drop_script_error")]
-    public static extern void FreeDropScriptError(IntPtr errorBuffer);
-
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "script_invoke")]
     public static extern void ScriptInvokeFfi(
         IntPtr client,

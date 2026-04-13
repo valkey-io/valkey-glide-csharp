@@ -430,48 +430,6 @@ public abstract partial class BaseClient : IBaseClient
             _ => false
         };
 
-    private static PubSubMessage MarshalPubSubMessage(
-        PushKind pushKind,
-        IntPtr messagePtr,
-        ulong messageLen,
-        IntPtr channelPtr,
-        ulong channelLen,
-        IntPtr patternPtr,
-        ulong patternLen)
-    {
-        // Marshal the raw byte pointers to byte arrays
-        byte[] messageBytes = new byte[messageLen];
-        Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
-
-        byte[] channelBytes = new byte[channelLen];
-        Marshal.Copy(channelPtr, channelBytes, 0, (int)channelLen);
-
-        byte[]? patternBytes = null;
-        if (patternPtr != IntPtr.Zero && patternLen > 0)
-        {
-            patternBytes = new byte[patternLen];
-            Marshal.Copy(patternPtr, patternBytes, 0, (int)patternLen);
-        }
-
-        // Create the appropriate PubSubMessage based on whether pattern is present
-        if (pushKind == PushKind.PushMessage)
-        {
-            return PubSubMessage.FromChannel(messageBytes, channelBytes);
-        }
-        else if (pushKind == PushKind.PushPMessage)
-        {
-            return PubSubMessage.FromPattern(messageBytes, channelBytes, patternBytes);
-        }
-        else if (pushKind == PushKind.PushSMessage)
-        {
-            return PubSubMessage.FromShardedChannel(messageBytes, channelBytes);
-        }
-        else
-        {
-            throw new ArgumentOutOfRangeException(nameof(pushKind), $"Unsupported PushKind: {pushKind}");
-        }
-    }
-
     /// <summary>
     /// Closes the connection to the client.
     /// </summary>
