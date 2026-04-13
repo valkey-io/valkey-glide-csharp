@@ -24,6 +24,9 @@ public class ConnectionConfigurationTests
     private static readonly uint ExponentBase = 2u;
     private static readonly uint JitterPercent = 10u;
 
+    // IAM auth constants.
+    private const uint RefreshInterval = 300;
+
     #endregion
     #region Authentication & Credentials Tests
 
@@ -87,8 +90,7 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithAuthentication_UsernameIamAuthConfig_WithRefreshInterval_Succeeds()
     {
-        var refreshInterval = IamAuthConfig.MinRefreshIntervalSeconds;
-        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: refreshInterval);
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: RefreshInterval);
         var builder = new StandaloneClientConfigurationBuilder()
             .WithAuthentication(Username, iamAuthConfig);
 
@@ -102,7 +104,7 @@ public class ConnectionConfigurationTests
         Assert.Equal(iamAuthConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
-        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, refreshInterval);
+        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, RefreshInterval);
     }
 
     [Fact]
@@ -171,8 +173,7 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithCredentials_Succeeds()
     {
-        var refreshInterval = IamAuthConfig.MinRefreshIntervalSeconds;
-        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: refreshInterval);
+        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: RefreshInterval);
         using var serverCredentials = new ServerCredentials(Username, iamAuthConfig);
         var builder = new StandaloneClientConfigurationBuilder()
             .WithCredentials(serverCredentials);
@@ -187,7 +188,7 @@ public class ConnectionConfigurationTests
         Assert.Equal(iamAuthConfig.Region, iamCredentials.Region);
         Assert.Equal(FFI.ServiceType.ElastiCache, iamCredentials.ServiceType);
         Assert.True(iamCredentials.HasRefreshIntervalSeconds);
-        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, refreshInterval);
+        Assert.Equal(iamAuthConfig.RefreshIntervalSeconds, RefreshInterval);
     }
 
     [Fact]

@@ -1,92 +1,84 @@
-﻿using System.Collections.Generic;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// A Shape that you can use for a GeoSearch.
+/// A shape that defines the search area for geospatial commands.
 /// </summary>
 public abstract class GeoSearchShape
 {
     /// <summary>
-    /// The unit to use for creating the shape.
+    /// The unit to use for the shape dimensions.
     /// </summary>
     protected GeoUnit Unit { get; }
 
     /// <summary>
-    /// The number of shape arguments.
-    /// </summary>
-    internal abstract int ArgCount { get; }
-
-    /// <summary>
-    /// constructs a <see cref="GeoSearchShape"/>.
+    /// Constructs a <see cref="GeoSearchShape"/>.
     /// </summary>
     /// <param name="unit">The geography unit to use.</param>
-    public GeoSearchShape(GeoUnit unit)
+    protected GeoSearchShape(GeoUnit unit)
     {
         Unit = unit;
     }
 
-    internal abstract void AddArgs(List<ValkeyValue> args);
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal abstract GlideString[] ToArgs();
 }
 
 /// <summary>
-/// A circle drawn on a map bounding.
+/// A circular search area for geospatial commands.
 /// </summary>
 public class GeoSearchCircle : GeoSearchShape
 {
     private readonly double _radius;
 
     /// <summary>
-    /// Creates a <see cref="GeoSearchCircle"/> Shape.
+    /// Creates a <see cref="GeoSearchCircle"/>.
     /// </summary>
     /// <param name="radius">The radius of the circle.</param>
-    /// <param name="unit">The distance unit the circle will use, defaults to Meters.</param>
+    /// <param name="unit">The distance unit, defaults to Meters.</param>
     public GeoSearchCircle(double radius, GeoUnit unit = GeoUnit.Meters) : base(unit)
     {
         _radius = radius;
     }
 
-    internal override int ArgCount => 3;
-
-    /// <summary>
-    /// Gets the <see cref="ValkeyValue"/>s for this shape.
-    /// </summary>
-    internal override void AddArgs(List<ValkeyValue> args)
-    {
-        args.Add(ValkeyLiterals.BYRADIUS);
-        args.Add(_radius);
-        args.Add(Unit.ToLiteral());
-    }
+    /// <inheritdoc/>
+    internal override GlideString[] ToArgs() =>
+    [
+        ValkeyLiterals.BYRADIUS,
+        _radius.ToGlideString(),
+        Unit.ToLiteral()
+    ];
 }
 
 /// <summary>
-/// A box drawn on a map.
+/// A rectangular search area for geospatial commands.
 /// </summary>
 public class GeoSearchBox : GeoSearchShape
 {
     private readonly double _height;
-
     private readonly double _width;
 
     /// <summary>
-    /// Initializes a GeoBox.
+    /// Creates a <see cref="GeoSearchBox"/>.
     /// </summary>
     /// <param name="height">The height of the box.</param>
     /// <param name="width">The width of the box.</param>
-    /// <param name="unit">The distance unit the box will use, defaults to Meters.</param>
+    /// <param name="unit">The distance unit, defaults to metres.</param>
     public GeoSearchBox(double height, double width, GeoUnit unit = GeoUnit.Meters) : base(unit)
     {
         _height = height;
         _width = width;
     }
 
-    internal override int ArgCount => 4;
-
-    internal override void AddArgs(List<ValkeyValue> args)
-    {
-        args.Add(ValkeyLiterals.BYBOX);
-        args.Add(_width);
-        args.Add(_height);
-        args.Add(Unit.ToLiteral());
-    }
+    /// <inheritdoc/>
+    internal override GlideString[] ToArgs() =>
+    [
+        ValkeyLiterals.BYBOX,
+        _width.ToGlideString(),
+        _height.ToGlideString(),
+        Unit.ToLiteral()
+    ];
 }
