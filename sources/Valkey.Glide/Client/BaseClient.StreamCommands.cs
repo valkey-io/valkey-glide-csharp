@@ -85,23 +85,9 @@ public partial class BaseClient
     }
 
     /// <inheritdoc/>
-    public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? start = null, ValkeyValue? end = null, int? count = null, Order order = Order.Ascending)
+    public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending)
     {
-        if (!start.HasValue)
-        {
-            if (order == Order.Ascending)
-                start = StreamConstants.ReadMinValue;
-            else
-                start = StreamConstants.ReadMaxValue;
-        }
-        if (!end.HasValue)
-        {
-            if (order == Order.Ascending)
-                end = StreamConstants.ReadMaxValue;
-            else
-                end = StreamConstants.ReadMinValue;
-        }
-        return await Command(Request.StreamRangeAsync(key, start ?? StreamConstants.ReadMinValue, end ?? StreamConstants.ReadMaxValue, count, order));
+        return await Command(Request.StreamRangeAsync(key, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, messageOrder));
     }
 
     /// <inheritdoc/>

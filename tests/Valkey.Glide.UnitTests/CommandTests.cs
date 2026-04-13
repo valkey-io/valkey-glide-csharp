@@ -931,7 +931,7 @@ public class CommandTests
             // StreamRange
             () => Assert.Equal(["XRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", "-", "+", null, Order.Ascending).GetArgs()),
             () => Assert.Equal(["XRANGE", "key", "1-0", "2-0", "COUNT", "10"], Request.StreamRangeAsync("key", "1-0", "2-0", 10, Order.Ascending).GetArgs()),
-            () => Assert.Equal(["XREVRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", "-", "+", null, Order.Descending).GetArgs()),
+            () => Assert.Equal(["XREVRANGE", "key", "+", "-"], Request.StreamRangeAsync("key", "-", "+", null, Order.Descending).GetArgs()),
 
             // StreamLength
             () => Assert.Equal(["XLEN", "key"], Request.StreamLengthAsync("key").GetArgs()),

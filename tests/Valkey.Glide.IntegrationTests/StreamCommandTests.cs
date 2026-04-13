@@ -237,7 +237,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read from id1 to id2
-        StreamEntry[] entries = await client.StreamRangeAsync(key, start: id1, end: id2);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, minId: id1, maxId: id2);
         Assert.Equal(2, entries.Length);
         Assert.Equal(id1.ToString(), entries[0].Id.ToString());
         Assert.Equal(id2.ToString(), entries[1].Id.ToString());
@@ -274,8 +274,8 @@ public class StreamCommandTests
         StreamEntry[] ascEntries = await client.StreamRangeAsync(key);
         Assert.Equal(3, ascEntries.Length);
 
-        // Read in descending order (most recent first) - XREVRANGE uses + to -
-        StreamEntry[] entries = await client.StreamRangeAsync(key, start: StreamConstants.ReadMaxValue, end: StreamConstants.ReadMinValue, order: Order.Descending);
+        // Read in descending order (most recent first) - library swaps minId/maxId for XREVRANGE
+        StreamEntry[] entries = await client.StreamRangeAsync(key, messageOrder: Order.Descending);
         Assert.Equal(3, entries.Length);
         Assert.Equal("value3", entries[0]["field"].ToString());
         Assert.Equal("value2", entries[1]["field"].ToString());

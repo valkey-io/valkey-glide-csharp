@@ -101,12 +101,12 @@ public interface IStreamBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xrange"/>
     /// <param name="key">The key of the stream.</param>
-    /// <param name="start">The ID for the start of the range (inclusive). Use <see cref="StreamConstants.ReadMinValue"/>  for the smallest ID in the stream.</param>
-    /// <param name="end">The ID for the end of the range (inclusive). Use <see cref="StreamConstants.ReadMaxValue"/>  for the largest ID in the stream.</param>
+    /// <param name="minId">The minimum ID of the range (inclusive). Use <see cref="StreamConstants.ReadMinValue"/>  for the smallest ID in the stream.</param>
+    /// <param name="maxId">The maximum ID of the range (inclusive). Use <see cref="StreamConstants.ReadMaxValue"/>  for the largest ID in the stream.</param>
     /// <param name="count">The maximum number of entries to return.</param>
-    /// <param name="order">The order to return entries (Ascending uses XRANGE, Descending uses XREVRANGE).</param>
+    /// <param name="messageOrder">The order to return entries (Ascending uses XRANGE, Descending uses XREVRANGE).</param>
     /// <returns>An array of stream entries in the specified range.</returns>
-    Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? start = null, ValkeyValue? end = null, int? count = null, Order order = Order.Ascending);
+    Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending);
 
     /// <summary>
     /// Creates a consumer group for a stream.

@@ -25,7 +25,7 @@ internal interface IBatchStreamCommands
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order)" /></returns>
-    IBatch StreamRange(ValkeyKey key, ValkeyValue? start = null, ValkeyValue? end = null, int? count = null, Order order = Order.Ascending);
+    IBatch StreamRange(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending);
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamLengthAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamLengthAsync(ValkeyKey)" /></returns>

@@ -102,9 +102,12 @@ internal partial class Request
         return new(RequestType.XRead, [.. args], false, converter, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue start, ValkeyValue end, int? count, Order order)
+    public static Cmd<object, StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue minId, ValkeyValue maxId, int? count, Order messageOrder)
     {
-        List<GlideString> args = [key.ToGlideString(), start.ToGlideString(), end.ToGlideString()];
+        // XREVRANGE expects the higher ID first, so swap minId/maxId for descending order.
+        List<GlideString> args = messageOrder == Order.Descending
+            ? [key.ToGlideString(), maxId.ToGlideString(), minId.ToGlideString()]
+            : [key.ToGlideString(), minId.ToGlideString(), maxId.ToGlideString()];
 
         if (count.HasValue)
         {
@@ -112,7 +115,7 @@ internal partial class Request
             args.Add(count.Value.ToGlideString());
         }
 
-        var requestType = order == Order.Descending ? RequestType.XRevRange : RequestType.XRange;
+        var requestType = messageOrder == Order.Descending ? RequestType.XRevRange : RequestType.XRange;
         return new(requestType, [.. args], false, ConvertXRangeResponse);
     }
 
