@@ -178,6 +178,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     public void Dispose()
     {
         GC.SuppressFinalize(this);
+        RemoveAllSubscriptions();
         lock (_lock)
         {
             if (_db is null)
