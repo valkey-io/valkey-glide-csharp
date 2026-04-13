@@ -132,6 +132,13 @@ internal partial class Database
         return await ListMoveAsync(sourceKey, destinationKey, sourceSide, destinationSide);
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.ListRightPopLeftPushAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
+    public async Task<ValkeyValue> ListRightPopLeftPushAsync(ValkeyKey source, ValkeyKey destination, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await ListMoveAsync(source, destination, ListSide.Right, ListSide.Left);
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.ListPositionAsync(ValkeyKey, ValkeyValue, long, long, CommandFlags)"/>
     public async Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None)
     {

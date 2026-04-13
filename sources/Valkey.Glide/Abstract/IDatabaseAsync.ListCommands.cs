@@ -100,6 +100,21 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide, CommandFlags flags);
 
+    /// <summary>
+    /// Atomically pops an element from the tail of the source list and pushes it to the head of the destination list.
+    /// </summary>
+    /// <remarks>
+    /// This is a StackExchange.Redis compatibility method. RPOPLPUSH is deprecated since Redis 6.2.0.
+    /// Use <see cref="ListMoveAsync"/> with <see cref="ListSide.Right"/> and <see cref="ListSide.Left"/> instead.
+    /// </remarks>
+    /// <seealso href="https://valkey.io/commands/rpoplpush"/>
+    /// <param name="source">The key of the source list.</param>
+    /// <param name="destination">The key of the destination list.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The element being popped and pushed, or <see cref="ValkeyValue.Null"/> if the source list is empty.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ValkeyValue> ListRightPopLeftPushAsync(ValkeyKey source, ValkeyKey destination, CommandFlags flags = CommandFlags.None);
+
     /// <inheritdoc cref="IListBaseCommands.ListPositionAsync(ValkeyKey, ValkeyValue, long, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
