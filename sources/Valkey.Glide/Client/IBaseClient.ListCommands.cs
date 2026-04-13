@@ -12,15 +12,6 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/#list">Valkey – List Commands</seealso>
 public partial interface IBaseClient
 {
-    // ===== BLOCKING OPERATIONS - NOT SUPPORTED BY STACKEXCHANGE.REDIS =====
-    // The following blocking operations are NOT supported by StackExchange.Redis because they would
-    // block the entire multiplexer, preventing other operations from executing.
-    // These are GLIDE-only features:
-    // - BLMOVE (blocking list move)
-    // - BLMPOP (blocking list multi-pop)
-    // - BLPOP (blocking left pop)
-    // - BRPOP (blocking right pop)
-
     /// <summary>
     /// Pops an element from the head of the first list that is non-empty, with the given <paramref name="keys"/> being checked in the order that
     /// they are given.
