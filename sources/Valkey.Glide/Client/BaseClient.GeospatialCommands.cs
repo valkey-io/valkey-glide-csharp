@@ -7,86 +7,46 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <inheritdoc/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member)
-    {
-        return await GeoAddAsync(key, new GeoEntry(longitude, latitude, member)).ConfigureAwait(false);
-    }
+    public async Task<bool> GeoAddAsync(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default)
+        => await Command(Request.GeoAddAsync(key, member, position, options));
 
     /// <inheritdoc/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value)
-    {
-        return await Command(Request.GeoAddAsync(key, value));
-    }
-
-    /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values)
-    {
-        return await Command(Request.GeoAddAsync(key, [.. values]));
-    }
-
-    /// <inheritdoc/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, GeoAddOptions options)
-    {
-        return await Command(Request.GeoAddAsync(key, value, options));
-    }
-
-    /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, GeoAddOptions options)
-    {
-        return await Command(Request.GeoAddAsync(key, [.. values], options));
-    }
+    public async Task<long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default)
+        => await Command(Request.GeoAddAsync(key, members, options));
 
     /// <inheritdoc/>
     public async Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters)
-    {
-        return await Command(Request.GeoDistanceAsync(key, member1, member2, unit));
-    }
+        => await Command(Request.GeoDistanceAsync(key, member1, member2, unit));
 
     /// <inheritdoc/>
     public async Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member)
-    {
-        return await Command(Request.GeoHashAsync(key, member));
-    }
+        => await Command(Request.GeoHashAsync(key, member));
 
     /// <inheritdoc/>
     public async Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members)
-    {
-        return await Command(Request.GeoHashAsync(key, [.. members]));
-    }
+        => await Command(Request.GeoHashAsync(key, [.. members]));
 
     /// <inheritdoc/>
     public async Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member)
-    {
-        return await Command(Request.GeoPositionAsync(key, member));
-    }
+        => await Command(Request.GeoPositionAsync(key, member));
 
     /// <inheritdoc/>
     public async Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members)
-    {
-        return await Command(Request.GeoPositionAsync(key, [.. members]));
-    }
+        => await Command(Request.GeoPositionAsync(key, [.. members]));
 
     /// <inheritdoc/>
-    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default)
-    {
-        return await Command(Request.GeoSearchAsync(key, fromMember, shape, count, demandClosest, order, options));
-    }
+    public async Task<GeoSearchResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default)
+        => await Command(Request.GeoSearchAsync(key, from, shape, options));
 
     /// <inheritdoc/>
-    public async Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default)
-    {
-        return await Command(Request.GeoSearchAsync(key, fromPosition, shape, count, demandClosest, order, options));
-    }
+    public async Task<GeoSearchResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default)
+        => await Command(Request.GeoSearchAsync(key, from, shape, options));
 
     /// <inheritdoc/>
-    public async Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue fromMember, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false)
-    {
-        return await Command(Request.GeoSearchAndStoreAsync(sourceKey, destinationKey, fromMember, shape, count, demandClosest, order, storeDistances));
-    }
+    public async Task<long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options = default) =>
+        await Command(Request.GeoSearchAndStoreAsync(source, destination, from, shape, options));
 
     /// <inheritdoc/>
-    public async Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, GeoPosition fromPosition, GeoSearchShape shape, long count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false)
-    {
-        return await Command(Request.GeoSearchAndStoreAsync(sourceKey, destinationKey, fromPosition, shape, count, demandClosest, order, storeDistances));
-    }
+    public async Task<long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options = default) =>
+        await Command(Request.GeoSearchAndStoreAsync(source, destination, from, shape, options));
 }
