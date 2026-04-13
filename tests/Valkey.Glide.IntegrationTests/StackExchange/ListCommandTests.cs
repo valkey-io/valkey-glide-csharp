@@ -64,4 +64,44 @@ public class ListCommandTests(TestConfiguration config)
     }
 
     #endregion
+
+    #region ListRightPushAsync/ListLeftPushAsync CommandFlags-only overloads
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task ListRightPushAsync_WithFlagsOnly_Works(IDatabaseAsync db)
+    {
+        string key = $"ser-rpush-flags-{Guid.NewGuid()}";
+
+        // Test single value with flags only (no When)
+        long count = await db.ListRightPushAsync(key, "a", CommandFlags.None);
+        Assert.Equal(1, count);
+
+        // Test multiple values with flags only (no When)
+        count = await db.ListRightPushAsync(key, ["b", "c"], CommandFlags.None);
+        Assert.Equal(3, count);
+
+        ValkeyValue[] list = await db.ListRangeAsync(key);
+        Assert.Equal(["a", "b", "c"], [.. list.Select(v => v.ToString())]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task ListLeftPushAsync_WithFlagsOnly_Works(IDatabaseAsync db)
+    {
+        string key = $"ser-lpush-flags-{Guid.NewGuid()}";
+
+        // Test single value with flags only (no When)
+        long count = await db.ListLeftPushAsync(key, "a", CommandFlags.None);
+        Assert.Equal(1, count);
+
+        // Test multiple values with flags only (no When)
+        count = await db.ListLeftPushAsync(key, ["b", "c"], CommandFlags.None);
+        Assert.Equal(3, count);
+
+        ValkeyValue[] list = await db.ListRangeAsync(key);
+        Assert.Equal(["c", "b", "a"], [.. list.Select(v => v.ToString())]);
+    }
+
+    #endregion
 }
