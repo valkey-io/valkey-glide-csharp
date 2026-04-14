@@ -1,12 +1,13 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
 public partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool)"/>
     public async Task<ValkeyValue> StreamAddAsync(
         ValkeyKey key,
         ValkeyValue streamField,
@@ -15,61 +16,36 @@ public partial class BaseClient
         int? maxLength,
         bool useApproximateMaxLength)
     {
-        return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, null, false);
+        var options = new StreamAddOptions { Id = messageId };
+        if (maxLength.HasValue)
+            options = options with { Trim = new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength } };
+        return await StreamAddAsync(key, streamField, streamValue, options);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, ValkeyValue?, int?, bool)"/>
     public async Task<ValkeyValue> StreamAddAsync(
         ValkeyKey key,
         IEnumerable<NameValueEntry> streamPairs,
         ValkeyValue? messageId,
-         int? maxLength,
-         bool useApproximateMaxLength)
+        int? maxLength,
+        bool useApproximateMaxLength)
     {
-        return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, null, false);
+        var options = new StreamAddOptions { Id = messageId };
+        if (maxLength.HasValue)
+            options = options with { Trim = new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength } };
+        return await StreamAddAsync(key, streamPairs, options);
     }
 
-    /// <inheritdoc/>
-    public async Task<ValkeyValue> StreamAddAsync(
-        ValkeyKey key,
-        ValkeyValue streamField,
-        ValkeyValue streamValue,
-        ValkeyValue? messageId = null,
-        long? maxLength = null,
-        bool useApproximateMaxLength = false,
-        long? limit = null,
-        bool noMakeStream = false)
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, StreamAddOptions?)"/>
+    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, StreamAddOptions? options = null)
     {
-        return await Command(Request.StreamAddAsync(
-            key,
-            messageId ?? default,
-            maxLength,
-            default,
-            useApproximateMaxLength,
-            [new NameValueEntry(streamField, streamValue)],
-            limit,
-            noMakeStream));
+        return await Command(Request.StreamAddAsync(key, [new NameValueEntry(streamField, streamValue)], options));
     }
 
-    /// <inheritdoc/>
-    public async Task<ValkeyValue> StreamAddAsync(
-        ValkeyKey key,
-        IEnumerable<NameValueEntry> streamPairs,
-        ValkeyValue? messageId = null,
-        long? maxLength = null,
-        bool useApproximateMaxLength = false,
-        long? limit = null,
-        bool noMakeStream = false)
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, StreamAddOptions?)"/>
+    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions? options = null)
     {
-        return await Command(Request.StreamAddAsync(
-            key,
-            messageId ?? default,
-            maxLength,
-            default,
-            useApproximateMaxLength,
-            [.. streamPairs],
-            limit,
-            noMakeStream));
+        return await Command(Request.StreamAddAsync(key, [.. streamPairs], options));
     }
 
     /// <inheritdoc/>

@@ -24,14 +24,20 @@ internal partial class Database
     public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, limit, false);
+        var options = new Commands.Options.StreamAddOptions { Id = messageId };
+        if (maxLength.HasValue)
+            options = options with { Trim = new Commands.Options.StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit } };
+        return await StreamAddAsync(key, streamField, streamValue, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, ValkeyValue?, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
     public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, limit, false);
+        var options = new Commands.Options.StreamAddOptions { Id = messageId };
+        if (maxLength.HasValue)
+            options = options with { Trim = new Commands.Options.StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit } };
+        return await StreamAddAsync(key, streamPairs, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)"/>

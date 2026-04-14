@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -50,7 +52,7 @@ public class StreamCommandTests
         // Add 5 entries with maxLength of 3
         for (int i = 0; i < 5; i++)
         {
-            _ = await client.StreamAddAsync(key, "field", $"value{i}", maxLength: 3);
+            _ = await client.StreamAddAsync(key, "field", $"value{i}", new StreamAddOptions { Trim = new StreamTrimOptions.MaxLen { MaxLength = 3 } });
         }
 
         // Verify stream was trimmed to maxLength of 3
@@ -58,7 +60,7 @@ public class StreamCommandTests
         Assert.Equal(3, length);
 
         // Add another entry with maxLength of 3
-        ValkeyValue lastId = await client.StreamAddAsync(key, "field", "final", maxLength: 3);
+        ValkeyValue lastId = await client.StreamAddAsync(key, "field", "final", new StreamAddOptions { Trim = new StreamTrimOptions.MaxLen { MaxLength = 3 } });
         AssertIsValidMessageId(lastId);
 
         // Verify stream is still trimmed to 3
@@ -113,7 +115,7 @@ public class StreamCommandTests
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Try to add to non-existent stream with NOMKSTREAM - should return null
-        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value", noMakeStream: true);
+        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value", new StreamAddOptions { MakeStream = false });
         Assert.True(messageId.IsNull);
     }
 
@@ -127,7 +129,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value1");
 
         // Add to existing stream with NOMKSTREAM - should succeed
-        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value2", noMakeStream: true);
+        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value2", new StreamAddOptions { MakeStream = false });
         AssertIsValidMessageId(messageId);
     }
 
@@ -182,12 +184,12 @@ public class StreamCommandTests
 
         // Use <ms>-* format to auto-generate sequence number for specific timestamp
         long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1", messageId: $"{timestamp}-*");
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1", new StreamAddOptions { Id = $"{timestamp}-*" });
         Assert.False(id1.IsNull);
         Assert.StartsWith($"{timestamp}-", id1.ToString());
 
         // Add another with same timestamp - should get incremented sequence
-        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2", messageId: $"{timestamp}-*");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2", new StreamAddOptions { Id = $"{timestamp}-*" });
         Assert.False(id2.IsNull);
         Assert.StartsWith($"{timestamp}-", id2.ToString());
 
@@ -202,7 +204,7 @@ public class StreamCommandTests
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Add with explicit ID
-        ValkeyValue id = await client.StreamAddAsync(key, "field", "value", messageId: "1000000000000-0");
+        ValkeyValue id = await client.StreamAddAsync(key, "field", "value", new StreamAddOptions { Id = "1000000000000-0" });
         Assert.Equal("1000000000000-0", id.ToString());
     }
 

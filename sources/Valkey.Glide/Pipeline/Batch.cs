@@ -28,8 +28,8 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
     IBatch IBatchStandalone.SelectAsync(long index) => SelectAsync(index);
 
     // Explicit interface implementations for IBatchStreamCommands
-    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamField, streamValue, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
-    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamPairs, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
+    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, Commands.Options.StreamAddOptions? options) => StreamAdd(key, streamField, streamValue, options);
+    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, Commands.Options.StreamAddOptions? options) => StreamAdd(key, streamPairs, options);
     IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count) => StreamRead(key, position, count);
     IBatch IBatchStreamCommands.StreamRead(IEnumerable<StreamPosition> streamPositions, int? count) => StreamRead(streamPositions, count);
     IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? start, ValkeyValue? end, int? count, Order order) => StreamRange(key, start, end, count, order);

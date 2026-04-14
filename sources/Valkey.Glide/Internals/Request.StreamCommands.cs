@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -60,6 +62,20 @@ internal partial class Request
         args.Add(messageId.IsNull ? "*" : messageId.ToGlideString());
 
         // Add field-value pairs
+        foreach (var pair in streamPairs)
+        {
+            args.Add(pair.Name.ToGlideString());
+            args.Add(pair.Value.ToGlideString());
+        }
+
+        return new(RequestType.XAdd, [.. args], true, response => (ValkeyValue)response);
+    }
+
+    public static Cmd<GlideString, ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, StreamAddOptions? options)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        args.AddRange((options ?? new StreamAddOptions()).ToArgs());
+
         foreach (var pair in streamPairs)
         {
             args.Add(pair.Name.ToGlideString());
