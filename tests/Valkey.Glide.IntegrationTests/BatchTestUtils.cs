@@ -297,8 +297,8 @@ internal partial class BatchTestUtils
         _ = batch.SetAdd(key1, ["b", "c"]);
         testData.Add(new(2L, "SetAdd(key1, [b, c])"));
 
-        _ = batch.SetLength(key1);
-        testData.Add(new(3L, "SetLength(key1)"));
+        _ = batch.SetCard(key1);
+        testData.Add(new(3L, "SetCard(key1)"));
 
         _ = batch.SetMembers(key1);
         testData.Add(new(Array.Empty<ValkeyValue>(), "SetMembers(key1)", true));
@@ -315,8 +315,8 @@ internal partial class BatchTestUtils
         _ = batch.SetRemove(key1, ["b", "d", "nonexistent"]);
         testData.Add(new(2L, "SetRemove(key1, [b, d, nonexistent])"));
 
-        _ = batch.SetLength(key1);
-        testData.Add(new(2L, "SetLength(key1) after multiple remove"));
+        _ = batch.SetCard(key1);
+        testData.Add(new(2L, "SetCard(key1) after multiple remove"));
 
         _ = batch.SetAdd(key2, "c");
         testData.Add(new(true, "SetAdd(key2, c)"));
@@ -347,28 +347,28 @@ internal partial class BatchTestUtils
         _ = batch.SetUnion([prefix + key1, prefix + key2, prefix + key5]);
         testData.Add(new(Array.Empty<ValkeyValue>(), "SetUnion([prefix+key1, prefix+key2, prefix+key5])", true));
 
-        _ = batch.SetIntersect(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetIntersect(prefix+key1, prefix+key2)", true));
+        _ = batch.SetInter(prefix + key1, prefix + key2);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "SetInter(prefix+key1, prefix+key2)", true));
 
-        _ = batch.SetIntersect([prefix + key1, prefix + key2]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetIntersect([prefix+key1, prefix+key2])", true));
+        _ = batch.SetInter([prefix + key1, prefix + key2]);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "SetInter([prefix+key1, prefix+key2])", true));
 
-        _ = batch.SetDifference(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDifference(prefix+key1, prefix+key2)", true));
+        _ = batch.SetDiff(prefix + key1, prefix + key2);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDiff(prefix+key1, prefix+key2)", true));
 
-        _ = batch.SetDifference([prefix + key1, prefix + key2]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDifference([prefix+key1, prefix+key2])", true));
+        _ = batch.SetDiff([prefix + key1, prefix + key2]);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDiff([prefix+key1, prefix+key2])", true));
 
         if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
-            _ = batch.SetIntersectionLength([prefix + key1, prefix + key2]);
-            testData.Add(new(1L, "SetIntersectionLength([prefix+key1, prefix+key2])"));
+            _ = batch.SetInterCard([prefix + key1, prefix + key2]);
+            testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key2])"));
 
-            _ = batch.SetIntersectionLength([prefix + key1, prefix + key2], 5);
-            testData.Add(new(1L, "SetIntersectionLength([prefix+key1, prefix+key2], limit=5)"));
+            _ = batch.SetInterCard([prefix + key1, prefix + key2], 5);
+            testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key2], limit=5)"));
 
-            _ = batch.SetIntersectionLength([prefix + key1, prefix + key5], 1);
-            testData.Add(new(1L, "SetIntersectionLength([prefix+key1, prefix+key5], limit=1)"));
+            _ = batch.SetInterCard([prefix + key1, prefix + key5], 1);
+            testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key5], limit=1)"));
         }
 
         _ = batch.SetUnionStore(prefix + destKey, prefix + key1, prefix + key2);
@@ -377,38 +377,38 @@ internal partial class BatchTestUtils
         _ = batch.SetUnionStore(prefix + destKey, [prefix + key1, prefix + key2]);
         testData.Add(new(2L, "SetUnionStore(prefix+destKey, [prefix+key1, prefix+key2])"));
 
-        _ = batch.SetIntersectStore(prefix + destKey, prefix + key1, prefix + key2);
-        testData.Add(new(1L, "SetIntersectStore(prefix+destKey, prefix+key1, prefix+key2)"));
+        _ = batch.SetInterStore(prefix + destKey, prefix + key1, prefix + key2);
+        testData.Add(new(1L, "SetInterStore(prefix+destKey, prefix+key1, prefix+key2)"));
 
-        _ = batch.SetIntersectStore(prefix + destKey, [prefix + key1, prefix + key2]);
-        testData.Add(new(1L, "SetIntersectStore(prefix+destKey, [prefix+key1, prefix+key2])"));
+        _ = batch.SetInterStore(prefix + destKey, [prefix + key1, prefix + key2]);
+        testData.Add(new(1L, "SetInterStore(prefix+destKey, [prefix+key1, prefix+key2])"));
 
-        _ = batch.SetDifferenceStore(prefix + destKey, prefix + key1, prefix + key2);
-        testData.Add(new(1L, "SetDifferenceStore(prefix+destKey, prefix+key1, prefix+key2)"));
+        _ = batch.SetDiffStore(prefix + destKey, prefix + key1, prefix + key2);
+        testData.Add(new(1L, "SetDiffStore(prefix+destKey, prefix+key1, prefix+key2)"));
 
-        _ = batch.SetDifferenceStore(prefix + destKey, [prefix + key1, prefix + key2]);
-        testData.Add(new(1L, "SetDifferenceStore(prefix+destKey, [prefix+key1, prefix+key2])"));
+        _ = batch.SetDiffStore(prefix + destKey, [prefix + key1, prefix + key2]);
+        testData.Add(new(1L, "SetDiffStore(prefix+destKey, [prefix+key1, prefix+key2])"));
 
         _ = batch.SetPop(key3);
         testData.Add(new(new gs("z"), "SetPop(key3)"));
 
-        _ = batch.SetLength(key3);
-        testData.Add(new(0L, "SetLength(key3) after pop"));
+        _ = batch.SetCard(key3);
+        testData.Add(new(0L, "SetCard(key3) after pop"));
 
         _ = batch.SetPop(key4, 1);
         testData.Add(new(Array.Empty<ValkeyValue>(), "SetPop(key4, 1)", true));
 
-        _ = batch.SetLength(key4);
-        testData.Add(new(1L, "SetLength(key4) after pop with count"));
+        _ = batch.SetCard(key4);
+        testData.Add(new(1L, "SetCard(key4) after pop with count"));
 
-        _ = batch.SetContains(key1, "c");
-        testData.Add(new(true, "SetContains(key1, c)"));
+        _ = batch.SetIsMember(key1, "c");
+        testData.Add(new(true, "SetIsMember(key1, c)"));
 
-        _ = batch.SetContains(key1, "nonexistent");
-        testData.Add(new(false, "SetContains(key1, nonexistent)"));
+        _ = batch.SetIsMember(key1, "nonexistent");
+        testData.Add(new(false, "SetIsMember(key1, nonexistent)"));
 
-        _ = batch.SetContains(key1, ["c", "e", "nonexistent"]);
-        testData.Add(new(new bool[] { true, true, false }, "SetContains(key1, [c, e, nonexistent])"));
+        _ = batch.SetIsMember(key1, ["c", "e", "nonexistent"]);
+        testData.Add(new(new bool[] { true, true, false }, "SetIsMember(key1, [c, e, nonexistent])"));
 
         _ = batch.SetRandomMember(key1);
         testData.Add(new(new ValkeyValue(""), "SetRandomMember(key1)", true)); // Can't predict exact value

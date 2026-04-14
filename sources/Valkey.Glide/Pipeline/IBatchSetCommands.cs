@@ -28,11 +28,11 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="IBaseClient.SetCardAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetCardAsync(ValkeyKey)" /></returns>
-    IBatch SetLength(ValkeyKey key);
+    IBatch SetCard(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.SetInterCardAsync(IEnumerable{ValkeyKey}, long)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetInterCardAsync(IEnumerable{ValkeyKey}, long)" /></returns>
-    IBatch SetIntersectionLength(IEnumerable<ValkeyKey> keys, long limit = 0);
+    IBatch SetInterCard(IEnumerable<ValkeyKey> keys, long limit = 0);
 
     /// <inheritdoc cref="ISetBaseCommands.SetPopAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetBaseCommands.SetPopAsync(ValkeyKey)" /></returns>
@@ -52,19 +52,19 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="IBaseClient.SetInterAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetInterAsync(IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetIntersect(ValkeyKey first, ValkeyKey second);
+    IBatch SetInter(ValkeyKey first, ValkeyKey second);
 
     /// <inheritdoc cref="IBaseClient.SetInterAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetInterAsync(IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetIntersect(IEnumerable<ValkeyKey> keys);
+    IBatch SetInter(IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="IBaseClient.SetDiffAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetDiffAsync(IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetDifference(ValkeyKey first, ValkeyKey second);
+    IBatch SetDiff(ValkeyKey first, ValkeyKey second);
 
     /// <inheritdoc cref="IBaseClient.SetDiffAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetDiffAsync(IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetDifference(IEnumerable<ValkeyKey> keys);
+    IBatch SetDiff(IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="IBaseClient.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" /></returns>
@@ -76,27 +76,27 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="IBaseClient.SetInterStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetInterStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetIntersectStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second);
+    IBatch SetInterStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second);
 
     /// <inheritdoc cref="IBaseClient.SetInterStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetInterStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetIntersectStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
+    IBatch SetInterStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="IBaseClient.SetDiffStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetDiffStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetDifferenceStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second);
+    IBatch SetDiffStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second);
 
     /// <inheritdoc cref="IBaseClient.SetDiffStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetDiffStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" /></returns>
-    IBatch SetDifferenceStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
+    IBatch SetDiffStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
     /// <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, ValkeyValue)" /></returns>
-    IBatch SetContains(ValkeyKey key, ValkeyValue value);
+    IBatch SetIsMember(ValkeyKey key, ValkeyValue value);
 
     /// <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
-    IBatch SetContains(ValkeyKey key, IEnumerable<ValkeyValue> values);
+    IBatch SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <inheritdoc cref="ISetBaseCommands.SetRandomMemberAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetBaseCommands.SetRandomMemberAsync(ValkeyKey)" /></returns>
