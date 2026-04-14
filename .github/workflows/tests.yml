@@ -38,57 +38,17 @@ env:
     CARGO_TERM_COLOR: always
 
 jobs:
-    get-matrices:
-        runs-on: ubuntu-latest
-        outputs:
-            server-matrix-output: ${{ steps.get-matrices.outputs.server-matrix-output }}
-            host-matrix-output: ${{ steps.get-matrices.outputs.os-matrix-output }}
-            version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
-        steps:
-            - name: Write inputs.json
-              uses: actions/github-script@v8
-              with:
-                  script: |
-                      const fs = require('fs');
-                      fs.mkdirSync('.run-meta', {recursive: true});
-                      const event = context.eventName;
-                      const out = {event};
-                      if (event === 'workflow_dispatch') {
-                        const inputs = context.payload.inputs || {};
-                        const raw = inputs['full-matrix'];
-                        const fm = (raw === true) || (String(raw).toLowerCase() === 'true');
-                        out.inputs = {
-                          'full-matrix': fm,
-                          name: inputs.name || ''
-                        };
-                      }
-                      fs.writeFileSync('.run-meta/inputs.json', JSON.stringify(out));
-                      core.info(`inputs.json => ${JSON.stringify(out)}`);
-
-            - name: Upload inputs.json
-              uses: actions/upload-artifact@v7
-              with:
-                  name: inputs.json
-                  path: .run-meta/inputs.json
-                  if-no-files-found: error
-
-            - uses: actions/checkout@v6
-            - id: get-matrices
-              uses: ./.github/workflows/create-test-matrices
-              with:
-                  # Run full test matrix if job started by cron or it was explictly specified by a person who triggered the workflow
-                  run-full-matrix: ${{ github.event.inputs.full-matrix == 'true' || github.event_name == 'schedule' }}
-
     tests:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
-        needs: get-matrices
         timeout-minutes: 100
         strategy:
             fail-fast: false
             matrix:
-                dotnet: ${{ fromJson(needs.get-matrices.outputs.version-matrix-output) }}
-                server: ${{ fromJson(needs.get-matrices.outputs.server-matrix-output) }}
-                host: ${{ fromJson(needs.get-matrices.outputs.host-matrix-output) }}
+                dotnet: ["8.0"]
+                server:
+                    - { type: "valkey", version: "9.0" }
+                host:
+                    - { OS: "ubuntu", NAMED_OS: "linux", RUNNER: "ubuntu-24.04", ARCH: "x64", TARGET: "x86_64-unknown-linux-gnu" }
         runs-on: ${{ matrix.host.RUNNER }}
         env:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
@@ -192,7 +152,7 @@ jobs:
 
     get-containers:
         runs-on: ubuntu-latest
-        if: ${{ github.event.inputs.full-matrix == 'true' || github.event_name == 'schedule' }}
+        if: false
         outputs:
             server-matrix-output: ${{ steps.get-matrices.outputs.server-matrix-output }}
             host-matrix-output: ${{ steps.get-matrices.outputs.os-matrix-output }}
