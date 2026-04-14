@@ -45,28 +45,12 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void StandaloneConfig_WithChannel_NullOrEmptyChannel_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
-    }
+    public void StandaloneConfig_WithChannel_Default_ThrowsArgumentException()
+        => _ = Assert.Throws<ArgumentException>(() => new StandalonePubSubSubscriptionConfig().WithChannel(default));
 
     [Fact]
-    public void StandaloneConfig_WithPattern_NullOrEmptyPattern_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new StandalonePubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
-    }
+    public void StandaloneConfig_WithPattern_DefaultOrWhitespacePattern_ThrowsArgumentException()
+        => _ = Assert.Throws<ArgumentException>(() => new StandalonePubSubSubscriptionConfig().WithPattern(default));
 
     [Fact]
     public void StandaloneConfig_WithCallback_SetsCallbackAndContext()
@@ -156,40 +140,16 @@ public class PubSubSubscriptionConfigTests
     }
 
     [Fact]
-    public void ClusterConfig_WithChannel_NullOrEmptyChannel_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(null!));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithChannel("   "));
-    }
+    public void ClusterConfig_WithChannel_DefaultOrWhitespaceChannel_ThrowsArgumentException()
+        => _ = Assert.Throws<ArgumentException>(() => new ClusterPubSubSubscriptionConfig().WithChannel(default));
 
     [Fact]
-    public void ClusterConfig_WithPattern_NullOrEmptyPattern_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(null!));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithPattern("   "));
-    }
+    public void ClusterConfig_WithPattern_DefaultOrWhitespacePattern_ThrowsArgumentException()
+        => _ = Assert.Throws<ArgumentException>(() => new ClusterPubSubSubscriptionConfig().WithPattern(default));
 
     [Fact]
-    public void ClusterConfig_WithShardedChannel_NullOrEmptyChannel_ThrowsArgumentException()
-    {
-        // Arrange
-        var config = new ClusterPubSubSubscriptionConfig();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel(null!));
-        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel(""));
-        _ = Assert.Throws<ArgumentException>(() => config.WithShardedChannel("   "));
-    }
+    public void ClusterConfig_WithShardedChannel_DefaultOrWhitespaceChannel_ThrowsArgumentException()
+         => _ = Assert.Throws<ArgumentException>(() => new ClusterPubSubSubscriptionConfig().WithShardedChannel(default));
 
     [Fact]
     public void ClusterConfig_DuplicateChannel_DoesNotAddDuplicate()
@@ -247,6 +207,22 @@ public class PubSubSubscriptionConfigTests
         Assert.True(config.Subscriptions.ContainsKey(PubSubChannelMode.Sharded));
         Assert.Equal(Callback, config.Callback);
         Assert.Equal(Context, config.Context);
+    }
+
+    [Fact]
+    public void ClusterConfig_AcceptsBinary()
+    {
+        byte[] invalidUtf8Bytes = [0xC0, 0xAF, 0xE0, 0x80, 0xBF];
+        ValkeyKey binaryKey = invalidUtf8Bytes;
+        var config = new ClusterPubSubSubscriptionConfig();
+
+        _ = config.WithChannel(binaryKey);
+        _ = config.WithPattern(binaryKey);
+        _ = config.WithShardedChannel(binaryKey);
+
+        Assert.Contains(binaryKey, config.Subscriptions[PubSubChannelMode.Exact]);
+        Assert.Contains(binaryKey, config.Subscriptions[PubSubChannelMode.Pattern]);
+        Assert.Contains(binaryKey, config.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
     #endregion

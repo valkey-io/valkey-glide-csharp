@@ -4,14 +4,10 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
-/// <summary>
-/// Generic commands with StackExchange.Redis-compatible naming (Key* prefix) and <see cref="CommandFlags"/> support.
-/// </summary>
-/// <remarks>
-/// These methods use StackExchange.Redis naming conventions. For Valkey GLIDE-style
-/// methods without "Key" prefix, use <see cref="IBaseClient"/>.
-/// </remarks>
-/// <seealso href="https://valkey.io/commands/#generic">Valkey – Generic Commands</seealso>
+/// ATTENTION: Methods should only be added to this interface if they are implemented
+/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+/// by both should be added to <see cref="IGenericBaseCommands"/> instead.
+
 public partial interface IDatabaseAsync
 {
     /// <summary>

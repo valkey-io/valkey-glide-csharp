@@ -10,7 +10,7 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
-internal class ValkeyServer(Database conn, EndPoint endpoint) : IServer
+internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 {
     private readonly Database _conn = conn;
 

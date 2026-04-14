@@ -8,8 +8,6 @@ namespace Valkey.Glide;
 /// </summary>
 public interface ISubscriber
 {
-    #region AsyncMethods
-
     /// <summary>
     /// Posts a message to the given channel.
     /// </summary>
@@ -83,6 +81,4 @@ public interface ISubscriber
     /// <seealso href="https://valkey.io/commands/sunsubscribe"/>.
     /// </remarks>
     Task UnsubscribeAllAsync(CommandFlags flags = CommandFlags.None);
-
-    #endregion
 }
