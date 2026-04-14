@@ -83,16 +83,16 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})" /></returns>
     IBatch StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options = null);
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})" /></returns>
+    /// <summary>Claims pending messages for a consumer, returning only IDs.</summary>
+    /// <returns>Command Response - An array of claimed message IDs.</returns>
     IBatch StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options = null);
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" /></returns>
     IBatch StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamAutoClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamAutoClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" /></returns>
+    /// <summary>Automatically claims pending messages, returning only IDs.</summary>
+    /// <returns>Command Response - Result containing next start ID, claimed IDs, and deleted IDs.</returns>
     IBatch StreamAutoClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamInfoAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />

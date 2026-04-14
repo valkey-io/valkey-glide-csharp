@@ -71,6 +71,6 @@ public abstract class StreamTrimOptions
 
         internal override string Method => "MINID";
 
-        internal override string Threshold => MinEntryId.ToString()!;
+        internal override string Threshold => MinEntryId.ToString();
     }
 }

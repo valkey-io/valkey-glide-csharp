@@ -7,7 +7,7 @@ namespace Valkey.Glide;
 
 public partial class BaseClient
 {
-    /// <inheritdoc cref="IStreamBaseCommands.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool)"/>
+    /// <summary>Appends a new entry to a stream (legacy SER-compatible overload).</summary>
     public async Task<ValkeyValue> StreamAddAsync(
         ValkeyKey key,
         ValkeyValue streamField,
@@ -22,7 +22,7 @@ public partial class BaseClient
         return await StreamAddAsync(key, streamField, streamValue, options);
     }
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, ValkeyValue?, int?, bool)"/>
+    /// <summary>Appends a new entry to a stream with multiple field-value pairs (legacy SER-compatible overload).</summary>
     public async Task<ValkeyValue> StreamAddAsync(
         ValkeyKey key,
         IEnumerable<NameValueEntry> streamPairs,
@@ -179,7 +179,7 @@ public partial class BaseClient
     {
         return await Command(Request.StreamPendingMessagesAsync(key, groupName, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, consumerName, minIdleTime));
     }
-    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})"/>
+    /// <summary>Claims pending messages for a consumer.</summary>
     public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
         return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], null, null, null, false));
@@ -191,7 +191,7 @@ public partial class BaseClient
         return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], options.Idle, options.IdleUnix, options.RetryCount, options.Force));
     }
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})"/>
+    /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})"/>
     public async Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
         return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], null, null, null, false));
