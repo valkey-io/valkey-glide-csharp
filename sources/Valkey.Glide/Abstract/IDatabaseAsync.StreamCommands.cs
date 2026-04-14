@@ -87,21 +87,6 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, CommandFlags flags = CommandFlags.None);
 
-    /// <summary>
-    /// Reads entries from a stream for a consumer group, with optional auto-claiming of idle messages.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xreadgroup"/>
-    /// <param name="key">The key of the stream.</param>
-    /// <param name="groupName">The consumer group name.</param>
-    /// <param name="consumerName">The consumer name.</param>
-    /// <param name="position">The position from which to read.</param>
-    /// <param name="count">The maximum number of entries to return.</param>
-    /// <param name="noAck">If true, messages are not added to the pending entries list.</param>
-    /// <param name="claimMinIdleTime">Auto-claim messages that have been idle for at least this long.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags = CommandFlags.None);
-
     /// <inheritdoc cref="IStreamBaseCommands.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>

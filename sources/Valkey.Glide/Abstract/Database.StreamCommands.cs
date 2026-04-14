@@ -117,14 +117,6 @@ internal partial class Database
         return await StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, TimeSpan?, CommandFlags)"/>
-    public async Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        // claimMinIdleTime is not yet supported by GLIDE core — delegate to the basic overload
-        return await StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, CommandFlags)"/>
     public async Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags)
     {
