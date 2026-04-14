@@ -30,17 +30,18 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetMembersAsync(ValkeyKey)"/>
+    /// <inheritdoc cref="IBaseClient.SetMembersAsync(ValkeyKey)" path="/*[not(self::returns)]"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array containing all members of the set.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IBaseClient.SetCardAsync(ValkeyKey)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags);
+    Task<long> SetLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetLengthAsync(ValkeyKey)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SetLengthAsync(ValkeyKey key, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)"/>
+    /// <inheritdoc cref="IBaseClient.SetInterCardAsync(IEnumerable{ValkeyKey}, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> SetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None);
@@ -55,75 +56,61 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetUnionAsync(ValkeyKey, ValkeyKey)"/>
+    /// <summary>
+    /// Returns the members of the set resulting from the specified <paramref name="operation"/> of the sets stored at <paramref name="first"/> and <paramref name="second"/>.
+    /// </summary>
+    /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of set members resulting from the operation.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetUnionAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+    Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetUnionAsync(IEnumerable{ValkeyKey})"/>
+    /// <summary>
+    /// Returns the members of the set resulting from the specified <paramref name="operation"/> of the sets stored at the given <paramref name="keys"/>.
+    /// </summary>
+    /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
+    /// <param name="keys">The keys of the sets to combine.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of set members resulting from the operation.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetUnionAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+    Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetIntersectAsync(ValkeyKey, ValkeyKey)"/>
+    /// <summary>
+    /// Performs the specified <paramref name="operation"/> on the sets stored at <paramref name="first"/> and <paramref name="second"/>,
+    /// and stores the result in the <paramref name="destination"/> key.
+    /// </summary>
+    /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
+    /// <param name="destination">The key to store the resulting set.</param>
+    /// <param name="first">The key of the first set.</param>
+    /// <param name="second">The key of the second set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of elements in the resulting set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetIntersectAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+    Task<long> SetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetIntersectAsync(IEnumerable{ValkeyKey})"/>
+    /// <summary>
+    /// Performs the specified <paramref name="operation"/> on the sets stored at the given <paramref name="keys"/>,
+    /// and stores the result in the <paramref name="destination"/> key.
+    /// </summary>
+    /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
+    /// <param name="destination">The key to store the resulting set.</param>
+    /// <param name="keys">The keys of the sets to combine.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of elements in the resulting set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetIntersectAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
+    Task<long> SetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetDifferenceAsync(ValkeyKey, ValkeyKey)"/>
+    /// <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetDifferenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+    Task<bool> SetContainsAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetDifferenceAsync(IEnumerable{ValkeyKey})"/>
+    /// <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetDifferenceAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetUnionStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SetUnionStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetIntersectStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SetIntersectStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetIntersectStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SetIntersectStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetDifferenceStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SetDifferenceStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetDifferenceStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SetDifferenceStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetContainsAsync(ValkeyKey, ValkeyValue)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> SetContainsAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
-
-    /// <inheritdoc cref="ISetBaseCommands.SetContainsAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool[]> SetContainsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
+    Task<bool[]> SetContainsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISetBaseCommands.SetRandomMemberAsync(ValkeyKey)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -140,6 +127,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value, CommandFlags flags);
 
+    // TODO #287
     /// <inheritdoc cref="ISetBaseCommands.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>

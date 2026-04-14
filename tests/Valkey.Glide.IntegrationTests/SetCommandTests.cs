@@ -15,8 +15,8 @@ public class SetCommandTests(TestConfiguration config)
         Assert.Equal(2, await client.SetAddAsync(key, ["test1", "test2"]));
         Assert.True(await client.SetAddAsync(key, "test3"));
 
-        ValkeyValue[] vals = await client.SetMembersAsync(key);
-        Assert.Equal(3, vals.Length);
+        var members = await client.SetMembersAsync(key);
+        Assert.Equal(3, members.Count);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -28,8 +28,8 @@ public class SetCommandTests(TestConfiguration config)
         Assert.True(await client.SetAddAsync(key, "1"));
         Assert.Equal(2, await client.SetAddAsync(key, ["2", "3"]));
 
-        ValkeyValue[] vals = await client.SetMembersAsync(key);
-        Assert.Equal(3, vals.Length);
+        var members = await client.SetMembersAsync(key);
+        Assert.Equal(3, members.Count);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -43,45 +43,44 @@ public class SetCommandTests(TestConfiguration config)
         Assert.Equal(2, await client.SetRemoveAsync(key, ["member1", "member2"]));
         Assert.True(await client.SetRemoveAsync(key, "member3"));
 
-        Assert.Equal(0, await client.SetLengthAsync(key));
+        Assert.Equal(0, await client.SetCardAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSetLengthAsync(BaseClient client)
+    public async Task TestSetCardAsync(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
         ValkeyValue[] members = ["member1", "member2", "member3"];
 
         // Test on non-existent key
-        Assert.Equal(0, await client.SetLengthAsync(key));
+        Assert.Equal(0, await client.SetCardAsync(key));
 
-        // Add members and test length
+        // Add members and test cardinality
         Assert.Equal(3, await client.SetAddAsync(key, members));
-        Assert.Equal(3, await client.SetLengthAsync(key));
+        Assert.Equal(3, await client.SetCardAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSetIntersectionLengthAsync(BaseClient client)
+    public async Task TestSetInterCardAsync(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "SetIntersectionLength is supported since 7.0.0"
-        );
+        SkipUtils.IfSetInterCardNotSupported();
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
 
         // Test with non-existent keys
-        Assert.Equal(0, await client.SetIntersectionLengthAsync([key1, key2]));
+        Assert.Equal(0, await client.SetInterCardAsync([key1, key2]));
 
         // Set up test data
         _ = await client.SetAddAsync(key1, ["a", "b", "c", "d"]);
         _ = await client.SetAddAsync(key2, ["b", "c", "e", "f"]);
 
         // Test intersection of two sets
-        Assert.Equal(2, await client.SetIntersectionLengthAsync([key1, key2])); // "b", "c"
+        Assert.Equal(2, await client.SetInterCardAsync([key1, key2])); // "b", "c"
 
         // Test with limit
-        Assert.Equal(1, await client.SetIntersectionLengthAsync([key1, key2], 1)); // Should stop at 1
+        Assert.Equal(1, await client.SetInterCardAsync([key1, key2], 1)); // Should stop at 1
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -102,14 +101,14 @@ public class SetCommandTests(TestConfiguration config)
         Assert.True(poppedElement.HasValue);
 
         // Verify the element was removed
-        Assert.Equal(4, await client.SetLengthAsync(key));
+        Assert.Equal(4, await client.SetCardAsync(key));
 
         // Test multiple pop
         ValkeyValue[] poppedElements = await client.SetPopAsync(key, 2);
         Assert.Equal(2, poppedElements.Length);
 
         // Verify elements were removed
-        Assert.Equal(2, await client.SetLengthAsync(key));
+        Assert.Equal(2, await client.SetCardAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -122,13 +121,13 @@ public class SetCommandTests(TestConfiguration config)
         _ = await client.SetAddAsync(key1, ["a", "b"]);
         _ = await client.SetAddAsync(key2, ["b", "c"]);
 
-        ValkeyValue[] result = await client.SetUnionAsync(key1, key2);
-        Assert.Equal(3, result.Length); // a, b, c
+        var result = await client.SetUnionAsync([key1, key2]);
+        Assert.Equal(3, result.Count); // a, b, c
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSetIntersectAsync(BaseClient client)
+    public async Task TestSetInterAsync(BaseClient client)
     {
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
@@ -136,13 +135,13 @@ public class SetCommandTests(TestConfiguration config)
         _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
         _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
 
-        ValkeyValue[] result = await client.SetIntersectAsync(key1, key2);
-        Assert.Equal(2, result.Length); // b, c
+        var result = await client.SetInterAsync([key1, key2]);
+        Assert.Equal(2, result.Count); // b, c
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSetDifferenceAsync(BaseClient client)
+    public async Task TestSetDiffAsync(BaseClient client)
     {
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
@@ -150,7 +149,7 @@ public class SetCommandTests(TestConfiguration config)
         _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
         _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
 
-        ValkeyValue[] result = await client.SetDifferenceAsync(key1, key2);
+        var result = await client.SetDiffAsync([key1, key2]);
         ValkeyValue singleResult = Assert.Single(result); // a
         Assert.Equal("a", singleResult.ToString());
     }
@@ -166,14 +165,13 @@ public class SetCommandTests(TestConfiguration config)
         _ = await client.SetAddAsync(key1, ["a", "b"]);
         _ = await client.SetAddAsync(key2, ["b", "c"]);
 
-        long count = await client.SetUnionStoreAsync(destKey, key1, key2);
-        Assert.Equal(3, count); // a, b, c
-        Assert.Equal(3, await client.SetLengthAsync(destKey));
+        Assert.Equal(3, await client.SetUnionStoreAsync(destKey, [key1, key2])); // a, b, c
+        Assert.Equal(3, await client.SetCardAsync(destKey));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSetIntersectStoreAsync(BaseClient client)
+    public async Task TestSetInterStoreAsync(BaseClient client)
     {
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
@@ -182,14 +180,13 @@ public class SetCommandTests(TestConfiguration config)
         _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
         _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
 
-        long count = await client.SetIntersectStoreAsync(destKey, key1, key2);
-        Assert.Equal(2, count); // b, c
-        Assert.Equal(2, await client.SetLengthAsync(destKey));
+        Assert.Equal(2, await client.SetInterStoreAsync(destKey, [key1, key2])); // b, c
+        Assert.Equal(2, await client.SetCardAsync(destKey));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSetDifferenceStoreAsync(BaseClient client)
+    public async Task TestSetDiffStoreAsync(BaseClient client)
     {
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
@@ -198,31 +195,31 @@ public class SetCommandTests(TestConfiguration config)
         _ = await client.SetAddAsync(key1, ["a", "b", "c"]);
         _ = await client.SetAddAsync(key2, ["b", "c", "d"]);
 
-        long count = await client.SetDifferenceStoreAsync(destKey, key1, key2);
-        Assert.Equal(1, count); // a
-        Assert.Equal(1, await client.SetLengthAsync(destKey));
+        Assert.Equal(1, await client.SetDiffStoreAsync(destKey, [key1, key2])); // a
+        Assert.Equal(1, await client.SetCardAsync(destKey));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSetContainsAsync(BaseClient client)
+    public async Task TestSetIsMemberAsync(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
         ValkeyValue[] members = ["member1", "member2", "member3"];
 
         // Test on non-existent key
-        Assert.False(await client.SetContainsAsync(key, "member1"));
+        Assert.False(await client.SetIsMemberAsync(key, "member1"));
 
         // Add members to set
         Assert.Equal(3, await client.SetAddAsync(key, members));
 
         // Test single member check
-        Assert.True(await client.SetContainsAsync(key, "member1"));
-        Assert.False(await client.SetContainsAsync(key, "nonexistent"));
+        Assert.True(await client.SetIsMemberAsync(key, "member1"));
+        Assert.False(await client.SetIsMemberAsync(key, "nonexistent"));
 
         // Test multiple member check
-        bool[] results = await client.SetContainsAsync(key, ["member1", "member2", "nonexistent"]);
-        Assert.Equal([true, true, false], results);
+        Assert.Equivalent(
+            new bool[] { true, true, false },
+            await client.SetIsMemberAsync(key, ["member1", "member2", "nonexistent"]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -273,12 +270,12 @@ public class SetCommandTests(TestConfiguration config)
 
         // Test successful move
         Assert.True(await client.SetMoveAsync(sourceKey, destKey, "member1"));
-        Assert.Equal(2, await client.SetLengthAsync(sourceKey)); // member1 removed
-        Assert.Equal(3, await client.SetLengthAsync(destKey)); // member1 added
+        Assert.Equal(2, await client.SetCardAsync(sourceKey)); // member1 removed
+        Assert.Equal(3, await client.SetCardAsync(destKey)); // member1 added
 
         // Verify member1 is in destination and not in source
-        Assert.False(await client.SetContainsAsync(sourceKey, "member1"));
-        Assert.True(await client.SetContainsAsync(destKey, "member1"));
+        Assert.False(await client.SetIsMemberAsync(sourceKey, "member1"));
+        Assert.True(await client.SetIsMemberAsync(destKey, "member1"));
 
         // Test move of non-existent member
         Assert.False(await client.SetMoveAsync(sourceKey, destKey, "nonexistent"));
@@ -286,8 +283,8 @@ public class SetCommandTests(TestConfiguration config)
         // Test move when member already exists in destination
         _ = await client.SetAddAsync(sourceKey, "member4"); // Add member4 to source
         Assert.True(await client.SetMoveAsync(sourceKey, destKey, "member4")); // Should still return true
-        Assert.Equal(2, await client.SetLengthAsync(sourceKey)); // member4 removed from source
-        Assert.Equal(3, await client.SetLengthAsync(destKey)); // destination size unchanged (member4 already existed)
+        Assert.Equal(2, await client.SetCardAsync(sourceKey)); // member4 removed from source
+        Assert.Equal(3, await client.SetCardAsync(destKey)); // destination size unchanged (member4 already existed)
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -378,6 +375,6 @@ public class SetCommandTests(TestConfiguration config)
         }
         Assert.Equal(12500, offsetResults.Count);
 
-        Assert.Equal(25000, await client.SetLengthAsync(key));
+        Assert.Equal(25000, await client.SetCardAsync(key));
     }
 }

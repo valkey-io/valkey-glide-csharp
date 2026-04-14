@@ -19,10 +19,18 @@ internal static class SkipUtils
             "Hash expire commands require Valkey 9.0+");
 
     /// <summary>
-    /// Skips the test if BIT index type commands are not supported.
+    /// Skips the test if bit index type commands are not supported.
     /// </summary>
     public static void IfBitIndexTypeNotSupported()
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey7_0,
-            "Bit index type commands requires server version 7.0 or higher");
+            "Bit index type commands requires Valkey 7.0+");
+
+    /// <summary>
+    /// Skips the test if set intersection cardinality commands are not supported.
+    /// </summary>
+    public static void IfSetInterCardNotSupported()
+        => Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < Valkey7_0,
+            "Set intersection cardinality commands requires Valkey 7.0+");
 }
