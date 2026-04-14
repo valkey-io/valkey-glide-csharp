@@ -71,21 +71,21 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null) =>
         AddCmd(Request.StreamPendingMessagesAsync(key, groupName, minId ?? "-", maxId ?? "+", count, consumerName, minIdleTime));
 
-    /// <inheritdoc cref="IBatchStreamCommands.StreamClaim(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, TimeSpan?, DateTimeOffset?, int?, bool)" />
-    public T StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false) =>
-        AddCmd(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], idleTime, timestamp, retryCount, force));
+    /// <inheritdoc cref="IBatchStreamCommands.StreamClaim(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, StreamClaimOptions?)" />
+    public T StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions? options = null) =>
+        AddCmd(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], options?.Idle, options?.IdleUnix, options?.RetryCount, options?.Force ?? false));
 
-    /// <inheritdoc cref="IBatchStreamCommands.StreamClaimIdsOnly(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, TimeSpan?, DateTimeOffset?, int?, bool)" />
-    public T StreamClaimIdsOnly(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false) =>
-        AddCmd(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], idleTime, timestamp, retryCount, force));
+    /// <inheritdoc cref="IBatchStreamCommands.StreamClaimJustId(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, StreamClaimOptions?)" />
+    public T StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions? options = null) =>
+        AddCmd(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], options?.Idle, options?.IdleUnix, options?.RetryCount, options?.Force ?? false));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamAutoClaim(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" />
     public T StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null) =>
         AddCmd(Request.StreamAutoClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
 
-    /// <inheritdoc cref="IBatchStreamCommands.StreamAutoClaimIdsOnly(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" />
-    public T StreamAutoClaimIdsOnly(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null) =>
-        AddCmd(Request.StreamAutoClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
+    /// <inheritdoc cref="IBatchStreamCommands.StreamAutoClaimJustId(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" />
+    public T StreamAutoClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null) =>
+        AddCmd(Request.StreamAutoClaimJustIdAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamInfo(ValkeyKey)" />
     public T StreamInfo(ValkeyKey key) => AddCmd(Request.StreamInfoAsync(key));
@@ -114,10 +114,10 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStreamCommands.StreamAcknowledge(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds) => StreamAcknowledge(key, groupName, messageIds);
     IBatch IBatchStreamCommands.StreamPending(ValkeyKey key, ValkeyValue groupName) => StreamPending(key, groupName);
     IBatch IBatchStreamCommands.StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId, ValkeyValue? maxId, TimeSpan? minIdleTime) => StreamPendingMessages(key, groupName, count, consumerName, minId, maxId, minIdleTime);
-    IBatch IBatchStreamCommands.StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force) => StreamClaim(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, idleTime, timestamp, retryCount, force);
-    IBatch IBatchStreamCommands.StreamClaimIdsOnly(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force) => StreamClaimIdsOnly(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, idleTime, timestamp, retryCount, force);
+    IBatch IBatchStreamCommands.StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions? options) => StreamClaim(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, options);
+    IBatch IBatchStreamCommands.StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions? options) => StreamClaimJustId(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, options);
     IBatch IBatchStreamCommands.StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaim(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
-    IBatch IBatchStreamCommands.StreamAutoClaimIdsOnly(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaimIdsOnly(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
+    IBatch IBatchStreamCommands.StreamAutoClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaimJustId(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
     IBatch IBatchStreamCommands.StreamInfo(ValkeyKey key) => StreamInfo(key);
     IBatch IBatchStreamCommands.StreamGroupInfo(ValkeyKey key) => StreamGroupInfo(key);
     IBatch IBatchStreamCommands.StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName) => StreamConsumerInfo(key, groupName);

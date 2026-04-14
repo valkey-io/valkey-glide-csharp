@@ -79,9 +79,8 @@ public interface IStreamBaseCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to start reading. Use <see cref="StreamConstants.NewMessages"/>  for new messages, <see cref="StreamConstants.AllMessages"/>  for all messages. Defaults to <see cref="StreamConstants.NewMessages"/>  if null.</param>
-    /// <returns>A task that completes when the consumer group has been created. Throws on failure.</returns>
-    // TODO #263: Move to IClient.StreamCommands; signature diverges from SER (Task vs Task<bool>).
-    Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position);
+    /// <returns><c>true</c> if the consumer group was created successfully.</returns>
+    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position);
 
     /// <summary>
     /// Creates a consumer group for a stream.
@@ -92,9 +91,8 @@ public interface IStreamBaseCommands
     /// <param name="position">The position from which to start reading. Use <see cref="StreamConstants.NewMessages"/>  for new messages, <see cref="StreamConstants.AllMessages"/>  for all messages. Defaults to <see cref="StreamConstants.NewMessages"/>  if null.</param>
     /// <param name="createStream">If true, creates the stream if it doesn't exist.</param>
     /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
-    /// <returns>A task that completes when the consumer group has been created. Throws on failure.</returns>
-    // TODO #263: Move to IClient.StreamCommands; signature diverges from SER (Task vs Task<bool>).
-    Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
+    /// <returns><c>true</c> if the consumer group was created successfully.</returns>
+    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
 
     /// <summary>
     /// Destroys a consumer group.
@@ -133,9 +131,8 @@ public interface IStreamBaseCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to read.</param>
     /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
-    /// <returns>A task that completes when the position has been set. Throws on failure.</returns>
-    // TODO #263: Move to IClient.StreamCommands; signature diverges from SER (Task vs Task<bool>).
-    Task StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
+    /// <returns><c>true</c> if the position was set successfully.</returns>
+    Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
 
     /// <summary>
     /// Reads entries from a stream for a consumer group.
@@ -254,22 +251,6 @@ public interface IStreamBaseCommands
     Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
 
     /// <summary>
-    /// Claims pending messages for a consumer.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xclaim"/>
-    /// <param name="key">The key of the stream.</param>
-    /// <param name="consumerGroup">The consumer group name.</param>
-    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
-    /// <param name="messageIds">A collection of message IDs to claim.</param>
-    /// <param name="idleTime">Set the idle time (last delivery time) of the message.</param>
-    /// <param name="timestamp">Set the idle time to a specific absolute timestamp.</param>
-    /// <param name="retryCount">Set the retry counter to the specified value.</param>
-    /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
-    /// <returns>An array of claimed stream entries.</returns>
-    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false);
-
-    /// <summary>
     /// Claims pending messages for a consumer, returning only IDs.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xclaim"/>
@@ -279,23 +260,7 @@ public interface IStreamBaseCommands
     /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
     /// <param name="messageIds">A collection of message IDs to claim.</param>
     /// <returns>An array of claimed message IDs.</returns>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
-
-    /// <summary>
-    /// Claims pending messages for a consumer, returning only IDs.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xclaim"/>
-    /// <param name="key">The key of the stream.</param>
-    /// <param name="consumerGroup">The consumer group name.</param>
-    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
-    /// <param name="minIdleTime">The minimum idle time for the message to be claimed</param>
-    /// <param name="messageIds">A collection of message IDs to claim.</param>
-    /// <param name="idleTime">Set the idle time (last delivery time) of the message.</param>
-    /// <param name="timestamp">Set the idle time to a specific absolute timestamp.</param>
-    /// <param name="retryCount">Set the retry counter to the specified value.</param>
-    /// <param name="force">Create PEL entry even if message not already assigned to a consumer.</param>
-    /// <returns>An array of claimed message IDs.</returns>
-    Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false);
+    Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
 
     /// <summary>
     /// Automatically claims pending messages.
@@ -321,7 +286,7 @@ public interface IStreamBaseCommands
     /// <param name="startAtId">The starting ID to scan for pending messages.</param>
     /// <param name="count">The maximum number of entries to claim. Defaults to 100 if null.</param>
     /// <returns>Result containing next start ID, claimed IDs, and deleted IDs.</returns>
-    Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
+    Task<StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
 
     /// <summary>
     /// Returns the number of entries in a stream.

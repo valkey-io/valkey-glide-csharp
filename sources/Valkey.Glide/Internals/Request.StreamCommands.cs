@@ -582,7 +582,7 @@ internal partial class Request
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimResult);
     }
 
-    public static Cmd<object[], StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
         List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
         if (count.HasValue)
@@ -602,12 +602,12 @@ internal partial class Request
         return new StreamAutoClaimResult(nextStartId, entries, deletedIds);
     }
 
-    private static StreamAutoClaimIdsOnlyResult ConvertAutoClaimIdsOnlyResult(object[] response)
+    private static StreamAutoClaimJustIdResult ConvertAutoClaimIdsOnlyResult(object[] response)
     {
         var nextStartId = (ValkeyValue)(GlideString)response[0];
         var claimedIds = ((object[])response[1]).Select(id => (ValkeyValue)(GlideString)id).ToArray();
         var deletedIds = response.Length > 2 && response[2] is object[] delArr ? delArr.Select(id => (ValkeyValue)(GlideString)id).ToArray() : [];
-        return new StreamAutoClaimIdsOnlyResult(nextStartId, claimedIds, deletedIds);
+        return new StreamAutoClaimJustIdResult(nextStartId, claimedIds, deletedIds);
     }
 
     public static Cmd<object[], StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key)

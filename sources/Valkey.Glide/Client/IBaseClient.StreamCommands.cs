@@ -30,4 +30,30 @@ public partial interface IBaseClient
     /// <param name="options">Optional arguments for the XADD command.</param>
     /// <returns>The ID of the added entry, or null if <see cref="StreamAddOptions.MakeStream"/> is <c>false</c> and the stream doesn't exist.</returns>
     Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions? options = null);
+
+    /// <summary>
+    /// Claims pending messages for a consumer with additional options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xclaim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="consumerGroup">The consumer group name.</param>
+    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed.</param>
+    /// <param name="messageIds">A collection of message IDs to claim.</param>
+    /// <param name="options">Optional arguments for the XCLAIM command.</param>
+    /// <returns>An array of claimed stream entries.</returns>
+    Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options);
+
+    /// <summary>
+    /// Claims pending messages for a consumer with additional options, returning only IDs.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xclaim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="consumerGroup">The consumer group name.</param>
+    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed.</param>
+    /// <param name="messageIds">A collection of message IDs to claim.</param>
+    /// <param name="options">Optional arguments for the XCLAIM command.</param>
+    /// <returns>An array of claimed message IDs.</returns>
+    Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options);
 }
