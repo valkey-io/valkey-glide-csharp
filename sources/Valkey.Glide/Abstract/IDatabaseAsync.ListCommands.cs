@@ -4,10 +4,10 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
-/// <summary>
-/// List commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
-/// </summary>
-/// <seealso cref="IListBaseCommands" />
+/// ATTENTION: Methods should only be added to this interface if they are implemented
+/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+/// by both should be added to <see cref="IListBaseCommands"/> instead.
+
 public partial interface IDatabaseAsync
 {
     // ===== LPUSH/RPUSH with When parameter (SER-specific) =====

@@ -279,7 +279,7 @@ public class PubSubFFIMemoryLeakTests
                 : PubSubMessage.FromChannel(message, channel);
 
             // Verify the message was created correctly
-            if (result.Message != message || result.Channel != channel || result.Pattern != pattern)
+            if (!result.Message.Equals(message) || !result.Channel.Equals(channel) || !Equals(result.Pattern, pattern))
             {
                 throw new InvalidOperationException("Message marshaling failed");
             }
