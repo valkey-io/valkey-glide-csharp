@@ -6,6 +6,24 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
+    // ===== LPUSH/RPUSH with When parameter (SER-specific implementations) =====
+
+    /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    public async Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when)
+        => await Command(Request.ListLeftPushAsync(key, value, when));
+
+    /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    public async Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when)
+        => await Command(Request.ListLeftPushAsync(key, [.. values], when));
+
+    /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    public async Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when)
+        => await Command(Request.ListRightPushAsync(key, value, when));
+
+    /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    public async Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when)
+        => await Command(Request.ListRightPushAsync(key, [.. values], when));
+
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPopAsync(ValkeyKey, CommandFlags)"/>
     public async Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key, CommandFlags flags)
     {

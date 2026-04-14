@@ -104,4 +104,90 @@ public class ListCommandTests(TestConfiguration config)
     }
 
     #endregion
+
+    #region ListLeftPushAsync/ListRightPushAsync with When parameter (SER-specific)
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task ListLeftPushAsync_WithWhen_Always_CreatesListIfNotExists(IDatabaseAsync db)
+    {
+        string key = $"ser-lpush-when-always-{Guid.NewGuid()}";
+
+        // When.Always should create the list if it doesn't exist
+        long count = await db.ListLeftPushAsync(key, "value1", When.Always);
+        Assert.Equal(1, count);
+
+        count = await db.ListLeftPushAsync(key, ["value2", "value3"], When.Always);
+        Assert.Equal(3, count);
+
+        ValkeyValue[] list = await db.ListRangeAsync(key);
+        Assert.Equal(["value3", "value2", "value1"], [.. list.Select(v => v.ToString())]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task ListLeftPushAsync_WithWhen_Exists_OnlyPushesIfKeyExists(IDatabaseAsync db)
+    {
+        string key = $"ser-lpush-when-exists-{Guid.NewGuid()}";
+
+        // When.Exists should NOT create the list if it doesn't exist
+        long count = await db.ListLeftPushAsync(key, "value1", When.Exists);
+        Assert.Equal(0, count);
+
+        // Create the list first
+        _ = await db.ListLeftPushAsync(key, "initial");
+
+        // Now When.Exists should work
+        count = await db.ListLeftPushAsync(key, "value2", When.Exists);
+        Assert.Equal(2, count);
+
+        count = await db.ListLeftPushAsync(key, ["value3", "value4"], When.Exists);
+        Assert.Equal(4, count);
+
+        ValkeyValue[] list = await db.ListRangeAsync(key);
+        Assert.Equal(["value4", "value3", "value2", "initial"], [.. list.Select(v => v.ToString())]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task ListRightPushAsync_WithWhen_Always_CreatesListIfNotExists(IDatabaseAsync db)
+    {
+        string key = $"ser-rpush-when-always-{Guid.NewGuid()}";
+
+        // When.Always should create the list if it doesn't exist
+        long count = await db.ListRightPushAsync(key, "value1", When.Always);
+        Assert.Equal(1, count);
+
+        count = await db.ListRightPushAsync(key, ["value2", "value3"], When.Always);
+        Assert.Equal(3, count);
+
+        ValkeyValue[] list = await db.ListRangeAsync(key);
+        Assert.Equal(["value1", "value2", "value3"], [.. list.Select(v => v.ToString())]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task ListRightPushAsync_WithWhen_Exists_OnlyPushesIfKeyExists(IDatabaseAsync db)
+    {
+        string key = $"ser-rpush-when-exists-{Guid.NewGuid()}";
+
+        // When.Exists should NOT create the list if it doesn't exist
+        long count = await db.ListRightPushAsync(key, "value1", When.Exists);
+        Assert.Equal(0, count);
+
+        // Create the list first
+        _ = await db.ListRightPushAsync(key, "initial");
+
+        // Now When.Exists should work
+        count = await db.ListRightPushAsync(key, "value2", When.Exists);
+        Assert.Equal(2, count);
+
+        count = await db.ListRightPushAsync(key, ["value3", "value4"], When.Exists);
+        Assert.Equal(4, count);
+
+        ValkeyValue[] list = await db.ListRangeAsync(key);
+        Assert.Equal(["initial", "value2", "value3", "value4"], [.. list.Select(v => v.ToString())]);
+    }
+
+    #endregion
 }

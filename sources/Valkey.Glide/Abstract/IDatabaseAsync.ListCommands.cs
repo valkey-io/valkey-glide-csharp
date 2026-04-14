@@ -10,6 +10,109 @@ namespace Valkey.Glide;
 /// <seealso cref="IListBaseCommands" />
 public partial interface IDatabaseAsync
 {
+    // ===== LPUSH/RPUSH with When parameter (SER-specific) =====
+
+    /// <summary>
+    /// Inserts the specified value at the head of the list stored at <paramref name="key" />.
+    /// If <paramref name="key" /> does not exist, it is created as an empty list before performing the push operation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lpush"/>
+    /// <seealso href="https://valkey.io/commands/lpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="value">The value to add to the head of the list.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
+    /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// This is a StackExchange.Redis compatibility method. For GLIDE-style API, use
+    /// <see cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, ValkeyValue)"/> or
+    /// <see cref="IBaseClient.ListLeftPushIfExistsAsync(ValkeyKey, ValkeyValue)"/>.
+    /// <example>
+    /// <code>
+    /// // Regular LPUSH
+    /// long result = await db.ListLeftPushAsync(key, value);
+    /// // LPUSHX (only push if key exists)
+    /// long result = await db.ListLeftPushAsync(key, value, When.Exists);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when);
+
+    /// <summary>
+    /// Inserts all the specified values at the head of the list stored at <paramref name="key" />. Elements are inserted one
+    /// after the other to the head of the list, from the leftmost element to the rightmost element. If <paramref name="key" /> does not exist, it
+    /// is created as an empty list before performing the push operation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lpush"/>
+    /// <seealso href="https://valkey.io/commands/lpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The elements to insert at the head of the list stored at <paramref name="key" />.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
+    /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// This is a StackExchange.Redis compatibility method. For GLIDE-style API, use
+    /// <see cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue})"/> or
+    /// <see cref="IBaseClient.ListLeftPushIfExistsAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>.
+    /// <example>
+    /// <code>
+    /// // Regular LPUSH
+    /// long result = await db.ListLeftPushAsync(key, values);
+    /// // LPUSHX (only push if key exists)
+    /// long result = await db.ListLeftPushAsync(key, values, When.Exists);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
+
+    /// <summary>
+    /// Inserts the specified value at the tail of the list stored at <paramref name="key" />.
+    /// If <paramref name="key" /> does not exist, it is created as an empty list before performing the push operation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/rpush"/>
+    /// <seealso href="https://valkey.io/commands/rpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="value">The value to add to the tail of the list.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
+    /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// This is a StackExchange.Redis compatibility method. For GLIDE-style API, use
+    /// <see cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, ValkeyValue)"/> or
+    /// <see cref="IBaseClient.ListRightPushIfExistsAsync(ValkeyKey, ValkeyValue)"/>.
+    /// <example>
+    /// <code>
+    /// // Regular RPUSH
+    /// long result = await db.ListRightPushAsync(key, value);
+    /// // RPUSHX (only push if key exists)
+    /// long result = await db.ListRightPushAsync(key, value, When.Exists);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when);
+
+    /// <summary>
+    /// Inserts all the specified values at the tail of the list stored at <paramref name="key" />.
+    /// Elements are inserted one after the other to the tail of the list, from the leftmost element to the rightmost element.
+    /// If <paramref name="key" /> does not exist, it is created as an empty list before performing the push operation.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/rpush"/>
+    /// <seealso href="https://valkey.io/commands/rpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The elements to insert at the tail of the list stored at <paramref name="key" />.</param>
+    /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
+    /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// This is a StackExchange.Redis compatibility method. For GLIDE-style API, use
+    /// <see cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue})"/> or
+    /// <see cref="IBaseClient.ListRightPushIfExistsAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>.
+    /// <example>
+    /// <code>
+    /// // Regular RPUSH
+    /// long result = await db.ListRightPushAsync(key, values);
+    /// // RPUSHX (only push if key exists)
+    /// long result = await db.ListRightPushAsync(key, values, When.Exists);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
     /// <inheritdoc cref="IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
@@ -25,22 +128,22 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);
@@ -60,22 +163,22 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags);

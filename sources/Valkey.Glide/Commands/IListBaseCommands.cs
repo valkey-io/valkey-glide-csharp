@@ -72,22 +72,17 @@ public interface IListBaseCommands
     /// If <paramref name="key" /> does not exist, it is created as an empty list before performing the push operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lpush"/>
-    /// <seealso href="https://valkey.io/commands/lpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="value">The value to add to the head of the list.</param>
-    /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Regular LPUSH
     /// long result = await client.ListLeftPushAsync(key, value);
-    /// // LPUSHX (only push if key exists)
-    /// long result = await client.ListLeftPushAsync(key, value, When.Exists);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always);
+    Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>
     /// Inserts all the specified values at the head of the list stored at <paramref name="key" />. Elements are inserted one
@@ -95,44 +90,34 @@ public interface IListBaseCommands
     /// is created as an empty list before performing the push operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lpush"/>
-    /// <seealso href="https://valkey.io/commands/lpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="values">The elements to insert at the head of the list stored at <paramref name="key" />.</param>
-    /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Regular LPUSH
-    /// long result = await client.ListLeftPushAsync(key, values, When.Always);
-    /// // LPUSHX (only push if key exists)
-    /// long result = await client.ListLeftPushAsync(key, values, When.Exists);
+    /// long result = await client.ListLeftPushAsync(key, values);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always);
+    Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
     /// Inserts the specified value at the tail of the list stored at <paramref name="key" />.
     /// If <paramref name="key" /> does not exist, it is created as an empty list before performing the push operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/rpush"/>
-    /// <seealso href="https://valkey.io/commands/rpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="value">The value to add to the tail of the list.</param>
-    /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Regular RPUSH
     /// long result = await client.ListRightPushAsync(key, value);
-    /// // RPUSHX (only push if key exists)
-    /// long result = await client.ListRightPushAsync(key, value, When.Exists);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always);
+    Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>
     /// Inserts all the specified values at the tail of the list stored at <paramref name="key" />.
@@ -140,22 +125,17 @@ public interface IListBaseCommands
     /// If <paramref name="key" /> does not exist, it is created as an empty list before performing the push operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/rpush"/>
-    /// <seealso href="https://valkey.io/commands/rpushx"/>
     /// <param name="key">The key of the list.</param>
     /// <param name="values">The elements to insert at the tail of the list stored at <paramref name="key" />.</param>
-    /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Regular RPUSH
-    /// long result = await client.ListRightPushAsync(key, values, When.Always);
-    /// // RPUSHX (only push if key exists)
-    /// long result = await client.ListRightPushAsync(key, values, When.Exists);
+    /// long result = await client.ListRightPushAsync(key, values);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always);
+    Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
     /// Removes and returns the last elements of the list stored at <paramref name="key" />.

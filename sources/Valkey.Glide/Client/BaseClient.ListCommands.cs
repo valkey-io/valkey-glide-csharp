@@ -15,12 +15,12 @@ public abstract partial class BaseClient
         => await Command(Request.ListLeftPopAsync(key, count));
 
     /// <inheritdoc/>
-    public async Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always)
-        => await Command(Request.ListLeftPushAsync(key, value, when));
+    public async Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value)
+        => await Command(Request.ListLeftPushAsync(key, value, When.Always));
 
     /// <inheritdoc/>
-    public async Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always)
-        => await Command(Request.ListLeftPushAsync(key, [.. values], when));
+    public async Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
+        => await Command(Request.ListLeftPushAsync(key, [.. values], When.Always));
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> ListRightPopAsync(ValkeyKey key)
@@ -31,12 +31,12 @@ public abstract partial class BaseClient
         => await Command(Request.ListRightPopAsync(key, count));
 
     /// <inheritdoc/>
-    public async Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always)
-        => await Command(Request.ListRightPushAsync(key, value, when));
+    public async Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value)
+        => await Command(Request.ListRightPushAsync(key, value, When.Always));
 
     /// <inheritdoc/>
-    public async Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always)
-        => await Command(Request.ListRightPushAsync(key, [.. values], when));
+    public async Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
+        => await Command(Request.ListRightPushAsync(key, [.. values], When.Always));
 
     /// <inheritdoc/>
     public async Task<long> ListLengthAsync(ValkeyKey key)
@@ -111,4 +111,22 @@ public abstract partial class BaseClient
     /// <inheritdoc/>
     public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout)
         => await Command(Request.ListBlockingPopAsync([.. keys], side, count, timeout));
+
+    // LPUSHX / RPUSHX - Explicit Methods (GLIDE-style API)
+
+    /// <inheritdoc/>
+    public async Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, ValkeyValue value)
+        => await Command(Request.ListLeftPushAsync(key, value, When.Exists));
+
+    /// <inheritdoc/>
+    public async Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
+        => await Command(Request.ListLeftPushAsync(key, [.. values], When.Exists));
+
+    /// <inheritdoc/>
+    public async Task<long> ListRightPushIfExistsAsync(ValkeyKey key, ValkeyValue value)
+        => await Command(Request.ListRightPushAsync(key, value, When.Exists));
+
+    /// <inheritdoc/>
+    public async Task<long> ListRightPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
+        => await Command(Request.ListRightPushAsync(key, [.. values], When.Exists));
 }

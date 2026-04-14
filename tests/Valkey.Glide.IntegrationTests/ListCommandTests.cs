@@ -371,24 +371,24 @@ public class ListCommandTests(TestConfiguration config)
     {
         string key = Guid.NewGuid().ToString();
 
-        // Test LPUSHX on non-existent key
-        Assert.Equal(0, await client.ListLeftPushAsync(key, "test", When.Exists));
+        // Test LPUSHX on non-existent key using GLIDE-style method
+        Assert.Equal(0, await client.ListLeftPushIfExistsAsync(key, "test"));
         Assert.Equal(0, await client.ListLengthAsync(key));
 
-        // Test RPUSHX on non-existent key
-        Assert.Equal(0, await client.ListRightPushAsync(key, "test", When.Exists));
+        // Test RPUSHX on non-existent key using GLIDE-style method
+        Assert.Equal(0, await client.ListRightPushIfExistsAsync(key, "test"));
         Assert.Equal(0, await client.ListLengthAsync(key));
 
         // Create the list first
         Assert.Equal(1, await client.ListRightPushAsync(key, "initial"));
 
-        // Now LPUSHX should work
-        Assert.Equal(2, await client.ListLeftPushAsync(key, "left", When.Exists));
-        Assert.Equal(4, await client.ListLeftPushAsync(key, ["left2", "left3"], When.Exists));
+        // Now LPUSHX should work using GLIDE-style method
+        Assert.Equal(2, await client.ListLeftPushIfExistsAsync(key, "left"));
+        Assert.Equal(4, await client.ListLeftPushIfExistsAsync(key, ["left2", "left3"]));
 
-        // And RPUSHX should work
-        Assert.Equal(5, await client.ListRightPushAsync(key, "right", When.Exists));
-        Assert.Equal(7, await client.ListRightPushAsync(key, ["right2", "right3"], When.Exists));
+        // And RPUSHX should work using GLIDE-style method
+        Assert.Equal(5, await client.ListRightPushIfExistsAsync(key, "right"));
+        Assert.Equal(7, await client.ListRightPushIfExistsAsync(key, ["right2", "right3"]));
 
         // Verify final order
         ValkeyValue[] result = await client.ListRangeAsync(key, 0, -1);
@@ -778,5 +778,93 @@ public class ListCommandTests(TestConfiguration config)
         Assert.NotEqual(ListPopResult.Null, result2);
         Assert.Equal(testKey, result2.Key.ToGlideString());
         Assert.Equal(["test1"], result2.Values.ToGlideStrings());
+    }
+
+    // ===== LPUSHX / RPUSHX - GLIDE-style explicit methods =====
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListLeftPushIfExistsAsync_SingleValue(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // LPUSHX on non-existent key should return 0 and not create the key
+        Assert.Equal(0, await client.ListLeftPushIfExistsAsync(key, "value1"));
+        Assert.Equal(0, await client.ListLengthAsync(key));
+
+        // Create the list first
+        Assert.Equal(1, await client.ListLeftPushAsync(key, "initial"));
+
+        // Now LPUSHX should work
+        Assert.Equal(2, await client.ListLeftPushIfExistsAsync(key, "value2"));
+        Assert.Equal(3, await client.ListLeftPushIfExistsAsync(key, "value3"));
+
+        // Verify order: [value3, value2, initial]
+        ValkeyValue[] result = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["value3", "value2", "initial"], result.ToGlideStrings());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListLeftPushIfExistsAsync_MultipleValues(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // LPUSHX on non-existent key should return 0 and not create the key
+        Assert.Equal(0, await client.ListLeftPushIfExistsAsync(key, ["value1", "value2"]));
+        Assert.Equal(0, await client.ListLengthAsync(key));
+
+        // Create the list first
+        Assert.Equal(1, await client.ListLeftPushAsync(key, "initial"));
+
+        // Now LPUSHX should work
+        Assert.Equal(3, await client.ListLeftPushIfExistsAsync(key, ["value2", "value3"]));
+
+        // Verify order: [value3, value2, initial]
+        ValkeyValue[] result = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["value3", "value2", "initial"], result.ToGlideStrings());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListRightPushIfExistsAsync_SingleValue(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // RPUSHX on non-existent key should return 0 and not create the key
+        Assert.Equal(0, await client.ListRightPushIfExistsAsync(key, "value1"));
+        Assert.Equal(0, await client.ListLengthAsync(key));
+
+        // Create the list first
+        Assert.Equal(1, await client.ListRightPushAsync(key, "initial"));
+
+        // Now RPUSHX should work
+        Assert.Equal(2, await client.ListRightPushIfExistsAsync(key, "value2"));
+        Assert.Equal(3, await client.ListRightPushIfExistsAsync(key, "value3"));
+
+        // Verify order: [initial, value2, value3]
+        ValkeyValue[] result = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["initial", "value2", "value3"], result.ToGlideStrings());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestListRightPushIfExistsAsync_MultipleValues(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // RPUSHX on non-existent key should return 0 and not create the key
+        Assert.Equal(0, await client.ListRightPushIfExistsAsync(key, ["value1", "value2"]));
+        Assert.Equal(0, await client.ListLengthAsync(key));
+
+        // Create the list first
+        Assert.Equal(1, await client.ListRightPushAsync(key, "initial"));
+
+        // Now RPUSHX should work
+        Assert.Equal(3, await client.ListRightPushIfExistsAsync(key, ["value2", "value3"]));
+
+        // Verify order: [initial, value2, value3]
+        ValkeyValue[] result = await client.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["initial", "value2", "value3"], result.ToGlideStrings());
     }
 }

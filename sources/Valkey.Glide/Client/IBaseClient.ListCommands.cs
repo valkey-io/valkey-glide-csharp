@@ -129,4 +129,82 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout);
+
+    // ===== LPUSHX / RPUSHX - Explicit Methods =====
+
+    /// <summary>
+    /// Inserts the specified value at the head of the list stored at <paramref name="key"/>, only if <paramref name="key"/> already exists and holds a list.
+    /// Unlike <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>, no operation will be performed when <paramref name="key"/> does not exist.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="value">The value to add to the head of the list.</param>
+    /// <returns>The length of the list after the push operation. Returns 0 if the key does not exist.</returns>
+    /// <remarks>
+    /// This is the GLIDE-style explicit method for LPUSHX. For SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
+    /// <example>
+    /// <code>
+    /// long result = await client.ListLeftPushIfExistsAsync(key, value);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, ValkeyValue value);
+
+    /// <summary>
+    /// Inserts all the specified values at the head of the list stored at <paramref name="key"/>, only if <paramref name="key"/> already exists and holds a list.
+    /// Unlike <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>, no operation will be performed when <paramref name="key"/> does not exist.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The values to add to the head of the list.</param>
+    /// <returns>The length of the list after the push operation. Returns 0 if the key does not exist.</returns>
+    /// <remarks>
+    /// This is the GLIDE-style explicit method for LPUSHX. For SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
+    /// <example>
+    /// <code>
+    /// long result = await client.ListLeftPushIfExistsAsync(key, values);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
+
+    /// <summary>
+    /// Inserts the specified value at the tail of the list stored at <paramref name="key"/>, only if <paramref name="key"/> already exists and holds a list.
+    /// Unlike <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>, no operation will be performed when <paramref name="key"/> does not exist.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/rpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="value">The value to add to the tail of the list.</param>
+    /// <returns>The length of the list after the push operation. Returns 0 if the key does not exist.</returns>
+    /// <remarks>
+    /// This is the GLIDE-style explicit method for RPUSHX. For SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
+    /// <example>
+    /// <code>
+    /// long result = await client.ListRightPushIfExistsAsync(key, value);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListRightPushIfExistsAsync(ValkeyKey key, ValkeyValue value);
+
+    /// <summary>
+    /// Inserts all the specified values at the tail of the list stored at <paramref name="key"/>, only if <paramref name="key"/> already exists and holds a list.
+    /// Unlike <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>, no operation will be performed when <paramref name="key"/> does not exist.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/rpushx"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="values">The values to add to the tail of the list.</param>
+    /// <returns>The length of the list after the push operation. Returns 0 if the key does not exist.</returns>
+    /// <remarks>
+    /// This is the GLIDE-style explicit method for RPUSHX. For SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
+    /// <example>
+    /// <code>
+    /// long result = await client.ListRightPushIfExistsAsync(key, values);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ListRightPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 }
