@@ -7,87 +7,87 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPopAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListLeftPopAsync(key);
+        return ListLeftPopAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPopAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count, CommandFlags flags)
+    public Task<ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListLeftPopAsync(key, count);
+        return ListLeftPopAsync(key, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPopAsync(IEnumerable{ValkeyKey}, long, CommandFlags)"/>
-    public async Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags)
+    public Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListLeftPopAsync(keys, count);
+        return ListLeftPopAsync(keys, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When, CommandFlags)"/>
-    public async Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListLeftPushAsync(key, value, when);
+        return ListLeftPushAsync(key, value, when);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When, CommandFlags)"/>
-    public async Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListLeftPushAsync(key, values, when);
+        return ListLeftPushAsync(key, values, when);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRightPopAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue> ListRightPopAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue> ListRightPopAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRightPopAsync(key);
+        return ListRightPopAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRightPopAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count, CommandFlags flags)
+    public Task<ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRightPopAsync(key, count);
+        return ListRightPopAsync(key, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRightPopAsync(IEnumerable{ValkeyKey}, long, CommandFlags)"/>
-    public async Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags)
+    public Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRightPopAsync(keys, count);
+        return ListRightPopAsync(keys, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When, CommandFlags)"/>
-    public async Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRightPushAsync(key, value, when);
+        return ListRightPushAsync(key, value, when);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When, CommandFlags)"/>
-    public async Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRightPushAsync(key, values, when);
+        return ListRightPushAsync(key, values, when);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListLengthAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<long> ListLengthAsync(ValkeyKey key, CommandFlags flags)
+    public Task<long> ListLengthAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListLengthAsync(key);
+        return ListLengthAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRemoveAsync(ValkeyKey, ValkeyValue, long, CommandFlags)"/>
-    public async Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0, CommandFlags flags = CommandFlags.None)
+    public Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRemoveAsync(key, value, count);
+        return ListRemoveAsync(key, value, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListTrimAsync(ValkeyKey, long, long, CommandFlags)"/>
@@ -98,52 +98,52 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRangeAsync(ValkeyKey, long, long, CommandFlags)"/>
-    public async Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start, long stop, CommandFlags flags)
+    public Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start, long stop, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListRangeAsync(key, start, stop);
+        return ListRangeAsync(key, start, stop);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags)
+    public Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListGetByIndexAsync(key, index);
+        return ListGetByIndexAsync(key, index);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListInsertAfterAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
-    public async Task<long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags)
+    public Task<long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListInsertAfterAsync(key, pivot, value);
+        return ListInsertAfterAsync(key, pivot, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListInsertBeforeAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
-    public async Task<long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags)
+    public Task<long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListInsertBeforeAsync(key, pivot, value);
+        return ListInsertBeforeAsync(key, pivot, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, CommandFlags)"/>
-    public async Task<ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide, CommandFlags flags)
+    public Task<ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListMoveAsync(sourceKey, destinationKey, sourceSide, destinationSide);
+        return ListMoveAsync(sourceKey, destinationKey, sourceSide, destinationSide);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListPositionAsync(ValkeyKey, ValkeyValue, long, long, CommandFlags)"/>
-    public async Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None)
+    public Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListPositionAsync(key, element, rank, maxLength);
+        return ListPositionAsync(key, element, rank, maxLength);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListPositionsAsync(ValkeyKey, ValkeyValue, long, long, long, CommandFlags)"/>
-    public async Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None)
+    public Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListPositionsAsync(key, element, count, rank, maxLength);
+        return ListPositionsAsync(key, element, count, rank, maxLength);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>
@@ -154,37 +154,37 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan, CommandFlags)"/>
-    public async Task<ValkeyValue[]?> ListBlockingLeftPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags)
+    public Task<ValkeyValue[]?> ListBlockingLeftPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingLeftPopAsync(keys, timeout);
+        return ListBlockingLeftPopAsync(keys, timeout);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan, CommandFlags)"/>
-    public async Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags)
+    public Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingRightPopAsync(keys, timeout);
+        return ListBlockingRightPopAsync(keys, timeout);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan, CommandFlags)"/>
-    public async Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout, CommandFlags flags)
+    public Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingMoveAsync(source, destination, sourceSide, destinationSide, timeout);
+        return ListBlockingMoveAsync(source, destination, sourceSide, destinationSide, timeout);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan, CommandFlags)"/>
-    public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout, CommandFlags flags)
+    public Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingPopAsync(keys, side, timeout);
+        return ListBlockingPopAsync(keys, side, timeout);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan, CommandFlags)"/>
-    public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout, CommandFlags flags)
+    public Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListBlockingPopAsync(keys, side, count, timeout);
+        return ListBlockingPopAsync(keys, side, count, timeout);
     }
 }

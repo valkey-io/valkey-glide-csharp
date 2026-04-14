@@ -7,8 +7,11 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    private static readonly Func<GlideString, ValkeyValue> ToValkeyValueConverter =
+        gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs;
+
     public static Cmd<GlideString, ValkeyValue> StringGet(GlideString key)
-        => new(RequestType.Get, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
+        => new(RequestType.Get, [key], true, ToValkeyValueConverter, allowConverterToHandleNull: true);
 
     public static Cmd<string, bool> StringSet(ValkeyKey key, ValkeyValue value)
     {

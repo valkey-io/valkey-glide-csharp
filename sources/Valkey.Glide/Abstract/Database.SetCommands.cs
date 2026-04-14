@@ -7,185 +7,185 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.SetAddAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> SetAddAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
+    public Task<bool> SetAddAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetAddAsync(key, value);
+        return SetAddAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetAddAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
+    public Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetAddAsync(key, values);
+        return SetAddAsync(key, values);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetRemoveAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> SetRemoveAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
+    public Task<bool> SetRemoveAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetRemoveAsync(key, value);
+        return SetRemoveAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
+    public Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetRemoveAsync(key, values);
+        return SetRemoveAsync(key, values);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetMembersAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetMembersAsync(key);
+        return SetMembersAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetLengthAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<long> SetLengthAsync(ValkeyKey key, CommandFlags flags)
+    public Task<long> SetLengthAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetLengthAsync(key);
+        return SetLengthAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long, CommandFlags)"/>
-    public async Task<long> SetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None)
+    public Task<long> SetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetIntersectionLengthAsync(keys, limit);
+        return SetIntersectionLengthAsync(keys, limit);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetPopAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue> SetPopAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue> SetPopAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetPopAsync(key);
+        return SetPopAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetPopAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags)
+    public Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetPopAsync(key, count);
+        return SetPopAsync(key, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetUnionAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetUnionAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<ValkeyValue[]> SetUnionAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetUnionAsync(first, second);
+        return SetUnionAsync(first, second);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetUnionAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetUnionAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
+    public Task<ValkeyValue[]> SetUnionAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetUnionAsync(keys);
+        return SetUnionAsync(keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetIntersectAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetIntersectAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<ValkeyValue[]> SetIntersectAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetIntersectAsync(first, second);
+        return SetIntersectAsync(first, second);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetIntersectAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetIntersectAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
+    public Task<ValkeyValue[]> SetIntersectAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetIntersectAsync(keys);
+        return SetIntersectAsync(keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetDifferenceAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetDifferenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<ValkeyValue[]> SetDifferenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetDifferenceAsync(first, second);
+        return SetDifferenceAsync(first, second);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetDifferenceAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetDifferenceAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
+    public Task<ValkeyValue[]> SetDifferenceAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetDifferenceAsync(keys);
+        return SetDifferenceAsync(keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetUnionStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<long> SetUnionStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<long> SetUnionStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetUnionStoreAsync(destination, first, second);
+        return SetUnionStoreAsync(destination, first, second);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags)
+    public Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetUnionStoreAsync(destination, keys);
+        return SetUnionStoreAsync(destination, keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetIntersectStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<long> SetIntersectStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<long> SetIntersectStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetIntersectStoreAsync(destination, first, second);
+        return SetIntersectStoreAsync(destination, first, second);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetIntersectStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<long> SetIntersectStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags)
+    public Task<long> SetIntersectStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetIntersectStoreAsync(destination, keys);
+        return SetIntersectStoreAsync(destination, keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetDifferenceStoreAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<long> SetDifferenceStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<long> SetDifferenceStoreAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetDifferenceStoreAsync(destination, first, second);
+        return SetDifferenceStoreAsync(destination, first, second);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetDifferenceStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<long> SetDifferenceStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags)
+    public Task<long> SetDifferenceStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetDifferenceStoreAsync(destination, keys);
+        return SetDifferenceStoreAsync(destination, keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetContainsAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> SetContainsAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
+    public Task<bool> SetContainsAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetContainsAsync(key, value);
+        return SetContainsAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetContainsAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<bool[]> SetContainsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
+    public Task<bool[]> SetContainsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetContainsAsync(key, values);
+        return SetContainsAsync(key, values);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetRandomMemberAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetRandomMemberAsync(key);
+        return SetRandomMemberAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetRandomMembersAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags)
+    public Task<ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetRandomMembersAsync(key, count);
+        return SetRandomMembersAsync(key, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetMoveAsync(ValkeyKey, ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value, CommandFlags flags)
+    public Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetMoveAsync(source, destination, value);
+        return SetMoveAsync(source, destination, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
