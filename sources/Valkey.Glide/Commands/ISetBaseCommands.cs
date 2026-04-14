@@ -154,7 +154,7 @@ public interface ISetBaseCommands
     Task<ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count);
 
     /// <summary>
-    /// Moves <paramref name="value"/> from the set at <paramref name="source"/>` to the set at <paramref name="destination"/>, removing it from the source set.
+    /// Moves <paramref name="value"/> from the set at <paramref name="source"/> to the set at <paramref name="destination"/>, removing it from the source set.
     /// Creates a new destination set if needed. The operation is atomic.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/smove"/>
