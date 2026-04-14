@@ -104,8 +104,8 @@ public class SetCommandTests(TestConfiguration config)
         Assert.Equal(4, await client.SetCardAsync(key));
 
         // Test multiple pop
-        ValkeyValue[] poppedElements = await client.SetPopAsync(key, 2);
-        Assert.Equal(2, poppedElements.Length);
+        var popped = await client.SetPopAsync(key, 2);
+        Assert.Equal(2, popped.Count);
 
         // Verify elements were removed
         Assert.Equal(2, await client.SetCardAsync(key));

@@ -13,22 +13,22 @@ public abstract partial class BaseBatch<T>
     public T SetAdd(ValkeyKey key, ValkeyValue value) => AddCmd(SetAddAsync(key, value));
 
     /// <inheritdoc cref="IBatchSetCommands.SetAdd(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T SetAdd(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetAddAsync(key, [.. values]));
+    public T SetAdd(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetAddAsync(key, values));
 
     /// <inheritdoc cref="IBatchSetCommands.SetRemove(ValkeyKey, ValkeyValue)" />
     public T SetRemove(ValkeyKey key, ValkeyValue value) => AddCmd(SetRemoveAsync(key, value));
 
     /// <inheritdoc cref="IBatchSetCommands.SetRemove(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T SetRemove(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetRemoveAsync(key, [.. values]));
+    public T SetRemove(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetRemoveAsync(key, values));
 
     /// <inheritdoc cref="IBatchSetCommands.SetMembers(ValkeyKey)" />
     public T SetMembers(ValkeyKey key) => AddCmd(SetMembersAsync(key));
 
     /// <inheritdoc cref="IBatchSetCommands.SetCard(ValkeyKey)" />
-    public T SetCard(ValkeyKey key) => AddCmd(SetLengthAsync(key));
+    public T SetCard(ValkeyKey key) => AddCmd(SetCardAsync(key));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInterCard(IEnumerable{ValkeyKey}, long)" />
-    public T SetInterCard(IEnumerable<ValkeyKey> keys, long limit = 0) => AddCmd(SetIntersectionLengthAsync([.. keys], limit));
+    public T SetInterCard(IEnumerable<ValkeyKey> keys, long limit = 0) => AddCmd(SetInterCardAsync(keys, limit));
 
     /// <inheritdoc cref="IBatchSetCommands.SetPop(ValkeyKey)" />
     public T SetPop(ValkeyKey key) => AddCmd(SetPopAsync(key));
@@ -40,43 +40,43 @@ public abstract partial class BaseBatch<T>
     public T SetUnion(ValkeyKey first, ValkeyKey second) => AddCmd(SetUnionAsync([first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetUnion(IEnumerable{ValkeyKey})" />
-    public T SetUnion(IEnumerable<ValkeyKey> keys) => AddCmd(SetUnionAsync([.. keys]));
+    public T SetUnion(IEnumerable<ValkeyKey> keys) => AddCmd(SetUnionAsync(keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInter(ValkeyKey, ValkeyKey)" />
-    public T SetInter(ValkeyKey first, ValkeyKey second) => AddCmd(SetIntersectAsync([first, second]));
+    public T SetInter(ValkeyKey first, ValkeyKey second) => AddCmd(SetInterAsync([first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInter(IEnumerable{ValkeyKey})" />
-    public T SetInter(IEnumerable<ValkeyKey> keys) => AddCmd(SetIntersectAsync([.. keys]));
+    public T SetInter(IEnumerable<ValkeyKey> keys) => AddCmd(SetInterAsync(keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiff(ValkeyKey, ValkeyKey)" />
-    public T SetDiff(ValkeyKey first, ValkeyKey second) => AddCmd(SetDifferenceAsync([first, second]));
+    public T SetDiff(ValkeyKey first, ValkeyKey second) => AddCmd(SetDiffAsync([first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiff(IEnumerable{ValkeyKey})" />
-    public T SetDiff(IEnumerable<ValkeyKey> keys) => AddCmd(SetDifferenceAsync([.. keys]));
+    public T SetDiff(IEnumerable<ValkeyKey> keys) => AddCmd(SetDiffAsync(keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetUnionStore(ValkeyKey, ValkeyKey, ValkeyKey)" />
     public T SetUnionStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetUnionStoreAsync(destination, [first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetUnionStore(ValkeyKey, IEnumerable{ValkeyKey})" />
-    public T SetUnionStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetUnionStoreAsync(destination, [.. keys]));
+    public T SetUnionStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetUnionStoreAsync(destination, keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInterStore(ValkeyKey, ValkeyKey, ValkeyKey)" />
-    public T SetInterStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetIntersectStoreAsync(destination, [first, second]));
+    public T SetInterStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetInterStoreAsync(destination, [first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInterStore(ValkeyKey, IEnumerable{ValkeyKey})" />
-    public T SetInterStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetIntersectStoreAsync(destination, [.. keys]));
+    public T SetInterStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetInterStoreAsync(destination, keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiffStore(ValkeyKey, ValkeyKey, ValkeyKey)" />
-    public T SetDiffStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetDifferenceStoreAsync(destination, [first, second]));
+    public T SetDiffStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetDiffStoreAsync(destination, [first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiffStore(ValkeyKey, IEnumerable{ValkeyKey})" />
-    public T SetDiffStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetDifferenceStoreAsync(destination, [.. keys]));
+    public T SetDiffStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetDiffStoreAsync(destination, keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetIsMember(ValkeyKey, ValkeyValue)" />
-    public T SetIsMember(ValkeyKey key, ValkeyValue value) => AddCmd(SetContainsAsync(key, value));
+    public T SetIsMember(ValkeyKey key, ValkeyValue value) => AddCmd(SetIsMemberAsync(key, value));
 
     /// <inheritdoc cref="IBatchSetCommands.SetIsMember(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetContainsAsync(key, [.. values]));
+    public T SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetIsMemberAsync(key, values));
 
     /// <inheritdoc cref="IBatchSetCommands.SetRandomMember(ValkeyKey)" />
     public T SetRandomMember(ValkeyKey key) => AddCmd(SetRandomMemberAsync(key));

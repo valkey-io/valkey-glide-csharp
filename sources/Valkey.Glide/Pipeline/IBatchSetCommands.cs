@@ -38,8 +38,8 @@ internal interface IBatchSetCommands
     /// <returns>Command Response - <inheritdoc cref="ISetBaseCommands.SetPopAsync(ValkeyKey)" /></returns>
     IBatch SetPop(ValkeyKey key);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetPopAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="ISetBaseCommands.SetPopAsync(ValkeyKey, long)" /></returns>
+    /// <inheritdoc cref="IBaseClient.SetPopAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetPopAsync(ValkeyKey, long)" /></returns>
     IBatch SetPop(ValkeyKey key, long count);
 
     /// <inheritdoc cref="IBaseClient.SetUnionAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />

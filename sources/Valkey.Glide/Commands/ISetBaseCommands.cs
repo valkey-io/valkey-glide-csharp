@@ -95,26 +95,6 @@ public interface ISetBaseCommands
     Task<ValkeyValue> SetPopAsync(ValkeyKey key);
 
     /// <summary>
-    /// Removes and returns the specified number of random elements from the set value stored at key.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/spop"/>
-    /// <param name="key">The key of the set.</param>
-    /// <param name="count">
-    /// The number of members to return.
-    ///	If count is positive, returns unique elements.
-    ///	If count is larger than the set's cardinality, returns the entire set.
-    /// </param>
-    /// <returns>An array of popped elements as <see cref="ValkeyValue" />s, or an empty array when key does not exist.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ValkeyValue[] result = await client.SetPopAsync(key, 2);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count);
-
-    /// <summary>
     /// Returns a random element from the set value stored at key.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/srandmember"/>

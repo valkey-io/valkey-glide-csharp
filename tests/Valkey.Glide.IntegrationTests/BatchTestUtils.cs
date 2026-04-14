@@ -301,7 +301,7 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "SetCard(key1)"));
 
         _ = batch.SetMembers(key1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetMembers(key1)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetMembers(key1)", true));
 
         _ = batch.SetRemove(key1, "a");
         testData.Add(new(true, "SetRemove(key1, a)"));
@@ -342,22 +342,22 @@ internal partial class BatchTestUtils
 
         // Multi-key operations: always use prefix to ensure same hash slot
         _ = batch.SetUnion(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetUnion(prefix+key1, prefix+key2)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetUnion(prefix+key1, prefix+key2)", true));
 
         _ = batch.SetUnion([prefix + key1, prefix + key2, prefix + key5]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetUnion([prefix+key1, prefix+key2, prefix+key5])", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetUnion([prefix+key1, prefix+key2, prefix+key5])", true));
 
         _ = batch.SetInter(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetInter(prefix+key1, prefix+key2)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetInter(prefix+key1, prefix+key2)", true));
 
         _ = batch.SetInter([prefix + key1, prefix + key2]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetInter([prefix+key1, prefix+key2])", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetInter([prefix+key1, prefix+key2])", true));
 
         _ = batch.SetDiff(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDiff(prefix+key1, prefix+key2)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetDiff(prefix+key1, prefix+key2)", true));
 
         _ = batch.SetDiff([prefix + key1, prefix + key2]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDiff([prefix+key1, prefix+key2])", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetDiff([prefix+key1, prefix+key2])", true));
 
         if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
@@ -396,7 +396,7 @@ internal partial class BatchTestUtils
         testData.Add(new(0L, "SetCard(key3) after pop"));
 
         _ = batch.SetPop(key4, 1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetPop(key4, 1)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetPop(key4, 1)", true));
 
         _ = batch.SetCard(key4);
         testData.Add(new(1L, "SetCard(key4) after pop with count"));

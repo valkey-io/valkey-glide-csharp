@@ -324,4 +324,36 @@ public class CommandFlagsTests(TestConfiguration config)
             () => db.SetMoveAsync("src", "dst", "value", UnsupportedFlag));
 
     #endregion
+    #region PubSub Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task PublishAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.PublishAsync(
+                ValkeyChannel.Literal("test-channel"),
+                "hello",
+                UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionChannelsAsync_ThrowsOnCommandFlags(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.SubscriptionChannelsAsync(flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionPatternCountAsync_ThrowsOnCommandFlags(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.SubscriptionPatternCountAsync(flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionSubscriberCountAsync_ThrowsOnCommandFlags(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.SubscriptionSubscriberCountAsync(
+                ValkeyChannel.Literal("test-channel"),
+                flags: UnsupportedFlag));
+
+    #endregion
 }

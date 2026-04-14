@@ -12,7 +12,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc/>
     public async Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
-        => await Command(Request.SetAddAsync(key, [.. values]));
+        => await Command(Request.SetAddAsync(key, values));
 
     /// <inheritdoc/>
     public async Task<bool> SetRemoveAsync(ValkeyKey key, ValkeyValue value)
@@ -20,59 +20,59 @@ public abstract partial class BaseClient
 
     /// <inheritdoc/>
     public async Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
-        => await Command(Request.SetRemoveAsync(key, [.. values]));
+        => await Command(Request.SetRemoveAsync(key, values));
 
     /// <inheritdoc/>
     public async Task<ISet<ValkeyValue>> SetMembersAsync(ValkeyKey key)
-        => new HashSet<ValkeyValue>(await Command(Request.SetMembersAsync(key)));
+        => await Command(Request.SetMembersAsync(key));
 
     /// <inheritdoc/>
     public async Task<long> SetCardAsync(ValkeyKey key)
-        => await Command(Request.SetLengthAsync(key));
+        => await Command(Request.SetCardAsync(key));
 
     /// <inheritdoc/>
     public async Task<long> SetInterCardAsync(IEnumerable<ValkeyKey> keys, long limit = 0)
-        => await Command(Request.SetIntersectionLengthAsync([.. keys], limit));
+        => await Command(Request.SetInterCardAsync(keys, limit));
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> SetPopAsync(ValkeyKey key)
         => await Command(Request.SetPopAsync(key));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count)
+    public async Task<ISet<ValkeyValue>> SetPopAsync(ValkeyKey key, long count)
         => await Command(Request.SetPopAsync(key, count));
 
     /// <inheritdoc/>
     public async Task<ISet<ValkeyValue>> SetUnionAsync(IEnumerable<ValkeyKey> keys)
-        => new HashSet<ValkeyValue>(await Command(Request.SetUnionAsync([.. keys])));
+        => await Command(Request.SetUnionAsync(keys));
 
     /// <inheritdoc/>
     public async Task<ISet<ValkeyValue>> SetInterAsync(IEnumerable<ValkeyKey> keys)
-        => new HashSet<ValkeyValue>(await Command(Request.SetIntersectAsync([.. keys])));
+        => await Command(Request.SetInterAsync(keys));
 
     /// <inheritdoc/>
     public async Task<ISet<ValkeyValue>> SetDiffAsync(IEnumerable<ValkeyKey> keys)
-        => new HashSet<ValkeyValue>(await Command(Request.SetDifferenceAsync([.. keys])));
+        => await Command(Request.SetDiffAsync(keys));
 
     /// <inheritdoc/>
     public async Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys)
-        => await Command(Request.SetUnionStoreAsync(destination, [.. keys]));
+        => await Command(Request.SetUnionStoreAsync(destination, keys));
 
     /// <inheritdoc/>
     public async Task<long> SetInterStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys)
-        => await Command(Request.SetIntersectStoreAsync(destination, [.. keys]));
+        => await Command(Request.SetInterStoreAsync(destination, keys));
 
     /// <inheritdoc/>
     public async Task<long> SetDiffStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys)
-        => await Command(Request.SetDifferenceStoreAsync(destination, [.. keys]));
+        => await Command(Request.SetDiffStoreAsync(destination, keys));
 
     /// <inheritdoc/>
     public async Task<bool> SetIsMemberAsync(ValkeyKey key, ValkeyValue value)
-        => await Command(Request.SetContainsAsync(key, value));
+        => await Command(Request.SetIsMemberAsync(key, value));
 
     /// <inheritdoc/>
     public async Task<bool[]> SetIsMemberAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
-        => await Command(Request.SetContainsAsync(key, [.. values]));
+        => await Command(Request.SetIsMemberAsync(key, values));
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key)

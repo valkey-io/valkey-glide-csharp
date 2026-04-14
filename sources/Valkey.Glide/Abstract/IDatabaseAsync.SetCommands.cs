@@ -51,10 +51,11 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> SetPopAsync(ValkeyKey key, CommandFlags flags);
 
-    /// <inheritdoc cref="ISetBaseCommands.SetPopAsync(ValkeyKey, long)"/>
+    /// <inheritdoc cref="IBaseClient.SetPopAsync(ValkeyKey, long)" path="/*[not(self::returns)]"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of popped elements, or an empty array when the key does not exist or the set is empty.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags);
+    Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns the members of the set resulting from the specified <paramref name="operation"/> of the sets stored at <paramref name="first"/> and <paramref name="second"/>.
