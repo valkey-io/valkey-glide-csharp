@@ -218,7 +218,7 @@ public interface IStreamBaseCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="count">The maximum number of entries to return.</param>
-    /// <param name="consumerName">Filter by consumer name.</param>
+    /// <param name="consumerName">Filter by consumer name. Pass <see cref="ValkeyValue.Null"/> or default to include all consumers.</param>
     /// <param name="minId">The minimum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMinValue"/>  (smallest ID) if null.</param>
     /// <param name="maxId">The maximum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMaxValue"/>  (largest ID) if null.</param>
     /// <returns>An array of detailed information about each pending message.</returns>
@@ -231,12 +231,12 @@ public interface IStreamBaseCommands
     /// <param name="key">The key of the stream.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="count">The maximum number of entries to return.</param>
-    /// <param name="consumerName">Filter by consumer name.</param>
+    /// <param name="consumerName">Filter by consumer name. Pass <see cref="ValkeyValue.Null"/> or default to include all consumers.</param>
     /// <param name="minId">The minimum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMinValue"/>  (smallest ID) if null.</param>
     /// <param name="maxId">The maximum ID (inclusive). Defaults to <see cref="StreamConstants.ReadMaxValue"/>  (largest ID) if null.</param>
     /// <param name="minIdleTime">The minimum idle time for pending messages</param>
     /// <returns>An array of detailed information about each pending message.</returns>
-    Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null);
+    Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName = default, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null);
 
     /// <summary>
     /// Claims pending messages for a consumer.

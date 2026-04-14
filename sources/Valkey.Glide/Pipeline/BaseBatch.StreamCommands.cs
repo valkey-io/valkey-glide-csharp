@@ -68,7 +68,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StreamPending(ValkeyKey key, ValkeyValue groupName) => AddCmd(Request.StreamPendingAsync(key, groupName));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamPendingMessages(ValkeyKey, ValkeyValue, int, ValkeyValue, ValkeyValue?, ValkeyValue?, TimeSpan?)" />
-    public T StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null) =>
+    public T StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName = default, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null) =>
         AddCmd(Request.StreamPendingMessagesAsync(key, groupName, minId ?? "-", maxId ?? "+", count, consumerName, minIdleTime));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamClaim(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, StreamClaimOptions?)" />

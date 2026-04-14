@@ -219,4 +219,75 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
+
+    #region StreamPendingMessagesAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingMessagesAsync_WithConsumer(IDatabaseAsync db)
+    {
+        string key = $"ser-xpending-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field", "value1", null, null, false, CommandFlags.None);
+        _ = await db.StreamAddAsync(key, "field", "value2", null, null, false, CommandFlags.None);
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", count: 2, flags: CommandFlags.None);
+
+        StreamPendingMessageInfo[] messages = await db.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", null, null, CommandFlags.None);
+        Assert.Equal(2, messages.Length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingMessagesAsync_WithoutConsumer_AllConsumers(IDatabaseAsync db)
+    {
+        string key = $"ser-xpending-all-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field", "value1", null, null, false, CommandFlags.None);
+        _ = await db.StreamAddAsync(key, "field", "value2", null, null, false, CommandFlags.None);
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", count: 1, flags: CommandFlags.None);
+        _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer2", ">", count: 1, flags: CommandFlags.None);
+
+        // Query without consumer filter — should return messages from all consumers
+        StreamPendingMessageInfo[] messages = await db.StreamPendingMessagesAsync(key, "mygroup", 10, default, null, null, CommandFlags.None);
+        Assert.Equal(2, messages.Length);
+    }
+
+    #endregion
+
+    #region StreamDeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteAsync_RemovesEntries(IDatabaseAsync db)
+    {
+        string key = $"ser-xdel-{Guid.NewGuid()}";
+        ValkeyValue id1 = await db.StreamAddAsync(key, "field", "value1", null, null, false, CommandFlags.None);
+        _ = await db.StreamAddAsync(key, "field", "value2", null, null, false, CommandFlags.None);
+
+        long deleted = await db.StreamDeleteAsync(key, [id1], CommandFlags.None);
+        Assert.Equal(1, deleted);
+        Assert.Equal(1, await db.StreamLengthAsync(key));
+    }
+
+    #endregion
+
+    #region StreamAcknowledgeAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAsync_AcksMessage(IDatabaseAsync db)
+    {
+        string key = $"ser-xack-{Guid.NewGuid()}";
+        ValkeyValue id1 = await db.StreamAddAsync(key, "field", "value1", null, null, false, CommandFlags.None);
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+        _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", count: 1, flags: CommandFlags.None);
+
+        long acked = await db.StreamAcknowledgeAsync(key, "mygroup", id1, CommandFlags.None);
+        Assert.Equal(1, acked);
+
+        StreamPendingInfo pending = await db.StreamPendingAsync(key, "mygroup");
+        Assert.Equal(0, pending.PendingMessageCount);
+    }
+
+    #endregion
 }
