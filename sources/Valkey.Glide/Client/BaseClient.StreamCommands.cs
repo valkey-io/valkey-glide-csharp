@@ -260,4 +260,10 @@ public partial class BaseClient
     {
         return await Command(Request.StreamConsumerInfoAsync(key, groupName));
     }
+
+    /// <inheritdoc cref="IBaseClient.StreamInfoFullAsync(ValkeyKey, int?)"/>
+    public async Task<StreamInfoFull> StreamInfoFullAsync(ValkeyKey key, int? count = null)
+    {
+        return await Command(Request.StreamInfoFullAsync(key, count));
+    }
 }

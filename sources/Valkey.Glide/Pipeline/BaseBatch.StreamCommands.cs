@@ -96,6 +96,9 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchStreamCommands.StreamConsumerInfo(ValkeyKey, ValkeyValue)" />
     public T StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName) => AddCmd(Request.StreamConsumerInfoAsync(key, groupName));
 
+    /// <inheritdoc cref="IBatchStreamCommands.StreamInfoFull(ValkeyKey, int?)" />
+    public T StreamInfoFull(ValkeyKey key, int? count = null) => AddCmd(Request.StreamInfoFullAsync(key, count));
+
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, StreamAddOptions? options) => StreamAdd(key, streamField, streamValue, options);
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions? options) => StreamAdd(key, streamPairs, options);
     IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count) => StreamRead(key, position, count);
@@ -121,4 +124,5 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStreamCommands.StreamInfo(ValkeyKey key) => StreamInfo(key);
     IBatch IBatchStreamCommands.StreamGroupInfo(ValkeyKey key) => StreamGroupInfo(key);
     IBatch IBatchStreamCommands.StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName) => StreamConsumerInfo(key, groupName);
+    IBatch IBatchStreamCommands.StreamInfoFull(ValkeyKey key, int? count) => StreamInfoFull(key, count);
 }

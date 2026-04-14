@@ -55,4 +55,5 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
     IBatch IBatchStreamCommands.StreamInfo(ValkeyKey key) => StreamInfo(key);
     IBatch IBatchStreamCommands.StreamGroupInfo(ValkeyKey key) => StreamGroupInfo(key);
     IBatch IBatchStreamCommands.StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName) => StreamConsumerInfo(key, groupName);
+    IBatch IBatchStreamCommands.StreamInfoFull(ValkeyKey key, int? count) => StreamInfoFull(key, count);
 }

@@ -854,4 +854,198 @@ internal partial class Request
 
         return new StreamInfo(length, radixTreeKeys, radixTreeNodes, groups, firstEntry, lastEntry, lastGeneratedId);
     }
+
+    public static Cmd<object, StreamInfoFull> StreamInfoFullAsync(ValkeyKey key, int? count)
+    {
+        List<GlideString> args = [key.ToGlideString(), "FULL"];
+        if (count.HasValue)
+        {
+            args.Add("COUNT");
+            args.Add(count.Value.ToGlideString());
+        }
+        return new(RequestType.XInfoStream, [.. args], false, ConvertStreamInfoFull);
+    }
+
+    private static StreamInfoFull ConvertStreamInfoFull(object response)
+    {
+        var length = 0L;
+        var radixTreeKeys = 0L;
+        var radixTreeNodes = 0L;
+        var lastGeneratedId = default(ValkeyValue);
+        var maxDeletedEntryId = 0L;
+        var entriesAdded = 0L;
+        var recordedFirstEntryId = default(ValkeyValue);
+        var entries = Array.Empty<StreamEntry>();
+        var groups = Array.Empty<StreamGroupFullInfo>();
+
+        void ProcessKeyValue(string key, object value)
+        {
+            switch (key)
+            {
+                case "length": length = value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
+                case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
+                case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
+                case "max-deleted-entry-id": maxDeletedEntryId = value is GlideString gs4 ? long.Parse(gs4.ToString()) : (long)value; break;
+                case "entries-added": entriesAdded = value is GlideString gs5 ? long.Parse(gs5.ToString()) : (long)value; break;
+                case "recorded-first-entry-id": recordedFirstEntryId = (ValkeyValue)(GlideString)value; break;
+                case "entries":
+                    entries = value is object[] arr && arr.Length > 0 ? ConvertStreamEntries(arr) : [];
+                    break;
+                case "groups":
+                    groups = value is object[] groupArr && groupArr.Length > 0 ? ConvertStreamGroupFullInfoArray(groupArr) : [];
+                    break;
+                default: break;
+            }
+        }
+
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+                ProcessKeyValue(kvp.Key.ToString(), kvp.Value);
+        }
+        else
+        {
+            var infoArray = (object[])response;
+            for (int i = 0; i < infoArray.Length; i += 2)
+                ProcessKeyValue(((GlideString)infoArray[i]).ToString(), infoArray[i + 1]);
+        }
+
+        return new StreamInfoFull(length, radixTreeKeys, radixTreeNodes, lastGeneratedId, maxDeletedEntryId, entriesAdded, recordedFirstEntryId, entries, groups);
+    }
+
+    private static StreamGroupFullInfo[] ConvertStreamGroupFullInfoArray(object[] response)
+    {
+        var result = new StreamGroupFullInfo[response.Length];
+        for (int i = 0; i < response.Length; i++)
+        {
+            result[i] = ConvertStreamGroupFullInfo(response[i]);
+        }
+        return result;
+    }
+
+    private static StreamGroupFullInfo ConvertStreamGroupFullInfo(object response)
+    {
+        var name = "";
+        var lastDeliveredId = default(ValkeyValue);
+        var entriesRead = (long?)null;
+        var pelCount = 0L;
+        var consumers = Array.Empty<StreamConsumerFullInfo>();
+        var pendingEntries = Array.Empty<StreamPendingEntryInfo>();
+
+        void ProcessKeyValue(string key, object value)
+        {
+            switch (key)
+            {
+                case "name": name = ((GlideString)value).ToString(); break;
+                case "last-delivered-id": lastDeliveredId = (ValkeyValue)(GlideString)value; break;
+                case "entries-read": entriesRead = value is null ? null : value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
+                case "pel-count": pelCount = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                case "consumers":
+                    consumers = value is object[] arr && arr.Length > 0 ? ConvertStreamConsumerFullInfoArray(arr) : [];
+                    break;
+                case "pel":
+                    pendingEntries = value is object[] pelArr && pelArr.Length > 0 ? ConvertGroupPelEntries(pelArr) : [];
+                    break;
+                default: break;
+            }
+        }
+
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+                ProcessKeyValue(kvp.Key.ToString(), kvp.Value);
+        }
+        else
+        {
+            var groupData = (object[])response;
+            for (int j = 0; j < groupData.Length; j += 2)
+                ProcessKeyValue(((GlideString)groupData[j]).ToString(), groupData[j + 1]);
+        }
+
+        return new StreamGroupFullInfo(name, lastDeliveredId, entriesRead, pelCount, consumers, pendingEntries);
+    }
+
+    private static StreamConsumerFullInfo[] ConvertStreamConsumerFullInfoArray(object[] response)
+    {
+        var result = new StreamConsumerFullInfo[response.Length];
+        for (int i = 0; i < response.Length; i++)
+        {
+            result[i] = ConvertStreamConsumerFullInfo(response[i]);
+        }
+        return result;
+    }
+
+    private static StreamConsumerFullInfo ConvertStreamConsumerFullInfo(object response)
+    {
+        var name = "";
+        var seenTime = 0L;
+        var activeTime = 0L;
+        var pelCount = 0L;
+        var pendingEntries = Array.Empty<StreamPendingEntryInfo>();
+
+        void ProcessKeyValue(string key, object value)
+        {
+            switch (key)
+            {
+                case "name": name = ((GlideString)value).ToString(); break;
+                case "seen-time": seenTime = value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
+                case "active-time": activeTime = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                case "pel-count": pelCount = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
+                case "pel":
+                    pendingEntries = value is object[] pelArr && pelArr.Length > 0 ? ConvertConsumerPelEntries(pelArr) : [];
+                    break;
+                default: break;
+            }
+        }
+
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+                ProcessKeyValue(kvp.Key.ToString(), kvp.Value);
+        }
+        else
+        {
+            var consumerData = (object[])response;
+            for (int j = 0; j < consumerData.Length; j += 2)
+                ProcessKeyValue(((GlideString)consumerData[j]).ToString(), consumerData[j + 1]);
+        }
+
+        return new StreamConsumerFullInfo(name, seenTime, activeTime, pelCount, pendingEntries);
+    }
+
+    /// <summary>
+    /// Converts group-level PEL entries: [entry-id, consumer-name, delivery-time, delivery-count]
+    /// </summary>
+    private static StreamPendingEntryInfo[] ConvertGroupPelEntries(object[] pelArray)
+    {
+        var result = new StreamPendingEntryInfo[pelArray.Length];
+        for (int i = 0; i < pelArray.Length; i++)
+        {
+            var entry = (object[])pelArray[i];
+            var entryId = (ValkeyValue)(GlideString)entry[0];
+            var consumerName = ((GlideString)entry[1]).ToString();
+            var deliveryTime = entry[2] is GlideString gs ? long.Parse(gs.ToString()) : (long)entry[2];
+            var deliveryCount = entry[3] is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)entry[3];
+            result[i] = new StreamPendingEntryInfo(entryId, consumerName, deliveryTime, deliveryCount);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Converts consumer-level PEL entries: [entry-id, delivery-time, delivery-count]
+    /// </summary>
+    private static StreamPendingEntryInfo[] ConvertConsumerPelEntries(object[] pelArray)
+    {
+        var result = new StreamPendingEntryInfo[pelArray.Length];
+        for (int i = 0; i < pelArray.Length; i++)
+        {
+            var entry = (object[])pelArray[i];
+            var entryId = (ValkeyValue)(GlideString)entry[0];
+            var deliveryTime = entry[1] is GlideString gs ? long.Parse(gs.ToString()) : (long)entry[1];
+            var deliveryCount = entry[2] is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)entry[2];
+            result[i] = new StreamPendingEntryInfo(entryId, null, deliveryTime, deliveryCount);
+        }
+        return result;
+    }
 }

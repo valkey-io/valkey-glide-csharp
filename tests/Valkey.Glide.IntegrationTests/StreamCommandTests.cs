@@ -873,4 +873,116 @@ public class StreamCommandTests
         Assert.Equal(2, length);
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_Basic(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+
+        // Add entries
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamAddAsync(key, "field3", "value3");
+
+        // Get full stream info
+        StreamInfoFull info = await client.StreamInfoFullAsync(key);
+        Assert.Equal(3, info.Length);
+        Assert.True(info.RadixTreeKeys > 0);
+        Assert.True(info.RadixTreeNodes > 0);
+        Assert.False(info.LastGeneratedId.IsNull);
+        Assert.Equal(3, info.Entries.Length);
+        Assert.Equal("value1", info.Entries[0]["field1"].ToString());
+        Assert.Equal("value3", info.Entries[2]["field3"].ToString());
+        Assert.Empty(info.Groups);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_WithConsumerGroup(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+
+        // Create a consumer group and read messages to create pending entries
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+
+        // Get full stream info
+        StreamInfoFull info = await client.StreamInfoFullAsync(key);
+        Assert.Equal(2, info.Length);
+        Assert.Equal(2, info.Entries.Length);
+
+        // Verify group info
+        _ = Assert.Single(info.Groups);
+        StreamGroupFullInfo group = info.Groups[0];
+        Assert.Equal("mygroup", group.Name);
+        Assert.False(group.LastDeliveredId.IsNull);
+        Assert.Equal(2, group.PelCount);
+
+        // Verify group-level PEL
+        Assert.Equal(2, group.PendingEntries.Length);
+        Assert.Equal(id1.ToString(), group.PendingEntries[0].EntryId.ToString());
+        Assert.Equal("consumer1", group.PendingEntries[0].ConsumerName);
+        Assert.True(group.PendingEntries[0].DeliveryTime > 0);
+        Assert.Equal(1, group.PendingEntries[0].DeliveryCount);
+
+        // Verify consumer info
+        _ = Assert.Single(group.Consumers);
+        StreamConsumerFullInfo consumer = group.Consumers[0];
+        Assert.Equal("consumer1", consumer.Name);
+        Assert.True(consumer.SeenTime > 0);
+        Assert.Equal(2, consumer.PelCount);
+
+        // Verify consumer-level PEL
+        Assert.Equal(2, consumer.PendingEntries.Length);
+        Assert.Null(consumer.PendingEntries[0].ConsumerName);
+        Assert.True(consumer.PendingEntries[0].DeliveryTime > 0);
+        Assert.Equal(1, consumer.PendingEntries[0].DeliveryCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_WithCount(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+
+        // Add entries and create group with pending messages
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamAddAsync(key, "field3", "value3");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+
+        // Get full stream info with count=1 to limit PEL entries
+        StreamInfoFull info = await client.StreamInfoFullAsync(key, count: 1);
+        Assert.Equal(3, info.Length);
+        _ = Assert.Single(info.Groups);
+
+        // PEL entries should be limited by count
+        StreamGroupFullInfo group = info.Groups[0];
+        Assert.True(group.PendingEntries.Length <= 1);
+        _ = Assert.Single(group.Consumers);
+        Assert.True(group.Consumers[0].PendingEntries.Length <= 1);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_NonExistentKey_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoFullAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_WrongKeyType_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+        await client.StringSetAsync(key, "not a stream");
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoFullAsync(key));
+    }
+
 }

@@ -123,4 +123,13 @@ public partial interface IBaseClient
     /// <param name="options">Optional arguments including count, block timeout, and noAck.</param>
     /// <returns>An array of streams with their entries.</returns>
     Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options);
+
+    /// <summary>
+    /// Returns detailed stream information including consumer group and PEL details.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="count">Maximum number of PEL entries per consumer to return. Defaults to 10 if null.</param>
+    /// <returns>Detailed information about the stream.</returns>
+    Task<StreamInfoFull> StreamInfoFullAsync(ValkeyKey key, int? count = null);
 }
