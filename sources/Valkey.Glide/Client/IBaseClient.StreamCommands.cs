@@ -56,4 +56,29 @@ public partial interface IBaseClient
     /// <param name="options">Optional arguments for the XCLAIM command.</param>
     /// <returns>An array of claimed message IDs.</returns>
     Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options);
+
+    /// <summary>
+    /// Claims pending messages for a consumer, returning only IDs.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xclaim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="consumerGroup">The consumer group name.</param>
+    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed.</param>
+    /// <param name="messageIds">A collection of message IDs to claim.</param>
+    /// <returns>An array of claimed message IDs.</returns>
+    Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds);
+
+    /// <summary>
+    /// Automatically claims pending messages, returning only IDs.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xautoclaim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="consumerGroup">The consumer group name.</param>
+    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="minIdleTime">The minimum idle time for the message to be claimed.</param>
+    /// <param name="startAtId">The starting ID to scan for pending messages.</param>
+    /// <param name="count">The maximum number of entries to claim. Defaults to 100 if null.</param>
+    /// <returns>Result containing next start ID, claimed IDs, and deleted IDs.</returns>
+    Task<StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
 }
