@@ -240,7 +240,7 @@ public class ListCommandTests(TestConfiguration config)
         // Setup list: [0, 1, 2, 3, 4, 5]
         _ = await client.ListRightPushAsync(key, ["0", "1", "2", "3", "4", "5"]);
 
-        // Test getting all elements (default parameters)
+        // Test getting all elements
         ValkeyValue[] allElements = await client.ListRangeAsync(key);
         Assert.Equal(["0", "1", "2", "3", "4", "5"], allElements.ToGlideStrings());
 
@@ -397,32 +397,32 @@ public class ListCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestListGetByIndex(BaseClient client)
+    public async Task TestListIndex(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        ValkeyValue nullResult = await client.ListGetByIndexAsync("non-exist-key", 0);
+        ValkeyValue nullResult = await client.ListIndexAsync("non-exist-key", 0);
         Assert.Equal(ValkeyValue.Null, nullResult);
 
         // Setup list
         _ = await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
 
         // Test positive indices
-        Assert.Equal("zero", (await client.ListGetByIndexAsync(key, 0)).ToGlideString());
-        Assert.Equal("two", (await client.ListGetByIndexAsync(key, 2)).ToGlideString());
-        Assert.Equal("four", (await client.ListGetByIndexAsync(key, 4)).ToGlideString());
+        Assert.Equal("zero", (await client.ListIndexAsync(key, 0)).ToGlideString());
+        Assert.Equal("two", (await client.ListIndexAsync(key, 2)).ToGlideString());
+        Assert.Equal("four", (await client.ListIndexAsync(key, 4)).ToGlideString());
 
         // Test negative indices
-        Assert.Equal("four", (await client.ListGetByIndexAsync(key, -1)).ToGlideString());
-        Assert.Equal("three", (await client.ListGetByIndexAsync(key, -2)).ToGlideString());
-        Assert.Equal("zero", (await client.ListGetByIndexAsync(key, -5)).ToGlideString());
+        Assert.Equal("four", (await client.ListIndexAsync(key, -1)).ToGlideString());
+        Assert.Equal("three", (await client.ListIndexAsync(key, -2)).ToGlideString());
+        Assert.Equal("zero", (await client.ListIndexAsync(key, -5)).ToGlideString());
 
         // Test out of range
-        ValkeyValue outOfRange1 = await client.ListGetByIndexAsync(key, 10);
+        ValkeyValue outOfRange1 = await client.ListIndexAsync(key, 10);
         Assert.Equal(ValkeyValue.Null, outOfRange1);
 
-        ValkeyValue outOfRange2 = await client.ListGetByIndexAsync(key, -10);
+        ValkeyValue outOfRange2 = await client.ListIndexAsync(key, -10);
         Assert.Equal(ValkeyValue.Null, outOfRange2);
     }
 
@@ -603,7 +603,7 @@ public class ListCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestListSetByIndex(BaseClient client)
+    public async Task TestListSet(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
@@ -611,18 +611,18 @@ public class ListCommandTests(TestConfiguration config)
         _ = await client.ListRightPushAsync(key, ["zero", "one", "two", "three", "four"]);
 
         // Test setting by positive index
-        await client.ListSetByIndexAsync(key, 0, "ZERO");
-        Assert.Equal("ZERO", (await client.ListGetByIndexAsync(key, 0)).ToGlideString());
+        await client.ListSetAsync(key, 0, "ZERO");
+        Assert.Equal("ZERO", (await client.ListIndexAsync(key, 0)).ToGlideString());
 
-        await client.ListSetByIndexAsync(key, 2, "TWO");
-        Assert.Equal("TWO", (await client.ListGetByIndexAsync(key, 2)).ToGlideString());
+        await client.ListSetAsync(key, 2, "TWO");
+        Assert.Equal("TWO", (await client.ListIndexAsync(key, 2)).ToGlideString());
 
         // Test setting by negative index
-        await client.ListSetByIndexAsync(key, -1, "FOUR");
-        Assert.Equal("FOUR", (await client.ListGetByIndexAsync(key, -1)).ToGlideString());
+        await client.ListSetAsync(key, -1, "FOUR");
+        Assert.Equal("FOUR", (await client.ListIndexAsync(key, -1)).ToGlideString());
 
-        await client.ListSetByIndexAsync(key, -2, "THREE");
-        Assert.Equal("THREE", (await client.ListGetByIndexAsync(key, -2)).ToGlideString());
+        await client.ListSetAsync(key, -2, "THREE");
+        Assert.Equal("THREE", (await client.ListIndexAsync(key, -2)).ToGlideString());
 
         // Verify final state
         ValkeyValue[] finalState = await client.ListRangeAsync(key, 0, -1);
@@ -630,14 +630,14 @@ public class ListCommandTests(TestConfiguration config)
 
         // Test error cases - out of range indices should throw
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
-            await client.ListSetByIndexAsync(key, 10, "invalid"));
+            await client.ListSetAsync(key, 10, "invalid"));
 
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
-            await client.ListSetByIndexAsync(key, -10, "invalid"));
+            await client.ListSetAsync(key, -10, "invalid"));
 
         // Test on non-existent key should throw
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
-            await client.ListSetByIndexAsync("non-exist-key", 0, "value"));
+            await client.ListSetAsync("non-exist-key", 0, "value"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -866,5 +866,86 @@ public class ListCommandTests(TestConfiguration config)
         // Verify order: [initial, value2, value3]
         ValkeyValue[] result = await client.ListRangeAsync(key, 0, -1);
         Assert.Equal(["initial", "value2", "value3"], result.ToGlideStrings());
+    }
+
+    // ===== SER-compat tests for ListGetByIndexAsync / ListSetByIndexAsync =====
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task TestListGetByIndexAsync_SER(ConnectionMultiplexer conn, bool _)
+    {
+        IDatabase db = conn.GetDatabase();
+        string key = Guid.NewGuid().ToString();
+
+        // Test on non-existent key
+        ValkeyValue nullResult = await db.ListGetByIndexAsync("non-exist-key", 0);
+        Assert.Equal(ValkeyValue.Null, nullResult);
+
+        // Setup list
+        ValkeyValue[] values = ["zero", "one", "two", "three", "four"];
+        long pushResult = await db.ListRightPushAsync(key, values);
+        Assert.Equal(5, pushResult);
+
+        // Test positive indices
+        Assert.Equal("zero", (await db.ListGetByIndexAsync(key, 0)).ToGlideString());
+        Assert.Equal("two", (await db.ListGetByIndexAsync(key, 2)).ToGlideString());
+        Assert.Equal("four", (await db.ListGetByIndexAsync(key, 4)).ToGlideString());
+
+        // Test negative indices
+        Assert.Equal("four", (await db.ListGetByIndexAsync(key, -1)).ToGlideString());
+        Assert.Equal("three", (await db.ListGetByIndexAsync(key, -2)).ToGlideString());
+        Assert.Equal("zero", (await db.ListGetByIndexAsync(key, -5)).ToGlideString());
+
+        // Test out of range
+        ValkeyValue outOfRange1 = await db.ListGetByIndexAsync(key, 10);
+        Assert.Equal(ValkeyValue.Null, outOfRange1);
+
+        ValkeyValue outOfRange2 = await db.ListGetByIndexAsync(key, -10);
+        Assert.Equal(ValkeyValue.Null, outOfRange2);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task TestListSetByIndexAsync_SER(ConnectionMultiplexer conn, bool _)
+    {
+        IDatabase db = conn.GetDatabase();
+        string key = Guid.NewGuid().ToString();
+
+        // Setup list
+        ValkeyValue[] values = ["zero", "one", "two", "three", "four"];
+        long pushResult = await db.ListRightPushAsync(key, values);
+        Assert.Equal(5, pushResult);
+
+        // Test setting by positive index
+        await db.ListSetByIndexAsync(key, 0, "ZERO");
+        Assert.Equal("ZERO", (await db.ListGetByIndexAsync(key, 0)).ToGlideString());
+
+        await db.ListSetByIndexAsync(key, 2, "TWO");
+        Assert.Equal("TWO", (await db.ListGetByIndexAsync(key, 2)).ToGlideString());
+
+        // Test setting by negative index
+        await db.ListSetByIndexAsync(key, -1, "FOUR");
+        Assert.Equal("FOUR", (await db.ListGetByIndexAsync(key, -1)).ToGlideString());
+
+        await db.ListSetByIndexAsync(key, -2, "THREE");
+        Assert.Equal("THREE", (await db.ListGetByIndexAsync(key, -2)).ToGlideString());
+
+        // Verify final state
+        ValkeyValue[] finalState = await db.ListRangeAsync(key, 0, -1);
+        Assert.Equal(["ZERO", "one", "TWO", "THREE", "FOUR"], finalState.ToGlideStrings());
+
+        // Test error cases - out of range indices should throw
+        RequestException ex1 = await Assert.ThrowsAsync<RequestException>(async () =>
+            await db.ListSetByIndexAsync(key, 10, "invalid"));
+        Assert.NotNull(ex1);
+
+        RequestException ex2 = await Assert.ThrowsAsync<RequestException>(async () =>
+            await db.ListSetByIndexAsync(key, -10, "invalid"));
+        Assert.NotNull(ex2);
+
+        // Test on non-existent key should throw
+        RequestException ex3 = await Assert.ThrowsAsync<RequestException>(async () =>
+            await db.ListSetByIndexAsync("non-exist-key", 0, "value"));
+        Assert.NotNull(ex3);
     }
 }

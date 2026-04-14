@@ -68,7 +68,7 @@ internal interface IBatchListCommands
 
     /// <inheritdoc cref="IListBaseCommands.ListTrimAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListTrimAsync(ValkeyKey, long, long)" /></returns>
-    IBatch ListTrim(ValkeyKey key, long start, long stop);
+    IBatch ListTrim(ValkeyKey key, long start = 0, long stop = -1);
 
     /// <inheritdoc cref="IListBaseCommands.ListRangeAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListRangeAsync(ValkeyKey, long, long)" /></returns>
@@ -82,9 +82,9 @@ internal interface IBatchListCommands
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListRightPopAsync(IEnumerable{ValkeyKey}, long)" /></returns>
     IBatch ListRightPop(IEnumerable<ValkeyKey> keys, long count);
 
-    /// <inheritdoc cref="IListBaseCommands.ListGetByIndexAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListGetByIndexAsync(ValkeyKey, long)" /></returns>
-    IBatch ListGetByIndex(ValkeyKey key, long index);
+    /// <inheritdoc cref="IBaseClient.ListIndexAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListIndexAsync(ValkeyKey, long)" /></returns>
+    IBatch ListIndex(ValkeyKey key, long index);
 
     /// <inheritdoc cref="IListBaseCommands.ListInsertAfterAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListInsertAfterAsync(ValkeyKey, ValkeyValue, ValkeyValue)" /></returns>
@@ -106,9 +106,9 @@ internal interface IBatchListCommands
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListPositionsAsync(ValkeyKey, ValkeyValue, long, long, long)" /></returns>
     IBatch ListPositions(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0);
 
-    /// <inheritdoc cref="IListBaseCommands.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)" /></returns>
-    IBatch ListSetByIndex(ValkeyKey key, long index, ValkeyValue value);
+    /// <inheritdoc cref="IBaseClient.ListSetAsync(ValkeyKey, long, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListSetAsync(ValkeyKey, long, ValkeyValue)" /></returns>
+    IBatch ListSet(ValkeyKey key, long index, ValkeyValue value);
 
     /// <inheritdoc cref="IBaseClient.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)" /></returns>

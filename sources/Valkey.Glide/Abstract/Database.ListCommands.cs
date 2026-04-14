@@ -130,7 +130,7 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListRemoveAsync(ValkeyKey, ValkeyValue, long, CommandFlags)"/>
-    public async Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0, CommandFlags flags = CommandFlags.None)
+    public async Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await ListRemoveAsync(key, value, count);
@@ -148,13 +148,6 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await ListRangeAsync(key, start, stop);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await ListGetByIndexAsync(key, index);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListInsertAfterAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
@@ -186,14 +179,14 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListPositionAsync(ValkeyKey, ValkeyValue, long, long, CommandFlags)"/>
-    public async Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None)
+    public async Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank, long maxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await ListPositionAsync(key, element, rank, maxLength);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.ListPositionsAsync(ValkeyKey, ValkeyValue, long, long, long, CommandFlags)"/>
-    public async Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None)
+    public async Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank, long maxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await ListPositionsAsync(key, element, count, rank, maxLength);
@@ -203,6 +196,23 @@ internal partial class Database
     public async Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await ListSetByIndexAsync(key, index, value);
+        await ListSetAsync(key, index, value);
     }
+
+    // ===== LINDEX / LSET - SER-style naming (delegates to GLIDE-style) =====
+
+    /// <inheritdoc cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long)"/>
+    public async Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index)
+        => await ListIndexAsync(key, index);
+
+    /// <inheritdoc cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long, CommandFlags)"/>
+    public async Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await ListIndexAsync(key, index);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)"/>
+    public async Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value)
+        => await ListSetAsync(key, index, value);
 }

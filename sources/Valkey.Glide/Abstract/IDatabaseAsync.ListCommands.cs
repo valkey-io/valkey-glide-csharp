@@ -191,7 +191,7 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="IListBaseCommands.ListRemoveAsync(ValkeyKey, ValkeyValue, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0, CommandFlags flags = CommandFlags.None);
+    Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count, CommandFlags flags);
 
     /// <inheritdoc cref="IListBaseCommands.ListTrimAsync(ValkeyKey, long, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -202,11 +202,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start, long stop, CommandFlags flags);
-
-    /// <inheritdoc cref="IListBaseCommands.ListGetByIndexAsync(ValkeyKey, long)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags);
 
     /// <inheritdoc cref="IListBaseCommands.ListInsertAfterAsync(ValkeyKey, ValkeyValue, ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -241,14 +236,67 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="IListBaseCommands.ListPositionAsync(ValkeyKey, ValkeyValue, long, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None);
+    Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank, long maxLength, CommandFlags flags);
 
     /// <inheritdoc cref="IListBaseCommands.ListPositionsAsync(ValkeyKey, ValkeyValue, long, long, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0, CommandFlags flags = CommandFlags.None);
+    Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank, long maxLength, CommandFlags flags);
 
-    /// <inheritdoc cref="IListBaseCommands.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)"/>
+    // ===== LINDEX / LSET - SER-style naming =====
+
+    /// <summary>
+    /// Returns the element at <paramref name="index"/> in the list stored at <paramref name="key"/>.
+    /// The index is zero-based, so <c>0</c> means the first element, <c>1</c> the second element and so on.
+    /// Negative indices can be used to designate elements starting at the tail of the list.
+    /// Here, <c>-1</c> means the last element, <c>-2</c> means the penultimate and so forth.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lindex"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="index">The index of the element in the list to retrieve.</param>
+    /// <returns>
+    /// The element at <paramref name="index"/>.
+    /// If <paramref name="index"/> is out of range or if <paramref name="key"/> does not exist, <see cref="ValkeyValue.Null"/> will be returned.
+    /// </returns>
+    /// <remarks>
+    /// This is the SER-compatible method for LINDEX. For GLIDE-style API, use
+    /// <see cref="IBaseClient.ListIndexAsync(ValkeyKey, long)"/>.
+    /// <example>
+    /// <code>
+    /// ValkeyValue result = await db.ListGetByIndexAsync(key, 0);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index);
+
+    /// <inheritdoc cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long)"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags);
+
+    /// <summary>
+    /// Sets the list element at <paramref name="index"/> to <paramref name="value"/>.
+    /// The index is zero-based, so <c>0</c> means the first element, <c>1</c> the second element and so on.
+    /// Negative indices can be used to designate elements starting at the tail of the list.
+    /// Here, <c>-1</c> means the last element, <c>-2</c> means the penultimate and so forth.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lset"/>
+    /// <param name="key">The key of the list.</param>
+    /// <param name="index">The index of the element in the list to set.</param>
+    /// <param name="value">The new value.</param>
+    /// <remarks>
+    /// An error is returned for out of range indexes.
+    /// This is the SER-compatible method for LSET. For GLIDE-style API, use
+    /// <see cref="IBaseClient.ListSetAsync(ValkeyKey, long, ValkeyValue)"/>.
+    /// <example>
+    /// <code>
+    /// await db.ListSetByIndexAsync(key, 0, "new_value");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value);
+
+    /// <inheritdoc cref="IDatabaseAsync.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value, CommandFlags flags);

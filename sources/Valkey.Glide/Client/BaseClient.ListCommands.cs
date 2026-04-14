@@ -47,7 +47,7 @@ public abstract partial class BaseClient
         => await Command(Request.ListRemoveAsync(key, value, count));
 
     /// <inheritdoc/>
-    public async Task ListTrimAsync(ValkeyKey key, long start, long stop)
+    public async Task ListTrimAsync(ValkeyKey key, long start = 0, long stop = -1)
         => _ = await Command(Request.ListTrimAsync(key, start, stop));
 
     /// <inheritdoc/>
@@ -63,7 +63,7 @@ public abstract partial class BaseClient
         => await Command(Request.ListRightPopAsync([.. keys], count));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index)
+    public async Task<ValkeyValue> ListIndexAsync(ValkeyKey key, long index)
         => await Command(Request.ListGetByIndexAsync(key, index));
 
     /// <inheritdoc/>
@@ -87,7 +87,7 @@ public abstract partial class BaseClient
         => await Command(Request.ListPositionsAsync(key, element, count, rank, maxLength));
 
     /// <inheritdoc/>
-    public async Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value)
+    public async Task ListSetAsync(ValkeyKey key, long index, ValkeyValue value)
         => _ = await Command(Request.ListSetByIndexAsync(key, index, value));
 
     // Blocking list operations (Blocking Commands aren't supported in SER so this is according to our own implementation)
@@ -97,8 +97,16 @@ public abstract partial class BaseClient
         => await Command(Request.ListBlockingLeftPopAsync([.. keys], timeout));
 
     /// <inheritdoc/>
+    public async Task<ValkeyValue[]?> ListBlockingLeftPopAsync(ValkeyKey key, TimeSpan timeout)
+        => await ListBlockingLeftPopAsync([key], timeout);
+
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
         => await Command(Request.ListBlockingRightPopAsync([.. keys], timeout));
+
+    /// <inheritdoc/>
+    public async Task<ValkeyValue[]?> ListBlockingRightPopAsync(ValkeyKey key, TimeSpan timeout)
+        => await ListBlockingRightPopAsync([key], timeout);
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout)
@@ -109,8 +117,16 @@ public abstract partial class BaseClient
         => await Command(Request.ListBlockingPopAsync([.. keys], side, timeout));
 
     /// <inheritdoc/>
+    public async Task<ListPopResult> ListBlockingPopAsync(ValkeyKey key, ListSide side, TimeSpan timeout)
+        => await ListBlockingPopAsync([key], side, timeout);
+
+    /// <inheritdoc/>
     public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout)
         => await Command(Request.ListBlockingPopAsync([.. keys], side, count, timeout));
+
+    /// <inheritdoc/>
+    public async Task<ListPopResult> ListBlockingPopAsync(ValkeyKey key, ListSide side, long count, TimeSpan timeout)
+        => await ListBlockingPopAsync([key], side, count, timeout);
 
     // LPUSHX / RPUSHX - Explicit Methods (GLIDE-style API)
 

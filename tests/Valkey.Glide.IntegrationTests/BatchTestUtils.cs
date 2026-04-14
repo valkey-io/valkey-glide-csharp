@@ -1118,19 +1118,19 @@ internal partial class BatchTestUtils
         _ = batch.ListRightPush(pushxKey, "right", When.Exists);
         testData.Add(new(3L, "ListRightPush(pushxKey, right, When.Exists) - key exists"));
 
-        // Test LINDEX (ListGetByIndex)
+        // Test LINDEX (ListIndex)
         string indexKey = $"{atomicPrefix}index-{Guid.NewGuid()}";
         _ = batch.ListRightPush(indexKey, ["idx0", "idx1", "idx2", "idx3"]);
         testData.Add(new(4L, "ListRightPush(indexKey, [idx0, idx1, idx2, idx3])"));
 
-        _ = batch.ListGetByIndex(indexKey, 0);
-        testData.Add(new(new ValkeyValue("idx0"), "ListGetByIndex(indexKey, 0)"));
+        _ = batch.ListIndex(indexKey, 0);
+        testData.Add(new(new ValkeyValue("idx0"), "ListIndex(indexKey, 0)"));
 
-        _ = batch.ListGetByIndex(indexKey, -1);
-        testData.Add(new(new ValkeyValue("idx3"), "ListGetByIndex(indexKey, -1)"));
+        _ = batch.ListIndex(indexKey, -1);
+        testData.Add(new(new ValkeyValue("idx3"), "ListIndex(indexKey, -1)"));
 
-        _ = batch.ListGetByIndex(indexKey, 10);
-        testData.Add(new(ValkeyValue.Null, "ListGetByIndex(indexKey, 10) - out of range"));
+        _ = batch.ListIndex(indexKey, 10);
+        testData.Add(new(ValkeyValue.Null, "ListIndex(indexKey, 10) - out of range"));
 
         // Test LINSERT (ListInsertBefore/After)
         string insertKey = $"{atomicPrefix}insert-{Guid.NewGuid()}";
@@ -1179,16 +1179,16 @@ internal partial class BatchTestUtils
         _ = batch.ListPositions(posKey, "a", 10);
         testData.Add(new(Array.Empty<long>(), "ListPositions(posKey, a, count=10)"));
 
-        // Test LSET (ListSetByIndex)
+        // Test LSET (ListSet)
         string setKey = $"{atomicPrefix}set-{Guid.NewGuid()}";
         _ = batch.ListRightPush(setKey, ["set0", "set1", "set2"]);
         testData.Add(new(3L, "ListRightPush(setKey, [set0, set1, set2])"));
 
-        _ = batch.ListSetByIndex(setKey, 1, "newvalue");
-        testData.Add(new(ValkeyValue.Ok, "ListSetByIndex(setKey, 1, newvalue)", true));
+        _ = batch.ListSet(setKey, 1, "newvalue");
+        testData.Add(new(ValkeyValue.Ok, "ListSet(setKey, 1, newvalue)", true));
 
-        _ = batch.ListGetByIndex(setKey, 1);
-        testData.Add(new(new ValkeyValue("newvalue"), "ListGetByIndex(setKey, 1) after set"));
+        _ = batch.ListIndex(setKey, 1);
+        testData.Add(new(new ValkeyValue("newvalue"), "ListIndex(setKey, 1) after set"));
 
         // Test blocking list operations - reuse existing keys that already have data
         string blockingKey1 = $"{atomicPrefix}blocking1-{Guid.NewGuid()}";

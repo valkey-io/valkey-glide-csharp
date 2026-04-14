@@ -285,28 +285,6 @@ public interface IListBaseCommands
     Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1);
 
     /// <summary>
-    /// Returns the element at index <paramref name="index"/> in the list stored at <paramref name="key"/>.
-    /// The index is zero-based, so <c>0</c> means the first element, <c>1</c> the second element and so on.
-    /// Negative indices can be used to designate elements starting at the tail of the list.
-    /// Here, <c>-1</c> means the last element, <c>-2</c> means the penultimate and so forth.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lindex"/>
-    /// <param name="key">The key of the list.</param>
-    /// <param name="index">The index of the element in the list to retrieve.</param>
-    /// <returns>
-    /// The element at <paramref name="index"/>.
-    /// If <paramref name="index"/> is out of range or if <paramref name="key"/> does not exist, <see cref="ValkeyValue.Null"/> will be returned.
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ValkeyValue result = await client.ListGetByIndexAsync(key, 0);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index);
-
-    /// <summary>
     /// Inserts <paramref name="value"/> in the list stored at <paramref name="key"/> after the reference value <paramref name="pivot"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/linsert"/>
@@ -413,23 +391,4 @@ public interface IListBaseCommands
     /// </remarks>
     Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0);
 
-    /// <summary>
-    /// Sets the list element at <paramref name="index"/> to <paramref name="value"/>.
-    /// The index is zero-based, so <c>0</c> means the first element, <c>1</c> the second element and so on.
-    /// Negative indices can be used to designate elements starting at the tail of the list.
-    /// Here, <c>-1</c> means the last element, <c>-2</c> means the penultimate and so forth.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lset"/>
-    /// <param name="key">The key of the list.</param>
-    /// <param name="index">The index of the element in the list to set.</param>
-    /// <param name="value">The new value.</param>
-    /// <remarks>
-    /// An error is returned for out of range indexes.
-    /// <example>
-    /// <code>
-    /// await client.ListSetByIndexAsync(key, 0, "new_value");
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value);
 }
