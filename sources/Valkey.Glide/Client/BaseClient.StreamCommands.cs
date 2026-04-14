@@ -60,6 +60,18 @@ public partial class BaseClient
         return await Command(Request.StreamReadAsync([.. streamPositions], count));
     }
 
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(ValkeyKey, ValkeyValue, StreamReadOptions)"/>
+    public async Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, StreamReadOptions options)
+    {
+        return await Command(Request.StreamReadAsync(key, position, options));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition}, StreamReadOptions)"/>
+    public async Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, StreamReadOptions options)
+    {
+        return await Command(Request.StreamReadAsync([.. streamPositions], options));
+    }
+
     /// <inheritdoc/>
     public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending)
     {
@@ -124,6 +136,18 @@ public partial class BaseClient
     public async Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false)
     {
         return await Command(Request.StreamReadGroupAsync([.. streamPositions], groupName, consumerName, countPerStream, noAck));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, StreamReadGroupOptions)"/>
+    public async Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, StreamReadGroupOptions options)
+    {
+        return await Command(Request.StreamReadGroupAsync(key, groupName, consumerName, position ?? default, options));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, StreamReadGroupOptions)"/>
+    public async Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
+    {
+        return await Command(Request.StreamReadGroupAsync([.. streamPositions], groupName, consumerName, options));
     }
 
     /// <inheritdoc/>

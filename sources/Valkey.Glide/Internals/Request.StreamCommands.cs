@@ -97,12 +97,33 @@ internal partial class Request
 
     private static Cmd<object, TResult> StreamReadAsync<TResult>(StreamPosition[] streamPositions, int? count, Func<object, TResult> converter)
     {
+        return StreamReadAsync(streamPositions, count, null, converter);
+    }
+
+    public static Cmd<object, StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, StreamReadOptions options)
+    {
+        return StreamReadAsync([new StreamPosition(key, position)], options.Count, options.Block, ConvertSingleStreamRead);
+    }
+
+    public static Cmd<object, ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, StreamReadOptions options)
+    {
+        return StreamReadAsync(streamPositions, options.Count, options.Block, ConvertMultiStreamRead);
+    }
+
+    private static Cmd<object, TResult> StreamReadAsync<TResult>(StreamPosition[] streamPositions, int? count, TimeSpan? block, Func<object, TResult> converter)
+    {
         List<GlideString> args = [];
 
         if (count.HasValue)
         {
             args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
+        }
+
+        if (block.HasValue)
+        {
+            args.Add("BLOCK");
+            args.Add(((long)block.Value.TotalMilliseconds).ToGlideString());
         }
 
         args.Add("STREAMS");
@@ -410,15 +431,25 @@ internal partial class Request
 
     public static Cmd<object, StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue position, int? count, bool noAck)
     {
-        return StreamReadGroupAsync([new StreamPosition(key, position)], groupName, consumerName, count, noAck, ConvertSingleStreamRead);
+        return StreamReadGroupAsync([new StreamPosition(key, position)], groupName, consumerName, count, noAck, null, ConvertSingleStreamRead);
     }
 
     public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, bool noAck)
     {
-        return StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck, ConvertMultiStreamRead);
+        return StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck, null, ConvertMultiStreamRead);
     }
 
-    private static Cmd<object, TResult> StreamReadGroupAsync<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? count, bool noAck, Func<object, TResult> converter)
+    public static Cmd<object, StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue position, StreamReadGroupOptions options)
+    {
+        return StreamReadGroupAsync([new StreamPosition(key, position)], groupName, consumerName, options.Count, options.NoAck, options.Block, ConvertSingleStreamRead);
+    }
+
+    public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
+    {
+        return StreamReadGroupAsync(streamPositions, groupName, consumerName, options.Count, options.NoAck, options.Block, ConvertMultiStreamRead);
+    }
+
+    private static Cmd<object, TResult> StreamReadGroupAsync<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? count, bool noAck, TimeSpan? block, Func<object, TResult> converter)
     {
         List<GlideString> args = ["GROUP", groupName.ToGlideString(), consumerName.ToGlideString()];
 
@@ -426,6 +457,12 @@ internal partial class Request
         {
             args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
+        }
+
+        if (block.HasValue)
+        {
+            args.Add("BLOCK");
+            args.Add(((long)block.Value.TotalMilliseconds).ToGlideString());
         }
 
         if (noAck)

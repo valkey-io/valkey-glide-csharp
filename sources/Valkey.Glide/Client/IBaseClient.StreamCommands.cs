@@ -81,4 +81,46 @@ public partial interface IBaseClient
     /// <param name="count">The maximum number of entries to claim. Defaults to 100 if null.</param>
     /// <returns>Result containing next start ID, claimed IDs, and deleted IDs.</returns>
     Task<StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
+
+    /// <summary>
+    /// Reads entries from a single stream with options including BLOCK support.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xread"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="position">The position from which to start reading.</param>
+    /// <param name="options">Optional arguments including count and block timeout.</param>
+    /// <returns>An array of stream entries, or an empty array if no entries are available.</returns>
+    Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, StreamReadOptions options);
+
+    /// <summary>
+    /// Reads entries from multiple streams with options including BLOCK support.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xread"/>
+    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
+    /// <param name="options">Optional arguments including count and block timeout.</param>
+    /// <returns>An array of streams with their entries, or an empty array if no entries are available.</returns>
+    Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, StreamReadOptions options);
+
+    /// <summary>
+    /// Reads entries from a stream for a consumer group with options including BLOCK support.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xreadgroup"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name.</param>
+    /// <param name="position">The position from which to read.</param>
+    /// <param name="options">Optional arguments including count, block timeout, and noAck.</param>
+    /// <returns>An array of stream entries.</returns>
+    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, StreamReadGroupOptions options);
+
+    /// <summary>
+    /// Reads entries from multiple streams for a consumer group with options including BLOCK support.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xreadgroup"/>
+    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name.</param>
+    /// <param name="options">Optional arguments including count, block timeout, and noAck.</param>
+    /// <returns>An array of streams with their entries.</returns>
+    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options);
 }

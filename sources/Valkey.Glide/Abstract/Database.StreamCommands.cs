@@ -117,6 +117,14 @@ internal partial class Database
         return await StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck);
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, TimeSpan?, CommandFlags)"/>
+    public async Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        // claimMinIdleTime is not yet supported by GLIDE core — delegate to the basic overload
+        return await StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck);
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, CommandFlags)"/>
     public async Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags)
     {
@@ -208,15 +216,15 @@ internal partial class Database
         return await StreamTrimAsync(key, maxLength, useApproximateMaxLength);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, CommandFlags)"/>
-    public async Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
+    public async Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await StreamTrimAsync(key, maxLength, useApproximateMaxLength, limit);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamTrimByMinIdAsync(ValkeyKey, ValkeyValue, bool, long?, CommandFlags)"/>
-    public async Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamTrimByMinIdAsync(ValkeyKey, ValkeyValue, bool, long?, StreamTrimMode, CommandFlags)"/>
+    public async Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await StreamTrimByMinIdAsync(key, minId, useApproximateMaxLength, limit);
