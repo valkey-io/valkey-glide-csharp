@@ -24,7 +24,7 @@ internal static class SkipUtils
     public static void IfBitIndexTypeNotSupported()
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey7_0,
-            "Bit index type commands requires Valkey 7.0+");
+            "Bit index type commands require Valkey 7.0+");
 
     /// <summary>
     /// Skips the test if set intersection cardinality commands are not supported.
@@ -32,5 +32,5 @@ internal static class SkipUtils
     public static void IfSetInterCardNotSupported()
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey7_0,
-            "Set intersection cardinality commands requires Valkey 7.0+");
+            "Set intersection cardinality commands require Valkey 7.0+");
 }
