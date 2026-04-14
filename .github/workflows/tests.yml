@@ -46,9 +46,14 @@ jobs:
             matrix:
                 dotnet: ["8.0"]
                 server:
-                    - { type: "valkey", version: "9.0" }
+                    - type: "valkey"
+                      version: "9.0"
                 host:
-                    - { OS: "ubuntu", NAMED_OS: "linux", RUNNER: "ubuntu-24.04", ARCH: "x64", TARGET: "x86_64-unknown-linux-gnu" }
+                    - OS: "ubuntu"
+                      NAMED_OS: "linux"
+                      RUNNER: "ubuntu-24.04"
+                      ARCH: "x64"
+                      TARGET: "x86_64-unknown-linux-gnu"
         runs-on: ${{ matrix.host.RUNNER }}
         env:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
