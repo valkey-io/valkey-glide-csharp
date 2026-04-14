@@ -33,7 +33,7 @@ public class ScanTests(TestConfiguration config)
         Assert.Empty(matchingKeys);
 
         // Remove keys.
-        _ = await client.KeyDeleteAsync([key1, key2]);
+        _ = await client.DeleteAsync([key1, key2]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -69,7 +69,7 @@ public class ScanTests(TestConfiguration config)
         Assert.Empty(matchingKeys);
 
         // Remove keys.
-        _ = await client.KeyDeleteAsync([stringKey, listKey, setKey]);
+        _ = await client.DeleteAsync([stringKey, listKey, setKey]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -98,7 +98,7 @@ public class ScanTests(TestConfiguration config)
         Assert.Equivalent(new[] { matchStringKey }, matchingKeys);
 
         // Remove keys.
-        _ = await client.KeyDeleteAsync([matchStringKey, matchListKey, otherStringKey]);
+        _ = await client.DeleteAsync([matchStringKey, matchListKey, otherStringKey]);
     }
 
     [Fact]

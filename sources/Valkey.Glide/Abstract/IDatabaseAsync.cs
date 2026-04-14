@@ -4,9 +4,9 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
-// ATTENTION: Methods should only be added to this interface if they are implemented by StackExchange.Redis
-// databases but NOT by Valkey GLIDE clients. Methods implemented by both should be added to the corresponding
-// Commands interface instead.
+/// ATTENTION: Methods should only be added to this interface if they are implemented
+/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+/// by both should be added to the corresponding <c>Commands</c> interface instead.
 
 /// <summary>
 /// Describes functionality that is common to both standalone and cluster servers.<br />

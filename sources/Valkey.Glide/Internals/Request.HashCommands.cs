@@ -225,7 +225,7 @@ internal partial class Request
     /// <summary>
     /// Adds the given expire condition to the arguments list.
     /// </summary>
-    private static void AddExpireCondition(List<GlideString> args, ExpireCondition condition)
+    internal static void AddExpireCondition(List<GlideString> args, ExpireCondition condition)
     {
         switch (condition)
         {

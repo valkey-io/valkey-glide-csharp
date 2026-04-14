@@ -2,20 +2,10 @@
 
 namespace Valkey.Glide;
 
-/// <summary>
-/// Bitmap commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
-/// </summary>
-/// <remarks>
-/// <para>
-/// This interface provides StackExchange.Redis-compatible method signatures with "String" prefix
-/// and <see cref="StringIndexType"/>. For Valkey GLIDE-native methods without the "String" prefix
-/// and using <see cref="BitmapIndexType"/>, use <see cref="IBaseClient"/>.
-/// </para>
-/// <para>
-/// BITFIELD and BITFIELD_RO are not supported by StackExchange.Redis and are available
-/// only through <see cref="IBaseClient"/>.
-/// </para>
-/// </remarks>
+/// ATTENTION: Methods should only be added to this interface if they are implemented
+/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+/// by both should be added to <see cref="Commands.IBitmapBaseCommands"/> instead.
+
 public partial interface IDatabaseAsync
 {
     /// <summary>

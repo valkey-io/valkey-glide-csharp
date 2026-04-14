@@ -66,12 +66,27 @@ internal partial class Request
         => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
 
     /// <summary>
-    /// Converts an object array to a string set and returns the result.
+    /// Converts an object array to a <see cref="ValkeyKey"/> set and returns the result.
     /// </summary>
     /// <param name="objects">The object array to convert.</param>
-    /// <returns>A converted string set.</returns>
-    private static HashSet<string> ToStringSet(object[] objects)
-        => [.. objects.Cast<GlideString>().Select(gs => gs.ToString())];
+    /// <returns>A converted <see cref="ValkeyKey"/> set.</returns>
+    private static HashSet<ValkeyKey> ToValkeyKeySet(object[] objects)
+        => [.. objects.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes)];
+
+    /// <summary>
+    /// Converts a <see cref="GlideString"/>-keyed dictionary to a <see cref="ValkeyKey"/>-keyed dictionary with <see langword="long"/> values.
+    /// </summary>
+    private static Dictionary<ValkeyKey, long> ToValkeyKeyLongDict(Dictionary<GlideString, object> dict)
+    {
+        Dictionary<ValkeyKey, long> result = [];
+
+        foreach (var kvp in dict)
+        {
+            result[(ValkeyKey)kvp.Key.Bytes] = Convert.ToInt64(kvp.Value);
+        }
+
+        return result;
+    }
 
     /// <summary>
     /// Converts the given time span to milliseconds.

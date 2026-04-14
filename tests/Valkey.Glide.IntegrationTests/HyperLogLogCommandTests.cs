@@ -55,7 +55,7 @@ public class HyperLogLogCommandTests(TestConfiguration config)
         Assert.True(result);
 
         // Verify key exists
-        Assert.True(await client.KeyExistsAsync(key));
+        Assert.True(await client.ExistsAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

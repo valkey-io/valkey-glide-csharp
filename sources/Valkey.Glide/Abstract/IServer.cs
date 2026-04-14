@@ -10,7 +10,7 @@ namespace Valkey.Glide;
 /// Provides configuration controls of a Valkey server.
 /// Compatible with StackExchange.Redis <c>IServer</c>.
 /// </summary>
-public interface IServer : IRedisAsync
+public partial interface IServer : IRedisAsync
 {
     /// <summary>
     /// Gets the address of the connected server.

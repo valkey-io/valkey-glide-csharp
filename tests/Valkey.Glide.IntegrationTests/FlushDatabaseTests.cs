@@ -17,12 +17,12 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         string key = $"flush-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
 
-        Assert.True(await client.KeyExistsAsync(key));
+        Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
         await client.FlushDatabaseAsync();
 
-        Assert.False(await client.KeyExistsAsync(key));
+        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
@@ -34,12 +34,12 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         string key = $"flushall-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
 
-        Assert.True(await client.KeyExistsAsync(key));
+        Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
         await client.FlushAllDatabasesAsync();
 
-        Assert.False(await client.KeyExistsAsync(key));
+        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
@@ -51,12 +51,12 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         string key = $"flush-cluster-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
 
-        Assert.True(await client.KeyExistsAsync(key));
+        Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
         await client.FlushDatabaseAsync();
 
-        Assert.False(await client.KeyExistsAsync(key));
+        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
@@ -68,12 +68,12 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         string key = $"flush-cluster-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
 
-        Assert.True(await client.KeyExistsAsync(key));
+        Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
         await client.FlushDatabaseAsync(Route.AllPrimaries);
 
-        Assert.False(await client.KeyExistsAsync(key));
+        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 }
