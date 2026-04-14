@@ -42,7 +42,7 @@ public class PubSubEdgeCaseTests
     public static async Task UnicodeAndSpecialCharacters_DeliversCorrectly(bool isCluster)
     {
         // Build messages with various Unicode and special characters.
-        string channel = BuildChannel();
+        var channel = BuildChannel();
         var messages = new[] {
             PubSubMessage.FromChannel("Simple ASCII", channel),
             PubSubMessage.FromChannel("Unicode: 你好世界 🌍", channel),

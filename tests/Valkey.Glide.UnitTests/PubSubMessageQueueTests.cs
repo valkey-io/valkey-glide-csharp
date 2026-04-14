@@ -111,7 +111,7 @@ public class PubSubMessageQueueTests
         queue.EnqueueMessage(testMessage);
 
         // Act
-        PubSubMessage result = await queue.GetMessageAsync();
+        PubSubMessage result = await queue.GetMessageAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("test-message", result.Message);
@@ -127,10 +127,10 @@ public class PubSubMessageQueueTests
         var testMessage = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
-        Task<PubSubMessage> getMessageTask = queue.GetMessageAsync();
+        Task<PubSubMessage> getMessageTask = queue.GetMessageAsync(TestContext.Current.CancellationToken);
 
         // Ensure the task is waiting
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
         Assert.False(getMessageTask.IsCompleted);
 
         // Enqueue a message
@@ -237,7 +237,8 @@ public class PubSubMessageQueueTests
         queue.Dispose();
 
         // Act & Assert
-        _ = await Assert.ThrowsAsync<ObjectDisposedException>(() => queue.GetMessageAsync());
+        _ = await Assert.ThrowsAsync<ObjectDisposedException>(()
+            => queue.GetMessageAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -262,7 +263,7 @@ public class PubSubMessageQueueTests
 
         // Act
         List<PubSubMessage> messages = [];
-        await foreach (PubSubMessage message in queue.GetMessagesAsync())
+        await foreach (PubSubMessage message in queue.GetMessagesAsync(TestContext.Current.CancellationToken))
         {
             messages.Add(message);
             queue.Dispose(); // Dispose after getting first message
@@ -282,8 +283,8 @@ public class PubSubMessageQueueTests
         const int producerThreads = 5;
         const int consumerThreads = 5;
 
-        ConcurrentBag<string> producedMessages = [];
-        ConcurrentBag<string> consumedMessages = [];
+        ConcurrentBag<ValkeyValue> producedMessages = [];
+        ConcurrentBag<ValkeyValue> consumedMessages = [];
         List<Task> tasks = [];
 
         // Producer tasks
@@ -299,7 +300,7 @@ public class PubSubMessageQueueTests
                     queue.EnqueueMessage(message);
                     producedMessages.Add(messageContent);
                 }
-            }));
+            }, TestContext.Current.CancellationToken));
         }
 
         // Consumer tasks
@@ -312,7 +313,7 @@ public class PubSubMessageQueueTests
                 {
                     try
                     {
-                        PubSubMessage message = await queue.GetMessageAsync();
+                        PubSubMessage message = await queue.GetMessageAsync(TestContext.Current.CancellationToken);
                         consumedMessages.Add(message.Message);
                         messagesConsumed++;
                     }
@@ -322,7 +323,7 @@ public class PubSubMessageQueueTests
                         break;
                     }
                 }
-            }));
+            }, TestContext.Current.CancellationToken));
         }
 
         // Act
@@ -334,8 +335,8 @@ public class PubSubMessageQueueTests
         Assert.Equal(0, queue.Count);
 
         // Verify all produced messages were consumed
-        HashSet<string> producedSet = [.. producedMessages];
-        HashSet<string> consumedSet = [.. consumedMessages];
+        HashSet<ValkeyValue> producedSet = [.. producedMessages];
+        HashSet<ValkeyValue> consumedSet = [.. consumedMessages];
         Assert.Equal(producedSet, consumedSet);
     }
 
@@ -354,7 +355,7 @@ public class PubSubMessageQueueTests
             queue.EnqueueMessage(message);
         }
 
-        ConcurrentBag<string> consumedMessages = [];
+        ConcurrentBag<ValkeyValue> consumedMessages = [];
         List<Task> tasks = [];
 
         // Consumer tasks using TryGetMessage
@@ -369,7 +370,7 @@ public class PubSubMessageQueueTests
                         consumedMessages.Add(message.Message);
                     }
                 }
-            }));
+            }, TestContext.Current.CancellationToken));
         }
 
         // Act

@@ -4,10 +4,10 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
-/// <summary>
-/// String commands with <see cref="CommandFlags"/> for StackExchange.Redis compatibility.
-/// </summary>
-/// <seealso cref="IStringBaseCommands" />
+/// ATTENTION: Methods should only be added to this interface if they are implemented
+/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+/// by both should be added to <see cref="IStringBaseCommands"/> instead.
+
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IStringBaseCommands.StringSetAsync(ValkeyKey, ValkeyValue)"/>

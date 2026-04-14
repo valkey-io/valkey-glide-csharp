@@ -307,9 +307,7 @@ internal partial class FFI
         }
 
         protected override IntPtr AllocateAndCopy()
-        {
-            return StructToPtr(_request);
-        }
+            => StructToPtr(_request);
 
         /// <summary>
         /// Marshals the node addresses.
@@ -379,7 +377,7 @@ internal partial class FFI
             {
                 // Note: IntPtr and Rust's usize are the same size (pointer-sized integer).
                 // We use IntPtr here to represent the numeric length value that Rust expects as usize.
-                IntPtr certLen = new IntPtr(rootCerts[i].Length);
+                IntPtr certLen = new(rootCerts[i].Length);
                 Marshal.WriteIntPtr(certsLengthsPtr, i * IntPtr.Size, certLen);
             }
 
@@ -403,23 +401,23 @@ internal partial class FFI
             var subscriptions = config.Subscriptions;
 
             // Marshal exact channels.
-            if (subscriptions.TryGetValue(PubSubChannelMode.Exact, out ISet<string>? channels) && channels.Count > 0)
+            if (subscriptions.TryGetValue(PubSubChannelMode.Exact, out ISet<ValkeyKey>? channels) && channels.Count > 0)
             {
-                pubSubConfig.ChannelsPtr = MarshalStringArray(channels);
+                pubSubConfig.ChannelsPtr = MarshalStrings(channels.ToGlideStrings());
                 pubSubConfig.ChannelCount = (uint)channels.Count;
             }
 
             // Marshal patterns.
-            if (subscriptions.TryGetValue(PubSubChannelMode.Pattern, out ISet<string>? patterns) && patterns.Count > 0)
+            if (subscriptions.TryGetValue(PubSubChannelMode.Pattern, out ISet<ValkeyKey>? patterns) && patterns.Count > 0)
             {
-                pubSubConfig.PatternsPtr = MarshalStringArray(patterns);
+                pubSubConfig.PatternsPtr = MarshalStrings(patterns.ToGlideStrings());
                 pubSubConfig.PatternCount = (uint)patterns.Count;
             }
 
             // Marshal sharded channels - only for cluster clients.
-            if (subscriptions.TryGetValue(PubSubChannelMode.Sharded, out ISet<string>? shardedChannels) && shardedChannels.Count > 0)
+            if (subscriptions.TryGetValue(PubSubChannelMode.Sharded, out ISet<ValkeyKey>? shardedChannels) && shardedChannels.Count > 0)
             {
-                pubSubConfig.ShardedChannelsPtr = MarshalStringArray(shardedChannels);
+                pubSubConfig.ShardedChannelsPtr = MarshalStrings(shardedChannels.ToGlideStrings());
                 pubSubConfig.ShardedChannelCount = (uint)shardedChannels.Count;
             }
 
@@ -427,30 +425,40 @@ internal partial class FFI
         }
 
         /// <summary>
-        /// Marshals a collection of strings into unmanaged memory and returns a pointer to the array.
+        /// Marshals an array of <see cref="GlideString"/> values.
         /// </summary>
-        /// <param name="strings">The collection of strings to marshal.</param>
-        /// <returns>Pointer to the array of string pointers in unmanaged memory.</returns>
-        private static IntPtr MarshalStringArray(ICollection<string> strings)
+        private static IntPtr MarshalStrings(GlideString[] strings)
         {
-            if (strings.Count == 0)
+            if (strings.Length == 0)
             {
                 return IntPtr.Zero;
             }
 
-            // Allocate array of string pointers
-            IntPtr arrayPtr = Marshal.AllocHGlobal(IntPtr.Size * strings.Count);
+            // Allocate memory for strings.
+            IntPtr arrayPtr = Marshal.AllocHGlobal(IntPtr.Size * strings.Length);
 
-            int i = 0;
-            foreach (string str in strings)
+            // Copy strings to allocated memory.
+            for (int i = 0; i < strings.Length; i++)
             {
-                // Allocate and copy each string
-                IntPtr stringPtr = Marshal.StringToHGlobalAnsi(str);
-                Marshal.WriteIntPtr(arrayPtr, i * IntPtr.Size, stringPtr);
-                i++;
+                Marshal.WriteIntPtr(arrayPtr, i * IntPtr.Size, MarshalString(strings[i]));
             }
 
             return arrayPtr;
+        }
+
+        /// <summary>
+        /// Marshals a <see cref="GlideString"/> into unmanaged memory.
+        /// </summary>
+        private static IntPtr MarshalString(GlideString str)
+        {
+            byte[] bytes = str.Bytes;
+            int length = bytes.Length;
+
+            IntPtr ptr = Marshal.AllocHGlobal(length + 1);
+            Marshal.Copy(bytes, 0, ptr, length);
+            Marshal.WriteByte(ptr, length, 0); // null terminator
+
+            return ptr;
         }
     }
 
@@ -490,7 +498,7 @@ internal partial class FFI
     {
         try
         {
-            // Marshal message bytes to string.
+            // Marshal message bytes.
             if (messagePtr == IntPtr.Zero)
             {
                 throw new ArgumentException("Invalid message data: pointer is null");
@@ -503,14 +511,8 @@ internal partial class FFI
 
             byte[] messageBytes = new byte[messageLen];
             Marshal.Copy(messagePtr, messageBytes, 0, (int)messageLen);
-            string message = System.Text.Encoding.UTF8.GetString(messageBytes);
 
-            if (string.IsNullOrEmpty(message))
-            {
-                throw new ArgumentException("PubSub message content cannot be null or empty after marshaling");
-            }
-
-            // Marshal channel bytes to string.
+            // Marshal channel bytes.
             if (channelPtr == IntPtr.Zero)
             {
                 throw new ArgumentException("Invalid channel data: pointer is null");
@@ -523,26 +525,19 @@ internal partial class FFI
 
             byte[] channelBytes = new byte[channelLen];
             Marshal.Copy(channelPtr, channelBytes, 0, (int)channelLen);
-            string channel = System.Text.Encoding.UTF8.GetString(channelBytes);
 
-            if (string.IsNullOrEmpty(channel))
-            {
-                throw new ArgumentException("PubSub channel name cannot be null or empty after marshaling");
-            }
-
-            // Create message based on push kind
+            // Create message based on push kind.
             if (pushKind == PushKind.PushMessage)
             {
-                return PubSubMessage.FromChannel(message, channel);
+                return PubSubMessage.FromChannel(messageBytes, channelBytes);
             }
-
             else if (pushKind == PushKind.PushSMessage)
             {
-                return PubSubMessage.FromShardedChannel(message, channel);
+                return PubSubMessage.FromShardedChannel(messageBytes, channelBytes);
             }
-
             else if (pushKind == PushKind.PushPMessage)
             {
+                // Marshal pattern bytes.
                 if (patternPtr == IntPtr.Zero)
                 {
                     throw new ArgumentException("Invalid pattern data: pointer is null for pattern message");
@@ -555,16 +550,9 @@ internal partial class FFI
 
                 byte[] patternBytes = new byte[patternLen];
                 Marshal.Copy(patternPtr, patternBytes, 0, (int)patternLen);
-                string pattern = System.Text.Encoding.UTF8.GetString(patternBytes);
 
-                if (string.IsNullOrEmpty(pattern))
-                {
-                    throw new ArgumentException("PubSub pattern cannot be empty when pattern pointer is provided");
-                }
-
-                return PubSubMessage.FromPattern(message, channel, pattern);
+                return PubSubMessage.FromPattern(messageBytes, channelBytes, patternBytes);
             }
-
             else
             {
                 throw new InvalidOperationException($"Unexpected PushKind for message: {pushKind}");

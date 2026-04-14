@@ -18,7 +18,7 @@ public class PubSubConfigurationTests
     private static readonly string Pattern2 = "pattern2*";
     private static readonly string ShardedChannel1 = "shard1";
     private static readonly string ShardedChannel2 = "shard2";
-    private static readonly Object Context = new { TestData = "test" };
+    private static readonly object Context = new { TestData = "test" };
     private static readonly MessageCallback Callback = (message, ctx) => { /* test callback */ };
 
     #region StandaloneClientConfigurationBuilder Tests
@@ -96,8 +96,8 @@ public class PubSubConfigurationTests
         Assert.NotNull(storedConfig);
 
         // Check exact channels and patterns.
-        Assert.Equivalent(new HashSet<string> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
-        Assert.Equivalent(new HashSet<string> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
+        Assert.Equivalent(new HashSet<ValkeyKey> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
+        Assert.Equivalent(new HashSet<ValkeyKey> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
     }
 
     #endregion
@@ -180,9 +180,9 @@ public class PubSubConfigurationTests
         Assert.NotNull(storedConfig);
 
         // Check exact channels, patterns, and sharded channels.
-        Assert.Equivalent(new HashSet<string> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
-        Assert.Equivalent(new HashSet<string> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
-        Assert.Equivalent(new HashSet<string> { ShardedChannel1, ShardedChannel2 }, storedConfig.Subscriptions[PubSubChannelMode.Sharded]);
+        Assert.Equivalent(new HashSet<ValkeyKey> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
+        Assert.Equivalent(new HashSet<ValkeyKey> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
+        Assert.Equivalent(new HashSet<ValkeyKey> { ShardedChannel1, ShardedChannel2 }, storedConfig.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
     #endregion
@@ -217,26 +217,6 @@ public class PubSubConfigurationTests
 
         var config = builder.Build(); // This should succeed
         Assert.NotNull(config);
-    }
-
-    [Fact]
-    public void StandaloneClientConfigurationBuilder_WithPubSubSubscriptions_EmptyChannelName_ThrowsArgumentException()
-    {
-        // Arrange
-        var builder = new StandaloneClientConfigurationBuilder();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => { _ = new StandalonePubSubSubscriptionConfig().WithChannel(""); });
-    }
-
-    [Fact]
-    public void ClusterClientConfigurationBuilder_WithPubSubSubscriptions_EmptyShardedChannelName_ThrowsArgumentException()
-    {
-        // Arrange
-        var builder = new ClusterClientConfigurationBuilder();
-
-        // Act & Assert
-        _ = Assert.Throws<ArgumentException>(() => { _ = new ClusterPubSubSubscriptionConfig().WithShardedChannel(""); });
     }
 
     #endregion
