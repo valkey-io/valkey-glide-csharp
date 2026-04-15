@@ -234,7 +234,7 @@ internal partial class Database
     public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortAsync(key, skip, take, order, sortType, by, get);
+        return await ((IGenericBaseCommands)this).SortAsync(key, skip, take, order, sortType, by, get);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortAndStoreAsync(ValkeyKey, ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?, CommandFlags)"/>
