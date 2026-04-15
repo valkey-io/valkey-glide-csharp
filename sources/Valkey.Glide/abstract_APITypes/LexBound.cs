@@ -52,7 +52,7 @@ public sealed class LexBound : Bound
 
         else if (value.Equals(ValkeyLiterals.LexRangeMax))
         {
-            return Min;
+            return Max;
         }
 
         return new((ValkeyValue)$"{ValkeyLiterals.RangeInclusive}{value}");
