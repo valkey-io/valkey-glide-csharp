@@ -13,12 +13,12 @@ public sealed class LexBound : Bound
     #region Constants
 
     /// <summary>
-    /// The minimum lexicographic bound (negative infinity).
+    /// The minimum lexicographic bound.
     /// </summary>
     public static readonly LexBound Min = new(ValkeyLiterals.RangeMinLex);
 
     /// <summary>
-    /// The maximum lexicographic bound (positive infinity).
+    /// The maximum lexicographic bound.
     /// </summary>
     public static readonly LexBound Max = new(ValkeyLiterals.RangeMaxLex);
 
