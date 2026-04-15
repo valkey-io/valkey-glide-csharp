@@ -103,6 +103,8 @@ internal partial class Database
     public async Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        ThrowIfDiffWithAggregate(operation, aggregate);
+
         if (weights != null)
         {
             var kw = ToDictionary(keys, weights);
@@ -110,7 +112,7 @@ internal partial class Database
             {
                 SetOperation.Union => await SortedSetUnionAsync(kw, aggregate),
                 SetOperation.Intersect => await SortedSetInterAsync(kw, aggregate),
-                SetOperation.Difference => await SortedSetDiffAsync(keys),
+                SetOperation.Difference => throw new ArgumentException("ZDIFF cannot be used with weights."),
                 _ => throw new ArgumentOutOfRangeException(nameof(operation)),
             };
         }
@@ -128,6 +130,7 @@ internal partial class Database
     public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        ThrowIfDiffWithAggregate(operation, aggregate);
 
         if (weights != null)
         {
@@ -136,7 +139,7 @@ internal partial class Database
             {
                 SetOperation.Union => await SortedSetUnionWithScoreAsync(kw, aggregate),
                 SetOperation.Intersect => await SortedSetInterWithScoreAsync(kw, aggregate),
-                SetOperation.Difference => await SortedSetDiffWithScoreAsync(keys),
+                SetOperation.Difference => throw new ArgumentException("ZDIFF cannot be used with weights."),
                 _ => throw new ArgumentOutOfRangeException(nameof(operation)),
             };
         }
@@ -161,6 +164,8 @@ internal partial class Database
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        ThrowIfDiffWithAggregate(operation, aggregate);
+
         if (weights != null)
         {
             var kw = ToDictionary(keys, weights);
@@ -168,7 +173,7 @@ internal partial class Database
             {
                 SetOperation.Union => await SortedSetUnionAndStoreAsync(destination, kw, aggregate),
                 SetOperation.Intersect => await SortedSetInterAndStoreAsync(destination, kw, aggregate),
-                SetOperation.Difference => await SortedSetDiffAndStoreAsync(destination, keys),
+                SetOperation.Difference => throw new ArgumentException("ZDIFF cannot be used with weights."),
                 _ => throw new ArgumentOutOfRangeException(nameof(operation)),
             };
         }
@@ -311,6 +316,14 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await SortedSetScoresAsync(key, members);
+    }
+
+    private static void ThrowIfDiffWithAggregate(SetOperation operation, Aggregate aggregate)
+    {
+        if (operation == SetOperation.Difference && aggregate != Aggregate.Sum)
+        {
+            throw new ArgumentException("ZDIFF cannot be used with aggregation.");
+        }
     }
 
     private static SortedSetAddOptions ToSortedSetAddOptions(SortedSetWhen when)
