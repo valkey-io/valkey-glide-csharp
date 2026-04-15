@@ -77,7 +77,7 @@ public readonly struct RangeOptions()
         {
             if (Range is RankRange)
             {
-                throw new ArgumentException("LIMIT is not supported with rank-based ranges. Use score-based or lixocographic range instead.", nameof(Range));
+                throw new ArgumentException("Offset and count are not supported with rank-based ranges. Use score-based or lexicographic range instead.", nameof(Range));
             }
 
             args.Add(ValkeyLiterals.LIMIT);
