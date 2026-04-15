@@ -44,7 +44,7 @@ public sealed class LexBound : Bound
     /// <param name="value">The lexicographic value.</param>
     /// <returns>An inclusive <see cref="LexBound"/>.</returns>
     public static LexBound Inclusive(ValkeyValue value)
-        => new(ValkeyLiterals.RangeInclusive + value);
+        => new((ValkeyValue)$"{ValkeyLiterals.RangeInclusive}{value}");
 
     /// <summary>
     /// Creates an exclusive lexicographic bound.
@@ -52,7 +52,7 @@ public sealed class LexBound : Bound
     /// <param name="value">The lexicographic value.</param>
     /// <returns>An exclusive <see cref="LexBound"/>.</returns>
     public static LexBound Exclusive(ValkeyValue value)
-        => new(ValkeyLiterals.RangeExclusive + value);
+        => new((ValkeyValue)$"{ValkeyLiterals.RangeExclusive}{value}");
 
     /// <summary>
     /// Converts a string to an inclusive lexicographic bound.

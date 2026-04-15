@@ -156,14 +156,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <param name="y">The second <see cref="ValkeyValue"/> to compare.</param>
     public static bool operator !=(ValkeyValue x, ValkeyValue y) => !(x == y);
 
-    /// <summary>
-    /// Concatenates two <see cref="ValkeyValue"/> instances by their string representations.
-    /// Valkey GLIDE-only convenience operator.
-    /// </summary>
-    /// <param name="x">The first <see cref="ValkeyValue"/>.</param>
-    /// <param name="y">The second <see cref="ValkeyValue"/>.</param>
-    public static ValkeyValue operator +(ValkeyValue x, ValkeyValue y) => $"{x}{y}";
-
     private double OverlappedValueDouble
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

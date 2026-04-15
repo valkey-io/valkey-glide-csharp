@@ -496,8 +496,8 @@ public abstract class Condition
         }
 
         public override string ToString()
-            => ((memberName.IsNull ? key.ToString() : ((string?)key) + " " + type + " > " + memberName)
-                + (expectedEqual ? " == " : " != ") + expectedValue)!;
+            => (memberName.IsNull ? key.ToString() : ((string?)key) + " " + type + " > " + memberName)
+                + (expectedEqual ? " == " : " != ") + expectedValue;
 
         internal sealed override List<ICmd> CreateCommands()
             => [
@@ -623,7 +623,7 @@ public abstract class Condition
         }
 
         public override string ToString()
-            => key.ToString() + " " + ValkeyType.SortedSet + " range[" + min.ToString() + ", " + max.ToString() + "] length" + GetComparisonString() + expectedLength.ToString();
+            => ((string?)key) + " " + ValkeyType.SortedSet + " range[" + min + ", " + max + "] length" + GetComparisonString() + expectedLength;
 
         private string GetComparisonString()
         => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
@@ -660,7 +660,7 @@ public abstract class Condition
         }
 
         public override string ToString()
-            => key.ToString() + (expectedEqual ? " contains " : " not contains ") + expectedValue.ToString() + " members with score: " + sortedSetScore.ToString();
+            => key.ToString() + (expectedEqual ? " contains " : " not contains ") + expectedValue + " members with score: " + sortedSetScore;
 
         internal sealed override List<ICmd> CreateCommands()
             => [
