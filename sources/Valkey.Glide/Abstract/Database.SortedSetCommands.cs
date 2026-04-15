@@ -359,28 +359,19 @@ internal partial class Database
     }
 
     private static ScoreRange ToScoreRange(double min, double max, Exclude exclude)
-    {
-        var minBound = exclude.HasFlag(Exclude.Start) ? ScoreBound.Exclusive(min) : ScoreBound.Inclusive(min);
-        var maxBound = exclude.HasFlag(Exclude.Stop) ? ScoreBound.Exclusive(max) : ScoreBound.Inclusive(max);
-        return ScoreRange.Between(
-            minBound,
-            maxBound);
-    }
+        => ScoreRange.Between(
+            exclude.HasFlag(Exclude.Start) ? ScoreBound.Exclusive(min) : ScoreBound.Inclusive(min),
+            exclude.HasFlag(Exclude.Stop) ? ScoreBound.Exclusive(max) : ScoreBound.Inclusive(max));
 
     private static LexRange ToLexRange(ValkeyValue min, ValkeyValue max, Exclude exclude)
-    {
-        var minBound = min.IsNull ? LexBound.Min
-            : exclude.HasFlag(Exclude.Start) ? LexBound.Exclusive(min) : LexBound.Inclusive(min);
-        var maxBound = max.IsNull ? LexBound.Max
-            : exclude.HasFlag(Exclude.Stop) ? LexBound.Exclusive(max) : LexBound.Inclusive(max);
-        return LexRange.Between(minBound, maxBound);
-    }
+        => LexRange.Between(
+            min.IsNull ? LexBound.Min : exclude.HasFlag(Exclude.Start) ? LexBound.Exclusive(min) : LexBound.Inclusive(min),
+            max.IsNull ? LexBound.Max : exclude.HasFlag(Exclude.Stop) ? LexBound.Exclusive(max) : LexBound.Inclusive(max));
 
     private static RangeOptions ToRangeOptions(ValkeyValue start, ValkeyValue stop, SortedSetOrder sortedSetOrder, Exclude exclude, Order order, long skip, long? take)
     {
         if (sortedSetOrder == SortedSetOrder.ByRank && exclude != Exclude.None)
         {
-            // Matches StackExchange.Redis exception.
             throw new ArgumentException("Exclude is not valid when sortedSetOrder is ByRank. Use ByLex or ByScore instead.", nameof(exclude));
         }
 
