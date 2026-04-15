@@ -465,26 +465,4 @@ public interface ISetBaseCommands
     /// </example>
     /// </remarks>
     Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value);
-
-    /// <summary>
-    /// Iterates elements over a set.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/sscan"/>
-    /// <param name="key">The key of the set.</param>
-    /// <param name="pattern">The pattern to match.</param>
-    /// <param name="pageSize">The page size to iterate by.</param>
-    /// <param name="cursor">The cursor position to start at.</param>
-    /// <param name="pageOffset">The page offset to start at.</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the set.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await foreach (ValkeyValue value in client.SetScanAsync(key, "*pattern*"))
-    /// {
-    ///     // Process each value
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
 }

@@ -154,8 +154,15 @@ internal interface IBatchSortedSetCommands
     /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude)" /></returns>
     IBatch SortedSetRemoveRangeByScore(ValkeyKey key, double min, double max, Exclude exclude = Exclude.None);
 
-    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
+    /// <summary>
+    /// Iterates elements of Sorted Set key and their associated scores using a cursor (single page).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zscan"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="pattern">The pattern to match.</param>
+    /// <param name="pageSize">The number of elements to return per iteration (hint to the server).</param>
+    /// <param name="cursor">The cursor position to start at.</param>
+    /// <returns>Command Response - A tuple of (cursor, entries) for the current page.</returns>
     IBatch SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0);
 
     /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetScoreAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
