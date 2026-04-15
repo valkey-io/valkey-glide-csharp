@@ -13,32 +13,55 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, CommandFlags flags);
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, When when, CommandFlags flags);
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, When when, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags);
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry})"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Updates the score of a member in a sorted set. Returns <see langword="true"/> if the score changed.
+    /// Uses the ZADD command with the CH (changed) flag.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member to update.</param>
+    /// <param name="score">The new score.</param>
+    /// <param name="when">Condition for the update.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<bool> SortedSetUpdateAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Updates the scores of multiple members in a sorted set. Returns the number of members whose scores changed.
+    /// Uses the ZADD command with the CH (changed) flag.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="values">The members and their new scores.</param>
+    /// <param name="when">Condition for the update.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<long> SortedSetUpdateAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetRemoveAsync(ValkeyKey, ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -118,7 +141,18 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags);
+    Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Decrements the score of a member in a sorted set by the given amount.
+    /// If the member does not exist, it is added with the negated decrement as its score.
+    /// </summary>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member whose score to decrement.</param>
+    /// <param name="value">The amount to decrement by.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<double> SortedSetDecrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -158,7 +192,7 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetRandomMembersWithScoresAsync(ValkeyKey, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count, CommandFlags flags);
+    Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -178,7 +212,7 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetRemoveRangeByRankAsync(ValkeyKey, long, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetRemoveRangeByRankAsync(ValkeyKey key, long start, long stop, CommandFlags flags);
+    Task<long> SortedSetRemoveRangeByRankAsync(ValkeyKey key, long start, long stop, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>

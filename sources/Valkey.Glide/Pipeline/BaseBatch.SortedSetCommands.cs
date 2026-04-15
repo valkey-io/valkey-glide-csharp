@@ -106,7 +106,7 @@ public abstract partial class BaseBatch<T>
     public T SortedSetRank(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending) => AddCmd(SortedSetRankAsync(key, member, order));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRange(ValkeyKey, RangeOptions)" />
-    public T SortedSetRange(ValkeyKey key, RangeOptions options) => AddCmd(SortedSetRangeAsync(key, options));
+    public T SortedSetRange(ValkeyKey key, RangeOptions options = default) => AddCmd(SortedSetRangeAsync(key, options));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRangeWithScores(ValkeyKey, RangeOptions)" />
     public T SortedSetRangeWithScores(ValkeyKey key, RangeOptions options = default) => AddCmd(SortedSetRangeWithScoresAsync(key, options));

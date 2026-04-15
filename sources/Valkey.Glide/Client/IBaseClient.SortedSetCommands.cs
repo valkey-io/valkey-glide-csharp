@@ -300,7 +300,7 @@ public partial interface IBaseClient
     /// <param name="key">The sorted set key.</param>
     /// <param name="options">Options specifying the range, order, and limits.</param>
     /// <returns>An array of elements in the specified range.</returns>
-    Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options);
+    Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options = default);
 
     /// <inheritdoc cref="SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[not(self::returns)]"/>
     /// <returns>An array of elements with their scores in the specified range.</returns>

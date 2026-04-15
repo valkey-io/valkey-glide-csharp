@@ -409,7 +409,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        ValkeyValue[] result = await client.SortedSetRangeAsync(key);
+        var result = await client.SortedSetRangeAsync(key);
         Assert.Empty(result);
 
         // Add members with scores

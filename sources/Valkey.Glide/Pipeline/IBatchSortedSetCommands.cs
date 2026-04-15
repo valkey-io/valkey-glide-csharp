@@ -125,7 +125,7 @@ internal interface IBatchSortedSetCommands
 
     /// <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" /></returns>
-    IBatch SortedSetRange(ValkeyKey key, RangeOptions options);
+    IBatch SortedSetRange(ValkeyKey key, RangeOptions options = default);
 
     /// <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey, RangeOptions)" /></returns>

@@ -171,7 +171,7 @@ public abstract partial class BaseClient
         => Command(Request.SortedSetRankAsync(key, member, order));
 
     /// <inheritdoc/>
-    public Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options)
+    public Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options = default)
         => Command(Request.SortedSetRangeAsync(key, options));
 
     /// <inheritdoc/>
