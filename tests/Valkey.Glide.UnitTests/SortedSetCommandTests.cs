@@ -105,27 +105,26 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZLEXCOUNT", "key", "[a", "(z"], Request.SortedSetLexCountAsync("key", LexRange.Between(LexBound.Inclusive("a"), LexBound.Exclusive("z"))).GetArgs()),
             () => Assert.Equal(["ZLEXCOUNT", "key", "-", "+"], Request.SortedSetLexCountAsync("key", LexRange.All).GetArgs()),
 
-            // GLIDE-native SortedSetRange (ZRANGE with SortedSetRangeOptions)
-            // Rank range
+            // SortedSetRangeAsync - Rank
             () => Assert.Equal(["ZRANGE", "key", "0", "-1"], Request.SortedSetRangeAsync("key", new() { Range = RankRange.All }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "1", "3"], Request.SortedSetRangeAsync("key", new() { Range = RankRange.Between(1, 3) }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "0", "-1", "REV"], Request.SortedSetRangeAsync("key", new() { Range = RankRange.All, Order = Order.Descending }).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "LIMIT", "2", "3"], Request.SortedSetRangeAsync("key", new() { Range = RankRange.All, Offset = 2, Count = 3 }).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "REV", "LIMIT", "1", "5"], Request.SortedSetRangeAsync("key", new() { Range = RankRange.All, Order = Order.Descending, Offset = 1, Count = 5 }).GetArgs()),
-            // Score range
+            () => Assert.Throws<ArgumentException>(() => Request.SortedSetRangeAsync("key", new() { Range = RankRange.All, Offset = 2, Count = 3 }).GetArgs()),
+            () => Assert.Throws<ArgumentException>(() => Request.SortedSetRangeAsync("key", new() { Range = RankRange.All, Order = Order.Descending, Offset = 1, Count = 5 }).GetArgs()),
+
+            // SortedSetRangeAsync - Score range
             () => Assert.Equal(["ZRANGE", "key", "-inf", "+inf", "BYSCORE"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.All }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.Between(ScoreBound.Inclusive(1.0), ScoreBound.Inclusive(10.0)) }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE", "LIMIT", "2", "3"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.Between(ScoreBound.Inclusive(1.0), ScoreBound.Inclusive(10.0)), Offset = 2, Count = 3 }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "-inf", "+inf", "BYSCORE", "REV"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.All, Order = Order.Descending }).GetArgs()),
-            // Lex range
+
+            // SortedSetRangeAsync - Lex range
             () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.All }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "[a", "[z", "BYLEX"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.Between(LexBound.Inclusive("a"), LexBound.Inclusive("z")) }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "[a", "[z", "BYLEX", "LIMIT", "1", "5"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.Between(LexBound.Inclusive("a"), LexBound.Inclusive("z")), Offset = 1, Count = 5 }).GetArgs()),
             () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX", "REV", "LIMIT", "2", "3"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.All, Order = Order.Descending, Offset = 2, Count = 3 }).GetArgs()),
-            // LIMIT defaults: Offset only → Count defaults to -1
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "LIMIT", "5", "-1"], Request.SortedSetRangeAsync("key", new() { Range = RankRange.All, Offset = 5 }).GetArgs()),
-            // LIMIT defaults: Count only → Offset defaults to 0
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "LIMIT", "0", "10"], Request.SortedSetRangeAsync("key", new() { Range = RankRange.All, Count = 10 }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX", "LIMIT", "5", "-1"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.All, Offset = 5 }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX", "LIMIT", "0", "10"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.All, Count = 10 }).GetArgs()),
 
             // SortedSetScores
             () => Assert.Equal(["ZMSCORE", "key", "member1"], Request.SortedSetScoresAsync("key", ["member1"]).GetArgs()),
