@@ -15,24 +15,26 @@ public sealed class ScoreBound : Bound
     /// <summary>
     /// The minimum score bound (negative infinity).
     /// </summary>
-    public static readonly ScoreBound Min = new(ValkeyLiterals.RangeMinScore);
+    public static readonly ScoreBound Min = new(double.NegativeInfinity, isExclusive: false);
 
     /// <summary>
     /// The maximum score bound (positive infinity).
     /// </summary>
-    public static readonly ScoreBound Max = new(ValkeyLiterals.RangeMaxScore);
+    public static readonly ScoreBound Max = new(double.PositiveInfinity, isExclusive: false);
 
     #endregion
     #region Fields
 
-    private readonly ValkeyValue _value;
+    private readonly double _score;
+    private readonly bool _isExclusive;
 
     #endregion
     #region Constructors
 
-    private ScoreBound(ValkeyValue value)
+    private ScoreBound(double score, bool isExclusive)
     {
-        _value = value;
+        _score = score;
+        _isExclusive = isExclusive;
     }
 
     #endregion
@@ -44,7 +46,7 @@ public sealed class ScoreBound : Bound
     /// <param name="value">The score value.</param>
     /// <returns>An inclusive <see cref="ScoreBound"/>.</returns>
     public static ScoreBound Inclusive(double value)
-        => new((ValkeyValue)value);
+        => new(value, isExclusive: false);
 
     /// <summary>
     /// Creates an exclusive score bound.
@@ -52,7 +54,7 @@ public sealed class ScoreBound : Bound
     /// <param name="value">The score value.</param>
     /// <returns>An exclusive <see cref="ScoreBound"/>.</returns>
     public static ScoreBound Exclusive(double value)
-        => new(ValkeyLiterals.RangeExclusive + (ValkeyValue)value);
+        => new(value, isExclusive: true);
 
     /// <summary>
     /// Implicitly converts a <see langword="double"/> to an inclusive <see cref="ScoreBound"/>.
@@ -69,17 +71,21 @@ public sealed class ScoreBound : Bound
     #region Internal Methods
 
     /// <inheritdoc/>
-    internal override GlideString[] ToArgs() => [_value];
+    internal override GlideString[] ToArgs()
+    {
+        GlideString scoreStr = _score.ToGlideString();
+        return _isExclusive ? [(GlideString)ValkeyLiterals.RangeExclusive + scoreStr] : [scoreStr];
+    }
 
     /// <summary>
-    /// Returns <see langword="true"/> if this bound represents the minimum score sentinel.
+    /// Returns <see langword="true"/> if this bound represents negative infinity.
     /// </summary>
-    internal bool IsMin => ReferenceEquals(this, Min);
+    internal bool IsMin => double.IsNegativeInfinity(_score);
 
     /// <summary>
-    /// Returns <see langword="true"/> if this bound represents the maximum score sentinel.
+    /// Returns <see langword="true"/> if this bound represents positive infinity.
     /// </summary>
-    internal bool IsMax => ReferenceEquals(this, Max);
+    internal bool IsMax => double.IsPositiveInfinity(_score);
 
     #endregion
 }

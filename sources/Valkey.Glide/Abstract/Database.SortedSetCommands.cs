@@ -360,11 +360,11 @@ internal partial class Database
 
     private static ScoreRange ToScoreRange(double min, double max, Exclude exclude)
     {
-        var minBound = double.IsNegativeInfinity(min) ? ScoreBound.Min
-            : exclude.HasFlag(Exclude.Start) ? ScoreBound.Exclusive(min) : ScoreBound.Inclusive(min);
-        var maxBound = double.IsPositiveInfinity(max) ? ScoreBound.Max
-            : exclude.HasFlag(Exclude.Stop) ? ScoreBound.Exclusive(max) : ScoreBound.Inclusive(max);
-        return ScoreRange.Between(minBound, maxBound);
+        var minBound = exclude.HasFlag(Exclude.Start) ? ScoreBound.Exclusive(min) : ScoreBound.Inclusive(min);
+        var maxBound = exclude.HasFlag(Exclude.Stop) ? ScoreBound.Exclusive(max) : ScoreBound.Inclusive(max);
+        return ScoreRange.Between(
+            minBound,
+            maxBound);
     }
 
     private static LexRange ToLexRange(ValkeyValue min, ValkeyValue max, Exclude exclude)

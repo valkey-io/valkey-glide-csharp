@@ -15,7 +15,7 @@ public sealed class ScoreRange : Range
     /// <summary>
     /// A range spanning all scores.
     /// </summary>
-    public static readonly ScoreRange All = new(ScoreBound.Min, ScoreBound.Max);
+    public static readonly ScoreRange All = new(double.NegativeInfinity, double.PositiveInfinity);
 
     #endregion
     #region Fields
@@ -41,7 +41,7 @@ public sealed class ScoreRange : Range
     /// <param name="min">The minimum score bound.</param>
     /// <returns>A <see cref="ScoreRange"/> from a minimum bound.</returns>
     public static ScoreRange From(ScoreBound min)
-        => new(min, ScoreBound.Max);
+        => new(min, double.PositiveInfinity);
 
     /// <summary>
     /// Creates a score range to a maximum bound.
@@ -49,7 +49,7 @@ public sealed class ScoreRange : Range
     /// <param name="max">The maximum score bound.</param>
     /// <returns>A <see cref="ScoreRange"/> to a maximum bound.</returns>
     public static ScoreRange To(ScoreBound max)
-        => new(ScoreBound.Min, max);
+        => new(double.NegativeInfinity, max);
 
     /// <summary>
     /// Creates a score range between minimum and maximum bounds.
