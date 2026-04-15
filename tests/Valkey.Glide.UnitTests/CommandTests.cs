@@ -566,8 +566,8 @@ public class CommandTests
             () => Assert.Equal(2L, Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).Converter(2L)),
             () => Assert.Equal(0L, Request.WaitAsync(0, TimeSpan.Zero).Converter(0L)),
             () => Assert.Equal(1L, Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).Converter(1L)),
-            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(1, 1, TimeSpan.FromMilliseconds(1000)).Converter(new object[] { 1L, 0L })),
-            () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(0, 0, TimeSpan.Zero).Converter(new object[] { 0L, 0L })),
+            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(1, 1, TimeSpan.FromMilliseconds(1000)).Converter([1L, 0L])),
+            () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(0, 0, TimeSpan.Zero).Converter([0L, 0L])),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
             () => Assert.Equal(["one", "two"], Request.ListLeftPopAsync("a", 2).Converter([(gs)"one", (gs)"two"])!),
