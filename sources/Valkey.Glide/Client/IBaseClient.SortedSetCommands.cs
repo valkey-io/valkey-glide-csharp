@@ -4,26 +4,30 @@ namespace Valkey.Glide;
 
 public partial interface IBaseClient
 {
-    /// <summary>
-    /// Adds or updates sorted set member(s).
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/zadd"/>
-    /// <param name="key">The sorted set key.</param>
-    /// <param name="member">The member to add or update in the sorted set.</param>
-    /// <param name="score">The score for the sorted set member.</param>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)" path="/*[not(self::param[@name='member']) and not(self::param[@name='score'])]"/>
+    /// <param name="member">The member and score to add or update.</param>
+    Task<bool> SortedSetAddAsync(ValkeyKey key, SortedSetEntry member);
+
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)" path="/*[not(self::returns)]"/>
     /// <param name="condition">The condition under which to add or update the member.</param>
     /// <returns><see langword="true"/> if the member was added.</returns>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition = SortedSetAddCondition.Always);
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition);
 
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" path="/*[not(self::param[@name='condition']) and not(self::returns)]"/>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)" path="/*[not(self::returns)]"/>
     /// <param name="options">Options for adding or updating the member.</param>
     /// <returns><see langword="true"/> if the member was added, or changed if <see cref="SortedSetAddOptions.Changed"/> is set.</returns>
     Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options);
 
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" path="/*[not(self::param[@name='member']) and not(self::param[@name='score']) and not(self::returns)]"/>
+    /// <inheritdoc cref="Commands.ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry})" path="/*[self::summary or self::seealso]"/>
+    /// <param name="key">The sorted set key.</param>
     /// <param name="members">A dictionary of members and their scores to add.</param>
+    /// <returns>The number of members added to the sorted set, not including members already existing for which the score was updated.</returns>
+    Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members);
+
+    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, IDictionary{ValkeyValue, double})" path="/*[not(self::returns)]"/>
+    /// <param name="condition">The condition under which to add or update the members.</param>
     /// <returns>The number of members added to the sorted set.</returns>
-    Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition = SortedSetAddCondition.Always);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition);
 
     /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, IDictionary{ValkeyValue, double}, SortedSetAddCondition)" path="/*[not(self::param[@name='condition']) and not(self::returns)]"/>
     /// <param name="options">Options for adding or updating the members.</param>

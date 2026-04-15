@@ -7,15 +7,19 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <inheritdoc/>
+    public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score)
+        => Command(Request.SortedSetAddAsync(key, member, score));
+
+    /// <inheritdoc/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, SortedSetEntry member)
-        => Command(Request.SortedSetAddAsync(key, member));
+        => SortedSetAddAsync(key, member.Element, member.Score);
 
     /// <inheritdoc/>
     public Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> members)
         => Command(Request.SortedSetAddAsync(key, members));
 
     /// <inheritdoc/>
-    public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition = SortedSetAddCondition.Always)
+    public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition)
         => SortedSetAddAsync(key, member, score, new SortedSetAddOptions { Condition = condition });
 
     /// <inheritdoc/>
@@ -23,12 +27,16 @@ public abstract partial class BaseClient
         => Command(Request.SortedSetAddAsync(key, member, score, options));
 
     /// <inheritdoc/>
-    public Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition = SortedSetAddCondition.Always)
+    public Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members)
+        => SortedSetAddAsync(key, members.Select(kvp => new SortedSetEntry(kvp.Key, kvp.Value)));
+
+    /// <inheritdoc/>
+    public Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition)
         => SortedSetAddAsync(key, members, new SortedSetAddOptions { Condition = condition });
 
     /// <inheritdoc/>
     public Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddOptions options)
-        => Command(Request.SortedSetAddAsync(key, members, options));
+        => Command(Request.SortedSetAddAsync(key, members.Select(kvp => new SortedSetEntry(kvp.Key, kvp.Value)), options));
 
     /// <inheritdoc/>
     public Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member)
@@ -56,7 +64,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc/>
     public Task<double?> SortedSetIncrementByAsync(ValkeyKey key, ValkeyValue member, double value, SortedSetAddCondition condition)
-        => Command(Request.SortedSetIncrementByAsync(key, member, value, condition));
+        => SortedSetIncrementByAsync(key, member, value, new SortedSetAddOptions { Condition = condition });
 
     /// <inheritdoc/>
     public Task<double?> SortedSetIncrementByAsync(ValkeyKey key, ValkeyValue member, double value, SortedSetAddOptions options)
@@ -85,26 +93,26 @@ public abstract partial class BaseClient
     /// <inheritdoc/>
     public Task<SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? Command(Request.SortedSetBlockingPopMinMultiKeyAsync(keys, timeout.Value))
-            : Command(Request.SortedSetPopMinMultiKeyAsync(keys));
+            ? Command(Request.SortedSetPopMinAsync(keys, timeout.Value))
+            : Command(Request.SortedSetPopMinAsync(keys));
 
     /// <inheritdoc/>
     public Task<SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? Command(Request.SortedSetBlockingPopMaxMultiKeyAsync(keys, timeout.Value))
-            : Command(Request.SortedSetPopMaxMultiKeyAsync(keys));
+            ? Command(Request.SortedSetPopMaxAsync(keys, timeout.Value))
+            : Command(Request.SortedSetPopMaxAsync(keys));
 
     /// <inheritdoc/>
     public Task<SortedSetPopResult> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? Command(Request.SortedSetBlockingPopMinMultiKeyAsync(keys, count, timeout.Value))
-            : Command(Request.SortedSetPopMinMultiKeyAsync(keys, count));
+            ? Command(Request.SortedSetPopMinAsync(keys, count, timeout.Value))
+            : Command(Request.SortedSetPopMinAsync(keys, count));
 
     /// <inheritdoc/>
     public Task<SortedSetPopResult> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? Command(Request.SortedSetBlockingPopMaxMultiKeyAsync(keys, count, timeout.Value))
-            : Command(Request.SortedSetPopMaxMultiKeyAsync(keys, count));
+            ? Command(Request.SortedSetPopMaxAsync(keys, count, timeout.Value))
+            : Command(Request.SortedSetPopMaxAsync(keys, count));
 
     /// <inheritdoc/>
     public Task<SortedSetEntry?> SortedSetRandomMemberWithScoreAsync(ValkeyKey key)

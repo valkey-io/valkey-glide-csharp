@@ -67,4 +67,9 @@ public readonly struct SortedSetEntry(ValkeyValue element, double score) : IEqua
     /// <inheritdoc/>
     public static bool operator !=(SortedSetEntry x, SortedSetEntry y)
         => x.Score != y.Score || x.Element != y.Element;
+
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal GlideString[] ToArgs() => [Score.ToGlideString(), Element];
 }

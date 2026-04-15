@@ -16,9 +16,10 @@ public interface ISortedSetBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zadd"/>
     /// <param name="key">The key of the sorted set.</param>
-    /// <param name="member">The member and score to add or update.</param>
-    /// <returns><see langword="true"/> if the member was added. <see langword="false"/> if the member updated.</returns>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, SortedSetEntry member);
+    /// <param name="member">The member to add or update.</param>
+    /// <param name="score">The score for the member.</param>
+    /// <returns><see langword="true"/> if the member was added. <see langword="false"/> if the member was updated.</returns>
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score);
 
     /// <summary>
     /// Adds or updates members in the sorted set stored at key.

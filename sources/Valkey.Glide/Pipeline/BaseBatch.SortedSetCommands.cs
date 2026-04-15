@@ -9,23 +9,29 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 public abstract partial class BaseBatch<T>
 {
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, ValkeyValue, double)" />
+    public T SortedSetAdd(ValkeyKey key, ValkeyValue member, double score) => AddCmd(SortedSetAddAsync(key, member, score));
+
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, SortedSetEntry)" />
-    public T SortedSetAdd(ValkeyKey key, SortedSetEntry member) => AddCmd(SortedSetAddAsync(key, member));
-
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" />
-    public T SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition = SortedSetAddCondition.Always) => SortedSetAdd(key, member, score, new SortedSetAddOptions { Condition = condition });
-
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, ValkeyValue, double, SortedSetAddOptions)" />
-    public T SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options) => AddCmd(SortedSetAddAsync(key, member, score, options));
+    public T SortedSetAdd(ValkeyKey key, SortedSetEntry member) => SortedSetAdd(key, member.Element, member.Score);
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, IEnumerable{SortedSetEntry})" />
     public T SortedSetAdd(ValkeyKey key, IEnumerable<SortedSetEntry> members) => AddCmd(SortedSetAddAsync(key, members));
 
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" />
+    public T SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition) => SortedSetAdd(key, member, score, new SortedSetAddOptions { Condition = condition });
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, ValkeyValue, double, SortedSetAddOptions)" />
+    public T SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options) => AddCmd(SortedSetAddAsync(key, member, score, options));
+
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, IDictionary{ValkeyValue, double})" />
+    public T SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members) => SortedSetAdd(key, members.Select(kvp => new SortedSetEntry(kvp.Key, kvp.Value)));
+
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, IDictionary{ValkeyValue, double}, SortedSetAddCondition)" />
-    public T SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition = SortedSetAddCondition.Always) => SortedSetAdd(key, members, new SortedSetAddOptions { Condition = condition });
+    public T SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition) => SortedSetAdd(key, members, new SortedSetAddOptions { Condition = condition });
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetAdd(ValkeyKey, IDictionary{ValkeyValue, double}, SortedSetAddOptions)" />
-    public T SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddOptions options) => AddCmd(SortedSetAddAsync(key, members, options));
+    public T SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddOptions options) => AddCmd(SortedSetAddAsync(key, members.Select(kvp => new SortedSetEntry(kvp.Key, kvp.Value)), options));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRemove(ValkeyKey, ValkeyValue)" />
     public T SortedSetRemove(ValkeyKey key, ValkeyValue member) => AddCmd(SortedSetRemoveAsync(key, member));
@@ -46,7 +52,7 @@ public abstract partial class BaseBatch<T>
     public T SortedSetIncrementBy(ValkeyKey key, ValkeyValue member, double value) => AddCmd(SortedSetIncrementByAsync(key, member, value));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetIncrementBy(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" />
-    public T SortedSetIncrementBy(ValkeyKey key, ValkeyValue member, double value, SortedSetAddCondition condition) => AddCmd(SortedSetIncrementByAsync(key, member, value, condition));
+    public T SortedSetIncrementBy(ValkeyKey key, ValkeyValue member, double value, SortedSetAddCondition condition) => SortedSetIncrementBy(key, member, value, new SortedSetAddOptions { Condition = condition });
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetIncrementBy(ValkeyKey, ValkeyValue, double, SortedSetAddOptions)" />
     public T SortedSetIncrementBy(ValkeyKey key, ValkeyValue member, double value, SortedSetAddOptions options) => AddCmd(SortedSetIncrementByAsync(key, member, value, options));
@@ -69,26 +75,26 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPopMin(IEnumerable{ValkeyKey}, TimeSpan?)" />
     public T SortedSetPopMin(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? AddCmd(SortedSetBlockingPopMinMultiKeyAsync([.. keys], timeout.Value))
-            : AddCmd(SortedSetPopMinMultiKeyAsync([.. keys]));
+            ? AddCmd(SortedSetPopMinAsync([.. keys], timeout.Value))
+            : AddCmd(SortedSetPopMinAsync([.. keys]));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPopMax(IEnumerable{ValkeyKey}, TimeSpan?)" />
     public T SortedSetPopMax(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? AddCmd(SortedSetBlockingPopMaxMultiKeyAsync([.. keys], timeout.Value))
-            : AddCmd(SortedSetPopMaxMultiKeyAsync([.. keys]));
+            ? AddCmd(SortedSetPopMaxAsync([.. keys], timeout.Value))
+            : AddCmd(SortedSetPopMaxAsync([.. keys]));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPopMin(IEnumerable{ValkeyKey}, long, TimeSpan?)" />
     public T SortedSetPopMin(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? AddCmd(SortedSetBlockingPopMinMultiKeyAsync([.. keys], count, timeout.Value))
-            : AddCmd(SortedSetPopMinMultiKeyAsync([.. keys], count));
+            ? AddCmd(SortedSetPopMinAsync([.. keys], count, timeout.Value))
+            : AddCmd(SortedSetPopMinAsync([.. keys], count));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetPopMax(IEnumerable{ValkeyKey}, long, TimeSpan?)" />
     public T SortedSetPopMax(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null)
         => timeout.HasValue
-            ? AddCmd(SortedSetBlockingPopMaxMultiKeyAsync([.. keys], count, timeout.Value))
-            : AddCmd(SortedSetPopMaxMultiKeyAsync([.. keys], count));
+            ? AddCmd(SortedSetPopMaxAsync([.. keys], count, timeout.Value))
+            : AddCmd(SortedSetPopMaxAsync([.. keys], count));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRandomMember(ValkeyKey)" />
     public T SortedSetRandomMember(ValkeyKey key) => AddCmd(SortedSetRandomMemberAsync(key));
@@ -176,10 +182,12 @@ public abstract partial class BaseBatch<T>
     public T SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0) => AddCmd(SortedSetScanAsync(key, pattern, pageSize, cursor));
 
     // Explicit interface implementations for IBatchSortedSetCommands
+    IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, ValkeyValue member, double score) => SortedSetAdd(key, member, score);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, SortedSetEntry member) => SortedSetAdd(key, member);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, IEnumerable<SortedSetEntry> members) => SortedSetAdd(key, members);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition) => SortedSetAdd(key, member, score, condition);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options) => SortedSetAdd(key, member, score, options);
+    IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members) => SortedSetAdd(key, members);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition) => SortedSetAdd(key, members, condition);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddOptions options) => SortedSetAdd(key, members, options);
     IBatch IBatchSortedSetCommands.SortedSetRemove(ValkeyKey key, ValkeyValue member) => SortedSetRemove(key, member);

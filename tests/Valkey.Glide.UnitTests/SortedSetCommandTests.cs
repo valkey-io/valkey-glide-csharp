@@ -6,16 +6,8 @@ public class SortedSetCommandTests
 {
     [Fact]
     public void SortedSetCommands_ValidateArguments() => Assert.Multiple(
-            // SortedSetAdd - Single SortedSetEntry
-            () => Assert.Equal(["ZADD", "key", "10.5", "member"], Request.SortedSetAddAsync("key", new SortedSetEntry("member", 10.5)).GetArgs()),
-
-            // SortedSetAdd - Multiple SortedSetEntry
-            () => Assert.Equal(["ZADD", "key", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", (SortedSetEntry[])[new("member1", 10.5), new("member2", 8.25)]).GetArgs()),
-
-            // SortedSetAdd - Single Member
+            // SortedSetAdd - Single member
             () => Assert.Equal(["ZADD", "key", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5).GetArgs()),
-
-            // SortedSetAdd - Single Member with conditions
             () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists }).GetArgs()),
             () => Assert.Equal(["ZADD", "key", "XX", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfExists }).GetArgs()),
             () => Assert.Equal(["ZADD", "key", "GT", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExistsOrGreaterThan }).GetArgs()),
@@ -25,10 +17,10 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZADD", "key", "CH", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Changed = true }).GetArgs()),
             () => Assert.Equal(["ZADD", "key", "NX", "CH", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists, Changed = true }).GetArgs()),
 
-            // SortedSetAdd - Multiple Members
-            () => Assert.Equal(["ZADD", "key", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", new Dictionary<ValkeyValue, double> { ["member1"] = 10.5, ["member2"] = 8.25 }).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", new Dictionary<ValkeyValue, double> { ["member1"] = 10.5, ["member2"] = 8.25 }, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists }).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "XX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", new Dictionary<ValkeyValue, double> { ["member1"] = 10.5, ["member2"] = 8.25 }, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfExists }).GetArgs()),
+            // SortedSetAdd - Multiple members
+            () => Assert.Equal(["ZADD", "key", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)]).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)], new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "XX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)], new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfExists }).GetArgs()),
 
             // SortedSetIncrementBy with options (ZADD INCR)
             () => Assert.Equal(["ZADD", "key", "NX", "INCR", "5", "member"], Request.SortedSetIncrementByAsync("key", "member", 5.0, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists }).GetArgs()),
@@ -142,16 +134,16 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZPOPMAX", "key", "5"], Request.SortedSetPopMaxAsync("key", 5).GetArgs()),
 
             // SortedSetPopMin / SortedSetPopMax - Multi-key (ZMPOP)
-            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MIN", "COUNT", "1"], Request.SortedSetPopMinMultiKeyAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MAX", "COUNT", "1"], Request.SortedSetPopMaxMultiKeyAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MIN", "COUNT", "3"], Request.SortedSetPopMinMultiKeyAsync(["key1", "key2"], 3).GetArgs()),
-            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MAX", "COUNT", "5"], Request.SortedSetPopMaxMultiKeyAsync(["key1", "key2"], 5).GetArgs()),
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MIN", "COUNT", "1"], Request.SortedSetPopMinAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MAX", "COUNT", "1"], Request.SortedSetPopMaxAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MIN", "COUNT", "3"], Request.SortedSetPopMinAsync(["key1", "key2"], 3).GetArgs()),
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MAX", "COUNT", "5"], Request.SortedSetPopMaxAsync(["key1", "key2"], 5).GetArgs()),
 
             // SortedSetPopMin / SortedSetPopMax - Blocking multi-key (BZMPOP)
-            () => Assert.Equal(["BZMPOP", "2", "2", "key1", "key2", "MIN", "COUNT", "1"], Request.SortedSetBlockingPopMinMultiKeyAsync(["key1", "key2"], TimeSpan.FromSeconds(2)).GetArgs()),
-            () => Assert.Equal(["BZMPOP", "2", "2", "key1", "key2", "MAX", "COUNT", "1"], Request.SortedSetBlockingPopMaxMultiKeyAsync(["key1", "key2"], TimeSpan.FromSeconds(2)).GetArgs()),
-            () => Assert.Equal(["BZMPOP", "5", "1", "key1", "MIN", "COUNT", "3"], Request.SortedSetBlockingPopMinMultiKeyAsync(["key1"], 3, TimeSpan.FromSeconds(5)).GetArgs()),
-            () => Assert.Equal(["BZMPOP", "5", "1", "key1", "MAX", "COUNT", "3"], Request.SortedSetBlockingPopMaxMultiKeyAsync(["key1"], 3, TimeSpan.FromSeconds(5)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "2", "2", "key1", "key2", "MIN", "COUNT", "1"], Request.SortedSetPopMinAsync(["key1", "key2"], TimeSpan.FromSeconds(2)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "2", "2", "key1", "key2", "MAX", "COUNT", "1"], Request.SortedSetPopMaxAsync(["key1", "key2"], TimeSpan.FromSeconds(2)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "5", "1", "key1", "MIN", "COUNT", "3"], Request.SortedSetPopMinAsync(["key1"], 3, TimeSpan.FromSeconds(5)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "5", "1", "key1", "MAX", "COUNT", "3"], Request.SortedSetPopMaxAsync(["key1"], 3, TimeSpan.FromSeconds(5)).GetArgs()),
 
             // SortedSetRandomMember
             () => Assert.Equal(["ZRANDMEMBER", "key"], Request.SortedSetRandomMemberAsync("key").GetArgs()),
