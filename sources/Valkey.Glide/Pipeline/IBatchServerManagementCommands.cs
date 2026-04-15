@@ -22,6 +22,14 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(ValkeyValue, ValkeyValue)" /></returns>
     IBatch ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
+    /// <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" /></returns>
+    IBatch ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
+
+    /// <inheritdoc cref="IServerManagementCommands.ConfigGetAsync(IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.ConfigGetAsync(IEnumerable{ValkeyValue})" /></returns>
+    IBatch ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
+
     /// <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync()" /></returns>
     IBatch DatabaseSizeAsync();
@@ -30,9 +38,17 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()" /></returns>
     IBatch FlushAllDatabasesAsync();
 
+    /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync(FlushMode)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync(FlushMode)" /></returns>
+    IBatch FlushAllDatabasesAsync(FlushMode mode);
+
     /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync()" /></returns>
     IBatch FlushDatabaseAsync();
+
+    /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(FlushMode)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(FlushMode)" /></returns>
+    IBatch FlushDatabaseAsync(FlushMode mode);
 
     /// <inheritdoc cref="IServerManagementCommands.LastSaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LastSaveAsync()" /></returns>
@@ -45,4 +61,16 @@ internal interface IBatchServerManagementCommands
     /// <inheritdoc cref="IServerManagementCommands.LolwutAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync()" /></returns>
     IBatch LolwutAsync();
+
+    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(int)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(int)" /></returns>
+    IBatch LolwutAsync(int version);
+
+    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(int, int[])" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(int, int[])" /></returns>
+    IBatch LolwutAsync(int version, int[] parameters);
+
+    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(int[])" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(int[])" /></returns>
+    IBatch LolwutAsync(int[] parameters);
 }

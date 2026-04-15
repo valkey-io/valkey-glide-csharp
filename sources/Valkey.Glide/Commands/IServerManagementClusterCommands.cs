@@ -232,6 +232,47 @@ public interface IServerManagementClusterCommands
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route);
 
     /// <summary>
+    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
+    /// This overload allows setting multiple configuration parameters in a single call.<br />
+    /// The command will be routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
+    /// {
+    ///     { "maxmemory", "100mb" },
+    ///     { "maxmemory-policy", "allkeys-lru" }
+    /// });
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
+
+    /// <summary>
+    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
+    /// This overload allows setting multiple configuration parameters in a single call.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <c>route</c>.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
+    /// {
+    ///     { "maxmemory", "100mb" },
+    ///     { "maxmemory-policy", "allkeys-lru" }
+    /// }, Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters, Route route);
+
+    /// <summary>
     /// Returns the number of keys in the database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
@@ -261,6 +302,64 @@ public interface IServerManagementClusterCommands
     Task<long> DatabaseSizeAsync(Route route);
 
     /// <summary>
+    /// Deletes all the keys of all the existing databases across all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushAllDatabasesAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushAllDatabasesAsync();
+
+    /// <summary>
+    /// Deletes all the keys of all the existing databases across all primary nodes, with the specified flush mode.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushAllDatabasesAsync(FlushMode.Async);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushAllDatabasesAsync(FlushMode mode);
+
+    /// <summary>
+    /// Deletes all the keys of all the existing databases across all routed nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushAllDatabasesAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushAllDatabasesAsync(Route route);
+
+    /// <summary>
+    /// Deletes all the keys of all the existing databases across all routed nodes, with the specified flush mode.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushAllDatabasesAsync(FlushMode.Async, Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushAllDatabasesAsync(FlushMode mode, Route route);
+
+    /// <summary>
     /// Deletes all the keys in the database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
@@ -272,6 +371,21 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task FlushDatabaseAsync();
+
+    /// <summary>
+    /// Deletes all the keys in the database across all primary nodes, with the specified flush mode.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushdb/"/>
+    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushDatabaseAsync(FlushMode.Async);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushDatabaseAsync(FlushMode mode);
 
     /// <summary>
     /// Deletes all the keys in the database across all routed nodes.
@@ -286,6 +400,22 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task FlushDatabaseAsync(Route route);
+
+    /// <summary>
+    /// Deletes all the keys in the database across all routed nodes, with the specified flush mode.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushdb/"/>
+    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushDatabaseAsync(FlushMode.Async, Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushDatabaseAsync(FlushMode mode, Route route);
 
     /// <summary>
     /// Return the time of the last DB save executed with success.
@@ -385,6 +515,55 @@ public interface IServerManagementClusterCommands
     Task<Dictionary<string, string>> LolwutAsync();
 
     /// <summary>
+    /// Displays a piece of generative computer art for the specified version.<br />
+    /// The command will be routed to a random node.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <param name="version">The version of the generative art to display.</param>
+    /// <returns>A string containing the Valkey version and generative art per cluster node.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// Dictionary&lt;string, string&gt; art = await client.LolwutAsync(version: 6);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<Dictionary<string, string>> LolwutAsync(int version);
+
+    /// <summary>
+    /// Displays a piece of generative computer art for the specified version with additional parameters.<br />
+    /// The command will be routed to a random node.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <param name="version">The version of the generative art to display.</param>
+    /// <param name="parameters">Additional parameters for the art generation.</param>
+    /// <returns>A string containing the Valkey version and generative art per cluster node.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// Dictionary&lt;string, string&gt; art = await client.LolwutAsync(version: 6, parameters: [40, 20]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<Dictionary<string, string>> LolwutAsync(int version, int[] parameters);
+
+    /// <summary>
+    /// Displays a piece of generative computer art with additional parameters (using the default version).<br />
+    /// The command will be routed to a random node.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <param name="parameters">Additional parameters for the art generation.</param>
+    /// <returns>A string containing the Valkey version and generative art per cluster node.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// Dictionary&lt;string, string&gt; art = await client.LolwutAsync(parameters: [40, 20]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<Dictionary<string, string>> LolwutAsync(int[] parameters);
+
+    /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/"/>
@@ -404,5 +583,37 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(Route route);
+
+    /// <summary>
+    /// Gets the values of configuration parameters matching multiple patterns.<br />
+    /// The command will be routed to a random node.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-get/"/>
+    /// <param name="patterns">The patterns of config values to get.</param>
+    /// <returns>All matching configuration parameters per cluster node.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;KeyValuePair&lt;string, string&gt;[]&gt; config = await client.ConfigGetAsync(["max*", "bind*"]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
+
+    /// <summary>
+    /// Gets the values of configuration parameters matching multiple patterns.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-get/"/>
+    /// <param name="patterns">The patterns of config values to get.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>All matching configuration parameters.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;KeyValuePair&lt;string, string&gt;[]&gt; config = await client.ConfigGetAsync(["max*", "bind*"], Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route);
 
 }

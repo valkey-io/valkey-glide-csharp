@@ -107,6 +107,25 @@ public interface IServerManagementCommands
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
     /// <summary>
+    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
+    /// This overload allows setting multiple configuration parameters in a single call.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
+    /// {
+    ///     { "maxmemory", "100mb" },
+    ///     { "maxmemory-policy", "allkeys-lru" }
+    /// });
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
+
+    /// <summary>
     /// Returns the number of keys in the currently-selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
@@ -134,6 +153,21 @@ public interface IServerManagementCommands
     Task FlushAllDatabasesAsync();
 
     /// <summary>
+    /// Deletes all the keys of all the existing databases, with the specified flush mode.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushAllDatabasesAsync(FlushMode.Async);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushAllDatabasesAsync(FlushMode mode);
+
+    /// <summary>
     /// Deletes all the keys of the currently selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
@@ -145,6 +179,21 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task FlushDatabaseAsync();
+
+    /// <summary>
+    /// Deletes all the keys of the currently selected database, with the specified flush mode.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushdb/"/>
+    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FlushDatabaseAsync(FlushMode.Async);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushDatabaseAsync(FlushMode mode);
 
     /// <summary>
     /// Return the time of the last DB save executed with success.
@@ -192,5 +241,66 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync();
+
+    /// <summary>
+    /// Displays a piece of generative computer art for the specified version.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <param name="version">The version of the generative art to display.</param>
+    /// <returns>A string containing the Valkey version and generative art.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string art = await client.LolwutAsync(version: 6);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> LolwutAsync(int version);
+
+    /// <summary>
+    /// Displays a piece of generative computer art for the specified version with additional parameters.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <param name="version">The version of the generative art to display.</param>
+    /// <param name="parameters">Additional parameters for the art generation.</param>
+    /// <returns>A string containing the Valkey version and generative art.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string art = await client.LolwutAsync(version: 6, parameters: [40, 20]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> LolwutAsync(int version, int[] parameters);
+
+    /// <summary>
+    /// Displays a piece of generative computer art with additional parameters (using the default version).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <param name="parameters">Additional parameters for the art generation.</param>
+    /// <returns>A string containing the Valkey version and generative art.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string art = await client.LolwutAsync(parameters: [40, 20]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> LolwutAsync(int[] parameters);
+
+    /// <summary>
+    /// Gets the values of configuration parameters matching multiple patterns.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-get/"/>
+    /// <param name="patterns">The patterns of config values to get.</param>
+    /// <returns>All matching configuration parameters.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// KeyValuePair&lt;string, string&gt;[] config = await client.ConfigGetAsync(["max*", "bind*"]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
 }

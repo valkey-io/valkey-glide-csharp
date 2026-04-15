@@ -168,6 +168,18 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
+    public async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
+    {
+        _ = await Command(Request.ConfigSetAsync(parameters), AllPrimaries);
+    }
+
+    /// <inheritdoc/>
+    public async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters, Route route)
+    {
+        _ = await Command(Request.ConfigSetAsync(parameters), route);
+    }
+
+    /// <inheritdoc/>
     public async Task<long> DatabaseSizeAsync()
         => await DatabaseSizeAsync(AllPrimaries);
 
@@ -179,12 +191,36 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
+    public async Task FlushAllDatabasesAsync()
+        => await FlushAllDatabasesAsync(AllPrimaries);
+
+    /// <inheritdoc/>
+    public async Task FlushAllDatabasesAsync(FlushMode mode)
+        => await FlushAllDatabasesAsync(mode, AllPrimaries);
+
+    /// <inheritdoc/>
+    public async Task FlushAllDatabasesAsync(Route route)
+        => _ = await Command(Request.FlushAllDatabasesAsync(), route);
+
+    /// <inheritdoc/>
+    public async Task FlushAllDatabasesAsync(FlushMode mode, Route route)
+        => _ = await Command(Request.FlushAllDatabasesAsync(mode), route);
+
+    /// <inheritdoc/>
     public async Task FlushDatabaseAsync()
         => await FlushDatabaseAsync(AllPrimaries);
 
     /// <inheritdoc/>
+    public async Task FlushDatabaseAsync(FlushMode mode)
+        => await FlushDatabaseAsync(mode, AllPrimaries);
+
+    /// <inheritdoc/>
     public async Task FlushDatabaseAsync(Route route)
         => _ = await Command(Request.FlushDatabaseAsync(), route);
+
+    /// <inheritdoc/>
+    public async Task FlushDatabaseAsync(FlushMode mode, Route route)
+        => _ = await Command(Request.FlushDatabaseAsync(mode), route);
 
     /// <inheritdoc/>
     public async Task<Dictionary<string, DateTime>> LastSaveAsync()
@@ -235,9 +271,54 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
+    public async Task<Dictionary<string, string>> LolwutAsync(int version)
+    {
+        ClusterValue<string> result = await Command(Request.LolwutAsync(version).ToClusterValue(false), Route.Random);
+        if (result.HasMultiData)
+        {
+            return result.MultiValue;
+        }
+        return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
+    }
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<string, string>> LolwutAsync(int version, int[] parameters)
+    {
+        ClusterValue<string> result = await Command(Request.LolwutAsync(version, parameters).ToClusterValue(false), Route.Random);
+        if (result.HasMultiData)
+        {
+            return result.MultiValue;
+        }
+        return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
+    }
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<string, string>> LolwutAsync(int[] parameters)
+    {
+        ClusterValue<string> result = await Command(Request.LolwutAsync(parameters).ToClusterValue(false), Route.Random);
+        if (result.HasMultiData)
+        {
+            return result.MultiValue;
+        }
+        return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
+    }
+
+    /// <inheritdoc/>
     public async Task<ClusterValue<string>> LolwutAsync(Route route)
     {
         return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
+    {
+        return await Command(Request.ConfigGetAsync(patterns).ToClusterValue(false), Route.AllPrimaries);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route)
+    {
+        return await Command(Request.ConfigGetAsync(patterns).ToClusterValue(route is SingleNodeRoute), route);
     }
 
     /// <inheritdoc/>

@@ -201,6 +201,9 @@ public class CommandTests
             () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
             () => Assert.Equal(["WAIT", "0", "0"], Request.WaitAsync(0, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["WAIT", "3", "5000"], Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(1, 1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "0", "0", "0"], Request.WaitAofAsync(0, 0, TimeSpan.Zero).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "1", "2", "5000"], Request.WaitAofAsync(1, 2, TimeSpan.FromMilliseconds(5000)).GetArgs()),
 
             // List Commands
             () => Assert.Equal(["LPOP", "a"], Request.ListLeftPopAsync("a").GetArgs()),
@@ -414,11 +417,20 @@ public class CommandTests
             () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
             () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
             () => Assert.Equal(["FLUSHALL"], Request.FlushAllDatabasesAsync().GetArgs()),
+            () => Assert.Equal(["FLUSHALL", "SYNC"], Request.FlushAllDatabasesAsync(FlushMode.Sync).GetArgs()),
+            () => Assert.Equal(["FLUSHALL", "ASYNC"], Request.FlushAllDatabasesAsync(FlushMode.Async).GetArgs()),
             () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
             () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
+            () => Assert.Equal(["FLUSHDB", "SYNC"], Request.FlushDatabaseAsync(FlushMode.Sync).GetArgs()),
+            () => Assert.Equal(["FLUSHDB", "ASYNC"], Request.FlushDatabaseAsync(FlushMode.Async).GetArgs()),
             () => Assert.Equal(["LASTSAVE"], Request.LastSaveAsync().GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
+            () => Assert.Equal(["LOLWUT", "VERSION", "5"], Request.LolwutAsync(5).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(6, [40, 20]).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "40", "20"], Request.LolwutAsync([40, 20]).GetArgs()),
+            () => Assert.Equal(["CONFIGGET", "maxmemory", "lfu-decay-time"], Request.ConfigGetAsync([(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]).GetArgs()),
+            () => Assert.Equal(["CONFIGSET", "lfu-decay-time", "5", "lfu-log-factor", "20"], Request.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "lfu-decay-time", "5" }, { "lfu-log-factor", "20" } }).GetArgs()),
 
             // Server Management Command Converters
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
@@ -554,6 +566,8 @@ public class CommandTests
             () => Assert.Equal(2L, Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).Converter(2L)),
             () => Assert.Equal(0L, Request.WaitAsync(0, TimeSpan.Zero).Converter(0L)),
             () => Assert.Equal(1L, Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).Converter(1L)),
+            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(1, 1, TimeSpan.FromMilliseconds(1000)).Converter(new object[] { 1L, 0L })),
+            () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(0, 0, TimeSpan.Zero).Converter(new object[] { 0L, 0L })),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
             () => Assert.Equal(["one", "two"], Request.ListLeftPopAsync("a", 2).Converter([(gs)"one", (gs)"two"])!),

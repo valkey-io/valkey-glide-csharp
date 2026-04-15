@@ -316,4 +316,12 @@ internal partial class Request
 
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()]);
+
+    public static Cmd<object[], long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout)
+        => new(RequestType.WaitAof, [numlocal.ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()], false, arr =>
+        {
+            long local = arr[0] is long l0 ? l0 : long.Parse(arr[0].ToString()!);
+            long replicas = arr[1] is long l1 ? l1 : long.Parse(arr[1].ToString()!);
+            return [local, replicas];
+        });
 }

@@ -29,6 +29,17 @@ internal partial class Request
     public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
         GlideString[] args = pattern.IsNull ? ["*"] : [pattern.ToGlideString()];
+        return ConfigGetAsyncInternal(args);
+    }
+
+    public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
+    {
+        GlideString[] args = [.. patterns.Select(p => p.ToGlideString())];
+        return ConfigGetAsyncInternal(args);
+    }
+
+    private static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsyncInternal(GlideString[] args)
+    {
         return new(RequestType.ConfigGet, args, false, response =>
         {
             // Handle both array and dictionary formats
@@ -93,14 +104,31 @@ internal partial class Request
         return Ok(RequestType.ConfigSet, args);
     }
 
+    public static Cmd<string, ValkeyValue> ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
+    {
+        List<GlideString> args = [];
+        foreach (KeyValuePair<ValkeyValue, ValkeyValue> kvp in parameters)
+        {
+            args.Add(kvp.Key.ToGlideString());
+            args.Add(kvp.Value.ToGlideString());
+        }
+        return Ok(RequestType.ConfigSet, [.. args]);
+    }
+
     public static Cmd<long, long> DatabaseSizeAsync()
         => new(RequestType.DBSize, [], false, l => l);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
         => Ok(RequestType.FlushAll, []);
 
+    public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync(FlushMode mode)
+        => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
+
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
         => Ok(RequestType.FlushDB, []);
+
+    public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
+        => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
 
     // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<long, DateTime> LastSaveAsync()
@@ -122,6 +150,25 @@ internal partial class Request
 
     public static Cmd<GlideString, string> LolwutAsync()
         => new(RequestType.Lolwut, [], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> LolwutAsync(int version)
+        => new(RequestType.Lolwut, ["VERSION", version.ToString().ToGlideString()], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> LolwutAsync(int version, int[] parameters)
+    {
+        List<GlideString> args = ["VERSION", version.ToString().ToGlideString()];
+        foreach (int param in parameters)
+        {
+            args.Add(param.ToString().ToGlideString());
+        }
+        return new(RequestType.Lolwut, [.. args], false, gs => gs.ToString());
+    }
+
+    public static Cmd<GlideString, string> LolwutAsync(int[] parameters)
+    {
+        GlideString[] args = [.. parameters.Select(p => p.ToString().ToGlideString())];
+        return new(RequestType.Lolwut, args, false, gs => gs.ToString());
+    }
 
     public static Cmd<string, ValkeyValue> Select(long index)
         => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
