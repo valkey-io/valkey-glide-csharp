@@ -46,7 +46,7 @@ public class BoundTests
         () => Assert.Equal(["[abc"], LexBound.Inclusive("abc").ToArgs()),
         () => Assert.Equal(["[hello world"], LexBound.Inclusive("hello world").ToArgs()),
         () => Assert.Same(LexBound.Min, LexBound.Inclusive("-")),
-        () => Assert.Same(LexBound.Min, LexBound.Inclusive("+")));
+        () => Assert.Same(LexBound.Max, LexBound.Inclusive("+")));
 
     [Fact]
     public void LexBound_Exclusive() => Assert.Multiple(
@@ -61,11 +61,15 @@ public class BoundTests
     [Fact]
     public void LexBound_ImplicitFromString() => Assert.Multiple(
         () => Assert.Equal(["[hello"], ((LexBound)"hello").ToArgs()),
-        () => Assert.Equal(["[world"], ((LexBound)"world").ToArgs()));
+        () => Assert.Equal(["[world"], ((LexBound)"world").ToArgs()),
+        () => Assert.Same(LexBound.Min, (LexBound)"-"),
+        () => Assert.Same(LexBound.Max, (LexBound)"+"));
 
     [Fact]
     public void LexBound_ImplicitFromValkeyValue() => Assert.Multiple(
         () => Assert.Equal(["[test"], ((LexBound)(ValkeyValue)"test").ToArgs()),
+        () => Assert.Same(LexBound.Min, (LexBound)(ValkeyValue)"-"),
+        () => Assert.Same(LexBound.Max, (LexBound)(ValkeyValue)"+"),
         () => Assert.Throws<ArgumentNullException>(() => (LexBound)ValkeyValue.Null));
 
     #endregion
