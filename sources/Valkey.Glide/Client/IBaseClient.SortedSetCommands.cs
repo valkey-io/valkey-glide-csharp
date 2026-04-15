@@ -310,27 +310,49 @@ public partial interface IBaseClient
     Task<(long Rank, double Score)?> SortedSetRankWithScoreAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending);
 
     /// <summary>
+    /// Returns all elements in the sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zrange/"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <returns>An array of elements in the specified range.</returns>
+    Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key);
+
+    /// <summary>
     /// Returns all elements in the sorted set within the given range.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrange/"/>
     /// <param name="key">The sorted set key.</param>
     /// <param name="options">Options specifying the range, order, and limits.</param>
     /// <returns>An array of elements in the specified range.</returns>
-    Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options = default);
+    Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options);
+
+    /// <inheritdoc cref="SortedSetRangeAsync(ValkeyKey)" path="/*[not(self::returns)]"/>
+    /// <returns>An array of elements with their scores in the specified range.</returns>
+    Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key);
 
     /// <inheritdoc cref="SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[not(self::returns)]"/>
+    /// <param name="options">Options specifying the range, order, and limits.</param>
     /// <returns>An array of elements with their scores in the specified range.</returns>
-    Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default);
+    Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options);
 
     /// <summary>
-    /// Stored all elements in the sorted set within the given range to <paramref name="destination"/>.
+    /// Stores all elements in the sorted set to <paramref name="destination"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zrangestore/"/>
+    /// <param name="source">The key of the source sorted set.</param>
+    /// <param name="destination">The key of the destination sorted set.</param>
+    /// <returns>The number of elements in the resulting sorted set.</returns>
+    Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination);
+
+    /// <summary>
+    /// Stores all elements in the sorted set within the given range to <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrangestore/"/>
     /// <param name="source">The key of the source sorted set.</param>
     /// <param name="destination">The key of the destination sorted set.</param>
     /// <param name="options">Options specifying the range, order, and limits.</param>
     /// <returns>The number of elements in the resulting sorted set.</returns>
-    Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options = default);
+    Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options);
 
     /// <summary>
     /// Removes all elements in the sorted set within the given range.

@@ -370,7 +370,7 @@ internal partial class Request
         return new(RequestType.ZScan, [.. args], false, ParseScanResponse);
     }
 
-    public static Cmd<object[], ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options = default)
+    public static Cmd<object[], ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options)
     {
         List<GlideString> args = [key];
         args.AddRange(options.ToArgs());
@@ -378,7 +378,7 @@ internal partial class Request
         return new(RequestType.ZRange, [.. args], false, ToValkeyValues);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default)
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options)
     {
         List<GlideString> args = [key];
         args.AddRange(options.ToArgs());
@@ -387,7 +387,7 @@ internal partial class Request
         return new(RequestType.ZRange, [.. args], false, ToScoreResults);
     }
 
-    public static Cmd<long, long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options = default)
+    public static Cmd<long, long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options)
     {
         List<GlideString> args = [destination, source];
         args.AddRange(options.ToArgs());

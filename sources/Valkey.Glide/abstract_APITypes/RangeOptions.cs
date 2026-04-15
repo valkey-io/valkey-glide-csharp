@@ -25,7 +25,7 @@ public readonly struct RangeOptions()
 
     /// <summary>
     /// The range to query.
-    /// Defaults to <see cref="RankRange.All"/> (all elements by rank).
+    /// Defaults to <see cref="RankRange.All"/>.
     /// </summary>
     public Range Range { get; init; } = RankRange.All;
 

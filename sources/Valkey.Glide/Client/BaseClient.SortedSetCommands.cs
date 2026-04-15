@@ -191,15 +191,27 @@ public abstract partial class BaseClient
         => Command(Request.SortedSetRankWithScoreAsync(key, member, order));
 
     /// <inheritdoc/>
-    public Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options = default)
+    public Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key)
+        => SortedSetRangeAsync(key, new RangeOptions());
+
+    /// <inheritdoc/>
+    public Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options)
         => Command(Request.SortedSetRangeAsync(key, options));
 
     /// <inheritdoc/>
-    public Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default)
+    public Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key)
+        => SortedSetRangeWithScoresAsync(key, new RangeOptions());
+
+    /// <inheritdoc/>
+    public Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options)
         => Command(Request.SortedSetRangeWithScoresAsync(key, options));
 
     /// <inheritdoc/>
-    public Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options = default)
+    public Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination)
+        => SortedSetRangeAndStoreAsync(source, destination, new RangeOptions());
+
+    /// <inheritdoc/>
+    public Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options)
         => Command(Request.SortedSetRangeAndStoreAsync(source, destination, options));
 
     /// <inheritdoc/>

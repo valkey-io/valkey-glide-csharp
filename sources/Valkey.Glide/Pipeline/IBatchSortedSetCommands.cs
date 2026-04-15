@@ -145,15 +145,27 @@ internal interface IBatchSortedSetCommands
 
     /// <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" /></returns>
-    IBatch SortedSetRange(ValkeyKey key, RangeOptions options = default);
+    IBatch SortedSetRange(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" /></returns>
+    IBatch SortedSetRange(ValkeyKey key, RangeOptions options);
 
     /// <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey, RangeOptions)" /></returns>
-    IBatch SortedSetRangeWithScores(ValkeyKey key, RangeOptions options = default);
+    IBatch SortedSetRangeWithScores(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey, RangeOptions)" /></returns>
+    IBatch SortedSetRangeWithScores(ValkeyKey key, RangeOptions options);
 
     /// <inheritdoc cref="IBaseClient.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, RangeOptions)" /></returns>
-    IBatch SortedSetRangeAndStore(ValkeyKey source, ValkeyKey destination, RangeOptions options = default);
+    IBatch SortedSetRangeAndStore(ValkeyKey source, ValkeyKey destination);
+
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, RangeOptions)" /></returns>
+    IBatch SortedSetRangeAndStore(ValkeyKey source, ValkeyKey destination, RangeOptions options);
 
     /// <inheritdoc cref="IBaseClient.SortedSetRemoveRangeAsync(ValkeyKey, Range)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRemoveRangeAsync(ValkeyKey, Range)" /></returns>
