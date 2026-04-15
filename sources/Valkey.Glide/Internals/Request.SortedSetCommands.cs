@@ -222,17 +222,7 @@ internal partial class Request
         List<GlideString> args = [key];
         args.AddRange(members.Select(m => (GlideString)m));
 
-        return new(RequestType.ZMScore, [.. args], false, response =>
-        {
-            double?[] scores = new double?[response.Length];
-
-            for (int i = 0; i < response.Length; i++)
-            {
-                scores[i] = response[i] == null ? null : (double)response[i];
-            }
-
-            return scores;
-        });
+        return new(RequestType.ZMScore, [.. args], false, ToNullableDoubleArray);
     }
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(ValkeyKey key)
@@ -340,36 +330,14 @@ internal partial class Request
     {
         List<GlideString> args = [key, 1.ToGlideString(), WithScoresKeyword];
 
-        return new(RequestType.ZRandMember, [.. args], false, response =>
-        {
-            if (response.Length == 0)
-            {
-                return null;
-            }
-
-            object[] pair = (object[])response[0];
-            ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
-            double score = (double)pair[1];
-            return new SortedSetEntry(member, score);
-        });
+        return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntryFromPairArray);
     }
 
     public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoreAsync(ValkeyKey key, long count)
     {
         List<GlideString> args = [key, count.ToGlideString(), WithScoresKeyword];
 
-        return new(RequestType.ZRandMember, [.. args], false, response =>
-        {
-            SortedSetEntry[] results = new SortedSetEntry[response.Length];
-            for (int i = 0; i < results.Length; i++)
-            {
-                object[] pair = (object[])response[i];
-                ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
-                double score = (double)pair[1];
-                results[i] = new SortedSetEntry(member, score);
-            }
-            return results;
-        });
+        return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntriesFromPairArray);
     }
 
     public static Cmd<GlideString?, ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key) =>
@@ -377,25 +345,13 @@ internal partial class Request
             response is null ? ValkeyValue.Null : (ValkeyValue)response, true);
 
     public static Cmd<object[], ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count)
-        => new(RequestType.ZRandMember, [key, count.ToGlideString()], false, response =>
-            [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
+        => new(RequestType.ZRandMember, [key, count.ToGlideString()], false, ToValkeyValues);
 
     public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count)
     {
         List<GlideString> args = [key, count.ToGlideString(), WithScoresKeyword];
 
-        return new(RequestType.ZRandMember, [.. args], false, response =>
-        {
-            SortedSetEntry[] entries = new SortedSetEntry[response.Length];
-            for (int i = 0; i < entries.Length; i++)
-            {
-                object[] pair = (object[])response[i];
-                ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
-                double score = (double)pair[1];
-                entries[i] = new SortedSetEntry(member, score);
-            }
-            return entries;
-        });
+        return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntriesFromPairArray);
     }
 
     public static Cmd<long?, long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending)
@@ -421,22 +377,7 @@ internal partial class Request
             args.Add(pageSize.ToGlideString());
         }
 
-        return new(RequestType.ZScan, [.. args], false, response =>
-        {
-            object[] responseArray = response;
-            long newCursor = long.Parse(responseArray[0].ToString()!);
-            object[] itemsArray = (object[])responseArray[1];
-
-            SortedSetEntry[] entries = new SortedSetEntry[itemsArray.Length / 2];
-            for (int i = 0; i < entries.Length; i++)
-            {
-                ValkeyValue member = (ValkeyValue)(GlideString)itemsArray[i * 2];
-                double score = double.Parse(((GlideString)itemsArray[(i * 2) + 1]).ToString());
-                entries[i] = new SortedSetEntry(member, score);
-            }
-
-            return (newCursor, entries);
-        });
+        return new(RequestType.ZScan, [.. args], false, ParseScanResponse);
     }
 
     public static Cmd<object[], ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options = default)
@@ -444,7 +385,7 @@ internal partial class Request
         List<GlideString> args = [key];
         args.AddRange(options.ToArgs());
 
-        return new(RequestType.ZRange, [.. args], false, array => [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
+        return new(RequestType.ZRange, [.. args], false, ToValkeyValues);
     }
 
     public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default)
@@ -453,8 +394,7 @@ internal partial class Request
         args.AddRange(options.ToArgs());
         args.Add(ValkeyLiterals.WITHSCORES);
 
-        return new(RequestType.ZRange, [.. args], false, dict =>
-            [.. dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))]);
+        return new(RequestType.ZRange, [.. args], false, ToScoreResults);
     }
 
     public static Cmd<long, long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options = default)
@@ -488,6 +428,54 @@ internal partial class Request
 
     private static readonly Func<object[], ValkeyValue[]> ToValkeyValues = array => [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
     private static readonly Func<Dictionary<GlideString, object>, SortedSetEntry[]> ToScoreResults = dict => [.. dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))];
+
+    private static double?[] ToNullableDoubleArray(object[] response)
+    {
+        double?[] scores = new double?[response.Length];
+        for (int i = 0; i < response.Length; i++)
+        {
+            scores[i] = response[i] == null ? null : (double)response[i];
+        }
+        return scores;
+    }
+
+    private static SortedSetEntry? ToSortedSetEntryFromPairArray(object[] response)
+    {
+        if (response.Length == 0)
+        {
+            return null;
+        }
+
+        object[] pair = (object[])response[0];
+        return new SortedSetEntry((ValkeyValue)(GlideString)pair[0], (double)pair[1]);
+    }
+
+    private static SortedSetEntry[] ToSortedSetEntriesFromPairArray(object[] response)
+    {
+        SortedSetEntry[] entries = new SortedSetEntry[response.Length];
+        for (int i = 0; i < entries.Length; i++)
+        {
+            object[] pair = (object[])response[i];
+            entries[i] = new SortedSetEntry((ValkeyValue)(GlideString)pair[0], (double)pair[1]);
+        }
+        return entries;
+    }
+
+    private static (long cursor, SortedSetEntry[] items) ParseScanResponse(object[] response)
+    {
+        long newCursor = long.Parse(response[0].ToString()!);
+        object[] itemsArray = (object[])response[1];
+
+        SortedSetEntry[] entries = new SortedSetEntry[itemsArray.Length / 2];
+        for (int i = 0; i < entries.Length; i++)
+        {
+            ValkeyValue member = (ValkeyValue)(GlideString)itemsArray[i * 2];
+            double score = double.Parse(((GlideString)itemsArray[(i * 2) + 1]).ToString());
+            entries[i] = new SortedSetEntry(member, score);
+        }
+
+        return (newCursor, entries);
+    }
 
     private static SortedSetEntry? ToSortedSetEntry(object? response)
     {
@@ -556,13 +544,13 @@ internal partial class Request
     private static void AddKeys(List<GlideString> args, IEnumerable<ValkeyKey> keys)
     {
         args.Add(keys.Count().ToGlideString());
-        args.AddRange(keys.Select(k => (GlideString)k));
+        args.AddRange(keys.ToGlideStrings());
     }
 
     private static void AddWeights(List<GlideString> args, IEnumerable<double> weights)
     {
         args.Add(WeightsKeyword);
-        args.AddRange(weights.Select(w => w.ToGlideString()));
+        args.AddRange(weights.ToGlideStrings());
     }
 
     private static void AddAggregate(List<GlideString> args, Aggregate aggregate)

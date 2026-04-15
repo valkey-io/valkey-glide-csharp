@@ -102,20 +102,6 @@ public static class GlideStringExtensions
     public static GlideString[] ToGlideStrings(this Section[]? strings) => strings is null ? [] : [.. strings.Select(s => new GlideString(s.ToString()))];
 
     /// <summary>
-    /// Convert an <see langword="ValkeyKey[]" /> to an <see langword="GlideString[]" />.
-    /// </summary>
-    /// <param name="keys">An array of <see langword="ValkeyKey" />s to convert.</param>
-    /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this ValkeyKey[]? keys) => keys is null ? [] : [.. keys.Select(k => (GlideString)k)];
-
-    /// <summary>
-    /// Convert an <see langword="ValkeyValue[]" /> to an <see langword="GlideString[]" />.
-    /// </summary>
-    /// <param name="values">An array of <see langword="ValkeyValue" />s to convert.</param>
-    /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this ValkeyValue[]? values) => values is null ? [] : [.. values.Select(v => (GlideString)v)];
-
-    /// <summary>
     /// Convert an <see langword="GlideString[]" /> to an <see langword="string[]" />.<br />
     /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
     /// stores a non-UTF8 compatible sequence of bytes.
@@ -130,6 +116,24 @@ public static class GlideStringExtensions
     /// <param name="strings">An array of <see cref="GlideString" />s to convert.</param>
     /// <returns>An array of <see langword="byte[]" />.</returns>
     public static byte[][] ToByteArrays(this GlideString[]? strings) => strings is null ? [] : [.. strings.Select(s => s.Bytes)];
+
+    #region ToGlideStrings
+
+    /// /// <summary>
+    /// Convert an <see cref="IEnumerable{Double}" /> to a <see langword="GlideString[]" />.
+    /// </summary>
+    /// <param name="values">A collection of <see langword="double" />s to convert.</param>
+    /// <returns>An array of <see cref="GlideString" />s.</returns>
+    public static GlideString[] ToGlideStrings(this IEnumerable<double> values) => [.. values.Select(v => v.ToGlideString())];
+
+    /// <summary>
+    /// Convert an <see cref="IEnumerable{ValkeyKey}" /> to a <see langword="GlideString[]" />.
+    /// </summary>
+    /// <param name="keys">A collection of <see cref="ValkeyKey" />s to convert.</param>
+    /// <returns>An array of <see cref="GlideString" />s.</returns>
+    public static GlideString[] ToGlideStrings(this IEnumerable<ValkeyKey> keys) => [.. keys.Select(k => (GlideString)k)];
+
+    #endregion
 }
 
 /// <summary>
