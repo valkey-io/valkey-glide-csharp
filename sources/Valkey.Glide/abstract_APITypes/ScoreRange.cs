@@ -65,7 +65,7 @@ public sealed class ScoreRange : Range
 
     /// <inheritdoc/>
     internal override bool IsUnbounded()
-        => _min.IsMin && _max.IsMax;
+        => _min.Equals(ScoreBound.Min) && _max.Equals(ScoreBound.Max);
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs()

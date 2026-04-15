@@ -23,13 +23,7 @@ public class BoundTests
     [Fact]
     public void ScoreBound_MinMax() => Assert.Multiple(
         () => Assert.Equal(["-inf"], ScoreBound.Min.ToArgs()),
-        () => Assert.Equal(["+inf"], ScoreBound.Max.ToArgs()),
-        () => Assert.True(ScoreBound.Min.IsMin),
-        () => Assert.False(ScoreBound.Min.IsMax),
-        () => Assert.True(ScoreBound.Max.IsMax),
-        () => Assert.False(ScoreBound.Max.IsMin),
-        () => Assert.False(ScoreBound.Inclusive(5.0).IsMin),
-        () => Assert.False(ScoreBound.Inclusive(5.0).IsMax));
+        () => Assert.Equal(["+inf"], ScoreBound.Max.ToArgs()));
 
     [Fact]
     public void ScoreBound_ImplicitFromDouble() => Assert.Multiple(

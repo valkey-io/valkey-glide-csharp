@@ -101,15 +101,5 @@ public sealed class ScoreBound : Bound
         return _isExclusive ? [(GlideString)ValkeyLiterals.RangeExclusive + scoreStr] : [scoreStr];
     }
 
-    /// <summary>
-    /// Returns <see langword="true"/> if this bound represents negative infinity.
-    /// </summary>
-    internal bool IsMin => double.IsNegativeInfinity(_score);
-
-    /// <summary>
-    /// Returns <see langword="true"/> if this bound represents positive infinity.
-    /// </summary>
-    internal bool IsMax => double.IsPositiveInfinity(_score);
-
     #endregion
 }
