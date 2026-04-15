@@ -252,13 +252,13 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> SortAsync(
         ValkeyKey key,
-        long skip = 0,
-        long take = -1,
-        Order order = Order.Ascending,
-        SortType sortType = SortType.Numeric,
-        ValkeyValue by = default,
-        IEnumerable<ValkeyValue>? get = null,
-        CommandFlags flags = CommandFlags.None);
+        long skip,
+        long take,
+        Order order,
+        SortType sortType,
+        ValkeyValue by,
+        IEnumerable<ValkeyValue>? get,
+        CommandFlags flags);
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAndStoreAsync(ValkeyKey, ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -266,11 +266,11 @@ public partial interface IDatabaseAsync
     Task<long> SortAndStoreAsync(
         ValkeyKey destination,
         ValkeyKey key,
-        long skip = 0,
-        long take = -1,
-        Order order = Order.Ascending,
-        SortType sortType = SortType.Numeric,
-        ValkeyValue by = default,
-        IEnumerable<ValkeyValue>? get = null,
-        CommandFlags flags = CommandFlags.None);
+        long skip,
+        long take,
+        Order order,
+        SortType sortType,
+        ValkeyValue by,
+        IEnumerable<ValkeyValue>? get,
+        CommandFlags flags);
 }

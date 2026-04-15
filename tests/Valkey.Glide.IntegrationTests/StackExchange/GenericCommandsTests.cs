@@ -739,14 +739,14 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key = $"ser-sort-flags-{Guid.NewGuid()}";
 
         _ = await fixture.Client.ListLeftPushAsync(key, ["3", "1", "2"]);
-        ValkeyValue[] result = await db.SortAsync(key, flags: CommandFlags.None);
+        ValkeyValue[] result = await db.SortAsync(key, 0, -1, Order.Ascending, SortType.Numeric, default, null, CommandFlags.None);
         Assert.Equal(3, result.Length);
     }
 
     [Fact]
     public async Task SortAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.SortAsync("key", flags: UnsupportedCommandFlag));
+            () => fixture.Database.SortAsync("key", 0, -1, Order.Ascending, SortType.Numeric, default, null, UnsupportedCommandFlag));
 
     #endregion
 
