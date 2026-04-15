@@ -121,54 +121,6 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(0, await db.SortedSetAddAsync(key, xxEntries, SortedSetWhen.Exists));
     }
 
-    #endregion
-    #region SortedSetUpdateAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetUpdateAsync_SingleMember(IDatabaseAsync db)
-    {
-        string key = $"ser-zadd-update-{Guid.NewGuid()}";
-
-        // Add initial member
-        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.0));
-
-        // Update with CH flag via SortedSetUpdateAsync — returns true if score changed
-        Assert.True(await db.SortedSetUpdateAsync(key, "member1", 15.0));
-
-        // Update with same score — returns false (no change)
-        Assert.False(await db.SortedSetUpdateAsync(key, "member1", 15.0));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetUpdateAsync_MultiMember(IDatabaseAsync db)
-    {
-        string key = $"ser-zadd-update-multi-{Guid.NewGuid()}";
-
-        // Add initial members
-        SortedSetEntry[] entries =
-        [
-            new("member1", 10.0),
-            new("member2", 20.0),
-        ];
-        Assert.Equal(2, await db.SortedSetAddAsync(key, entries));
-
-        // Update scores — returns count of changed members
-        SortedSetEntry[] updatedEntries =
-        [
-            new("member1", 15.0),
-            new("member2", 25.0),
-        ];
-        Assert.Equal(2, await db.SortedSetUpdateAsync(key, updatedEntries));
-
-        // Update with same scores — returns 0 (no changes)
-        Assert.Equal(0, await db.SortedSetUpdateAsync(key, updatedEntries));
-    }
-
-    #endregion
-    #region CommandFlags Validation
-
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetAddAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
@@ -180,7 +132,254 @@ public class SortedSetCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region SortedSetLengthAsync / SortedSetCountAsync
+    #region SortedSetCombineAndStoreAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAndStoreAsync_TwoKey_Union(IDatabaseAsync db)
+    {
+        string key1 = $"{{ser-zunionstore}}-1-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zunionstore}}-2-{Guid.NewGuid()}";
+        string dest = $"{{ser-zunionstore}}-dest-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+
+        long stored = await db.SortedSetCombineAndStoreAsync(SetOperation.Union, dest, key1, key2);
+        Assert.Equal(3, stored);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAndStoreAsync_MultiKey_Intersect(IDatabaseAsync db)
+    {
+        string key1 = $"{{ser-zinterstore}}-1-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zinterstore}}-2-{Guid.NewGuid()}";
+        string dest = $"{{ser-zinterstore}}-dest-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+
+        IEnumerable<ValkeyKey> interKeys = [key1, key2];
+        long stored = await db.SortedSetCombineAndStoreAsync(SetOperation.Intersect, dest, interKeys);
+        Assert.Equal(1, stored);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAndStoreAsync_Difference(IDatabaseAsync db)
+    {
+        string key1 = $"{{ser-zdiffstore}}-1-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zdiffstore}}-2-{Guid.NewGuid()}";
+        string dest = $"{{ser-zdiffstore}}-dest-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+
+        long stored = await db.SortedSetCombineAndStoreAsync(SetOperation.Difference, dest, key1, key2);
+        Assert.Equal(1, stored);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAndStoreAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zcombinestore-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetCombineAndStoreAsync(SetOperation.Union, key, key, key, Aggregate.Sum, CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetCombineAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAsync_Union_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key1 = $"{{ser-zunion}}-1-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zunion}}-2-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+
+        ValkeyValue[] result = await db.SortedSetCombineAsync(SetOperation.Union, [key1, key2]);
+        Assert.Equal(3, result.Length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAsync_Intersect_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key1 = $"{{ser-zinter}}-1-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zinter}}-2-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+
+        ValkeyValue[] result = await db.SortedSetCombineAsync(SetOperation.Intersect, [key1, key2]);
+        _ = Assert.Single(result);
+        Assert.Equal("m2", result[0]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAsync_Difference_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key1 = $"{{ser-zdiff}}-1-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zdiff}}-2-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+
+        ValkeyValue[] result = await db.SortedSetCombineAsync(SetOperation.Difference, [key1, key2]);
+        _ = Assert.Single(result);
+        Assert.Equal("m1", result[0]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zcombine-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetCombineAsync(SetOperation.Union, [key], null, Aggregate.Sum, CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetCombineWithScoresAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetCombineWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key1 = $"{{ser-zunion-ws}}-1-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zunion-ws}}-2-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+
+        SortedSetEntry[] result = await db.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2]);
+        Assert.Equal(3, result.Length);
+    }
+
+    #endregion
+    #region SortedSetDecrementAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetDecrementAsync_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key = $"ser-zdecr-{Guid.NewGuid()}";
+
+        // Decrement on non-existent member creates it with negated value
+        double result = await db.SortedSetDecrementAsync(key, "member1", 10.0);
+        Assert.Equal(-10.0, result);
+
+        // Decrement existing member
+        result = await db.SortedSetDecrementAsync(key, "member1", 5.0);
+        Assert.Equal(-15.0, result);
+
+        // Decrement by zero
+        result = await db.SortedSetDecrementAsync(key, "member1", 0.0);
+        Assert.Equal(-15.0, result);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetDecrementAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zdecr-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetDecrementAsync(key, "member1", 1.0, CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetIncrementAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetIncrementAsync_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key = $"ser-zincrby-{Guid.NewGuid()}";
+
+        // Increment on non-existent member creates it
+        double result = await db.SortedSetIncrementAsync(key, "member1", 10.5);
+        Assert.Equal(10.5, result);
+
+        // Increment existing member
+        result = await db.SortedSetIncrementAsync(key, "member1", 5.0);
+        Assert.Equal(15.5, result);
+
+        // Negative increment
+        result = await db.SortedSetIncrementAsync(key, "member1", -3.0);
+        Assert.Equal(12.5, result);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetIncrementAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zincrby-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetIncrementAsync(key, "member1", 1.0, CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetIntersectionLengthAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetIntersectionLengthAsync_WithCommandFlags(IDatabaseAsync db)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZINTERCARD is supported since 7.0.0");
+
+        string key1 = $"{{ser-zintercard}}-{Guid.NewGuid()}";
+        string key2 = $"{{ser-zintercard}}-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(key1, "m3", 3.0));
+
+        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+        Assert.True(await db.SortedSetAddAsync(key2, "m4", 40.0));
+
+        // Default (no limit)
+        Assert.Equal(2, await db.SortedSetIntersectionLengthAsync([key1, key2]));
+
+        // With limit
+        Assert.Equal(1, await db.SortedSetIntersectionLengthAsync([key1, key2], limit: 1));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetIntersectionLengthAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zintercard-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetIntersectionLengthAsync([key], flags: CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetLengthAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -241,104 +440,6 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.SortedSetLengthAsync(key, flags: CommandFlags.DemandMaster));
-    }
-
-    #endregion
-    #region SortedSetIncrementAsync / SortedSetDecrementAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetIncrementAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key = $"ser-zincrby-{Guid.NewGuid()}";
-
-        // Increment on non-existent member creates it
-        double result = await db.SortedSetIncrementAsync(key, "member1", 10.5);
-        Assert.Equal(10.5, result);
-
-        // Increment existing member
-        result = await db.SortedSetIncrementAsync(key, "member1", 5.0);
-        Assert.Equal(15.5, result);
-
-        // Negative increment
-        result = await db.SortedSetIncrementAsync(key, "member1", -3.0);
-        Assert.Equal(12.5, result);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetDecrementAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key = $"ser-zdecr-{Guid.NewGuid()}";
-
-        // Decrement on non-existent member creates it with negated value
-        double result = await db.SortedSetDecrementAsync(key, "member1", 10.0);
-        Assert.Equal(-10.0, result);
-
-        // Decrement existing member
-        result = await db.SortedSetDecrementAsync(key, "member1", 5.0);
-        Assert.Equal(-15.0, result);
-
-        // Decrement by zero
-        result = await db.SortedSetDecrementAsync(key, "member1", 0.0);
-        Assert.Equal(-15.0, result);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetIncrementAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zincrby-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetIncrementAsync(key, "member1", 1.0, CommandFlags.DemandMaster));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetDecrementAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zdecr-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetDecrementAsync(key, "member1", 1.0, CommandFlags.DemandMaster));
-    }
-
-    #endregion
-    #region SortedSetIntersectionLengthAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetIntersectionLengthAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZINTERCARD is supported since 7.0.0");
-
-        string key1 = $"{{ser-zintercard}}-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zintercard}}-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m3", 3.0));
-
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m4", 40.0));
-
-        // Default (no limit)
-        Assert.Equal(2, await db.SortedSetIntersectionLengthAsync([key1, key2]));
-
-        // With limit
-        Assert.Equal(1, await db.SortedSetIntersectionLengthAsync([key1, key2], limit: 1));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetIntersectionLengthAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zintercard-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetIntersectionLengthAsync([key], flags: CommandFlags.DemandMaster));
     }
 
     #endregion
@@ -451,16 +552,6 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetPopAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zpop-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetPopAsync(key, Order.Ascending, CommandFlags.DemandMaster));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetPopAsync_MultiKey_WithCommandFlags(IDatabaseAsync db)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
@@ -484,75 +575,22 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetPopAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zpop-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetPopAsync(key, Order.Ascending, CommandFlags.DemandMaster));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetPopAsync_MultiKey_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
     {
         string key = $"ser-zmpop-flags-{Guid.NewGuid()}";
 
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.SortedSetPopAsync([key], 1, Order.Ascending, CommandFlags.DemandMaster));
-    }
-
-    #endregion
-    #region SortedSetScoreAsync / SortedSetScoresAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoreAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key = $"ser-zscore-{Guid.NewGuid()}";
-
-        // Non-existent key
-        Assert.Null(await db.SortedSetScoreAsync(key, "member1"));
-
-        // Add test data
-        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
-        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
-
-        // Get score of existing member
-        double? score = await db.SortedSetScoreAsync(key, "member1");
-        _ = Assert.NotNull(score);
-        Assert.Equal(10.5, score.Value);
-
-        // Get score of non-existent member
-        Assert.Null(await db.SortedSetScoreAsync(key, "nonexistent"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoreAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zscore-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetScoreAsync(key, "member1", CommandFlags.DemandMaster));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoresAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key = $"ser-zmscore-{Guid.NewGuid()}";
-
-        // Add test data
-        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
-        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
-
-        // Get scores of multiple members
-        double?[] scores = await db.SortedSetScoresAsync(key, ["member1", "member2", "nonexistent"]);
-        Assert.Equal(3, scores.Length);
-        Assert.Equal(10.5, scores[0]);
-        Assert.Equal(8.2, scores[1]);
-        Assert.Null(scores[2]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoresAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zmscore-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetScoresAsync(key, ["member1"], CommandFlags.DemandMaster));
     }
 
     #endregion
@@ -588,6 +626,9 @@ public class SortedSetCommandTests(TestConfiguration config)
             () => db.SortedSetRandomMemberAsync(key, CommandFlags.DemandMaster));
     }
 
+    #endregion
+    #region SortedSetRandomMembersAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetRandomMembersAsync_WithCommandFlags(IDatabaseAsync db)
@@ -613,6 +654,9 @@ public class SortedSetCommandTests(TestConfiguration config)
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.SortedSetRandomMembersAsync(key, 2, CommandFlags.DemandMaster));
     }
+
+    #endregion
+    #region SortedSetRandomMembersWithScoresAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -646,7 +690,26 @@ public class SortedSetCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region SortedSetRangeByRankAsync / SortedSetRangeByScoreAsync / SortedSetRangeByValueAsync
+    #region SortedSetRangeAndStoreAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetRangeAndStoreAsync_WithCommandFlags(IDatabaseAsync db)
+    {
+        string srcKey = $"{{ser-zrangestore}}-src-{Guid.NewGuid()}";
+        string destKey = $"{{ser-zrangestore}}-dest-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(srcKey, "m1", 1.0));
+        Assert.True(await db.SortedSetAddAsync(srcKey, "m2", 2.0));
+        Assert.True(await db.SortedSetAddAsync(srcKey, "m3", 3.0));
+        Assert.True(await db.SortedSetAddAsync(srcKey, "m4", 4.0));
+
+        long stored = await db.SortedSetRangeAndStoreAsync(srcKey, destKey, 1, 2);
+        Assert.Equal(2, stored);
+    }
+
+    #endregion
+    #region SortedSetRangeByRankAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -680,6 +743,19 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetRangeByRankAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zrange-rank-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetRangeByRankAsync(key, 0, -1, Order.Ascending, CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetRangeByRankWithScoresAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetRangeByRankWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
     {
         string key = $"ser-zrange-rank-scores-{Guid.NewGuid()}";
@@ -695,6 +771,9 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("m3", result[2].Element);
         Assert.Equal(3.5, result[2].Score);
     }
+
+    #endregion
+    #region SortedSetRangeByScoreAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -718,6 +797,9 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("m3", result[0]);
     }
 
+    #endregion
+    #region SortedSetRangeByScoreWithScoresAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetRangeByScoreWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
@@ -734,6 +816,9 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(1.0, result[0].Score);
     }
 
+    #endregion
+    #region SortedSetRangeByValueAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetRangeByValueAsync_WithCommandFlags(IDatabaseAsync db)
@@ -749,32 +834,6 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(2, result.Length);
         Assert.Equal("banana", result[0]);
         Assert.Equal("cherry", result[1]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeAndStoreAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string srcKey = $"{{ser-zrangestore}}-src-{Guid.NewGuid()}";
-        string destKey = $"{{ser-zrangestore}}-dest-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(srcKey, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(srcKey, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(srcKey, "m3", 3.0));
-        Assert.True(await db.SortedSetAddAsync(srcKey, "m4", 4.0));
-
-        long stored = await db.SortedSetRangeAndStoreAsync(srcKey, destKey, 1, 2);
-        Assert.Equal(2, stored);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeByRankAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zrange-rank-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetRangeByRankAsync(key, 0, -1, Order.Ascending, CommandFlags.DemandMaster));
     }
 
     #endregion
@@ -862,24 +921,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region SortedSetRemoveRangeByValueAsync / SortedSetRemoveRangeByRankAsync / SortedSetRemoveRangeByScoreAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRemoveRangeByValueAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key = $"ser-zremrangebylex-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(key, "apple", 0.0));
-        Assert.True(await db.SortedSetAddAsync(key, "banana", 0.0));
-        Assert.True(await db.SortedSetAddAsync(key, "cherry", 0.0));
-        Assert.True(await db.SortedSetAddAsync(key, "date", 0.0));
-
-        long removed = await db.SortedSetRemoveRangeByValueAsync(key, "b", "d");
-        Assert.Equal(2, removed);
-
-        Assert.Equal(2, await db.SortedSetLengthAsync(key));
-    }
+    #region SortedSetRemoveRangeByRankAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -897,6 +939,19 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         Assert.Equal(2, await db.SortedSetLengthAsync(key));
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetRemoveRangeByRankAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zremrangebyrank-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetRemoveRangeByRankAsync(key, 0, 1, CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetRemoveRangeByScoreAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -929,157 +984,135 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(0, removed);
     }
 
+    #endregion
+    #region SortedSetRemoveRangeByValueAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRemoveRangeByRankAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    public async Task SortedSetRemoveRangeByValueAsync_WithCommandFlags(IDatabaseAsync db)
     {
-        string key = $"ser-zremrangebyrank-flags-{Guid.NewGuid()}";
+        string key = $"ser-zremrangebylex-{Guid.NewGuid()}";
 
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetRemoveRangeByRankAsync(key, 0, 1, CommandFlags.DemandMaster));
+        Assert.True(await db.SortedSetAddAsync(key, "apple", 0.0));
+        Assert.True(await db.SortedSetAddAsync(key, "banana", 0.0));
+        Assert.True(await db.SortedSetAddAsync(key, "cherry", 0.0));
+        Assert.True(await db.SortedSetAddAsync(key, "date", 0.0));
+
+        long removed = await db.SortedSetRemoveRangeByValueAsync(key, "b", "d");
+        Assert.Equal(2, removed);
+
+        Assert.Equal(2, await db.SortedSetLengthAsync(key));
     }
 
     #endregion
-    #region SortedSetCombineAsync / SortedSetCombineWithScoresAsync
+    #region SortedSetScoreAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAsync_Union_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetScoreAsync_WithCommandFlags(IDatabaseAsync db)
     {
-        string key1 = $"{{ser-zunion}}-1-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zunion}}-2-{Guid.NewGuid()}";
+        string key = $"ser-zscore-{Guid.NewGuid()}";
 
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+        // Non-existent key
+        Assert.Null(await db.SortedSetScoreAsync(key, "member1"));
 
-        ValkeyValue[] result = await db.SortedSetCombineAsync(SetOperation.Union, [key1, key2]);
-        Assert.Equal(3, result.Length);
+        // Add test data
+        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
+        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
+
+        // Get score of existing member
+        double? score = await db.SortedSetScoreAsync(key, "member1");
+        _ = Assert.NotNull(score);
+        Assert.Equal(10.5, score.Value);
+
+        // Get score of non-existent member
+        Assert.Null(await db.SortedSetScoreAsync(key, "nonexistent"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAsync_Intersect_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetScoreAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
     {
-        string key1 = $"{{ser-zinter}}-1-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zinter}}-2-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
-
-        ValkeyValue[] result = await db.SortedSetCombineAsync(SetOperation.Intersect, [key1, key2]);
-        _ = Assert.Single(result);
-        Assert.Equal("m2", result[0]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAsync_Difference_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key1 = $"{{ser-zdiff}}-1-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zdiff}}-2-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
-
-        ValkeyValue[] result = await db.SortedSetCombineAsync(SetOperation.Difference, [key1, key2]);
-        _ = Assert.Single(result);
-        Assert.Equal("m1", result[0]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key1 = $"{{ser-zunion-ws}}-1-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zunion-ws}}-2-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
-
-        SortedSetEntry[] result = await db.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2]);
-        Assert.Equal(3, result.Length);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zcombine-flags-{Guid.NewGuid()}";
+        string key = $"ser-zscore-flags-{Guid.NewGuid()}";
 
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetCombineAsync(SetOperation.Union, [key], null, Aggregate.Sum, CommandFlags.DemandMaster));
+            () => db.SortedSetScoreAsync(key, "member1", CommandFlags.DemandMaster));
     }
 
     #endregion
-    #region SortedSetCombineAndStoreAsync
+    #region SortedSetScoresAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAndStoreAsync_TwoKey_Union(IDatabaseAsync db)
+    public async Task SortedSetScoresAsync_WithCommandFlags(IDatabaseAsync db)
     {
-        string key1 = $"{{ser-zunionstore}}-1-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zunionstore}}-2-{Guid.NewGuid()}";
-        string dest = $"{{ser-zunionstore}}-dest-{Guid.NewGuid()}";
+        string key = $"ser-zmscore-{Guid.NewGuid()}";
 
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
+        // Add test data
+        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
+        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
 
-        long stored = await db.SortedSetCombineAndStoreAsync(SetOperation.Union, dest, key1, key2);
-        Assert.Equal(3, stored);
+        // Get scores of multiple members
+        double?[] scores = await db.SortedSetScoresAsync(key, ["member1", "member2", "nonexistent"]);
+        Assert.Equal(3, scores.Length);
+        Assert.Equal(10.5, scores[0]);
+        Assert.Equal(8.2, scores[1]);
+        Assert.Null(scores[2]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAndStoreAsync_MultiKey_Intersect(IDatabaseAsync db)
+    public async Task SortedSetScoresAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
     {
-        string key1 = $"{{ser-zinterstore}}-1-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zinterstore}}-2-{Guid.NewGuid()}";
-        string dest = $"{{ser-zinterstore}}-dest-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m3", 30.0));
-
-        IEnumerable<ValkeyKey> interKeys = [key1, key2];
-        long stored = await db.SortedSetCombineAndStoreAsync(SetOperation.Intersect, dest, interKeys);
-        Assert.Equal(1, stored);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAndStoreAsync_Difference(IDatabaseAsync db)
-    {
-        string key1 = $"{{ser-zdiffstore}}-1-{Guid.NewGuid()}";
-        string key2 = $"{{ser-zdiffstore}}-2-{Guid.NewGuid()}";
-        string dest = $"{{ser-zdiffstore}}-dest-{Guid.NewGuid()}";
-
-        Assert.True(await db.SortedSetAddAsync(key1, "m1", 1.0));
-        Assert.True(await db.SortedSetAddAsync(key1, "m2", 2.0));
-        Assert.True(await db.SortedSetAddAsync(key2, "m2", 20.0));
-
-        long stored = await db.SortedSetCombineAndStoreAsync(SetOperation.Difference, dest, key1, key2);
-        Assert.Equal(1, stored);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAndStoreAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zcombinestore-flags-{Guid.NewGuid()}";
+        string key = $"ser-zmscore-flags-{Guid.NewGuid()}";
 
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetCombineAndStoreAsync(SetOperation.Union, key, key, key, Aggregate.Sum, CommandFlags.DemandMaster));
+            () => db.SortedSetScoresAsync(key, ["member1"], CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetUpdateAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetUpdateAsync_SingleMember(IDatabaseAsync db)
+    {
+        string key = $"ser-zadd-update-{Guid.NewGuid()}";
+
+        // Add initial member
+        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.0));
+
+        // Update with CH flag via SortedSetUpdateAsync — returns true if score changed
+        Assert.True(await db.SortedSetUpdateAsync(key, "member1", 15.0));
+
+        // Update with same score — returns false (no change)
+        Assert.False(await db.SortedSetUpdateAsync(key, "member1", 15.0));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetUpdateAsync_MultiMember(IDatabaseAsync db)
+    {
+        string key = $"ser-zadd-update-multi-{Guid.NewGuid()}";
+
+        // Add initial members
+        SortedSetEntry[] entries =
+        [
+            new("member1", 10.0),
+            new("member2", 20.0),
+        ];
+        Assert.Equal(2, await db.SortedSetAddAsync(key, entries));
+
+        // Update scores — returns count of changed members
+        SortedSetEntry[] updatedEntries =
+        [
+            new("member1", 15.0),
+            new("member2", 25.0),
+        ];
+        Assert.Equal(2, await db.SortedSetUpdateAsync(key, updatedEntries));
+
+        // Update with same scores — returns 0 (no changes)
+        Assert.Equal(0, await db.SortedSetUpdateAsync(key, updatedEntries));
     }
 
     #endregion
