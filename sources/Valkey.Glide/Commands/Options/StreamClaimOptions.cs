@@ -34,27 +34,33 @@ public class StreamClaimOptions
 
         if (Idle.HasValue)
         {
-            args.Add((GlideString)"IDLE");
-            args.Add(((long)Idle.Value.TotalMilliseconds).ToGlideString());
+            args.Add(ValkeyLiterals.IDLE.ToGlideString());
+            args.Add(ToMilliseconds(Idle.Value).ToGlideString());
         }
 
         if (IdleUnix.HasValue)
         {
-            args.Add((GlideString)"TIME");
+            args.Add(ValkeyLiterals.TIME.ToGlideString());
             args.Add(IdleUnix.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
 
         if (RetryCount.HasValue)
         {
-            args.Add((GlideString)"RETRYCOUNT");
+            args.Add(ValkeyLiterals.RETRYCOUNT.ToGlideString());
             args.Add(RetryCount.Value.ToGlideString());
         }
 
         if (Force)
         {
-            args.Add((GlideString)"FORCE");
+            args.Add(ValkeyLiterals.FORCE.ToGlideString());
         }
 
         return [.. args];
     }
+
+    /// <summary>
+    /// Converts the given time span to milliseconds without truncation.
+    /// </summary>
+    private static long ToMilliseconds(TimeSpan timeSpan)
+        => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
 }

@@ -220,7 +220,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read all entries
-        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         Assert.Equal(3, entries.Length);
         Assert.Equal("value1", entries[0]["field"].ToString());
         Assert.Equal("value2", entries[1]["field"].ToString());
@@ -239,7 +239,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read from id1 to id2
-        StreamEntry[] entries = await client.StreamRangeAsync(key, minId: id1, maxId: id2);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions { MinId = id1, MaxId = id2 });
         Assert.Equal(2, entries.Length);
         Assert.Equal(id1.ToString(), entries[0].Id.ToString());
         Assert.Equal(id2.ToString(), entries[1].Id.ToString());
@@ -257,7 +257,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read only 2 entries
-        StreamEntry[] entries = await client.StreamRangeAsync(key, count: 2);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions { Count = 2 });
         Assert.Equal(2, entries.Length);
     }
 
@@ -273,11 +273,11 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read in ascending order first to verify entries exist
-        StreamEntry[] ascEntries = await client.StreamRangeAsync(key);
+        StreamEntry[] ascEntries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         Assert.Equal(3, ascEntries.Length);
 
         // Read in descending order (most recent first) - library swaps minId/maxId for XREVRANGE
-        StreamEntry[] entries = await client.StreamRangeAsync(key, messageOrder: Order.Descending);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions { MessageOrder = Order.Descending });
         Assert.Equal(3, entries.Length);
         Assert.Equal("value3", entries[0]["field"].ToString());
         Assert.Equal("value2", entries[1]["field"].ToString());
@@ -341,7 +341,7 @@ public class StreamCommandTests
         Assert.False(streamId.IsNull);
 
         // Read back - entry should exist
-        StreamEntry[] result = await client.StreamRangeAsync(key);
+        StreamEntry[] result = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(result);
         Assert.Equal(streamId.ToString(), result[0].Id.ToString());
 
@@ -369,7 +369,7 @@ public class StreamCommandTests
         Assert.Equal(2, deleted);
 
         // Verify only one entry remains
-        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(entries);
         Assert.Equal(id3.ToString(), entries[0].Id.ToString());
 
@@ -721,7 +721,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value");
         _ = await client.StreamTrimAsync(key, maxLength: 0);
 
-        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         Assert.Empty(entries);
     }
 
@@ -762,7 +762,7 @@ public class StreamCommandTests
         ];
         _ = await client.StreamAddAsync(key, entries);
 
-        StreamEntry[] result = await client.StreamRangeAsync(key);
+        StreamEntry[] result = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(result);
         Assert.Equal(3, result[0].Values.Length);
         Assert.Equal("value1", result[0]["field1"].ToString());
@@ -782,7 +782,7 @@ public class StreamCommandTests
         ];
         _ = await client.StreamAddAsync(key, entries);
 
-        StreamEntry[] result = await client.StreamRangeAsync(key);
+        StreamEntry[] result = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(result);
         Assert.Equal(3, result[0].Values.Length);
         Assert.Equal("field", result[0].Values[0].Name.ToString());

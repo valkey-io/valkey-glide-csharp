@@ -72,10 +72,22 @@ public partial class BaseClient
         return await Command(Request.StreamReadAsync([.. streamPositions], options));
     }
 
-    /// <inheritdoc/>
+    /// <summary>Queries a stream range (legacy SER-compatible overload).</summary>
     public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending)
     {
         return await Command(Request.StreamRangeAsync(key, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, messageOrder));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey, StreamRangeOptions?)"/>
+    public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, StreamRangeOptions? options = null)
+    {
+        var opts = options ?? new StreamRangeOptions();
+        return await Command(Request.StreamRangeAsync(
+            key,
+            opts.MinId ?? StreamConstants.ReadMinValue,
+            opts.MaxId ?? StreamConstants.ReadMaxValue,
+            opts.Count,
+            opts.MessageOrder));
     }
 
     /// <inheritdoc/>

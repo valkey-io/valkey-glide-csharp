@@ -20,24 +20,27 @@ public abstract class StreamTrimOptions
     /// </summary>
     public long? Limit { get; init; }
 
-    internal abstract string Method { get; }
+    internal abstract GlideString Method { get; }
 
-    internal abstract string Threshold { get; }
+    internal abstract GlideString Threshold { get; }
 
     internal GlideString[] ToArgs()
     {
-        List<GlideString> args = [(GlideString)Method];
+        if (Limit.HasValue && Exact == true)
+            throw new ArgumentException("LIMIT cannot be used with exact trimming.", nameof(Limit));
+
+        List<GlideString> args = [Method];
 
         if (Exact == true)
-            args.Add((GlideString)"=");
+            args.Add(ValkeyLiterals.ExactTrim.ToGlideString());
         else if (Exact == false)
-            args.Add((GlideString)"~");
+            args.Add(ValkeyLiterals.ApproxTrim.ToGlideString());
 
-        args.Add((GlideString)Threshold);
+        args.Add(Threshold);
 
         if (Limit.HasValue)
         {
-            args.Add((GlideString)"LIMIT");
+            args.Add(ValkeyLiterals.LIMIT.ToGlideString());
             args.Add(Limit.Value.ToGlideString());
         }
 
@@ -54,9 +57,9 @@ public abstract class StreamTrimOptions
         /// </summary>
         public required long MaxLength { get; init; }
 
-        internal override string Method => "MAXLEN";
+        internal override GlideString Method => ValkeyLiterals.MAXLEN.ToGlideString();
 
-        internal override string Threshold => MaxLength.ToString();
+        internal override GlideString Threshold => MaxLength.ToGlideString();
     }
 
     /// <summary>
@@ -69,8 +72,8 @@ public abstract class StreamTrimOptions
         /// </summary>
         public required ValkeyValue MinEntryId { get; init; }
 
-        internal override string Method => "MINID";
+        internal override GlideString Method => ValkeyLiterals.MINID.ToGlideString();
 
-        internal override string Threshold => MinEntryId.ToString();
+        internal override GlideString Threshold => MinEntryId.ToGlideString();
     }
 }

@@ -102,12 +102,29 @@ internal partial class Request
 
     public static Cmd<object, StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, StreamReadOptions options)
     {
-        return StreamReadAsync([new StreamPosition(key, position)], options.Count, options.Block, ConvertSingleStreamRead);
+        return StreamReadAsyncWithOptions([new StreamPosition(key, position)], options, ConvertSingleStreamRead);
     }
 
     public static Cmd<object, ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, StreamReadOptions options)
     {
-        return StreamReadAsync(streamPositions, options.Count, options.Block, ConvertMultiStreamRead);
+        return StreamReadAsyncWithOptions(streamPositions, options, ConvertMultiStreamRead);
+    }
+
+    private static Cmd<object, TResult> StreamReadAsyncWithOptions<TResult>(StreamPosition[] streamPositions, StreamReadOptions options, Func<object, TResult> converter)
+    {
+        List<GlideString> args = [.. options.ToArgs()];
+
+        args.Add("STREAMS");
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Key.ToGlideString());
+        }
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Position.ToGlideString());
+        }
+
+        return new(RequestType.XRead, [.. args], false, converter, allowConverterToHandleNull: true);
     }
 
     private static Cmd<object, TResult> StreamReadAsync<TResult>(StreamPosition[] streamPositions, int? count, TimeSpan? block, Func<object, TResult> converter)
@@ -441,12 +458,30 @@ internal partial class Request
 
     public static Cmd<object, StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue position, StreamReadGroupOptions options)
     {
-        return StreamReadGroupAsync([new StreamPosition(key, position)], groupName, consumerName, options.Count, options.NoAck, options.Block, ConvertSingleStreamRead);
+        return StreamReadGroupAsyncWithOptions([new StreamPosition(key, position)], groupName, consumerName, options, ConvertSingleStreamRead);
     }
 
     public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
     {
-        return StreamReadGroupAsync(streamPositions, groupName, consumerName, options.Count, options.NoAck, options.Block, ConvertMultiStreamRead);
+        return StreamReadGroupAsyncWithOptions(streamPositions, groupName, consumerName, options, ConvertMultiStreamRead);
+    }
+
+    private static Cmd<object, TResult> StreamReadGroupAsyncWithOptions<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options, Func<object, TResult> converter)
+    {
+        List<GlideString> args = ["GROUP", groupName.ToGlideString(), consumerName.ToGlideString()];
+        args.AddRange(options.ToArgs());
+
+        args.Add("STREAMS");
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Key.ToGlideString());
+        }
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Position.ToGlideString());
+        }
+
+        return new(RequestType.XReadGroup, [.. args], false, converter, allowConverterToHandleNull: true);
     }
 
     private static Cmd<object, TResult> StreamReadGroupAsync<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? count, bool noAck, TimeSpan? block, Func<object, TResult> converter)

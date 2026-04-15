@@ -30,12 +30,12 @@ public record StreamAddOptions
         List<GlideString> args = [];
 
         if (!MakeStream)
-            args.Add((GlideString)"NOMKSTREAM");
+            args.Add(ValkeyLiterals.NOMKSTREAM.ToGlideString());
 
         if (Trim is not null)
             args.AddRange(Trim.ToArgs());
 
-        args.Add(Id.HasValue && !Id.Value.IsNull ? Id.Value.ToGlideString() : (GlideString)"*");
+        args.Add(Id.HasValue && !Id.Value.IsNull ? Id.Value.ToGlideString() : ValkeyLiterals.Wildcard.ToGlideString());
 
         return [.. args];
     }

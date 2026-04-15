@@ -132,4 +132,14 @@ public partial interface IBaseClient
     /// <param name="count">Maximum number of PEL entries per consumer to return. Defaults to 10 if null.</param>
     /// <returns>Detailed information about the stream.</returns>
     Task<StreamInfoFull> StreamInfoFullAsync(ValkeyKey key, int? count = null);
+
+    /// <summary>
+    /// Returns the entries in a stream within a specified range of IDs.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xrange"/>
+    /// <seealso href="https://valkey.io/commands/xrevrange"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="options">Optional arguments including range bounds, count, and order.</param>
+    /// <returns>An array of stream entries in the specified range.</returns>
+    Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, StreamRangeOptions? options = null);
 }

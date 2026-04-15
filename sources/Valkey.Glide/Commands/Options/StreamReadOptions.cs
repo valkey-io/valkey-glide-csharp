@@ -20,6 +20,31 @@ public class StreamReadOptions
     /// Equivalent to the BLOCK option.
     /// </summary>
     public TimeSpan? Block { get; init; }
+
+    internal virtual GlideString[] ToArgs()
+    {
+        List<GlideString> args = [];
+
+        if (Count.HasValue)
+        {
+            args.Add(ValkeyLiterals.COUNT.ToGlideString());
+            args.Add(Count.Value.ToGlideString());
+        }
+
+        if (Block.HasValue)
+        {
+            args.Add(ValkeyLiterals.BLOCK.ToGlideString());
+            args.Add(ToMilliseconds(Block.Value).ToGlideString());
+        }
+
+        return [.. args];
+    }
+
+    /// <summary>
+    /// Converts the given time span to milliseconds without truncation.
+    /// </summary>
+    private protected static long ToMilliseconds(TimeSpan timeSpan)
+        => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
 }
 
 /// <summary>
@@ -34,4 +59,16 @@ public class StreamReadGroupOptions : StreamReadOptions
     /// Equivalent to the NOACK option.
     /// </summary>
     public bool NoAck { get; init; }
+
+    internal override GlideString[] ToArgs()
+    {
+        List<GlideString> args = [.. base.ToArgs()];
+
+        if (NoAck)
+        {
+            args.Add(ValkeyLiterals.NOACK.ToGlideString());
+        }
+
+        return [.. args];
+    }
 }
