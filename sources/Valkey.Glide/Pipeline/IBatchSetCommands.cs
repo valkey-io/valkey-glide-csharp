@@ -112,5 +112,5 @@ internal interface IBatchSetCommands
 
     /// <inheritdoc cref="ISetBaseCommands.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetBaseCommands.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
-    IBatch SetScan(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0);
+    IBatch SetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0);
 }

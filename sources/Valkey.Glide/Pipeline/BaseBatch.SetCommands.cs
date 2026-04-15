@@ -87,8 +87,8 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSetCommands.SetMove(ValkeyKey, ValkeyKey, ValkeyValue)" />
     public T SetMove(ValkeyKey source, ValkeyKey destination, ValkeyValue value) => AddCmd(SetMoveAsync(source, destination, value));
 
-    /// <inheritdoc cref="IBatchSetCommands.SetScan(ValkeyKey, long, ValkeyValue, long)" />
-    public T SetScan(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0) => AddCmd(SetScanAsync(key, cursor, pattern, count));
+    /// <inheritdoc cref="IBatchSetCommands.SetScan(ValkeyKey, ValkeyValue, int, long)" />
+    public T SetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0) => AddCmd(SetScanAsync(key, cursor, pattern, pageSize));
 
     // Explicit interface implementations for IBatchSetCommands
     IBatch IBatchSetCommands.SetAdd(ValkeyKey key, ValkeyValue value) => SetAdd(key, value);
@@ -117,5 +117,5 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSetCommands.SetRandomMember(ValkeyKey key) => SetRandomMember(key);
     IBatch IBatchSetCommands.SetRandomMembers(ValkeyKey key, long count) => SetRandomMembers(key, count);
     IBatch IBatchSetCommands.SetMove(ValkeyKey source, ValkeyKey destination, ValkeyValue value) => SetMove(source, destination, value);
-    IBatch IBatchSetCommands.SetScan(ValkeyKey key, long cursor, ValkeyValue pattern, long count) => SetScan(key, cursor, pattern, count);
+    IBatch IBatchSetCommands.SetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor) => SetScan(key, pattern, pageSize, cursor);
 }
