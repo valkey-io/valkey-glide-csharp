@@ -10,7 +10,7 @@ public abstract class BasePubSubSubscriptionConfig
 {
     internal MessageCallback? Callback { get; set; }
     internal object? Context { get; set; }
-    internal Dictionary<PubSubChannelMode, ISet<string>> Subscriptions { get; set; } = [];
+    internal Dictionary<PubSubChannelMode, ISet<ValkeyKey>> Subscriptions { get; set; } = [];
     internal PubSubPerformanceConfig? PerformanceConfig { get; set; }
 
     /// <summary>
@@ -32,7 +32,7 @@ public abstract class BasePubSubSubscriptionConfig
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    public virtual BasePubSubSubscriptionConfig WithChannel(string channel)
+    public virtual BasePubSubSubscriptionConfig WithChannel(ValkeyKey channel)
         => AddSubscription(PubSubChannelMode.Exact, channel);
 
     /// <summary>
@@ -40,7 +40,7 @@ public abstract class BasePubSubSubscriptionConfig
     /// </summary>
     /// <param name="pattern">The pattern to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    public virtual BasePubSubSubscriptionConfig WithPattern(string pattern)
+    public virtual BasePubSubSubscriptionConfig WithPattern(ValkeyKey pattern)
         => AddSubscription(PubSubChannelMode.Pattern, pattern);
 
     /// <summary>
@@ -49,13 +49,14 @@ public abstract class BasePubSubSubscriptionConfig
     /// <param name="mode">The channel subscription mode.</param>
     /// <param name="channelOrPattern">The channel or pattern to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    protected BasePubSubSubscriptionConfig AddSubscription(PubSubChannelMode mode, string channelOrPattern)
+    protected BasePubSubSubscriptionConfig AddSubscription(PubSubChannelMode mode, ValkeyKey channelOrPattern)
     {
-        if (string.IsNullOrWhiteSpace(channelOrPattern))
-            throw new ArgumentException("Channel name or pattern cannot be null, empty, or whitespace", nameof(channelOrPattern));
+        channelOrPattern.AssertNotNull();
 
         if (!Subscriptions.ContainsKey(mode))
-            Subscriptions[mode] = new HashSet<string>();
+        {
+            Subscriptions[mode] = new HashSet<ValkeyKey>();
+        }
 
         _ = Subscriptions[mode].Add(channelOrPattern);
 
@@ -78,11 +79,11 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
         => (StandalonePubSubSubscriptionConfig)base.WithCallback(callback, context);
 
     /// <inheritdoc/>
-    public override StandalonePubSubSubscriptionConfig WithChannel(string channel)
+    public override StandalonePubSubSubscriptionConfig WithChannel(ValkeyKey channel)
         => (StandalonePubSubSubscriptionConfig)base.WithChannel(channel);
 
     /// <inheritdoc/>
-    public override StandalonePubSubSubscriptionConfig WithPattern(string pattern)
+    public override StandalonePubSubSubscriptionConfig WithPattern(ValkeyKey pattern)
         => (StandalonePubSubSubscriptionConfig)base.WithPattern(pattern);
 }
 
@@ -101,11 +102,11 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
         => (ClusterPubSubSubscriptionConfig)base.WithCallback(callback, context);
 
     /// <inheritdoc/>
-    public override ClusterPubSubSubscriptionConfig WithChannel(string channel)
+    public override ClusterPubSubSubscriptionConfig WithChannel(ValkeyKey channel)
         => (ClusterPubSubSubscriptionConfig)base.WithChannel(channel);
 
     /// <inheritdoc/>
-    public override ClusterPubSubSubscriptionConfig WithPattern(string pattern)
+    public override ClusterPubSubSubscriptionConfig WithPattern(ValkeyKey pattern)
         => (ClusterPubSubSubscriptionConfig)base.WithPattern(pattern);
 
     /// <summary>
@@ -113,6 +114,6 @@ public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConf
     /// </summary>
     /// <param name="channel">The sharded channel to subscribe to.</param>
     /// <returns>This configuration instance for method chaining.</returns>
-    public ClusterPubSubSubscriptionConfig WithShardedChannel(string channel)
+    public ClusterPubSubSubscriptionConfig WithShardedChannel(ValkeyKey channel)
         => (ClusterPubSubSubscriptionConfig)AddSubscription(PubSubChannelMode.Sharded, channel);
 }

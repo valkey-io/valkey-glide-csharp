@@ -2,6 +2,9 @@
 
 namespace Valkey.Glide.Commands;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by both Valkey GLIDE clients and StackExchange.Redis databases.
+
 /// <summary>
 /// Geospatial commands for clients.
 /// </summary>

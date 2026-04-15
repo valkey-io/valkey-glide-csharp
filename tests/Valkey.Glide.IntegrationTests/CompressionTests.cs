@@ -414,7 +414,7 @@ public class CompressionTests(TestConfiguration config)
         string value = new string('s', LargeValueSize);
 
         await client.StringSetAsync(key, value);
-        bool expired = await client.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
+        bool expired = await client.ExpireAsync(key, TimeSpan.FromSeconds(10));
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,

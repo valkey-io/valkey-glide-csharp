@@ -34,7 +34,7 @@ public class CommandFlagsTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashSetAsync(IDatabaseAsync db)
+    public async Task HashSetAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
     {
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.HashSetAsync("key", "field", "value", When.Always, UnsupportedFlag));
@@ -389,6 +389,38 @@ public class CommandFlagsTests(TestConfiguration config)
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.SortedSetCombineAndStoreAsync(SetOperation.Union, "dest", [], flags: UnsupportedFlag));
     }
+
+    #endregion
+    #region PubSub Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task PublishAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.PublishAsync(
+                ValkeyChannel.Literal("test-channel"),
+                "hello",
+                UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionChannelsAsync_ThrowsOnCommandFlags(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.SubscriptionChannelsAsync(flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionPatternCountAsync_ThrowsOnCommandFlags(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.SubscriptionPatternCountAsync(flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task SubscriptionSubscriberCountAsync_ThrowsOnCommandFlags(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.SubscriptionSubscriberCountAsync(
+                ValkeyChannel.Literal("test-channel"),
+                flags: UnsupportedFlag));
 
     #endregion
 }

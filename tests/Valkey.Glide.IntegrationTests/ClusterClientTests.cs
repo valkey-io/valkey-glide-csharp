@@ -389,7 +389,7 @@ public class ClusterClientTests(TestConfiguration config)
         }
         finally
         {
-            _ = await client.KeyDeleteAsync(key);
+            _ = await client.DeleteAsync(key);
         }
     }
 
@@ -548,11 +548,11 @@ public class ClusterClientTests(TestConfiguration config)
         await client.StringSetAsync(key, value);
 
         // Move the key to database 1
-        bool moveResult = await client.KeyMoveAsync(key, 1);
+        bool moveResult = await client.MoveAsync(key, 1);
         Assert.True(moveResult);
 
         // Verify the key no longer exists in the current database
-        Assert.False(await client.KeyExistsAsync(key));
+        Assert.False(await client.ExistsAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true, Skip = "CrossSlot error - keys don't hash to same slot in cluster mode")]
@@ -571,11 +571,11 @@ public class ClusterClientTests(TestConfiguration config)
         await client.StringSetAsync(sourceKey, value);
 
         // Copy the key to database 1
-        bool copyResult = await client.KeyCopyAsync(sourceKey, destKey, 1);
+        bool copyResult = await client.CopyAsync(sourceKey, destKey, 1);
         Assert.True(copyResult);
 
         // Verify the source key still exists in the current database
-        Assert.True(await client.KeyExistsAsync(sourceKey));
+        Assert.True(await client.ExistsAsync(sourceKey));
     }
 
     [Fact]

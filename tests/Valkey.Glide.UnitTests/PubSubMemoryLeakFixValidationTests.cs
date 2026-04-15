@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Text;
+
 namespace Valkey.Glide.UnitTests;
 
 /// <summary>
@@ -25,8 +27,8 @@ public class PubSubMemoryLeakFixValidationTests
         // Act: Process multiple messages
         for (int i = 0; i < messageCount; i++)
         {
-            string message = $"test-message-{i}";
-            string channel = $"test-channel-{i % 10}";
+            byte[] message = Encoding.UTF8.GetBytes($"test-message-{i}");
+            byte[] channel = Encoding.UTF8.GetBytes($"test-channel-{i % 10}");
 
             ProcessSingleMessage(message, channel, null);
         }
@@ -51,13 +53,13 @@ public class PubSubMemoryLeakFixValidationTests
     public void MarshalPubSubMessage_WithPatternMessages_HandlesCorrectly()
     {
         // Arrange
-        string message = "pattern test message";
-        string channel = "news.sports";
-        string pattern = "news.*";
+        byte[] message = Encoding.UTF8.GetBytes("pattern test message");
+        byte[] channel = Encoding.UTF8.GetBytes("news.sports");
+        byte[] pattern = Encoding.UTF8.GetBytes("news.*");
 
-        IntPtr messagePtr = Marshal.StringToHGlobalAnsi(message);
-        IntPtr channelPtr = Marshal.StringToHGlobalAnsi(channel);
-        IntPtr patternPtr = Marshal.StringToHGlobalAnsi(pattern);
+        IntPtr messagePtr = AllocNative(message);
+        IntPtr channelPtr = AllocNative(channel);
+        IntPtr patternPtr = AllocNative(pattern);
 
         try
         {
@@ -78,7 +80,6 @@ public class PubSubMemoryLeakFixValidationTests
         }
         finally
         {
-            // Clean up allocated memory
             Marshal.FreeHGlobal(messagePtr);
             Marshal.FreeHGlobal(channelPtr);
             Marshal.FreeHGlobal(patternPtr);
@@ -89,11 +90,11 @@ public class PubSubMemoryLeakFixValidationTests
     public void MarshalPubSubMessage_WithShardedMessages_HandlesCorrectly()
     {
         // Arrange
-        string message = "sharded test message";
-        string channel = "shard-channel";
+        byte[] message = Encoding.UTF8.GetBytes("sharded test message");
+        byte[] channel = Encoding.UTF8.GetBytes("shard-channel");
 
-        IntPtr messagePtr = Marshal.StringToHGlobalAnsi(message);
-        IntPtr channelPtr = Marshal.StringToHGlobalAnsi(channel);
+        IntPtr messagePtr = AllocNative(message);
+        IntPtr channelPtr = AllocNative(channel);
 
         try
         {
@@ -114,20 +115,30 @@ public class PubSubMemoryLeakFixValidationTests
         }
         finally
         {
-            // Clean up allocated memory
             Marshal.FreeHGlobal(messagePtr);
             Marshal.FreeHGlobal(channelPtr);
         }
     }
 
     /// <summary>
+    /// Allocates native memory and copies the byte array into it, simulating
+    /// the Rust-allocated buffers that the real FFI callback receives.
+    /// </summary>
+    private static IntPtr AllocNative(byte[] data)
+    {
+        IntPtr ptr = Marshal.AllocHGlobal(data.Length);
+        Marshal.Copy(data, 0, ptr, data.Length);
+        return ptr;
+    }
+
+    /// <summary>
     /// Helper method to simulate processing a single PubSub message through the FFI marshaling layer.
     /// </summary>
-    private static void ProcessSingleMessage(string message, string channel, string? pattern)
+    private static void ProcessSingleMessage(byte[] message, byte[] channel, byte[]? pattern)
     {
-        IntPtr messagePtr = Marshal.StringToHGlobalAnsi(message);
-        IntPtr channelPtr = Marshal.StringToHGlobalAnsi(channel);
-        IntPtr patternPtr = pattern != null ? Marshal.StringToHGlobalAnsi(pattern) : IntPtr.Zero;
+        IntPtr messagePtr = AllocNative(message);
+        IntPtr channelPtr = AllocNative(channel);
+        IntPtr patternPtr = pattern != null ? AllocNative(pattern) : IntPtr.Zero;
 
         try
         {
@@ -143,14 +154,13 @@ public class PubSubMemoryLeakFixValidationTests
                 (ulong)(pattern?.Length ?? 0));
 
             // Verify the message was marshaled correctly
-            if (result.Message != message || result.Channel != channel || result.Pattern != pattern)
+            if (!result.Message.Equals(message) || !result.Channel.Equals(channel) || !Equals(result.Pattern, pattern))
             {
                 throw new InvalidOperationException("Message marshaling failed");
             }
         }
         finally
         {
-            // Clean up allocated memory
             Marshal.FreeHGlobal(messagePtr);
             Marshal.FreeHGlobal(channelPtr);
             if (patternPtr != IntPtr.Zero)

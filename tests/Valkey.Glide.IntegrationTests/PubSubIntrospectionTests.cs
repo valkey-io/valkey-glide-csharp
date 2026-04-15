@@ -8,6 +8,184 @@ using static Valkey.Glide.TestUtils.Data;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
+/// Integration tests for pub/sub introspection commands.
+/// </summary>
+[Collection(typeof(PubSubIntrospectionTests))]
+[CollectionDefinition(DisableParallelization = true)]
+public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : IClassFixture<PubSubIntrospectionFixture>
+{
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubChannelsAsync_ReturnsEmpty(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        Assert.Empty(await client.PubSubChannelsAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Equivalent(new[] { fixture.Channel }, await client.PubSubChannelsAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Equivalent(new[] { fixture.Channel }, await client.PubSubChannelsAsync(fixture.MatchChannel));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
+    {
+        var channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+
+        Assert.Equivalent(
+            new Dictionary<ValkeyKey, long> { { channel, 0L } },
+            await client.PubSubNumSubAsync([channel]));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
+    {
+        var channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+
+        Assert.Equivalent(
+            new Dictionary<ValkeyKey, long> { { channel, 1L } },
+            await client.PubSubNumSubAsync([channel]));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_SingleChannel_WithNoSubscribers_ReturnsZero(bool isCluster)
+    {
+        var channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        Assert.Equal(0L, await client.PubSubNumSubAsync(channel));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumSubAsync_SingleChannel_WithSubscribers_ReturnsCount(bool isCluster)
+    {
+        var channel = fixture.Channel;
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Equal(1L, await client.PubSubNumSubAsync(channel));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        Assert.Equal(0L, await client.PubSubNumPatAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        Assert.Equal(1L, await client.PubSubNumPatAsync());
+    }
+
+    [Fact]
+    public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsEmpty()
+    {
+        SkipUnlessShardedSupported();
+
+        GlideClusterClient client = fixture.EmptyClusterClient!;
+        Assert.Empty(await client.PubSubShardChannelsAsync());
+    }
+
+    [Fact]
+    public async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
+    {
+        SkipUnlessShardedSupported();
+
+        GlideClusterClient client = fixture.ClusterClient!;
+        Assert.Equivalent(new[] { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync());
+    }
+
+    [Fact]
+    public async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
+    {
+        SkipUnlessShardedSupported();
+
+        GlideClusterClient client = fixture.ClusterClient!;
+        Assert.Equivalent(new[] { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync(fixture.MatchShardedChannel));
+    }
+
+    [Fact]
+    public async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
+    {
+        SkipUnlessShardedSupported();
+
+        var channel = fixture.ShardedChannel;
+        GlideClusterClient client = fixture.EmptyClusterClient!;
+
+        Assert.Equivalent(
+            new Dictionary<ValkeyKey, long> { { channel, 0L } },
+            await client.PubSubShardNumSubAsync([channel]));
+    }
+
+    [Fact]
+    public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardedChannelCounts()
+    {
+        SkipUnlessShardedSupported();
+
+        var shardChannel = fixture.ShardedChannel;
+        GlideClusterClient client = fixture.ClusterClient!;
+
+        Assert.Equivalent(
+            new Dictionary<ValkeyKey, long> { { shardChannel, 1L } },
+            await client.PubSubShardNumSubAsync([shardChannel]));
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
+        PubSubState state = await client.GetSubscriptionsAsync();
+
+        // Verify subscriptions.
+        foreach (var subscriptions in new[] { state.Desired, state.Actual })
+        {
+            foreach (PubSubChannelMode mode in Enum.GetValues<PubSubChannelMode>())
+            {
+                Assert.Empty(subscriptions[mode]);
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
+    {
+        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
+        PubSubState state = await client.GetSubscriptionsAsync();
+
+        var expected = new Dictionary<PubSubChannelMode, HashSet<ValkeyKey>>()
+        {
+            [PubSubChannelMode.Exact] = [fixture.Channel],
+            [PubSubChannelMode.Pattern] = [fixture.Pattern],
+            [PubSubChannelMode.Sharded] = IsShardedSupported(isCluster) ? [fixture.ShardedChannel] : []
+        };
+
+        Assert.Equivalent(expected, state.Desired);
+        Assert.Equivalent(expected, state.Actual);
+    }
+}
+
+/// <summary>
 /// Fixture class to manage server lifecycle for pub/sub introspection tests.
 /// </summary>
 public class PubSubIntrospectionFixture : IAsyncLifetime
@@ -25,9 +203,12 @@ public class PubSubIntrospectionFixture : IAsyncLifetime
     public GlideClusterClient? ClusterClient;
 
     // Pub/sub channels for clients.
-    public readonly string Channel = BuildChannel();
-    public readonly string Pattern = BuildPattern();
-    public readonly string ShardedChannel = BuildChannel();
+    public readonly ValkeyKey Channel = "CHANNEL";
+    public readonly ValkeyKey Pattern = "PATTERN";
+    public readonly ValkeyKey ShardedChannel = "SHARDED_CHANNEL";
+
+    public readonly ValkeyKey MatchChannel = "CHANNEL*";
+    public readonly ValkeyKey MatchShardedChannel = "SHARDED_CHANNEL*";
 
     public async ValueTask InitializeAsync()
     {
@@ -73,173 +254,5 @@ public class PubSubIntrospectionFixture : IAsyncLifetime
         }
 
         return new ValueTask();
-    }
-}
-
-/// <summary>
-/// Integration tests for pub/sub introspection commands.
-/// </summary>
-[Collection(typeof(PubSubIntrospectionTests))]
-[CollectionDefinition(DisableParallelization = true)]
-public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : IClassFixture<PubSubIntrospectionFixture>
-{
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task PubSubChannelsAsync_ReturnsEmpty(bool isCluster)
-    {
-        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
-        Assert.Empty(await client.PubSubChannelsAsync());
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
-    {
-        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-        Assert.Equivalent(new[] { fixture.Channel }, await client.PubSubChannelsAsync());
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
-    {
-        // Create matching pattern by replacing 'channel' with wildcard.
-        string channel = fixture.Channel;
-        string pattern = channel.Replace("channel", "*");
-
-        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-        Assert.Equivalent(new[] { channel }, await client.PubSubChannelsAsync(pattern));
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task PubSubNumSubAsync_WithNoSubscribers_ReturnsZeroCounts(bool isCluster)
-    {
-        string channel = fixture.Channel;
-        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
-
-        Assert.Equivalent(
-            new Dictionary<string, long> { { channel, 0L } },
-            await client.PubSubNumSubAsync([channel]));
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task PubSubNumSubAsync_WithSubscribers_ReturnsChannelCounts(bool isCluster)
-    {
-        string channel = fixture.Channel;
-        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-
-        Assert.Equivalent(
-            new Dictionary<string, long> { { channel, 1L } },
-            await client.PubSubNumSubAsync([channel]));
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task PubSubNumPatAsync_WithNoPatternSubscriptions_ReturnsZero(bool isCluster)
-    {
-        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
-        Assert.Equal(0L, await client.PubSubNumPatAsync());
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task PubSubNumPatAsync_WithPatternSubscriptions_ReturnsPatternCount(bool isCluster)
-    {
-        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-        Assert.Equal(1L, await client.PubSubNumPatAsync());
-    }
-
-    [Fact]
-    public async Task PubSubShardChannelsAsync_WithNoChannels_ReturnsEmpty()
-    {
-        SkipUnlessShardedSupported();
-
-        GlideClusterClient client = fixture.EmptyClusterClient!;
-        Assert.Empty(await client.PubSubShardChannelsAsync());
-    }
-
-    [Fact]
-    public async Task PubSubShardChannelsAsync_WithActiveSubscription_ReturnsChannel()
-    {
-        SkipUnlessShardedSupported();
-
-        GlideClusterClient client = fixture.ClusterClient!;
-        Assert.Equivalent(new[] { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync());
-    }
-
-    [Fact]
-    public async Task PubSubShardChannelsAsync_WithPattern_ReturnsMatchingChannels()
-    {
-        SkipUnlessShardedSupported();
-
-        // Create matching pattern by replacing 'channel' with wildcard.
-        string shardChannel = fixture.ShardedChannel;
-        string pattern = shardChannel.Replace("channel", "*");
-
-        GlideClusterClient client = fixture.ClusterClient!;
-        Assert.Equivalent(new[] { shardChannel }, await client.PubSubShardChannelsAsync(pattern));
-    }
-
-    [Fact]
-    public async Task PubSubShardNumSubAsync_WithNoSubscribers_ReturnsZeroCounts()
-    {
-        SkipUnlessShardedSupported();
-
-        string channel = fixture.ShardedChannel;
-        GlideClusterClient client = fixture.EmptyClusterClient!;
-
-        Assert.Equivalent(
-            new Dictionary<string, long> { { channel, 0L } },
-            await client.PubSubShardNumSubAsync([channel]));
-    }
-
-    [Fact]
-    public async Task PubSubShardNumSubAsync_WithSubscribers_ReturnsShardedChannelCounts()
-    {
-        SkipUnlessShardedSupported();
-
-        string shardChannel = fixture.ShardedChannel;
-        GlideClusterClient client = fixture.ClusterClient!;
-
-        Assert.Equivalent(
-            new Dictionary<string, long> { { shardChannel, 1L } },
-            await client.PubSubShardNumSubAsync([shardChannel]));
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task GetSubscriptionsAsync_NoSubscriptions(bool isCluster)
-    {
-        BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
-        PubSubState state = await client.GetSubscriptionsAsync();
-
-        // Verify subscriptions.
-        foreach (IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<string>>? subscriptions in new[] { state.Desired, state.Actual })
-        {
-            foreach (PubSubChannelMode mode in Enum.GetValues<PubSubChannelMode>())
-            {
-                Assert.Empty(subscriptions[mode]);
-            }
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
-    public async Task GetSubscriptionsAsync_WithSubscriptions(bool isCluster)
-    {
-        BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-        PubSubState state = await client.GetSubscriptionsAsync();
-
-        Dictionary<PubSubChannelMode, HashSet<string>> expected = new()
-        {
-            [PubSubChannelMode.Exact] = [fixture.Channel],
-            [PubSubChannelMode.Pattern] = [fixture.Pattern],
-            [PubSubChannelMode.Sharded] = IsShardedSupported(isCluster) ? [fixture.ShardedChannel] : []
-        };
-
-        Assert.Equivalent(expected, state.Desired);
-        Assert.Equivalent(expected, state.Actual);
     }
 }
