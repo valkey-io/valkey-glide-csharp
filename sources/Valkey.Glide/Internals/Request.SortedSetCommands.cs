@@ -360,6 +360,22 @@ internal partial class Request
         return new(requestType, [key, member], true, response => response);
     }
 
+    public static Cmd<object[], (long Rank, double Score)?> SortedSetRankWithScoreAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending)
+    {
+        RequestType requestType = order == Order.Ascending ? RequestType.ZRank : RequestType.ZRevRank;
+        return new(requestType, [key, member, ValkeyLiterals.WITHSCORE], true, response =>
+        {
+            if (response is not { Length: 2 })
+            {
+                return null;
+            }
+
+            long rank = (long)response[0];
+            double score = (double)response[1];
+            return (rank, score);
+        });
+    }
+
     // TODO #287
     public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0)
     {

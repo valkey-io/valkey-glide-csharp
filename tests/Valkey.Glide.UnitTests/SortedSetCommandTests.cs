@@ -177,6 +177,11 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZRANK", "key", "member"], Request.SortedSetRankAsync("key", "member", Order.Ascending).GetArgs()),
             () => Assert.Equal(["ZREVRANK", "key", "member"], Request.SortedSetRankAsync("key", "member", Order.Descending).GetArgs()),
 
+            // SortedSetRankWithScore
+            () => Assert.Equal(["ZRANK", "key", "member", "WITHSCORE"], Request.SortedSetRankWithScoreAsync("key", "member").GetArgs()),
+            () => Assert.Equal(["ZRANK", "key", "member", "WITHSCORE"], Request.SortedSetRankWithScoreAsync("key", "member", Order.Ascending).GetArgs()),
+            () => Assert.Equal(["ZREVRANK", "key", "member", "WITHSCORE"], Request.SortedSetRankWithScoreAsync("key", "member", Order.Descending).GetArgs()),
+
             // SortedSetScan
             () => Assert.Equal(["ZSCAN", "key", "0"], Request.SortedSetScanAsync("key").GetArgs()),
             () => Assert.Equal(["ZSCAN", "key", "5"], Request.SortedSetScanAsync("key", cursor: 5).GetArgs()),
@@ -336,6 +341,23 @@ public class SortedSetCommandTests
             () =>
             {
                 long? result = Request.SortedSetRankAsync("key", "member").Converter(null);
+                Assert.Null(result);
+            },
+
+            // Test SortedSetRankWithScoreAsync converter
+            () =>
+            {
+                object[] response = [2L, 10.5];
+                (long Rank, double Score)? result = Request.SortedSetRankWithScoreAsync("key", "member").Converter(response);
+                _ = Assert.NotNull(result);
+                Assert.Equal(2L, result.Value.Rank);
+                Assert.Equal(10.5, result.Value.Score);
+            },
+
+            // Test SortedSetRankWithScoreAsync converter - null result
+            () =>
+            {
+                (long Rank, double Score)? result = Request.SortedSetRankWithScoreAsync("key", "member").Converter([]);
                 Assert.Null(result);
             },
 

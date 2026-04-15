@@ -294,6 +294,18 @@ public partial interface IBaseClient
     Task<long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending);
 
     /// <summary>
+    /// Returns the rank and score of a member in the sorted set.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zrank"/>
+    /// <seealso href="https://valkey.io/commands/zrevrank"/>
+    /// <note>Since Valkey 7.2.0 and above.</note>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="member">The member to get the rank and score of.</param>
+    /// <param name="order">The order to sort by.</param>
+    /// <returns>A tuple of the rank and score, or <see langword="null"/> if the member or key does not exist.</returns>
+    Task<(long Rank, double Score)?> SortedSetRankWithScoreAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending);
+
+    /// <summary>
     /// Returns all elements in the sorted set within the given range.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrange/"/>

@@ -103,6 +103,7 @@ internal static class ValkeyLiterals
         USERNAME = "USERNAME",
         WEIGHTS = "WEIGHTS",
         WITHMATCHLEN = "WITHMATCHLEN",
+        WITHSCORE = "WITHSCORE",
         WITHSCORES = "WITHSCORES",
         WITHVALUES = "WITHVALUES",
         XOR = "XOR",
