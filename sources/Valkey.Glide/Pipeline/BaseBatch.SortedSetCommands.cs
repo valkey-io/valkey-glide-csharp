@@ -216,5 +216,5 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetDiffAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => SortedSetDiffAndStore(destination, keys);
 
     // TODO #287
-    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor) => SortedSetScan(key, pattern, pageSize, cursor, pageOffset);
+    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor) => SortedSetScan(key, pattern, pageSize, cursor);
 }
