@@ -72,7 +72,7 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return new(RequestType.ZUnion, [.. args], false, ToValkeyValues);
     }
 
@@ -81,7 +81,7 @@ internal partial class Request
         List<GlideString> args = [];
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return new(RequestType.ZUnion, [.. args], false, ToValkeyValues);
     }
 
@@ -89,7 +89,7 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         args.Add(WithScoresKeyword);
         return new(RequestType.ZUnion, [.. args], false, ToScoreResults);
     }
@@ -99,7 +99,7 @@ internal partial class Request
         List<GlideString> args = [];
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         args.Add(WithScoresKeyword);
         return new(RequestType.ZUnion, [.. args], false, ToScoreResults);
     }
@@ -108,7 +108,7 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return new(RequestType.ZInter, [.. args], false, ToValkeyValues);
     }
 
@@ -117,7 +117,7 @@ internal partial class Request
         List<GlideString> args = [];
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return new(RequestType.ZInter, [.. args], false, ToValkeyValues);
     }
 
@@ -125,7 +125,7 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         args.Add(WithScoresKeyword);
         return new(RequestType.ZInter, [.. args], false, ToScoreResults);
     }
@@ -135,7 +135,7 @@ internal partial class Request
         List<GlideString> args = [];
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         args.Add(WithScoresKeyword);
         return new(RequestType.ZInter, [.. args], false, ToScoreResults);
     }
@@ -159,7 +159,7 @@ internal partial class Request
     {
         List<GlideString> args = [destination];
         AddKeys(args, keys);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return Simple<long>(RequestType.ZUnionStore, [.. args]);
     }
 
@@ -168,7 +168,7 @@ internal partial class Request
         List<GlideString> args = [destination];
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return Simple<long>(RequestType.ZUnionStore, [.. args]);
     }
 
@@ -176,7 +176,7 @@ internal partial class Request
     {
         List<GlideString> args = [destination];
         AddKeys(args, keys);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return Simple<long>(RequestType.ZInterStore, [.. args]);
     }
 
@@ -185,7 +185,7 @@ internal partial class Request
         List<GlideString> args = [destination];
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
-        AddAggregate(args, aggregate);
+        args.AddRange(aggregate.ToArgs());
         return Simple<long>(RequestType.ZInterStore, [.. args]);
     }
 
@@ -551,15 +551,6 @@ internal partial class Request
     {
         args.Add(WeightsKeyword);
         args.AddRange(weights.ToGlideStrings());
-    }
-
-    private static void AddAggregate(List<GlideString> args, Aggregate aggregate)
-    {
-        if (aggregate != Aggregate.Sum)
-        {
-            args.Add(AggregateKeyword);
-            args.Add(aggregate.ToString().ToUpper());
-        }
     }
 
     #endregion
