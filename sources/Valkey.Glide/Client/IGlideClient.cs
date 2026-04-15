@@ -55,4 +55,23 @@ public interface IGlideClient :
     /// </example>
     /// </remarks>
     Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false);
+
+    /// <summary>
+    /// Incrementally iterates over the matching keys in the database.
+    /// </summary>
+    /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
+    /// <param name="pageSize">The number of keys to return per SCAN iteration (COUNT hint).</param>
+    /// <param name="cursor">The cursor to start scanning from.</param>
+    /// <param name="pageOffset">The number of keys to skip from the first page of results.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching keys.</returns>
+    /// <example>
+    /// <code>
+    /// await foreach (var key in client.ScanAsync("user:*"))
+    /// {
+    ///     Console.WriteLine(key);
+    /// }
+    /// </code>
+    /// </example>
+    /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
+    IAsyncEnumerable<ValkeyKey> ScanAsync(ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
 }

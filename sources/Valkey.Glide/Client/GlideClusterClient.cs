@@ -302,16 +302,40 @@ public sealed partial class GlideClusterClient :
     /// <summary>
     /// Iterates incrementally over keys in the cluster.
     /// </summary>
-    /// <param name="cursor">The cursor to use for this iteration.</param>
-    /// <param name="options">Optional scan options to filter results.</param>
-    /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
-    /// <seealso cref="ClusterScanCursor"/>
+    /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
+    /// <param name="pageSize">The number of keys to return per SCAN iteration (COUNT hint).</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching keys.</returns>
     /// <seealso cref="ScanOptions"/>
-    public async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ScanAsync(ClusterScanCursor cursor, ScanOptions? options = null)
+    public async IAsyncEnumerable<ValkeyKey> ScanAsync(ValkeyValue pattern = default, int pageSize = 250)
     {
+        // Build options from parameters
+        ScanOptions? options = null;
+        if (!pattern.IsNullOrEmpty || pageSize != 250)
+        {
+            options = new ScanOptions();
+            if (!pattern.IsNullOrEmpty)
+            {
+                options.MatchPattern = pattern.ToString();
+            }
+            if (pageSize != 250)
+            {
+                options.Count = pageSize;
+            }
+        }
+
         string[] args = options?.ToArgs() ?? [];
-        var (nextCursorId, keys) = await ClusterScanCommand(cursor.CursorId, args);
-        return (new ClusterScanCursor(nextCursorId), keys);
+        ClusterScanCursor cursor = ClusterScanCursor.InitialCursor();
+
+        while (!cursor.IsFinished)
+        {
+            var (nextCursorId, keys) = await ClusterScanCommand(cursor.CursorId, args);
+            cursor = new ClusterScanCursor(nextCursorId);
+
+            foreach (ValkeyKey key in keys)
+            {
+                yield return key;
+            }
+        }
     }
 
     /// <summary>

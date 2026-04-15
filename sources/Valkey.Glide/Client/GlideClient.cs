@@ -140,8 +140,41 @@ public partial class GlideClient :
     }
 
     /// <inheritdoc/>
-    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
-        => await Command(Request.ScanAsync(cursor, options));
+    public async IAsyncEnumerable<ValkeyKey> ScanAsync(ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0)
+    {
+        string currentCursor = cursor.ToString();
+        int currentOffset = pageOffset;
+
+        // Build options from parameters
+        ScanOptions? options = null;
+        if (!pattern.IsNullOrEmpty || pageSize != 250)
+        {
+            options = new ScanOptions();
+            if (!pattern.IsNullOrEmpty)
+            {
+                options.MatchPattern = pattern.ToString();
+            }
+            if (pageSize != 250)
+            {
+                options.Count = pageSize;
+            }
+        }
+
+        do
+        {
+            (string nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, options));
+
+            IEnumerable<ValkeyKey> keysToYield = currentOffset > 0 ? keys.Skip(currentOffset) : keys;
+
+            foreach (ValkeyKey key in keysToYield)
+            {
+                yield return key;
+            }
+
+            currentCursor = nextCursor;
+            currentOffset = 0; // Only skip on first iteration
+        } while (currentCursor != "0");
+    }
 
     /// <inheritdoc/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)

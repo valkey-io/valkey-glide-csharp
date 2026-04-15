@@ -9,8 +9,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// A cursor used to iterate through data returned by cluster scan requests.
 /// </summary>
-/// <seealso cref="Commands.IGenericClusterCommands.ScanAsync"/>
-public class ClusterScanCursor
+internal class ClusterScanCursor
 {
     private const string InitialCursorId = "0";
     private const string FinishedCursorId = "finished";
