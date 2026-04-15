@@ -55,17 +55,15 @@ public readonly struct RangeOptions()
     /// </summary>
     internal GlideString[] ToArgs()
     {
-        Range range = Range ?? RankRange.All;
-
         List<GlideString> args = [];
 
-        args.AddRange(range.ToArgs());
+        args.AddRange(Range.ToArgs());
 
-        if (range is ScoreRange)
+        if (Range is ScoreRange)
         {
             args.Add(ValkeyLiterals.BYSCORE);
         }
-        else if (range is LexRange)
+        else if (Range is LexRange)
         {
             args.Add(ValkeyLiterals.BYLEX);
         }
@@ -77,6 +75,11 @@ public readonly struct RangeOptions()
 
         if (Offset != NoOffset || Count != NoCount)
         {
+            if (Range is RankRange)
+            {
+                throw new ArgumentException("LIMIT is not supported with rank-based ranges. Use score-based or lixocographic range instead.", nameof(Range));
+            }
+
             args.Add(ValkeyLiterals.LIMIT);
             args.Add(Offset.ToGlideString());
             args.Add(Count.ToGlideString());

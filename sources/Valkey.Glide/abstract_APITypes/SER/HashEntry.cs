@@ -56,7 +56,7 @@ public readonly struct HashEntry : IEquatable<HashEntry>
     /// <summary>
     /// A "{name}: {value}" string representation of this entry.
     /// </summary>
-    public override string ToString() => name + ": " + value;
+    public override string ToString() => name.ToString() + ": " + value.ToString();
 
     /// <inheritdoc/>
     public override int GetHashCode() => name.GetHashCode() ^ value.GetHashCode();

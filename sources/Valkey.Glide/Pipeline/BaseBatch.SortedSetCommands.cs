@@ -163,8 +163,8 @@ public abstract partial class BaseBatch<T>
     public T SortedSetDiffAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SortedSetDiffAndStoreAsync(destination, [.. keys]));
 
     // TODO #287
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScan(ValkeyKey, ValkeyValue, int, long, int)" />
-    public T SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0) => AddCmd(SortedSetScanAsync(key, pattern, pageSize, cursor));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScan(ValkeyKey, ValkeyValue, int, long)" />
+    public T SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0) => AddCmd(SortedSetScanAsync(key, pattern, pageSize, cursor));
 
     // Explicit interface implementations for IBatchSortedSetCommands
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition) => SortedSetAdd(key, member, score, condition);
@@ -216,5 +216,5 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetDiffAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => SortedSetDiffAndStore(destination, keys);
 
     // TODO #287
-    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor, int pageOffset) => SortedSetScan(key, pattern, pageSize, cursor, pageOffset);
+    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor) => SortedSetScan(key, pattern, pageSize, cursor, pageOffset);
 }

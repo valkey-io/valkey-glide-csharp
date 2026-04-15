@@ -202,5 +202,5 @@ internal interface IBatchSortedSetCommands
     // TODO #287
     /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
-    IBatch SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
+    IBatch SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0);
 }

@@ -48,7 +48,7 @@ public readonly struct NameValueEntry : IEquatable<NameValueEntry>
     /// <summary>
     /// The "{name}: {value}" string representation.
     /// </summary>
-    public override string ToString() => name + ": " + value;
+    public override string ToString() => name.ToString() + ": " + value.ToString();
 
     /// <inheritdoc/>
     public override int GetHashCode() => name.GetHashCode() ^ value.GetHashCode();
