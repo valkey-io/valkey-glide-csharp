@@ -105,6 +105,9 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRank(ValkeyKey, ValkeyValue, Order)" />
     public T SortedSetRank(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending) => AddCmd(SortedSetRankAsync(key, member, order));
 
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRankWithScore(ValkeyKey, ValkeyValue, Order)" />
+    public T SortedSetRankWithScore(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending) => AddCmd(SortedSetRankWithScoreAsync(key, member, order));
+
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRange(ValkeyKey, RangeOptions)" />
     public T SortedSetRange(ValkeyKey key, RangeOptions options = default) => AddCmd(SortedSetRangeAsync(key, options));
 
@@ -195,6 +198,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetScore(ValkeyKey key, ValkeyValue member) => SortedSetScore(key, member);
     IBatch IBatchSortedSetCommands.SortedSetScores(ValkeyKey key, IEnumerable<ValkeyValue> members) => SortedSetScores(key, members);
     IBatch IBatchSortedSetCommands.SortedSetRank(ValkeyKey key, ValkeyValue member, Order order) => SortedSetRank(key, member, order);
+    IBatch IBatchSortedSetCommands.SortedSetRankWithScore(ValkeyKey key, ValkeyValue member, Order order) => SortedSetRankWithScore(key, member, order);
     IBatch IBatchSortedSetCommands.SortedSetRange(ValkeyKey key, RangeOptions options) => SortedSetRange(key, options);
     IBatch IBatchSortedSetCommands.SortedSetRangeWithScores(ValkeyKey key, RangeOptions options) => SortedSetRangeWithScores(key, options);
     IBatch IBatchSortedSetCommands.SortedSetRangeAndStore(ValkeyKey source, ValkeyKey destination, RangeOptions options) => SortedSetRangeAndStore(source, destination, options);

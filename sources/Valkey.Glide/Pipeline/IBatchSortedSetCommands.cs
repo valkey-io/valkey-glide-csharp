@@ -123,6 +123,10 @@ internal interface IBatchSortedSetCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRankAsync(ValkeyKey, ValkeyValue, Order)" /></returns>
     IBatch SortedSetRank(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending);
 
+    /// <inheritdoc cref="IBaseClient.SortedSetRankWithScoreAsync(ValkeyKey, ValkeyValue, Order)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRankWithScoreAsync(ValkeyKey, ValkeyValue, Order)" /></returns>
+    IBatch SortedSetRankWithScore(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending);
+
     /// <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" /></returns>
     IBatch SortedSetRange(ValkeyKey key, RangeOptions options = default);

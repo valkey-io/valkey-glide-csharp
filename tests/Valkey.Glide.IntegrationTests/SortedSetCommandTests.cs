@@ -1319,6 +1319,28 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetRankWithScore(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0
+        });
+
+        Assert.Null(await client.SortedSetRankWithScoreAsync(key, "nonexistent"));
+        Assert.Null(await client.SortedSetRankWithScoreAsync(key, "nonexistent", Order.Descending));
+
+        Assert.Equal((1, 10.5), await client.SortedSetRankWithScoreAsync(key, "member1"));
+        Assert.Equal((0, 8.2), await client.SortedSetRankWithScoreAsync(key, "member2"));
+        Assert.Equal((2, 15.0), await client.SortedSetRankWithScoreAsync(key, "member3"));
+
+        Assert.Equal((2, 8.2), await client.SortedSetRankWithScoreAsync(key, "member2", Order.Descending));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetRemoveRangeByValue(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();

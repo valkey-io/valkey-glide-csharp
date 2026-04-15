@@ -363,17 +363,7 @@ internal partial class Request
     public static Cmd<object[], (long Rank, double Score)?> SortedSetRankWithScoreAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending)
     {
         RequestType requestType = order == Order.Ascending ? RequestType.ZRank : RequestType.ZRevRank;
-        return new(requestType, [key, member, ValkeyLiterals.WITHSCORE], true, response =>
-        {
-            if (response is not { Length: 2 })
-            {
-                return null;
-            }
-
-            long rank = (long)response[0];
-            double score = (double)response[1];
-            return (rank, score);
-        });
+        return new(requestType, [key, member, ValkeyLiterals.WITHSCORE], true, ToRankAndScore);
     }
 
     // TODO #287
@@ -444,6 +434,9 @@ internal partial class Request
 
     private static readonly Func<object[], ValkeyValue[]> ToValkeyValues = array => [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
     private static readonly Func<Dictionary<GlideString, object>, SortedSetEntry[]> ToScoreResults = dict => [.. dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))];
+
+    private static (long Rank, double Score)? ToRankAndScore(object[] response)
+        => response is { Length: 2 } ? ((long)response[0], (double)response[1]) : null;
 
     private static double?[] ToNullableDoubleArray(object[] response)
     {
