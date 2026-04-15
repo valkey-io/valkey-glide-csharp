@@ -82,8 +82,7 @@ internal partial class Database
     public async Task<SortedSetEntry[]> SortedSetRangeByRankWithScoresAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var results = await SortedSetRangeWithScoresAsync(key, new RangeOptions { Range = RankRange.Between(start, stop), Order = order });
-        return [.. results.Select(r => new SortedSetEntry(r.Member, r.Score))];
+        return await SortedSetRangeWithScoresAsync(key, new RangeOptions { Range = RankRange.Between(start, stop), Order = order });
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long, CommandFlags)"/>
@@ -97,8 +96,7 @@ internal partial class Database
     public async Task<SortedSetEntry[]> SortedSetRangeByScoreWithScoresAsync(ValkeyKey key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var results = await SortedSetRangeWithScoresAsync(key, new RangeOptions { Range = ToScoreRange(start, stop, exclude), Order = order, Offset = skip, Count = take });
-        return [.. results.Select(r => new SortedSetEntry(r.Member, r.Score))];
+        return await SortedSetRangeWithScoresAsync(key, new RangeOptions { Range = ToScoreRange(start, stop, exclude), Order = order, Offset = skip, Count = take });
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long, CommandFlags)"/>
@@ -144,11 +142,11 @@ internal partial class Database
     public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        SortedSetScoreResult[] results;
+
         if (weights != null)
         {
             var kw = ToDictionary(keys, weights);
-            results = operation switch
+            return operation switch
             {
                 SetOperation.Union => await SortedSetUnionWithScoreAsync(kw, aggregate),
                 SetOperation.Intersect => await SortedSetInterWithScoreAsync(kw, aggregate),
@@ -156,25 +154,21 @@ internal partial class Database
                 _ => throw new ArgumentOutOfRangeException(nameof(operation)),
             };
         }
-        else
-        {
-            results = operation switch
-            {
-                SetOperation.Union => await SortedSetUnionWithScoreAsync(keys, aggregate),
-                SetOperation.Intersect => await SortedSetInterWithScoreAsync(keys, aggregate),
-                SetOperation.Difference => await SortedSetDiffWithScoreAsync(keys),
-                _ => throw new ArgumentOutOfRangeException(nameof(operation)),
-            };
-        }
 
-        return [.. results.Select(r => new SortedSetEntry(r.Member, r.Score))];
+        return operation switch
+        {
+            SetOperation.Union => await SortedSetUnionWithScoreAsync(keys, aggregate),
+            SetOperation.Intersect => await SortedSetInterWithScoreAsync(keys, aggregate),
+            SetOperation.Difference => await SortedSetDiffWithScoreAsync(keys),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate, CommandFlags)"/>
     public Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return SortedSetCombineAndStoreAsync(operation, destination, (IEnumerable<ValkeyKey>)[first, second], null, aggregate);
+        return SortedSetCombineAndStoreAsync(operation, destination, [first, second], null, aggregate);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate, CommandFlags)"/>
@@ -231,16 +225,14 @@ internal partial class Database
     public async Task<SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var result = order == Order.Ascending ? await SortedSetPopMinAsync(key) : await SortedSetPopMaxAsync(key);
-        return result.HasValue ? new SortedSetEntry(result.Value.Member, result.Value.Score) : null;
+        return order == Order.Ascending ? await SortedSetPopMinAsync(key) : await SortedSetPopMaxAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetPopAsync(ValkeyKey, long, Order, CommandFlags)"/>
     public async Task<SortedSetEntry[]> SortedSetPopAsync(ValkeyKey key, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var results = order == Order.Ascending ? await SortedSetPopMinAsync(key, count) : await SortedSetPopMaxAsync(key, count);
-        return [.. results.Select(r => new SortedSetEntry(r.Member, r.Score))];
+        return order == Order.Ascending ? await SortedSetPopMinAsync(key, count) : await SortedSetPopMaxAsync(key, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order, CommandFlags)"/>
@@ -313,12 +305,12 @@ internal partial class Database
         return base.SortedSetScanAsync(key, pattern, pageSize, cursor, pageOffset);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetBlockingPopAsync(ValkeyKey, Order, TimeSpan)"/>
-    public Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout)
+    /// <inheritdoc cref="IBaseClient.SortedSetBlockingPopAsync(ValkeyKey, Order, TimeSpan)"/>
+    public new Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout)
         => base.SortedSetBlockingPopAsync(key, order, timeout);
 
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, TimeSpan)"/>
-    public Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout)
+    /// <inheritdoc cref="IBaseClient.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, TimeSpan)"/>
+    public new Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout)
         => base.SortedSetBlockingPopAsync(keys, count, order, timeout);
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScoreAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
@@ -357,14 +349,25 @@ internal partial class Database
     private static IDictionary<ValkeyKey, double> ToDictionary(IEnumerable<ValkeyKey> keys, IEnumerable<double> weights)
     {
         Dictionary<ValkeyKey, double> result = [];
+
         using var keyEnum = keys.GetEnumerator();
         using var weightEnum = weights.GetEnumerator();
+
         while (true)
         {
             bool hasKey = keyEnum.MoveNext();
             bool hasWeight = weightEnum.MoveNext();
-            if (hasKey != hasWeight) throw new ArgumentException("The number of weights must match the number of keys.", nameof(weights));
-            if (!hasKey) return result;
+
+            if (hasKey != hasWeight)
+            {
+                throw new ArgumentException("The number of weights must match the number of keys.", nameof(weights));
+            }
+
+            else if (!hasKey)
+            {
+                return result;
+            }
+
             result[keyEnum.Current] = weightEnum.Current;
         }
     }
@@ -389,12 +392,26 @@ internal partial class Database
 
     private static RangeOptions ToRangeOptions(ValkeyValue start, ValkeyValue stop, SortedSetOrder sortedSetOrder, Exclude exclude, Order order, long skip, long? take)
     {
+        if (sortedSetOrder == SortedSetOrder.ByRank && exclude != Exclude.None)
+        {
+            // Matches StackExchange.Redis exception.
+            throw new ArgumentException("Exclude is not valid when sortedSetOrder is ByRank. Use ByLex or ByScore instead.", nameof(exclude));
+        }
+
         Range range = sortedSetOrder switch
         {
+            SortedSetOrder.ByRank => RankRange.Between((long)start, (long)stop),
             SortedSetOrder.ByScore => ToScoreRange((double)start, (double)stop, exclude),
             SortedSetOrder.ByLex => ToLexRange(start, stop, exclude),
-            _ => RankRange.Between((long)start, (long)stop),
+            _ => throw new ArgumentOutOfRangeException(nameof(sortedSetOrder), sortedSetOrder, "Unsupported sorted set order."),
         };
-        return new RangeOptions { Range = range, Order = order, Offset = skip, Count = take ?? -1 };
+
+        return new RangeOptions
+        {
+            Range = range,
+            Order = order,
+            Offset = skip,
+            Count = take ?? -1
+        };
     }
 }

@@ -709,7 +709,7 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue[] { "testMember2", "testMember3", "testMember1", "testMember4" }, "SortedSetUnion([combineKey1, combineKey3])"));
 
         _ = batch.SortedSetInterWithScore([combineKey1, combineKey3]);
-        testData.Add(new(new SortedSetScoreResult[] { new("testMember2", 27.0) }, "SortedSetInterWithScore([combineKey1, combineKey3])"));
+        testData.Add(new(new SortedSetEntry[] { new("testMember2", 27.0) }, "SortedSetInterWithScore([combineKey1, combineKey3])"));
 
         _ = batch.SortedSetUnionAndStore(combineDestKey, [combineKey1, combineKey3]);
         testData.Add(new(4L, "SortedSetUnionAndStore(combineDestKey, [combineKey1, combineKey3])"));
@@ -761,11 +761,11 @@ internal partial class BatchTestUtils
 
         // Test SortedSetPopMin
         _ = batch.SortedSetPopMin(newKey);
-        testData.Add(new(new SortedSetScoreResult("newMember2", 8.2), "SortedSetPopMin(newKey)"));
+        testData.Add(new(new SortedSetEntry("newMember2", 8.2), "SortedSetPopMin(newKey)"));
 
         // Test SortedSetPopMax
         _ = batch.SortedSetPopMax(newKey);
-        testData.Add(new(new SortedSetScoreResult("newMember3", 15.0), "SortedSetPopMax(newKey)"));
+        testData.Add(new(new SortedSetEntry("newMember3", 15.0), "SortedSetPopMax(newKey)"));
 
         // Test SortedSetRandomMember
         _ = batch.SortedSetRandomMember(newKey);
@@ -798,11 +798,11 @@ internal partial class BatchTestUtils
 
         // Test SortedSetRandomMemberWithScore
         _ = batch.SortedSetRandomMemberWithScore(newKey);
-        testData.Add(new(new SortedSetScoreResult?(), "SortedSetRandomMemberWithScore(newKey)", true));
+        testData.Add(new(new SortedSetEntry?(), "SortedSetRandomMemberWithScore(newKey)", true));
 
         // Test SortedSetRandomMembersWithScores
         _ = batch.SortedSetRandomMembersWithScores(newKey, 2);
-        testData.Add(new(Array.Empty<SortedSetScoreResult>(), "SortedSetRandomMembersWithScores(newKey, 2)", true));
+        testData.Add(new(Array.Empty<SortedSetEntry>(), "SortedSetRandomMembersWithScores(newKey, 2)", true));
 
         // Test SortedSetRangeAndStore (should copy all 3 elements from newKey to newDestKey)
         _ = batch.SortedSetRangeAndStore(newKey, newDestKey);

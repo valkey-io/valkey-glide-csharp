@@ -92,7 +92,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/zpopmin"/>
     /// <param name="key">The sorted set key.</param>
     /// <returns>The removed element, or <see langword="null"/> when the key does not exist.</returns>
-    Task<SortedSetScoreResult?> SortedSetPopMinAsync(ValkeyKey key);
+    Task<SortedSetEntry?> SortedSetPopMinAsync(ValkeyKey key);
 
     /// <summary>
     /// Removes and returns the member with the highest score.
@@ -100,7 +100,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/zpopmax"/>
     /// <param name="key">The sorted set key.</param>
     /// <returns>The removed element, or <see langword="null"/> when the key does not exist.</returns>
-    Task<SortedSetScoreResult?> SortedSetPopMaxAsync(ValkeyKey key);
+    Task<SortedSetEntry?> SortedSetPopMaxAsync(ValkeyKey key);
 
     /// <summary>
     /// Removes and returns up to <paramref name="count"/> members with the lowest scores.
@@ -109,7 +109,7 @@ public partial interface IBaseClient
     /// <param name="key">The sorted set key.</param>
     /// <param name="count">The number of members to remove.</param>
     /// <returns>An array of removed elements.</returns>
-    Task<SortedSetScoreResult[]> SortedSetPopMinAsync(ValkeyKey key, long count);
+    Task<SortedSetEntry[]> SortedSetPopMinAsync(ValkeyKey key, long count);
 
     /// <summary>
     /// Removes and returns up to <paramref name="count"/> members with the highest scores.
@@ -118,7 +118,7 @@ public partial interface IBaseClient
     /// <param name="key">The sorted set key.</param>
     /// <param name="count">The number of members to remove.</param>
     /// <returns>An array of removed elements.</returns>
-    Task<SortedSetScoreResult[]> SortedSetPopMaxAsync(ValkeyKey key, long count);
+    Task<SortedSetEntry[]> SortedSetPopMaxAsync(ValkeyKey key, long count);
 
     /// <summary>
     /// Removes and returns the member with the lowest score from the first non-empty sorted set.
@@ -129,7 +129,7 @@ public partial interface IBaseClient
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
     /// <returns>The removed element, or <see langword="null"/> when no element could be popped.</returns>
-    Task<SortedSetScoreResult?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null);
+    Task<SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null);
 
     /// <summary>
     /// Removes and returns the member with the highest score from the first non-empty sorted set.
@@ -140,7 +140,7 @@ public partial interface IBaseClient
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
     /// <returns>The removed element, or <see langword="null"/> when no element could be popped.</returns>
-    Task<SortedSetScoreResult?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null);
+    Task<SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null);
 
     /// <summary>
     /// Removes and returns up to <paramref name="count"/> members with the lowest scores from the first non-empty sorted set.
@@ -173,7 +173,7 @@ public partial interface IBaseClient
     /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <returns>The randomly selected element with its score, or <see langword="null"/> when the key does not exist.</returns>
-    Task<SortedSetScoreResult?> SortedSetRandomMemberWithScoreAsync(ValkeyKey key);
+    Task<SortedSetEntry?> SortedSetRandomMemberWithScoreAsync(ValkeyKey key);
 
     /// <summary>
     /// Returns random members with their scores from the sorted set.
@@ -183,7 +183,7 @@ public partial interface IBaseClient
     /// <param name="key">The sorted set key.</param>
     /// <param name="count">The number of random members to return.</param>
     /// <returns>An array of randomly selected elements with their scores, or an empty array when the key does not exist.</returns>
-    Task<SortedSetScoreResult[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count);
+    Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count);
 
     /// <summary>
     /// Computes the union of multiple sorted sets.
@@ -201,11 +201,11 @@ public partial interface IBaseClient
 
     /// <inheritdoc cref="SortedSetUnionAsync(IEnumerable{ValkeyKey}, Aggregate)" path="/*[not(self::returns)]"/>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
-    Task<SortedSetScoreResult[]> SortedSetUnionWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
+    Task<SortedSetEntry[]> SortedSetUnionWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
     /// <inheritdoc cref="SortedSetUnionWithScoreAsync(IEnumerable{ValkeyKey}, Aggregate)" path="/*[not(self::param[@name='keys'])]"/>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
-    Task<SortedSetScoreResult[]> SortedSetUnionWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
+    Task<SortedSetEntry[]> SortedSetUnionWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
     /// <summary>
     /// Computes the intersection of multiple sorted sets.
@@ -223,11 +223,11 @@ public partial interface IBaseClient
 
     /// <inheritdoc cref="SortedSetInterAsync(IEnumerable{ValkeyKey}, Aggregate)" path="/*[not(self::returns)]"/>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
-    Task<SortedSetScoreResult[]> SortedSetInterWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
+    Task<SortedSetEntry[]> SortedSetInterWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
     /// <inheritdoc cref="SortedSetInterWithScoreAsync(IEnumerable{ValkeyKey}, Aggregate)" path="/*[not(self::param[@name='keys'])]"/>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
-    Task<SortedSetScoreResult[]> SortedSetInterWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
+    Task<SortedSetEntry[]> SortedSetInterWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
     /// <summary>
     /// Computes the difference between the first sorted set and all successive sorted sets.
@@ -240,7 +240,7 @@ public partial interface IBaseClient
 
     /// <inheritdoc cref="SortedSetDiffAsync(IEnumerable{ValkeyKey})" path="/*[not(self::returns)]"/>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
-    Task<SortedSetScoreResult[]> SortedSetDiffWithScoreAsync(IEnumerable<ValkeyKey> keys);
+    Task<SortedSetEntry[]> SortedSetDiffWithScoreAsync(IEnumerable<ValkeyKey> keys);
 
     /// <summary>
     /// Computes the union of multiple sorted sets and stores the result in <paramref name="destination"/>.
@@ -304,7 +304,7 @@ public partial interface IBaseClient
 
     /// <inheritdoc cref="SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[not(self::returns)]"/>
     /// <returns>An array of elements with their scores in the specified range.</returns>
-    Task<SortedSetScoreResult[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default);
+    Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default);
 
     /// <summary>
     /// Stored all elements in the sorted set within the given range to <paramref name="destination"/>.

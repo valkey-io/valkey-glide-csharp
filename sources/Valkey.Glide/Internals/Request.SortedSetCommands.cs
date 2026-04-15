@@ -73,8 +73,6 @@ internal partial class Request
         return Simple<long>(RequestType.ZCount, [key.ToGlideString(), .. range.ToArgs()]);
     }
 
-    private static readonly Func<object[], ValkeyValue[]> ToValkeyValues = array => [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
-    private static readonly Func<Dictionary<GlideString, object>, SortedSetScoreResult[]> ToScoreResults = dict => [.. dict.Select(kvp => new SortedSetScoreResult((ValkeyValue)kvp.Key, (double)kvp.Value))];
 
     public static Cmd<object[], ValkeyValue[]> SortedSetUnionAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
     {
@@ -93,7 +91,7 @@ internal partial class Request
         return new(RequestType.ZUnion, [.. args], false, ToValkeyValues);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetUnionWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetUnionWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
@@ -102,7 +100,7 @@ internal partial class Request
         return new(RequestType.ZUnion, [.. args], false, ToScoreResults);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetUnionWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetUnionWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
     {
         List<GlideString> args = [];
         AddKeys(args, keysAndWeights.Keys);
@@ -129,7 +127,7 @@ internal partial class Request
         return new(RequestType.ZInter, [.. args], false, ToValkeyValues);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetInterWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetInterWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
@@ -138,7 +136,7 @@ internal partial class Request
         return new(RequestType.ZInter, [.. args], false, ToScoreResults);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetInterWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetInterWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
     {
         List<GlideString> args = [];
         AddKeys(args, keysAndWeights.Keys);
@@ -155,7 +153,7 @@ internal partial class Request
         return new(RequestType.ZDiff, [.. args], false, ToValkeyValues);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetDiffWithScoreAsync(IEnumerable<ValkeyKey> keys)
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetDiffWithScoreAsync(IEnumerable<ValkeyKey> keys)
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
@@ -243,100 +241,31 @@ internal partial class Request
         });
     }
 
-    public static Cmd<object?, SortedSetScoreResult?> SortedSetPopMinAsync(ValkeyKey key)
-        => new(RequestType.ZPopMin, [key.ToGlideString()], true, response =>
-        {
-            if (response == null)
-            {
-                return null;
-            }
+    public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(ValkeyKey key)
+        => new(RequestType.ZPopMin, [key.ToGlideString()], true, ToSortedSetEntry, allowConverterToHandleNull: true);
 
-            Dictionary<GlideString, object> responseDict = (Dictionary<GlideString, object>)response;
-            if (responseDict.Count == 0)
-            {
-                return null;
-            }
+    public static Cmd<object?, SortedSetEntry?> SortedSetPopMaxAsync(ValkeyKey key)
+        => new(RequestType.ZPopMax, [key.ToGlideString()], true, ToSortedSetEntry, allowConverterToHandleNull: true);
 
-            KeyValuePair<GlideString, object> firstEntry = responseDict.First();
-            return new SortedSetScoreResult((ValkeyValue)firstEntry.Key, (double)firstEntry.Value);
-        }, allowConverterToHandleNull: true);
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetPopMinAsync(ValkeyKey key, long count)
+        => new(RequestType.ZPopMin, [key.ToGlideString(), count.ToGlideString()], false, ToScoreResults);
 
-    public static Cmd<object?, SortedSetScoreResult?> SortedSetPopMaxAsync(ValkeyKey key)
-        => new(RequestType.ZPopMax, [key.ToGlideString()], true, response =>
-        {
-            if (response == null)
-            {
-                return null;
-            }
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetPopMaxAsync(ValkeyKey key, long count)
+        => new(RequestType.ZPopMax, [key.ToGlideString(), count.ToGlideString()], false, ToScoreResults);
 
-            Dictionary<GlideString, object> responseDict = (Dictionary<GlideString, object>)response;
-            if (responseDict.Count == 0)
-            {
-                return null;
-            }
-
-            KeyValuePair<GlideString, object> firstEntry = responseDict.First();
-            return new SortedSetScoreResult((ValkeyValue)firstEntry.Key, (double)firstEntry.Value);
-        }, allowConverterToHandleNull: true);
-
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetPopMinAsync(ValkeyKey key, long count)
-    {
-        List<GlideString> args = [key.ToGlideString(), count.ToGlideString()];
-
-        return new(RequestType.ZPopMin, [.. args], false, response =>
-        {
-            SortedSetScoreResult[] entries = new SortedSetScoreResult[response.Count];
-            int i = 0;
-            foreach (KeyValuePair<GlideString, object> kvp in response)
-            {
-                entries[i] = new SortedSetScoreResult((ValkeyValue)kvp.Key, (double)kvp.Value);
-                i++;
-            }
-
-            return entries;
-        });
-    }
-
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetPopMaxAsync(ValkeyKey key, long count)
-    {
-        List<GlideString> args = [key.ToGlideString(), count.ToGlideString()];
-
-        return new(RequestType.ZPopMax, [.. args], false, response =>
-        {
-            SortedSetScoreResult[] entries = new SortedSetScoreResult[response.Count];
-            int i = 0;
-            foreach (KeyValuePair<GlideString, object> kvp in response)
-            {
-                entries[i] = new SortedSetScoreResult((ValkeyValue)kvp.Key, (double)kvp.Value);
-                i++;
-            }
-
-            return entries;
-        });
-    }
-
-    public static Cmd<object?, SortedSetScoreResult?> SortedSetPopMinMultiKeyAsync(IEnumerable<ValkeyKey> keys)
+    public static Cmd<object?, SortedSetEntry?> SortedSetPopMinMultiKeyAsync(IEnumerable<ValkeyKey> keys)
     {
         List<GlideString> args = [];
+
         AddKeys(args, keys);
         args.Add(MinKeyword);
         args.Add(CountKeyword);
         args.Add(1.ToGlideString());
 
-        return new(RequestType.ZMPop, [.. args], true, response =>
-        {
-            SortedSetPopResult popResult = HandleSortedSetPopResultResponse(response);
-            if (popResult.IsNull || popResult.Entries.Length == 0)
-            {
-                return null;
-            }
-
-            SortedSetEntry entry = popResult.Entries[0];
-            return new SortedSetScoreResult(entry.Element, entry.Score);
-        }, allowConverterToHandleNull: true);
+        return new(RequestType.ZMPop, [.. args], true, ToSortedSetEntryFromPopResult, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, SortedSetScoreResult?> SortedSetPopMaxMultiKeyAsync(IEnumerable<ValkeyKey> keys)
+    public static Cmd<object?, SortedSetEntry?> SortedSetPopMaxMultiKeyAsync(IEnumerable<ValkeyKey> keys)
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
@@ -344,17 +273,7 @@ internal partial class Request
         args.Add(CountKeyword);
         args.Add(1.ToGlideString());
 
-        return new(RequestType.ZMPop, [.. args], true, response =>
-        {
-            SortedSetPopResult popResult = HandleSortedSetPopResultResponse(response);
-            if (popResult.IsNull || popResult.Entries.Length == 0)
-            {
-                return null;
-            }
-
-            SortedSetEntry entry = popResult.Entries[0];
-            return new SortedSetScoreResult(entry.Element, entry.Score);
-        }, allowConverterToHandleNull: true);
+        return new(RequestType.ZMPop, [.. args], true, ToSortedSetEntryFromPopResult, allowConverterToHandleNull: true);
     }
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMinMultiKeyAsync(IEnumerable<ValkeyKey> keys, long count)
@@ -379,7 +298,7 @@ internal partial class Request
         return new(RequestType.ZMPop, [.. args], true, HandleSortedSetPopResultResponse, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, SortedSetScoreResult?> SortedSetBlockingPopMinMultiKeyAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
+    public static Cmd<object?, SortedSetEntry?> SortedSetBlockingPopMinMultiKeyAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
     {
         List<GlideString> args = [ToSeconds(timeout).ToGlideString()];
         AddKeys(args, keys);
@@ -387,20 +306,10 @@ internal partial class Request
         args.Add(CountKeyword);
         args.Add(1.ToGlideString());
 
-        return new(RequestType.BZMPop, [.. args], true, response =>
-        {
-            SortedSetPopResult popResult = HandleSortedSetPopResultResponse(response);
-            if (popResult.IsNull || popResult.Entries.Length == 0)
-            {
-                return null;
-            }
-
-            SortedSetEntry entry = popResult.Entries[0];
-            return new SortedSetScoreResult(entry.Element, entry.Score);
-        }, allowConverterToHandleNull: true);
+        return new(RequestType.BZMPop, [.. args], true, ToSortedSetEntryFromPopResult, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, SortedSetScoreResult?> SortedSetBlockingPopMaxMultiKeyAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
+    public static Cmd<object?, SortedSetEntry?> SortedSetBlockingPopMaxMultiKeyAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
     {
         List<GlideString> args = [ToSeconds(timeout).ToGlideString()];
         AddKeys(args, keys);
@@ -408,17 +317,7 @@ internal partial class Request
         args.Add(CountKeyword);
         args.Add(1.ToGlideString());
 
-        return new(RequestType.BZMPop, [.. args], true, response =>
-        {
-            SortedSetPopResult popResult = HandleSortedSetPopResultResponse(response);
-            if (popResult.IsNull || popResult.Entries.Length == 0)
-            {
-                return null;
-            }
-
-            SortedSetEntry entry = popResult.Entries[0];
-            return new SortedSetScoreResult(entry.Element, entry.Score);
-        }, allowConverterToHandleNull: true);
+        return new(RequestType.BZMPop, [.. args], true, ToSortedSetEntryFromPopResult, allowConverterToHandleNull: true);
     }
 
     public static Cmd<object?, SortedSetPopResult> SortedSetBlockingPopMinMultiKeyAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
@@ -443,7 +342,7 @@ internal partial class Request
         return new(RequestType.BZMPop, [.. args], true, HandleSortedSetPopResultResponse, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object[], SortedSetScoreResult?> SortedSetRandomMemberWithScoreAsync(ValkeyKey key)
+    public static Cmd<object[], SortedSetEntry?> SortedSetRandomMemberWithScoreAsync(ValkeyKey key)
     {
         List<GlideString> args = [key.ToGlideString(), 1.ToGlideString(), WithScoresKeyword];
 
@@ -457,23 +356,23 @@ internal partial class Request
             object[] pair = (object[])response[0];
             ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
             double score = (double)pair[1];
-            return new SortedSetScoreResult(member, score);
+            return new SortedSetEntry(member, score);
         });
     }
 
-    public static Cmd<object[], SortedSetScoreResult[]> SortedSetRandomMembersWithScoreAsync(ValkeyKey key, long count)
+    public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoreAsync(ValkeyKey key, long count)
     {
         List<GlideString> args = [key.ToGlideString(), count.ToGlideString(), WithScoresKeyword];
 
         return new(RequestType.ZRandMember, [.. args], false, response =>
         {
-            SortedSetScoreResult[] results = new SortedSetScoreResult[response.Length];
+            SortedSetEntry[] results = new SortedSetEntry[response.Length];
             for (int i = 0; i < results.Length; i++)
             {
                 object[] pair = (object[])response[i];
                 ValkeyValue member = (ValkeyValue)(GlideString)pair[0];
                 double score = (double)pair[1];
-                results[i] = new SortedSetScoreResult(member, score);
+                results[i] = new SortedSetEntry(member, score);
             }
             return results;
         });
@@ -558,14 +457,14 @@ internal partial class Request
         return new(RequestType.ZRange, [.. args], false, array => [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, SortedSetScoreResult[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default)
+    public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options = default)
     {
         List<GlideString> args = [key.ToGlideString()];
         args.AddRange(options.ToArgs());
         args.Add(ValkeyLiterals.WITHSCORES);
 
         return new(RequestType.ZRange, [.. args], false, dict =>
-            [.. dict.Select(kvp => new SortedSetScoreResult((ValkeyValue)kvp.Key, (double)kvp.Value))]);
+            [.. dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))]);
     }
 
     public static Cmd<long, long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options = default)
@@ -594,6 +493,28 @@ internal partial class Request
 
     public static Cmd<double?, double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member)
         => new(RequestType.ZScore, [key.ToGlideString(), member.ToGlideString()], true, response => response);
+
+    #region Private Methods
+
+    private static readonly Func<object[], ValkeyValue[]> ToValkeyValues = array => [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+    private static readonly Func<Dictionary<GlideString, object>, SortedSetEntry[]> ToScoreResults = dict => [.. dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))];
+
+    private static SortedSetEntry? ToSortedSetEntry(object? response)
+    {
+        if (response is not Dictionary<GlideString, object> dict || dict.Count == 0)
+        {
+            return null;
+        }
+
+        KeyValuePair<GlideString, object> first = dict.First();
+        return new SortedSetEntry((ValkeyValue)first.Key, (double)first.Value);
+    }
+
+    private static SortedSetEntry? ToSortedSetEntryFromPopResult(object? response)
+    {
+        SortedSetPopResult popResult = HandleSortedSetPopResultResponse(response);
+        return popResult.IsNull || popResult.Entries.Length == 0 ? null : popResult.Entries[0];
+    }
 
     /// <summary>
     /// Shared response handler for sorted set pop operations (both blocking and non-blocking).
@@ -627,8 +548,6 @@ internal partial class Request
 
         return new SortedSetPopResult(key, entries);
     }
-
-    #region Private Methods
 
     private static void AddKeys(List<GlideString> args, IEnumerable<ValkeyKey> keys)
     {

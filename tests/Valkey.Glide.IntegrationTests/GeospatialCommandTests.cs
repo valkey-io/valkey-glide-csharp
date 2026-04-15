@@ -679,9 +679,9 @@ public class GeospatialCommandTests(TestConfiguration config)
         var results = await client.SortedSetRangeWithScoresAsync(dest);
         Assert.Equal(2, results.Length);
 
-        Assert.Equal(PalermoName, results[0].Member);
+        Assert.Equal(PalermoName, results[0].Element);
         Assert.Equal(0.0, results[0].Score, DistanceTolerance);
-        Assert.Equal(CataniaName, results[1].Member);
+        Assert.Equal(CataniaName, results[1].Element);
         Assert.Equal(PalermoCataniaDistanceKm, results[1].Score, DistanceTolerance);
     }
 
