@@ -619,15 +619,15 @@ internal partial class BatchTestUtils
         testData.Add(new(2L, "SortedSetAdd(key1, [member2:8.2, member3:15.0])"));
 
         // Test add with NX (should not add existing member)
-        _ = batch.SortedSetAdd(key1, "member1", 20.0, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists });
+        _ = batch.SortedSetAdd(key1, "member1", 20.0, SortedSetAddCondition.OnlyIfNotExists);
         testData.Add(new(false, "SortedSetAdd(key1, member1, 20.0, OnlyIfNotExists)"));
 
         // Test add with XX (should update existing member)
-        _ = batch.SortedSetAdd(key1, "member2", 12.0, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfExists });
+        _ = batch.SortedSetAdd(key1, "member2", 12.0, SortedSetAddCondition.OnlyIfExists);
         testData.Add(new(false, "SortedSetAdd(key1, member2, 12.0, OnlyIfExists)"));
 
         // Test add new member with NX
-        _ = batch.SortedSetAdd(key2, "newMember", 7.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists });
+        _ = batch.SortedSetAdd(key2, "newMember", 7.5, SortedSetAddCondition.OnlyIfNotExists);
         testData.Add(new(true, "SortedSetAdd(key2, newMember, 7.5, OnlyIfNotExists)"));
 
         // Test single member remove
@@ -1363,10 +1363,10 @@ internal partial class BatchTestUtils
         testData.Add(new(2L, "GeoAdd(key1, [Catania, Rome])"));
 
         // Test GeoAdd with options
-        _ = batch.GeoAdd(sourceKey, "Palermo", new GeoPosition(13.361389, 38.115556), new GeoAddOptions { Condition = GeoAddCondition.OnlyIfExists });
+        _ = batch.GeoAdd(sourceKey, "Palermo", new GeoPosition(13.361389, 38.115556), GeoAddCondition.OnlyIfExists);
         testData.Add(new(false, "GeoAdd(key1, Palermo, XX) - update existing"));
 
-        _ = batch.GeoAdd(sourceKey, "Milan", new GeoPosition(9.189982, 45.4642035), new GeoAddOptions { Condition = GeoAddCondition.OnlyIfNotExists });
+        _ = batch.GeoAdd(sourceKey, "Milan", new GeoPosition(9.189982, 45.4642035), GeoAddCondition.OnlyIfNotExists);
         testData.Add(new(true, "GeoAdd(key1, Milan, NX) - add new"));
 
         _ = batch.GeoAdd(prefix + sourceKey, new Dictionary<ValkeyValue, GeoPosition>
