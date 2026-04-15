@@ -45,6 +45,7 @@ internal static class ValkeyLiterals
         HISTORY = "HISTORY",
         ID = "ID",
         IDX = "IDX",
+        INCR = "INCR",
         IDLETIME = "IDLETIME",
         KEEPTTL = "KEEPTTL",
         KILL = "KILL",
@@ -130,9 +131,15 @@ internal static class ValkeyLiterals
         none = "none",
         sync = "sync",
 
-        MinusSymbol = "-",
-        PlusSymbol = "+",
-        Wildcard = "*",
+        // Sorted script ranges
+        RangeInclusive = "[",
+        RangeExclusive = "(",
+        RangeMinLex = "-",
+        RangeMaxLex = "+",
+        RangeMinScore = "-inf",
+        RangeMaxScore = "+inf",
+        RangeMinRank = "0",
+        RangeMaxRank = "-1",
 
         // Geo Radius/Search Literals
         BYBOX = "BYBOX",

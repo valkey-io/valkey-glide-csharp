@@ -3,13 +3,15 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// The options for an operation to add or update  sorted set members.
+/// The options for an operation to add or update sorted set members.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/zadd/"/>
 public readonly struct SortedSetAddOptions
 {
+    #region Public Properties
+
     /// <summary>
-    /// The condition under which to add or update  members.
+    /// The condition under which to add or update members.
     /// </summary>
     public SortedSetAddCondition Condition { get; init; }
 
@@ -18,6 +20,9 @@ public readonly struct SortedSetAddOptions
     /// updated) instead of the number of added elements only (CH).
     /// </summary>
     public bool Changed { get; init; }
+
+    #endregion
+    #region Internal Methods
 
     /// <summary>
     /// Converts to command arguments.
@@ -34,4 +39,6 @@ public readonly struct SortedSetAddOptions
 
         return [.. args];
     }
+
+    #endregion
 }

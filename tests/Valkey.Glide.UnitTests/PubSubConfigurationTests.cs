@@ -101,7 +101,6 @@ public class PubSubConfigurationTests
     }
 
     #endregion
-
     #region ClusterClientConfigurationBuilder Tests
 
     [Fact]
@@ -186,7 +185,6 @@ public class PubSubConfigurationTests
     }
 
     #endregion
-
     #region Validation Tests
 
     [Fact]

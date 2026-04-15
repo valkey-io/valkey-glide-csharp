@@ -81,7 +81,6 @@ public class FunctionDataModelTests
     }
 
     #endregion
-
     #region FunctionInfo Tests
 
     [Fact]
@@ -143,7 +142,6 @@ public class FunctionDataModelTests
         Assert.Throws<ArgumentNullException>(() => new FunctionInfo("myfunction", "description", null!));
 
     #endregion
-
     #region FunctionStatsResult Tests
 
     [Fact]
@@ -186,7 +184,6 @@ public class FunctionDataModelTests
         Assert.Throws<ArgumentNullException>(() => new FunctionStatsResult(null!));
 
     #endregion
-
     #region EngineStats Tests
 
     [Fact]
@@ -226,7 +223,6 @@ public class FunctionDataModelTests
         Assert.Throws<ArgumentNullException>(() => new EngineStats(null!, 5, 2));
 
     #endregion
-
     #region RunningScriptInfo Tests
 
     [Fact]
@@ -280,7 +276,6 @@ public class FunctionDataModelTests
         Assert.Throws<ArgumentNullException>(() => new RunningScriptInfo("myscript", "FCALL", null!, TimeSpan.FromSeconds(1)));
 
     #endregion
-
     #region FunctionListQuery Tests
 
     [Fact]

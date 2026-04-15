@@ -3,13 +3,13 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// The options for an operation to add or update  a geospatial item.
+/// The options for an operation to add or update a geospatial item.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/geoadd/"/>
 public readonly struct GeoAddOptions
 {
     /// <summary>
-    /// The condition under which to add or update  members.
+    /// The condition under which to add or update members.
     /// </summary>
     public GeoAddCondition Condition { get; init; }
 

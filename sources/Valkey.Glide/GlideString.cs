@@ -81,6 +81,13 @@ public static class GlideStringExtensions
     public static GlideString[] ToGlideStrings(this IEnumerable<string> strings) => [.. strings.Select(s => new GlideString(s))];
 
     /// <summary>
+    /// Convert an <see langword="IEnumerable&lt;ValkeyValue&gt;" /> to an <see langword="GlideString[]" />.
+    /// </summary>
+    /// <param name="strings">A collection of <see langword="string" />s to convert.</param>
+    /// <returns>An array of <see cref="GlideString" />s.</returns>
+    public static GlideString[] ToGlideStrings(this IEnumerable<ValkeyValue> strings) => [.. strings.Select(v => v.ToGlideString())];
+
+    /// <summary>
     /// Convert an array of <see langword="byte[]" />s to an <see langword="GlideString[]" />.
     /// </summary>
     /// <param name="strings">An array of <see langword="byte[]" />s to convert.</param>

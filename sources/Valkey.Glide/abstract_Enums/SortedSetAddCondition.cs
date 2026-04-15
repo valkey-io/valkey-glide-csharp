@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// The condition for an operation to add or update  sorted set members.
+/// The condition for an operation to add or update sorted set members.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/zadd/"/>
 public enum SortedSetAddCondition
@@ -24,22 +24,22 @@ public enum SortedSetAddCondition
     OnlyIfExists,
 
     /// <summary>
-    /// Only add new members or update existing members if the new score is greater than the current score (GT).
+    /// Only add new members, or update existing members if the new score is greater than the current score (GT).
     /// </summary>
     OnlyIfNotExistsOrGreaterThan,
 
     /// <summary>
-    /// Only add new members or update existing members if the new score is less than the current score (LT).
+    /// Only add new members, or update existing members if the new score is less than the current score (LT).
     /// </summary>
     OnlyIfNotExistsOrLessThan,
 
     /// <summary>
-    /// Only update existing members when the new score is greater than the current score (XX + GT).
+    /// Only update existing members if the new score is greater than the current score (XX + GT).
     /// </summary>
     OnlyIfGreaterThan,
 
     /// <summary>
-    /// Only update existing members when the new score is less than the current score (XX + LT).
+    /// Only update existing members if the new score is less than the current score (XX + LT).
     /// </summary>
     OnlyIfLessThan,
 }

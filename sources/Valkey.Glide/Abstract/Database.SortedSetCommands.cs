@@ -65,7 +65,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetLengthAsync(ValkeyKey, double, double, Exclude, CommandFlags)"/>
     public async Task<long> SortedSetLengthAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetLengthAsync(key, min, max, exclude);
     }
@@ -80,7 +79,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCountAsync(ValkeyKey, double, double, Exclude, CommandFlags)"/>
     public async Task<long> SortedSetCountAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetCountAsync(key, min, max, exclude);
     }
@@ -88,7 +86,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order, CommandFlags)"/>
     public async Task<ValkeyValue[]> SortedSetRangeByRankAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRangeByRankAsync(key, start, stop, order);
     }
@@ -96,7 +93,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByRankWithScoresAsync(ValkeyKey, long, long, Order, CommandFlags)"/>
     public async Task<SortedSetEntry[]> SortedSetRangeByRankWithScoresAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRangeByRankWithScoresAsync(key, start, stop, order);
     }
@@ -104,7 +100,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long, CommandFlags)"/>
     public async Task<ValkeyValue[]> SortedSetRangeByScoreAsync(ValkeyKey key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRangeByScoreAsync(key, start, stop, exclude, order, skip, take);
     }
@@ -112,7 +107,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByScoreWithScoresAsync(ValkeyKey, double, double, Exclude, Order, long, long, CommandFlags)"/>
     public async Task<SortedSetEntry[]> SortedSetRangeByScoreWithScoresAsync(ValkeyKey key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRangeByScoreWithScoresAsync(key, start, stop, exclude, order, skip, take);
     }
@@ -120,7 +114,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long, CommandFlags)"/>
     public async Task<ValkeyValue[]> SortedSetRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, long skip, long take = -1, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRangeByValueAsync(key, min, max, exclude, skip, take);
     }
@@ -128,15 +121,23 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, Order, long, long, CommandFlags)"/>
     public async Task<ValkeyValue[]> SortedSetRangeByValueAsync(ValkeyKey key, ValkeyValue min = default, ValkeyValue max = default, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRangeByValueAsync(key, min, max, exclude, order, skip, take);
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?, CommandFlags)"/>
+    public async Task<long> SortedSetRangeAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue start, ValkeyValue stop, SortedSetOrder sortedSetOrder = SortedSetOrder.ByRank, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long? take = null, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await base.SortedSetRangeAndStoreAsync(sourceKey, destinationKey, start, stop, sortedSetOrder, exclude, order, skip, take);
+    }
+
+    #endregion
+    #region SortedSetCombine
+
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate, CommandFlags)"/>
     public async Task<ValkeyValue[]> SortedSetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetCombineAsync(operation, keys, weights, aggregate);
     }
@@ -144,7 +145,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCombineWithScoresAsync(SetOperation, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate, CommandFlags)"/>
     public async Task<SortedSetEntry[]> SortedSetCombineWithScoresAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetCombineWithScoresAsync(operation, keys, weights, aggregate);
     }
@@ -152,7 +152,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, Aggregate, CommandFlags)"/>
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetCombineAndStoreAsync(operation, destination, first, second, aggregate);
     }
@@ -160,10 +159,12 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetCombineAndStoreAsync(SetOperation, ValkeyKey, IEnumerable{ValkeyKey}, IEnumerable{double}?, Aggregate, CommandFlags)"/>
     public async Task<long> SortedSetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, IEnumerable<double>? weights = null, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetCombineAndStoreAsync(operation, destination, keys, weights, aggregate);
     }
+
+    #endregion
+    #region SortedSetIncrement
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double, CommandFlags)"/>
     public async Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags)
@@ -172,26 +173,32 @@ internal partial class Database
         return await SortedSetIncrementAsync(key, member, value);
     }
 
+    #endregion
+    #region SortedSetIntersectionLength
+
     /// <inheritdoc cref="IDatabaseAsync.SortedSetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long, CommandFlags)"/>
     public async Task<long> SortedSetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetIntersectionLengthAsync(keys, limit);
     }
 
+    #endregion
+    #region SortedSetLengthByValue
+
     /// <inheritdoc cref="IDatabaseAsync.SortedSetLengthByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, CommandFlags)"/>
     public async Task<long> SortedSetLengthByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetLengthByValueAsync(key, min, max, exclude);
     }
 
+    #endregion
+    #region SortedSetPop
+
     /// <inheritdoc cref="IDatabaseAsync.SortedSetPopAsync(ValkeyKey, Order, CommandFlags)"/>
     public async Task<SortedSetEntry?> SortedSetPopAsync(ValkeyKey key, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetPopAsync(key, order);
     }
@@ -199,7 +206,6 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetPopAsync(ValkeyKey, long, Order, CommandFlags)"/>
     public async Task<SortedSetEntry[]> SortedSetPopAsync(ValkeyKey key, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetPopAsync(key, count, order);
     }
@@ -207,10 +213,12 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetPopAsync(IEnumerable{ValkeyKey}, long, Order, CommandFlags)"/>
     public async Task<SortedSetPopResult> SortedSetPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetPopAsync(keys, count, order);
     }
+
+    #endregion
+    #region SortedSetRandomMember
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRandomMemberAsync(ValkeyKey, CommandFlags)"/>
     public async Task<ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key, CommandFlags flags)
@@ -230,29 +238,25 @@ internal partial class Database
     public async Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetRandomMembersWithScoresAsync(key, count);
+        return await Command(Request.SortedSetRandomMembersWithScoresAsync(key, count));
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?, CommandFlags)"/>
-    public async Task<long> SortedSetRangeAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue start, ValkeyValue stop, SortedSetOrder sortedSetOrder = SortedSetOrder.ByRank, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long? take = null, CommandFlags flags = CommandFlags.None)
-    {
-        // TODO #270
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await base.SortedSetRangeAndStoreAsync(sourceKey, destinationKey, start, stop, sortedSetOrder, exclude, order, skip, take);
-    }
+    #endregion
+    #region SortedSetRank
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRankAsync(ValkeyKey, ValkeyValue, Order, CommandFlags)"/>
     public async Task<long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRankAsync(key, member, order);
     }
 
+    #endregion
+    #region SortedSetRemoveRange
+
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRemoveRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, CommandFlags)"/>
     public async Task<long> SortedSetRemoveRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRemoveRangeByValueAsync(key, min, max, exclude);
     }
@@ -267,18 +271,22 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude, CommandFlags)"/>
     public async Task<long> SortedSetRemoveRangeByScoreAsync(ValkeyKey key, double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return await base.SortedSetRemoveRangeByScoreAsync(key, start, stop, exclude);
     }
 
+    #endregion
+    #region SortedSetScan
+
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
     public IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
     {
-        // TODO #270
         GuardClauses.ThrowIfCommandFlags(flags);
         return base.SortedSetScanAsync(key, pattern, pageSize, cursor, pageOffset);
     }
+
+    #endregion
+    #region SortedSetScore
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScoreAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public async Task<double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
@@ -293,4 +301,6 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
         return await SortedSetScoresAsync(key, members);
     }
+
+    #endregion
 }
