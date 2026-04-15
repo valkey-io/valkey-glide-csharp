@@ -707,7 +707,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test specific range with descending order
         result = await client.SortedSetRangeAsync(key, new()
         {
-            Range = LexRange.Between(LexBound.Inclusive("b"), LexBound.Inclusive("d")),
+            Range = LexRange.Between("d", "b"),
             Order = Order.Descending
         });
         Assert.Equal(2, result.Length);

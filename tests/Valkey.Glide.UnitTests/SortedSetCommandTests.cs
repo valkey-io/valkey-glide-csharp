@@ -348,20 +348,20 @@ public class SortedSetCommandTests
             },
 
             // Test SortedSetScanAsync converter - basic case
-            (Action)(() =>
+            () =>
             {
                 object[] testScanResponse = [
                     5L,
                     new object[] { (gs)"member1", (gs)"10.5", (gs)"member2", (gs)"8.25" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
-                Assert.Equal(5L, result.cursor);
-                Assert.Equal(2, result.items.Length);
-                Assert.Equal("member1", result.items[0].Element);
-                Assert.Equal<double>(10.5, result.items[(int)0].Score);
-                Assert.Equal("member2", result.items[1].Element);
-                Assert.Equal<double>(8.25, result.items[(int)1].Score);
-            }),
+                var (cursor, items) = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                Assert.Equal(5L, cursor);
+                Assert.Equal(2, items.Length);
+                Assert.Equal("member1", items[0].Element);
+                Assert.Equal(10.5, items[0].Score);
+                Assert.Equal("member2", items[1].Element);
+                Assert.Equal(8.25, items[1].Score);
+            },
 
             // Test SortedSetScanAsync converter - empty result
             () =>
@@ -370,38 +370,38 @@ public class SortedSetCommandTests
                     0L,
                     new object[] { }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
-                Assert.Equal(0L, result.cursor);
-                Assert.Empty(result.items);
+                var (cursor, items) = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                Assert.Equal(0L, cursor);
+                Assert.Empty(items);
             },
 
             // Test SortedSetScanAsync converter - single entry
-            (Action)(() =>
+            () =>
             {
                 object[] testScanResponse = [
                     10L,
                     new object[] { (gs)"single", (gs)"42.0" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
-                Assert.Equal(10L, result.cursor);
-                _ = Assert.Single(result.items);
-                Assert.Equal("single", result.items[0].Element);
-                Assert.Equal<double>(42.0, result.items[(int)0].Score);
-            }),
+                var (cursor, items) = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                Assert.Equal(10L, cursor);
+                _ = Assert.Single(items);
+                Assert.Equal("single", items[0].Element);
+                Assert.Equal(42.0, items[0].Score);
+            },
 
             // Test SortedSetScanAsync converter - cursor as GlideString
-            (Action)(() =>
+            () =>
             {
                 object[] testScanResponse = [
                     (gs)"15",
                     new object[] { (gs)"test", (gs)"1.5" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
-                Assert.Equal(15L, result.cursor);
-                _ = Assert.Single(result.items);
-                Assert.Equal("test", result.items[0].Element);
-                Assert.Equal<double>(1.5, result.items[(int)0].Score);
-            }),
+                var (cursor, items) = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                Assert.Equal(15L, cursor);
+                _ = Assert.Single(items);
+                Assert.Equal("test", items[0].Element);
+                Assert.Equal(1.5, items[0].Score);
+            },
 
             // Test SortedSetScoreAsync converter
             () =>
@@ -421,8 +421,7 @@ public class SortedSetCommandTests
 
     [Fact]
     public void RangeByLex_ToArgs_GeneratesCorrectArguments()
-    {
-        Assert.Multiple(
+        => Assert.Multiple(
             // Basic range
             () => Assert.Equal(["[a", "[z", "BYLEX"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).ToArgs()),
 
@@ -444,12 +443,10 @@ public class SortedSetCommandTests
             // With reverse and limit
             () => Assert.Equal(["[z", "[a", "BYLEX", "REV", "LIMIT", "5", "15"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).SetReverse().SetLimit(5, 15).ToArgs())
         );
-    }
 
     [Fact]
     public void RangeByScore_ToArgs_GeneratesCorrectArguments()
-    {
-        Assert.Multiple(
+        => Assert.Multiple(
             // Basic range
             () => Assert.Equal(["10", "20", "BYSCORE"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).ToArgs()),
 
@@ -471,5 +468,4 @@ public class SortedSetCommandTests
             // With reverse and limit
             () => Assert.Equal(["20", "10", "BYSCORE", "REV", "LIMIT", "5", "15"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).SetReverse().SetLimit(5, 15).ToArgs())
         );
-    }
 }
