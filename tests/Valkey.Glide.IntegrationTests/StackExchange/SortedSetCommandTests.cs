@@ -13,6 +13,28 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetAddAsync_SingleEntry(IDatabaseAsync db)
+    {
+        string key = $"ser-zadd-entry-{Guid.NewGuid()}";
+
+        Assert.True(await db.SortedSetAddAsync(key, new SortedSetEntry("member1", 10.5)));
+        Assert.False(await db.SortedSetAddAsync(key, new SortedSetEntry("member1", 15.0)));
+        Assert.Equal(15.0, await db.SortedSetScoreAsync(key, "member1"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetAddAsync_MultipleEntries(IDatabaseAsync db)
+    {
+        string key = $"ser-zadd-entries-{Guid.NewGuid()}";
+
+        SortedSetEntry[] entries = [new("member1", 10.5), new("member2", 8.25)];
+        Assert.Equal(2, await db.SortedSetAddAsync(key, entries));
+        Assert.Equal(0, await db.SortedSetAddAsync(key, entries));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetAddAsync_SingleMember_WithSortedSetWhen_Always(IDatabaseAsync db)
     {
         string key = $"ser-zadd-{Guid.NewGuid()}";

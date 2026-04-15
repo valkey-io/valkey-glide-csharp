@@ -7,6 +7,9 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    public static Cmd<long, bool> SortedSetAddAsync(ValkeyKey key, SortedSetEntry member)
+        => SortedSetAddAsync(key, member.Element, member.Score);
+
     public static Cmd<long, bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options = default)
     {
         List<GlideString> args = [];
@@ -17,6 +20,10 @@ internal partial class Request
 
         return new(RequestType.ZAdd, [.. args], false, response => response == 1);
     }
+
+    // TODO sorted set
+    public static Cmd<long, long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> members)
+        => SortedSetAddAsync(key, members.ToDictionary(e => e.Element, e => e.Score));
 
     public static Cmd<long, long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddOptions options = default)
     {

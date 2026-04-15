@@ -7,6 +7,14 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <inheritdoc/>
+    public Task<bool> SortedSetAddAsync(ValkeyKey key, SortedSetEntry member)
+        => Command(Request.SortedSetAddAsync(key, member));
+
+    /// <inheritdoc/>
+    public Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> members)
+        => Command(Request.SortedSetAddAsync(key, members));
+
+    /// <inheritdoc/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition = SortedSetAddCondition.Always)
         => SortedSetAddAsync(key, member, score, new SortedSetAddOptions { Condition = condition });
 

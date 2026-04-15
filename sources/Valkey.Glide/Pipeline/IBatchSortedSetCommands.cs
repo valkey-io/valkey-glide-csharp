@@ -11,6 +11,10 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 internal interface IBatchSortedSetCommands
 {
+    /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, SortedSetEntry)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, SortedSetEntry)" /></returns>
+    IBatch SortedSetAdd(ValkeyKey key, SortedSetEntry member);
+
     /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" /></returns>
     IBatch SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition = SortedSetAddCondition.Always);
@@ -18,6 +22,10 @@ internal interface IBatchSortedSetCommands
     /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddOptions)" /></returns>
     IBatch SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options);
+
+    /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry})" /></returns>
+    IBatch SortedSetAdd(ValkeyKey key, IEnumerable<SortedSetEntry> members);
 
     /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, IDictionary{ValkeyValue, double}, SortedSetAddCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, IDictionary{ValkeyValue, double}, SortedSetAddCondition)" /></returns>

@@ -6,6 +6,12 @@ public class SortedSetCommandTests
 {
     [Fact]
     public void SortedSetCommands_ValidateArguments() => Assert.Multiple(
+            // SortedSetAdd - Single SortedSetEntry
+            () => Assert.Equal(["ZADD", "key", "10.5", "member"], Request.SortedSetAddAsync("key", new SortedSetEntry("member", 10.5)).GetArgs()),
+
+            // SortedSetAdd - Multiple SortedSetEntry
+            () => Assert.Equal(["ZADD", "key", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", (SortedSetEntry[])[new("member1", 10.5), new("member2", 8.25)]).GetArgs()),
+
             // SortedSetAdd - Single Member
             () => Assert.Equal(["ZADD", "key", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5).GetArgs()),
 

@@ -24,6 +24,40 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetAdd_SingleEntry(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test adding a new entry
+        Assert.True(await client.SortedSetAddAsync(key, new SortedSetEntry("member1", 10.5)));
+
+        // Test updating existing entry (should return false)
+        Assert.False(await client.SortedSetAddAsync(key, new SortedSetEntry("member1", 15.0)));
+
+        // Verify score was updated
+        Assert.Equal(15.0, await client.SortedSetScoreAsync(key, "member1"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetAdd_MultipleEntries(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        SortedSetEntry[] entries = [new("member1", 10.5), new("member2", 8.25), new("member3", 15.0)];
+        Assert.Equal(3, await client.SortedSetAddAsync(key, entries));
+
+        // Verify scores
+        Assert.Equal(10.5, await client.SortedSetScoreAsync(key, "member1"));
+        Assert.Equal(8.25, await client.SortedSetScoreAsync(key, "member2"));
+        Assert.Equal(15.0, await client.SortedSetScoreAsync(key, "member3"));
+
+        // Adding again should return 0 (all existing)
+        Assert.Equal(0, await client.SortedSetAddAsync(key, entries));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetAdd_MultipleMembers(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();

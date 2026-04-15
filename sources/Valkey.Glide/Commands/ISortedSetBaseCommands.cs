@@ -12,6 +12,24 @@ namespace Valkey.Glide.Commands;
 public interface ISortedSetBaseCommands
 {
     /// <summary>
+    /// Adds or updates a member in the sorted set stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zadd"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="member">The member and score to add or update.</param>
+    /// <returns><see langword="true"/> if the member was added. <see langword="false"/> if the member updated.</returns>
+    Task<bool> SortedSetAddAsync(ValkeyKey key, SortedSetEntry member);
+
+    /// <summary>
+    /// Adds or updates members in the sorted set stored at key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zadd"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="members">The members and their scores to add or update.</param>
+    /// <returns>The number of members added to the sorted set.</returns>
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> members);
+
+    /// <summary>
     /// Removes the specified member from the sorted set stored at key.
     /// Non existing members are ignored.
     /// </summary>
