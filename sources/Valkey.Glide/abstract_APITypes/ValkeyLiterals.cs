@@ -132,7 +132,7 @@ internal static class ValkeyLiterals
         none = "none",
         sync = "sync",
 
-        // Sorted script ranges
+        // Sorted set ranges
         RangeInclusive = "[",
         RangeExclusive = "(",
         LexRangeMin = "-",
