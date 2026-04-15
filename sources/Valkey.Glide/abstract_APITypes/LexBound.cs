@@ -15,12 +15,12 @@ public sealed class LexBound : Bound
     /// <summary>
     /// The minimum lexicographic bound.
     /// </summary>
-    public static readonly LexBound Min = new(ValkeyLiterals.RangeMinLex);
+    public static readonly LexBound Min = new(ValkeyLiterals.LexRangeMin);
 
     /// <summary>
     /// The maximum lexicographic bound.
     /// </summary>
-    public static readonly LexBound Max = new(ValkeyLiterals.RangeMaxLex);
+    public static readonly LexBound Max = new(ValkeyLiterals.LexRangeMax);
 
     #endregion
     #region Fields
@@ -44,7 +44,20 @@ public sealed class LexBound : Bound
     /// <param name="value">The lexicographic value.</param>
     /// <returns>An inclusive <see cref="LexBound"/>.</returns>
     public static LexBound Inclusive(ValkeyValue value)
-        => new((ValkeyValue)$"{ValkeyLiterals.RangeInclusive}{value}");
+    {
+        if (value.Equals(ValkeyLiterals.LexRangeMin))
+        {
+            return Min;
+        }
+
+        else if (value.Equals(ValkeyLiterals.LexRangeMax))
+        {
+            return Min;
+        }
+
+        return new((ValkeyValue)$"{ValkeyLiterals.RangeInclusive}{value}");
+    }
+
 
     /// <summary>
     /// Creates an exclusive lexicographic bound.
@@ -79,16 +92,6 @@ public sealed class LexBound : Bound
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs() => [_value];
-
-    /// <summary>
-    /// Returns <see langword="true"/> if this bound represents the minimum lex sentinel.
-    /// </summary>
-    internal bool IsMin => ReferenceEquals(this, Min);
-
-    /// <summary>
-    /// Returns <see langword="true"/> if this bound represents the maximum lex sentinel.
-    /// </summary>
-    internal bool IsMax => ReferenceEquals(this, Max);
 
     #endregion
 }

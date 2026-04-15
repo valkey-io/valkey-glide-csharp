@@ -65,7 +65,7 @@ public sealed class LexRange : Range
 
     /// <inheritdoc/>
     internal override bool IsUnbounded()
-        => _min.IsMin && _max.IsMax;
+        => _min == LexBound.Min && _max == LexBound.Max;
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs()
