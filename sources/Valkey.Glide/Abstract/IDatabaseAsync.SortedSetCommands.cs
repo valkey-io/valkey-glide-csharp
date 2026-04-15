@@ -14,42 +14,20 @@ public partial interface IDatabaseAsync
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to add.</param>
     /// <param name="score">The score for the member.</param>
+    /// <param name="when">Condition under which to add (e.g. <see cref="SortedSetWhen.NotExists"/>).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the member was added.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, CommandFlags flags = CommandFlags.None);
+    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, CommandFlags)" path="/*[not(self::param[@name='flags']) and not(self::exception)]"/>
-    /// <param name="when">Condition under which to add (e.g. <see cref="When.NotExists"/>).</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, When when, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, CommandFlags)" path="/*[not(self::param[@name='flags']) and not(self::exception)]"/>
-    /// <param name="when">Condition under which to add (e.g. <see cref="SortedSetWhen.NotExists"/>).</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, CommandFlags)" path="/*[self::summary or self::seealso]"/>
+    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen, CommandFlags)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The sorted set key.</param>
     /// <param name="values">The members and their scores.</param>
+    /// <param name="when">Condition under which to add (e.g. <see cref="SortedSetWhen.NotExists"/>).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of members added to the sorted set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, CommandFlags)" path="/*[not(self::param[@name='flags']) and not(self::exception)]"/>
-    /// <param name="when">Condition under which to add (e.g. <see cref="When.NotExists"/>).</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, CommandFlags)" path="/*[not(self::param[@name='flags']) and not(self::exception)]"/>
-    /// <param name="when">Condition under which to add (e.g. <see cref="SortedSetWhen.NotExists"/>).</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags = CommandFlags.None);
+    Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Updates the score of a member in a sorted set. Returns <see langword="true"/> if the score changed.

@@ -6,34 +6,12 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, CommandFlags)"/>
-    public async Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetAddAsync(key, member, score);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen, CommandFlags)"/>
     public async Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await SortedSetAddAsync(key, member, score, ToSortedSetAddOptions(when));
     }
-
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, When, CommandFlags)"/>
-    public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, When when, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return SortedSetAddAsync(key, member, score, SortedSetWhenExtensions.Parse(when), flags);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, CommandFlags)"/>
-    public Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, CommandFlags flags)
-        => SortedSetAddAsync(key, values, SortedSetWhen.Always, flags);
-
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, When, CommandFlags)"/>
-    public Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, When when, CommandFlags flags)
-        => SortedSetAddAsync(key, values, SortedSetWhenExtensions.Parse(when), flags);
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen, CommandFlags)"/>
     public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags)
