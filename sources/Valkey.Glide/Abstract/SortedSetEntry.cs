@@ -15,12 +15,12 @@ public readonly struct SortedSetEntry(ValkeyValue element, double score) : IEqua
     /// <summary>
     /// The sorted set member.
     /// </summary>
-    public readonly ValkeyValue Element = element;
+    public ValkeyValue Element { get; } = element;
 
     /// <summary>
     /// The score for the sorted set member.
     /// </summary>
-    public readonly double Score = score;
+    public double Score { get; } = score;
 
     /// <summary>
     /// Converts to a key/value pair.
