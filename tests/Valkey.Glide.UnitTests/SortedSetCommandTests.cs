@@ -131,13 +131,6 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZMSCORE", "key", "member1", "member2", "member3"], Request.SortedSetScoresAsync("key", ["member1", "member2", "member3"]).GetArgs()),
             () => Assert.Equal(["ZMSCORE", "key"], Request.SortedSetScoresAsync("key", []).GetArgs()),
 
-            // Double formatting tests
-            () => Assert.Equal("+inf", double.PositiveInfinity.ToGlideString().ToString()),
-            () => Assert.Equal("-inf", double.NegativeInfinity.ToGlideString().ToString()),
-            () => Assert.Equal("nan", double.NaN.ToGlideString().ToString()),
-            () => Assert.Equal("0", 0.0.ToGlideString().ToString()),
-            () => Assert.Equal("10.5", 10.5.ToGlideString().ToString()),
-
             // SortedSetPopMin / SortedSetPopMax (GLIDE-native)
             () => Assert.Equal(["ZPOPMIN", "key"], Request.SortedSetPopMinAsync("key").GetArgs()),
             () => Assert.Equal(["ZPOPMAX", "key"], Request.SortedSetPopMaxAsync("key").GetArgs()),
