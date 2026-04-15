@@ -57,20 +57,6 @@ internal partial class Database
             : await SortedSetCountAsync(key, ToScoreRange(min, max, exclude));
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetCardAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<long> SortedSetCardAsync(ValkeyKey key, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetCardAsync(key);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.SortedSetCountAsync(ValkeyKey, double, double, Exclude, CommandFlags)"/>
-    public async Task<long> SortedSetCountAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetCountAsync(key, ToScoreRange(min, max, exclude));
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order, CommandFlags)"/>
     public async Task<ValkeyValue[]> SortedSetRangeByRankAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {

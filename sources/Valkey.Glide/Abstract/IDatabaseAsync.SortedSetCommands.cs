@@ -74,21 +74,6 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> SortedSetLengthAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.SortedSetCardAsync(ValkeyKey)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetCardAsync(ValkeyKey key, CommandFlags flags);
-
-    /// <inheritdoc cref="IBaseClient.SortedSetCountAsync(ValkeyKey, ScoreRange)" path="/*[self::summary or self::seealso]"/>
-    /// <param name="key">The sorted set key.</param>
-    /// <param name="min">The minimum score to filter by.</param>
-    /// <param name="max">The maximum score to filter by.</param>
-    /// <param name="exclude">Which of min and max to exclude.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>The number of members in the score range.</returns>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> SortedSetCountAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None);
-
     /// <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The sorted set key.</param>
     /// <param name="start">The start rank.</param>
