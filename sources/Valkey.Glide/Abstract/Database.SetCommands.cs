@@ -67,7 +67,7 @@ internal partial class Database
     public async Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return [.. await SetPopAsync(key, count)];
+        return [.. await base.SetPopAsync(key, count)];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetCombineAsync(SetOperation, ValkeyKey, ValkeyKey, CommandFlags)"/>
