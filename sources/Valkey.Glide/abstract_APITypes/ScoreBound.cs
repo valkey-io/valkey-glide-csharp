@@ -57,6 +57,30 @@ public sealed class ScoreBound : Bound
         => new(value, isExclusive: true);
 
     /// <summary>
+    /// Converts a <see cref="ValkeyValue"/> to an inclusive lexicographic bound.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public static implicit operator ScoreBound(ValkeyValue value)
+    {
+        if (value.IsNull)
+        {
+            throw new ArgumentNullException(nameof(value), "Use ScoreBound.Min or ScoreBound.Max for unbounded ranges.");
+        }
+
+        else if (value.Equals(ValkeyLiterals.LexRangeMin))
+        {
+            return Min;
+        }
+
+        else if (value.Equals(ValkeyLiterals.LexRangeMax))
+        {
+            return Max;
+        }
+
+        return Inclusive((double)value);
+    }
+
+    /// <summary>
     /// Implicitly converts a <see langword="double"/> to an inclusive <see cref="ScoreBound"/>.
     /// Infinity values are mapped to <see cref="Min"/> and <see cref="Max"/> respectively.
     /// </summary>

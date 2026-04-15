@@ -135,12 +135,12 @@ internal static class ValkeyLiterals
         // Sorted script ranges
         RangeInclusive = "[",
         RangeExclusive = "(",
-        RangeMinLex = "-",
-        RangeMaxLex = "+",
-        RangeMinScore = "-inf",
-        RangeMaxScore = "+inf",
-        RangeMinRank = "0",
-        RangeMaxRank = "-1",
+        LexRangeMin = "-",
+        LexRangeMax = "+",
+        ScoreRangeMin = "-inf",
+        ScoreRangeMax = "+inf",
+        RankRangeMin = "0",
+        RankRangeMax = "-1",
 
         // Geo Radius/Search Literals
         BYBOX = "BYBOX",
