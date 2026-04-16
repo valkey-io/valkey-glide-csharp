@@ -590,42 +590,24 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
+    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, GlideString[] optionArgs)
     {
-        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, false, ConvertXRangeResponse);
+        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, optionArgs, false, ConvertXRangeResponse);
     }
 
-    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
+    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, GlideString[] optionArgs)
     {
-        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, true, ConvertClaimIdsOnly);
+        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, optionArgs, true, ConvertClaimIdsOnly);
     }
 
-    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force, bool justId, Func<TResponse, TResult> converter)
+    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, GlideString[] optionArgs, bool justId, Func<TResponse, TResult> converter)
     {
         List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id.ToGlideString());
         }
-        if (idleTime.HasValue)
-        {
-            args.Add("IDLE");
-            args.Add(ToMilliseconds(idleTime.Value).ToGlideString());
-        }
-        if (timestamp.HasValue)
-        {
-            args.Add("TIME");
-            args.Add(timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
-        }
-        if (retryCount.HasValue)
-        {
-            args.Add("RETRYCOUNT");
-            args.Add(retryCount.Value.ToGlideString());
-        }
-        if (force)
-        {
-            args.Add("FORCE");
-        }
+        args.AddRange(optionArgs);
         if (justId)
         {
             args.Add("JUSTID");
@@ -907,7 +889,7 @@ internal partial class Request
         var radixTreeKeys = 0L;
         var radixTreeNodes = 0L;
         var lastGeneratedId = default(ValkeyValue);
-        var maxDeletedEntryId = 0L;
+        var maxDeletedEntryId = default(ValkeyValue);
         var entriesAdded = 0L;
         var recordedFirstEntryId = default(ValkeyValue);
         var entries = Array.Empty<StreamEntry>();
@@ -921,7 +903,7 @@ internal partial class Request
                 case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
                 case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
                 case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
-                case "max-deleted-entry-id": maxDeletedEntryId = value is GlideString gs4 ? long.Parse(gs4.ToString()) : (long)value; break;
+                case "max-deleted-entry-id": maxDeletedEntryId = (ValkeyValue)(GlideString)value; break;
                 case "entries-added": entriesAdded = value is GlideString gs5 ? long.Parse(gs5.ToString()) : (long)value; break;
                 case "recorded-first-entry-id": recordedFirstEntryId = (ValkeyValue)(GlideString)value; break;
                 case "entries":

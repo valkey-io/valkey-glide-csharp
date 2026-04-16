@@ -194,25 +194,27 @@ public partial class BaseClient
     /// <summary>Claims pending messages for a consumer.</summary>
     public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
-        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], null, null, null, false));
+        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], []));
     }
 
     /// <inheritdoc cref="IBaseClient.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, StreamClaimOptions)"/>
     public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
     {
-        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], options.Idle, options.IdleUnix, options.RetryCount, options.Force));
+        var optionArgs = options.ToArgs();
+        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], optionArgs));
     }
 
     /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})"/>
     public async Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
-        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], null, null, null, false));
+        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], []));
     }
 
     /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, StreamClaimOptions)"/>
     public async Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
     {
-        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], options.Idle, options.IdleUnix, options.RetryCount, options.Force));
+        var optionArgs = options.ToArgs();
+        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], optionArgs));
     }
     /// <inheritdoc/>
     public async Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null)

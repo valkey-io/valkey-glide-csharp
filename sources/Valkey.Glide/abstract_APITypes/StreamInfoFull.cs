@@ -13,7 +13,7 @@ public readonly struct StreamInfoFull
         long radixTreeKeys,
         long radixTreeNodes,
         ValkeyValue lastGeneratedId,
-        long maxDeletedEntryId,
+        ValkeyValue maxDeletedEntryId,
         long entriesAdded,
         ValkeyValue recordedFirstEntryId,
         StreamEntry[] entries,
@@ -53,7 +53,7 @@ public readonly struct StreamInfoFull
     /// <summary>
     /// The ID of the maximum deleted entry. Available since server 7.0.
     /// </summary>
-    public long MaxDeletedEntryId { get; }
+    public ValkeyValue MaxDeletedEntryId { get; }
 
     /// <summary>
     /// The total number of entries added to the stream since creation. Available since server 7.0.

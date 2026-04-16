@@ -34,7 +34,7 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, Commands.Options.StreamAddOptions? options) => StreamAdd(key, streamPairs, options);
     IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count) => StreamRead(key, position, count);
     IBatch IBatchStreamCommands.StreamRead(IEnumerable<StreamPosition> streamPositions, int? count) => StreamRead(streamPositions, count);
-    IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? start, ValkeyValue? end, int? count, Order order) => StreamRange(key, start, end, count, order);
+    IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? minId, ValkeyValue? maxId, int? count, Order messageOrder) => StreamRange(key, minId, maxId, count, messageOrder);
     IBatch IBatchStreamCommands.StreamLength(ValkeyKey key) => StreamLength(key);
     IBatch IBatchStreamCommands.StreamDelete(ValkeyKey key, IEnumerable<ValkeyValue> messageIds) => StreamDelete(key, messageIds);
     IBatch IBatchStreamCommands.StreamTrim(ValkeyKey key, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit) => StreamTrim(key, maxLength, minId, useApproximateTrimming, limit);

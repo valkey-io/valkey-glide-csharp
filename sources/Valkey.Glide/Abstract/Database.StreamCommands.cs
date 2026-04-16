@@ -24,6 +24,7 @@ internal partial class Database
     public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
         var options = new Commands.Options.StreamAddOptions { Id = messageId };
         if (maxLength.HasValue)
             options = options with { Trim = new Commands.Options.StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit } };
@@ -34,6 +35,7 @@ internal partial class Database
     public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId = null, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
         var options = new Commands.Options.StreamAddOptions { Id = messageId };
         if (maxLength.HasValue)
             options = options with { Trim = new Commands.Options.StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit } };
@@ -212,6 +214,7 @@ internal partial class Database
     public async Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
         return await StreamTrimAsync(key, maxLength, useApproximateMaxLength, limit);
     }
 
@@ -219,6 +222,7 @@ internal partial class Database
     public async Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
         return await StreamTrimByMinIdAsync(key, minId, useApproximateMaxLength, limit);
     }
 
