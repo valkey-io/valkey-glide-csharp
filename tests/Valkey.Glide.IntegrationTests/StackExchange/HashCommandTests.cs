@@ -529,7 +529,7 @@ public class HashCommandTests(TestConfiguration config)
         SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-keepttl-{Guid.NewGuid()}";
-        _ = db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60));
+        _ = await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60));
 
         Assert.Equal(1, (int)await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", keepTtl: true));
         Assert.Equal("updated", await db.HashGetAsync(key, "field1"));

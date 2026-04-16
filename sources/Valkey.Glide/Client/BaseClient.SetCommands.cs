@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -88,18 +89,15 @@ public abstract partial class BaseClient
 
     // TODO #287
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0)
+    public async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ScanOptions? options = null)
     {
-        long currentCursor = cursor;
-        int currentOffset = pageOffset;
+        long currentCursor = 0;
 
         do
         {
-            (long nextCursor, ValkeyValue[] elements) = await Command(Request.SetScanAsync(key, currentCursor, pattern, pageSize));
+            (long nextCursor, ValkeyValue[] elements) = await Command(Request.SetScanAsync(key, currentCursor, options));
 
-            IEnumerable<ValkeyValue> elementsToYield = currentOffset > 0 ? elements.Skip(currentOffset) : elements;
-
-            foreach (ValkeyValue element in elementsToYield)
+            foreach (ValkeyValue element in elements)
             {
                 yield return element;
             }

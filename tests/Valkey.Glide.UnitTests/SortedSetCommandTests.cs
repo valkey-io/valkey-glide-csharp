@@ -221,14 +221,14 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZREMRANGEBYSCORE", "key", "(1", "(10"], Request.SortedSetRemoveRangeByScoreAsync("key", 1.0, 10.0, Exclude.Both).GetArgs()),
 
             // SortedSetScan
-            () => Assert.Equal(["ZSCAN", "key", "0"], Request.SortedSetScanAsync("key").GetArgs()),
-            () => Assert.Equal(["ZSCAN", "key", "5"], Request.SortedSetScanAsync("key", cursor: 5).GetArgs()),
-            () => Assert.Equal(["ZSCAN", "key", "0", "MATCH", "pattern*"], Request.SortedSetScanAsync("key", "pattern*").GetArgs()),
-            () => Assert.Equal(["ZSCAN", "key", "0", "COUNT", "20"], Request.SortedSetScanAsync("key", pageSize: 20).GetArgs()),
-            () => Assert.Equal(["ZSCAN", "key", "5", "MATCH", "pattern*", "COUNT", "20"], Request.SortedSetScanAsync("key", "pattern*", 20, 5).GetArgs()),
-            () => Assert.Equal(["ZSCAN", "key", "10", "MATCH", "user:*", "COUNT", "50"], Request.SortedSetScanAsync("key", "user:*", 50, 10).GetArgs()),
-            () => Assert.Equal(["ZSCAN", "key", "0", "MATCH", "*"], Request.SortedSetScanAsync("key", "*").GetArgs()),
-            () => Assert.Equal(["ZSCAN", "key", "100"], Request.SortedSetScanAsync("key", cursor: 100).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "0"], Request.SortedSetScanAsync("key", 0).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "5"], Request.SortedSetScanAsync("key", 5).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "0", "MATCH", "pattern*"], Request.SortedSetScanAsync("key", 0, new ScanOptions { MatchPattern = "pattern*" }).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "0", "COUNT", "20"], Request.SortedSetScanAsync("key", 0, new ScanOptions { Count = 20 }).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "5", "MATCH", "pattern*", "COUNT", "20"], Request.SortedSetScanAsync("key", 5, new ScanOptions { MatchPattern = "pattern*", Count = 20 }).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "10", "MATCH", "user:*", "COUNT", "50"], Request.SortedSetScanAsync("key", 10, new ScanOptions { MatchPattern = "user:*", Count = 50 }).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "0", "MATCH", "*"], Request.SortedSetScanAsync("key", 0, new ScanOptions { MatchPattern = "*" }).GetArgs()),
+            () => Assert.Equal(["ZSCAN", "key", "100"], Request.SortedSetScanAsync("key", 100).GetArgs()),
 
             // SortedSetScore
             () => Assert.Equal(["ZSCORE", "key", "member"], Request.SortedSetScoreAsync("key", "member").GetArgs())
@@ -589,7 +589,7 @@ public class SortedSetCommandTests
                     5L,
                     new object[] { (GlideString)"member1", (GlideString)"10.5", (GlideString)"member2", (GlideString)"8.25" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
                 Assert.Equal(5L, result.cursor);
                 Assert.Equal(2, result.items.Length);
                 Assert.Equal("member1", result.items[0].Element);
@@ -605,7 +605,7 @@ public class SortedSetCommandTests
                     0L,
                     new object[] { }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
                 Assert.Equal(0L, result.cursor);
                 Assert.Empty(result.items);
             },
@@ -617,7 +617,7 @@ public class SortedSetCommandTests
                     10L,
                     new object[] { (GlideString)"single", (GlideString)"42.0" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
                 Assert.Equal(10L, result.cursor);
                 _ = Assert.Single(result.items);
                 Assert.Equal("single", result.items[0].Element);
@@ -631,7 +631,7 @@ public class SortedSetCommandTests
                     (GlideString)"15",
                     new object[] { (GlideString)"test", (GlideString)"1.5" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key").Converter(testScanResponse);
+                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
                 Assert.Equal(15L, result.cursor);
                 _ = Assert.Single(result.items);
                 Assert.Equal("test", result.items[0].Element);
