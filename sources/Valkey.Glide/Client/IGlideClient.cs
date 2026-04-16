@@ -14,7 +14,6 @@ namespace Valkey.Glide;
 public partial interface IGlideClient :
     IBaseClient,
     IGenericCommands,
-    IScriptingAndFunctionStandaloneCommands,
     IServerManagementCommands
 {
 }

@@ -15,7 +15,6 @@ public partial interface IGlideClusterClient :
     IBaseClient,
     IGenericClusterCommands,
     IPubSubClusterCommands,
-    IScriptingAndFunctionClusterCommands,
     IServerManagementClusterCommands,
     ITransactionClusterCommands
 {
