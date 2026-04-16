@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -192,6 +193,43 @@ internal partial class Database
     public IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return SetScanAsync(key, pattern, pageSize, cursor, pageOffset);
+
+        // Build ScanOptions from the SER parameters
+        ScanOptions? options = null;
+        if (!pattern.IsNull || pageSize != 250)
+        {
+            options = new ScanOptions();
+            if (!pattern.IsNull)
+            {
+                options.MatchPattern = pattern.ToString();
+            }
+            if (pageSize != 250)
+            {
+                options.Count = pageSize;
+            }
+        }
+
+        return SetScanWithOffsetAsync(key, options, cursor, pageOffset);
+    }
+
+    private async IAsyncEnumerable<ValkeyValue> SetScanWithOffsetAsync(ValkeyKey key, ScanOptions? options, long cursor, int pageOffset)
+    {
+        long currentCursor = cursor;
+        int currentOffset = pageOffset;
+
+        do
+        {
+            (long nextCursor, ValkeyValue[] elements) = await Command(Request.SetScanAsync(key, currentCursor, options));
+
+            IEnumerable<ValkeyValue> elementsToYield = currentOffset > 0 ? elements.Skip(currentOffset) : elements;
+
+            foreach (ValkeyValue element in elementsToYield)
+            {
+                yield return element;
+            }
+
+            currentCursor = nextCursor;
+            currentOffset = 0; // Only skip on first iteration
+        } while (currentCursor != 0);
     }
 }

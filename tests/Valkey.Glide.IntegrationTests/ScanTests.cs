@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class ScanTests(TestConfiguration config)
@@ -81,17 +83,22 @@ public class ScanTests(TestConfiguration config)
     private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ValkeyValue pattern = default, int pageSize = 250)
     {
         var allKeys = new List<ValkeyKey>();
+        var options = new ScanOptions
+        {
+            MatchPattern = pattern.IsNull ? null : pattern.ToString(),
+            Count = pageSize
+        };
 
         if (client is GlideClient standaloneClient)
         {
-            await foreach (var key in standaloneClient.ScanAsync(pattern, pageSize))
+            await foreach (var key in standaloneClient.ScanAsync(options))
             {
                 allKeys.Add(key);
             }
         }
         else
         {
-            await foreach (var key in ((GlideClusterClient)client).ScanAsync(pattern, pageSize))
+            await foreach (var key in ((GlideClusterClient)client).ScanAsync(options))
             {
                 allKeys.Add(key);
             }

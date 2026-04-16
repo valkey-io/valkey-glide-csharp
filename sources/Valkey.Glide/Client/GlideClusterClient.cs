@@ -299,30 +299,9 @@ public sealed partial class GlideClusterClient :
         return _serverVersion;
     }
 
-    /// <summary>
-    /// Iterates incrementally over keys in the cluster.
-    /// </summary>
-    /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
-    /// <param name="pageSize">The number of keys to return per SCAN iteration (COUNT hint).</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching keys.</returns>
-    /// <seealso cref="ScanOptions"/>
-    public async IAsyncEnumerable<ValkeyKey> ScanAsync(ValkeyValue pattern = default, int pageSize = 250)
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
     {
-        // Build options from parameters
-        ScanOptions? options = null;
-        if (!pattern.IsNullOrEmpty || pageSize != 250)
-        {
-            options = new ScanOptions();
-            if (!pattern.IsNullOrEmpty)
-            {
-                options.MatchPattern = pattern.ToString();
-            }
-            if (pageSize != 250)
-            {
-                options.Count = pageSize;
-            }
-        }
-
         string[] args = options?.ToArgs() ?? [];
         ClusterScanCursor cursor = ClusterScanCursor.InitialCursor();
 

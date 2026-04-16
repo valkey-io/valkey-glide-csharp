@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
@@ -59,19 +60,24 @@ public interface IGlideClient :
     /// <summary>
     /// Incrementally iterates over the matching keys in the database.
     /// </summary>
-    /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
-    /// <param name="pageSize">The number of keys to return per SCAN iteration (COUNT hint).</param>
-    /// <param name="cursor">The cursor to start scanning from.</param>
-    /// <param name="pageOffset">The number of keys to skip from the first page of results.</param>
+    /// <param name="options">Optional scan options including pattern, count hint, and type filter.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching keys.</returns>
     /// <example>
     /// <code>
-    /// await foreach (var key in client.ScanAsync("user:*"))
+    /// // Scan all keys
+    /// await foreach (var key in client.ScanAsync())
+    /// {
+    ///     Console.WriteLine(key);
+    /// }
+    ///
+    /// // Scan with pattern and type filter
+    /// var options = new ScanOptions { MatchPattern = "user:*", Type = ValkeyType.String };
+    /// await foreach (var key in client.ScanAsync(options))
     /// {
     ///     Console.WriteLine(key);
     /// }
     /// </code>
     /// </example>
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
-    IAsyncEnumerable<ValkeyKey> ScanAsync(ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
+    IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null);
 }

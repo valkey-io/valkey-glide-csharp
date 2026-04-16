@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Constants;
+using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
 
@@ -75,18 +76,18 @@ internal partial class Request
     public static Cmd<bool, bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value)
         => Simple<bool>(RequestType.SMove, [source.ToGlideString(), destination.ToGlideString(), value.ToGlideString()]);
 
-    public static Cmd<object[], (long, ValkeyValue[])> SetScanAsync(ValkeyKey key, long cursor, ValkeyValue pattern = default, long count = 0)
+    public static Cmd<object[], (long, ValkeyValue[])> SetScanAsync(ValkeyKey key, long cursor, ScanOptions? options = null)
     {
         List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
 
-        if (!pattern.IsNull)
+        if (options?.MatchPattern != null)
         {
-            args.AddRange([Constants.MatchKeyword.ToGlideString(), pattern.ToGlideString()]);
+            args.AddRange([Constants.MatchKeyword.ToGlideString(), options.MatchPattern.ToGlideString()]);
         }
 
-        if (count > 0)
+        if (options?.Count > 0)
         {
-            args.AddRange([Constants.CountKeyword.ToGlideString(), count.ToGlideString()]);
+            args.AddRange([Constants.CountKeyword.ToGlideString(), options.Count.Value.ToGlideString()]);
         }
 
         return new(RequestType.SScan, [.. args], false, arr =>

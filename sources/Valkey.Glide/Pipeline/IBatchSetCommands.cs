@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.Pipeline;
 
@@ -115,9 +116,8 @@ internal interface IBatchSetCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sscan"/>
     /// <param name="key">The key of the set.</param>
-    /// <param name="pattern">The pattern to match.</param>
-    /// <param name="pageSize">The number of elements to return per iteration (hint to the server).</param>
-    /// <param name="cursor">The cursor position to start at.</param>
+    /// <param name="cursor">The cursor position to start at (use 0 to start a new iteration).</param>
+    /// <param name="options">Optional scan options including pattern and count hint.</param>
     /// <returns>Command Response - A tuple of (cursor, elements) for the current page.</returns>
-    IBatch SetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0);
+    IBatch SetScan(ValkeyKey key, long cursor = 0, ScanOptions? options = null);
 }
