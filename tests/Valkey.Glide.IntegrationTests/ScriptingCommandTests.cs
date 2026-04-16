@@ -986,8 +986,7 @@ redis.register_function('func2', function(keys, args) return 'result2' end)";
         _ = await client.FunctionLoadAsync(lib2Code);
 
         // List with filter
-        var query = new FunctionListQuery().ForLibrary("filterlib1");
-        LibraryInfo[] libraries = await client.FunctionListAsync(query);
+        LibraryInfo[] libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "filterlib1" });
 
         Assert.NotNull(libraries);
         _ = Assert.Single(libraries);
@@ -1009,8 +1008,7 @@ redis.register_function('codefunc', function(keys, args) return 'result' end)";
         _ = await client.FunctionLoadAsync(libCode);
 
         // List with code
-        var query = new FunctionListQuery().IncludeCode();
-        LibraryInfo[] libraries = await client.FunctionListAsync(query);
+        LibraryInfo[] libraries = await client.FunctionListAsync(new FunctionListOptions { WithCode = true });
 
         Assert.NotNull(libraries);
         var lib = libraries.FirstOrDefault(l => l.Name == "codelib");
@@ -1069,14 +1067,14 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
         _ = await client.FunctionLoadAsync(libCode);
 
         // Verify it exists
-        var libraries = await client.FunctionListAsync(new FunctionListQuery().ForLibrary("deletelib"));
+        var libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "deletelib" });
         _ = Assert.Single(libraries);
 
         // Delete the library
         await client.FunctionDeleteAsync("deletelib");
 
         // Verify it no longer exists
-        libraries = await client.FunctionListAsync(new FunctionListQuery().ForLibrary("deletelib"));
+        libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "deletelib" });
         Assert.Empty(libraries);
     }
 
@@ -1143,7 +1141,7 @@ redis.register_function('restorefunc1', function(keys, args) return 'result1' en
         await client.FunctionRestoreAsync(backup);
 
         // Verify library was restored
-        var libraries = await client.FunctionListAsync(new FunctionListQuery().ForLibrary("restorelib1"));
+        var libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "restorelib1" });
         _ = Assert.Single(libraries);
     }
 

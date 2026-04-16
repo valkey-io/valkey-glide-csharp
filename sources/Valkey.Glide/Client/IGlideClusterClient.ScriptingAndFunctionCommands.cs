@@ -1,15 +1,15 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-namespace Valkey.Glide.Commands;
-
-// ATTENTION: Methods should only be added to this interface if they are implemented
-// by both Valkey GLIDE clients and StackExchange.Redis databases.
+namespace Valkey.Glide;
 
 /// <summary>
-/// Scripting and function commands for cluster clients.
+/// Scripting and function commands for Valkey GLIDE cluster clients.
 /// </summary>
+/// <remarks>
+/// These methods are GLIDE-specific and not available in StackExchange.Redis.
+/// </remarks>
 /// <seealso href="https://valkey.io/commands/#scripting">Valkey – Scripting and Function Commands</seealso>
-public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBaseCommands
+public partial interface IGlideClusterClient
 {
     // ===== Script Execution with Routing =====
 
@@ -63,6 +63,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         IEnumerable<string> sha1Hashes,
         Route route,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Flushes all scripts from the cache on specified nodes using default flush mode.
@@ -161,6 +162,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         Route route,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Executes a loaded function in read-only mode on specified nodes.
     /// </summary>
@@ -207,6 +209,28 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         CancellationToken cancellationToken = default);
 
     // ===== Function Management with Routing =====
+
+    /// <summary>
+    /// Loads a function library on specified nodes.
+    /// </summary>
+    /// <param name="libraryCode">The Lua code defining the function library.</param>
+    /// <param name="route">The routing configuration specifying which nodes to load on.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A ClusterValue containing library names from nodes.</returns>
+    /// <remarks>
+    /// Uses <c>replace: false</c> by default. Use the overload with <c>replace</c> parameter to overwrite existing libraries.
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;string&gt; result = await client.FunctionLoadAsync(
+    ///     libraryCode,
+    ///     Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> FunctionLoadAsync(
+        string libraryCode,
+        Route route,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Loads a function library on specified nodes.
@@ -266,6 +290,7 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         Route route,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Flushes all loaded functions from specified nodes with specified flush mode.
     /// </summary>
@@ -303,9 +328,27 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     // ===== Function Inspection with Routing =====
 
     /// <summary>
+    /// Lists loaded function libraries from all primary nodes.
+    /// </summary>
+    /// <param name="options">Optional query parameters to filter results.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A ClusterValue containing library information from nodes.</returns>
+    /// <remarks>
+    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
+        FunctionListOptions? options = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Lists loaded function libraries from specified nodes.
     /// </summary>
-    /// <param name="query">Optional query parameters to filter results.</param>
+    /// <param name="options">Optional query parameters to filter results.</param>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing library information from nodes.</returns>
@@ -319,9 +362,10 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
     /// </example>
     /// </remarks>
     Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
-        FunctionListQuery? query,
+        FunctionListOptions? options,
         Route route,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Returns function statistics from specified nodes.
@@ -365,12 +409,13 @@ public interface IScriptingAndFunctionClusterCommands : IScriptingAndFunctionBas
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Restores functions from a binary backup on specified nodes using default policy.
+    /// Restores functions from a binary backup on specified nodes.
     /// </summary>
     /// <param name="payload">The binary payload from FunctionDump.</param>
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <remarks>
+    /// Uses the default APPEND policy.
     /// <example>
     /// <code>
     /// await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
