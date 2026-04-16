@@ -26,7 +26,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptEvaluateAsync_WithKeys_AccessesKeys(IDatabaseAsync db)
     {
         string key = $"ser-script-key-{Guid.NewGuid()}";
-        await db.StringSetAsync(key, "test-value");
+        _ = await db.StringSetAsync(key, "test-value");
 
         ValkeyResult result = await db.ScriptEvaluateAsync(
             "return redis.call('GET', KEYS[1])",
