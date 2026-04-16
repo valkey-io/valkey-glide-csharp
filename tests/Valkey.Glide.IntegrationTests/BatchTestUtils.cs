@@ -806,7 +806,7 @@ internal partial class BatchTestUtils
 
         // Test SortedSetRandomMemberWithScore
         _ = batch.SortedSetRandomMemberWithScore(newKey);
-        testData.Add(new(new SortedSetEntry?(), "SortedSetRandomMemberWithScore(newKey)", true));
+        testData.Add(new(new SortedSetEntry(), "SortedSetRandomMemberWithScore(newKey)", true));
 
         // Test SortedSetRandomMembersWithScores
         _ = batch.SortedSetRandomMembersWithScores(newKey, 2);
