@@ -117,6 +117,23 @@ public static class GlideStringExtensions
         => [.. values.Select(v => (GlideString)v)];
 
     /// <summary>
+    /// Convert a <see langword="KeyValuePair{ValkeyKey, ValkeyValue}"/> collection to an interleaved <see langword="GlideString[]" /> array.
+    /// </summary>
+    /// <param name="pairs">An <see langword="KeyValuePair{ValkeyKey, ValkeyValue}"/> array to convert.</param>
+    /// <returns>A <see cref="GlideString"/> array.</returns>
+    public static GlideString[] ToGlideStrings(this KeyValuePair<ValkeyKey, ValkeyValue>[] pairs)
+    {
+        GlideString[] args = new GlideString[pairs.Length * 2];
+        for (int i = 0; i < pairs.Length; i++)
+        {
+            args[i * 2] = pairs[i].Key.ToGlideString();
+            args[(i * 2) + 1] = pairs[i].Value.ToGlideString();
+        }
+
+        return args;
+    }
+
+    /// <summary>
     /// Convert an <see langword="GlideString[]" /> to an <see langword="string[]" />.<br />
     /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
     /// stores a non-UTF8 compatible sequence of bytes.
