@@ -57,6 +57,23 @@ public partial interface IBaseClient
 
 
     /// <summary>
+    /// Checks if a script exists in the server cache by its SHA1 hash.
+    /// </summary>
+    /// <param name="sha1Hash">The SHA1 hash of the script to check.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if the script exists in the cache, false otherwise.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// bool exists = await client.ScriptExistsAsync(script.Hash);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> ScriptExistsAsync(
+        string sha1Hash,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if scripts exist in the server cache by their SHA1 hashes.
     /// </summary>
     /// <param name="sha1Hashes">The SHA1 hashes of scripts to check.</param>
@@ -74,10 +91,12 @@ public partial interface IBaseClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Flushes all scripts from the server cache using default flush mode (SYNC).
+    /// Flushes all scripts from the server cache.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <remarks>
+    /// The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
+    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.
     /// <example>
     /// <code>
     /// await client.ScriptFlushAsync();
@@ -242,10 +261,12 @@ public partial interface IBaseClient
 
 
     /// <summary>
-    /// Flushes all loaded functions using default flush mode (SYNC).
+    /// Flushes all loaded functions.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <remarks>
+    /// The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
+    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.
     /// <example>
     /// <code>
     /// await client.FunctionFlushAsync();
@@ -269,5 +290,91 @@ public partial interface IBaseClient
     /// </remarks>
     Task FunctionFlushAsync(
         FlushMode mode,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a function library by name.
+    /// </summary>
+    /// <param name="libraryName">The name of the library to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="Errors.ValkeyServerException">Thrown if the library does not exist.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FunctionDeleteAsync("mylib");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FunctionDeleteAsync(
+        string libraryName,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Terminates a currently executing function that has not written data.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="Errors.ValkeyServerException">Thrown if no function is running or if the function has written data.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FunctionKillAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FunctionKillAsync(
+        CancellationToken cancellationToken = default);
+
+    // ===== Function Persistence =====
+
+    /// <summary>
+    /// Creates a binary backup of all loaded functions.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A binary payload containing all loaded functions.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// byte[] backup = await client.FunctionDumpAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<byte[]> FunctionDumpAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Restores functions from a binary backup.
+    /// </summary>
+    /// <param name="payload">The binary payload from FunctionDump.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails (e.g., library conflict with default APPEND policy).</exception>
+    /// <remarks>
+    /// Uses the default APPEND policy. Use the overload with <see cref="FunctionRestorePolicy"/> to specify a different policy.
+    /// <example>
+    /// <code>
+    /// await client.FunctionRestoreAsync(backup);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FunctionRestoreAsync(
+        byte[] payload,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Restores functions from a binary backup with specified policy.
+    /// </summary>
+    /// <param name="payload">The binary payload from FunctionDump.</param>
+    /// <param name="policy">The restore policy (APPEND, FLUSH, or REPLACE).</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FunctionRestoreAsync(
+        byte[] payload,
+        FunctionRestorePolicy policy,
         CancellationToken cancellationToken = default);
 }

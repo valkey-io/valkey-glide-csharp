@@ -214,6 +214,28 @@ public partial interface IGlideClusterClient
     /// Loads a function library on specified nodes.
     /// </summary>
     /// <param name="libraryCode">The Lua code defining the function library.</param>
+    /// <param name="route">The routing configuration specifying which nodes to load on.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A ClusterValue containing library names from nodes.</returns>
+    /// <remarks>
+    /// Uses <c>replace: false</c> by default. Use the overload with <c>replace</c> parameter to overwrite existing libraries.
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;string&gt; result = await client.FunctionLoadAsync(
+    ///     libraryCode,
+    ///     Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> FunctionLoadAsync(
+        string libraryCode,
+        Route route,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Loads a function library on specified nodes.
+    /// </summary>
+    /// <param name="libraryCode">The Lua code defining the function library.</param>
     /// <param name="replace">Whether to replace an existing library with the same name.</param>
     /// <param name="route">The routing configuration specifying which nodes to load on.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -285,21 +307,6 @@ public partial interface IGlideClusterClient
     Task FunctionFlushAsync(
         FlushMode mode,
         Route route,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Terminates currently executing functions on all primary nodes.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <remarks>
-    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
-    /// <example>
-    /// <code>
-    /// await client.FunctionKillAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FunctionKillAsync(
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -385,22 +392,6 @@ public partial interface IGlideClusterClient
     // ===== Function Persistence with Routing =====
 
     /// <summary>
-    /// Creates a binary backup of loaded functions from a random node.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The binary payload containing the function backup.</returns>
-    /// <remarks>
-    /// Uses <see cref="Route.RandomRoute"/> as the default route.
-    /// <example>
-    /// <code>
-    /// byte[] backup = await client.FunctionDumpAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<byte[]> FunctionDumpAsync(
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Creates a binary backup of loaded functions from specified nodes.
     /// </summary>
     /// <param name="route">The routing configuration specifying which nodes to backup from.</param>
@@ -418,29 +409,13 @@ public partial interface IGlideClusterClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Restores functions from a binary backup on all primary nodes using default policy.
-    /// </summary>
-    /// <param name="payload">The binary payload from FunctionDump.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <remarks>
-    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
-    /// <example>
-    /// <code>
-    /// await client.FunctionRestoreAsync(backup);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FunctionRestoreAsync(
-        byte[] payload,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Restores functions from a binary backup on specified nodes using default policy.
+    /// Restores functions from a binary backup on specified nodes.
     /// </summary>
     /// <param name="payload">The binary payload from FunctionDump.</param>
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <remarks>
+    /// Uses the default APPEND policy.
     /// <example>
     /// <code>
     /// await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
@@ -450,26 +425,6 @@ public partial interface IGlideClusterClient
     Task FunctionRestoreAsync(
         byte[] payload,
         Route route,
-        CancellationToken cancellationToken = default);
-
-
-    /// <summary>
-    /// Restores functions from a binary backup on all primary nodes with specified policy.
-    /// </summary>
-    /// <param name="payload">The binary payload from FunctionDump.</param>
-    /// <param name="policy">The restore policy (APPEND, FLUSH, or REPLACE).</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <remarks>
-    /// Uses <see cref="Route.AllPrimaries"/> as the default route.
-    /// <example>
-    /// <code>
-    /// await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FunctionRestoreAsync(
-        byte[] payload,
-        FunctionRestorePolicy policy,
         CancellationToken cancellationToken = default);
 
     /// <summary>
