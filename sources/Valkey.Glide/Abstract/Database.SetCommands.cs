@@ -36,7 +36,7 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetMembersAsync(ValkeyKey, CommandFlags)"/>
-    public Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         var result = await base.SetMembersAsync(key);
@@ -65,24 +65,27 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetPopAsync(ValkeyKey, long, CommandFlags)"/>
-    public Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return [.. base.SetPopAsync(key, count)];
+        var result = await base.SetPopAsync(key, count);
+        return [.. result];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetCombineAsync(SetOperation, ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return [.. GetCombineResultAsync(operation, [first, second])];
+        var result = await GetCombineResultAsync(operation, [first, second]);
+        return [.. result];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return [.. GetCombineResultAsync(operation, keys)];
+        var result = await GetCombineResultAsync(operation, keys);
+        return [.. result];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)"/>
