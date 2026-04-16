@@ -56,7 +56,7 @@ public abstract partial class BaseClient
         Command(Request.GetSet(key, value, new SetOptions { Expiry = expiry }));
 
     /// <inheritdoc/>
-    public Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end) =>
+    public Task<ValkeyValue> GetRangeAsync(ValkeyKey key, long start, long end) =>
         Command(Request.GetRange(key, start, end));
 
     /// <inheritdoc/>

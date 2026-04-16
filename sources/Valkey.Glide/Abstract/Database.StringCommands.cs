@@ -81,10 +81,10 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetRangeAsync(ValkeyKey, long, long, CommandFlags)"/>
-    public async Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags)
+    public async Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StringGetRangeAsync(key, start, end);
+        return await GetRangeAsync(key, start, end);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetRangeAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>

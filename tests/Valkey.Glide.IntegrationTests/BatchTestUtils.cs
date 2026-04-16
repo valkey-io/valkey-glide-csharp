@@ -152,18 +152,18 @@ internal partial class BatchTestUtils
         _ = batch.Set(rangeKey, rangeValue);
         testData.Add(new(true, "Set(rangeKey, Hello World)"));
 
-        _ = batch.StringGetRange(rangeKey, 0, 4);
-        testData.Add(new(new ValkeyValue("Hello"), "StringGetRange(rangeKey, 0, 4)"));
+        _ = batch.GetRange(rangeKey, 0, 4);
+        testData.Add(new(new ValkeyValue("Hello"), "GetRange(rangeKey, 0, 4)"));
 
-        _ = batch.StringGetRange(rangeKey, 6, -1);
-        testData.Add(new(new ValkeyValue("World"), "StringGetRange(rangeKey, 6, -1)"));
+        _ = batch.GetRange(rangeKey, 6, -1);
+        testData.Add(new(new ValkeyValue("World"), "GetRange(rangeKey, 6, -1)"));
 
-        _ = batch.StringGetRange(rangeKey, -5, -1);
-        testData.Add(new(new ValkeyValue("World"), "StringGetRange(rangeKey, -5, -1)"));
+        _ = batch.GetRange(rangeKey, -5, -1);
+        testData.Add(new(new ValkeyValue("World"), "GetRange(rangeKey, -5, -1)"));
 
         string nonExistingKey2 = $"{atomicPrefix}nonexisting2-{Guid.NewGuid()}";
-        _ = batch.StringGetRange(nonExistingKey2, 0, 5);
-        testData.Add(new(new ValkeyValue(""), "StringGetRange(nonExistingKey2, 0, 5)"));
+        _ = batch.GetRange(nonExistingKey2, 0, 5);
+        testData.Add(new(new ValkeyValue(""), "GetRange(nonExistingKey2, 0, 5)"));
 
         // SetRange tests
         string setRangeKey = $"{atomicPrefix}setrange-{Guid.NewGuid()}";

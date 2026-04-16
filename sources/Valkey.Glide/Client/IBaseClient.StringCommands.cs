@@ -197,6 +197,28 @@ public partial interface IBaseClient
     Task<ValkeyValue> GetExpiryAsync(ValkeyKey key, GetExpiryOptions options);
 
     /// <summary>
+    /// Returns a substring.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/getrange/">valkey.io</seealso>
+    /// <param name="key">The key of the string.</param>
+    /// <param name="start">The starting offset.</param>
+    /// <param name="end">The ending offset.</param>
+    /// <returns>
+    /// A substring extracted from the value stored at key.<br/>
+    /// An empty string is returned if the key does not exist or if the start and end offsets are out of range.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SetAsync("key", "Hello World");
+    /// var response = await client.GetRangeAsync("key", 0, 4);
+    /// Console.WriteLine(response); // Output: "Hello"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ValkeyValue> GetRangeAsync(ValkeyKey key, long start, long end);
+
+    /// <summary>
     /// Sets the value of a key to a string.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/set/">valkey.io</seealso>

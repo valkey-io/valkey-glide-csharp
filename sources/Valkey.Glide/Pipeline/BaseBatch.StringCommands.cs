@@ -43,8 +43,8 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchStringCommands.GetSetExpiry(ValkeyKey, ValkeyValue, SetExpiryOptions)" />
     public T GetSetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => AddCmd(Request.GetSet(key, value, new SetOptions { Expiry = expiry }));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringGetRange(ValkeyKey, long, long)" />
-    public T StringGetRangeAsync(ValkeyKey key, long start, long end) => AddCmd(Request.GetRange(key, start, end));
+    /// <inheritdoc cref="IBatchStringCommands.GetRange(ValkeyKey, long, long)" />
+    public T GetRangeAsync(ValkeyKey key, long start, long end) => AddCmd(Request.GetRange(key, start, end));
 
     /// <inheritdoc cref="IBatchStringCommands.SetRange(ValkeyKey, long, ValkeyValue)" />
     public T SetRangeAsync(ValkeyKey key, long offset, ValkeyValue value) => AddCmd(Request.SetRange(key, offset, value));
@@ -100,7 +100,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetCondition condition) => GetSetAsync(key, value, condition);
     IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetOptions options) => GetSetAsync(key, value, options);
     IBatch IBatchStringCommands.GetSetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => GetSetExpiryAsync(key, value, expiry);
-    IBatch IBatchStringCommands.StringGetRange(ValkeyKey key, long start, long end) => StringGetRangeAsync(key, start, end);
+    IBatch IBatchStringCommands.GetRange(ValkeyKey key, long start, long end) => GetRangeAsync(key, start, end);
     IBatch IBatchStringCommands.SetRange(ValkeyKey key, long offset, ValkeyValue value) => SetRangeAsync(key, offset, value);
     IBatch IBatchStringCommands.Length(ValkeyKey key) => LengthAsync(key);
     IBatch IBatchStringCommands.Append(ValkeyKey key, ValkeyValue value) => AppendAsync(key, value);

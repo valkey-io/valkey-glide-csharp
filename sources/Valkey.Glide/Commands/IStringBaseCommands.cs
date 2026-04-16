@@ -12,31 +12,6 @@ namespace Valkey.Glide.Commands;
 public interface IStringBaseCommands
 {
     /// <summary>
-    /// Returns the substring of the string value stored at key, determined by the offsets
-    /// start and end (both are inclusive).
-    /// Negative offsets can be used in order to provide an offset starting from the end of the string. So `-1` means the last
-    /// character, `-2` the penultimate and so forth.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/getrange/">valkey.io</seealso>
-    /// <param name="key">The key of the string.</param>
-    /// <param name="start">The starting offset.</param>
-    /// <param name="end">The ending offset.</param>
-    /// <returns>
-    /// A substring extracted from the value stored at key.<br/>
-    /// An empty string is returned if the key does not exist or if the start and end offsets are out of range.
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.SetAsync("key", "Hello World");
-    /// var response = await client.StringGetRangeAsync("key", 0, 4);
-    /// Console.WriteLine(response); // Output: "Hello"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end);
-
-    /// <summary>
     /// Returns the longest common subsequence between the values at <paramref name="first"/> and <paramref name="second"/>,
     /// returning a string containing the common sequence.
     /// Note that this is different than the longest common string algorithm,

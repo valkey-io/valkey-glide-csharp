@@ -48,7 +48,6 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringDecrementAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -120,7 +119,6 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringIncrementAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -192,7 +190,6 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringGetAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -259,7 +256,43 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region StringGetRangeAsync
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetRangeAsync_ReturnsSubstring(IDatabaseAsync db)
+    {
+        string key = $"ser-getrange-{Guid.NewGuid()}";
+
+        _ = await db.StringSetAsync(key, "Hello World", CommandFlags.None);
+
+        ValkeyValue result = await db.StringGetRangeAsync(key, 0, 4, CommandFlags.None);
+        Assert.Equal("Hello", result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetRangeAsync_NegativeOffsets(IDatabaseAsync db)
+    {
+        string key = $"ser-getrange-neg-{Guid.NewGuid()}";
+
+        _ = await db.StringSetAsync(key, "Hello World", CommandFlags.None);
+
+        ValkeyValue result = await db.StringGetRangeAsync(key, -5, -1, CommandFlags.None);
+        Assert.Equal("World", result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetRangeAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
+    {
+        string key = $"ser-getrange-nonexist-{Guid.NewGuid()}";
+
+        ValkeyValue result = await db.StringGetRangeAsync(key, 0, 4, CommandFlags.None);
+        Assert.Equal("", result.ToString());
+    }
+
+    #endregion
     #region StringGetDeleteAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -290,7 +323,6 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringGetSetExpiryAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -360,7 +392,6 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringSetAsync (SET/SETNX/SETEX/PSETEX)
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -555,7 +586,6 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringSetRangeAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -589,7 +619,6 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringLengthAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]

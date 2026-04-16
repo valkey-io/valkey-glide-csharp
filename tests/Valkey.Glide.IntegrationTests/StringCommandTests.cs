@@ -203,7 +203,7 @@ public class StringCommandTests(TestConfiguration config)
         string value = "Hello World";
 
         await client.SetAsync(key, value);
-        ValkeyValue result = await client.StringGetRangeAsync(key, 0, 4);
+        ValkeyValue result = await client.GetRangeAsync(key, 0, 4);
         Assert.Equal("Hello", result.ToString());
     }
 
@@ -212,7 +212,7 @@ public class StringCommandTests(TestConfiguration config)
     public async Task StringGetRangeAsync_NonExistentKey(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        ValkeyValue result = await client.StringGetRangeAsync(key, 0, 4);
+        ValkeyValue result = await client.GetRangeAsync(key, 0, 4);
         Assert.Equal("", result.ToString());
     }
 

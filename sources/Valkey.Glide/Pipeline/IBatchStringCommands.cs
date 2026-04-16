@@ -57,9 +57,9 @@ internal interface IBatchStringCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetSetExpiryAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" /></returns>
     IBatch GetSetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringGetRangeAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringGetRangeAsync(ValkeyKey, long, long)" /></returns>
-    IBatch StringGetRange(ValkeyKey key, long start, long end);
+    /// <inheritdoc cref="IBaseClient.GetRangeAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetRangeAsync(ValkeyKey, long, long)" /></returns>
+    IBatch GetRange(ValkeyKey key, long start, long end);
 
     /// <inheritdoc cref="IBaseClient.SetRangeAsync(ValkeyKey, long, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetRangeAsync(ValkeyKey, long, ValkeyValue)" /></returns>
