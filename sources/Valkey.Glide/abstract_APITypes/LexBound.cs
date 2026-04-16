@@ -8,31 +8,37 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/zlexcount/"/>
 /// <seealso href="https://valkey.io/commands/zrangebylex/"/>
 /// <seealso href="https://valkey.io/commands/zremrangebylex/"/>
-public sealed class LexBound : Bound
+public sealed class LexBound : Bound, IEquatable<LexBound>
 {
     #region Constants
 
     /// <summary>
     /// The minimum lexicographic bound.
     /// </summary>
-    public static readonly LexBound Min = new(ValkeyLiterals.LexRangeMin);
+    public static readonly LexBound Min = new(ValkeyLiterals.LexRangeMin, isInclusive: false);
 
     /// <summary>
     /// The maximum lexicographic bound.
     /// </summary>
-    public static readonly LexBound Max = new(ValkeyLiterals.LexRangeMax);
+    public static readonly LexBound Max = new(ValkeyLiterals.LexRangeMax, isInclusive: false);
 
     #endregion
     #region Fields
 
     private readonly ValkeyValue _value;
+    private readonly bool _isInclusive;
 
     #endregion
     #region Constructors
 
-    private LexBound(ValkeyValue value)
+    private LexBound(ValkeyValue value, bool isInclusive)
     {
         _value = value;
+
+        // Min/max values are never inclusive.
+        _isInclusive = isInclusive
+            && value != ValkeyLiterals.LexRangeMin
+            && value != ValkeyLiterals.LexRangeMax;
     }
 
     #endregion
@@ -43,55 +49,63 @@ public sealed class LexBound : Bound
     /// </summary>
     /// <param name="value">The lexicographic value.</param>
     /// <returns>An inclusive <see cref="LexBound"/>.</returns>
-    public static LexBound Inclusive(ValkeyValue value)
-    {
-        if (value.Equals(ValkeyLiterals.LexRangeMin))
-        {
-            return Min;
-        }
-
-        else if (value.Equals(ValkeyLiterals.LexRangeMax))
-        {
-            return Max;
-        }
-
-        return new((ValkeyValue)$"{ValkeyLiterals.RangeInclusive}{value}");
-    }
-
+    public static LexBound Inclusive(ValkeyValue value) => new(value, isInclusive: true);
 
     /// <summary>
     /// Creates an exclusive lexicographic bound.
     /// </summary>
     /// <param name="value">The lexicographic value.</param>
     /// <returns>An exclusive <see cref="LexBound"/>.</returns>
-    public static LexBound Exclusive(ValkeyValue value)
-        => new((ValkeyValue)$"{ValkeyLiterals.RangeExclusive}{value}");
+    public static LexBound Exclusive(ValkeyValue value) => new(value, isInclusive: false);
 
     /// <summary>
     /// Converts a string to an inclusive lexicographic bound.
     /// </summary>
-    public static implicit operator LexBound(string value)
-        => Inclusive((ValkeyValue)value);
+    public static implicit operator LexBound(string value) => Inclusive(value);
+
+    /// <summary>
+    /// Converts a byte array to an inclusive lexicographic bound.
+    /// </summary>
+    public static implicit operator LexBound(byte[] value) => Inclusive(value);
 
     /// <summary>
     /// Converts a <see cref="ValkeyValue"/> to an inclusive lexicographic bound.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static implicit operator LexBound(ValkeyValue value)
-    {
-        if (value.IsNull)
-        {
-            throw new ArgumentNullException(nameof(value), "Use LexBound.Min or LexBound.Max for unbounded ranges.");
-        }
+    public static implicit operator LexBound(ValkeyValue value) => Inclusive((ValkeyValue)value);
 
-        return Inclusive(value);
-    }
+    /// <inheritdoc/>
+    public bool Equals(LexBound? other)
+        => other is not null
+        && _value == other._value
+        && _isInclusive == other._isInclusive;
+
+    /// <inheritdoc/>
+    public override bool Equals(Bound? other) => Equals(other as LexBound);
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(_value, _isInclusive);
 
     #endregion
     #region Internal Methods
 
     /// <inheritdoc/>
-    internal override GlideString[] ToArgs() => [_value];
+    internal override GlideString[] ToArgs()
+    {
+        if (_value == ValkeyLiterals.LexRangeMin)
+        {
+            return [ValkeyLiterals.LexRangeMin];
+        }
+
+        else if (_value == ValkeyLiterals.LexRangeMax)
+        {
+            return [ValkeyLiterals.LexRangeMax];
+        }
+
+        GlideString value = _value;
+        return _isInclusive
+            ? [ValkeyLiterals.RangeInclusive.ToGlideString() + value]
+            : [ValkeyLiterals.RangeExclusive.ToGlideString() + value];
+    }
 
     #endregion
 }

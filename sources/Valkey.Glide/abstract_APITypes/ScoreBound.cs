@@ -8,33 +8,35 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/zcount/"/>
 /// <seealso href="https://valkey.io/commands/zrangebyscore/"/>
 /// <seealso href="https://valkey.io/commands/zremrangebyscore/"/>
-public sealed class ScoreBound : Bound
+public sealed class ScoreBound : Bound, IEquatable<ScoreBound>
 {
     #region Constants
 
     /// <summary>
     /// The minimum score bound (negative infinity).
     /// </summary>
-    public static readonly ScoreBound Min = new(double.NegativeInfinity, isExclusive: false);
+    public static readonly ScoreBound Min = new(double.NegativeInfinity, isInclusive: false);
 
     /// <summary>
     /// The maximum score bound (positive infinity).
     /// </summary>
-    public static readonly ScoreBound Max = new(double.PositiveInfinity, isExclusive: false);
+    public static readonly ScoreBound Max = new(double.PositiveInfinity, isInclusive: false);
 
     #endregion
     #region Fields
 
     private readonly double _score;
-    private readonly bool _isExclusive;
+    private readonly bool _isInclusive;
 
     #endregion
     #region Constructors
 
-    private ScoreBound(double score, bool isExclusive)
+    private ScoreBound(double score, bool isInclusive)
     {
         _score = score;
-        _isExclusive = isExclusive;
+
+        // Infinity values are never inclusive.
+        _isInclusive = isInclusive && !double.IsInfinity(_score);
     }
 
     #endregion
@@ -45,51 +47,31 @@ public sealed class ScoreBound : Bound
     /// </summary>
     /// <param name="value">The score value.</param>
     /// <returns>An inclusive <see cref="ScoreBound"/>.</returns>
-    public static ScoreBound Inclusive(double value)
-        => new(value, isExclusive: false);
+    public static ScoreBound Inclusive(double value) => new(value, isInclusive: true);
 
     /// <summary>
     /// Creates an exclusive score bound.
     /// </summary>
     /// <param name="value">The score value.</param>
     /// <returns>An exclusive <see cref="ScoreBound"/>.</returns>
-    public static ScoreBound Exclusive(double value)
-        => new(value, isExclusive: true);
-
-    /// <summary>
-    /// Converts a <see cref="ValkeyValue"/> to an inclusive lexicographic bound.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static implicit operator ScoreBound(ValkeyValue value)
-    {
-        if (value.IsNull)
-        {
-            throw new ArgumentNullException(nameof(value), "Use ScoreBound.Min or ScoreBound.Max for unbounded ranges.");
-        }
-
-        else if (value.Equals(ValkeyLiterals.LexRangeMin))
-        {
-            return Min;
-        }
-
-        else if (value.Equals(ValkeyLiterals.LexRangeMax))
-        {
-            return Max;
-        }
-
-        return Inclusive((double)value);
-    }
+    public static ScoreBound Exclusive(double value) => new(value, isInclusive: false);
 
     /// <summary>
     /// Implicitly converts a <see langword="double"/> to an inclusive <see cref="ScoreBound"/>.
-    /// Infinity values are mapped to <see cref="Min"/> and <see cref="Max"/> respectively.
     /// </summary>
-    public static implicit operator ScoreBound(double value) => value switch
-    {
-        double.NegativeInfinity => Min,
-        double.PositiveInfinity => Max,
-        _ => Inclusive(value),
-    };
+    public static implicit operator ScoreBound(double value) => new(value, isInclusive: true);
+
+    /// <inheritdoc/>
+    public bool Equals(ScoreBound? other)
+        => other is not null
+        && _score == other._score
+        && _isInclusive == other._isInclusive;
+
+    /// <inheritdoc/>
+    public override bool Equals(Bound? other) => Equals(other as ScoreBound);
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(_score, _isInclusive);
 
     #endregion
     #region Internal Methods
@@ -97,8 +79,19 @@ public sealed class ScoreBound : Bound
     /// <inheritdoc/>
     internal override GlideString[] ToArgs()
     {
-        GlideString scoreStr = _score.ToGlideString();
-        return _isExclusive ? [(GlideString)ValkeyLiterals.RangeExclusive + scoreStr] : [scoreStr];
+        if (_score == double.NegativeInfinity)
+        {
+            return [ValkeyLiterals.ScoreRangeMin];
+        }
+
+        else if (_score == double.PositiveInfinity)
+        {
+            return [ValkeyLiterals.ScoreRangeMax];
+        }
+
+        return _isInclusive
+            ? [_score.ToGlideString()]
+            : [ValkeyLiterals.RangeExclusive + _score.ToGlideString()];
     }
 
     #endregion

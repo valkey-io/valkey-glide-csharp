@@ -15,7 +15,7 @@ public sealed class ScoreRange : Range
     /// <summary>
     /// A range spanning all scores.
     /// </summary>
-    public static readonly ScoreRange All = new(double.NegativeInfinity, double.PositiveInfinity);
+    public static readonly ScoreRange All = new(ScoreBound.Min, ScoreBound.Max);
 
     #endregion
     #region Fields
@@ -40,16 +40,14 @@ public sealed class ScoreRange : Range
     /// </summary>
     /// <param name="min">The minimum score bound.</param>
     /// <returns>A <see cref="ScoreRange"/> from a minimum bound.</returns>
-    public static ScoreRange From(ScoreBound min)
-        => new(min, double.PositiveInfinity);
+    public static ScoreRange From(ScoreBound min) => new(min, ScoreBound.Max);
 
     /// <summary>
     /// Creates a score range to a maximum bound.
     /// </summary>
     /// <param name="max">The maximum score bound.</param>
     /// <returns>A <see cref="ScoreRange"/> to a maximum bound.</returns>
-    public static ScoreRange To(ScoreBound max)
-        => new(double.NegativeInfinity, max);
+    public static ScoreRange To(ScoreBound max) => new(ScoreBound.Min, max);
 
     /// <summary>
     /// Creates a score range between minimum and maximum bounds.
@@ -57,19 +55,16 @@ public sealed class ScoreRange : Range
     /// <param name="min">The minimum score bound.</param>
     /// <param name="max">The maximum score bound.</param>
     /// <returns>A <see cref="ScoreRange"/> between minimum and maximum bounds.</returns>
-    public static ScoreRange Between(ScoreBound min, ScoreBound max)
-        => new(min, max);
+    public static ScoreRange Between(ScoreBound min, ScoreBound max) => new(min, max);
 
     #endregion
     #region Internal Methods
 
     /// <inheritdoc/>
-    internal override bool IsUnbounded()
-        => _min.Equals(ScoreBound.Min) && _max.Equals(ScoreBound.Max);
+    internal override bool IsUnbounded() => _min.Equals(ScoreBound.Min) && _max.Equals(ScoreBound.Max);
 
     /// <inheritdoc/>
-    internal override GlideString[] ToArgs()
-        => [.. _min.ToArgs(), .. _max.ToArgs()];
+    internal override GlideString[] ToArgs() => [.. _min.ToArgs(), .. _max.ToArgs()];
 
     #endregion
 }

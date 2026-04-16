@@ -42,16 +42,14 @@ public sealed class RankRange : Range
     /// </summary>
     /// <param name="start">The start rank.</param>
     /// <returns>A <see cref="RankRange"/> from a start rank.</returns>
-    public static RankRange From(long start)
-        => new(start: start);
+    public static RankRange From(long start) => new(start: start);
 
     /// <summary>
     /// Creates a range from the beginning of the sorted set to a stop rank.
     /// </summary>
     /// <param name="stop">The stop rank.</param>
     /// <returns>A <see cref="RankRange"/> to a stop rank.</returns>
-    public static RankRange To(long stop)
-        => new(stop: stop);
+    public static RankRange To(long stop) => new(stop: stop);
 
     /// <summary>
     /// Creates a rank range between start and stop ranks.
@@ -59,19 +57,16 @@ public sealed class RankRange : Range
     /// <param name="start">The start rank.</param>
     /// <param name="stop">The stop rank.</param>
     /// <returns>A <see cref="RankRange"/> between start and stop ranks.</returns>
-    public static RankRange Between(long start, long stop)
-        => new(start, stop);
+    public static RankRange Between(long start, long stop) => new(start, stop);
 
     #endregion
     #region Internal Methods
 
     /// <inheritdoc/>
-    internal override bool IsUnbounded()
-        => _start == MinRank && _stop == MaxRank;
+    internal override bool IsUnbounded() => _start == MinRank && _stop == MaxRank;
 
     /// <inheritdoc/>
-    internal override GlideString[] ToArgs()
-        => [_start.ToGlideString(), _stop.ToGlideString()];
+    internal override GlideString[] ToArgs() => [_start.ToGlideString(), _stop.ToGlideString()];
 
     #endregion
 }

@@ -14,7 +14,7 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/zremrangebylex/"/>
 /// <seealso href="https://valkey.io/commands/zremrangebyrank/"/>
 /// <seealso href="https://valkey.io/commands/zremrangebyscore/"/>
-public abstract class Bound
+public abstract class Bound : IEquatable<Bound>
 {
     #region Internal Methods
 
@@ -22,6 +22,31 @@ public abstract class Bound
     /// Converts to command arguments.
     /// </summary>
     internal abstract GlideString[] ToArgs();
+
+    #endregion
+    #region Public Methods
+
+    /// <inheritdoc/>
+    public abstract bool Equals(Bound? other);
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+        => Equals(obj as Bound);
+
+    /// <inheritdoc/>
+    public abstract override int GetHashCode();
+
+    /// <summary>
+    /// Determines whether two <see cref="Bound"/> instances are equal.
+    /// </summary>
+    public static bool operator ==(Bound? left, Bound? right)
+        => Equals(left, right);
+
+    /// <summary>
+    /// Determines whether two <see cref="Bound"/> instances are not equal.
+    /// </summary>
+    public static bool operator !=(Bound? left, Bound? right)
+        => !Equals(left, right);
 
     #endregion
 }
