@@ -139,17 +139,17 @@ internal partial class Request
     /// <summary>
     /// Creates a command to list all loaded function libraries.
     /// </summary>
-    public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListQuery? query = null)
+    public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListOptions? options = null)
     {
         List<GlideString> cmdArgs = [];
 
-        if (query?.LibraryName != null)
+        if (options?.LibraryName != null)
         {
             cmdArgs.Add("LIBRARYNAME");
-            cmdArgs.Add(query.LibraryName);
+            cmdArgs.Add(options.Value.LibraryName);
         }
 
-        if (query?.WithCode == true)
+        if (options?.WithCode == true)
         {
             cmdArgs.Add("WITHCODE");
         }

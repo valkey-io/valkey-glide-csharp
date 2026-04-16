@@ -11,11 +11,10 @@ namespace Valkey.Glide;
 /// <summary>
 /// Interface for Valkey GLIDE cluster client.
 /// </summary>
-public interface IGlideClusterClient :
+public partial interface IGlideClusterClient :
     IBaseClient,
     IGenericClusterCommands,
     IPubSubClusterCommands,
-    IScriptingAndFunctionClusterCommands,
     IServerManagementClusterCommands,
     ITransactionClusterCommands
 {

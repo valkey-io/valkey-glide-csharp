@@ -11,10 +11,9 @@ namespace Valkey.Glide;
 /// <summary>
 /// Interface for Valkey GLIDE standalone client.
 /// </summary>
-public interface IGlideClient :
+public partial interface IGlideClient :
     IBaseClient,
     IGenericCommands,
-    IScriptingAndFunctionStandaloneCommands,
     IServerManagementCommands
 {
     /// <summary>
