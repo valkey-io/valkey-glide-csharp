@@ -8,10 +8,11 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
+    public async Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return SetAsync(key, value).ContinueWith(_ => true, TaskContinuationOptions.ExecuteSynchronously);
+        await SetAsync(key, value);
+        return true;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(ValkeyKey, ValkeyValue, TimeSpan?, bool, When, CommandFlags)"/>
@@ -47,16 +48,21 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When, CommandFlags)"/>
-    public Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return when switch
+        switch (when)
         {
-            When.Always => SetAsync(values).ContinueWith(_ => true, TaskContinuationOptions.ExecuteSynchronously),
-            When.NotExists => SetIfNotExistsAsync(values),
-            When.Exists => throw new ArgumentException(when + " is not valid in this context; the permitted values are: Always, NotExists"),
-            _ => throw new NotSupportedException($"When {when} is not supported by Valkey GLIDE"),
-        };
+            case When.Always:
+                await SetAsync(values);
+                return true;
+            case When.NotExists:
+                return await SetIfNotExistsAsync(values);
+            case When.Exists:
+                throw new ArgumentException(when + " is not valid in this context; the permitted values are: Always, NotExists");
+            default:
+                throw new NotSupportedException($"Enum value {when} is not supported by Valkey GLIDE");
+        }
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetSetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
@@ -192,22 +198,19 @@ internal partial class Database
         _ => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists, Exists"),
     };
 
-    private static SetExpiryOptions ToSetExpiryOption(TimeSpan? expiry, bool keepTtl)
+    private static SetExpiryOptions? ToSetExpiryOption(TimeSpan? expiry, bool keepTtl)
     {
         if (expiry.HasValue && keepTtl)
         {
             throw new ArgumentException("Cannot specify both expiry and keepTtl=true.");
         }
 
-        else if (expiry.HasValue)
+        if (expiry.HasValue)
         {
             return SetExpiryOptions.ExpireIn(expiry.Value);
         }
 
-        else
-        {
-            return SetExpiryOptions.KeepTimeToLive();
-        }
+        return keepTtl ? SetExpiryOptions.KeepTimeToLive() : null;
     }
 
     #endregion
