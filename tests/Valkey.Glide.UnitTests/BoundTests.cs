@@ -101,7 +101,10 @@ public class BoundTests
 
         // Infinity equality
         () => Assert.Equal(0, ScoreBound.Min.CompareTo(ScoreBound.Inclusive(double.NegativeInfinity))),
-        () => Assert.Equal(0, ScoreBound.Max.CompareTo(ScoreBound.Exclusive(double.PositiveInfinity))));
+        () => Assert.Equal(0, ScoreBound.Max.CompareTo(ScoreBound.Exclusive(double.PositiveInfinity))),
+
+        // Null throws
+        () => Assert.Throws<ArgumentNullException>(() => ScoreBound.Inclusive(5.0).CompareTo(null)));
 
     #endregion
     #region LexBound Tests
@@ -206,7 +209,10 @@ public class BoundTests
 
         // Sentinel equality
         () => Assert.Equal(0, LexBound.Min.CompareTo(LexBound.Min)),
-        () => Assert.Equal(0, LexBound.Max.CompareTo(LexBound.Max)));
+        () => Assert.Equal(0, LexBound.Max.CompareTo(LexBound.Max)),
+
+        // Null throws
+        () => Assert.Throws<ArgumentNullException>(() => LexBound.Inclusive("a").CompareTo(null)));
 
     #endregion
     #region Cross-Type Tests

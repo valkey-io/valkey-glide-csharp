@@ -88,10 +88,7 @@ public sealed class LexBound : Bound, IEquatable<LexBound>, IComparable<LexBound
     /// <inheritdoc/>
     public int CompareTo(LexBound? other)
     {
-        if (other is null)
-        {
-            return 1;
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         bool otherIsMin = other._value == ValkeyLiterals.LexRangeMin;
         bool otherIsMax = other._value == ValkeyLiterals.LexRangeMax;
