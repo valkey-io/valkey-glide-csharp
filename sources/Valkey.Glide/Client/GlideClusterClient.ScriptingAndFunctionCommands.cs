@@ -168,19 +168,19 @@ public sealed partial class GlideClusterClient
 
     /// <inheritdoc/>
     public async Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
-        FunctionListQuery? query = null,
+        FunctionListOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return await Command(Request.FunctionListAsync(query).ToClusterValue(Route.AllPrimaries), Route.AllPrimaries);
+        return await Command(Request.FunctionListAsync(options).ToClusterValue(Route.AllPrimaries), Route.AllPrimaries);
     }
 
     /// <inheritdoc/>
     public async Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
-        FunctionListQuery? query,
+        FunctionListOptions? options,
         Route route,
         CancellationToken cancellationToken = default)
     {
-        return await Command(Request.FunctionListAsync(query).ToClusterValue(route), route);
+        return await Command(Request.FunctionListAsync(options).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>

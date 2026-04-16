@@ -16,7 +16,7 @@ public partial interface IGlideClient
     /// <summary>
     /// Lists all loaded function libraries.
     /// </summary>
-    /// <param name="query">Optional query parameters to filter results.</param>
+    /// <param name="options">Optional query parameters to filter results.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An array of library information.</returns>
     /// <remarks>
@@ -27,7 +27,7 @@ public partial interface IGlideClient
     /// </example>
     /// </remarks>
     Task<LibraryInfo[]> FunctionListAsync(
-        FunctionListQuery? query = null,
+        FunctionListOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

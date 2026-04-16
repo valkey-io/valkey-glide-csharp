@@ -330,7 +330,7 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Lists loaded function libraries from all primary nodes.
     /// </summary>
-    /// <param name="query">Optional query parameters to filter results.</param>
+    /// <param name="options">Optional query parameters to filter results.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing library information from nodes.</returns>
     /// <remarks>
@@ -342,13 +342,13 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
-        FunctionListQuery? query = null,
+        FunctionListOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Lists loaded function libraries from specified nodes.
     /// </summary>
-    /// <param name="query">Optional query parameters to filter results.</param>
+    /// <param name="options">Optional query parameters to filter results.</param>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A ClusterValue containing library information from nodes.</returns>
@@ -362,7 +362,7 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
-        FunctionListQuery? query,
+        FunctionListOptions? options,
         Route route,
         CancellationToken cancellationToken = default);
 

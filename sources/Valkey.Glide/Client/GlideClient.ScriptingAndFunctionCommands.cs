@@ -10,10 +10,10 @@ public partial class GlideClient
 
     /// <inheritdoc/>
     public async Task<LibraryInfo[]> FunctionListAsync(
-        FunctionListQuery? query = null,
+        FunctionListOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return await Command(Request.FunctionListAsync(query));
+        return await Command(Request.FunctionListAsync(options));
     }
 
     /// <inheritdoc/>
