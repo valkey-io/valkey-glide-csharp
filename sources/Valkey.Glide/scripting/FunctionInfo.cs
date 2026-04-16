@@ -5,23 +5,27 @@ namespace Valkey.Glide;
 /// <summary>
 /// Information about a function.
 /// </summary>
-/// <param name="name">The function name.</param>
-/// <param name="description">The function description.</param>
-/// <param name="flags">The function flags (e.g., "no-writes", "allow-oom").</param>
-public sealed class FunctionInfo(string name, string? description, string[] flags)
+public sealed class FunctionInfo
 {
+    internal FunctionInfo(string name, string? description, string[] flags)
+    {
+        Name = name;
+        Description = description;
+        Flags = flags;
+    }
+
     /// <summary>
     /// Gets the function name.
     /// </summary>
-    public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
+    public string Name { get; }
 
     /// <summary>
     /// Gets the function description.
     /// </summary>
-    public string? Description { get; } = description;
+    public string? Description { get; }
 
     /// <summary>
     /// Gets the function flags (e.g., "no-writes", "allow-oom").
     /// </summary>
-    public string[] Flags { get; } = flags ?? throw new ArgumentNullException(nameof(flags));
+    public string[] Flags { get; }
 }

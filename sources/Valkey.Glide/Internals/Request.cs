@@ -69,6 +69,12 @@ internal partial class Request
         => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
 
     /// <summary>
+    /// Converts a <see cref="HashSet{Object}"/> response to an <see cref="ISet{ValkeyValue}"/>.
+    /// </summary>
+    private static ISet<ValkeyValue> ToValkeyValueSet(HashSet<object> set)
+        => new HashSet<ValkeyValue>(set.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
+
+    /// <summary>
     /// Converts an object array to a <see cref="ValkeyKey"/> set and returns the result.
     /// </summary>
     /// <param name="objects">The object array to convert.</param>

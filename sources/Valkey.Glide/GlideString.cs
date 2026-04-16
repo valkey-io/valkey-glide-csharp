@@ -109,6 +109,14 @@ public static class GlideStringExtensions
     public static GlideString[] ToGlideStrings(this ValkeyValue[]? values) => values is null ? [] : [.. values.Select(v => (GlideString)v)];
 
     /// <summary>
+    /// Converts an <see cref="ValkeyValue"/> collection to a <see cref="GlideString"/> array.
+    /// </summary>
+    /// <param name="values">A <see langword="ValkeyValue" /> collection to convert.</param>
+    /// <returns>A <see cref="GlideString" /> array.</returns>
+    public static GlideString[] ToGlideStrings(this IEnumerable<ValkeyValue> values)
+        => [.. values.Select(v => (GlideString)v)];
+
+    /// <summary>
     /// Convert an <see langword="GlideString[]" /> to an <see langword="string[]" />.<br />
     /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
     /// stores a non-UTF8 compatible sequence of bytes.

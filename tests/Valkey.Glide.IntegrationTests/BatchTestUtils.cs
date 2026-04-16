@@ -297,11 +297,11 @@ internal partial class BatchTestUtils
         _ = batch.SetAdd(key1, ["b", "c"]);
         testData.Add(new(2L, "SetAdd(key1, [b, c])"));
 
-        _ = batch.SetLength(key1);
-        testData.Add(new(3L, "SetLength(key1)"));
+        _ = batch.SetCard(key1);
+        testData.Add(new(3L, "SetCard(key1)"));
 
         _ = batch.SetMembers(key1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetMembers(key1)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetMembers(key1)", true));
 
         _ = batch.SetRemove(key1, "a");
         testData.Add(new(true, "SetRemove(key1, a)"));
@@ -315,8 +315,8 @@ internal partial class BatchTestUtils
         _ = batch.SetRemove(key1, ["b", "d", "nonexistent"]);
         testData.Add(new(2L, "SetRemove(key1, [b, d, nonexistent])"));
 
-        _ = batch.SetLength(key1);
-        testData.Add(new(2L, "SetLength(key1) after multiple remove"));
+        _ = batch.SetCard(key1);
+        testData.Add(new(2L, "SetCard(key1) after multiple remove"));
 
         _ = batch.SetAdd(key2, "c");
         testData.Add(new(true, "SetAdd(key2, c)"));
@@ -342,33 +342,33 @@ internal partial class BatchTestUtils
 
         // Multi-key operations: always use prefix to ensure same hash slot
         _ = batch.SetUnion(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetUnion(prefix+key1, prefix+key2)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetUnion(prefix+key1, prefix+key2)", true));
 
         _ = batch.SetUnion([prefix + key1, prefix + key2, prefix + key5]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetUnion([prefix+key1, prefix+key2, prefix+key5])", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetUnion([prefix+key1, prefix+key2, prefix+key5])", true));
 
-        _ = batch.SetIntersect(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetIntersect(prefix+key1, prefix+key2)", true));
+        _ = batch.SetInter(prefix + key1, prefix + key2);
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetInter(prefix+key1, prefix+key2)", true));
 
-        _ = batch.SetIntersect([prefix + key1, prefix + key2]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetIntersect([prefix+key1, prefix+key2])", true));
+        _ = batch.SetInter([prefix + key1, prefix + key2]);
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetInter([prefix+key1, prefix+key2])", true));
 
-        _ = batch.SetDifference(prefix + key1, prefix + key2);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDifference(prefix+key1, prefix+key2)", true));
+        _ = batch.SetDiff(prefix + key1, prefix + key2);
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetDiff(prefix+key1, prefix+key2)", true));
 
-        _ = batch.SetDifference([prefix + key1, prefix + key2]);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetDifference([prefix+key1, prefix+key2])", true));
+        _ = batch.SetDiff([prefix + key1, prefix + key2]);
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetDiff([prefix+key1, prefix+key2])", true));
 
         if (TestConfiguration.IsVersionAtLeast("7.0.0"))
         {
-            _ = batch.SetIntersectionLength([prefix + key1, prefix + key2]);
-            testData.Add(new(1L, "SetIntersectionLength([prefix+key1, prefix+key2])"));
+            _ = batch.SetInterCard([prefix + key1, prefix + key2]);
+            testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key2])"));
 
-            _ = batch.SetIntersectionLength([prefix + key1, prefix + key2], 5);
-            testData.Add(new(1L, "SetIntersectionLength([prefix+key1, prefix+key2], limit=5)"));
+            _ = batch.SetInterCard([prefix + key1, prefix + key2], 5);
+            testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key2], limit=5)"));
 
-            _ = batch.SetIntersectionLength([prefix + key1, prefix + key5], 1);
-            testData.Add(new(1L, "SetIntersectionLength([prefix+key1, prefix+key5], limit=1)"));
+            _ = batch.SetInterCard([prefix + key1, prefix + key5], 1);
+            testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key5], limit=1)"));
         }
 
         _ = batch.SetUnionStore(prefix + destKey, prefix + key1, prefix + key2);
@@ -377,38 +377,38 @@ internal partial class BatchTestUtils
         _ = batch.SetUnionStore(prefix + destKey, [prefix + key1, prefix + key2]);
         testData.Add(new(2L, "SetUnionStore(prefix+destKey, [prefix+key1, prefix+key2])"));
 
-        _ = batch.SetIntersectStore(prefix + destKey, prefix + key1, prefix + key2);
-        testData.Add(new(1L, "SetIntersectStore(prefix+destKey, prefix+key1, prefix+key2)"));
+        _ = batch.SetInterStore(prefix + destKey, prefix + key1, prefix + key2);
+        testData.Add(new(1L, "SetInterStore(prefix+destKey, prefix+key1, prefix+key2)"));
 
-        _ = batch.SetIntersectStore(prefix + destKey, [prefix + key1, prefix + key2]);
-        testData.Add(new(1L, "SetIntersectStore(prefix+destKey, [prefix+key1, prefix+key2])"));
+        _ = batch.SetInterStore(prefix + destKey, [prefix + key1, prefix + key2]);
+        testData.Add(new(1L, "SetInterStore(prefix+destKey, [prefix+key1, prefix+key2])"));
 
-        _ = batch.SetDifferenceStore(prefix + destKey, prefix + key1, prefix + key2);
-        testData.Add(new(1L, "SetDifferenceStore(prefix+destKey, prefix+key1, prefix+key2)"));
+        _ = batch.SetDiffStore(prefix + destKey, prefix + key1, prefix + key2);
+        testData.Add(new(1L, "SetDiffStore(prefix+destKey, prefix+key1, prefix+key2)"));
 
-        _ = batch.SetDifferenceStore(prefix + destKey, [prefix + key1, prefix + key2]);
-        testData.Add(new(1L, "SetDifferenceStore(prefix+destKey, [prefix+key1, prefix+key2])"));
+        _ = batch.SetDiffStore(prefix + destKey, [prefix + key1, prefix + key2]);
+        testData.Add(new(1L, "SetDiffStore(prefix+destKey, [prefix+key1, prefix+key2])"));
 
         _ = batch.SetPop(key3);
         testData.Add(new(new gs("z"), "SetPop(key3)"));
 
-        _ = batch.SetLength(key3);
-        testData.Add(new(0L, "SetLength(key3) after pop"));
+        _ = batch.SetCard(key3);
+        testData.Add(new(0L, "SetCard(key3) after pop"));
 
         _ = batch.SetPop(key4, 1);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "SetPop(key4, 1)", true));
+        testData.Add(new(new HashSet<ValkeyValue>(), "SetPop(key4, 1)", true));
 
-        _ = batch.SetLength(key4);
-        testData.Add(new(1L, "SetLength(key4) after pop with count"));
+        _ = batch.SetCard(key4);
+        testData.Add(new(1L, "SetCard(key4) after pop with count"));
 
-        _ = batch.SetContains(key1, "c");
-        testData.Add(new(true, "SetContains(key1, c)"));
+        _ = batch.SetIsMember(key1, "c");
+        testData.Add(new(true, "SetIsMember(key1, c)"));
 
-        _ = batch.SetContains(key1, "nonexistent");
-        testData.Add(new(false, "SetContains(key1, nonexistent)"));
+        _ = batch.SetIsMember(key1, "nonexistent");
+        testData.Add(new(false, "SetIsMember(key1, nonexistent)"));
 
-        _ = batch.SetContains(key1, ["c", "e", "nonexistent"]);
-        testData.Add(new(new bool[] { true, true, false }, "SetContains(key1, [c, e, nonexistent])"));
+        _ = batch.SetIsMember(key1, ["c", "e", "nonexistent"]);
+        testData.Add(new(new bool[] { true, true, false }, "SetIsMember(key1, [c, e, nonexistent])"));
 
         _ = batch.SetRandomMember(key1);
         testData.Add(new(new ValkeyValue(""), "SetRandomMember(key1)", true)); // Can't predict exact value
@@ -1118,19 +1118,19 @@ internal partial class BatchTestUtils
         _ = batch.ListRightPush(pushxKey, "right", When.Exists);
         testData.Add(new(3L, "ListRightPush(pushxKey, right, When.Exists) - key exists"));
 
-        // Test LINDEX (ListGetByIndex)
+        // Test LINDEX (ListIndex)
         string indexKey = $"{atomicPrefix}index-{Guid.NewGuid()}";
         _ = batch.ListRightPush(indexKey, ["idx0", "idx1", "idx2", "idx3"]);
         testData.Add(new(4L, "ListRightPush(indexKey, [idx0, idx1, idx2, idx3])"));
 
-        _ = batch.ListGetByIndex(indexKey, 0);
-        testData.Add(new(new ValkeyValue("idx0"), "ListGetByIndex(indexKey, 0)"));
+        _ = batch.ListIndex(indexKey, 0);
+        testData.Add(new(new ValkeyValue("idx0"), "ListIndex(indexKey, 0)"));
 
-        _ = batch.ListGetByIndex(indexKey, -1);
-        testData.Add(new(new ValkeyValue("idx3"), "ListGetByIndex(indexKey, -1)"));
+        _ = batch.ListIndex(indexKey, -1);
+        testData.Add(new(new ValkeyValue("idx3"), "ListIndex(indexKey, -1)"));
 
-        _ = batch.ListGetByIndex(indexKey, 10);
-        testData.Add(new(ValkeyValue.Null, "ListGetByIndex(indexKey, 10) - out of range"));
+        _ = batch.ListIndex(indexKey, 10);
+        testData.Add(new(ValkeyValue.Null, "ListIndex(indexKey, 10) - out of range"));
 
         // Test LINSERT (ListInsertBefore/After)
         string insertKey = $"{atomicPrefix}insert-{Guid.NewGuid()}";
@@ -1179,16 +1179,16 @@ internal partial class BatchTestUtils
         _ = batch.ListPositions(posKey, "a", 10);
         testData.Add(new(Array.Empty<long>(), "ListPositions(posKey, a, count=10)"));
 
-        // Test LSET (ListSetByIndex)
+        // Test LSET (ListSet)
         string setKey = $"{atomicPrefix}set-{Guid.NewGuid()}";
         _ = batch.ListRightPush(setKey, ["set0", "set1", "set2"]);
         testData.Add(new(3L, "ListRightPush(setKey, [set0, set1, set2])"));
 
-        _ = batch.ListSetByIndex(setKey, 1, "newvalue");
-        testData.Add(new(ValkeyValue.Ok, "ListSetByIndex(setKey, 1, newvalue)", true));
+        _ = batch.ListSet(setKey, 1, "newvalue");
+        testData.Add(new(ValkeyValue.Ok, "ListSet(setKey, 1, newvalue)", true));
 
-        _ = batch.ListGetByIndex(setKey, 1);
-        testData.Add(new(new ValkeyValue("newvalue"), "ListGetByIndex(setKey, 1) after set"));
+        _ = batch.ListIndex(setKey, 1);
+        testData.Add(new(new ValkeyValue("newvalue"), "ListIndex(setKey, 1) after set"));
 
         // Test blocking list operations - reuse existing keys that already have data
         string blockingKey1 = $"{atomicPrefix}blocking1-{Guid.NewGuid()}";

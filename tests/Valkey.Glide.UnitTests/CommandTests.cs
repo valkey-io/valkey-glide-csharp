@@ -96,23 +96,23 @@ public class CommandTests
             () => Assert.Equal(["SREM", "key", "member"], Request.SetRemoveAsync("key", "member").GetArgs()),
             () => Assert.Equal(["SREM", "key", "member1", "member2"], Request.SetRemoveAsync("key", ["member1", "member2"]).GetArgs()),
             () => Assert.Equal(["SMEMBERS", "key"], Request.SetMembersAsync("key").GetArgs()),
-            () => Assert.Equal(["SCARD", "key"], Request.SetLengthAsync("key").GetArgs()),
-            () => Assert.Equal(["SINTERCARD", "2", "key1", "key2"], Request.SetIntersectionLengthAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["SINTERCARD", "2", "key1", "key2", "LIMIT", "10"], Request.SetIntersectionLengthAsync(["key1", "key2"], 10).GetArgs()),
+            () => Assert.Equal(["SCARD", "key"], Request.SetCardAsync("key").GetArgs()),
+            () => Assert.Equal(["SINTERCARD", "2", "key1", "key2"], Request.SetInterCardAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["SINTERCARD", "2", "key1", "key2", "LIMIT", "10"], Request.SetInterCardAsync(["key1", "key2"], 10).GetArgs()),
             () => Assert.Equal(["SPOP", "key"], Request.SetPopAsync("key").GetArgs()),
             () => Assert.Equal(["SPOP", "key", "3"], Request.SetPopAsync("key", 3).GetArgs()),
             () => Assert.Equal(["SUNION", "key1", "key2"], Request.SetUnionAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["SINTER", "key1", "key2"], Request.SetIntersectAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["SDIFF", "key1", "key2"], Request.SetDifferenceAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["SINTER", "key1", "key2"], Request.SetInterAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["SDIFF", "key1", "key2"], Request.SetDiffAsync(["key1", "key2"]).GetArgs()),
             () => Assert.Equal(["SUNIONSTORE", "dest", "key1", "key2"], Request.SetUnionStoreAsync("dest", ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["SINTERSTORE", "dest", "key1", "key2"], Request.SetIntersectStoreAsync("dest", ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["SDIFFSTORE", "dest", "key1", "key2"], Request.SetDifferenceStoreAsync("dest", ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["SISMEMBER", "key", "member"], Request.SetContainsAsync("key", "member").GetArgs()),
-            () => Assert.Equal(["SISMEMBER", "mykey", "value"], Request.SetContainsAsync("mykey", "value").GetArgs()),
-            () => Assert.Equal(["SISMEMBER", "test:set", "test-member"], Request.SetContainsAsync("test:set", "test-member").GetArgs()),
-            () => Assert.Equal(["SMISMEMBER", "key", "member1", "member2", "member3"], Request.SetContainsAsync("key", ["member1", "member2", "member3"]).GetArgs()),
-            () => Assert.Equal(["SMISMEMBER", "key"], Request.SetContainsAsync("key", []).GetArgs()),
-            () => Assert.Equal(["SMISMEMBER", "key", "", " ", "null", "0", "-1"], Request.SetContainsAsync("key", ["", " ", "null", "0", "-1"]).GetArgs()),
+            () => Assert.Equal(["SINTERSTORE", "dest", "key1", "key2"], Request.SetInterStoreAsync("dest", ["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["SDIFFSTORE", "dest", "key1", "key2"], Request.SetDiffStoreAsync("dest", ["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["SISMEMBER", "key", "member"], Request.SetIsMemberAsync("key", "member").GetArgs()),
+            () => Assert.Equal(["SISMEMBER", "mykey", "value"], Request.SetIsMemberAsync("mykey", "value").GetArgs()),
+            () => Assert.Equal(["SISMEMBER", "test:set", "test-member"], Request.SetIsMemberAsync("test:set", "test-member").GetArgs()),
+            () => Assert.Equal(["SMISMEMBER", "key", "member1", "member2", "member3"], Request.SetIsMemberAsync("key", ["member1", "member2", "member3"]).GetArgs()),
+            () => Assert.Equal(["SMISMEMBER", "key"], Request.SetIsMemberAsync("key", []).GetArgs()),
+            () => Assert.Equal(["SMISMEMBER", "key", "", " ", "null", "0", "-1"], Request.SetIsMemberAsync("key", ["", " ", "null", "0", "-1"]).GetArgs()),
             () => Assert.Equal(["SRANDMEMBER", "key"], Request.SetRandomMemberAsync("key").GetArgs()),
             () => Assert.Equal(["SRANDMEMBER", "mykey"], Request.SetRandomMemberAsync("mykey").GetArgs()),
             () => Assert.Equal(["SRANDMEMBER", "test:set"], Request.SetRandomMemberAsync("test:set").GetArgs()),
@@ -126,17 +126,17 @@ public class CommandTests
             () => Assert.Equal(["SSCAN", "key", "0"], Request.SetScanAsync("key", 0).GetArgs()),
             () => Assert.Equal(["SSCAN", "key", "10"], Request.SetScanAsync("key", 10).GetArgs()),
             () => Assert.Equal(["SSCAN", "mykey", "0"], Request.SetScanAsync("mykey", 0).GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "0", "MATCH", "pattern*"], Request.SetScanAsync("key", 0, "pattern*").GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "5", "MATCH", "test*"], Request.SetScanAsync("key", 5, "test*").GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "0", "MATCH", "*suffix"], Request.SetScanAsync("key", 0, "*suffix").GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "0", "COUNT", "10"], Request.SetScanAsync("key", 0, default, 10).GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "5", "COUNT", "20"], Request.SetScanAsync("key", 5, default, 20).GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "0", "COUNT", "1"], Request.SetScanAsync("key", 0, default, 1).GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "0", "MATCH", "pattern*", "COUNT", "10"], Request.SetScanAsync("key", 0, "pattern*", 10).GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "5", "MATCH", "test*", "COUNT", "20"], Request.SetScanAsync("key", 5, "test*", 20).GetArgs()),
-            () => Assert.Equal(["SSCAN", "key", "10", "MATCH", "*suffix", "COUNT", "5"], Request.SetScanAsync("key", 10, "*suffix", 5).GetArgs()),
-            () => Assert.Equal(["SISMEMBER", "", "member"], Request.SetContainsAsync("", "member").GetArgs()),
-            () => Assert.Equal(["SISMEMBER", "key", ""], Request.SetContainsAsync("key", "").GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "0", "MATCH", "pattern*"], Request.SetScanAsync("key", 0, new ScanOptions { MatchPattern = "pattern*" }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "5", "MATCH", "test*"], Request.SetScanAsync("key", 5, new ScanOptions { MatchPattern = "test*" }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "0", "MATCH", "*suffix"], Request.SetScanAsync("key", 0, new ScanOptions { MatchPattern = "*suffix" }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "0", "COUNT", "10"], Request.SetScanAsync("key", 0, new ScanOptions { Count = 10 }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "5", "COUNT", "20"], Request.SetScanAsync("key", 5, new ScanOptions { Count = 20 }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "0", "COUNT", "1"], Request.SetScanAsync("key", 0, new ScanOptions { Count = 1 }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "0", "MATCH", "pattern*", "COUNT", "10"], Request.SetScanAsync("key", 0, new ScanOptions { MatchPattern = "pattern*", Count = 10 }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "5", "MATCH", "test*", "COUNT", "20"], Request.SetScanAsync("key", 5, new ScanOptions { MatchPattern = "test*", Count = 20 }).GetArgs()),
+            () => Assert.Equal(["SSCAN", "key", "10", "MATCH", "*suffix", "COUNT", "5"], Request.SetScanAsync("key", 10, new ScanOptions { MatchPattern = "*suffix", Count = 5 }).GetArgs()),
+            () => Assert.Equal(["SISMEMBER", "", "member"], Request.SetIsMemberAsync("", "member").GetArgs()),
+            () => Assert.Equal(["SISMEMBER", "key", ""], Request.SetIsMemberAsync("key", "").GetArgs()),
             () => Assert.Equal(["SMOVE", "", "", ""], Request.SetMoveAsync("", "", "").GetArgs()),
             () => Assert.Equal(["SSCAN", "", "0"], Request.SetScanAsync("", 0).GetArgs()),
 
@@ -471,11 +471,11 @@ public class CommandTests
 
             () => Assert.Equal(2L, Request.SetAddAsync("key", ["member1", "member2"]).Converter(2L)),
             () => Assert.Equal(1L, Request.SetRemoveAsync("key", ["member1", "member2"]).Converter(1L)),
-            () => Assert.Equal(5L, Request.SetLengthAsync("key").Converter(5L)),
-            () => Assert.Equal(3L, Request.SetIntersectionLengthAsync(["key1", "key2"]).Converter(3L)),
+            () => Assert.Equal(5L, Request.SetCardAsync("key").Converter(5L)),
+            () => Assert.Equal(3L, Request.SetInterCardAsync(["key1", "key2"]).Converter(3L)),
             () => Assert.Equal(4L, Request.SetUnionStoreAsync("dest", ["key1", "key2"]).Converter(4L)),
-            () => Assert.Equal(2L, Request.SetIntersectStoreAsync("dest", ["key1", "key2"]).Converter(2L)),
-            () => Assert.Equal(1L, Request.SetDifferenceStoreAsync("dest", ["key1", "key2"]).Converter(1L)),
+            () => Assert.Equal(2L, Request.SetInterStoreAsync("dest", ["key1", "key2"]).Converter(2L)),
+            () => Assert.Equal(1L, Request.SetDiffStoreAsync("dest", ["key1", "key2"]).Converter(1L)),
 
             () => Assert.Equal<ValkeyValue>("member", Request.SetPopAsync("key").Converter("member")),
             () => Assert.Null(Request.SetPopAsync("key").Converter(null!)),
@@ -736,31 +736,31 @@ public class CommandTests
         Assert.Multiple([
             () => {
                 var result = Request.SetMembersAsync("key").Converter(testHashSet);
-                Assert.Equal(3, result.Length);
+                Assert.Equal(3, result.Count);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
                 var result = Request.SetPopAsync("key", 2).Converter(testHashSet);
-                Assert.Equal(3, result.Length);
+                Assert.Equal(3, result.Count);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
                 var result = Request.SetUnionAsync(["key1", "key2"]).Converter(testHashSet);
-                Assert.Equal(3, result.Length);
+                Assert.Equal(3, result.Count);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
-                var result = Request.SetIntersectAsync(["key1", "key2"]).Converter(testHashSet);
-                Assert.Equal(3, result.Length);
+                var result = Request.SetInterAsync(["key1", "key2"]).Converter(testHashSet);
+                Assert.Equal(3, result.Count);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
 
             () => {
-                var result = Request.SetDifferenceAsync(["key1", "key2"]).Converter(testHashSet);
-                Assert.Equal(3, result.Length);
+                var result = Request.SetDiffAsync(["key1", "key2"]).Converter(testHashSet);
+                Assert.Equal(3, result.Count);
                 Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
             },
         ]);
