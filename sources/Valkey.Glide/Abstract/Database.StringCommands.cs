@@ -188,7 +188,7 @@ internal partial class Database
     #region Private Methods
 
     private static SetOptions ToSetOptions(When when, TimeSpan? expiry, bool keepTtl)
-        => new() { Condition = ToSetCondition(when), Expiry = ToSetExpiryOption(expiry, keepTtl) };
+        => new() { Condition = ToSetCondition(when), Expiry = ToSetExpiryOptions(expiry, keepTtl) };
 
     private static SetCondition ToSetCondition(When when) => when switch
     {
@@ -198,7 +198,7 @@ internal partial class Database
         _ => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists, Exists"),
     };
 
-    private static SetExpiryOptions? ToSetExpiryOption(TimeSpan? expiry, bool keepTtl)
+    private static SetExpiryOptions? ToSetExpiryOptions(TimeSpan? expiry, bool keepTtl)
     {
         if (expiry.HasValue && keepTtl)
         {
