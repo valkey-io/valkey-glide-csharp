@@ -97,15 +97,4 @@ internal interface IBatchStringCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)" /></returns>
     IBatch GetExpiry(ValkeyKey key, GetExpiryOptions options);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey)" /></returns>
-    IBatch StringLongestCommonSubsequence(ValkeyKey first, ValkeyKey second);
-
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey)" /></returns>
-    IBatch StringLongestCommonSubsequenceLength(ValkeyKey first, ValkeyKey second);
-
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long)" /></returns>
-    IBatch StringLongestCommonSubsequenceWithMatches(ValkeyKey first, ValkeyKey second, long minLength = 0);
 }

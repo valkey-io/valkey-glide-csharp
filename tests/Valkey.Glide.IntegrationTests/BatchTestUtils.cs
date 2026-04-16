@@ -243,39 +243,6 @@ internal partial class BatchTestUtils
         _ = batch.GetExpiry(getSetExpiryKey2, GetExpiryOptions.ExpireAt(new DateTimeOffset(futureTime)));
         testData.Add(new(new ValkeyValue("expire-me-abs"), "GetExpiry(getSetExpiryKey2, futureTime)"));
 
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
-        {
-            string lcsKey1 = $"{prefix}lcs1-{Guid.NewGuid()}";
-            string lcsKey2 = $"{prefix}lcs2-{Guid.NewGuid()}";
-
-            _ = batch.Set(lcsKey1, "abcdef");
-            testData.Add(new(true, "Set(lcsKey1, abcdef)"));
-
-            _ = batch.Set(lcsKey2, "acef");
-            testData.Add(new(true, "Set(lcsKey2, acef)"));
-
-            _ = batch.StringLongestCommonSubsequence(lcsKey1, lcsKey2);
-            testData.Add(new("acef", "StringLongestCommonSubsequence(lcsKey1, lcsKey2)"));
-
-            _ = batch.StringLongestCommonSubsequenceLength(lcsKey1, lcsKey2);
-            testData.Add(new(4L, "StringLongestCommonSubsequenceLength(lcsKey1, lcsKey2)"));
-
-            _ = batch.StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2);
-            testData.Add(new(LCSMatchResult.Null, "StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2)", true));
-
-            _ = batch.StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2, 2);
-            testData.Add(new(LCSMatchResult.Null, "StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2, minLength=2)", true));
-
-            // Test LCS with non-existent keys
-            string nonExistingKey6 = $"{prefix}nonexisting6-{Guid.NewGuid()}";
-            _ = batch.StringLongestCommonSubsequence(lcsKey1, nonExistingKey6);
-            testData.Add(new("", "StringLongestCommonSubsequence(lcsKey1, nonExistingKey6)"));
-
-            string nonExistingKey7 = $"{prefix}nonexisting7-{Guid.NewGuid()}";
-            _ = batch.StringLongestCommonSubsequenceLength(nonExistingKey7, lcsKey2);
-            testData.Add(new(0L, "StringLongestCommonSubsequenceLength(nonExistingKey7, lcsKey2)"));
-        }
-
         return testData;
     }
 

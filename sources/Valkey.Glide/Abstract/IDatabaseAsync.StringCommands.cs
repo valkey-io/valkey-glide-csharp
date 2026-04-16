@@ -156,18 +156,42 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IStringBaseCommands.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey)"/>
+    /// <summary>
+    /// Returns the longest common subsequence between the values at <paramref name="first"/> and <paramref name="second"/>,
+    /// returning a string containing the common sequence.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lcs/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
+    /// <param name="first">The key that stores the first string.</param>
+    /// <param name="second">The key that stores the second string.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>A string (sequence of characters) of the LCS match.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+    Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IStringBaseCommands.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey)"/>
+    /// <summary>
+    /// Returns the longest common subsequence between the values at <paramref name="first"/> and <paramref name="second"/>,
+    /// returning the length of the common sequence.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lcs/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
+    /// <param name="first">The key that stores the first string.</param>
+    /// <param name="second">The key that stores the second string.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The length of the LCS match.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags);
+    Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IStringBaseCommands.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long)"/>
+    /// <summary>
+    /// Returns the longest common subsequence between the values at <paramref name="first"/> and <paramref name="second"/>,
+    /// returning a list of all common sequences with their positions and match information.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lcs/">valkey.io</seealso>
+    /// <param name="first">The key that stores the first string.</param>
+    /// <param name="second">The key that stores the second string.</param>
+    /// <param name="minLength">Can be used to restrict the list of matches to the ones of a given minimum length. Defaults to 0.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The result of LCS algorithm, containing match positions and lengths based on the given parameters.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0, CommandFlags flags = CommandFlags.None);
 }

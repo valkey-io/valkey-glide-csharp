@@ -645,4 +645,55 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region StringLongestCommonSubsequenceAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringLongestCommonSubsequenceAsync_ReturnsCommonSubsequence(IDatabaseAsync db)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0");
+
+        string key1 = $"ser-lcs-1-{Guid.NewGuid()}";
+        string key2 = $"ser-lcs-2-{Guid.NewGuid()}";
+
+        _ = await db.StringSetAsync(key1, "abcdef", CommandFlags.None);
+        _ = await db.StringSetAsync(key2, "acef", CommandFlags.None);
+
+        string? result = await db.StringLongestCommonSubsequenceAsync(key1, key2);
+        Assert.Equal("acef", result);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringLongestCommonSubsequenceLengthAsync_ReturnsLength(IDatabaseAsync db)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0");
+
+        string key1 = $"ser-lcslen-1-{Guid.NewGuid()}";
+        string key2 = $"ser-lcslen-2-{Guid.NewGuid()}";
+
+        _ = await db.StringSetAsync(key1, "abcdef", CommandFlags.None);
+        _ = await db.StringSetAsync(key2, "acef", CommandFlags.None);
+
+        long result = await db.StringLongestCommonSubsequenceLengthAsync(key1, key2);
+        Assert.Equal(4, result);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringLongestCommonSubsequenceWithMatchesAsync_ReturnsMatches(IDatabaseAsync db)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0");
+
+        string key1 = $"ser-lcsmatch-1-{Guid.NewGuid()}";
+        string key2 = $"ser-lcsmatch-2-{Guid.NewGuid()}";
+
+        _ = await db.StringSetAsync(key1, "abcdef1234", CommandFlags.None);
+        _ = await db.StringSetAsync(key2, "bcdef1234", CommandFlags.None);
+
+        LCSMatchResult result = await db.StringLongestCommonSubsequenceWithMatchesAsync(key1, key2);
+        Assert.True(result.LongestMatchLength > 0);
+    }
+
+    #endregion
 }

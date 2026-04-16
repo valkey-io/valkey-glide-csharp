@@ -33,17 +33,17 @@ internal partial class Database
         => SetAsync(key, value, ToSetOptions(when, expiry, keepTtl: false));
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetAndGetAsync(ValkeyKey, ValkeyValue, TimeSpan?, bool, When, CommandFlags)"/>
-    public async Task<ValkeyValue> StringSetAndGetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StringSetAndGetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetSetAsync(key, value, ToSetOptions(when, expiry, keepTtl));
+        return GetSetAsync(key, value, ToSetOptions(when, expiry, keepTtl));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetAndGetAsync(ValkeyKey, ValkeyValue, TimeSpan?, When, CommandFlags)"/>
-    public async Task<ValkeyValue> StringSetAndGetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry, When when, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StringSetAndGetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry, When when, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetSetAsync(key, value, ToSetOptions(when, expiry, keepTtl: false));
+        return GetSetAsync(key, value, ToSetOptions(when, expiry, keepTtl: false));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When, CommandFlags)"/>
@@ -60,87 +60,87 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetSetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<ValkeyValue> StringGetSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StringGetSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetSetAsync(key, value);
+        return GetSetAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetAsync(key);
+        return GetAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetAsync(keys);
+        return GetAsync(keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetRangeAsync(ValkeyKey, long, long, CommandFlags)"/>
-    public async Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetRangeAsync(key, start, end);
+        return GetRangeAsync(key, start, end);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringSetRangeAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>
-    public async Task<ValkeyValue> StringSetRangeAsync(ValkeyKey key, long offset, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StringSetRangeAsync(ValkeyKey key, long offset, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SetRangeAsync(key, offset, value);
+        return SetRangeAsync(key, offset, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringLengthAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<long> StringLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
+    public Task<long> StringLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await LengthAsync(key);
+        return LengthAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringAppendAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<long> StringAppendAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
+    public Task<long> StringAppendAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await AppendAsync(key, value);
+        return AppendAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringDecrementAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<long> StringDecrementAsync(ValkeyKey key, long value = 1, CommandFlags flags = CommandFlags.None)
+    public Task<long> StringDecrementAsync(ValkeyKey key, long value = 1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await DecrementAsync(key, value);
+        return DecrementAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringDecrementAsync(ValkeyKey, double, CommandFlags)"/>
-    public async Task<double> StringDecrementAsync(ValkeyKey key, double value, CommandFlags flags = CommandFlags.None)
+    public Task<double> StringDecrementAsync(ValkeyKey key, double value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await DecrementAsync(key, value);
+        return DecrementAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringIncrementAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<long> StringIncrementAsync(ValkeyKey key, long value = 1, CommandFlags flags = CommandFlags.None)
+    public Task<long> StringIncrementAsync(ValkeyKey key, long value = 1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await IncrementAsync(key, value);
+        return IncrementAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringIncrementAsync(ValkeyKey, double, CommandFlags)"/>
-    public async Task<double> StringIncrementAsync(ValkeyKey key, double value, CommandFlags flags = CommandFlags.None)
+    public Task<double> StringIncrementAsync(ValkeyKey key, double value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await IncrementAsync(key, value);
+        return IncrementAsync(key, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetDeleteAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue> StringGetDeleteAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue> StringGetDeleteAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetDeleteAsync(key);
+        return GetDeleteAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetSetExpiryAsync(ValkeyKey, TimeSpan?, CommandFlags)"/>
@@ -152,31 +152,31 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringGetSetExpiryAsync(ValkeyKey, DateTime, CommandFlags)"/>
-    public async Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry, CommandFlags flags = CommandFlags.None)
+    public Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GetExpiryAsync(key, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
+        return GetExpiryAsync(key, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StringLongestCommonSubsequenceAsync(first, second);
+        return Command(Request.LongestCommonSubsequence(first, second));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags)
+    public Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StringLongestCommonSubsequenceLengthAsync(first, second);
+        return Command(Request.LongestCommonSubsequenceLength(first, second));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long, CommandFlags)"/>
-    public async Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0, CommandFlags flags = CommandFlags.None)
+    public Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await base.StringLongestCommonSubsequenceWithMatchesAsync(first, second, minLength);
+        return Command(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
     }
 
     #region Private Methods

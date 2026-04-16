@@ -79,15 +79,6 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchStringCommands.GetExpiry(ValkeyKey, GetExpiryOptions)" />
     public T GetExpiryAsync(ValkeyKey key, GetExpiryOptions option) => AddCmd(Request.GetExpiry(key, option));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringLongestCommonSubsequence(ValkeyKey, ValkeyKey)" />
-    public T StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second) => AddCmd(Request.LongestCommonSubsequence(first, second));
-
-    /// <inheritdoc cref="IBatchStringCommands.StringLongestCommonSubsequenceLength(ValkeyKey, ValkeyKey)" />
-    public T StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second) => AddCmd(Request.LongestCommonSubsequenceLength(first, second));
-
-    /// <inheritdoc cref="IBatchStringCommands.StringLongestCommonSubsequenceWithMatches(ValkeyKey, ValkeyKey, long)" />
-    public T StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0) => AddCmd(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
-
     IBatch IBatchStringCommands.Get(ValkeyKey key) => GetAsync(key);
     IBatch IBatchStringCommands.Get(IEnumerable<ValkeyKey> keys) => GetAsync(keys);
     IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value) => SetAsync(key, value);
@@ -110,7 +101,4 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStringCommands.Increment(ValkeyKey key, double value) => IncrementAsync(key, value);
     IBatch IBatchStringCommands.GetDelete(ValkeyKey key) => GetDeleteAsync(key);
     IBatch IBatchStringCommands.GetExpiry(ValkeyKey key, GetExpiryOptions option) => GetExpiryAsync(key, option);
-    IBatch IBatchStringCommands.StringLongestCommonSubsequence(ValkeyKey first, ValkeyKey second) => StringLongestCommonSubsequenceAsync(first, second);
-    IBatch IBatchStringCommands.StringLongestCommonSubsequenceLength(ValkeyKey first, ValkeyKey second) => StringLongestCommonSubsequenceLengthAsync(first, second);
-    IBatch IBatchStringCommands.StringLongestCommonSubsequenceWithMatches(ValkeyKey first, ValkeyKey second, long minLength) => StringLongestCommonSubsequenceWithMatchesAsync(first, second, minLength);
 }

@@ -99,18 +99,4 @@ public abstract partial class BaseClient
     public Task<ValkeyValue> GetExpiryAsync(ValkeyKey key, GetExpiryOptions options) =>
         Command(Request.GetExpiry(key, options));
 
-    /// <inheritdoc/>
-    public async Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second)
-    {
-        ValkeyValue result = await Command(Request.LongestCommonSubsequence(first, second));
-        return result.IsNull ? null : result.ToString();
-    }
-
-    /// <inheritdoc/>
-    public Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second) =>
-        Command(Request.LongestCommonSubsequenceLength(first, second));
-
-    /// <inheritdoc/>
-    public Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0) =>
-        Command(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
 }
