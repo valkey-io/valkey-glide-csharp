@@ -16,14 +16,8 @@ internal partial class Request
         => new(RequestType.MGet, keys.ToGlideStrings(), false, array =>
             [.. array.Select(item => item is null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
 
-    public static Cmd<string, bool> Set(ValkeyKey key, ValkeyValue value)
-        => OKToBool(RequestType.Set, [key.ToGlideString(), value.ToGlideString()]);
-
     public static Cmd<string?, bool> Set(ValkeyKey key, ValkeyValue value, SetOptions options)
         => NullableOKToBool(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs()]);
-
-    public static Cmd<string, bool> SetWithExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry)
-        => OKToBool(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. expiry.ToArgs()]);
 
     public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
         => ToValkeyValue(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs(), ValkeyLiterals.GET.ToGlideString()], isNullable: true);

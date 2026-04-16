@@ -14,12 +14,12 @@ public class CommandTests
             () => Assert.Equal([], Request.CustomCommand([]).GetArgs()),
 
             // String Commands
-            () => Assert.Equal(["SET", "key", "value"], Request.Set("key", "value").GetArgs()),
+            () => Assert.Equal(["SET", "key", "value"], Request.Set("key", "value", new SetOptions()).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "NX"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "XX"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfExists }).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "NX", "PX", "5000"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) }).GetArgs()),
-            () => Assert.Equal(["SET", "key", "value", "PX", "10000"], Request.SetWithExpiry("key", "value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10))).GetArgs()),
-            () => Assert.Equal(["SET", "key", "value", "KEEPTTL"], Request.SetWithExpiry("key", "value", SetExpiryOptions.KeepTimeToLive()).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "PX", "10000"], Request.Set("key", "value", new SetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "KEEPTTL"], Request.Set("key", "value", new SetOptions { Expiry = SetExpiryOptions.KeepTimeToLive() }).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "GET"], Request.GetSet("key", "value", new SetOptions()).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "NX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "XX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfExists }).GetArgs()),
@@ -377,7 +377,7 @@ public class CommandTests
             () => Assert.Null(Request.CustomCommand([]).Converter(null)),
 
             // String Commands
-            () => Assert.True(Request.Set("key", "value").Converter("OK")),
+            () => Assert.True(Request.Set("key", "value", new SetOptions()).Converter("OK")),
             () => Assert.True(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).Converter("OK")),
             () => Assert.False(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).Converter(null)),
             () => Assert.Equal<GlideString>("value", Request.Get("key").Converter("value")),

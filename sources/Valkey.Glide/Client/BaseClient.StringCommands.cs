@@ -9,7 +9,7 @@ public abstract partial class BaseClient
 {
     /// <inheritdoc/>
     public Task SetAsync(ValkeyKey key, ValkeyValue value)
-        => Command(Request.Set(key, value));
+        => Command(Request.Set(key, value, new SetOptions()));
 
     /// <inheritdoc/>
     public Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
@@ -20,8 +20,8 @@ public abstract partial class BaseClient
         Command(Request.Set(key, value, options));
 
     /// <inheritdoc/>
-    public Task SetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) =>
-        Command(Request.SetWithExpiry(key, value, expiry));
+    public Task SetAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) =>
+        Command(Request.Set(key, value, new SetOptions { Expiry = expiry }));
 
     /// <inheritdoc/>
     public Task<ValkeyValue> GetAsync(ValkeyKey key) =>

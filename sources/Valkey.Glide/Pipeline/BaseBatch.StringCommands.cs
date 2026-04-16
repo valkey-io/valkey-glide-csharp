@@ -14,7 +14,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T GetAsync(IEnumerable<ValkeyKey> keys) => AddCmd(Request.Get(keys));
 
     /// <inheritdoc cref="IBatchStringCommands.Set(ValkeyKey, ValkeyValue)" />
-    public T SetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.Set(key, value));
+    public T SetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.Set(key, value, new SetOptions()));
 
     /// <inheritdoc cref="IBatchStringCommands.Set(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" />
     public T SetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => AddCmd(Request.Set([.. values]));
@@ -23,16 +23,13 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T SetIfNotExistsAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => AddCmd(Request.SetIfNotExists([.. values]));
 
     /// <inheritdoc cref="IBatchStringCommands.Set(ValkeyKey, ValkeyValue, SetCondition)" />
-    public T SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
-        condition == SetCondition.Always
-            ? AddCmd(Request.Set(key, value))
-            : AddCmd(Request.Set(key, value, new SetOptions { Condition = condition }));
+    public T SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) => AddCmd(Request.Set(key, value, new SetOptions { Condition = condition }));
 
     /// <inheritdoc cref="IBatchStringCommands.Set(ValkeyKey, ValkeyValue, SetOptions)" />
     public T SetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) => AddCmd(Request.Set(key, value, options));
 
     /// <inheritdoc cref="IBatchStringCommands.SetExpiry(ValkeyKey, ValkeyValue, SetExpiryOptions)" />
-    public T SetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => AddCmd(Request.SetWithExpiry(key, value, expiry));
+    public T SetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => AddCmd(Request.Set(key, value, new SetOptions { Expiry = expiry }));
 
     /// <inheritdoc cref="IBatchStringCommands.GetSet(ValkeyKey, ValkeyValue)" />
     public T GetSetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.GetSet(key, value, new SetOptions()));

@@ -37,8 +37,8 @@ internal interface IBatchStringCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetOptions)" /></returns>
     IBatch Set(ValkeyKey key, ValkeyValue value, SetOptions options);
 
-    /// <inheritdoc cref="IBaseClient.SetExpiryAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetExpiryAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" /></returns>
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" /></returns>
     IBatch SetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry);
 
     /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />

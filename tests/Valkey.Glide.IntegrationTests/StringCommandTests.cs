@@ -682,11 +682,11 @@ public class StringCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetExpiryAsync_SetsValueWithExpiry(BaseClient client)
+    public async Task SetAsync_SetsValueWithExpiry(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
-        await client.SetExpiryAsync(key, "value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
+        await client.SetAsync(key, "value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
 
         ValkeyValue retrieved = await client.GetAsync(key);
         Assert.Equal("value", retrieved.ToString());

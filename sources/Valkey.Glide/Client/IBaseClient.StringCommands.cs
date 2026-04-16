@@ -267,13 +267,13 @@ public partial interface IBaseClient
     Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetOptions options);
 
     /// <summary>
-    /// Sets the value of a key with an expiry duration or timestamp.
+    /// Sets the value of a key with an expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/set/">valkey.io</seealso>
     /// <param name="key">The key to store.</param>
     /// <param name="value">The value to store with the given key.</param>
     /// <param name="expiry">The expiry configuration for the key.</param>
-    Task SetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry);
+    Task SetAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry);
 
     /// <summary>
     /// Gets the old value stored at key and sets it to a new value. If the key does not exist, <see cref="ValkeyValue.Null"/> is returned.
