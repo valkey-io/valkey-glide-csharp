@@ -1307,13 +1307,13 @@ internal partial class BatchTestUtils
         _ = batch.HashKeys(nonExistingKey);
         testData.Add(new(new HashSet<ValkeyValue>(), "HashKeys(nonExistingKey)"));
 
-        // HashGetAll test
-        _ = batch.HashGetAll(key1);
+        // HashGet test
+        _ = batch.HashGet(key1);
         testData.Add(new(new Dictionary<ValkeyValue, ValkeyValue> {
             { "field1", value1 },
             { "counter", "16" },
             { "float_counter", "13" }
-        }, "HashGetAll(key1)"));
+        }, "HashGet(key1)"));
 
         // HashValues test
         _ = batch.HashValues(key1);
@@ -1327,7 +1327,7 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue[] { "field1", "counter" }, "HashRandomFields(key1, 2)"));
 
         _ = batch.HashRandomFieldsWithValues(key1, 2);
-        testData.Add(new(new List<KeyValuePair<ValkeyValue, ValkeyValue>>(), "HashRandomFieldsWithValues(key1, 2)", true));
+        testData.Add(new(Array.Empty<HashEntry>(), "HashRandomFieldsWithValues(key1, 2)", true));
 
         // Multi-field operations
         HashEntry[] multiEntries = [
@@ -1356,12 +1356,12 @@ internal partial class BatchTestUtils
             testData.Add(new(true, "HashSet(expireKey, expire_field2, expire_value2)"));
 
             // Test HGETEX
-            _ = batch.HashGetExpiry(expireKey, ["expire_field1"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
-            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGetExpiry(expireKey, [expire_field1], 60s)"));
+            _ = batch.HashGet(expireKey, ["expire_field1"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
+            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGet(expireKey, [expire_field1], 60s)"));
 
             // Test HSETEX
-            _ = batch.HashSetExpiry(expireKey, [new("setex_field", "setex_value")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
-            testData.Add(new(true, "HashSetExpiry(expireKey, {setex_field: setex_value}, 60s)"));
+            _ = batch.HashSet(expireKey, [new("setex_field", "setex_value")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) });
+            testData.Add(new(true, "HashSet(expireKey, {setex_field: setex_value}, 60s)"));
 
             // Test HEXPIRE with seconds
             _ = batch.HashExpire(expireKey, ["expire_field1"], TimeSpan.FromSeconds(30));

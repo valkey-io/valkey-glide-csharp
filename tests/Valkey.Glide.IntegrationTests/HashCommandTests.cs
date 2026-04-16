@@ -31,7 +31,7 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        ValkeyValue[] values = await client.HashGetAsync(key, ["field1", "field2", "field3"]);
+        var values = await client.HashGetAsync(key, ["field1", "field2", "field3"]);
         Assert.Equal(3, values.Length);
         Assert.Equal("value1", values[0]);
         Assert.Equal("value2", values[1]);
@@ -91,7 +91,7 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        IDictionary<ValkeyValue, ValkeyValue> result = await client.HashGetAllAsync(key);
+        var result = await client.HashGetAsync(key);
         Assert.Equal(3, result.Count);
 
         Assert.Equal("value1", result["field1"]);
@@ -331,12 +331,12 @@ public class HashCommandTests(TestConfiguration config)
         ];
         _ = await client.HashSetAsync(key, entries.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value)));
 
-        ICollection<KeyValuePair<ValkeyValue, ValkeyValue>> randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 2);
-        Assert.Equal(2, randomEntries.Count);
+        var randomEntries = await client.HashRandomFieldsWithValuesAsync(key, 2);
+        Assert.Equal(2, randomEntries.Length);
 
         foreach (var entry in randomEntries)
         {
-            string fieldName = entry.Key.ToString();
+            string fieldName = entry.Name.ToString();
             string fieldValue = entry.Value.ToString();
 
             Assert.Contains(fieldName, new[] { "field1", "field2", "field3" });
@@ -388,23 +388,23 @@ public class HashCommandTests(TestConfiguration config)
 
         // Test HGETEX with expiry as duration
         var options = GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
-        ValkeyValue[] values = await client.HashGetExpiryAsync(key, ["field1", "field2"], options);
+        var values = await client.HashGetAsync(key, ["field1", "field2"], options);
         Assert.Equal(2, values.Length);
         Assert.Equal("value1", values[0]);
         Assert.Equal("value2", values[1]);
 
         // Test HGETEX with persist option
         var persist = GetExpiryOptions.Persist();
-        values = await client.HashGetExpiryAsync(key, ["field1"], persist);
+        values = await client.HashGetAsync(key, ["field1"], persist);
         _ = Assert.Single(values);
         Assert.Equal("value1", values[0]);
 
         // Test HGETEX on non-existing key
-        values = await client.HashGetExpiryAsync("nonexistent", ["field1"], options);
+        values = await client.HashGetAsync("nonexistent", ["field1"], options);
         Assert.Equal(ValkeyValue.Null, values[0]);
 
         // Test HGETEX with non-existing fields
-        values = await client.HashGetExpiryAsync(key, ["nonexistent1", "nonexistent2"], options);
+        values = await client.HashGetAsync(key, ["nonexistent1", "nonexistent2"], options);
         Assert.NotNull(values);
         Assert.Equal(2, values.Length);
         Assert.Equal(ValkeyValue.Null, values[0]);
@@ -424,7 +424,7 @@ public class HashCommandTests(TestConfiguration config)
 
         // Test HGETEX single field with expiry as duration
         var expireIn = GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
-        ValkeyValue value = await client.HashGetExpiryAsync(key, "field1", expireIn);
+        var value = await client.HashGetAsync(key, "field1", expireIn);
         Assert.Equal("value1", value);
 
         // Verify TTL was set
@@ -435,7 +435,7 @@ public class HashCommandTests(TestConfiguration config)
         // Test HGETEX single field with expiry as timestamp
         DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
         var expireAt = GetExpiryOptions.ExpireAt(expiry);
-        value = await client.HashGetExpiryAsync(key, "field1", expireAt);
+        value = await client.HashGetAsync(key, "field1", expireAt);
         Assert.Equal("value1", value);
 
         // Verify expiry was set
@@ -445,7 +445,7 @@ public class HashCommandTests(TestConfiguration config)
 
         // Test HGETEX single field with persist option
         var persist = GetExpiryOptions.Persist();
-        value = await client.HashGetExpiryAsync(key, "field1", persist);
+        value = await client.HashGetAsync(key, "field1", persist);
         Assert.Equal("value1", value);
 
         // Verify expiry was removed
@@ -454,11 +454,11 @@ public class HashCommandTests(TestConfiguration config)
         Assert.False(ttlResult.HasTimeToLive);
 
         // Test HGETEX single field that doesn't exist
-        value = await client.HashGetExpiryAsync(key, "nonexistent", expireIn);
+        value = await client.HashGetAsync(key, "nonexistent", expireIn);
         Assert.Equal(ValkeyValue.Null, value);
 
         // Test HGETEX single field on non-existing key
-        value = await client.HashGetExpiryAsync("nonexistent_key", "field1", expireIn);
+        value = await client.HashGetAsync("nonexistent_key", "field1", expireIn);
         Assert.Equal(ValkeyValue.Null, value);
     }
 
@@ -480,25 +480,24 @@ public class HashCommandTests(TestConfiguration config)
             new("field1", "value1"),
             new("field2", "value2")
         ];
-        var options = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
-        Assert.True(await client.HashSetExpiryAsync(key, hashFieldsAndValues, options));
+        var options = new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) };
+        Assert.True(await client.HashSetAsync(key, hashFieldsAndValues, options));
 
         // Verify values were set
         Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
         Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
 
         // Test HSETEX with FNX condition (should fail for existing fields)
-        Assert.False(await client.HashSetExpiryAsync(key, hashFieldsAndValues, options, HashSetCondition.OnlyIfNoneExist));
+        Assert.False(await client.HashSetAsync(key, hashFieldsAndValues, new HashSetOptions { Condition = HashSetCondition.OnlyIfNoneExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }));
 
         // Test HSETEX with FXX condition (should succeed for existing fields)
         KeyValuePair<ValkeyValue, ValkeyValue>[] updateFields = [new("field1", "updated_value1")];
-        Assert.True(await client.HashSetExpiryAsync(key, updateFields, options, HashSetCondition.OnlyIfAllExist));
+        Assert.True(await client.HashSetAsync(key, updateFields, new HashSetOptions { Condition = HashSetCondition.OnlyIfAllExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }));
         Assert.Equal("updated_value1", await client.HashGetAsync(key, "field1"));
 
         // Test HSETEX with KEEPTTL option
-        var keepTtl = SetExpiryOptions.KeepTimeToLive();
         KeyValuePair<ValkeyValue, ValkeyValue>[] keepTtlFields = [new("field3", "value3")];
-        Assert.True(await client.HashSetExpiryAsync(key, keepTtlFields, keepTtl));
+        Assert.True(await client.HashSetAsync(key, keepTtlFields, new HashSetOptions { Expiry = SetExpiryOptions.KeepTimeToLive() }));
         Assert.Equal("value3", await client.HashGetAsync(key, "field3"));
     }
 
@@ -511,8 +510,8 @@ public class HashCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test HSETEX single field with expiry as duration
-        var expireIn = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60));
-        Assert.True(await client.HashSetExpiryAsync(key, "field1", "value1", expireIn));
+        var expireIn = new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) };
+        Assert.True(await client.HashSetAsync(key, "field1", "value1", expireIn));
         Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
 
         // Verify TTL was set
@@ -522,8 +521,8 @@ public class HashCommandTests(TestConfiguration config)
 
         // Test HSETEX single field with expiry as timestamp
         DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
-        var expireAt = SetExpiryOptions.ExpireAt(expiry);
-        Assert.True(await client.HashSetExpiryAsync(key, "field2", "value2", expireAt));
+        var expireAt = new HashSetOptions { Expiry = SetExpiryOptions.ExpireAt(expiry) };
+        Assert.True(await client.HashSetAsync(key, "field2", "value2", expireAt));
         Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
 
         // Verify expiry was set
@@ -532,8 +531,8 @@ public class HashCommandTests(TestConfiguration config)
         _ = Assert.NotNull(expireTimeResult.Expiry);
 
         // Test HSETEX single field with KEEPTTL option
-        var keepTtl = SetExpiryOptions.KeepTimeToLive();
-        Assert.True(await client.HashSetExpiryAsync(key, "field1", "updated_value1", keepTtl));
+        var keepTtl = new HashSetOptions { Expiry = SetExpiryOptions.KeepTimeToLive() };
+        Assert.True(await client.HashSetAsync(key, "field1", "updated_value1", keepTtl));
         Assert.Equal("updated_value1", await client.HashGetAsync(key, "field1"));
 
         // Verify TTL was preserved
@@ -542,19 +541,19 @@ public class HashCommandTests(TestConfiguration config)
         Assert.True(ttlResult.TimeToLive!.Value.TotalSeconds is > 0 and <= 60);
 
         // Test HSETEX single field with FNX condition on new field (should succeed)
-        Assert.True(await client.HashSetExpiryAsync(key, "new_field", "new_value", expireIn, HashSetCondition.OnlyIfNoneExist));
+        Assert.True(await client.HashSetAsync(key, "new_field", "new_value", new HashSetOptions { Condition = HashSetCondition.OnlyIfNoneExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }));
         Assert.Equal("new_value", await client.HashGetAsync(key, "new_field"));
 
         // Test HSETEX single field with FNX condition on existing field (should fail)
-        Assert.False(await client.HashSetExpiryAsync(key, "field1", "should_not_set", expireIn, HashSetCondition.OnlyIfNoneExist));
+        Assert.False(await client.HashSetAsync(key, "field1", "should_not_set", new HashSetOptions { Condition = HashSetCondition.OnlyIfNoneExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }));
         Assert.Equal("updated_value1", await client.HashGetAsync(key, "field1"));
 
         // Test HSETEX single field with FXX condition on existing field (should succeed)
-        Assert.True(await client.HashSetExpiryAsync(key, "field1", "exist_updated", expireIn, HashSetCondition.OnlyIfAllExist));
+        Assert.True(await client.HashSetAsync(key, "field1", "exist_updated", new HashSetOptions { Condition = HashSetCondition.OnlyIfAllExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }));
         Assert.Equal("exist_updated", await client.HashGetAsync(key, "field1"));
 
         // Test HSETEX single field with FXX condition on new field (should fail)
-        Assert.False(await client.HashSetExpiryAsync(key, "nonexistent_field", "value", expireIn, HashSetCondition.OnlyIfAllExist));
+        Assert.False(await client.HashSetAsync(key, "nonexistent_field", "value", new HashSetOptions { Condition = HashSetCondition.OnlyIfAllExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }));
         Assert.False(await client.HashExistsAsync(key, "nonexistent_field"));
     }
 

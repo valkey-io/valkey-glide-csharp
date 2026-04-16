@@ -19,7 +19,7 @@ internal partial class Request
             item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
     }
 
-    public static Cmd<Dictionary<GlideString, object>, IDictionary<ValkeyValue, ValkeyValue>> HashGetAllAsync(ValkeyKey key)
+    public static Cmd<Dictionary<GlideString, object>, IDictionary<ValkeyValue, ValkeyValue>> HashGetAsync(ValkeyKey key)
         => new(RequestType.HGetAll, [key.ToGlideString()], false, dict =>
             dict.ToDictionary(kvp => (ValkeyValue)kvp.Key, kvp => (ValkeyValue)(GlideString)kvp.Value));
 
@@ -80,18 +80,18 @@ internal partial class Request
                 : null);
     }
 
-    public static Cmd<object[], ICollection<KeyValuePair<ValkeyValue, ValkeyValue>>> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
+    public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
     {
         GlideString[] args = [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword];
         return new(RequestType.HRandField, args, false, response =>
             [.. response.Select(item =>
             {
                 object[] arr = (object[])item;
-                return new KeyValuePair<ValkeyValue, ValkeyValue>((GlideString)arr[0], (GlideString)arr[1]);
+                return new HashEntry((GlideString)arr[0], (GlideString)arr[1]);
             })]);
     }
 
-    public static Cmd<object[], ValkeyValue[]> HashGetExpiryAsync(
+    public static Cmd<object[], ValkeyValue[]> HashGetAsync(
         ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
@@ -117,10 +117,11 @@ internal partial class Request
             [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
     }
 
-    public static Cmd<long, bool> HashSetExpiryAsync(
+    public static Cmd<long, bool> HashSetAsync(
         ValkeyKey key,
-        IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        SetExpiryOptions options, HashSetCondition condition)
+        ValkeyValue hashField,
+        ValkeyValue value,
+        HashSetCondition condition)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -133,25 +134,43 @@ internal partial class Request
             args.Add(Constants.FxxKeyword);
         }
 
-        if (options.Duration.HasValue)
+        args.AddRange([Constants.FieldsKeyword, 1.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
+        return Boolean<long>(RequestType.HSetEx, [.. args]);
+    }
+
+    public static Cmd<long, bool> HashSetAsync(
+        ValkeyKey key,
+        IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        HashSetCondition condition)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+
+        if (condition == HashSetCondition.OnlyIfNoneExist)
         {
-            args.Add(Constants.PxKeyword);
-            args.Add(ToMilliseconds(options.Duration.Value).ToGlideString());
+            args.Add(Constants.FnxKeyword);
         }
-        else if (options.Timestamp.HasValue)
+        else if (condition == HashSetCondition.OnlyIfAllExist)
         {
-            args.Add(Constants.PxAtKeyword);
-            args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
-        }
-        else
-        {
-            args.Add(Constants.KeepTtlKeyword);
+            args.Add(Constants.FxxKeyword);
         }
 
         args.Add(Constants.FieldsKeyword);
         args.Add(hashFieldsAndValues.Count().ToGlideString());
         AddPairs(args, hashFieldsAndValues);
 
+        return Boolean<long>(RequestType.HSetEx, [.. args]);
+    }
+
+    public static Cmd<long, bool> HashSetAsync(
+        ValkeyKey key,
+        IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        HashSetOptions options)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        args.AddRange(options.ToArgs());
+        args.Add(Constants.FieldsKeyword);
+        args.Add(hashFieldsAndValues.Count().ToGlideString());
+        AddPairs(args, hashFieldsAndValues);
         return Boolean<long>(RequestType.HSetEx, [.. args]);
     }
 

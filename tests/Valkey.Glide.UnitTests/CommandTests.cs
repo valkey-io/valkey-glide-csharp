@@ -271,7 +271,7 @@ public class CommandTests
             // Hash Commands
             () => Assert.Equal(new string[] { "HGET", "key", "field" }, Request.HashGetAsync("key", "field").GetArgs()),
             () => Assert.Equal(["HMGET", "key", "field1", "field2"], Request.HashGetAsync("key", ["field1", "field2"]).GetArgs()),
-            () => Assert.Equal(new string[] { "HGETALL", "key" }, Request.HashGetAllAsync("key").GetArgs()),
+            () => Assert.Equal(new string[] { "HGETALL", "key" }, Request.HashGetAsync("key").GetArgs()),
             () => Assert.Equal(["HSET", "key", "field1", "value1", "field2", "value2"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")]).GetArgs()),
             () => Assert.Equal(["HSET", "key", "field", "value"], Request.HashSetAsync("key", "field", "value").GetArgs()),
             () => Assert.Equal(["HSETNX", "key", "field", "value"], Request.HashSetNotExistsAsync("key", "field", "value").GetArgs()),
@@ -344,18 +344,18 @@ public class CommandTests
             () => Assert.Equal(["BITFIELDREADONLY", "key", "GET", "u8", "0", "GET", "i4", "8"], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(4), new BitFieldOptions.BitOffset(8))]).GetArgs()),
 
             // Hash Field Expire Commands (Valkey 9.0+)
-            () => Assert.Equal(["HGETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "field2"], Request.HashGetExpiryAsync("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PX", "5000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.ExpireIn(TimeSpan.FromMilliseconds(5000))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeSeconds(1609459200))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(1609459200000))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PERSIST", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.Persist()).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PX", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromMilliseconds(5000)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PXAT", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], SetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(60000)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PXAT", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(5000)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "KEEPTTL", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.KeepTimeToLive(), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "FNX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.OnlyIfNoneExist).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "FXX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.OnlyIfAllExist).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "field2"], Request.HashGetAsync("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PX", "5000", "FIELDS", "1", "field1"], Request.HashGetAsync("key", ["field1"], GetExpiryOptions.ExpireIn(TimeSpan.FromMilliseconds(5000))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetAsync("key", ["field1"], GetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeSeconds(1609459200))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetAsync("key", ["field1"], GetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(1609459200000))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PERSIST", "FIELDS", "1", "field1"], Request.HashGetAsync("key", ["field1"], GetExpiryOptions.Persist()).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PX", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromMilliseconds(5000)) }).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PXAT", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(60000)) }).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PXAT", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(5000)) }).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "KEEPTTL", "FIELDS", "1", "field1", "value1"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.KeepTimeToLive() }).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "FNX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Condition = HashSetCondition.OnlyIfNoneExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "FXX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Condition = HashSetCondition.OnlyIfAllExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).GetArgs()),
             () => Assert.Equal(["HPERSIST", "key", "FIELDS", "2", "field1", "field2"], Request.HashPersistAsync("key", ["field1", "field2"]).GetArgs()),
             () => Assert.Equal(["HPEXPIRE", "key", "60000", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2"], ExpireCondition.Always).GetArgs()),
             () => Assert.Equal(["HPEXPIRE", "key", "60000", "NX", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2"], ExpireCondition.OnlyIfNotExists).GetArgs()),
@@ -601,10 +601,10 @@ public class CommandTests
             () => Assert.Equal(10L, Request.HashStringLengthAsync("key", "field").Converter(10L)),
 
             // Hash Field Expire Commands converters (Valkey 9.0+)
-            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGetExpiryAsync("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter([(gs)"value1", (gs)"value2"])),
-            () => Assert.Equal((ValkeyValue[])[ValkeyValue.Null], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.Persist()).Converter([null!])),
-            () => Assert.True(Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).Converter(1L)),
-            () => Assert.False(Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).Converter(0L)),
+            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGetAsync("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter([(gs)"value1", (gs)"value2"])),
+            () => Assert.Equal((ValkeyValue[])[ValkeyValue.Null], Request.HashGetAsync("key", ["field1"], GetExpiryOptions.Persist()).Converter([null!])),
+            () => Assert.True(Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).Converter(1L)),
+            () => Assert.False(Request.HashSetAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).Converter(0L)),
             () => Assert.Equal([HashPersistResult.ExpiryRemoved, HashPersistResult.NoExpiry, HashPersistResult.NoField], Request.HashPersistAsync("key", ["field1", "field2", "field3"]).Converter([1L, -1L, -2L])),
             () => Assert.Equal([HashExpireResult.ExpirySet, HashExpireResult.ConditionNotMet, HashExpireResult.NoField], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
             () => Assert.Equal([HashExpireResult.ExpirySet, HashExpireResult.ConditionNotMet, HashExpireResult.NoField], Request.HashExpireAtAsync("key", DateTimeOffset.FromUnixTimeSeconds(1609459200), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
@@ -783,7 +783,7 @@ public class CommandTests
             null!,
         ];
 
-        // Test for HashGetAllAsync and HashRandomFieldsWithValuesAsync
+        // Test for HashGetAsync (all) and HashRandomFieldsWithValuesAsync
         Dictionary<GlideString, object> testKvpList = new() {
             {"field1", (gs)"value1" },
             {"field2", (gs)"value2" },
@@ -816,10 +816,10 @@ public class CommandTests
                 Assert.Equal(ValkeyValue.Null, result[2]);
             },
 
-            // Test HashGetAllAsync
+            // Test HashGetAsync (all)
             () =>
             {
-                var result = Request.HashGetAllAsync("key").Converter(testKvpList);
+                var result = Request.HashGetAsync("key").Converter(testKvpList);
                 Assert.Equal(3, result.Count);
                 Assert.Equal("value1", result["field1"]);
             },
@@ -851,11 +851,10 @@ public class CommandTests
             () =>
             {
                 var result = Request.HashRandomFieldsWithValuesAsync("key", 3).Converter(testObjectNestedArray);
-                Assert.Equal(3, result.Count);
+                Assert.Equal(3, result.Length);
                 foreach (var entry in result)
                 {
-                    _ = Assert.IsType<ValkeyValue>(entry.Key);
-                    _ = Assert.IsType<ValkeyValue>(entry.Value);
+                    _ = Assert.IsType<HashEntry>(entry);
                 }
             }
         );

@@ -12,7 +12,28 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/hgetall"/>
     /// <param name="key">The key of the hash.</param>
     /// <returns>A dictionary of field-value pairs, or an empty dictionary if the key does not exist.</returns>
-    Task<IDictionary<ValkeyValue, ValkeyValue>> HashGetAllAsync(ValkeyKey key);
+    Task<IDictionary<ValkeyValue, ValkeyValue>> HashGetAsync(ValkeyKey key);
+
+    /// <summary>
+    /// Gets the value and sets the expiry for the specified hash field(s).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hgetex"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="hashField">The field to retrieve and set the expiry for.</param>
+    /// <param name="options">The options for setting the expiry.</param>
+    /// <returns>The <see cref="ValkeyValue"/> for the field.</returns>
+    Task<ValkeyValue> HashGetAsync(
+        ValkeyKey key,
+        ValkeyValue hashField,
+        GetExpiryOptions options);
+
+    /// <inheritdoc cref="HashGetAsync(ValkeyKey, ValkeyValue, GetExpiryOptions)"/>
+    /// <param name="hashFields">The fields to retrieve and set the expiry for.</param>
+    /// <returns>A <see cref="ValkeyValue"/> array with one entry per field.</returns>
+    Task<ValkeyValue[]> HashGetAsync(
+        ValkeyKey key,
+        IEnumerable<ValkeyValue> hashFields,
+        GetExpiryOptions options);
 
     /// <summary>
     /// Returns all field names in the hash stored at the given key.
@@ -142,66 +163,78 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/hrandfield"/>
     /// <param name="key">The key of the hash.</param>
     /// <returns>A random field-value pair, or <see langword="null"/> if the hash does not exist or is empty.</returns>
-    Task<KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key);
+    Task<HashEntry?> HashRandomFieldWithValueAsync(ValkeyKey key);
 
     /// <summary>
-    /// Gets random field-value pairs from the specified hash.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hrandfield"/>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="count">
-    /// The number of field-value pairs to return.
-    /// If positive, returns up to <paramref name="count"/> distinct pairs.
-    /// If negative, allows duplicates and returns exactly <c>abs(count)</c> pairs.
-    /// </param>
-    /// <returns>A collection of field-value pairs, or an empty collection if the hash does not exist.</returns>
-    Task<ICollection<KeyValuePair<ValkeyValue, ValkeyValue>>> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
-
-    /// <summary>
-    /// Gets the value and sets the expiry for the specified hash field(s).
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hgetex"/>
-    /// <param name="key">The key of the hash.</param>
-    /// <param name="hashField">The field to retrieve and set the expiry for.</param>
-    /// <param name="options">The options for setting the expiry.</param>
-    /// <returns>The <see cref="ValkeyValue"/> for the field.</returns>
-    Task<ValkeyValue> HashGetExpiryAsync(
-        ValkeyKey key,
-        ValkeyValue hashField,
-        GetExpiryOptions options);
-
-    /// <inheritdoc cref="HashGetExpiryAsync(ValkeyKey, ValkeyValue, GetExpiryOptions)"/>
-    /// <param name="hashFields">The fields to retrieve and set the expiry for.</param>
-    /// <returns>A <see cref="ValkeyValue"/> array with one entry per field.</returns>
-    Task<ValkeyValue[]> HashGetExpiryAsync(
-        ValkeyKey key,
-        IEnumerable<ValkeyValue> hashFields,
-        GetExpiryOptions options);
-
-    /// <summary>
-    /// Sets the value and the expiry for the specified hash field(s).
-    /// If the specified condition is not satisfied, no fields are set.
+    /// Sets the value for the specified hash field using HSETEX without expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex"/>
     /// <param name="key">The key of the hash.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
-    /// <param name="options">The options for setting the expiry.</param>
-    /// <param name="condition">The condition under which to set the field(s).</param>
+    /// <param name="condition">The condition under which to set the field.</param>
     /// <returns><see langword="true"/> if the field was set, <see langword="false"/> otherwise.</returns>
-    Task<bool> HashSetExpiryAsync(
+    Task<bool> HashSetAsync(
         ValkeyKey key,
         ValkeyValue hashField,
         ValkeyValue value,
-        SetExpiryOptions options,
-        HashSetCondition condition = HashSetCondition.Always);
+        HashSetCondition condition);
 
-    /// <inheritdoc cref="HashSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, SetExpiryOptions, HashSetCondition)"/>
+    /// <summary>
+    /// Sets the values for the specified hash fields using HSETEX without expiry.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hsetex"/>
+    /// <param name="key">The key of the hash.</param>
     /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
+    /// <param name="condition">The condition under which to set the fields.</param>
     /// <returns><see langword="true"/> if the fields were set, <see langword="false"/> otherwise.</returns>
-    Task<bool> HashSetExpiryAsync(
+    Task<bool> HashSetAsync(
         ValkeyKey key,
         IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        SetExpiryOptions options,
-        HashSetCondition condition = HashSetCondition.Always);
+        HashSetCondition condition);
+
+    /// <summary>
+    /// Sets the value for the specified hash field using HSETEX with options for expiry and/or condition.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hsetex"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="hashField">The field to set.</param>
+    /// <param name="value">The value to set.</param>
+    /// <param name="options">The options for setting the field(s), including expiry and condition.</param>
+    /// <returns><see langword="true"/> if the field was set, <see langword="false"/> otherwise.</returns>
+    Task<bool> HashSetAsync(
+        ValkeyKey key,
+        ValkeyValue hashField,
+        ValkeyValue value,
+        HashSetOptions options);
+
+    /// <inheritdoc cref="HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, HashSetOptions)"/>
+    /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
+    /// <returns><see langword="true"/> if the fields were set, <see langword="false"/> otherwise.</returns>
+    Task<bool> HashSetAsync(
+        ValkeyKey key,
+        IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        HashSetOptions options);
+
+    /// <summary>
+    /// Sets the value for the specified hash field.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hsetex"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="hashField">The field to set.</param>
+    /// <param name="value">The value to set.</param>
+    /// <param name="expiry">The expiry configuration for the field.</param>
+    /// <returns><see langword="true"/> if the field was set, <see langword="false"/> otherwise.</returns>
+    Task<bool> HashSetAsync(
+        ValkeyKey key,
+        ValkeyValue hashField,
+        ValkeyValue value, SetExpiryOptions expiry);
+
+    /// <inheritdoc cref="HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, SetExpiryOptions)"/>
+    /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
+    /// <returns><see langword="true"/> if the fields were set, <see langword="false"/> otherwise.</returns>
+    Task<bool> HashSetAsync(
+        ValkeyKey key,
+        IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        SetExpiryOptions expiry);
 }

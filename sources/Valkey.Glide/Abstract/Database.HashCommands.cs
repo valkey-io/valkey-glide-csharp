@@ -25,7 +25,7 @@ internal partial class Database
     public async Task<HashEntry[]> HashGetAllAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var dict = await HashGetAllAsync(key);
+        var dict = await HashGetAsync(key);
         return [.. dict.Select(kvp => new HashEntry(kvp.Key, kvp.Value))];
     }
 
@@ -131,50 +131,53 @@ internal partial class Database
     public async Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var pairs = await HashRandomFieldsWithValuesAsync(key, count);
-        return [.. pairs.Select(kvp => new HashEntry(kvp.Key, kvp.Value))];
+        return await HashRandomFieldsWithValuesAsync(key, count);
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> HashFieldGetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, TimeSpan? expiry = null, bool persist = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetExpiryAsync(key, hashField, ToGetExpiryOptions(expiry, persist));
+        return await HashGetAsync(key, hashField, ToGetExpiryOptions(expiry, persist));
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> HashFieldGetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, DateTime expiry, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetExpiryAsync(key, hashField, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
+        return await HashGetAsync(key, hashField, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyValue[]> HashFieldGetAndSetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan? expiry = null, bool persist = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetExpiryAsync(key, hashFields, ToGetExpiryOptions(expiry, persist));
+        return await HashGetAsync(key, hashFields, ToGetExpiryOptions(expiry, persist));
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyValue[]> HashFieldGetAndSetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTime expiry, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetExpiryAsync(key, hashFields, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
+        return await HashGetAsync(key, hashFields, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashSetExpiryAsync(key, hashField, value, ToSetExpiryOption(expiry, keepTtl), ToHashSetCondition(when)) ? 1 : 0;
+        var options = ToSetExpiryOptions(expiry, keepTtl);
+        var set = options is null
+            ? await HashSetAsync(key, hashField, value, ToHashSetCondition(when))
+            : await HashSetAsync(key, hashField, value, new HashSetOptions { Condition = ToHashSetCondition(when), Expiry = options });
+        return set ? 1 : 0;
     }
 
     /// <inheritdoc/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, DateTime expiry, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashSetExpiryAsync(key, hashField, value, SetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)), ToHashSetCondition(when)) ? 1 : 0;
+        return await HashSetAsync(key, hashField, value, new HashSetOptions { Condition = ToHashSetCondition(when), Expiry = SetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)) }) ? 1 : 0;
     }
 
     /// <inheritdoc/>
@@ -182,8 +185,12 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         var entries = hashFields.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value));
-        var options = ToSetExpiryOption(expiry, keepTtl);
-        return await HashSetExpiryAsync(key, entries, options, ToHashSetCondition(when)) ? 1 : 0;
+        var expiryOptions = ToSetExpiryOptions(expiry, keepTtl);
+
+        var set = expiryOptions is null
+            ? await HashSetAsync(key, entries, ToHashSetCondition(when))
+            : await HashSetAsync(key, entries, new HashSetOptions { Condition = ToHashSetCondition(when), Expiry = expiryOptions });
+        return set ? 1 : 0;
     }
 
     /// <inheritdoc/>
@@ -191,8 +198,7 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         var entries = hashFields.Select(e => new KeyValuePair<ValkeyValue, ValkeyValue>(e.Name, e.Value));
-        var options = SetExpiryOptions.ExpireAt(new DateTimeOffset(expiry));
-        return await HashSetExpiryAsync(key, entries, options, ToHashSetCondition(when)) ? 1 : 0;
+        return await HashSetAsync(key, entries, new HashSetOptions { Condition = ToHashSetCondition(when), Expiry = SetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)) }) ? 1 : 0;
     }
 
     /// <inheritdoc/>
