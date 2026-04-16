@@ -117,7 +117,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoAdd_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.StringSetAsync(key, "not_a_geo_key");
+        await client.SetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoAddAsync(key, PalermoName, PalermoPos));
@@ -238,7 +238,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoDistance_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.StringSetAsync(key, "not_a_geo_key");
+        await client.SetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoDistanceAsync(key, "member1", "member2"));
@@ -302,7 +302,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoHash_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.StringSetAsync(key, "not_a_geo_key");
+        await client.SetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoHashAsync(key, "member"));
@@ -378,7 +378,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoPosition_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.StringSetAsync(key, "not_a_geo_key");
+        await client.SetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoPositionAsync(key, "member"));
@@ -604,7 +604,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     public async Task GeoSearch_WrongKeyType_ThrowsException(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.StringSetAsync(key, "not_a_geo_key");
+        await client.SetAsync(key, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoSearchAsync(key, PalermoPos, Circle100Km));
@@ -707,7 +707,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         string source = prefix + ":source";
         string dest = prefix + ":dest";
 
-        await client.StringSetAsync(source, "not_a_geo_key");
+        await client.SetAsync(source, "not_a_geo_key");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.GeoSearchAndStoreAsync(source, dest, PalermoPos, Circle100Km));

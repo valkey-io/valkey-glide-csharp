@@ -290,7 +290,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         // Set up test data
         string key = Guid.NewGuid().ToString();
         string value = "test value";
-        await client.StringSetAsync(key, value);
+        await client.SetAsync(key, value);
 
         // Script that reads the data
         using var script = new Script("return redis.call('GET', KEYS[1])");
@@ -321,7 +321,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.Equal("OK", result.ToString());
 
         // Verify the value was set
-        ValkeyValue retrievedValue = await client.StringGetAsync(key);
+        ValkeyValue retrievedValue = await client.GetAsync(key);
         Assert.Equal(value, retrievedValue.ToString());
     }
 
@@ -759,7 +759,7 @@ end)";
         // Set up test data
         string key = Guid.NewGuid().ToString();
         string value = "function test value";
-        await client.StringSetAsync(key, value);
+        await client.SetAsync(key, value);
 
         // Use hardcoded unique library name per test
         string libName = "getlib";
@@ -808,7 +808,7 @@ end)";
         Assert.Equal("OK", result.ToString());
 
         // Verify the value was set
-        ValkeyValue retrievedValue = await client.StringGetAsync(key);
+        ValkeyValue retrievedValue = await client.GetAsync(key);
         Assert.Equal(value, retrievedValue.ToString());
     }
 
@@ -1693,7 +1693,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         Assert.Equal("OK", result.ToString());
 
         // Verify the key was set
-        ValkeyValue getValue = await client.StringGetAsync("luakey");
+        ValkeyValue getValue = await client.GetAsync("luakey");
         Assert.Equal("luavalue", getValue.ToString());
     }
 
@@ -1712,7 +1712,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             LoadedLuaScript loaded = await script.LoadAsync(server);
 
             // Set a test value first
-            await client.StringSetAsync("loadedkey", "loadedvalue");
+            await client.SetAsync("loadedkey", "loadedvalue");
 
             // Execute the loaded script
             var parameters = new { key = new ValkeyKey("loadedkey") };
@@ -1896,7 +1896,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         Assert.Equal("OK", result.ToString());
 
         // Verify the key was set
-        ValkeyValue getValue = await client.StringGetAsync("paramkey");
+        ValkeyValue getValue = await client.GetAsync("paramkey");
         Assert.Equal("paramvalue", getValue.ToString());
     }
 
@@ -1919,7 +1919,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         Assert.Equal("OK", result.ToString());
 
         // Verify the key was set with prefix
-        ValkeyValue getValue = await client.StringGetAsync("prefix:prefixkey");
+        ValkeyValue getValue = await client.GetAsync("prefix:prefixkey");
         Assert.Equal("prefixvalue", getValue.ToString());
     }
 }

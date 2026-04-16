@@ -88,9 +88,9 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithMultiNodeRoute(GlideClusterClient client)
     {
-        await client.StringSetAsync("abc", "abc");
-        await client.StringSetAsync("klm", "klm");
-        await client.StringSetAsync("xyz", "xyz");
+        await client.SetAsync("abc", "abc");
+        await client.SetAsync("klm", "klm");
+        await client.SetAsync("xyz", "xyz");
 
         long res = (long)(await client.CustomCommand(["dbsize"], AllPrimaries)).SingleValue!;
         Assert.True(res >= 3);
@@ -377,7 +377,7 @@ public class ClusterClientTests(TestConfiguration config)
         try
         {
             // Add a key
-            await client.StringSetAsync(key, "test-value");
+            await client.SetAsync(key, "test-value");
 
             // Get aggregated database size from all primary nodes
             long totalSize = await client.DatabaseSizeAsync();
@@ -527,10 +527,10 @@ public class ClusterClientTests(TestConfiguration config)
         // Verify database isolation by setting a key in database 1
         string testKey = Guid.NewGuid().ToString();
         string testValue = "test_value_db1";
-        await client.StringSetAsync(testKey, testValue);
+        await client.SetAsync(testKey, testValue);
 
         // Verify the key exists in database 1
-        ValkeyValue retrievedValue = await client.StringGetAsync(testKey);
+        ValkeyValue retrievedValue = await client.GetAsync(testKey);
         Assert.Equal(testValue, retrievedValue.ToString());
     }
 
@@ -545,7 +545,7 @@ public class ClusterClientTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key in the current database
-        await client.StringSetAsync(key, value);
+        await client.SetAsync(key, value);
 
         // Move the key to database 1
         bool moveResult = await client.MoveAsync(key, 1);
@@ -568,7 +568,7 @@ public class ClusterClientTests(TestConfiguration config)
         string value = "test_value";
 
         // Set a key in the current database
-        await client.StringSetAsync(sourceKey, value);
+        await client.SetAsync(sourceKey, value);
 
         // Copy the key to database 1
         bool copyResult = await client.CopyAsync(sourceKey, destKey, 1);

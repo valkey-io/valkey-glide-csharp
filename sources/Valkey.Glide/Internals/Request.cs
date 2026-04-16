@@ -38,6 +38,15 @@ internal partial class Request
         => new(request, args, false, response => response == "OK");
 
     /// <summary>
+    /// Create a Cmd which returns a Boolean value based on the response being OK or not, allowing null responses.
+    /// </summary>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
+    /// <returns>A command that converts the response to a boolean value (true if response equals OK, false if null)</returns>
+    private static Cmd<string?, bool> NullableOKToBool(RequestType request, GlideString[] args)
+        => new(request, args, true, response => response == "OK", allowConverterToHandleNull: true);
+
+    /// <summary>
     /// Create a Cmd which returns "OK" when it completes.
     /// </summary>
     /// <param name="request">The request type</param>

@@ -14,43 +14,51 @@ public class CommandTests
             () => Assert.Equal([], Request.CustomCommand([]).GetArgs()),
 
             // String Commands
-            () => Assert.Equal(["SET", "key", "value"], Request.StringSet("key", "value").GetArgs()),
-            () => Assert.Equal(["SET", "key", "value", "NX"], Request.StringSetNX("key", "value").GetArgs()),
-            () => Assert.Equal(["SET", "key", "value", "XX"], Request.StringSetXX("key", "value").GetArgs()),
-            () => Assert.Equal(["GET", "key"], Request.StringGet("key").GetArgs()),
-            () => Assert.Equal(["MGET", "key1", "key2", "key3"], Request.StringGetMultiple(["key1", "key2", "key3"]).GetArgs()),
-            () => Assert.Equal(["MSET", "key1", "value1", "key2", "value2"], Request.StringSetMultiple([
+            () => Assert.Equal(["SET", "key", "value"], Request.Set("key", "value").GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "NX"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "XX"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfExists }).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "NX", "PX", "5000"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) }).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "PX", "10000"], Request.SetWithExpiry("key", "value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10))).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "KEEPTTL"], Request.SetWithExpiry("key", "value", SetExpiryOptions.KeepTimeToLive()).GetArgs()),
+            () => Assert.Equal(["GETSET", "key", "value"], Request.GetSet("key", "value").GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "NX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "XX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfExists }).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "NX", "PX", "5000", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) }).GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "PX", "10000", "GET"], Request.GetSet("key", "value", new SetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }).GetArgs()),
+            () => Assert.Equal(["GET", "key"], Request.Get("key").GetArgs()),
+            () => Assert.Equal(["MGET", "key1", "key2", "key3"], Request.Get(["key1", "key2", "key3"]).GetArgs()),
+            () => Assert.Equal(["MSET", "key1", "value1", "key2", "value2"], Request.Set([
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
             ]).GetArgs()),
-            () => Assert.Equal(["STRLEN", "key"], Request.StringLength("key").GetArgs()),
-            () => Assert.Equal(["GETRANGE", "key", "0", "5"], Request.StringGetRange("key", 0, 5).GetArgs()),
-            () => Assert.Equal(["SETRANGE", "key", "10", "value"], Request.StringSetRange("key", 10, "value").GetArgs()),
-            () => Assert.Equal(["APPEND", "key", "value"], Request.StringAppend("key", "value").GetArgs()),
-            () => Assert.Equal(11L, Request.StringAppend("key", "value").Converter(11L)),
-            () => Assert.Equal(["DECR", "key"], Request.StringDecr("key").GetArgs()),
-            () => Assert.Equal(["DECRBY", "key", "5"], Request.StringDecrBy("key", 5).GetArgs()),
-            () => Assert.Equal(["INCR", "key"], Request.StringIncr("key").GetArgs()),
-            () => Assert.Equal(["INCRBY", "key", "5"], Request.StringIncrBy("key", 5).GetArgs()),
-            () => Assert.Equal(["INCRBYFLOAT", "key", "0.5"], Request.StringIncrByFloat("key", 0.5).GetArgs()),
-            () => Assert.Equal(["MSETNX", "key1", "value1", "key2", "value2"], Request.StringSetMultipleNX([
+            () => Assert.Equal(["STRLEN", "key"], Request.Length("key").GetArgs()),
+            () => Assert.Equal(["GETRANGE", "key", "0", "5"], Request.GetRange("key", 0, 5).GetArgs()),
+            () => Assert.Equal(["SETRANGE", "key", "10", "value"], Request.SetRange("key", 10, "value").GetArgs()),
+            () => Assert.Equal(["APPEND", "key", "value"], Request.Append("key", "value").GetArgs()),
+            () => Assert.Equal(11L, Request.Append("key", "value").Converter(11L)),
+            () => Assert.Equal(["DECR", "key"], Request.Decrement("key").GetArgs()),
+            () => Assert.Equal(["DECRBY", "key", "5"], Request.DecrementBy("key", 5).GetArgs()),
+            () => Assert.Equal(["INCR", "key"], Request.Increment("key").GetArgs()),
+            () => Assert.Equal(["INCRBY", "key", "5"], Request.IncrementBy("key", 5).GetArgs()),
+            () => Assert.Equal(["INCRBYFLOAT", "key", "0.5"], Request.IncrementByFloat("key", 0.5).GetArgs()),
+            () => Assert.Equal(["MSETNX", "key1", "value1", "key2", "value2"], Request.SetIfNotExists([
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
             ]).GetArgs()),
-            () => Assert.Equal(["MSETNX"], Request.StringSetMultipleNX([]).GetArgs()),
-            () => Assert.Equal(["GETDEL", "key"], Request.StringGetDelete("key").GetArgs()),
-            () => Assert.Equal(["GETDEL", "test_key"], Request.StringGetDelete("test_key").GetArgs()),
-            () => Assert.Equal(["GETEX", "key", "PX", "60000"], Request.StringGetSetExpiry("key", TimeSpan.FromSeconds(60)).GetArgs()),
-            () => Assert.Equal(["GETEX", "test_key", "PX", "60000"], Request.StringGetSetExpiry("test_key", TimeSpan.FromSeconds(60)).GetArgs()),
-            () => Assert.Equal(["GETEX", "key", "PERSIST"], Request.StringGetSetExpiry("key", null).GetArgs()),
-            () => Assert.Equal(["GETEX", "test_key", "PERSIST"], Request.StringGetSetExpiry("test_key", null).GetArgs()),
-            () => Assert.Equal(["GETEX", "key", "EXAT", "1609459200"], Request.StringGetSetExpiry("key", new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc)).GetArgs()),
-            () => Assert.Equal(["GETEX", "test_key", "EXAT", "1609459200"], Request.StringGetSetExpiry("test_key", new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc)).GetArgs()),
-            () => Assert.Equal(["LCS", "key1", "key2"], Request.StringLongestCommonSubsequence("key1", "key2").GetArgs()),
-            () => Assert.Equal(["LCS", "key1", "key2", "LEN"], Request.StringLongestCommonSubsequenceLength("key1", "key2").GetArgs()),
-            () => Assert.Equal(["LCS", "key1", "key2", "IDX", "MINMATCHLEN", "0", "WITHMATCHLEN"], Request.StringLongestCommonSubsequenceWithMatches("key1", "key2").GetArgs()),
-            () => Assert.Equal(["LCS", "key1", "key2", "IDX", "MINMATCHLEN", "5", "WITHMATCHLEN"], Request.StringLongestCommonSubsequenceWithMatches("key1", "key2", 5).GetArgs()),
-            () => Assert.Equal(["LCS", "key1", "key2", "IDX", "MINMATCHLEN", "0", "WITHMATCHLEN"], Request.StringLongestCommonSubsequenceWithMatches("key1", "key2", 0).GetArgs()),
+            () => Assert.Equal(["MSETNX"], Request.SetIfNotExists([]).GetArgs()),
+            () => Assert.Equal(["GETDEL", "key"], Request.GetDelete("key").GetArgs()),
+            () => Assert.Equal(["GETDEL", "test_key"], Request.GetDelete("test_key").GetArgs()),
+            () => Assert.Equal(["GETEX", "key", "PX", "60000"], Request.GetExpiry("key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).GetArgs()),
+            () => Assert.Equal(["GETEX", "test_key", "PX", "60000"], Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).GetArgs()),
+            () => Assert.Equal(["GETEX", "key", "PERSIST"], Request.GetExpiry("key", GetExpiryOptions.Persist()).GetArgs()),
+            () => Assert.Equal(["GETEX", "test_key", "PERSIST"], Request.GetExpiry("test_key", GetExpiryOptions.Persist()).GetArgs()),
+            () => Assert.Equal(["GETEX", "key", "PXAT", "1609459200000"], Request.GetExpiry("key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).GetArgs()),
+            () => Assert.Equal(["GETEX", "test_key", "PXAT", "1609459200000"], Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).GetArgs()),
+            () => Assert.Equal(["LCS", "key1", "key2"], Request.LongestCommonSubsequence("key1", "key2").GetArgs()),
+            () => Assert.Equal(["LCS", "key1", "key2", "LEN"], Request.LongestCommonSubsequenceLength("key1", "key2").GetArgs()),
+            () => Assert.Equal(["LCS", "key1", "key2", "IDX", "MINMATCHLEN", "0", "WITHMATCHLEN"], Request.LongestCommonSubsequenceWithMatches("key1", "key2").GetArgs()),
+            () => Assert.Equal(["LCS", "key1", "key2", "IDX", "MINMATCHLEN", "5", "WITHMATCHLEN"], Request.LongestCommonSubsequenceWithMatches("key1", "key2", 5).GetArgs()),
+            () => Assert.Equal(["LCS", "key1", "key2", "IDX", "MINMATCHLEN", "0", "WITHMATCHLEN"], Request.LongestCommonSubsequenceWithMatches("key1", "key2", 0).GetArgs()),
 
             // Info Command Args
             () => Assert.Equal(["INFO"], Request.Info([]).GetArgs()),
@@ -336,18 +344,18 @@ public class CommandTests
             () => Assert.Equal(["BITFIELDREADONLY", "key", "GET", "u8", "0", "GET", "i4", "8"], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(4), new BitFieldOptions.BitOffset(8))]).GetArgs()),
 
             // Hash Field Expire Commands (Valkey 9.0+)
-            () => Assert.Equal(["HGETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "field2"], Request.HashGetExpiryAsync("key", ["field1", "field2"], GetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PX", "5000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOption.ExpireIn(TimeSpan.FromMilliseconds(5000))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOption.ExpireAt(DateTimeOffset.FromUnixTimeSeconds(1609459200))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOption.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(1609459200000))).GetArgs()),
-            () => Assert.Equal(["HGETEX", "key", "PERSIST", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOption.Persist()).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], SetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PX", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOption.ExpireIn(TimeSpan.FromMilliseconds(5000)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PXAT", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], SetExpiryOption.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(60000)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "PXAT", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOption.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(5000)), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "KEEPTTL", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOption.KeepTimeToLive(), HashSetCondition.Always).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "FNX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.OnlyIfNoneExist).GetArgs()),
-            () => Assert.Equal(["HSETEX", "key", "FXX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.OnlyIfAllExist).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "field2"], Request.HashGetExpiryAsync("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PX", "5000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.ExpireIn(TimeSpan.FromMilliseconds(5000))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeSeconds(1609459200))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PXAT", "1609459200000", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(1609459200000))).GetArgs()),
+            () => Assert.Equal(["HGETEX", "key", "PERSIST", "FIELDS", "1", "field1"], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.Persist()).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PX", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PX", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromMilliseconds(5000)), HashSetCondition.Always).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PXAT", "60000", "FIELDS", "2", "field1", "value1", "field2", "value2"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"), new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")], SetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(60000)), HashSetCondition.Always).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "PXAT", "5000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireAt(DateTimeOffset.FromUnixTimeMilliseconds(5000)), HashSetCondition.Always).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "KEEPTTL", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.KeepTimeToLive(), HashSetCondition.Always).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "FNX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.OnlyIfNoneExist).GetArgs()),
+            () => Assert.Equal(["HSETEX", "key", "FXX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.OnlyIfAllExist).GetArgs()),
             () => Assert.Equal(["HPERSIST", "key", "FIELDS", "2", "field1", "field2"], Request.HashPersistAsync("key", ["field1", "field2"]).GetArgs()),
             () => Assert.Equal(["HPEXPIRE", "key", "60000", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2"], ExpireCondition.Always).GetArgs()),
             () => Assert.Equal(["HPEXPIRE", "key", "60000", "NX", "FIELDS", "2", "field1", "field2"], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2"], ExpireCondition.OnlyIfNotExists).GetArgs()),
@@ -369,39 +377,37 @@ public class CommandTests
             () => Assert.Null(Request.CustomCommand([]).Converter(null)),
 
             // String Commands
-            () => Assert.True(Request.StringSet("key", "value").Converter("OK")),
-            () => Assert.True(Request.StringSetNX("key", "value").Converter("OK")),
-            () => Assert.False(Request.StringSetNX("key", "value").Converter(null)),
-            () => Assert.True(Request.StringSetXX("key", "value").Converter("OK")),
-            () => Assert.False(Request.StringSetXX("key", "value").Converter(null)),
-            () => Assert.Equal<GlideString>("value", Request.StringGet("key").Converter("value")),
-            () => Assert.Equal(ValkeyValue.Null, Request.StringGet("key").Converter(null!)),
-            () => Assert.Equal(5L, Request.StringLength("key").Converter(5L)),
-            () => Assert.Equal(0L, Request.StringLength("key").Converter(0L)),
-            () => Assert.Equal(new ValkeyValue("hello"), Request.StringGetRange("key", 0, 4).Converter("hello")),
-            () => Assert.Equal(new ValkeyValue(""), Request.StringGetRange("key", 0, 4).Converter("")),
-            () => Assert.Equal(ValkeyValue.Null, Request.StringGetRange("key", 0, 4).Converter(null!)),
-            () => Assert.Equal((ValkeyValue)10L, Request.StringSetRange("key", 5, "world").Converter(10L)),
-            () => Assert.Equal(11L, Request.StringAppend("key", "value").Converter(11L)),
-            () => Assert.Equal(9L, Request.StringDecr("key").Converter(9L)),
-            () => Assert.Equal(5L, Request.StringDecrBy("key", 5).Converter(5L)),
-            () => Assert.Equal(11L, Request.StringIncr("key").Converter(11L)),
-            () => Assert.Equal(15L, Request.StringIncrBy("key", 5).Converter(15L)),
-            () => Assert.Equal(10.5, Request.StringIncrByFloat("key", 0.5).Converter(10.5)),
-            () => Assert.True(Request.StringSetMultiple([
+            () => Assert.True(Request.Set("key", "value").Converter("OK")),
+            () => Assert.True(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).Converter("OK")),
+            () => Assert.False(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).Converter(null)),
+            () => Assert.Equal<GlideString>("value", Request.Get("key").Converter("value")),
+            () => Assert.Equal(ValkeyValue.Null, Request.Get("key").Converter(null!)),
+            () => Assert.Equal(5L, Request.Length("key").Converter(5L)),
+            () => Assert.Equal(0L, Request.Length("key").Converter(0L)),
+            () => Assert.Equal(new ValkeyValue("hello"), Request.GetRange("key", 0, 4).Converter("hello")),
+            () => Assert.Equal(new ValkeyValue(""), Request.GetRange("key", 0, 4).Converter("")),
+            () => Assert.Equal(ValkeyValue.Null, Request.GetRange("key", 0, 4).Converter(null!)),
+            () => Assert.Equal((ValkeyValue)10L, Request.SetRange("key", 5, "world").Converter(10L)),
+            () => Assert.Equal(11L, Request.Append("key", "value").Converter(11L)),
+            () => Assert.Equal(9L, Request.Decrement("key").Converter(9L)),
+            () => Assert.Equal(5L, Request.DecrementBy("key", 5).Converter(5L)),
+            () => Assert.Equal(11L, Request.Increment("key").Converter(11L)),
+            () => Assert.Equal(15L, Request.IncrementBy("key", 5).Converter(15L)),
+            () => Assert.Equal(10.5, Request.IncrementByFloat("key", 0.5).Converter(10.5)),
+            () => Assert.True(Request.Set([
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
             ]).Converter("OK")),
-            () => Assert.False(Request.StringSetMultiple([
+            () => Assert.False(Request.Set([
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
             ]).Converter("ERROR")),
-            () => Assert.True(Request.StringSetMultipleNX([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(true)),
-            () => Assert.False(Request.StringSetMultipleNX([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(false)),
-            () => Assert.Equal("test_value", Request.StringGetDelete("test_key").Converter(new GlideString("test_value")).ToString()),
-            () => Assert.True(Request.StringGetDelete("test_key").Converter(null!).IsNull),
-            () => Assert.Equal("test_value", Request.StringGetSetExpiry("test_key", TimeSpan.FromSeconds(60)).Converter(new GlideString("test_value")).ToString()),
-            () => Assert.True(Request.StringGetSetExpiry("test_key", TimeSpan.FromSeconds(60)).Converter(null!).IsNull),
+            () => Assert.True(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(true)),
+            () => Assert.False(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(false)),
+            () => Assert.Equal("test_value", Request.GetDelete("test_key").Converter(new GlideString("test_value")).ToString()),
+            () => Assert.True(Request.GetDelete("test_key").Converter(null!).IsNull),
+            () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(new GlideString("test_value")).ToString()),
+            () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(null!).IsNull),
 
             // Server Management Commands
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync("*").GetArgs()),
@@ -428,9 +434,9 @@ public class CommandTests
             () => Assert.Equal(DateTime.UnixEpoch.AddSeconds(1609459200), Request.LastSaveAsync().Converter(1609459200L)),
             () => Assert.Equal(DateTime.UnixEpoch.AddSeconds(1609459200).AddTicks(123456 * 10), Request.TimeAsync().Converter(["1609459200", "123456"])),
             () => Assert.Equal("Valkey 7.0.0", Request.LolwutAsync().Converter("Valkey 7.0.0")),
-            () => Assert.Equal("test_value", Request.StringGetSetExpiry("test_key", new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Converter(new GlideString("test_value")).ToString()),
-            () => Assert.Equal("common", Request.StringLongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
-            () => Assert.Equal(5L, Request.StringLongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
+            () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
+            () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
+            () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
 
             // Info Command Converters
             () => Assert.Equal("info", Request.Info([]).Converter("info")),
@@ -595,10 +601,10 @@ public class CommandTests
             () => Assert.Equal(10L, Request.HashStringLengthAsync("key", "field").Converter(10L)),
 
             // Hash Field Expire Commands converters (Valkey 9.0+)
-            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGetExpiryAsync("key", ["field1", "field2"], GetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60))).Converter([(gs)"value1", (gs)"value2"])),
-            () => Assert.Equal((ValkeyValue[])[ValkeyValue.Null], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOption.Persist()).Converter([null!])),
-            () => Assert.True(Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).Converter(1L)),
-            () => Assert.False(Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).Converter(0L)),
+            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGetExpiryAsync("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter([(gs)"value1", (gs)"value2"])),
+            () => Assert.Equal((ValkeyValue[])[ValkeyValue.Null], Request.HashGetExpiryAsync("key", ["field1"], GetExpiryOptions.Persist()).Converter([null!])),
+            () => Assert.True(Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).Converter(1L)),
+            () => Assert.False(Request.HashSetExpiryAsync("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)), HashSetCondition.Always).Converter(0L)),
             () => Assert.Equal([HashPersistResult.ExpiryRemoved, HashPersistResult.NoExpiry, HashPersistResult.NoField], Request.HashPersistAsync("key", ["field1", "field2", "field3"]).Converter([1L, -1L, -2L])),
             () => Assert.Equal([HashExpireResult.ExpirySet, HashExpireResult.ConditionNotMet, HashExpireResult.NoField], Request.HashExpireAsync("key", TimeSpan.FromSeconds(60), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
             () => Assert.Equal([HashExpireResult.ExpirySet, HashExpireResult.ConditionNotMet, HashExpireResult.NoField], Request.HashExpireAtAsync("key", DateTimeOffset.FromUnixTimeSeconds(1609459200), ["field1", "field2", "field3"], ExpireCondition.Always).Converter([1L, 0L, -2L])),
@@ -697,7 +703,7 @@ public class CommandTests
             {
                 // Test MGET with GlideString objects (what the server actually returns)
                 var mgetResponse = new object[] { new GlideString("value1"), null!, new GlideString("value3") };
-                var result = Request.StringGetMultiple(["key1", "key2", "key3"]).Converter(mgetResponse);
+                var result = Request.Get(["key1", "key2", "key3"]).Converter(mgetResponse);
                 Assert.Equal(3, result.Length);
                 Assert.Equal(new ValkeyValue("value1"), result[0]);
                 Assert.Equal(ValkeyValue.Null, result[1]);
@@ -707,7 +713,7 @@ public class CommandTests
             () =>
             {
                 // Test empty MGET response
-                var emptyResult = Request.StringGetMultiple([]).Converter([]);
+                var emptyResult = Request.Get([]).Converter([]);
                 Assert.Empty(emptyResult);
             },
 
@@ -715,7 +721,7 @@ public class CommandTests
             {
                 // Test MGET with all null values
                 var allNullResponse = new object[] { null!, null! };
-                var result = Request.StringGetMultiple(["key1", "key2"]).Converter(allNullResponse);
+                var result = Request.Get(["key1", "key2"]).Converter(allNullResponse);
                 Assert.Equal(2, result.Length);
                 Assert.Equal(ValkeyValue.Null, result[0]);
                 Assert.Equal(ValkeyValue.Null, result[1]);

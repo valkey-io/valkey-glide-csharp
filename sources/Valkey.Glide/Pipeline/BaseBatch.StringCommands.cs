@@ -1,84 +1,118 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.Pipeline;
 
 public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 {
-    /// <inheritdoc cref="IBatchStringCommands.StringGet(ValkeyKey)" />
-    public T StringGetAsync(ValkeyKey key) => AddCmd(Request.StringGet(key));
+    /// <inheritdoc cref="IBatchStringCommands.Get(ValkeyKey)" />
+    public T GetAsync(ValkeyKey key) => AddCmd(Request.Get(key));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringGet(IEnumerable{ValkeyKey})" />
-    public T StringGetAsync(IEnumerable<ValkeyKey> keys) => AddCmd(Request.StringGetMultiple([.. keys]));
+    /// <inheritdoc cref="IBatchStringCommands.Get(IEnumerable{ValkeyKey})" />
+    public T GetAsync(IEnumerable<ValkeyKey> keys) => AddCmd(Request.Get(keys));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringSet(ValkeyKey, ValkeyValue)" />
-    public T StringSetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.StringSet(key, value));
+    /// <inheritdoc cref="IBatchStringCommands.Set(ValkeyKey, ValkeyValue)" />
+    public T SetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.Set(key, value));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringSet(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" />
-    public T StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => AddCmd(Request.StringSetMultiple([.. values]));
+    /// <inheritdoc cref="IBatchStringCommands.Set(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" />
+    public T SetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => AddCmd(Request.Set([.. values]));
+
+    /// <inheritdoc cref="IBatchStringCommands.SetIfNotExists(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" />
+    public T SetIfNotExistsAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => AddCmd(Request.SetIfNotExists([.. values]));
+
+    /// <inheritdoc cref="IBatchStringCommands.Set(ValkeyKey, ValkeyValue, SetCondition)" />
+    public T SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
+        condition == SetCondition.Always
+            ? AddCmd(Request.Set(key, value))
+            : AddCmd(Request.Set(key, value, new SetOptions { Condition = condition }));
+
+    /// <inheritdoc cref="IBatchStringCommands.Set(ValkeyKey, ValkeyValue, SetOptions)" />
+    public T SetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) => AddCmd(Request.Set(key, value, options));
+
+    /// <inheritdoc cref="IBatchStringCommands.SetExpiry(ValkeyKey, ValkeyValue, SetExpiryOptions)" />
+    public T SetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => AddCmd(Request.SetWithExpiry(key, value, expiry));
+
+    /// <inheritdoc cref="IBatchStringCommands.GetSet(ValkeyKey, ValkeyValue)" />
+    public T GetSetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.GetSet(key, value));
+
+    /// <inheritdoc cref="IBatchStringCommands.GetSet(ValkeyKey, ValkeyValue, SetCondition)" />
+    public T GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) => AddCmd(Request.GetSet(key, value, new SetOptions { Condition = condition }));
+
+    /// <inheritdoc cref="IBatchStringCommands.GetSet(ValkeyKey, ValkeyValue, SetOptions)" />
+    public T GetSetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) => AddCmd(Request.GetSet(key, value, options));
+
+    /// <inheritdoc cref="IBatchStringCommands.GetSetExpiry(ValkeyKey, ValkeyValue, SetExpiryOptions)" />
+    public T GetSetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => AddCmd(Request.GetSet(key, value, new SetOptions { Expiry = expiry }));
 
     /// <inheritdoc cref="IBatchStringCommands.StringGetRange(ValkeyKey, long, long)" />
-    public T StringGetRangeAsync(ValkeyKey key, long start, long end) => AddCmd(Request.StringGetRange(key, start, end));
+    public T StringGetRangeAsync(ValkeyKey key, long start, long end) => AddCmd(Request.GetRange(key, start, end));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringSetRange(ValkeyKey, long, ValkeyValue)" />
-    public T StringSetRangeAsync(ValkeyKey key, long offset, ValkeyValue value) => AddCmd(Request.StringSetRange(key, offset, value));
+    /// <inheritdoc cref="IBatchStringCommands.SetRange(ValkeyKey, long, ValkeyValue)" />
+    public T SetRangeAsync(ValkeyKey key, long offset, ValkeyValue value) => AddCmd(Request.SetRange(key, offset, value));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringLength(ValkeyKey)" />
-    public T StringLengthAsync(ValkeyKey key) => AddCmd(Request.StringLength(key));
+    /// <inheritdoc cref="IBatchStringCommands.Length(ValkeyKey)" />
+    public T LengthAsync(ValkeyKey key) => AddCmd(Request.Length(key));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringAppend(ValkeyKey, ValkeyValue)" />
-    public T StringAppendAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.StringAppend(key, value));
+    /// <inheritdoc cref="IBatchStringCommands.Append(ValkeyKey, ValkeyValue)" />
+    public T AppendAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.Append(key, value));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringDecrement(ValkeyKey)" />
-    public T StringDecrementAsync(ValkeyKey key) => AddCmd(Request.StringDecr(key));
+    /// <inheritdoc cref="IBatchStringCommands.Decrement(ValkeyKey, long)" />
+    public T DecrementAsync(ValkeyKey key, long value = 1) =>
+        value == 1
+            ? AddCmd(Request.Decrement(key))
+            : AddCmd(Request.DecrementBy(key, value));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringDecrement(ValkeyKey, long)" />
-    public T StringDecrementAsync(ValkeyKey key, long decrement) => AddCmd(Request.StringDecrBy(key, decrement));
+    /// <inheritdoc cref="IBatchStringCommands.Decrement(ValkeyKey, double)" />
+    public T DecrementAsync(ValkeyKey key, double value) => AddCmd(Request.IncrementByFloat(key, -value));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringIncrement(ValkeyKey)" />
-    public T StringIncrementAsync(ValkeyKey key) => AddCmd(Request.StringIncr(key));
+    /// <inheritdoc cref="IBatchStringCommands.Increment(ValkeyKey, long)" />
+    public T IncrementAsync(ValkeyKey key, long value = 1) =>
+        value == 1
+            ? AddCmd(Request.Increment(key))
+            : AddCmd(Request.IncrementBy(key, value));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringIncrement(ValkeyKey, long)" />
-    public T StringIncrementAsync(ValkeyKey key, long increment) => AddCmd(Request.StringIncrBy(key, increment));
+    /// <inheritdoc cref="IBatchStringCommands.Increment(ValkeyKey, double)" />
+    public T IncrementAsync(ValkeyKey key, double value) => AddCmd(Request.IncrementByFloat(key, value));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringIncrement(ValkeyKey, double)" />
-    public T StringIncrementAsync(ValkeyKey key, double increment) => AddCmd(Request.StringIncrByFloat(key, increment));
+    /// <inheritdoc cref="IBatchStringCommands.GetDelete(ValkeyKey)" />
+    public T GetDeleteAsync(ValkeyKey key) => AddCmd(Request.GetDelete(key));
 
-    /// <inheritdoc cref="IBatchStringCommands.StringGetDelete(ValkeyKey)" />
-    public T StringGetDeleteAsync(ValkeyKey key) => AddCmd(Request.StringGetDelete(key));
-
-    /// <inheritdoc cref="IBatchStringCommands.StringGetSetExpiry(ValkeyKey, TimeSpan?)" />
-    public T StringGetSetExpiryAsync(ValkeyKey key, TimeSpan? expiry) => AddCmd(Request.StringGetSetExpiry(key, expiry));
-
-    /// <inheritdoc cref="IBatchStringCommands.StringGetSetExpiry(ValkeyKey, DateTime)" />
-    public T StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry) => AddCmd(Request.StringGetSetExpiry(key, expiry));
+    /// <inheritdoc cref="IBatchStringCommands.GetExpiry(ValkeyKey, GetExpiryOptions)" />
+    public T GetExpiryAsync(ValkeyKey key, GetExpiryOptions option) => AddCmd(Request.GetExpiry(key, option));
 
     /// <inheritdoc cref="IBatchStringCommands.StringLongestCommonSubsequence(ValkeyKey, ValkeyKey)" />
-    public T StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second) => AddCmd(Request.StringLongestCommonSubsequence(first, second));
+    public T StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second) => AddCmd(Request.LongestCommonSubsequence(first, second));
 
     /// <inheritdoc cref="IBatchStringCommands.StringLongestCommonSubsequenceLength(ValkeyKey, ValkeyKey)" />
-    public T StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second) => AddCmd(Request.StringLongestCommonSubsequenceLength(first, second));
+    public T StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second) => AddCmd(Request.LongestCommonSubsequenceLength(first, second));
 
     /// <inheritdoc cref="IBatchStringCommands.StringLongestCommonSubsequenceWithMatches(ValkeyKey, ValkeyKey, long)" />
-    public T StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0) => AddCmd(Request.StringLongestCommonSubsequenceWithMatches(first, second, minLength));
+    public T StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0) => AddCmd(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
 
-    IBatch IBatchStringCommands.StringGet(ValkeyKey key) => StringGetAsync(key);
-    IBatch IBatchStringCommands.StringGet(IEnumerable<ValkeyKey> keys) => StringGetAsync(keys);
-    IBatch IBatchStringCommands.StringSet(ValkeyKey key, ValkeyValue value) => StringSetAsync(key, value);
-    IBatch IBatchStringCommands.StringSet(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => StringSetAsync(values);
+    IBatch IBatchStringCommands.Get(ValkeyKey key) => GetAsync(key);
+    IBatch IBatchStringCommands.Get(IEnumerable<ValkeyKey> keys) => GetAsync(keys);
+    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value) => SetAsync(key, value);
+    IBatch IBatchStringCommands.Set(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => SetAsync(values);
+    IBatch IBatchStringCommands.SetIfNotExists(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => SetIfNotExistsAsync(values);
+    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value, SetCondition condition) => SetAsync(key, value, condition);
+    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value, SetOptions options) => SetAsync(key, value, options);
+    IBatch IBatchStringCommands.SetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => SetExpiryAsync(key, value, expiry);
+    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value) => GetSetAsync(key, value);
+    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetCondition condition) => GetSetAsync(key, value, condition);
+    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetOptions options) => GetSetAsync(key, value, options);
+    IBatch IBatchStringCommands.GetSetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => GetSetExpiryAsync(key, value, expiry);
     IBatch IBatchStringCommands.StringGetRange(ValkeyKey key, long start, long end) => StringGetRangeAsync(key, start, end);
-    IBatch IBatchStringCommands.StringSetRange(ValkeyKey key, long offset, ValkeyValue value) => StringSetRangeAsync(key, offset, value);
-    IBatch IBatchStringCommands.StringLength(ValkeyKey key) => StringLengthAsync(key);
-    IBatch IBatchStringCommands.StringAppend(ValkeyKey key, ValkeyValue value) => StringAppendAsync(key, value);
-    IBatch IBatchStringCommands.StringDecrement(ValkeyKey key) => StringDecrementAsync(key);
-    IBatch IBatchStringCommands.StringDecrement(ValkeyKey key, long decrement) => StringDecrementAsync(key, decrement);
-    IBatch IBatchStringCommands.StringIncrement(ValkeyKey key) => StringIncrementAsync(key);
-    IBatch IBatchStringCommands.StringIncrement(ValkeyKey key, long increment) => StringIncrementAsync(key, increment);
-    IBatch IBatchStringCommands.StringIncrement(ValkeyKey key, double increment) => StringIncrementAsync(key, increment);
-    IBatch IBatchStringCommands.StringGetDelete(ValkeyKey key) => StringGetDeleteAsync(key);
-    IBatch IBatchStringCommands.StringGetSetExpiry(ValkeyKey key, TimeSpan? expiry) => StringGetSetExpiryAsync(key, expiry);
-    IBatch IBatchStringCommands.StringGetSetExpiry(ValkeyKey key, DateTime expiry) => StringGetSetExpiryAsync(key, expiry);
+    IBatch IBatchStringCommands.SetRange(ValkeyKey key, long offset, ValkeyValue value) => SetRangeAsync(key, offset, value);
+    IBatch IBatchStringCommands.Length(ValkeyKey key) => LengthAsync(key);
+    IBatch IBatchStringCommands.Append(ValkeyKey key, ValkeyValue value) => AppendAsync(key, value);
+    IBatch IBatchStringCommands.Decrement(ValkeyKey key, long value) => DecrementAsync(key, value);
+    IBatch IBatchStringCommands.Decrement(ValkeyKey key, double value) => DecrementAsync(key, value);
+    IBatch IBatchStringCommands.Increment(ValkeyKey key, long value) => IncrementAsync(key, value);
+    IBatch IBatchStringCommands.Increment(ValkeyKey key, double value) => IncrementAsync(key, value);
+    IBatch IBatchStringCommands.GetDelete(ValkeyKey key) => GetDeleteAsync(key);
+    IBatch IBatchStringCommands.GetExpiry(ValkeyKey key, GetExpiryOptions option) => GetExpiryAsync(key, option);
     IBatch IBatchStringCommands.StringLongestCommonSubsequence(ValkeyKey first, ValkeyKey second) => StringLongestCommonSubsequenceAsync(first, second);
     IBatch IBatchStringCommands.StringLongestCommonSubsequenceLength(ValkeyKey first, ValkeyKey second) => StringLongestCommonSubsequenceLengthAsync(first, second);
     IBatch IBatchStringCommands.StringLongestCommonSubsequenceWithMatches(ValkeyKey first, ValkeyKey second, long minLength) => StringLongestCommonSubsequenceWithMatchesAsync(first, second, minLength);

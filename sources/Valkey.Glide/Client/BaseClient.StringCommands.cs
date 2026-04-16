@@ -1,5 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -7,103 +8,109 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <inheritdoc/>
-    public async Task StringSetAsync(ValkeyKey key, ValkeyValue value) =>
-        _ = await Command(Request.StringSet(key, value));
+    public Task SetAsync(ValkeyKey key, ValkeyValue value)
+        => Command(Request.Set(key, value));
 
     /// <inheritdoc/>
-    public async Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, When when) =>
-        when switch
-        {
-            When.Always => await Command(Request.StringSet(key, value)),
-            When.NotExists => await Command(Request.StringSetNX(key, value)),
-            When.Exists => await Command(Request.StringSetXX(key, value)),
-            _ => throw new ArgumentOutOfRangeException(nameof(when), $"{when} is not supported for StringSetAsync.")
-        };
+    public Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
+        Command(Request.Set(key, value, new SetOptions { Condition = condition }));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> StringGetAsync(ValkeyKey key) =>
-        await Command(Request.StringGet(key));
+    public Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) =>
+        Command(Request.Set(key, value, options));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys) =>
-        await Command(Request.StringGetMultiple([.. keys]));
+    public Task SetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) =>
+        Command(Request.SetWithExpiry(key, value, expiry));
 
     /// <inheritdoc/>
-    public async Task StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
-        _ = await Command(Request.StringSetMultiple([.. values]));
-
-    // TODO #262: Replace with separate StringSetNXAsync(values) method; remove When parameter.
-    /// <inheritdoc/>
-    public async Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when) =>
-        when switch
-        {
-            When.Always => await Command(Request.StringSetMultiple([.. values])),
-            When.Exists => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists"),
-
-            When.NotExists => await Command(Request.StringSetMultipleNX([.. values])),
-            _ => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists")
-        };
+    public Task<ValkeyValue> GetAsync(ValkeyKey key) =>
+        Command(Request.Get(key));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end) =>
-        await Command(Request.StringGetRange(key, start, end));
+    public Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys) =>
+        Command(Request.Get(keys));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> StringSetRangeAsync(ValkeyKey key, long offset, ValkeyValue value) =>
-        await Command(Request.StringSetRange(key, offset, value));
+    public Task SetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
+        Command(Request.Set([.. values]));
 
     /// <inheritdoc/>
-    public async Task<long> StringLengthAsync(ValkeyKey key) =>
-        await Command(Request.StringLength(key));
+    public Task<bool> SetIfNotExistsAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
+        Command(Request.SetIfNotExists([.. values]));
 
     /// <inheritdoc/>
-    public async Task<long> StringAppendAsync(ValkeyKey key, ValkeyValue value) =>
-        await Command(Request.StringAppend(key, value));
+    public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value) =>
+        Command(Request.GetSet(key, value));
 
     /// <inheritdoc/>
-    public async Task<long> StringDecrementAsync(ValkeyKey key) =>
-        await Command(Request.StringDecr(key));
+    public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
+        Command(Request.GetSet(key, value, new SetOptions { Condition = condition }));
 
     /// <inheritdoc/>
-    public async Task<long> StringDecrementAsync(ValkeyKey key, long decrement) =>
-        await Command(Request.StringDecrBy(key, decrement));
+    public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) =>
+        Command(Request.GetSet(key, value, options));
 
     /// <inheritdoc/>
-    public async Task<long> StringIncrementAsync(ValkeyKey key) =>
-        await Command(Request.StringIncr(key));
+    public Task<ValkeyValue> GetSetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) =>
+        Command(Request.GetSet(key, value, new SetOptions { Expiry = expiry }));
 
     /// <inheritdoc/>
-    public async Task<long> StringIncrementAsync(ValkeyKey key, long increment) =>
-        await Command(Request.StringIncrBy(key, increment));
+    public Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end) =>
+        Command(Request.GetRange(key, start, end));
 
     /// <inheritdoc/>
-    public async Task<double> StringIncrementAsync(ValkeyKey key, double increment) =>
-        await Command(Request.StringIncrByFloat(key, increment));
+    public Task<ValkeyValue> SetRangeAsync(ValkeyKey key, long offset, ValkeyValue value) =>
+        Command(Request.SetRange(key, offset, value));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> StringGetDeleteAsync(ValkeyKey key) =>
-        await Command(Request.StringGetDelete(key));
+    public Task<long> LengthAsync(ValkeyKey key) =>
+        Command(Request.Length(key));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, TimeSpan? expiry) =>
-        await Command(Request.StringGetSetExpiry(key, expiry));
+    public Task<long> AppendAsync(ValkeyKey key, ValkeyValue value) =>
+        Command(Request.Append(key, value));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry) =>
-        await Command(Request.StringGetSetExpiry(key, expiry));
+    public Task<long> DecrementAsync(ValkeyKey key, long value = 1) =>
+        value == 1
+            ? Command(Request.Decrement(key))
+            : Command(Request.DecrementBy(key, value));
+
+    /// <inheritdoc/>
+    public Task<double> DecrementAsync(ValkeyKey key, double value) =>
+        Command(Request.IncrementByFloat(key, -value));
+
+    /// <inheritdoc/>
+    public Task<long> IncrementAsync(ValkeyKey key, long value = 1) =>
+        value == 1
+            ? Command(Request.Increment(key))
+            : Command(Request.IncrementBy(key, value));
+
+    /// <inheritdoc/>
+    public Task<double> IncrementAsync(ValkeyKey key, double value) =>
+        Command(Request.IncrementByFloat(key, value));
+
+    /// <inheritdoc/>
+    public Task<ValkeyValue> GetDeleteAsync(ValkeyKey key) =>
+        Command(Request.GetDelete(key));
+
+    /// <inheritdoc/>
+    public Task<ValkeyValue> GetExpiryAsync(ValkeyKey key, GetExpiryOptions options) =>
+        Command(Request.GetExpiry(key, options));
 
     /// <inheritdoc/>
     public async Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second)
     {
-        ValkeyValue result = await Command(Request.StringLongestCommonSubsequence(first, second));
+        ValkeyValue result = await Command(Request.LongestCommonSubsequence(first, second));
         return result.IsNull ? null : result.ToString();
     }
 
     /// <inheritdoc/>
-    public async Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second) =>
-        await Command(Request.StringLongestCommonSubsequenceLength(first, second));
+    public Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second) =>
+        Command(Request.LongestCommonSubsequenceLength(first, second));
 
     /// <inheritdoc/>
-    public async Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0) =>
-        await Command(Request.StringLongestCommonSubsequenceWithMatches(first, second, minLength));
+    public Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0) =>
+        Command(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
 }

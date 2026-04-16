@@ -92,19 +92,19 @@ internal partial class Request
     }
 
     public static Cmd<object[], ValkeyValue[]> HashGetExpiryAsync(
-        ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOption option)
+        ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
 
-        if (option.Duration is { } duration)
+        if (options.Duration.HasValue)
         {
             args.Add(Constants.PxKeyword);
-            args.Add(ToMilliseconds(duration).ToGlideString());
+            args.Add(ToMilliseconds(options.Duration.Value).ToGlideString());
         }
-        else if (option.Timestamp is { } timestamp)
+        else if (options.Timestamp.HasValue)
         {
             args.Add(Constants.PxAtKeyword);
-            args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());
+            args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
         else
         {
@@ -118,8 +118,9 @@ internal partial class Request
     }
 
     public static Cmd<long, bool> HashSetExpiryAsync(
-        ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        SetExpiryOption option, HashSetCondition condition)
+        ValkeyKey key,
+        IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        SetExpiryOptions options, HashSetCondition condition)
     {
         List<GlideString> args = [key.ToGlideString()];
 
@@ -132,15 +133,15 @@ internal partial class Request
             args.Add(Constants.FxxKeyword);
         }
 
-        if (option.Duration is { } duration)
+        if (options.Duration.HasValue)
         {
             args.Add(Constants.PxKeyword);
-            args.Add(ToMilliseconds(duration).ToGlideString());
+            args.Add(ToMilliseconds(options.Duration.Value).ToGlideString());
         }
-        else if (option.Timestamp is { } timestamp)
+        else if (options.Timestamp.HasValue)
         {
             args.Add(Constants.PxAtKeyword);
-            args.Add(timestamp.ToUnixTimeMilliseconds().ToGlideString());
+            args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
         else
         {

@@ -45,6 +45,7 @@ internal static class ValkeyLiterals
         HISTORY = "HISTORY",
         ID = "ID",
         IDX = "IDX",
+        IFEQ = "IFEQ",
         IDLETIME = "IDLETIME",
         KEEPTTL = "KEEPTTL",
         KILL = "KILL",
