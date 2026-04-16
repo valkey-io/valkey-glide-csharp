@@ -300,7 +300,7 @@ public partial interface IBaseClient
     /// <summary>
     /// Gets the old value stored at key and sets it to a new value. If the key does not exist, <see cref="ValkeyValue.Null"/> is returned.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/getset/">valkey.io</seealso>
+    /// <seealso href="https://valkey.io/commands/set/">valkey.io</seealso>
     /// <param name="key">The key to get and set.</param>
     /// <param name="value">The new value to store.</param>
     /// <returns>The old value stored at key, or <see cref="ValkeyValue.Null"/> when key did not exist.</returns>
