@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Internals.Request;
 
 namespace Valkey.Glide.Pipeline;
@@ -133,8 +135,8 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRemoveRangeByScore(ValkeyKey, double, double, Exclude)" />
     public T SortedSetRemoveRangeByScore(ValkeyKey key, double start, double stop, Exclude exclude = Exclude.None) => AddCmd(SortedSetRemoveRangeByScoreAsync(key, start, stop, exclude));
 
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScan(ValkeyKey, ValkeyValue, int, long)" />
-    public T SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0) => AddCmd(SortedSetScanAsync(key, pattern, pageSize, cursor));
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScan(ValkeyKey, long, ScanOptions)" />
+    public T SortedSetScan(ValkeyKey key, long cursor = 0, ScanOptions? options = null) => AddCmd(SortedSetScanAsync(key, cursor, options));
 
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScore(ValkeyKey, ValkeyValue)" />
     public T SortedSetScore(ValkeyKey key, ValkeyValue member) => AddCmd(SortedSetScoreAsync(key, member));
@@ -174,6 +176,6 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetRemoveRangeByValue(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude) => SortedSetRemoveRangeByValue(key, min, max, exclude);
     IBatch IBatchSortedSetCommands.SortedSetRemoveRangeByRank(ValkeyKey key, long start, long stop) => SortedSetRemoveRangeByRank(key, start, stop);
     IBatch IBatchSortedSetCommands.SortedSetRemoveRangeByScore(ValkeyKey key, double start, double stop, Exclude exclude) => SortedSetRemoveRangeByScore(key, start, stop, exclude);
-    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor) => SortedSetScan(key, pattern, pageSize, cursor);
+    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, long cursor, ScanOptions? options) => SortedSetScan(key, cursor, options);
     IBatch IBatchSortedSetCommands.SortedSetScore(ValkeyKey key, ValkeyValue member) => SortedSetScore(key, member);
 }

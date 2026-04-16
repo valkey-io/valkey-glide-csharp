@@ -657,20 +657,20 @@ internal partial class Request
         return Simple<long>(RequestType.ZRemRangeByScore, [.. args]);
     }
 
-    public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0)
+    public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScanAsync(ValkeyKey key, long cursor, ScanOptions? options = null)
     {
         List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
 
-        if (!pattern.IsNull)
+        if (options?.MatchPattern != null)
         {
             args.Add(MatchKeyword);
-            args.Add(pattern.ToGlideString());
+            args.Add(options.MatchPattern.ToGlideString());
         }
 
-        if (pageSize != 250)
+        if (options?.Count > 0)
         {
             args.Add(CountKeyword);
-            args.Add(pageSize.ToGlideString());
+            args.Add(options.Count.Value.ToGlideString());
         }
 
         return new(RequestType.ZScan, [.. args], false, response =>

@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -260,19 +261,15 @@ public abstract partial class BaseClient
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0)
+    public async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ScanOptions? options = null)
     {
-
-        long currentCursor = cursor;
-        int currentOffset = pageOffset;
+        long currentCursor = 0;
 
         do
         {
-            (long nextCursor, SortedSetEntry[] elements) = await Command(Request.SortedSetScanAsync(key, pattern, pageSize, currentCursor));
+            (long nextCursor, SortedSetEntry[] elements) = await Command(Request.SortedSetScanAsync(key, currentCursor, options));
 
-            IEnumerable<SortedSetEntry> elementsToYield = currentOffset > 0 ? elements.Skip(currentOffset) : elements;
-
-            foreach (SortedSetEntry element in elementsToYield)
+            foreach (SortedSetEntry element in elements)
             {
                 yield return element;
             }
