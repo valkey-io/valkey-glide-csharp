@@ -154,6 +154,33 @@ public class BoundTests
         () => Assert.NotEqual(LexBound.Inclusive("abc").GetHashCode(), LexBound.Exclusive("abc").GetHashCode()),
         () => Assert.NotEqual(LexBound.Min.GetHashCode(), LexBound.Max.GetHashCode()));
 
+    [Fact]
+    public void LexBound_Comparison() => Assert.Multiple(
+        // Min is less than everything
+        () => Assert.True(LexBound.Min < LexBound.Inclusive("a")),
+        () => Assert.True(LexBound.Min < LexBound.Max),
+        () => Assert.True(LexBound.Min <= LexBound.Inclusive("-")),
+
+        // Max is greater than everything
+        () => Assert.True(LexBound.Max > LexBound.Inclusive("z")),
+        () => Assert.True(LexBound.Max > LexBound.Min),
+        () => Assert.True(LexBound.Max >= LexBound.Inclusive("+")),
+
+        // Regular values compare lexicographically
+        () => Assert.True(LexBound.Inclusive("a") < LexBound.Inclusive("b")),
+        () => Assert.True(LexBound.Inclusive("b") > LexBound.Inclusive("a")),
+        () => Assert.True(LexBound.Inclusive("abc") < LexBound.Inclusive("abd")),
+        () => Assert.True(LexBound.Inclusive("a") <= LexBound.Inclusive("a")),
+        () => Assert.True(LexBound.Inclusive("a") >= LexBound.Inclusive("a")),
+
+        // Inclusivity does not affect ordering
+        () => Assert.Equal(0, LexBound.Inclusive("a").CompareTo(LexBound.Exclusive("a"))),
+        () => Assert.True(LexBound.Exclusive("a") < LexBound.Inclusive("b")),
+
+        // Sentinel equality
+        () => Assert.Equal(0, LexBound.Min.CompareTo(LexBound.Min)),
+        () => Assert.Equal(0, LexBound.Max.CompareTo(LexBound.Max)));
+
     #endregion
     #region Cross-Type Tests
 
