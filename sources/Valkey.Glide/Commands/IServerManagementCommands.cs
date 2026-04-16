@@ -1,7 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
-
 using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide.Commands;
@@ -109,25 +107,6 @@ public interface IServerManagementCommands
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
     /// <summary>
-    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
-    /// This overload allows setting multiple configuration parameters in a single call.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-set/"/>
-    /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
-    /// {
-    ///     { "maxmemory", "100mb" },
-    ///     { "maxmemory-policy", "allkeys-lru" }
-    /// });
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
-
-    /// <summary>
     /// Returns the number of keys in the currently-selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/"/>
@@ -155,21 +134,6 @@ public interface IServerManagementCommands
     Task FlushAllDatabasesAsync();
 
     /// <summary>
-    /// Deletes all the keys of all the existing databases, with the specified flush mode.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
-    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FlushAllDatabasesAsync(FlushMode.Async);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushAllDatabasesAsync(FlushMode mode);
-
-    /// <summary>
     /// Deletes all the keys of the currently selected database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/"/>
@@ -181,21 +145,6 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task FlushDatabaseAsync();
-
-    /// <summary>
-    /// Deletes all the keys of the currently selected database, with the specified flush mode.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FlushDatabaseAsync(FlushMode.Async);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushDatabaseAsync(FlushMode mode);
 
     /// <summary>
     /// Return the time of the last DB save executed with success.
@@ -243,35 +192,5 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync();
-
-    /// <summary>
-    /// Displays a piece of generative computer art and the Valkey version.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
-    /// <returns>A string containing the Valkey version and generative art.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// string art = await client.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] });
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string> LolwutAsync(LolwutOptions options);
-
-    /// <summary>
-    /// Gets the values of configuration parameters matching multiple patterns.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/"/>
-    /// <param name="patterns">The patterns of config values to get.</param>
-    /// <returns>All matching configuration parameters.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// KeyValuePair&lt;string, string&gt;[] config = await client.ConfigGetAsync(["max*", "bind*"]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
 }

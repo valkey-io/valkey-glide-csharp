@@ -125,8 +125,8 @@ public abstract partial class BaseClient
         => await Command(Request.WaitAsync(numreplicas, timeout));
 
     /// <inheritdoc/>
-    public async Task<long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout)
-        => await Command(Request.WaitAofAsync(numlocal, numreplicas, timeout));
+    public async Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
+        => await Command(Request.WaitAofAsync(localAof, numreplicas, timeout));
 
     /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, SortOptions? options)

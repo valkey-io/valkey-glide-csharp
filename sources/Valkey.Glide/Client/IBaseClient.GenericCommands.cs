@@ -475,19 +475,19 @@ public partial interface IBaseClient
     /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/waitaof"/>
-    /// <param name="numlocal">The number of local nodes to wait for AOF sync. Can be 0 or 1.</param>
+    /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
     /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
     /// <param name="timeout">The timeout to wait.</param>
     /// <returns>An array of two longs: the number of local and replica nodes that acknowledged the write commands.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] result = await client.WaitAofAsync(1, 1, TimeSpan.FromSeconds(1));
+    /// long[] result = await client.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1));
     /// // result[0] = number of local nodes, result[1] = number of replica nodes
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout);
+    Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout);
 
     /// <summary>
     /// Sorts the elements in the list, set, or sorted set at key and returns the result.

@@ -317,8 +317,8 @@ internal partial class Request
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()]);
 
-    public static Cmd<object[], long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout)
-        => new(RequestType.WaitAof, [numlocal.ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()], false, arr =>
+    public static Cmd<object[], long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
+        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()], false, arr =>
         {
             long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);
             long replicas = Convert.ToInt64(arr[1] is GlideString gs1 ? gs1.ToString() : arr[1]);

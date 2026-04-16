@@ -1,22 +1,20 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
-using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
 /// Tests for server management commands: FlushMode, LOLWUT version/parameters, CONFIG GET/SET multi-parameter.
 /// </summary>
-public class ServerManagementCommandTests(ServerManagementFixture fixture) : IClassFixture<ServerManagementFixture>
+public class ServerManagementCommandTests
 {
     #region FlushMode Tests
 
-    [Fact]
-    public async Task FlushDatabaseAsync_Standalone_WithSyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_Standalone_WithSyncMode(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string key = $"flush-sync-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -27,11 +25,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushDatabaseAsync_Standalone_WithAsyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_Standalone_WithAsyncMode(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string key = $"flush-async-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -44,11 +41,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushAllDatabasesAsync_Standalone_WithSyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_Standalone_WithSyncMode(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string key = $"flushall-sync-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -59,11 +55,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushAllDatabasesAsync_Standalone_WithAsyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_Standalone_WithAsyncMode(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string key = $"flushall-async-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -75,11 +70,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushDatabaseAsync_Cluster_WithSyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_Cluster_WithSyncMode(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"flush-cluster-sync-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -90,11 +84,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushDatabaseAsync_Cluster_WithAsyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_Cluster_WithAsyncMode(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"flush-cluster-async-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -106,11 +99,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushDatabaseAsync_Cluster_WithSyncMode_AndRoute()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushDatabaseAsync_Cluster_WithSyncMode_AndRoute(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"flush-cluster-sync-route-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -125,11 +117,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
 
     #region LOLWUT Tests
 
-    [Fact]
-    public async Task LolwutAsync_Standalone_WithVersion()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_Standalone_WithVersion(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string result = await client.LolwutAsync(new LolwutOptions { Version = 5 });
 
         Assert.NotNull(result);
@@ -137,11 +128,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task LolwutAsync_Standalone_WithVersionAndParameters()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_Standalone_WithVersionAndParameters(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string result = await client.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
 
         Assert.NotNull(result);
@@ -149,45 +139,36 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task LolwutAsync_Cluster_WithVersion()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_Cluster_WithVersion(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
-        Dictionary<string, string> result = await client.LolwutAsync(new LolwutOptions { Version = 5 });
+        string result = await client.LolwutAsync(new LolwutOptions { Version = 5 });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
-        foreach (string value in result.Values)
-        {
-            Assert.Contains("Valkey", value, StringComparison.OrdinalIgnoreCase);
-        }
+        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task LolwutAsync_Cluster_WithVersionAndParameters()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_Cluster_WithVersionAndParameters(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
-        Dictionary<string, string> result = await client.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
+        string result = await client.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
-        foreach (string value in result.Values)
-        {
-            Assert.Contains("Valkey", value, StringComparison.OrdinalIgnoreCase);
-        }
+        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion
 
     #region CONFIG GET/SET Multi-Parameter Tests
 
-    [Fact]
-    public async Task ConfigGetAsync_Standalone_MultiplePatterns()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigGetAsync_Standalone_MultiplePatterns(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         KeyValuePair<string, string>[] result = await client.ConfigGetAsync(
             [(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]);
 
@@ -197,11 +178,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
 
-    [Fact]
-    public async Task ConfigSetAsync_Standalone_MultipleParameters()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigSetAsync_Standalone_MultipleParameters(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         // Get original values
         KeyValuePair<string, string>[] original = await client.ConfigGetAsync(
             [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"]);
@@ -236,37 +216,23 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         }
     }
 
-    [Fact]
-    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigGetAsync_Cluster_MultiplePatterns(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
-        ClusterValue<KeyValuePair<string, string>[]> result = await client.ConfigGetAsync(
+        KeyValuePair<string, string>[] result = await client.ConfigGetAsync(
             [(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]);
 
         Assert.NotNull(result);
-        if (result.HasMultiData)
-        {
-            foreach (KeyValuePair<string, string>[] nodeResult in result.MultiValue.Values)
-            {
-                Assert.True(nodeResult.Length >= 2);
-                Assert.Contains(nodeResult, kvp => kvp.Key == "maxmemory");
-                Assert.Contains(nodeResult, kvp => kvp.Key == "lfu-decay-time");
-            }
-        }
-        else
-        {
-            Assert.True(result.SingleValue.Length >= 2);
-            Assert.Contains(result.SingleValue, kvp => kvp.Key == "maxmemory");
-            Assert.Contains(result.SingleValue, kvp => kvp.Key == "lfu-decay-time");
-        }
+        Assert.True(result.Length >= 2);
+        Assert.Contains(result, kvp => kvp.Key == "maxmemory");
+        Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
 
-    [Fact]
-    public async Task ConfigSetAsync_Cluster_MultipleParameters()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task ConfigSetAsync_Cluster_MultipleParameters(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         // Get original values
         ClusterValue<KeyValuePair<string, string>[]> original = await client.ConfigGetAsync(
             [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"],
@@ -316,11 +282,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
 
     #region FlushAllDatabases Cluster Tests
 
-    [Fact]
-    public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"flushall-cluster-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -331,11 +296,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushAllDatabasesAsync_Cluster_WithSyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_Cluster_WithSyncMode(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"flushall-cluster-sync-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -346,11 +310,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushAllDatabasesAsync_Cluster_WithAsyncMode()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_Cluster_WithAsyncMode(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"flushall-cluster-async-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -362,11 +325,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
-    [Fact]
-    public async Task FlushAllDatabasesAsync_Cluster_WithRoute()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task FlushAllDatabasesAsync_Cluster_WithRoute(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"flushall-cluster-route-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
@@ -381,15 +343,14 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
 
     #region WAITAOF Tests
 
-    [Fact]
-    public async Task WaitAofAsync_Standalone_ReturnsResults()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task WaitAofAsync_Standalone_ReturnsResults(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string key = $"waitaof-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
 
-        long[] result = await client.WaitAofAsync(0, 0, TimeSpan.FromSeconds(2));
+        long[] result = await client.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
 
         Assert.NotNull(result);
         Assert.Equal(2, result.Length);
@@ -399,15 +360,14 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.True(result[1] >= 0);
     }
 
-    [Fact]
-    public async Task WaitAofAsync_Cluster_ReturnsResults()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task WaitAofAsync_Cluster_ReturnsResults(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
         string key = $"waitaof-cluster-test-{Guid.NewGuid()}";
         await client.StringSetAsync(key, "test-value");
 
-        long[] result = await client.WaitAofAsync(0, 0, TimeSpan.FromSeconds(2));
+        long[] result = await client.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
 
         Assert.NotNull(result);
         Assert.Equal(2, result.Length);
@@ -419,11 +379,10 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
 
     #region LOLWUT Params-Only Tests
 
-    [Fact]
-    public async Task LolwutAsync_Standalone_WithParametersOnly()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_Standalone_WithParametersOnly(GlideClient client)
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
-
         string result = await client.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
 
         Assert.NotNull(result);
@@ -431,35 +390,16 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task LolwutAsync_Cluster_WithParametersOnly()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task LolwutAsync_Cluster_WithParametersOnly(GlideClusterClient client)
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
-        Dictionary<string, string> result = await client.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
+        string result = await client.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
-        foreach (string value in result.Values)
-        {
-            Assert.Contains("Valkey", value, StringComparison.OrdinalIgnoreCase);
-        }
+        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion
-}
-
-/// <summary>
-/// Fixture class for server management command tests.
-/// </summary>
-public class ServerManagementFixture : IDisposable
-{
-    public StandaloneServer StandaloneServer = new();
-    public ClusterServer ClusterServer = new();
-
-    public void Dispose()
-    {
-        StandaloneServer.Dispose();
-        ClusterServer.Dispose();
-    }
 }

@@ -1,14 +1,13 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.TestUtils;
-
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
 /// SER-compatible integration tests for server management commands.
-/// Tests the IServer and IDatabaseAsync interfaces for FlushMode, LOLWUT, and CONFIG operations.
+/// Tests the IServer and IDatabaseAsync interfaces for CONFIG, LOLWUT, TIME, LASTSAVE,
+/// FLUSHDB, and FLUSHALL operations.
 /// </summary>
-public class ServerManagementTests(ServerManagementSERFixture fixture) : IClassFixture<ServerManagementSERFixture>
+public class ServerManagementTests
 {
     #region Constants
 
@@ -18,220 +17,229 @@ public class ServerManagementTests(ServerManagementSERFixture fixture) : IClassF
 
     #region IServer Tests
 
-    [Fact]
-    public async Task IServer_ConfigGetAsync_ReturnsResults()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigGetAsync_ReturnsResults(IServer server)
     {
-        KeyValuePair<string, string>[] result = await fixture.Server.ConfigGetAsync("maxmemory");
+        KeyValuePair<string, string>[] result = await server.ConfigGetAsync("maxmemory");
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
     }
 
-    [Fact]
-    public async Task IServer_ConfigSetAsync_SetsValue()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigGetAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ConfigGetAsync(flags: UnsupportedCommandFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigSetAsync_SetsValue(IServer server)
     {
-        // Get original value
-        KeyValuePair<string, string>[] original = await fixture.Server.ConfigGetAsync("lfu-decay-time");
+        KeyValuePair<string, string>[] original = await server.ConfigGetAsync("lfu-decay-time");
         string originalValue = original.First(kvp => kvp.Key == "lfu-decay-time").Value;
 
         try
         {
-            await fixture.Server.ConfigSetAsync("lfu-decay-time", "5");
+            await server.ConfigSetAsync("lfu-decay-time", "5");
 
-            KeyValuePair<string, string>[] result = await fixture.Server.ConfigGetAsync("lfu-decay-time");
+            KeyValuePair<string, string>[] result = await server.ConfigGetAsync("lfu-decay-time");
             Assert.Equal("5", result.First(kvp => kvp.Key == "lfu-decay-time").Value);
         }
         finally
         {
-            await fixture.Server.ConfigSetAsync("lfu-decay-time", originalValue);
+            await server.ConfigSetAsync("lfu-decay-time", originalValue);
         }
     }
 
-    [Fact]
-    public async Task IServer_ConfigResetStatisticsAsync_Succeeds()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigSetAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ConfigSetAsync("lfu-decay-time", "1", UnsupportedCommandFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigResetStatisticsAsync_Succeeds(IServer server)
     {
-        await fixture.Server.ConfigResetStatisticsAsync();
-        // No exception means success
+        await server.ConfigResetStatisticsAsync();
     }
 
-    [Fact]
-    public async Task IServer_LolwutAsync_ReturnsArt()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigResetStatisticsAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ConfigResetStatisticsAsync(UnsupportedCommandFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_LolwutAsync_ReturnsArt(IServer server)
     {
-        string result = await fixture.Server.LolwutAsync();
+        string result = await server.LolwutAsync();
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task IServer_TimeAsync_ReturnsValidTime()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_LolwutAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.LolwutAsync(UnsupportedCommandFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_TimeAsync_ReturnsValidTime(IServer server)
     {
-        DateTime result = await fixture.Server.TimeAsync();
+        DateTime result = await server.TimeAsync();
 
         Assert.True(result > DateTime.UnixEpoch);
         Assert.True(result <= DateTime.UtcNow.AddMinutes(1));
     }
 
-    [Fact]
-    public async Task IServer_LastSaveAsync_ReturnsValidTime()
-    {
-        DateTime result = await fixture.Server.LastSaveAsync();
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_TimeAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.TimeAsync(UnsupportedCommandFlag));
 
-        // LastSave returns the Unix timestamp of the last save; it should be a valid date
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_LastSaveAsync_ReturnsValidTime(IServer server)
+    {
+        DateTime result = await server.LastSaveAsync();
+
         Assert.True(result >= DateTime.UnixEpoch);
     }
 
-    [Fact]
-    public async Task IServer_FlushDatabaseAsync_ClearsDatabase()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_LastSaveAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.LastSaveAsync(UnsupportedCommandFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_FlushDatabaseAsync_Succeeds(IServer server)
     {
-        string key = $"ser-server-flush-{Guid.NewGuid()}";
-        await fixture.Database.StringSetAsync(key, "test-value");
-        Assert.True(await fixture.Database.KeyExistsAsync(key));
-
-        await fixture.Server.FlushDatabaseAsync();
-
-        Assert.False(await fixture.Database.KeyExistsAsync(key));
+        await server.FlushDatabaseAsync();
     }
 
-    [Fact]
-    public async Task IServer_FlushAllDatabasesAsync_ClearsAllDatabases()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_FlushDatabaseAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.FlushDatabaseAsync(UnsupportedCommandFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_FlushAllDatabasesAsync_Succeeds(IServer server)
     {
-        string key = $"ser-server-flushall-{Guid.NewGuid()}";
-        await fixture.Database.StringSetAsync(key, "test-value");
-        Assert.True(await fixture.Database.KeyExistsAsync(key));
-
-        await fixture.Server.FlushAllDatabasesAsync();
-
-        Assert.False(await fixture.Database.KeyExistsAsync(key));
+        await server.FlushAllDatabasesAsync();
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_FlushAllDatabasesAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.FlushAllDatabasesAsync(UnsupportedCommandFlag));
 
     #endregion
 
     #region IDatabaseAsync Server Management Tests
 
-    [Fact]
-    public async Task IDatabaseAsync_ConfigGetAsync_WithFlags()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_ConfigGetAsync_WithFlags(IDatabaseAsync db)
     {
-        KeyValuePair<string, string>[] result = await fixture.Database.ConfigGetAsync("maxmemory", CommandFlags.None);
+        KeyValuePair<string, string>[] result = await db.ConfigGetAsync("maxmemory", CommandFlags.None);
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
     }
 
-    [Fact]
-    public async Task IDatabaseAsync_ConfigGetAsync_UnsupportedFlags_Throws()
-    {
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.ConfigGetAsync("maxmemory", UnsupportedCommandFlag));
-    }
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_ConfigGetAsync_UnsupportedFlags_Throws(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.ConfigGetAsync("maxmemory", UnsupportedCommandFlag));
 
-    [Fact]
-    public async Task IDatabaseAsync_ConfigSetAsync_WithFlags()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_ConfigSetAsync_WithFlags(IDatabaseAsync db)
     {
-        // Get original value
-        KeyValuePair<string, string>[] original = await fixture.Database.ConfigGetAsync("lfu-decay-time", CommandFlags.None);
+        KeyValuePair<string, string>[] original = await db.ConfigGetAsync("lfu-decay-time", CommandFlags.None);
         string originalValue = original.First(kvp => kvp.Key == "lfu-decay-time").Value;
 
         try
         {
-            await fixture.Database.ConfigSetAsync("lfu-decay-time", "7", CommandFlags.None);
+            await db.ConfigSetAsync("lfu-decay-time", "7", CommandFlags.None);
 
-            KeyValuePair<string, string>[] result = await fixture.Database.ConfigGetAsync("lfu-decay-time", CommandFlags.None);
+            KeyValuePair<string, string>[] result = await db.ConfigGetAsync("lfu-decay-time", CommandFlags.None);
             Assert.Equal("7", result.First(kvp => kvp.Key == "lfu-decay-time").Value);
         }
         finally
         {
-            await fixture.Database.ConfigSetAsync("lfu-decay-time", originalValue, CommandFlags.None);
+            await db.ConfigSetAsync("lfu-decay-time", originalValue, CommandFlags.None);
         }
     }
 
-    [Fact]
-    public async Task IDatabaseAsync_ConfigSetAsync_UnsupportedFlags_Throws()
-    {
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.ConfigSetAsync("lfu-decay-time", "1", UnsupportedCommandFlag));
-    }
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_ConfigSetAsync_UnsupportedFlags_Throws(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.ConfigSetAsync("lfu-decay-time", "1", UnsupportedCommandFlag));
 
-    [Fact]
-    public async Task IDatabaseAsync_LolwutAsync_WithFlags()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_LolwutAsync_WithFlags(IDatabaseAsync db)
     {
-        string result = await fixture.Database.LolwutAsync(CommandFlags.None);
+        string result = await db.LolwutAsync(CommandFlags.None);
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task IDatabaseAsync_LolwutAsync_UnsupportedFlags_Throws()
-    {
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.LolwutAsync(UnsupportedCommandFlag));
-    }
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_LolwutAsync_UnsupportedFlags_Throws(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.LolwutAsync(UnsupportedCommandFlag));
 
-    [Fact]
-    public async Task IDatabaseAsync_TimeAsync_WithFlags()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_TimeAsync_WithFlags(IDatabaseAsync db)
     {
-        DateTime result = await fixture.Database.TimeAsync(CommandFlags.None);
+        DateTime result = await db.TimeAsync(CommandFlags.None);
 
         Assert.True(result > DateTime.UnixEpoch);
     }
 
-    [Fact]
-    public async Task IDatabaseAsync_TimeAsync_UnsupportedFlags_Throws()
-    {
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.TimeAsync(UnsupportedCommandFlag));
-    }
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_TimeAsync_UnsupportedFlags_Throws(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.TimeAsync(UnsupportedCommandFlag));
 
-    [Fact]
-    public async Task IDatabaseAsync_LastSaveAsync_WithFlags()
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_LastSaveAsync_WithFlags(IDatabaseAsync db)
     {
-        DateTime result = await fixture.Database.LastSaveAsync(CommandFlags.None);
+        DateTime result = await db.LastSaveAsync(CommandFlags.None);
 
         Assert.True(result >= DateTime.UnixEpoch);
     }
 
-    [Fact]
-    public async Task IDatabaseAsync_LastSaveAsync_UnsupportedFlags_Throws()
-    {
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.LastSaveAsync(UnsupportedCommandFlag));
-    }
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task IDatabaseAsync_LastSaveAsync_UnsupportedFlags_Throws(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.LastSaveAsync(UnsupportedCommandFlag));
 
     #endregion
-}
-
-/// <summary>
-/// Fixture class for SER-compatible server management tests.
-/// </summary>
-public class ServerManagementSERFixture : IDisposable
-{
-    private readonly StandaloneServer _standaloneServer;
-    private readonly ConnectionMultiplexer _connection;
-
-    public IServer Server { get; }
-    public IDatabaseAsync Database { get; }
-
-    public ServerManagementSERFixture()
-    {
-        _standaloneServer = new();
-        var (host, port) = _standaloneServer.Addresses.First();
-
-        ConfigurationOptions config = new();
-        config.EndPoints.Add(host, port);
-        _connection = ConnectionMultiplexer.Connect(config);
-
-        Server = _connection.GetServer(host, port);
-        Database = _connection.GetDatabase();
-    }
-
-    public void Dispose()
-    {
-        _connection.Dispose();
-        _standaloneServer.Dispose();
-    }
 }

@@ -201,9 +201,9 @@ public class CommandTests
             () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
             () => Assert.Equal(["WAIT", "0", "0"], Request.WaitAsync(0, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["WAIT", "3", "5000"], Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(1, 1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "0", "0", "0"], Request.WaitAofAsync(0, 0, TimeSpan.Zero).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "1", "2", "5000"], Request.WaitAofAsync(1, 2, TimeSpan.FromMilliseconds(5000)).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "0", "0", "0"], Request.WaitAofAsync(false, 0, TimeSpan.Zero).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "1", "2", "5000"], Request.WaitAofAsync(true, 2, TimeSpan.FromMilliseconds(5000)).GetArgs()),
 
             // List Commands
             () => Assert.Equal(["LPOP", "a"], Request.ListLeftPopAsync("a").GetArgs()),
@@ -567,8 +567,8 @@ public class CommandTests
             () => Assert.Equal(2L, Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).Converter(2L)),
             () => Assert.Equal(0L, Request.WaitAsync(0, TimeSpan.Zero).Converter(0L)),
             () => Assert.Equal(1L, Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).Converter(1L)),
-            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(1, 1, TimeSpan.FromMilliseconds(1000)).Converter([1L, 0L])),
-            () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(0, 0, TimeSpan.Zero).Converter([0L, 0L])),
+            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).Converter([1L, 0L])),
+            () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(false, 0, TimeSpan.Zero).Converter([0L, 0L])),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
             () => Assert.Equal(["one", "two"], Request.ListLeftPopAsync("a", 2).Converter([(gs)"one", (gs)"two"])!),

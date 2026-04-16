@@ -23,12 +23,12 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(ValkeyValue, ValkeyValue)" /></returns>
     IBatch ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
-    /// <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" /></returns>
+    /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" /></returns>
     IBatch ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
 
-    /// <inheritdoc cref="IServerManagementCommands.ConfigGetAsync(IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.ConfigGetAsync(IEnumerable{ValkeyValue})" /></returns>
+    /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})" /></returns>
     IBatch ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
     /// <inheritdoc cref="IServerManagementCommands.DatabaseSizeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -39,16 +39,16 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()" /></returns>
     IBatch FlushAllDatabasesAsync();
 
-    /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync(FlushMode)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync(FlushMode)" /></returns>
+    /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)" /></returns>
     IBatch FlushAllDatabasesAsync(FlushMode mode);
 
     /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync()" /></returns>
     IBatch FlushDatabaseAsync();
 
-    /// <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(FlushMode)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.FlushDatabaseAsync(FlushMode)" /></returns>
+    /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)" /></returns>
     IBatch FlushDatabaseAsync(FlushMode mode);
 
     /// <inheritdoc cref="IServerManagementCommands.LastSaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -63,7 +63,7 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync()" /></returns>
     IBatch LolwutAsync();
 
-    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(LolwutOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(LolwutOptions)" /></returns>
+    /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)" /></returns>
     IBatch LolwutAsync(LolwutOptions options);
 }

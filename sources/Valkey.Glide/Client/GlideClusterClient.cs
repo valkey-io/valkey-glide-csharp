@@ -168,7 +168,7 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
+    public override async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
     {
         _ = await Command(Request.ConfigSetAsync(parameters), AllPrimaries);
     }
@@ -195,7 +195,7 @@ public sealed partial class GlideClusterClient :
         => await FlushAllDatabasesAsync(AllPrimaries);
 
     /// <inheritdoc/>
-    public async Task FlushAllDatabasesAsync(FlushMode mode)
+    public override async Task FlushAllDatabasesAsync(FlushMode mode)
         => await FlushAllDatabasesAsync(mode, AllPrimaries);
 
     /// <inheritdoc/>
@@ -211,7 +211,7 @@ public sealed partial class GlideClusterClient :
         => await FlushDatabaseAsync(AllPrimaries);
 
     /// <inheritdoc/>
-    public async Task FlushDatabaseAsync(FlushMode mode)
+    public override async Task FlushDatabaseAsync(FlushMode mode)
         => await FlushDatabaseAsync(mode, AllPrimaries);
 
     /// <inheritdoc/>
@@ -271,14 +271,9 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, string>> LolwutAsync(LolwutOptions options)
+    public override async Task<string> LolwutAsync(LolwutOptions options)
     {
-        ClusterValue<string> result = await Command(Request.LolwutAsync(options).ToClusterValue(false), Route.Random);
-        if (result.HasMultiData)
-        {
-            return result.MultiValue;
-        }
-        return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
+        return await Command(Request.LolwutAsync(options), Route.Random);
     }
 
     /// <inheritdoc/>
@@ -294,9 +289,9 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
+    public override async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
     {
-        return await Command(Request.ConfigGetAsync(patterns).ToClusterValue(false), Route.AllPrimaries);
+        return await Command(Request.ConfigGetAsync(patterns));
     }
 
     /// <inheritdoc/>
@@ -306,8 +301,8 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task<long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout, Route route)
-        => await Command(Request.WaitAofAsync(numlocal, numreplicas, timeout), route);
+    public async Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route)
+        => await Command(Request.WaitAofAsync(localAof, numreplicas, timeout), route);
 
     /// <inheritdoc/>
     public override async Task<ValkeyValue> ClientGetNameAsync()
