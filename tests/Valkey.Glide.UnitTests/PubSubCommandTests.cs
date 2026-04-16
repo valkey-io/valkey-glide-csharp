@@ -13,6 +13,7 @@ public class PubSubCommandTests
     private static readonly string Pattern1 = "news.*";
     private static readonly string Pattern2 = "weather.*";
     private static readonly string Message = "message";
+
     private static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(123);
     private static readonly string TimeoutExpected = "123";
 
@@ -147,9 +148,9 @@ public class PubSubCommandTests
         var cmd = Request.PubSubChannels();
 
         // Simulated response from server
-        object[] response = [(GlideString)Channel1, (GlideString)Channel2];
+        GlideString[] response = [Channel1, Channel2];
 
-        var expected = new[] { Channel1, Channel2 };
+        var expected = new ValkeyKey[] { Channel1, Channel2 };
         Assert.Equivalent(expected, cmd.Converter(response));
     }
 
@@ -169,11 +170,11 @@ public class PubSubCommandTests
         // Simulated response from server
         Dictionary<GlideString, object> response = new()
         {
-            { (GlideString)Channel1, 5L },
-            { (GlideString)Channel2, 10L }
+            { Channel1, 5L },
+            { Channel2, 10L }
         };
 
-        var expected = new Dictionary<string, long>
+        var expected = new Dictionary<ValkeyKey, long>
         {
             { Channel1, 5L },
             { Channel2, 10L }
@@ -184,9 +185,7 @@ public class PubSubCommandTests
 
     [Fact]
     public void PubSubNumPat_BuildsCorrectCommand()
-    {
-        Assert.Equal(["PUBSUB", "NUMPAT"], Request.PubSubNumPat().GetArgs());
-    }
+        => Assert.Equal(["PUBSUB", "NUMPAT"], Request.PubSubNumPat().GetArgs());
 
     [Fact]
     public void PubSubShardChannels_BuildsCorrectCommand()
@@ -211,11 +210,11 @@ public class PubSubCommandTests
         // Simulated response from server
         Dictionary<GlideString, object> response = new()
         {
-            { (GlideString)Channel1, 3L },
-            { (GlideString)Channel2, 7L }
+            { Channel1, 3L },
+            { Channel2, 7L }
         };
 
-        var expected = new Dictionary<string, long>
+        var expected = new Dictionary<ValkeyKey, long>
         {
             { Channel1, 3L },
             { Channel2, 7L }
@@ -230,9 +229,9 @@ public class PubSubCommandTests
         var cmd = Request.PubSubShardChannels();
 
         // Simulated response from server
-        object[] response = [(GlideString)Channel1, (GlideString)Channel2];
+        GlideString[] response = [Channel1, Channel2];
 
-        var expected = new[] { Channel1, Channel2 };
+        var expected = new ValkeyKey[] { Channel1, Channel2 };
         Assert.Equivalent(expected, cmd.Converter(response));
     }
 

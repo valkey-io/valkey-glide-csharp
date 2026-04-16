@@ -220,8 +220,8 @@ public class StandaloneClientTests(TestConfiguration config)
         string key2 = Guid.NewGuid().ToString();
 
         await client.StringSetAsync(key, "val");
-        Assert.True(await client.KeyCopyAsync(key, key2, 1));
-        Assert.True(await client.KeyMoveAsync(key, 2));
+        Assert.True(await client.CopyAsync(key, key2, 1));
+        Assert.True(await client.MoveAsync(key, 2));
     }
 
     [Theory]
@@ -245,10 +245,10 @@ public class StandaloneClientTests(TestConfiguration config)
         Batch batch2 = new(isAtomic);
 
         // Test KeyCopy with database parameter
-        _ = batch2.KeyCopy(sourceKey, destKey, 1, false);
+        _ = batch2.Copy(sourceKey, destKey, 1, false);
 
         // Test KeyMove
-        _ = batch2.KeyMove(moveKey, 2);
+        _ = batch2.Move(moveKey, 2);
 
         object?[] results = (await client.Exec((Batch)batch, false))!;
         object?[] results2 = (await client.Exec(batch2, false))!;
@@ -394,7 +394,7 @@ public class StandaloneClientTests(TestConfiguration config)
         }
         finally
         {
-            _ = await client.KeyDeleteAsync(key);
+            _ = await client.DeleteAsync(key);
         }
     }
 

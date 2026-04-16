@@ -1,5 +1,7 @@
 ﻿using System;
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -41,6 +43,16 @@ internal static class ExpiryOptionExtensions
         ExpireWhen.HasExpiry => ValkeyLiterals.XX,
         ExpireWhen.GreaterThanCurrentExpiry => ValkeyLiterals.GT,
         ExpireWhen.LessThanCurrentExpiry => ValkeyLiterals.LT,
+        _ => throw new ArgumentOutOfRangeException(nameof(op)),
+    };
+
+    internal static ExpireCondition ToExpireCondition(this ExpireWhen op) => op switch
+    {
+        ExpireWhen.Always => ExpireCondition.Always,
+        ExpireWhen.HasNoExpiry => ExpireCondition.OnlyIfNotExists,
+        ExpireWhen.HasExpiry => ExpireCondition.OnlyIfExists,
+        ExpireWhen.GreaterThanCurrentExpiry => ExpireCondition.OnlyIfGreaterThan,
+        ExpireWhen.LessThanCurrentExpiry => ExpireCondition.OnlyIfLessThan,
         _ => throw new ArgumentOutOfRangeException(nameof(op)),
     };
 }

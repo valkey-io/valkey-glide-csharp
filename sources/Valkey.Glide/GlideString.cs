@@ -95,11 +95,11 @@ public static class GlideStringExtensions
     public static GlideString[] ToGlideStrings(this Section[]? strings) => strings is null ? [] : [.. strings.Select(s => new GlideString(s.ToString()))];
 
     /// <summary>
-    /// Convert an <see langword="ValkeyKey[]" /> to an <see langword="GlideString[]" />.
+    /// Convert an <see langword="IEnumerable&lt;ValkeyKey&gt;" /> to an <see langword="GlideString[]" />.
     /// </summary>
-    /// <param name="keys">An array of <see langword="ValkeyKey" />s to convert.</param>
+    /// <param name="keys">A collection of <see langword="ValkeyKey"/>s to convert.</param>
     /// <returns>An array of <see cref="GlideString" />s.</returns>
-    public static GlideString[] ToGlideStrings(this ValkeyKey[]? keys) => keys is null ? [] : [.. keys.Select(k => (GlideString)k)];
+    public static GlideString[] ToGlideStrings(this IEnumerable<ValkeyKey> keys) => [.. keys.Select(k => (GlideString)k)];
 
     /// <summary>
     /// Convert an <see langword="ValkeyValue[]" /> to an <see langword="GlideString[]" />.
@@ -107,6 +107,14 @@ public static class GlideStringExtensions
     /// <param name="values">An array of <see langword="ValkeyValue" />s to convert.</param>
     /// <returns>An array of <see cref="GlideString" />s.</returns>
     public static GlideString[] ToGlideStrings(this ValkeyValue[]? values) => values is null ? [] : [.. values.Select(v => (GlideString)v)];
+
+    /// <summary>
+    /// Converts an <see cref="ValkeyValue"/> collection to a <see cref="GlideString"/> array.
+    /// </summary>
+    /// <param name="values">A <see langword="ValkeyValue" /> collection to convert.</param>
+    /// <returns>A <see cref="GlideString" /> array.</returns>
+    public static GlideString[] ToGlideStrings(this IEnumerable<ValkeyValue> values)
+        => [.. values.Select(v => (GlideString)v)];
 
     /// <summary>
     /// Convert an <see langword="GlideString[]" /> to an <see langword="string[]" />.<br />

@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
@@ -8,120 +9,108 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <inheritdoc/>
-    public async Task<bool> KeyDeleteAsync(ValkeyKey key)
-        => await Command(Request.KeyDeleteAsync(key));
+    public async Task<bool> DeleteAsync(ValkeyKey key)
+        => await Command(Request.DeleteAsync(key));
 
     /// <inheritdoc/>
-    public async Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys)
-        => await Command(Request.KeyDeleteAsync([.. keys]));
+    public async Task<long> DeleteAsync(IEnumerable<ValkeyKey> keys)
+        => await Command(Request.DeleteAsync([.. keys]));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyUnlinkAsync(ValkeyKey key)
-        => await Command(Request.KeyUnlinkAsync(key));
+    public async Task<bool> UnlinkAsync(ValkeyKey key)
+        => await Command(Request.UnlinkAsync(key));
 
     /// <inheritdoc/>
-    public async Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys)
-        => await Command(Request.KeyUnlinkAsync([.. keys]));
+    public async Task<long> UnlinkAsync(IEnumerable<ValkeyKey> keys)
+        => await Command(Request.UnlinkAsync([.. keys]));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyExistsAsync(ValkeyKey key)
-        => await Command(Request.KeyExistsAsync(key));
+    public async Task<bool> ExistsAsync(ValkeyKey key)
+        => await Command(Request.ExistsAsync(key));
 
     /// <inheritdoc/>
-    public async Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys)
-        => await Command(Request.KeyExistsAsync([.. keys]));
+    public async Task<long> ExistsAsync(IEnumerable<ValkeyKey> keys)
+        => await Command(Request.ExistsAsync([.. keys]));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry)
-        => await KeyExpireAsync(key, expiry, ExpireWhen.Always);
+    public async Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.ExpireAsync(key, expiry, condition));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when)
-        => await Command(Request.KeyExpireAsync(key, expiry, when));
+    public async Task<bool> ExpireAsync(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always)
+        => await Command(Request.ExpireAsync(key, expiry, condition));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry)
-        => await KeyExpireAsync(key, expiry, ExpireWhen.Always);
+    public async Task<TimeToLiveResult> TimeToLiveAsync(ValkeyKey key)
+        => await Command(Request.TimeToLiveAsync(key));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when)
-        => await Command(Request.KeyExpireAsync(key, expiry, when));
+    public async Task<ValkeyType> TypeAsync(ValkeyKey key)
+        => await Command(Request.TypeAsync(key));
 
     /// <inheritdoc/>
-    public async Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key)
-        => await Command(Request.KeyTimeToLiveAsync(key));
+    public async Task RenameAsync(ValkeyKey key, ValkeyKey newKey)
+        => _ = await Command(Request.RenameAsync(key, newKey));
 
     /// <inheritdoc/>
-    public async Task<ValkeyType> KeyTypeAsync(ValkeyKey key)
-        => await Command(Request.KeyTypeAsync(key));
+    public async Task<bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
+        => await Command(Request.RenameIfNotExistsAsync(key, newKey));
 
     /// <inheritdoc/>
-    public async Task KeyRenameAsync(ValkeyKey key, ValkeyKey newKey)
-        => _ = await Command(Request.KeyRenameAsync(key, newKey));
+    public async Task<bool> PersistAsync(ValkeyKey key)
+        => await Command(Request.PersistAsync(key));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyRenameNXAsync(ValkeyKey key, ValkeyKey newKey)
-        => await Command(Request.KeyRenameNXAsync(key, newKey));
+    public async Task<byte[]?> DumpAsync(ValkeyKey key)
+        => await Command(Request.DumpAsync(key));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyPersistAsync(ValkeyKey key)
-        => await Command(Request.KeyPersistAsync(key));
+    public async Task RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null)
+        => _ = await Command(Request.RestoreAsync(key, value, options));
 
     /// <inheritdoc/>
-    public async Task<byte[]?> KeyDumpAsync(ValkeyKey key)
-        => await Command(Request.KeyDumpAsync(key));
+    public async Task<bool> TouchAsync(ValkeyKey key)
+        => await Command(Request.TouchAsync(key));
 
     /// <inheritdoc/>
-    public async Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, RestoreOptions? restoreOptions = null)
-        => _ = await Command(Request.KeyRestoreAsync(key, value, expiry, restoreOptions));
+    public async Task<long> TouchAsync(IEnumerable<ValkeyKey> keys)
+        => await Command(Request.TouchAsync([.. keys]));
 
     /// <inheritdoc/>
-    public async Task KeyRestoreDateTimeAsync(ValkeyKey key, byte[] value, DateTime? expiry = null, RestoreOptions? restoreOptions = null)
-        => _ = await Command(Request.KeyRestoreDateTimeAsync(key, value, expiry, restoreOptions));
+    public async Task<DateTimeOffset?> ExpireTimeAsync(ValkeyKey key)
+        => await Command(Request.ExpireTimeAsync(key));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyTouchAsync(ValkeyKey key)
-        => await Command(Request.KeyTouchAsync(key));
+    public async Task<string?> ObjectEncodingAsync(ValkeyKey key)
+        => await Command(Request.ObjectEncodingAsync(key));
 
     /// <inheritdoc/>
-    public async Task<long> KeyTouchAsync(IEnumerable<ValkeyKey> keys)
-        => await Command(Request.KeyTouchAsync([.. keys]));
+    public async Task<long?> ObjectFrequencyAsync(ValkeyKey key)
+        => await Command(Request.ObjectFrequencyAsync(key));
 
     /// <inheritdoc/>
-    public async Task<DateTime?> KeyExpireTimeAsync(ValkeyKey key)
-        => await Command(Request.KeyExpireTimeAsync(key));
+    public async Task<TimeSpan?> ObjectIdleTimeAsync(ValkeyKey key)
+        => await Command(Request.ObjectIdleTimeAsync(key));
 
     /// <inheritdoc/>
-    public async Task<string?> KeyEncodingAsync(ValkeyKey key)
-        => await Command(Request.KeyEncodingAsync(key));
+    public async Task<long?> ObjectRefCountAsync(ValkeyKey key)
+        => await Command(Request.ObjectRefCountAsync(key));
 
     /// <inheritdoc/>
-    public async Task<long?> KeyFrequencyAsync(ValkeyKey key)
-        => await Command(Request.KeyFrequencyAsync(key));
+    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false)
+        => await Command(Request.CopyAsync(source, destination, replace));
 
     /// <inheritdoc/>
-    public async Task<long?> KeyIdleTimeAsync(ValkeyKey key)
-        => await Command(Request.KeyIdleTimeAsync(key));
+    public async Task<bool> MoveAsync(ValkeyKey key, int database)
+        => await Command(Request.MoveAsync(key, database));
 
     /// <inheritdoc/>
-    public async Task<long?> KeyRefCountAsync(ValkeyKey key)
-        => await Command(Request.KeyRefCountAsync(key));
+    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
+        => await Command(Request.CopyAsync(source, destination, destinationDatabase, replace));
 
     /// <inheritdoc/>
-    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, bool replace = false)
-        => await Command(Request.KeyCopyAsync(sourceKey, destinationKey, replace));
-
-    /// <inheritdoc/>
-    public async Task<bool> KeyMoveAsync(ValkeyKey key, int database)
-        => await Command(Request.KeyMoveAsync(key, database));
-
-    /// <inheritdoc/>
-    public async Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase, bool replace = false)
-        => await Command(Request.KeyCopyAsync(sourceKey, destinationKey, destinationDatabase, replace));
-
-    /// <inheritdoc/>
-    public async Task<string?> KeyRandomAsync()
-        => await Command(Request.KeyRandomAsync());
+    public async Task<ValkeyKey?> RandomKeyAsync()
+        => await Command(Request.RandomKeyAsync());
 
     /// <inheritdoc/>
     public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null)
@@ -134,4 +123,29 @@ public abstract partial class BaseClient
     /// <inheritdoc/>
     public async Task<long> WaitAsync(long numreplicas, TimeSpan timeout)
         => await Command(Request.WaitAsync(numreplicas, timeout));
+
+    /// <inheritdoc/>
+    public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return await SortAsync(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return await SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null)
+        => await Command(Request.SortReadOnlyAsync(key, skip, take, order, sortType, by, get?.ToArray()));
+
+    /// <inheritdoc/>
+    public async Task<ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, SortOptions? options)
+    {
+        var opts = options ?? new SortOptions();
+        return await SortReadOnlyAsync(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
+    }
 }
