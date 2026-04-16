@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -129,7 +130,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
-        string result = await client.LolwutAsync(version: 5);
+        string result = await client.LolwutAsync(new LolwutOptions { Version = 5 });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -141,7 +142,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
-        string result = await client.LolwutAsync(version: 5, parameters: [40, 20]);
+        string result = await client.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -153,7 +154,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
-        Dictionary<string, string> result = await client.LolwutAsync(version: 5);
+        Dictionary<string, string> result = await client.LolwutAsync(new LolwutOptions { Version = 5 });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -168,7 +169,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
-        Dictionary<string, string> result = await client.LolwutAsync(version: 5, parameters: [40, 20]);
+        Dictionary<string, string> result = await client.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -423,7 +424,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
-        string result = await client.LolwutAsync(parameters: [40, 20]);
+        string result = await client.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -435,7 +436,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
-        Dictionary<string, string> result = await client.LolwutAsync(parameters: [40, 20]);
+        Dictionary<string, string> result = await client.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);

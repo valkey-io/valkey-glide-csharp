@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide.Commands;
@@ -515,53 +517,20 @@ public interface IServerManagementClusterCommands
     Task<Dictionary<string, string>> LolwutAsync();
 
     /// <summary>
-    /// Displays a piece of generative computer art for the specified version.<br />
+    /// Displays a piece of generative computer art and the Valkey version.<br />
     /// The command will be routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="version">The version of the generative art to display.</param>
+    /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
     /// <returns>A string containing the Valkey version and generative art per cluster node.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, string&gt; art = await client.LolwutAsync(version: 6);
+    /// Dictionary&lt;string, string&gt; art = await client.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] });
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, string>> LolwutAsync(int version);
-
-    /// <summary>
-    /// Displays a piece of generative computer art for the specified version with additional parameters.<br />
-    /// The command will be routed to a random node.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="version">The version of the generative art to display.</param>
-    /// <param name="parameters">Additional parameters for the art generation.</param>
-    /// <returns>A string containing the Valkey version and generative art per cluster node.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// Dictionary&lt;string, string&gt; art = await client.LolwutAsync(version: 6, parameters: [40, 20]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<Dictionary<string, string>> LolwutAsync(int version, int[] parameters);
-
-    /// <summary>
-    /// Displays a piece of generative computer art with additional parameters (using the default version).<br />
-    /// The command will be routed to a random node.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="parameters">Additional parameters for the art generation.</param>
-    /// <returns>A string containing the Valkey version and generative art per cluster node.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// Dictionary&lt;string, string&gt; art = await client.LolwutAsync(parameters: [40, 20]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<Dictionary<string, string>> LolwutAsync(int[] parameters);
+    Task<Dictionary<string, string>> LolwutAsync(LolwutOptions options);
 
     /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.
@@ -583,6 +552,25 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(Route route);
+
+    /// <summary>
+    /// Displays a piece of generative computer art and the Valkey version.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <c>route</c>.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}" /> containing the Valkey version and generative art.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ClusterValue&lt;string&gt; art = await client.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }, Route.AllNodes);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> LolwutAsync(LolwutOptions options, Route route);
 
     /// <summary>
     /// Gets the values of configuration parameters matching multiple patterns.<br />
@@ -615,5 +603,27 @@ public interface IServerManagementClusterCommands
     /// </example>
     /// </remarks>
     Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route);
+
+    /// <summary>
+    /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged
+    /// by at least the specified number of local and replica AOF-synced nodes.
+    /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/waitaof"/>
+    /// <param name="numlocal">The number of local nodes to wait for AOF sync. Can be 0 or 1.</param>
+    /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
+    /// <param name="timeout">The timeout to wait.</param>
+    /// <param name="route">Specifies the routing configuration for the command. Typically, you should route
+    /// to the primary that handled the write operation you want to wait for.</param>
+    /// <returns>An array of two longs: the number of local and replica nodes that acknowledged the write commands.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// long[] result = await client.WaitAofAsync(1, 1, TimeSpan.FromSeconds(1), route);
+    /// // result[0] = number of local nodes, result[1] = number of replica nodes
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout, Route route);
 
 }

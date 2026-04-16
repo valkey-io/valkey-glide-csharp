@@ -271,31 +271,9 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, string>> LolwutAsync(int version)
+    public async Task<Dictionary<string, string>> LolwutAsync(LolwutOptions options)
     {
-        ClusterValue<string> result = await Command(Request.LolwutAsync(version).ToClusterValue(false), Route.Random);
-        if (result.HasMultiData)
-        {
-            return result.MultiValue;
-        }
-        return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
-    }
-
-    /// <inheritdoc/>
-    public async Task<Dictionary<string, string>> LolwutAsync(int version, int[] parameters)
-    {
-        ClusterValue<string> result = await Command(Request.LolwutAsync(version, parameters).ToClusterValue(false), Route.Random);
-        if (result.HasMultiData)
-        {
-            return result.MultiValue;
-        }
-        return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
-    }
-
-    /// <inheritdoc/>
-    public async Task<Dictionary<string, string>> LolwutAsync(int[] parameters)
-    {
-        ClusterValue<string> result = await Command(Request.LolwutAsync(parameters).ToClusterValue(false), Route.Random);
+        ClusterValue<string> result = await Command(Request.LolwutAsync(options).ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
             return result.MultiValue;
@@ -310,6 +288,12 @@ public sealed partial class GlideClusterClient :
     }
 
     /// <inheritdoc/>
+    public async Task<ClusterValue<string>> LolwutAsync(LolwutOptions options, Route route)
+    {
+        return await Command(Request.LolwutAsync(options).ToClusterValue(route is SingleNodeRoute), route);
+    }
+
+    /// <inheritdoc/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
     {
         return await Command(Request.ConfigGetAsync(patterns).ToClusterValue(false), Route.AllPrimaries);
@@ -320,6 +304,10 @@ public sealed partial class GlideClusterClient :
     {
         return await Command(Request.ConfigGetAsync(patterns).ToClusterValue(route is SingleNodeRoute), route);
     }
+
+    /// <inheritdoc/>
+    public async Task<long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout, Route route)
+        => await Command(Request.WaitAofAsync(numlocal, numreplicas, timeout), route);
 
     /// <inheritdoc/>
     public override async Task<ValkeyValue> ClientGetNameAsync()

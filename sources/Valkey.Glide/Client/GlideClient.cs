@@ -158,21 +158,9 @@ public partial class GlideClient :
     }
 
     /// <inheritdoc/>
-    public async Task<string> LolwutAsync(int version)
+    public async Task<string> LolwutAsync(LolwutOptions options)
     {
-        return await Command(Request.LolwutAsync(version));
-    }
-
-    /// <inheritdoc/>
-    public async Task<string> LolwutAsync(int version, int[] parameters)
-    {
-        return await Command(Request.LolwutAsync(version, parameters));
-    }
-
-    /// <inheritdoc/>
-    public async Task<string> LolwutAsync(int[] parameters)
-    {
-        return await Command(Request.LolwutAsync(parameters));
+        return await Command(Request.LolwutAsync(options));
     }
 
     /// <inheritdoc/>

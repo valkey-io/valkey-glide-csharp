@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.Pipeline;
 
@@ -62,15 +63,7 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync()" /></returns>
     IBatch LolwutAsync();
 
-    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(int)" /></returns>
-    IBatch LolwutAsync(int version);
-
-    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(int, int[])" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(int, int[])" /></returns>
-    IBatch LolwutAsync(int version, int[] parameters);
-
-    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(int[])" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(int[])" /></returns>
-    IBatch LolwutAsync(int[] parameters);
+    /// <inheritdoc cref="IServerManagementCommands.LolwutAsync(LolwutOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.LolwutAsync(LolwutOptions)" /></returns>
+    IBatch LolwutAsync(LolwutOptions options);
 }

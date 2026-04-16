@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -122,13 +123,13 @@ internal partial class Request
         => Ok(RequestType.FlushAll, []);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync(FlushMode mode)
-        => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
+        => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? Constants.SyncKeyword : Constants.AsyncKeyword]);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
         => Ok(RequestType.FlushDB, []);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
-        => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
+        => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? Constants.SyncKeyword : Constants.AsyncKeyword]);
 
     // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<long, DateTime> LastSaveAsync()
@@ -148,25 +149,9 @@ internal partial class Request
 #endif
         });
 
-    public static Cmd<GlideString, string> LolwutAsync()
-        => new(RequestType.Lolwut, [], false, gs => gs.ToString());
-
-    public static Cmd<GlideString, string> LolwutAsync(int version)
-        => new(RequestType.Lolwut, ["VERSION", version.ToString().ToGlideString()], false, gs => gs.ToString());
-
-    public static Cmd<GlideString, string> LolwutAsync(int version, int[] parameters)
+    public static Cmd<GlideString, string> LolwutAsync(LolwutOptions? options = null)
     {
-        List<GlideString> args = ["VERSION", version.ToString().ToGlideString()];
-        foreach (int param in parameters)
-        {
-            args.Add(param.ToString().ToGlideString());
-        }
-        return new(RequestType.Lolwut, [.. args], false, gs => gs.ToString());
-    }
-
-    public static Cmd<GlideString, string> LolwutAsync(int[] parameters)
-    {
-        GlideString[] args = [.. parameters.Select(p => p.ToString().ToGlideString())];
+        GlideString[] args = options is null ? [] : [.. options.ToArgs().Select(a => a.ToGlideString())];
         return new(RequestType.Lolwut, args, false, gs => gs.ToString());
     }
 

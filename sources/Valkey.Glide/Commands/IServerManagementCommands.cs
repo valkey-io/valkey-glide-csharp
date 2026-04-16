@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide.Commands;
@@ -243,50 +245,19 @@ public interface IServerManagementCommands
     Task<string> LolwutAsync();
 
     /// <summary>
-    /// Displays a piece of generative computer art for the specified version.
+    /// Displays a piece of generative computer art and the Valkey version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="version">The version of the generative art to display.</param>
+    /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
     /// <returns>A string containing the Valkey version and generative art.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string art = await client.LolwutAsync(version: 6);
+    /// string art = await client.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] });
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> LolwutAsync(int version);
-
-    /// <summary>
-    /// Displays a piece of generative computer art for the specified version with additional parameters.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="version">The version of the generative art to display.</param>
-    /// <param name="parameters">Additional parameters for the art generation.</param>
-    /// <returns>A string containing the Valkey version and generative art.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// string art = await client.LolwutAsync(version: 6, parameters: [40, 20]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string> LolwutAsync(int version, int[] parameters);
-
-    /// <summary>
-    /// Displays a piece of generative computer art with additional parameters (using the default version).
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <param name="parameters">Additional parameters for the art generation.</param>
-    /// <returns>A string containing the Valkey version and generative art.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// string art = await client.LolwutAsync(parameters: [40, 20]);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string> LolwutAsync(int[] parameters);
+    Task<string> LolwutAsync(LolwutOptions options);
 
     /// <summary>
     /// Gets the values of configuration parameters matching multiple patterns.

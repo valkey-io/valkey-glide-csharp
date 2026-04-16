@@ -426,9 +426,10 @@ public class CommandTests
             () => Assert.Equal(["LASTSAVE"], Request.LastSaveAsync().GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
-            () => Assert.Equal(["LOLWUT", "VERSION", "5"], Request.LolwutAsync(5).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(6, [40, 20]).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "40", "20"], Request.LolwutAsync([40, 20]).GetArgs()),
+            () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "VERSION", "5"], Request.LolwutAsync(new LolwutOptions { Version = 5 }).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "40", "20"], Request.LolwutAsync(new LolwutOptions { Parameters = [40, 20] }).GetArgs()),
             () => Assert.Equal(["CONFIGGET", "maxmemory", "lfu-decay-time"], Request.ConfigGetAsync([(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]).GetArgs()),
             () => Assert.Equal(["CONFIGSET", "lfu-decay-time", "5", "lfu-log-factor", "20"], Request.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "lfu-decay-time", "5" }, { "lfu-log-factor", "20" } }).GetArgs()),
 

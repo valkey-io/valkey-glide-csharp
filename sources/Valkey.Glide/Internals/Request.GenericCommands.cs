@@ -320,8 +320,8 @@ internal partial class Request
     public static Cmd<object[], long[]> WaitAofAsync(long numlocal, long numreplicas, TimeSpan timeout)
         => new(RequestType.WaitAof, [numlocal.ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()], false, arr =>
         {
-            long local = arr[0] is long l0 ? l0 : long.Parse(arr[0].ToString()!);
-            long replicas = arr[1] is long l1 ? l1 : long.Parse(arr[1].ToString()!);
+            long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);
+            long replicas = Convert.ToInt64(arr[1] is GlideString gs1 ? gs1.ToString() : arr[1]);
             return [local, replicas];
         });
 }

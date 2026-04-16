@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.Pipeline;
@@ -48,14 +49,8 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync()" />
     public T LolwutAsync() => AddCmd(Request.LolwutAsync());
 
-    /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync(int)" />
-    public T LolwutAsync(int version) => AddCmd(Request.LolwutAsync(version));
-
-    /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync(int, int[])" />
-    public T LolwutAsync(int version, int[] parameters) => AddCmd(Request.LolwutAsync(version, parameters));
-
-    /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync(int[])" />
-    public T LolwutAsync(int[] parameters) => AddCmd(Request.LolwutAsync(parameters));
+    /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync(LolwutOptions)" />
+    public T LolwutAsync(LolwutOptions options) => AddCmd(Request.LolwutAsync(options));
 
     // Interface implementations
     IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
@@ -72,7 +67,5 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.LastSaveAsync() => LastSaveAsync();
     IBatch IBatchServerManagementCommands.TimeAsync() => TimeAsync();
     IBatch IBatchServerManagementCommands.LolwutAsync() => LolwutAsync();
-    IBatch IBatchServerManagementCommands.LolwutAsync(int version) => LolwutAsync(version);
-    IBatch IBatchServerManagementCommands.LolwutAsync(int version, int[] parameters) => LolwutAsync(version, parameters);
-    IBatch IBatchServerManagementCommands.LolwutAsync(int[] parameters) => LolwutAsync(parameters);
+    IBatch IBatchServerManagementCommands.LolwutAsync(LolwutOptions options) => LolwutAsync(options);
 }
