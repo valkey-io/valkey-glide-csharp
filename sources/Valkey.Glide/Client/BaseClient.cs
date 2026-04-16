@@ -359,14 +359,12 @@ public abstract partial class BaseClient : IBaseClient
 
     #region private methods
     private void SuccessCallback(ulong index, IntPtr ptr) =>
-        // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
-        Task.Run(() => MessageContainer.GetMessage((int)index).SetResult(ptr));
+        ThreadPool.UnsafeQueueUserWorkItem(_ => MessageContainer.GetMessage((int)index).SetResult(ptr), null);
 
     private void FailureCallback(ulong index, IntPtr strPtr, RequestErrorType errType)
     {
         string str = Marshal.PtrToStringAnsi(strPtr)!;
-        // Work needs to be offloaded from the calling thread, because otherwise we might starve the client's thread pool.
-        _ = Task.Run(() => MessageContainer.GetMessage((int)index).SetException(Create(errType, str)));
+        _ = ThreadPool.UnsafeQueueUserWorkItem(_ => MessageContainer.GetMessage((int)index).SetException(Create(errType, str)), null);
     }
 
     private void PubSubCallback(

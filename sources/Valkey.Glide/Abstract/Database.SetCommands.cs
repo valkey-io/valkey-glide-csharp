@@ -68,21 +68,24 @@ internal partial class Database
     public async Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return [.. await base.SetPopAsync(key, count)];
+        var result = await base.SetPopAsync(key, count);
+        return [.. result];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetCombineAsync(SetOperation, ValkeyKey, ValkeyKey, CommandFlags)"/>
     public async Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return [.. await GetCombineResultAsync(operation, [first, second])];
+        var result = await GetCombineResultAsync(operation, [first, second]);
+        return [.. result];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetCombineAsync(SetOperation, IEnumerable{ValkeyKey}, CommandFlags)"/>
     public async Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return [.. await GetCombineResultAsync(operation, keys)];
+        var result = await GetCombineResultAsync(operation, keys);
+        return [.. result];
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetCombineAndStoreAsync(SetOperation, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)"/>

@@ -7,31 +7,31 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.HyperLogLogAddAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element, CommandFlags flags)
+    public Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HyperLogLogAddAsync(key, element);
+        return HyperLogLogAddAsync(key, element);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HyperLogLogAddAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements, CommandFlags flags)
+    public Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HyperLogLogAddAsync(key, elements);
+        return HyperLogLogAddAsync(key, elements);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HyperLogLogLengthAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<long> HyperLogLogLengthAsync(ValkeyKey key, CommandFlags flags)
+    public Task<long> HyperLogLogLengthAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HyperLogLogLengthAsync(key);
+        return HyperLogLogLengthAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HyperLogLogLengthAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
-    public async Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
+    public Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HyperLogLogLengthAsync(keys);
+        return HyperLogLogLengthAsync(keys);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HyperLogLogMergeAsync(ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)"/>
