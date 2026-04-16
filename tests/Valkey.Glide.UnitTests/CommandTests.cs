@@ -135,8 +135,8 @@ public class CommandTests
             () => Assert.Equal(["SSCAN", "key", "0", "MATCH", "pattern*", "COUNT", "10"], Request.SetScanAsync("key", 0, new ScanOptions { MatchPattern = "pattern*", Count = 10 }).GetArgs()),
             () => Assert.Equal(["SSCAN", "key", "5", "MATCH", "test*", "COUNT", "20"], Request.SetScanAsync("key", 5, new ScanOptions { MatchPattern = "test*", Count = 20 }).GetArgs()),
             () => Assert.Equal(["SSCAN", "key", "10", "MATCH", "*suffix", "COUNT", "5"], Request.SetScanAsync("key", 10, new ScanOptions { MatchPattern = "*suffix", Count = 5 }).GetArgs()),
-            () => Assert.Equal(["SISMEMBER", "", "member"], Request.SetContainsAsync("", "member").GetArgs()),
-            () => Assert.Equal(["SISMEMBER", "key", ""], Request.SetContainsAsync("key", "").GetArgs()),
+            () => Assert.Equal(["SISMEMBER", "", "member"], Request.SetIsMemberAsync("", "member").GetArgs()),
+            () => Assert.Equal(["SISMEMBER", "key", ""], Request.SetIsMemberAsync("key", "").GetArgs()),
             () => Assert.Equal(["SMOVE", "", "", ""], Request.SetMoveAsync("", "", "").GetArgs()),
             () => Assert.Equal(["SSCAN", "", "0"], Request.SetScanAsync("", 0).GetArgs()),
 

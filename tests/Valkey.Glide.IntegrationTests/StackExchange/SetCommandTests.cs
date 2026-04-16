@@ -97,7 +97,7 @@ public class SetCommandTests(TestConfiguration config)
 
         // Should have 3 elements (5 - 2 skipped)
         Assert.Equal(3, results.Count);
-      
+
     }
     #endregion
     #region SetAddAsync
@@ -279,7 +279,9 @@ public class SetCommandTests(TestConfiguration config)
             }
         });
     }
-  
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SetContainsAsync_MultiValue_ReturnsMembershipArray(IDatabaseAsync db)
     {
         string key = $"ser-smismember-{Guid.NewGuid()}";

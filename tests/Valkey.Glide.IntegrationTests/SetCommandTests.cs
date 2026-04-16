@@ -369,6 +369,6 @@ public class SetCommandTests(TestConfiguration config)
         }
         Assert.Equal(25000, smallPageScanned.Count);
 
-        Assert.Equal(25000, await client.SetLengthAsync(key));
+        Assert.Equal(25000, await client.SetCardAsync(key));
     }
 }
