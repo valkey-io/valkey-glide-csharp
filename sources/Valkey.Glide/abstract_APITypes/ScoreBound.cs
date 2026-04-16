@@ -8,7 +8,7 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/zcount/"/>
 /// <seealso href="https://valkey.io/commands/zrangebyscore/"/>
 /// <seealso href="https://valkey.io/commands/zremrangebyscore/"/>
-public sealed class ScoreBound : Bound, IEquatable<ScoreBound>
+public sealed class ScoreBound : Bound, IEquatable<ScoreBound>, IComparable<ScoreBound>
 {
     #region Constants
 
@@ -72,6 +72,25 @@ public sealed class ScoreBound : Bound, IEquatable<ScoreBound>
 
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(_score, _isInclusive);
+
+    /// <inheritdoc/>
+    public int CompareTo(ScoreBound? other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        return _score.CompareTo(other._score);
+    }
+
+    /// <inheritdoc/>
+    public static bool operator <(ScoreBound left, ScoreBound right) => left.CompareTo(right) < 0;
+
+    /// <inheritdoc/>
+    public static bool operator <=(ScoreBound left, ScoreBound right) => left.CompareTo(right) <= 0;
+
+    /// <inheritdoc/>
+    public static bool operator >(ScoreBound left, ScoreBound right) => left.CompareTo(right) > 0;
+
+    /// <inheritdoc/>
+    public static bool operator >=(ScoreBound left, ScoreBound right) => left.CompareTo(right) >= 0;
 
     #endregion
     #region Internal Methods

@@ -76,6 +76,33 @@ public class BoundTests
         () => Assert.NotEqual(ScoreBound.Inclusive(5.0).GetHashCode(), ScoreBound.Exclusive(5.0).GetHashCode()),
         () => Assert.NotEqual(ScoreBound.Min.GetHashCode(), ScoreBound.Max.GetHashCode()));
 
+    [Fact]
+    public void ScoreBound_Comparison() => Assert.Multiple(
+        // Min is less than everything
+        () => Assert.True(ScoreBound.Min < ScoreBound.Inclusive(0.0)),
+        () => Assert.True(ScoreBound.Min < ScoreBound.Max),
+        () => Assert.True(ScoreBound.Min <= ScoreBound.Inclusive(double.NegativeInfinity)),
+
+        // Max is greater than everything
+        () => Assert.True(ScoreBound.Max > ScoreBound.Inclusive(0.0)),
+        () => Assert.True(ScoreBound.Max > ScoreBound.Min),
+        () => Assert.True(ScoreBound.Max >= ScoreBound.Inclusive(double.PositiveInfinity)),
+
+        // Regular values compare numerically
+        () => Assert.True(ScoreBound.Inclusive(1.0) < ScoreBound.Inclusive(2.0)),
+        () => Assert.True(ScoreBound.Inclusive(2.0) > ScoreBound.Inclusive(1.0)),
+        () => Assert.True(ScoreBound.Inclusive(-5.0) < ScoreBound.Inclusive(5.0)),
+        () => Assert.True(ScoreBound.Inclusive(3.0) <= ScoreBound.Inclusive(3.0)),
+        () => Assert.True(ScoreBound.Inclusive(3.0) >= ScoreBound.Inclusive(3.0)),
+
+        // Inclusivity does not affect ordering
+        () => Assert.Equal(0, ScoreBound.Inclusive(5.0).CompareTo(ScoreBound.Exclusive(5.0))),
+        () => Assert.True(ScoreBound.Exclusive(1.0) < ScoreBound.Inclusive(2.0)),
+
+        // Infinity equality
+        () => Assert.Equal(0, ScoreBound.Min.CompareTo(ScoreBound.Inclusive(double.NegativeInfinity))),
+        () => Assert.Equal(0, ScoreBound.Max.CompareTo(ScoreBound.Exclusive(double.PositiveInfinity))));
+
     #endregion
     #region LexBound Tests
 
