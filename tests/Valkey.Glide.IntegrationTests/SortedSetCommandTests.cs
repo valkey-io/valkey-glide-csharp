@@ -1213,7 +1213,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         ValkeyValue[] multiResult = await client.SortedSetRandomMembersAsync(key, 2);
         Assert.Equal(2, multiResult.Length);
 
-        // Test random member with score (GLIDE-native)
+        // Test random member with score
         SortedSetEntry scoreResult = Assert.NotNull(await client.SortedSetRandomMemberWithScoreAsync(key));
         Assert.Contains(scoreResult.Element.ToString(), new[] { "member1", "member2", "member3" });
         Assert.True(scoreResult.Score > 0);
