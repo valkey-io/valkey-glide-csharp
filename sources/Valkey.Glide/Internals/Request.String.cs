@@ -23,10 +23,10 @@ internal partial class Request
         => ToValkeyValue(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs(), ValkeyLiterals.GET.ToGlideString()], isNullable: true);
 
     public static Cmd<string, bool> Set(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
-        => OKToBool(RequestType.MSet, [.. values.SelectMany(kvp => new[] { kvp.Key.ToGlideString(), kvp.Value.ToGlideString() })]);
+        => OKToBool(RequestType.MSet, values.ToGlideStrings());
 
     public static Cmd<bool, bool> SetIfNotExists(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
-        => Simple<bool>(RequestType.MSetNX, [.. values.SelectMany(kvp => new[] { kvp.Key.ToGlideString(), kvp.Value.ToGlideString() })]);
+        => Simple<bool>(RequestType.MSetNX, values.ToGlideStrings());
 
     public static Cmd<long, ValkeyValue> SetRange(GlideString key, long offset, GlideString value)
         => new(RequestType.SetRange, [key, offset.ToGlideString(), value], false, response => (ValkeyValue)response);
