@@ -1016,117 +1016,6 @@ public class SortedSetCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region SortedSetScoreAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoreAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key = $"ser-zscore-{Guid.NewGuid()}";
-
-        // Non-existent key
-        Assert.Null(await db.SortedSetScoreAsync(key, "member1"));
-
-        // Add test data
-        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
-        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
-
-        // Get score of existing member
-        double? score = await db.SortedSetScoreAsync(key, "member1");
-        _ = Assert.NotNull(score);
-        Assert.Equal(10.5, score.Value);
-
-        // Get score of non-existent member
-        Assert.Null(await db.SortedSetScoreAsync(key, "nonexistent"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoreAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zscore-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetScoreAsync(key, "member1", CommandFlags.DemandMaster));
-    }
-
-    #endregion
-    #region SortedSetScoresAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoresAsync_WithCommandFlags(IDatabaseAsync db)
-    {
-        string key = $"ser-zmscore-{Guid.NewGuid()}";
-
-        // Add test data
-        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
-        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
-
-        // Get scores of multiple members
-        double?[] scores = await db.SortedSetScoresAsync(key, ["member1", "member2", "nonexistent"]);
-        Assert.Equal(3, scores.Length);
-        Assert.Equal(10.5, scores[0]);
-        Assert.Equal(8.2, scores[1]);
-        Assert.Null(scores[2]);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoresAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
-    {
-        string key = $"ser-zmscore-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.SortedSetScoresAsync(key, ["member1"], CommandFlags.DemandMaster));
-    }
-
-    #endregion
-    #region SortedSetUpdateAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetUpdateAsync_SingleMember(IDatabaseAsync db)
-    {
-        string key = $"ser-zadd-update-{Guid.NewGuid()}";
-
-        // Add initial member
-        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.0));
-
-        // Update with CH flag via SortedSetUpdateAsync — returns true if score changed
-        Assert.True(await db.SortedSetUpdateAsync(key, "member1", 15.0));
-
-        // Update with same score — returns false (no change)
-        Assert.False(await db.SortedSetUpdateAsync(key, "member1", 15.0));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetUpdateAsync_MultiMember(IDatabaseAsync db)
-    {
-        string key = $"ser-zadd-update-multi-{Guid.NewGuid()}";
-
-        // Add initial members
-        SortedSetEntry[] entries =
-        [
-            new("member1", 10.0),
-            new("member2", 20.0),
-        ];
-        Assert.Equal(2, await db.SortedSetAddAsync(key, entries));
-
-        // Update scores — returns count of changed members
-        SortedSetEntry[] updatedEntries =
-        [
-            new("member1", 15.0),
-            new("member2", 25.0),
-        ];
-        Assert.Equal(2, await db.SortedSetUpdateAsync(key, updatedEntries));
-
-        // Update with same scores — returns 0 (no changes)
-        Assert.Equal(0, await db.SortedSetUpdateAsync(key, updatedEntries));
-    }
-
-    #endregion
     #region SortedSetScanAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1269,6 +1158,117 @@ public class SortedSetCommandTests(TestConfiguration config)
                 // Should not reach here
             }
         });
+    }
+
+    #endregion
+    #region SortedSetScoreAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetScoreAsync_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key = $"ser-zscore-{Guid.NewGuid()}";
+
+        // Non-existent key
+        Assert.Null(await db.SortedSetScoreAsync(key, "member1"));
+
+        // Add test data
+        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
+        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
+
+        // Get score of existing member
+        double? score = await db.SortedSetScoreAsync(key, "member1");
+        _ = Assert.NotNull(score);
+        Assert.Equal(10.5, score.Value);
+
+        // Get score of non-existent member
+        Assert.Null(await db.SortedSetScoreAsync(key, "nonexistent"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetScoreAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zscore-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetScoreAsync(key, "member1", CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetScoresAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetScoresAsync_WithCommandFlags(IDatabaseAsync db)
+    {
+        string key = $"ser-zmscore-{Guid.NewGuid()}";
+
+        // Add test data
+        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.5));
+        Assert.True(await db.SortedSetAddAsync(key, "member2", 8.2));
+
+        // Get scores of multiple members
+        double?[] scores = await db.SortedSetScoresAsync(key, ["member1", "member2", "nonexistent"]);
+        Assert.Equal(3, scores.Length);
+        Assert.Equal(10.5, scores[0]);
+        Assert.Equal(8.2, scores[1]);
+        Assert.Null(scores[2]);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetScoresAsync_UnsupportedCommandFlags_Throws(IDatabaseAsync db)
+    {
+        string key = $"ser-zmscore-flags-{Guid.NewGuid()}";
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetScoresAsync(key, ["member1"], CommandFlags.DemandMaster));
+    }
+
+    #endregion
+    #region SortedSetUpdateAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetUpdateAsync_SingleMember(IDatabaseAsync db)
+    {
+        string key = $"ser-zadd-update-{Guid.NewGuid()}";
+
+        // Add initial member
+        Assert.True(await db.SortedSetAddAsync(key, "member1", 10.0));
+
+        // Update with CH flag via SortedSetUpdateAsync — returns true if score changed
+        Assert.True(await db.SortedSetUpdateAsync(key, "member1", 15.0));
+
+        // Update with same score — returns false (no change)
+        Assert.False(await db.SortedSetUpdateAsync(key, "member1", 15.0));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetUpdateAsync_MultiMember(IDatabaseAsync db)
+    {
+        string key = $"ser-zadd-update-multi-{Guid.NewGuid()}";
+
+        // Add initial members
+        SortedSetEntry[] entries =
+        [
+            new("member1", 10.0),
+            new("member2", 20.0),
+        ];
+        Assert.Equal(2, await db.SortedSetAddAsync(key, entries));
+
+        // Update scores — returns count of changed members
+        SortedSetEntry[] updatedEntries =
+        [
+            new("member1", 15.0),
+            new("member2", 25.0),
+        ];
+        Assert.Equal(2, await db.SortedSetUpdateAsync(key, updatedEntries));
+
+        // Update with same scores — returns 0 (no changes)
+        Assert.Equal(0, await db.SortedSetUpdateAsync(key, updatedEntries));
     }
 
     #endregion
