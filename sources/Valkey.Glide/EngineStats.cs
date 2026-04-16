@@ -5,23 +5,27 @@ namespace Valkey.Glide;
 /// <summary>
 /// Statistics for a specific engine.
 /// </summary>
-/// <param name="language">The engine language (e.g., "LUA").</param>
-/// <param name="functionCount">The number of loaded functions.</param>
-/// <param name="libraryCount">The number of loaded libraries.</param>
-public sealed class EngineStats(string language, long functionCount, long libraryCount)
+public sealed class EngineStats
 {
+    internal EngineStats(string language, long functionCount, long libraryCount)
+    {
+        Language = language;
+        FunctionCount = functionCount;
+        LibraryCount = libraryCount;
+    }
+
     /// <summary>
     /// Gets the engine language (e.g., "LUA").
     /// </summary>
-    public string Language { get; } = language ?? throw new ArgumentNullException(nameof(language));
+    public string Language { get; }
 
     /// <summary>
     /// Gets the number of loaded functions.
     /// </summary>
-    public long FunctionCount { get; } = functionCount;
+    public long FunctionCount { get; }
 
     /// <summary>
     /// Gets the number of loaded libraries.
     /// </summary>
-    public long LibraryCount { get; } = libraryCount;
+    public long LibraryCount { get; }
 }
