@@ -8,34 +8,25 @@ public class SortedSetCommandTests
 {
     [Fact]
     public void SortedSetCommands_ValidateArguments() => Assert.Multiple(
-            // SortedSetAdd - Single Member
+            // SortedSetAdd - Single member
             () => Assert.Equal(["ZADD", "key", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, SortedSetWhen.NotExists).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "XX", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, SortedSetWhen.Exists).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "GT", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, SortedSetWhen.GreaterThan).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "LT", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, SortedSetWhen.LessThan).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "XX", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfExists }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "GT", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExistsOrGreaterThan }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "LT", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExistsOrLessThan }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "XX", "GT", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfGreaterThan }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "XX", "LT", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfLessThan }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "CH", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Changed = true }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "NX", "CH", "10.5", "member"], Request.SortedSetAddAsync("key", "member", 10.5, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists, Changed = true }).GetArgs()),
 
-            // SortedSetAdd - Multiple Members
-            () => Assert.Equal(["ZADD", "key", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [
-                new SortedSetEntry("member1", 10.5),
-                new SortedSetEntry("member2", 8.25)
-            ]).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [
-                new SortedSetEntry("member1", 10.5),
-                new SortedSetEntry("member2", 8.25)
-            ], SortedSetWhen.NotExists).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "XX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [
-                new SortedSetEntry("member1", 10.5),
-                new SortedSetEntry("member2", 8.25)
-            ], SortedSetWhen.Exists).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "GT", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [
-                new SortedSetEntry("member1", 10.5),
-                new SortedSetEntry("member2", 8.25)
-            ], SortedSetWhen.GreaterThan).GetArgs()),
-            () => Assert.Equal(["ZADD", "key", "LT", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [
-                new SortedSetEntry("member1", 10.5),
-                new SortedSetEntry("member2", 8.25)
-            ], SortedSetWhen.LessThan).GetArgs()),
+            // SortedSetAdd - Multiple members
+            () => Assert.Equal(["ZADD", "key", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)]).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "NX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)], new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "XX", "10.5", "member1", "8.25", "member2"], Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)], new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfExists }).GetArgs()),
+
+            // SortedSetIncrementBy with options (ZADD INCR)
+            () => Assert.Equal(["ZADD", "key", "NX", "INCR", "5", "member"], Request.SortedSetIncrementByAsync("key", "member", 5.0, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfNotExists }).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "XX", "GT", "INCR", "5", "member"], Request.SortedSetIncrementByAsync("key", "member", 5.0, new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfGreaterThan }).GetArgs()),
 
             // SortedSetRemove - Single Member
             () => Assert.Equal(["ZREM", "key", "member"], Request.SortedSetRemoveAsync("key", "member").GetArgs()),
@@ -52,173 +43,142 @@ public class SortedSetCommandTests
             () => Assert.Equal(["ZCARD", ""], Request.SortedSetCardAsync("").GetArgs()),
 
             // SortedSetCount
-            () => Assert.Equal(["ZCOUNT", "key", "-inf", "+inf"], Request.SortedSetCountAsync("key").GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "1", "10"], Request.SortedSetCountAsync("key", 1.0, 10.0).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "0", "100"], Request.SortedSetCountAsync("key", 0.0, 100.0).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "-5", "5"], Request.SortedSetCountAsync("key", -5.0, 5.0).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "1.5", "9.75"], Request.SortedSetCountAsync("key", 1.5, 9.75).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "0.1", "0.9"], Request.SortedSetCountAsync("key", 0.1, 0.9).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "-inf", "10"], Request.SortedSetCountAsync("key", double.NegativeInfinity, 10.0).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "0", "+inf"], Request.SortedSetCountAsync("key", 0.0, double.PositiveInfinity).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "-inf", "+inf"], Request.SortedSetCountAsync("key", double.NegativeInfinity, double.PositiveInfinity).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "1", "10"], Request.SortedSetCountAsync("key", 1.0, 10.0, Exclude.None).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "(1", "10"], Request.SortedSetCountAsync("key", 1.0, 10.0, Exclude.Start).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "1", "(10"], Request.SortedSetCountAsync("key", 1.0, 10.0, Exclude.Stop).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "(1", "(10"], Request.SortedSetCountAsync("key", 1.0, 10.0, Exclude.Both).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "0", "0"], Request.SortedSetCountAsync("key", 0.0, 0.0).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "key", "(0", "(0"], Request.SortedSetCountAsync("key", 0.0, 0.0, Exclude.Both).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "mykey", "1", "10"], Request.SortedSetCountAsync("mykey", 1.0, 10.0).GetArgs()),
-            () => Assert.Equal(["ZCOUNT", "test:sorted:set", "1", "10"], Request.SortedSetCountAsync("test:sorted:set", 1.0, 10.0).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "-inf", "+inf"], Request.SortedSetCountAsync("key", ScoreRange.MinToMax).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "1", "10"], Request.SortedSetCountAsync("key", ScoreRange.Between(1.0, 10.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "0", "100"], Request.SortedSetCountAsync("key", ScoreRange.Between(0.0, 100.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "-5", "5"], Request.SortedSetCountAsync("key", ScoreRange.Between(-5.0, 5.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "1.5", "9.75"], Request.SortedSetCountAsync("key", ScoreRange.Between(1.5, 9.75)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "0.10000000000000001", "0.90000000000000002"], Request.SortedSetCountAsync("key", ScoreRange.Between(0.1, 0.9)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "-inf", "10"], Request.SortedSetCountAsync("key", ScoreRange.Between(ScoreBound.Min, 10.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "0", "+inf"], Request.SortedSetCountAsync("key", ScoreRange.Between(0.0, ScoreBound.Max)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "-inf", "+inf"], Request.SortedSetCountAsync("key", ScoreRange.MinToMax).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "1", "10"], Request.SortedSetCountAsync("key", ScoreRange.Between(1.0, 10.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "(1", "10"], Request.SortedSetCountAsync("key", ScoreRange.Between(ScoreBound.Exclusive(1.0), 10.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "1", "(10"], Request.SortedSetCountAsync("key", ScoreRange.Between(1.0, ScoreBound.Exclusive(10.0))).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "(1", "(10"], Request.SortedSetCountAsync("key", ScoreRange.Between(ScoreBound.Exclusive(1.0), ScoreBound.Exclusive(10.0))).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "0", "0"], Request.SortedSetCountAsync("key", ScoreRange.Between(0.0, 0.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "key", "(0", "(0"], Request.SortedSetCountAsync("key", ScoreRange.Between(ScoreBound.Exclusive(0.0), ScoreBound.Exclusive(0.0))).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "mykey", "1", "10"], Request.SortedSetCountAsync("mykey", ScoreRange.Between(1.0, 10.0)).GetArgs()),
+            () => Assert.Equal(["ZCOUNT", "test:sorted:set", "1", "10"], Request.SortedSetCountAsync("test:sorted:set", ScoreRange.Between(1.0, 10.0)).GetArgs()),
 
-            // SortedSetRangeByRank
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1"], Request.SortedSetRangeByRankAsync("key").GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1", "5"], Request.SortedSetRangeByRankAsync("key", 1, 5).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "-5", "-1"], Request.SortedSetRangeByRankAsync("key", -5, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "REV"], Request.SortedSetRangeByRankAsync("key", 0, -1, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "WITHSCORES"], Request.SortedSetRangeByRankWithScoresAsync("key").GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1", "5", "WITHSCORES"], Request.SortedSetRangeByRankWithScoresAsync("key", 1, 5).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "REV", "WITHSCORES"], Request.SortedSetRangeByRankWithScoresAsync("key", 0, -1, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "0", "0"], Request.SortedSetRangeByRankAsync("key", 0, 0).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "mykey", "0", "10"], Request.SortedSetRangeByRankAsync("mykey", 0, 10).GetArgs()),
+            // SortedSetUnion/Inter/Diff
+            () => Assert.Equal(["ZUNION", "2", "key1", "key2"], Request.SortedSetUnionAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZUNION", "3", "key1", "key2", "key3", "WEIGHTS", "1", "2", "3"], Request.SortedSetUnionAsync(new Dictionary<ValkeyKey, double> { ["key1"] = 1.0, ["key2"] = 2.0, ["key3"] = 3.0 }).GetArgs()),
+            () => Assert.Equal(["ZUNION", "2", "key1", "key2", "AGGREGATE", "MAX"], Request.SortedSetUnionAsync(["key1", "key2"], Aggregate.Max).GetArgs()),
+            () => Assert.Equal(["ZUNION", "2", "key1", "key2", "WEIGHTS", "1.5", "2.5", "AGGREGATE", "MIN"], Request.SortedSetUnionAsync(new Dictionary<ValkeyKey, double> { ["key1"] = 1.5, ["key2"] = 2.5 }, Aggregate.Min).GetArgs()),
+            () => Assert.Equal(["ZUNION", "2", "key1", "key2", "WITHSCORES"], Request.SortedSetUnionWithScoreAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZUNION", "2", "key1", "key2", "WEIGHTS", "1", "2", "WITHSCORES"], Request.SortedSetUnionWithScoreAsync(new Dictionary<ValkeyKey, double> { ["key1"] = 1.0, ["key2"] = 2.0 }).GetArgs()),
+            () => Assert.Equal(["ZINTER", "2", "key1", "key2"], Request.SortedSetInterAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZINTER", "2", "key1", "key2", "AGGREGATE", "MAX"], Request.SortedSetInterAsync(["key1", "key2"], Aggregate.Max).GetArgs()),
+            () => Assert.Equal(["ZINTER", "2", "key1", "key2", "WEIGHTS", "2", "3"], Request.SortedSetInterAsync(new Dictionary<ValkeyKey, double> { ["key1"] = 2.0, ["key2"] = 3.0 }).GetArgs()),
+            () => Assert.Equal(["ZINTER", "2", "key1", "key2", "WITHSCORES"], Request.SortedSetInterWithScoreAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZINTER", "2", "key1", "key2", "WEIGHTS", "1", "2", "AGGREGATE", "MAX", "WITHSCORES"], Request.SortedSetInterWithScoreAsync(new Dictionary<ValkeyKey, double> { ["key1"] = 1.0, ["key2"] = 2.0 }, Aggregate.Max).GetArgs()),
+            () => Assert.Equal(["ZDIFF", "2", "key1", "key2"], Request.SortedSetDiffAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZDIFF", "3", "key1", "key2", "key3"], Request.SortedSetDiffAsync(["key1", "key2", "key3"]).GetArgs()),
+            () => Assert.Equal(["ZDIFF", "2", "key1", "key2", "WITHSCORES"], Request.SortedSetDiffWithScoreAsync(["key1", "key2"]).GetArgs()),
 
-            // SortedSetRangeByScore
-            () => Assert.Equal(["ZRANGE", "key", "-inf", "+inf", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key").GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", 1.0, 10.0).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1.5", "9.75", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", 1.5, 9.75).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "-inf", "10", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", double.NegativeInfinity, 10.0).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "(1", "10", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", 1.0, 10.0, Exclude.Start).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1", "(10", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", 1.0, 10.0, Exclude.Stop).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "(1", "(10", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", 1.0, 10.0, Exclude.Both).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "10", "1", "BYSCORE", "REV"], Request.SortedSetRangeByScoreAsync("key", 1.0, 10.0, Exclude.None, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE", "LIMIT", "2", "3"], Request.SortedSetRangeByScoreAsync("key", 1.0, 10.0, Exclude.None, Order.Ascending, 2, 3).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "(10", "(1", "BYSCORE", "REV", "LIMIT", "1", "5"], Request.SortedSetRangeByScoreAsync("key", 1.0, 10.0, Exclude.Both, Order.Descending, 1, 5).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "-inf", "+inf", "BYSCORE", "WITHSCORES"], Request.SortedSetRangeByScoreWithScoresAsync("key").GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE", "WITHSCORES"], Request.SortedSetRangeByScoreWithScoresAsync("key", 1.0, 10.0).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "10", "1", "BYSCORE", "REV", "WITHSCORES"], Request.SortedSetRangeByScoreWithScoresAsync("key", 1.0, 10.0, Exclude.None, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE", "LIMIT", "2", "3", "WITHSCORES"], Request.SortedSetRangeByScoreWithScoresAsync("key", 1.0, 10.0, Exclude.None, Order.Ascending, 2, 3).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "0", "0", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", 0.0, 0.0).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "(0", "(0", "BYSCORE"], Request.SortedSetRangeByScoreAsync("key", 0.0, 0.0, Exclude.Both).GetArgs()),
+            // SortedSetUnion/Inter/Diff AndStore
+            () => Assert.Equal(["ZUNIONSTORE", "dest", "2", "key1", "key2"], Request.SortedSetUnionAndStoreAsync("dest", ["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZUNIONSTORE", "dest", "3", "key1", "key2", "key3", "WEIGHTS", "1", "2", "3"], Request.SortedSetUnionAndStoreAsync("dest", new Dictionary<ValkeyKey, double> { ["key1"] = 1.0, ["key2"] = 2.0, ["key3"] = 3.0 }).GetArgs()),
+            () => Assert.Equal(["ZUNIONSTORE", "dest", "2", "key1", "key2", "AGGREGATE", "MIN"], Request.SortedSetUnionAndStoreAsync("dest", ["key1", "key2"], Aggregate.Min).GetArgs()),
+            () => Assert.Equal(["ZINTERSTORE", "dest", "2", "key1", "key2"], Request.SortedSetInterAndStoreAsync("dest", ["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZINTERSTORE", "dest", "2", "key1", "key2", "AGGREGATE", "MIN"], Request.SortedSetInterAndStoreAsync("dest", ["key1", "key2"], Aggregate.Min).GetArgs()),
+            () => Assert.Equal(["ZINTERSTORE", "dest", "2", "key1", "key2", "WEIGHTS", "2", "3"], Request.SortedSetInterAndStoreAsync("dest", new Dictionary<ValkeyKey, double> { ["key1"] = 2.0, ["key2"] = 3.0 }).GetArgs()),
+            () => Assert.Equal(["ZDIFFSTORE", "dest", "2", "key1", "key2"], Request.SortedSetDiffAndStoreAsync("dest", ["key1", "key2"]).GetArgs()),
 
-            // SortedSetRangeByValue
-            () => Assert.Equal(["ZRANGE", "key", "[a", "[z", "BYLEX"], Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.None, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "[apple", "[zebra", "BYLEX"], Request.SortedSetRangeByValueAsync("key", "apple", "zebra", Exclude.None, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "(a", "[z", "BYLEX"], Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.Start, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "[a", "(z", "BYLEX"], Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.Stop, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "(a", "(z", "BYLEX"], Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.Both, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "[a", "[z", "BYLEX", "LIMIT", "2", "3"], Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.None, 2, 3).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "(a", "(z", "BYLEX", "LIMIT", "1", "5"], Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.Both, 1, 5).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX"], Request.SortedSetRangeByValueAsync("key").GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX"], Request.SortedSetRangeByValueAsync("key", default, default, Exclude.None, Order.Ascending, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "+", "-", "BYLEX", "REV"], Request.SortedSetRangeByValueAsync("key", default, default, Exclude.None, Order.Descending, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX", "LIMIT", "2", "3"], Request.SortedSetRangeByValueAsync("key", default, default, Exclude.None, Order.Ascending, 2, 3).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX"], Request.SortedSetRangeByValueAsync("key", double.NegativeInfinity, double.PositiveInfinity, Exclude.None, Order.Ascending, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "[a", "[a", "BYLEX"], Request.SortedSetRangeByValueAsync("key", "a", "a", Exclude.None, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "[", "[z", "BYLEX"], Request.SortedSetRangeByValueAsync("key", "", "z", Exclude.None, 0, -1).GetArgs()),
+            // SortedSetIncrementBy (convenience, uses ZADD INCR under the hood)
+            () => Assert.Equal(["ZADD", "key", "INCR", "2.5", "member"], Request.SortedSetIncrementByAsync("key", "member", 2.5, new SortedSetAddOptions()).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "INCR", "-1.5", "member"], Request.SortedSetIncrementByAsync("key", "member", -1.5, new SortedSetAddOptions()).GetArgs()),
+            () => Assert.Equal(["ZADD", "key", "INCR", "0", "member"], Request.SortedSetIncrementByAsync("key", "member", 0.0, new SortedSetAddOptions()).GetArgs()),
 
-            // SortedSetCombine operations
-            () => Assert.Equal(["ZUNION", "2", "key1", "key2"], Request.SortedSetCombineAsync(SetOperation.Union, ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZINTER", "2", "key1", "key2"], Request.SortedSetCombineAsync(SetOperation.Intersect, ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZDIFF", "2", "key1", "key2"], Request.SortedSetCombineAsync(SetOperation.Difference, ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZUNION", "3", "key1", "key2", "key3", "WEIGHTS", "1", "2", "3"], Request.SortedSetCombineAsync(SetOperation.Union, ["key1", "key2", "key3"], [1.0, 2.0, 3.0]).GetArgs()),
-            () => Assert.Equal(["ZINTER", "2", "key1", "key2", "AGGREGATE", "MAX"], Request.SortedSetCombineAsync(SetOperation.Intersect, ["key1", "key2"], null, Aggregate.Max).GetArgs()),
-            () => Assert.Equal(["ZUNION", "2", "key1", "key2", "WEIGHTS", "1.5", "2.5", "AGGREGATE", "MIN"], Request.SortedSetCombineAsync(SetOperation.Union, ["key1", "key2"], [1.5, 2.5], Aggregate.Min).GetArgs()),
-            () => Assert.Equal(["ZUNION", "2", "key1", "key2", "WITHSCORES"], Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZINTER", "2", "key1", "key2", "WITHSCORES"], Request.SortedSetCombineWithScoresAsync(SetOperation.Intersect, ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZDIFF", "2", "key1", "key2", "WITHSCORES"], Request.SortedSetCombineWithScoresAsync(SetOperation.Difference, ["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZUNION", "3", "key1", "key2", "key3", "WEIGHTS", "1", "2", "3", "WITHSCORES"], Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1", "key2", "key3"], [1.0, 2.0, 3.0]).GetArgs()),
-            () => Assert.Equal(["ZINTER", "2", "key1", "key2", "AGGREGATE", "MAX", "WITHSCORES"], Request.SortedSetCombineWithScoresAsync(SetOperation.Intersect, ["key1", "key2"], null, Aggregate.Max).GetArgs()),
-            () => Assert.Equal(["ZUNIONSTORE", "dest", "2", "key1", "key2"], Request.SortedSetCombineAndStoreAsync(SetOperation.Union, "dest", "key1", "key2").GetArgs()),
-            () => Assert.Equal(["ZINTERSTORE", "dest", "2", "key1", "key2"], Request.SortedSetCombineAndStoreAsync(SetOperation.Intersect, "dest", "key1", "key2").GetArgs()),
-            () => Assert.Equal(["ZDIFFSTORE", "dest", "2", "key1", "key2"], Request.SortedSetCombineAndStoreAsync(SetOperation.Difference, "dest", "key1", "key2").GetArgs()),
-            () => Assert.Equal(["ZUNIONSTORE", "dest", "2", "key1", "key2", "AGGREGATE", "MAX"], Request.SortedSetCombineAndStoreAsync(SetOperation.Union, "dest", "key1", "key2", Aggregate.Max).GetArgs()),
-            () => Assert.Equal(["ZUNIONSTORE", "dest", "3", "key1", "key2", "key3"], Request.SortedSetCombineAndStoreAsync(SetOperation.Union, "dest", ["key1", "key2", "key3"]).GetArgs()),
-            () => Assert.Equal(["ZUNIONSTORE", "dest", "3", "key1", "key2", "key3", "WEIGHTS", "1", "2", "3"], Request.SortedSetCombineAndStoreAsync(SetOperation.Union, "dest", ["key1", "key2", "key3"], [1.0, 2.0, 3.0]).GetArgs()),
-            () => Assert.Equal(["ZINTERSTORE", "dest", "2", "key1", "key2", "AGGREGATE", "MIN"], Request.SortedSetCombineAndStoreAsync(SetOperation.Intersect, "dest", ["key1", "key2"], null, Aggregate.Min).GetArgs()),
+            // SortedSetInterCard
+            () => Assert.Equal(["ZINTERCARD", "2", "key1", "key2"], Request.SortedSetInterCardAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZINTERCARD", "3", "key1", "key2", "key3"], Request.SortedSetInterCardAsync(["key1", "key2", "key3"]).GetArgs()),
+            () => Assert.Equal(["ZINTERCARD", "2", "key1", "key2", "LIMIT", "10"], Request.SortedSetInterCardAsync(["key1", "key2"], 10).GetArgs()),
 
-            // SortedSetIncrement
-            () => Assert.Equal(["ZINCRBY", "key", "2.5", "member"], Request.SortedSetIncrementAsync("key", "member", 2.5).GetArgs()),
-            () => Assert.Equal(["ZINCRBY", "key", "-1.5", "member"], Request.SortedSetIncrementAsync("key", "member", -1.5).GetArgs()),
-            () => Assert.Equal(["ZINCRBY", "key", "0", "member"], Request.SortedSetIncrementAsync("key", "member", 0.0).GetArgs()),
+            // SortedSetLexCount
+            () => Assert.Equal(["ZLEXCOUNT", "key", "[a", "[z"], Request.SortedSetLexCountAsync("key", LexRange.Between("a", "z")).GetArgs()),
+            () => Assert.Equal(["ZLEXCOUNT", "key", "(a", "(z"], Request.SortedSetLexCountAsync("key", LexRange.Between(LexBound.Exclusive("a"), LexBound.Exclusive("z"))).GetArgs()),
+            () => Assert.Equal(["ZLEXCOUNT", "key", "(a", "[z"], Request.SortedSetLexCountAsync("key", LexRange.Between(LexBound.Exclusive("a"), "z")).GetArgs()),
+            () => Assert.Equal(["ZLEXCOUNT", "key", "[a", "(z"], Request.SortedSetLexCountAsync("key", LexRange.Between("a", LexBound.Exclusive("z"))).GetArgs()),
+            () => Assert.Equal(["ZLEXCOUNT", "key", "-", "+"], Request.SortedSetLexCountAsync("key", LexRange.MinToMax).GetArgs()),
 
-            // SortedSetIntersectionLength
-            () => Assert.Equal(["ZINTERCARD", "2", "key1", "key2"], Request.SortedSetIntersectionLengthAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["ZINTERCARD", "3", "key1", "key2", "key3"], Request.SortedSetIntersectionLengthAsync(["key1", "key2", "key3"]).GetArgs()),
-            () => Assert.Equal(["ZINTERCARD", "2", "key1", "key2", "LIMIT", "10"], Request.SortedSetIntersectionLengthAsync(["key1", "key2"], 10).GetArgs()),
+            // SortedSetRangeAsync - Rank
+            () => Assert.Equal(["ZRANGE", "key", "0", "-1"], Request.SortedSetRangeAsync("key", new() { Range = IndexRange.FirstToLast }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "1", "3"], Request.SortedSetRangeAsync("key", new() { Range = IndexRange.Between(1, 3) }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "0", "-1", "REV"], Request.SortedSetRangeAsync("key", new() { Range = IndexRange.FirstToLast, Order = Order.Descending }).GetArgs()),
+            () => Assert.Throws<ArgumentException>(() => Request.SortedSetRangeAsync("key", new() { Range = IndexRange.FirstToLast, Offset = 2, Count = 3 }).GetArgs()),
+            () => Assert.Throws<ArgumentException>(() => Request.SortedSetRangeAsync("key", new() { Range = IndexRange.FirstToLast, Order = Order.Descending, Offset = 1, Count = 5 }).GetArgs()),
 
-            // SortedSetLengthByValue
-            () => Assert.Equal(["ZLEXCOUNT", "key", "[a", "[z"], Request.SortedSetLengthByValueAsync("key", "a", "z").GetArgs()),
-            () => Assert.Equal(["ZLEXCOUNT", "key", "(a", "(z"], Request.SortedSetLengthByValueAsync("key", "a", "z", Exclude.Both).GetArgs()),
-            () => Assert.Equal(["ZLEXCOUNT", "key", "(a", "[z"], Request.SortedSetLengthByValueAsync("key", "a", "z", Exclude.Start).GetArgs()),
-            () => Assert.Equal(["ZLEXCOUNT", "key", "[a", "(z"], Request.SortedSetLengthByValueAsync("key", "a", "z", Exclude.Stop).GetArgs()),
-            () => Assert.Equal(["ZLEXCOUNT", "key", "[", "["], Request.SortedSetLengthByValueAsync("key", ValkeyValue.Null, ValkeyValue.Null).GetArgs()),
+            // SortedSetRangeAsync - Score range
+            () => Assert.Equal(["ZRANGE", "key", "-inf", "+inf", "BYSCORE"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.MinToMax }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.Between(1.0, 10.0) }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "1", "10", "BYSCORE", "LIMIT", "2", "3"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.Between(1.0, 10.0), Offset = 2, Count = 3 }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "-inf", "+inf", "BYSCORE", "REV"], Request.SortedSetRangeAsync("key", new() { Range = ScoreRange.MinToMax, Order = Order.Descending }).GetArgs()),
 
-            // SortedSetPop
-            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MIN", "COUNT", "1"], Request.SortedSetPopAsync(["key1", "key2"], 1).GetArgs()),
-            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MAX", "COUNT", "3"], Request.SortedSetPopAsync(["key1", "key2"], 3, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZMPOP", "3", "key1", "key2", "key3", "MIN", "COUNT", "2"], Request.SortedSetPopAsync(["key1", "key2", "key3"], 2, Order.Ascending).GetArgs()),
+            // SortedSetRangeAsync - Lex range
+            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.MinToMax }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "[a", "[z", "BYLEX"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.Between("a", "z") }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "[a", "[z", "BYLEX", "LIMIT", "1", "5"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.Between("a", "z"), Offset = 1, Count = 5 }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX", "REV", "LIMIT", "2", "3"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.MinToMax, Order = Order.Descending, Offset = 2, Count = 3 }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX", "LIMIT", "5", "-1"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.MinToMax, Offset = 5 }).GetArgs()),
+            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX", "LIMIT", "0", "10"], Request.SortedSetRangeAsync("key", new() { Range = LexRange.MinToMax, Count = 10 }).GetArgs()),
 
             // SortedSetScores
             () => Assert.Equal(["ZMSCORE", "key", "member1"], Request.SortedSetScoresAsync("key", ["member1"]).GetArgs()),
             () => Assert.Equal(["ZMSCORE", "key", "member1", "member2", "member3"], Request.SortedSetScoresAsync("key", ["member1", "member2", "member3"]).GetArgs()),
             () => Assert.Equal(["ZMSCORE", "key"], Request.SortedSetScoresAsync("key", []).GetArgs()),
 
-            // SortedSetBlockingPopAsync  - single key, single element (uses BZPOPMIN/BZPOPMAX)
-            () => Assert.Equal(["BZPOPMIN", "key", "5"], Request.SortedSetBlockingPopAsync("key", Order.Ascending, TimeSpan.FromSeconds(5)).GetArgs()),
-            () => Assert.Equal(["BZPOPMAX", "key", "0"], Request.SortedSetBlockingPopAsync("key", Order.Descending, TimeSpan.Zero).GetArgs()),
-            () => Assert.Equal(["BZPOPMIN", "key", "10.5"], Request.SortedSetBlockingPopAsync("key", Order.Ascending, TimeSpan.FromSeconds(10.5)).GetArgs()),
+            // SortedSetPopMin / SortedSetPopMax
+            () => Assert.Equal(["ZPOPMIN", "key"], Request.SortedSetPopMinAsync("key").GetArgs()),
+            () => Assert.Equal(["ZPOPMAX", "key"], Request.SortedSetPopMaxAsync("key").GetArgs()),
+            () => Assert.Equal(["ZPOPMIN", "key", "3"], Request.SortedSetPopMinAsync("key", 3).GetArgs()),
+            () => Assert.Equal(["ZPOPMAX", "key", "5"], Request.SortedSetPopMaxAsync("key", 5).GetArgs()),
 
-            // SortedSetBlockingPopAsync (BZMPOP) - multi-key, multiple elements
-            () => Assert.Equal(["BZMPOP", "5", "2", "key1", "key2", "MIN", "COUNT", "3"], Request.SortedSetBlockingPopAsync(["key1", "key2"], 3, Order.Ascending, TimeSpan.FromSeconds(5)).GetArgs()),
-            () => Assert.Equal(["BZMPOP", "0", "1", "key", "MAX", "COUNT", "1"], Request.SortedSetBlockingPopAsync(["key"], 1, Order.Descending, TimeSpan.Zero).GetArgs()),
-            () => Assert.Equal(["BZMPOP", "10.5", "3", "key1", "key2", "key3", "MIN", "COUNT", "2"], Request.SortedSetBlockingPopAsync(["key1", "key2", "key3"], 2, Order.Ascending, TimeSpan.FromSeconds(10.5)).GetArgs()),
+            // SortedSetPopMin / SortedSetPopMax - Multi-key (ZMPOP)
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MIN", "COUNT", "1"], Request.SortedSetPopMinAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MAX", "COUNT", "1"], Request.SortedSetPopMaxAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MIN", "COUNT", "3"], Request.SortedSetPopMinAsync(["key1", "key2"], 3).GetArgs()),
+            () => Assert.Equal(["ZMPOP", "2", "key1", "key2", "MAX", "COUNT", "5"], Request.SortedSetPopMaxAsync(["key1", "key2"], 5).GetArgs()),
 
-            // Double formatting tests
-            () => Assert.Equal("+inf", double.PositiveInfinity.ToGlideString().ToString()),
-            () => Assert.Equal("-inf", double.NegativeInfinity.ToGlideString().ToString()),
-            () => Assert.Equal("nan", double.NaN.ToGlideString().ToString()),
-            () => Assert.Equal("0", 0.0.ToGlideString().ToString()),
-            () => Assert.Equal("10.5", 10.5.ToGlideString().ToString()),
-
-            () => Assert.Equal(["ZRANGE", "key", "-", "+", "BYLEX"], Request.SortedSetRangeByValueAsync("key", double.NegativeInfinity, double.PositiveInfinity, Exclude.None, Order.Ascending, 0, -1).GetArgs()),
-            () => Assert.Equal(["ZRANGE", "key", "6", "2", "BYSCORE", "REV", "WITHSCORES"], Request.SortedSetRangeByScoreWithScoresAsync("key", 2.0, 6.0, order: Order.Descending).GetArgs()),
-
-            // SortedSetPop
-            () => Assert.Equal(["ZPOPMIN", "key"], Request.SortedSetPopAsync("key").GetArgs()),
-            () => Assert.Equal(["ZPOPMAX", "key"], Request.SortedSetPopAsync("key", Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZPOPMIN", "key"], Request.SortedSetPopAsync("key", Order.Ascending).GetArgs()),
-            () => Assert.Equal(["ZPOPMIN", "key", "3"], Request.SortedSetPopAsync("key", 3).GetArgs()),
-            () => Assert.Equal(["ZPOPMAX", "key", "3"], Request.SortedSetPopAsync("key", 3, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZPOPMIN", "key", "5"], Request.SortedSetPopAsync("key", 5, Order.Ascending).GetArgs()),
+            // SortedSetPopMin / SortedSetPopMax - Blocking multi-key (BZMPOP)
+            () => Assert.Equal(["BZMPOP", "2", "2", "key1", "key2", "MIN", "COUNT", "1"], Request.SortedSetPopMinAsync(["key1", "key2"], TimeSpan.FromSeconds(2)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "2", "2", "key1", "key2", "MAX", "COUNT", "1"], Request.SortedSetPopMaxAsync(["key1", "key2"], TimeSpan.FromSeconds(2)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "5", "1", "key1", "MIN", "COUNT", "3"], Request.SortedSetPopMinAsync(["key1"], 3, TimeSpan.FromSeconds(5)).GetArgs()),
+            () => Assert.Equal(["BZMPOP", "5", "1", "key1", "MAX", "COUNT", "3"], Request.SortedSetPopMaxAsync(["key1"], 3, TimeSpan.FromSeconds(5)).GetArgs()),
 
             // SortedSetRandomMember
             () => Assert.Equal(["ZRANDMEMBER", "key"], Request.SortedSetRandomMemberAsync("key").GetArgs()),
             () => Assert.Equal(["ZRANDMEMBER", "key", "3"], Request.SortedSetRandomMembersAsync("key", 3).GetArgs()),
             () => Assert.Equal(["ZRANDMEMBER", "key", "5", "WITHSCORES"], Request.SortedSetRandomMembersWithScoresAsync("key", 5).GetArgs()),
+            () => Assert.Equal(["ZRANDMEMBER", "key", "1", "WITHSCORES"], Request.SortedSetRandomMemberWithScoreAsync("key").GetArgs()),
+
+            // SortedSetRemoveRange - by rank
+            () => Assert.Equal(["ZREMRANGEBYRANK", "key", "0", "3"], Request.SortedSetRemoveRangeAsync("key", IndexRange.Between(0, 3)).GetArgs()),
+            () => Assert.Equal(["ZREMRANGEBYRANK", "key", "0", "-1"], Request.SortedSetRemoveRangeAsync("key", IndexRange.FirstToLast).GetArgs()),
+            // SortedSetRemoveRange - by score
+            () => Assert.Equal(["ZREMRANGEBYSCORE", "key", "1", "10"], Request.SortedSetRemoveRangeAsync("key", ScoreRange.Between(1.0, 10.0)).GetArgs()),
+            () => Assert.Equal(["ZREMRANGEBYSCORE", "key", "(1", "(10"], Request.SortedSetRemoveRangeAsync("key", ScoreRange.Between(ScoreBound.Exclusive(1.0), ScoreBound.Exclusive(10.0))).GetArgs()),
+            () => Assert.Equal(["ZREMRANGEBYSCORE", "key", "-inf", "+inf"], Request.SortedSetRemoveRangeAsync("key", ScoreRange.MinToMax).GetArgs()),
+            // SortedSetRemoveRange - by lex
+            () => Assert.Equal(["ZREMRANGEBYLEX", "key", "[a", "[z"], Request.SortedSetRemoveRangeAsync("key", LexRange.Between("a", "z")).GetArgs()),
+            () => Assert.Equal(["ZREMRANGEBYLEX", "key", "(a", "(z"], Request.SortedSetRemoveRangeAsync("key", LexRange.Between(LexBound.Exclusive("a"), LexBound.Exclusive("z"))).GetArgs()),
 
             // SortedSetRangeAndStore
-            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "0", "10"], Request.SortedSetRangeAndStoreAsync("src", "dest", 0, 10).GetArgs()),
-            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "0", "10", "REV"], Request.SortedSetRangeAndStoreAsync("src", "dest", 0, 10, SortedSetOrder.ByRank, Exclude.None, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "1", "10", "BYSCORE"], Request.SortedSetRangeAndStoreAsync("src", "dest", 1.0, 10.0, SortedSetOrder.ByScore).GetArgs()),
-            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "10", "1", "BYSCORE", "REV"], Request.SortedSetRangeAndStoreAsync("src", "dest", 1.0, 10.0, SortedSetOrder.ByScore, Exclude.None, Order.Descending).GetArgs()),
-            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "(1", "10", "BYSCORE", "LIMIT", "2", "5"], Request.SortedSetRangeAndStoreAsync("src", "dest", 1.0, 10.0, SortedSetOrder.ByScore, Exclude.Start, Order.Ascending, 2, 5).GetArgs()),
-            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "[a", "[z", "BYLEX"], Request.SortedSetRangeAndStoreAsync("src", "dest", "a", "z", SortedSetOrder.ByLex).GetArgs()),
-            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "(a", "(z", "BYLEX", "LIMIT", "1", "3"], Request.SortedSetRangeAndStoreAsync("src", "dest", "a", "z", SortedSetOrder.ByLex, Exclude.Both, Order.Ascending, 1, 3).GetArgs()),
+            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "0", "-1"], Request.SortedSetRangeAndStoreAsync("src", "dest", new() { Range = IndexRange.FirstToLast }).GetArgs()),
+            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "1", "3"], Request.SortedSetRangeAndStoreAsync("src", "dest", new() { Range = IndexRange.Between(1, 3) }).GetArgs()),
+            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "-inf", "+inf", "BYSCORE"], Request.SortedSetRangeAndStoreAsync("src", "dest", new() { Range = ScoreRange.MinToMax }).GetArgs()),
+            () => Assert.Equal(["ZRANGESTORE", "dest", "src", "[a", "[z", "BYLEX"], Request.SortedSetRangeAndStoreAsync("src", "dest", new() { Range = LexRange.Between("a", "z") }).GetArgs()),
 
             // SortedSetRank
             () => Assert.Equal(["ZRANK", "key", "member"], Request.SortedSetRankAsync("key", "member").GetArgs()),
             () => Assert.Equal(["ZRANK", "key", "member"], Request.SortedSetRankAsync("key", "member", Order.Ascending).GetArgs()),
             () => Assert.Equal(["ZREVRANK", "key", "member"], Request.SortedSetRankAsync("key", "member", Order.Descending).GetArgs()),
 
-            // SortedSetRemoveRangeByValue
-            () => Assert.Equal(["ZREMRANGEBYLEX", "key", "[a", "[z"], Request.SortedSetRemoveRangeByValueAsync("key", "a", "z").GetArgs()),
-            () => Assert.Equal(["ZREMRANGEBYLEX", "key", "(a", "(z"], Request.SortedSetRemoveRangeByValueAsync("key", "a", "z", Exclude.Both).GetArgs()),
-
-            // SortedSetRemoveRangeByRank
-            () => Assert.Equal(["ZREMRANGEBYRANK", "key", "0", "10"], Request.SortedSetRemoveRangeByRankAsync("key", 0, 10).GetArgs()),
-
-            // SortedSetRemoveRangeByScore
-            () => Assert.Equal(["ZREMRANGEBYSCORE", "key", "1", "10"], Request.SortedSetRemoveRangeByScoreAsync("key", 1.0, 10.0).GetArgs()),
-            () => Assert.Equal(["ZREMRANGEBYSCORE", "key", "(1", "(10"], Request.SortedSetRemoveRangeByScoreAsync("key", 1.0, 10.0, Exclude.Both).GetArgs()),
+            // SortedSetRankWithScore
+            () => Assert.Equal(["ZRANK", "key", "member", "WITHSCORE"], Request.SortedSetRankWithScoreAsync("key", "member").GetArgs()),
+            () => Assert.Equal(["ZRANK", "key", "member", "WITHSCORE"], Request.SortedSetRankWithScoreAsync("key", "member", Order.Ascending).GetArgs()),
+            () => Assert.Equal(["ZREVRANK", "key", "member", "WITHSCORE"], Request.SortedSetRankWithScoreAsync("key", "member", Order.Descending).GetArgs()),
 
             // SortedSetScan
             () => Assert.Equal(["ZSCAN", "key", "0"], Request.SortedSetScanAsync("key", 0).GetArgs()),
@@ -239,14 +199,12 @@ public class SortedSetCommandTests
             // Basic converter tests
             () => Assert.True(Request.SortedSetAddAsync("key", "member", 10.5).Converter(1L)),
             () => Assert.False(Request.SortedSetAddAsync("key", "member", 10.5).Converter(0L)),
-            () => Assert.Equal(2L, Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5), new SortedSetEntry("member2", 8.25)]).Converter(2L)),
-            () => Assert.Equal(1L, Request.SortedSetAddAsync("key", [new SortedSetEntry("member1", 10.5)]).Converter(1L)),
             () => Assert.True(Request.SortedSetRemoveAsync("key", "member").Converter(1L)),
             () => Assert.False(Request.SortedSetRemoveAsync("key", "member").Converter(0L)),
             () => Assert.Equal(2L, Request.SortedSetRemoveAsync("key", ["member1", "member2"]).Converter(2L)),
             () => Assert.Equal(5L, Request.SortedSetCardAsync("key").Converter(5L)),
-            () => Assert.Equal(3L, Request.SortedSetCountAsync("key", 1.0, 10.0).Converter(3L)),
-            () => Assert.Equal(0L, Request.SortedSetCountAsync("key").Converter(0L)),
+            () => Assert.Equal(3L, Request.SortedSetCountAsync("key", ScoreRange.Between(1.0, 10.0)).Converter(3L)),
+            () => Assert.Equal(0L, Request.SortedSetCountAsync("key", ScoreRange.MinToMax).Converter(0L)),
 
             // Type converter test
             () => Assert.Equal(ValkeyType.SortedSet, Request.TypeAsync("key").Converter("zset"))
@@ -255,14 +213,7 @@ public class SortedSetCommandTests
     [Fact]
     public void SortedSetCommands_ValidateArrayConverters()
     {
-        // Test data for SortedSetRangeByRankAsync
-        object[] testRankArray = [
-            (GlideString)"member1",
-            (GlideString)"member2",
-            (GlideString)"member3"
-        ];
-
-        // Test data for SortedSetRangeByRankWithScoresAsync and SortedSetRangeByScoreWithScoresAsync
+        // Test data for score-based converters
         Dictionary<GlideString, object> testScoreDict = new()
         {
             {"member1", 10.5},
@@ -271,151 +222,21 @@ public class SortedSetCommandTests
         };
 
         Assert.Multiple(
-            // Test SortedSetRangeByRankAsync converter
+            // Test SortedSetIncrementByAsync converter
             () =>
             {
-                ValkeyValue[] result = Request.SortedSetRangeByRankAsync("key", 0, -1).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
-
-            // Test SortedSetRangeByRankWithScoresAsync converter
-            () =>
-            {
-                SortedSetEntry[] result = Request.SortedSetRangeByRankWithScoresAsync("key", 0, -1).Converter(testScoreDict);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
-                Assert.Equal("member2", result[0].Element);
-                Assert.Equal(8.25, result[0].Score);
-                Assert.Equal("member1", result[1].Element);
-                Assert.Equal(10.5, result[1].Score);
-                Assert.Equal("member3", result[2].Element);
-                Assert.Equal(15.0, result[2].Score);
-            },
-
-            // Test SortedSetRangeByScoreAsync converter
-            () =>
-            {
-                ValkeyValue[] result = Request.SortedSetRangeByScoreAsync("key", 1.0, 20.0).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
-
-            // Test SortedSetRangeByScoreWithScoresAsync converter
-            () =>
-            {
-                SortedSetEntry[] result = Request.SortedSetRangeByScoreWithScoresAsync("key", 1.0, 20.0).Converter(testScoreDict);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
-                // Check that entries have proper element and score values
-                foreach (SortedSetEntry entry in result)
-                {
-                    _ = Assert.IsType<ValkeyValue>(entry.Element);
-                    _ = Assert.IsType<double>(entry.Score);
-                }
-                // Validate specific values (sorted by score)
-                SortedSetEntry[] sortedResults = [.. result.OrderBy(e => e.Score)];
-                Assert.Equal("member2", result[0].Element);
-                Assert.Equal(8.25, result[0].Score);
-                Assert.Equal("member1", result[1].Element);
-                Assert.Equal(10.5, result[1].Score);
-                Assert.Equal("member3", result[2].Element);
-                Assert.Equal(15.0, result[2].Score);
-            },
-
-            // Test SortedSetRangeByValueAsync converter
-            () =>
-            {
-                ValkeyValue[] result = Request.SortedSetRangeByValueAsync("key", "a", "z", Exclude.None, 0, -1).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
-
-            // Test SortedSetRangeByValueAsync with order converter
-            // Note: This test validates the converter function only, not the ordering logic.
-            () =>
-            {
-                ValkeyValue[] result = Request.SortedSetRangeByValueAsync("key", default, default, Exclude.None, Order.Descending, 0, -1).Converter(testRankArray);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, item => Assert.IsType<ValkeyValue>(item));
-                Assert.Equal("member1", result[0]);
-                Assert.Equal("member2", result[1]);
-                Assert.Equal("member3", result[2]);
-            },
-
-            // Test empty arrays
-            () =>
-            {
-                ValkeyValue[] emptyResult = Request.SortedSetRangeByRankAsync("key").Converter([]);
-                Assert.Empty(emptyResult);
-            },
-
-            () =>
-            {
-                SortedSetEntry[] emptyScoreResult = Request.SortedSetRangeByRankWithScoresAsync("key").Converter([]);
-                Assert.Empty(emptyScoreResult);
-            },
-
-            // Test SortedSetCombineWithScoresAsync converter
-            () =>
-            {
-                SortedSetEntry[] result = Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1", "key2"]).Converter(testScoreDict);
-                Assert.Equal(3, result.Length);
-                Assert.All(result, entry => Assert.IsType<SortedSetEntry>(entry));
-                // Check that entries are sorted by score
-                SortedSetEntry[] sortedResults = [.. result.OrderBy(e => e.Score)];
-                Assert.Equal("member2", sortedResults[0].Element);
-                Assert.Equal(8.25, sortedResults[0].Score);
-                Assert.Equal("member1", sortedResults[1].Element);
-                Assert.Equal(10.5, sortedResults[1].Score);
-                Assert.Equal("member3", sortedResults[2].Element);
-                Assert.Equal(15.0, sortedResults[2].Score);
-            },
-
-            // Test SortedSetIncrementAsync converter
-            () =>
-            {
-                double result = Request.SortedSetIncrementAsync("key", "member", 2.5).Converter(12.5);
+                double? result = Request.SortedSetIncrementByAsync("key", "member", 2.5, new SortedSetAddOptions()).Converter(12.5);
                 Assert.Equal(12.5, result);
             },
 
-            // Test SortedSetPopAsync converter - with result
+            // Test SortedSetUnionWithScoreAsync converter
             () =>
             {
-                object[] testPopResponse = [
-                    (GlideString)"key1",
-                    new Dictionary<GlideString, object>
-                    {
-                        { (GlideString)"member1", 10.5 },
-                        { (GlideString)"member2", 8.25 }
-                    }
-                ];
-                SortedSetPopResult result = Request.SortedSetPopAsync(["key1", "key2"], 2).Converter(testPopResponse);
-                Assert.False(result.IsNull);
-                Assert.Equal("key1", result.Key);
-                Assert.Equal(2, result.Entries.Length);
-                Assert.Equal("member1", result.Entries[0].Element);
-                Assert.Equal(10.5, result.Entries[0].Score);
-                Assert.Equal("member2", result.Entries[1].Element);
-                Assert.Equal(8.25, result.Entries[1].Score);
-            },
-
-            // Test SortedSetPopAsync converter - null result
-            () =>
-            {
-                SortedSetPopResult result = Request.SortedSetPopAsync(["key1", "key2"], 2).Converter(null);
-                Assert.True(result.IsNull);
-                Assert.Equal(ValkeyKey.Null, result.Key);
-                Assert.Empty(result.Entries);
+                SortedSetEntry[] result = Request.SortedSetUnionWithScoreAsync(["key1", "key2"]).Converter(testScoreDict);
+                Assert.Equal(3, result.Length);
+                Assert.Contains(result, r => r.Element == "member1" && r.Score == 10.5);
+                Assert.Contains(result, r => r.Element == "member2" && r.Score == 8.25);
+                Assert.Contains(result, r => r.Element == "member3" && r.Score == 15.0);
             },
 
             // Test SortedSetScoresAsync converter
@@ -429,112 +250,65 @@ public class SortedSetCommandTests
                 Assert.Equal(8.25, result[2]);
             },
 
-            // Test SortedSetBlockingPopAsync (single key, single element) converter
+            // Test SortedSetPopMinAsync converter - single element
             () =>
             {
-                // BZPOPMIN/BZPOPMAX returns [key, member, score]
-                object[] testBlockingPopResponse = [
-                    (GlideString)"key1",
-                    (GlideString)"member1",
-                    10.5
-                ];
-                SortedSetEntry? result = Request.SortedSetBlockingPopAsync("key1", Order.Ascending, TimeSpan.FromSeconds(5)).Converter(testBlockingPopResponse);
-                _ = Assert.NotNull(result);
-                Assert.Equal("member1", result.Value.Element);
-                Assert.Equal(10.5, result.Value.Score);
-            },
-
-            // Test SortedSetBlockingPopAsync (single key, single element) converter with null response
-            () =>
-            {
-                SortedSetEntry? result = Request.SortedSetBlockingPopAsync("key1", Order.Ascending, TimeSpan.FromSeconds(5)).Converter(null);
-                Assert.Null(result);
-            },
-
-            // Test SortedSetBlockingPopAsync (multi-key, multiple elements) converter
-            () =>
-            {
-                object[] testBlockingPopResponse = [
-                    (GlideString)"key1",
-                    new Dictionary<GlideString, object>
-                    {
-                        { (GlideString)"member1", 10.5 },
-                        { (GlideString)"member2", 8.25 }
-                    }
-                ];
-                SortedSetPopResult result = Request.SortedSetBlockingPopAsync(["key1", "key2"], 2, Order.Ascending, TimeSpan.FromSeconds(5)).Converter(testBlockingPopResponse);
-                Assert.False(result.IsNull);
-                Assert.Equal("key1", result.Key);
-                Assert.Equal(2, result.Entries.Length);
-                Assert.Equal("member1", result.Entries[0].Element);
-                Assert.Equal(10.5, result.Entries[0].Score);
-                Assert.Equal("member2", result.Entries[1].Element);
-                Assert.Equal(8.25, result.Entries[1].Score);
-            },
-
-            // Test SortedSetBlockingPopAsync (multi-key, multiple elements) converter with null response
-            () =>
-            {
-                SortedSetPopResult result = Request.SortedSetBlockingPopAsync(["key1", "key2"], 2, Order.Ascending, TimeSpan.FromSeconds(5)).Converter(null);
-                Assert.True(result.IsNull);
-                Assert.Equal(ValkeyKey.Null, result.Key);
-                Assert.Empty(result.Entries);
-            },
-
-            // Test empty arrays
-            () =>
-            {
-                SortedSetEntry[] emptyResult = Request.SortedSetCombineWithScoresAsync(SetOperation.Union, ["key1"]).Converter([]);
-                Assert.Empty(emptyResult);
-            },
-
-            // Test SortedSetPopAsync converter - single element (max)
-            () =>
-            {
-                Dictionary<GlideString, object> testPopMaxDict = new()
+                Dictionary<gs, object> testDict = new()
                 {
-                    { (GlideString)"member1", 10.5 }
+                    { (gs)"member1", 8.25 }
                 };
-                SortedSetEntry? result = Request.SortedSetPopAsync("key").Converter(testPopMaxDict);
-                _ = Assert.NotNull(result);
-                Assert.Equal("member1", result.Value.Element);
-                Assert.Equal(10.5, result.Value.Score);
-            },
-
-            // Test SortedSetPopAsync converter - null result
-            () =>
-            {
-                SortedSetEntry? result = Request.SortedSetPopAsync("key").Converter(null);
-                Assert.Null(result);
-            },
-
-            // Test SortedSetPopAsync converter - multiple elements (max)
-            () =>
-            {
-                Dictionary<GlideString, object> testPopMaxDict = new()
-                {
-                    { (GlideString)"member1", 10.5 },
-                    { (GlideString)"member2", 8.25 }
-                };
-                SortedSetEntry[] result = Request.SortedSetPopAsync("key", 2).Converter(testPopMaxDict);
-                Assert.Equal(2, result.Length);
-                SortedSetEntry member1Entry = result.First(e => e.Element.ToString() == "member1");
-                SortedSetEntry member2Entry = result.First(e => e.Element.ToString() == "member2");
-                Assert.Equal(10.5, member1Entry.Score);
-                Assert.Equal(8.25, member2Entry.Score);
-            },
-
-            // Test SortedSetPopAsync converter - single element (min)
-            () =>
-            {
-                Dictionary<GlideString, object> testPopMinDict = new()
-                {
-                    { (GlideString)"member1", 8.25 }
-                };
-                SortedSetEntry? result = Request.SortedSetPopAsync("key", Order.Ascending).Converter(testPopMinDict);
+                SortedSetEntry? result = Request.SortedSetPopMinAsync("key").Converter(testDict);
                 _ = Assert.NotNull(result);
                 Assert.Equal("member1", result.Value.Element);
                 Assert.Equal(8.25, result.Value.Score);
+            },
+
+            // Test SortedSetPopMinAsync converter - null result
+            () =>
+            {
+                SortedSetEntry? result = Request.SortedSetPopMinAsync("key").Converter(null);
+                Assert.Null(result);
+            },
+
+            // Test SortedSetPopMaxAsync converter - single element
+            () =>
+            {
+                Dictionary<gs, object> testDict = new()
+                {
+                    { (gs)"member1", 10.5 }
+                };
+                SortedSetEntry? result = Request.SortedSetPopMaxAsync("key").Converter(testDict);
+                _ = Assert.NotNull(result);
+                Assert.Equal("member1", result.Value.Element);
+                Assert.Equal(10.5, result.Value.Score);
+            },
+
+            // Test SortedSetPopMinAsync converter - multiple elements
+            () =>
+            {
+                Dictionary<gs, object> testDict = new()
+                {
+                    { (gs)"member1", 5.0 },
+                    { (gs)"member2", 8.25 }
+                };
+                SortedSetEntry[] result = Request.SortedSetPopMinAsync("key", 2).Converter(testDict);
+                Assert.Equal(2, result.Length);
+                SortedSetEntry member1Entry = result.First(e => e.Element.ToString() == "member1");
+                Assert.Equal(5.0, member1Entry.Score);
+            },
+
+            // Test SortedSetPopMaxAsync converter - multiple elements
+            () =>
+            {
+                Dictionary<gs, object> testDict = new()
+                {
+                    { (gs)"member1", 10.5 },
+                    { (gs)"member2", 8.25 }
+                };
+                SortedSetEntry[] result = Request.SortedSetPopMaxAsync("key", 2).Converter(testDict);
+                Assert.Equal(2, result.Length);
+                SortedSetEntry member1Entry = result.First(e => e.Element.ToString() == "member1");
+                Assert.Equal(10.5, member1Entry.Score);
             },
 
             // Test SortedSetRandomMemberAsync converter
@@ -547,18 +321,11 @@ public class SortedSetCommandTests
             // Test SortedSetRandomMembersAsync converter
             () =>
             {
-                object[] testRandomResponse = [(GlideString)"member1", (GlideString)"member2"];
+                object[] testRandomResponse = [(gs)"member1", (gs)"member2"];
                 ValkeyValue[] result = Request.SortedSetRandomMembersAsync("key", 2).Converter(testRandomResponse);
                 Assert.Equal(2, result.Length);
                 Assert.Equal("member1", result[0]);
                 Assert.Equal("member2", result[1]);
-            },
-
-            // Test SortedSetRangeAndStoreAsync converter
-            () =>
-            {
-                long result = Request.SortedSetRangeAndStoreAsync("src", "dest", 0, 10).Converter(5L);
-                Assert.Equal(5L, result);
             },
 
             // Test SortedSetRankAsync converter
@@ -575,11 +342,21 @@ public class SortedSetCommandTests
                 Assert.Null(result);
             },
 
-            // Test SortedSetRemoveRangeByValueAsync converter
+            // Test SortedSetRankWithScoreAsync converter
             () =>
             {
-                long result = Request.SortedSetRemoveRangeByValueAsync("key", "a", "z").Converter(3L);
-                Assert.Equal(3L, result);
+                object[] response = [2L, 10.5];
+                (long Rank, double Score)? result = Request.SortedSetRankWithScoreAsync("key", "member").Converter(response);
+                _ = Assert.NotNull(result);
+                Assert.Equal(2L, result.Value.Rank);
+                Assert.Equal(10.5, result.Value.Score);
+            },
+
+            // Test SortedSetRankWithScoreAsync converter - null result
+            () =>
+            {
+                (long Rank, double Score)? result = Request.SortedSetRankWithScoreAsync("key", "member").Converter([]);
+                Assert.Null(result);
             },
 
             // Test SortedSetScanAsync converter - basic case
@@ -587,15 +364,15 @@ public class SortedSetCommandTests
             {
                 object[] testScanResponse = [
                     5L,
-                    new object[] { (GlideString)"member1", (GlideString)"10.5", (GlideString)"member2", (GlideString)"8.25" }
+                    new object[] { (gs)"member1", (gs)"10.5", (gs)"member2", (gs)"8.25" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
-                Assert.Equal(5L, result.cursor);
-                Assert.Equal(2, result.items.Length);
-                Assert.Equal("member1", result.items[0].Element);
-                Assert.Equal(10.5, result.items[0].Score);
-                Assert.Equal("member2", result.items[1].Element);
-                Assert.Equal(8.25, result.items[1].Score);
+                (long cursor, SortedSetEntry[] items) = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
+                Assert.Equal(5L, cursor);
+                Assert.Equal(2, items.Length);
+                Assert.Equal("member1", items[0].Element);
+                Assert.Equal(10.5, items[0].Score);
+                Assert.Equal("member2", items[1].Element);
+                Assert.Equal(8.25, items[1].Score);
             },
 
             // Test SortedSetScanAsync converter - empty result
@@ -605,9 +382,9 @@ public class SortedSetCommandTests
                     0L,
                     new object[] { }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
-                Assert.Equal(0L, result.cursor);
-                Assert.Empty(result.items);
+                (long cursor, SortedSetEntry[] items) = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
+                Assert.Equal(0L, cursor);
+                Assert.Empty(items);
             },
 
             // Test SortedSetScanAsync converter - single entry
@@ -615,27 +392,27 @@ public class SortedSetCommandTests
             {
                 object[] testScanResponse = [
                     10L,
-                    new object[] { (GlideString)"single", (GlideString)"42.0" }
+                    new object[] { (gs)"single", (gs)"42.0" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
-                Assert.Equal(10L, result.cursor);
-                _ = Assert.Single(result.items);
-                Assert.Equal("single", result.items[0].Element);
-                Assert.Equal(42.0, result.items[0].Score);
+                (long cursor, SortedSetEntry[] items) = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
+                Assert.Equal(10L, cursor);
+                _ = Assert.Single(items);
+                Assert.Equal("single", items[0].Element);
+                Assert.Equal(42.0, items[0].Score);
             },
 
             // Test SortedSetScanAsync converter - cursor as GlideString
             () =>
             {
                 object[] testScanResponse = [
-                    (GlideString)"15",
-                    new object[] { (GlideString)"test", (GlideString)"1.5" }
+                    (gs)"15",
+                    new object[] { (gs)"test", (gs)"1.5" }
                 ];
-                (long cursor, SortedSetEntry[] items) result = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
-                Assert.Equal(15L, result.cursor);
-                _ = Assert.Single(result.items);
-                Assert.Equal("test", result.items[0].Element);
-                Assert.Equal(1.5, result.items[0].Score);
+                (long cursor, SortedSetEntry[] items) = Request.SortedSetScanAsync("key", 0).Converter(testScanResponse);
+                Assert.Equal(15L, cursor);
+                _ = Assert.Single(items);
+                Assert.Equal("test", items[0].Element);
+                Assert.Equal(1.5, items[0].Score);
             },
 
             // Test SortedSetScoreAsync converter
@@ -651,60 +428,6 @@ public class SortedSetCommandTests
                 double? result = Request.SortedSetScoreAsync("key", "member").Converter(null);
                 Assert.Null(result);
             }
-        );
-    }
-
-    [Fact]
-    public void RangeByLex_ToArgs_GeneratesCorrectArguments()
-    {
-        Assert.Multiple(
-            // Basic range
-            () => Assert.Equal(["[a", "[z", "BYLEX"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).ToArgs()),
-
-            // Exclusive boundaries
-            () => Assert.Equal(["(a", "(z", "BYLEX"], new RangeByLex(LexBoundary.Exclusive("a"), LexBoundary.Exclusive("z")).ToArgs()),
-
-            // Mixed boundaries
-            () => Assert.Equal(["[a", "(z", "BYLEX"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Exclusive("z")).ToArgs()),
-
-            // Infinity boundaries
-            () => Assert.Equal(["-", "+", "BYLEX"], new RangeByLex(LexBoundary.NegativeInfinity(), LexBoundary.PositiveInfinity()).ToArgs()),
-
-            // With reverse
-            () => Assert.Equal(["[z", "[a", "BYLEX", "REV"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).SetReverse().ToArgs()),
-
-            // With limit
-            () => Assert.Equal(["[a", "[z", "BYLEX", "LIMIT", "10", "20"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).SetLimit(10, 20).ToArgs()),
-
-            // With reverse and limit
-            () => Assert.Equal(["[z", "[a", "BYLEX", "REV", "LIMIT", "5", "15"], new RangeByLex(LexBoundary.Inclusive("a"), LexBoundary.Inclusive("z")).SetReverse().SetLimit(5, 15).ToArgs())
-        );
-    }
-
-    [Fact]
-    public void RangeByScore_ToArgs_GeneratesCorrectArguments()
-    {
-        Assert.Multiple(
-            // Basic range
-            () => Assert.Equal(["10", "20", "BYSCORE"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).ToArgs()),
-
-            // Exclusive boundaries
-            () => Assert.Equal(["(10", "(20", "BYSCORE"], new RangeByScore(ScoreBoundary.Exclusive(10), ScoreBoundary.Exclusive(20)).ToArgs()),
-
-            // Mixed boundaries
-            () => Assert.Equal(["10", "(20", "BYSCORE"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Exclusive(20)).ToArgs()),
-
-            // Infinity boundaries
-            () => Assert.Equal(["-inf", "+inf", "BYSCORE"], new RangeByScore(ScoreBoundary.NegativeInfinity(), ScoreBoundary.PositiveInfinity()).ToArgs()),
-
-            // With reverse
-            () => Assert.Equal(["20", "10", "BYSCORE", "REV"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).SetReverse().ToArgs()),
-
-            // With limit
-            () => Assert.Equal(["10", "20", "BYSCORE", "LIMIT", "10", "20"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).SetLimit(10, 20).ToArgs()),
-
-            // With reverse and limit
-            () => Assert.Equal(["20", "10", "BYSCORE", "REV", "LIMIT", "5", "15"], new RangeByScore(ScoreBoundary.Inclusive(10), ScoreBoundary.Inclusive(20)).SetReverse().SetLimit(5, 15).ToArgs())
         );
     }
 }

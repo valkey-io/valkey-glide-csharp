@@ -3,21 +3,26 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// The options for an operation to add or update a geospatial item.
+/// The options for an operation to add or update sorted set members.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/geoadd/"/>
-public readonly struct GeoAddOptions
+/// <seealso href="https://valkey.io/commands/zadd/"/>
+public readonly struct SortedSetAddOptions
 {
+    #region Public Properties
+
     /// <summary>
     /// The condition under which to add or update members.
     /// </summary>
-    public GeoAddCondition Condition { get; init; }
+    public SortedSetAddCondition Condition { get; init; }
 
     /// <summary>
     /// Whether to return the number of changed elements (added and
     /// updated) instead of the number of added elements only (CH).
     /// </summary>
     public bool Changed { get; init; }
+
+    #endregion
+    #region Internal Methods
 
     /// <summary>
     /// Converts to command arguments.
@@ -34,4 +39,6 @@ public readonly struct GeoAddOptions
 
         return [.. args];
     }
+
+    #endregion
 }

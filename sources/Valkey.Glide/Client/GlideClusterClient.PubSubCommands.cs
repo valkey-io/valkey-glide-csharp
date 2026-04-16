@@ -16,14 +16,14 @@ public partial class GlideClusterClient
     #region SubscribeCommands
 
     /// <inheritdoc/>
-    public async Task SSubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout = default)
+    public async Task SSubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SSubscribeBlocking([shardedChannel], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task SSubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout = default)
+    public async Task SSubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SSubscribeBlocking(shardedChannels.ToGlideStrings(), timeout));
@@ -41,21 +41,21 @@ public partial class GlideClusterClient
     #region UnsubscribeCommands
 
     /// <inheritdoc/>
-    public async Task SUnsubscribeAsync(TimeSpan timeout = default)
+    public async Task SUnsubscribeAsync(TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SUnsubscribeBlocking([], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task SUnsubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout = default)
+    public async Task SUnsubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SUnsubscribeBlocking([shardedChannel], timeout));
     }
 
     /// <inheritdoc/>
-    public async Task SUnsubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout = default)
+    public async Task SUnsubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SUnsubscribeBlocking(shardedChannels.ToGlideStrings(), timeout));

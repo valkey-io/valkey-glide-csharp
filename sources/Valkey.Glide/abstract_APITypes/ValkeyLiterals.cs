@@ -7,6 +7,7 @@ internal static class ValkeyLiterals
     // unlike primary commands, these do not get altered by the command-map; we may as
     // well compute the bytes once and share them
     public static readonly ValkeyValue
+        @default = "default",
         ACLCAT = "ACLCAT",
         ADDR = "ADDR",
         AFTER = "AFTER",
@@ -27,7 +28,6 @@ internal static class ValkeyLiterals
         COPY = "COPY",
         COUNT = "COUNT",
         DB = "DB",
-        @default = "default",
         DESC = "DESC",
         DOCTOR = "DOCTOR",
         ENCODING = "ENCODING",
@@ -44,9 +44,9 @@ internal static class ValkeyLiterals
         GT = "GT",
         HISTORY = "HISTORY",
         ID = "ID",
-        IDX = "IDX",
-        IFEQ = "IFEQ",
         IDLETIME = "IDLETIME",
+        IDX = "IDX",
+        INCR = "INCR",
         KEEPTTL = "KEEPTTL",
         KILL = "KILL",
         LADDR = "LADDR",
@@ -59,8 +59,8 @@ internal static class ValkeyLiterals
         LIST = "LIST",
         LOAD = "LOAD",
         LT = "LT",
-        MATCH = "MATCH",
         MALLOC_STATS = "MALLOC-STATS",
+        MATCH = "MATCH",
         MAX = "MAX",
         MAXAGE = "MAXAGE",
         MAXLEN = "MAXLEN",
@@ -103,6 +103,7 @@ internal static class ValkeyLiterals
         USERNAME = "USERNAME",
         WEIGHTS = "WEIGHTS",
         WITHMATCHLEN = "WITHMATCHLEN",
+        WITHSCORE = "WITHSCORE",
         WITHSCORES = "WITHSCORES",
         WITHVALUES = "WITHVALUES",
         XOR = "XOR",
@@ -131,9 +132,15 @@ internal static class ValkeyLiterals
         none = "none",
         sync = "sync",
 
-        MinusSymbol = "-",
-        PlusSymbol = "+",
-        Wildcard = "*",
+        // Sorted set ranges
+        RangeInclusive = "[",
+        RangeExclusive = "(",
+        LexRangeMin = "-",
+        LexRangeMax = "+",
+        ScoreRangeMin = "-inf",
+        ScoreRangeMax = "+inf",
+        RankRangeMin = "0",
+        RankRangeMax = "-1",
 
         // Geo Radius/Search Literals
         BYBOX = "BYBOX",

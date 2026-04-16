@@ -135,7 +135,6 @@ public class ReadFromTests(TestConfiguration config)
     }
 
     #endregion
-
     #region Configuration Pipeline Validation Tests
 
     [Fact]
@@ -199,7 +198,6 @@ public class ReadFromTests(TestConfiguration config)
     }
 
     #endregion
-
     #region Backward Compatibility Tests
 
     [Theory]

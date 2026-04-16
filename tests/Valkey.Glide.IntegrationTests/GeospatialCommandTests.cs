@@ -676,12 +676,12 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         Assert.Equal(2, await client.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km, new GeoSearchStoreOptions { StoreDistances = true }));
 
-        var results = await client.SortedSetRangeByRankWithScoresAsync(dest, 0, -1);
+        var results = await client.SortedSetRangeWithScoresAsync(dest);
         Assert.Equal(2, results.Length);
 
-        Assert.Equal(PalermoName, results[0].Element.ToString());
+        Assert.Equal(PalermoName, results[0].Element);
         Assert.Equal(0.0, results[0].Score, DistanceTolerance);
-        Assert.Equal(CataniaName, results[1].Element.ToString());
+        Assert.Equal(CataniaName, results[1].Element);
         Assert.Equal(PalermoCataniaDistanceKm, results[1].Score, DistanceTolerance);
     }
 
@@ -731,9 +731,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(source, members);
 
         Assert.Equal(2, await client.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km, new GeoSearchStoreOptions { Count = 2 }));
-
-        var storedMembers = await client.SortedSetRangeByRankAsync(dest, 0, -1);
-        Assert.Equal(2, storedMembers.Length);
+        Assert.Equal(2, await client.SortedSetCardAsync(dest));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -746,13 +744,13 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         _ = await client.GeoAddAsync(source, PalermoCatania);
 
-        _ = await client.SortedSetAddAsync(dest, [new SortedSetEntry("OldMember", 100)]);
+        _ = await client.SortedSetAddAsync(dest, new Dictionary<ValkeyValue, double> { ["OldMember"] = 100 });
         Assert.Equal(1, await client.SortedSetCardAsync(dest));
 
         Assert.Equal(2, await client.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km));
 
-        var storedMembers = await client.SortedSetRangeByRankAsync(dest, 0, -1);
-        Assert.Equivalent(new[] { PalermoName, CataniaName }, storedMembers.Select(m => m.ToString()));
+        var stored = await client.SortedSetRangeAsync(dest);
+        Assert.Equivalent(new ValkeyValue[] { PalermoName, CataniaName }, stored);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
