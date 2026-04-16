@@ -215,6 +215,15 @@ public abstract partial class BaseClient
     // ===== Script Management =====
 
     /// <inheritdoc/>
+    public async Task<bool> ScriptExistsAsync(
+        string sha1Hash,
+        CancellationToken cancellationToken = default)
+    {
+        bool[] results = await ScriptExistsAsync([sha1Hash], cancellationToken);
+        return results[0];
+    }
+
+    /// <inheritdoc/>
     public async Task<bool[]> ScriptExistsAsync(
         IEnumerable<string> sha1Hashes,
         CancellationToken cancellationToken = default)
@@ -322,6 +331,47 @@ public abstract partial class BaseClient
         CancellationToken cancellationToken = default)
     {
         _ = await Command(Request.FunctionFlushAsync(mode));
+    }
+
+    /// <inheritdoc/>
+    public async Task FunctionDeleteAsync(
+        string libraryName,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionDeleteAsync(libraryName));
+    }
+
+    /// <inheritdoc/>
+    public async Task FunctionKillAsync(
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionKillAsync());
+    }
+
+    // ===== Function Persistence =====
+
+    /// <inheritdoc/>
+    public async Task<byte[]> FunctionDumpAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await Command(Request.FunctionDumpAsync());
+    }
+
+    /// <inheritdoc/>
+    public async Task FunctionRestoreAsync(
+        byte[] payload,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionRestoreAsync(payload, null));
+    }
+
+    /// <inheritdoc/>
+    public async Task FunctionRestoreAsync(
+        byte[] payload,
+        FunctionRestorePolicy policy,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionRestoreAsync(payload, policy));
     }
 
     // ===== StackExchange.Redis Compatibility Methods =====
