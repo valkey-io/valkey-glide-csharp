@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -1488,22 +1490,14 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(3, scanItems.Count);
         Assert.All(scanItems, item => Assert.Contains(item.Element.ToString(), new[] { "member1", "member2", "member3" }));
 
-        // Test scan with pattern
+        // Test scan with pattern using ScanOptions
         List<SortedSetEntry> patternItems = [];
-        await foreach (SortedSetEntry item in client.SortedSetScanAsync(key, "member*"))
+        await foreach (SortedSetEntry item in client.SortedSetScanAsync(key, new ScanOptions { MatchPattern = "member*" }))
         {
             patternItems.Add(item);
         }
         Assert.Equal(3, patternItems.Count);
         Assert.All(patternItems, item => Assert.Contains(item.Element.ToString(), new[] { "member1", "member2", "member3" }));
-
-        // Test scan with pageOffset
-        List<SortedSetEntry> offsetItems = [];
-        await foreach (SortedSetEntry item in client.SortedSetScanAsync(key, pageOffset: 1))
-        {
-            offsetItems.Add(item);
-        }
-        Assert.Equal(2, offsetItems.Count); // Should skip the first item
     }
 
 
@@ -1525,9 +1519,9 @@ public class SortedSetCommandTests(TestConfiguration config)
         }
         Assert.Equal(25000, allScanned.Count);
 
-        // Test 2: Scan with pattern matching (should find members 1000-1999)
+        // Test 2: Scan with pattern matching using ScanOptions
         List<SortedSetEntry> patternScanned = [];
-        await foreach (var entry in client.SortedSetScanAsync(key, "member1*"))
+        await foreach (var entry in client.SortedSetScanAsync(key, new ScanOptions { MatchPattern = "member1*" }))
         {
             Assert.StartsWith("member1", entry.Element);
             patternScanned.Add(entry);
@@ -1536,20 +1530,12 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test 3: Scan with small page size to test pagination
         List<SortedSetEntry> smallPageScanned = [];
-        await foreach (var entry in client.SortedSetScanAsync(key, pageSize: 100))
+        await foreach (var entry in client.SortedSetScanAsync(key, new ScanOptions { Count = 100 }))
         {
             smallPageScanned.Add(entry);
         }
+
         Assert.Equal(25000, smallPageScanned.Count);
-
-        // Test 4: Use pageOffset to skip first 500 results per pagination
-        List<SortedSetEntry> offsetResults = [];
-        await foreach (var entry in client.SortedSetScanAsync(key, pageSize: 1000, pageOffset: 500))
-        {
-            offsetResults.Add(entry);
-        }
-        Assert.Equal(24500, offsetResults.Count);
-
         Assert.Equal(25000, await client.SortedSetCardAsync(key));
     }
 

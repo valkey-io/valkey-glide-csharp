@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class SetCommandTests(TestConfiguration config)
@@ -316,7 +318,7 @@ public class SetCommandTests(TestConfiguration config)
 
         // Test scan with pattern
         List<ValkeyValue> patternResults = [];
-        await foreach (var value in client.SetScanAsync(key, "test*"))
+        await foreach (var value in client.SetScanAsync(key, new ScanOptions { MatchPattern = "test*" }))
         {
             patternResults.Add(value);
         }
@@ -325,7 +327,7 @@ public class SetCommandTests(TestConfiguration config)
 
         // Test scan with small page size
         List<ValkeyValue> smallPageResults = [];
-        await foreach (var value in client.SetScanAsync(key, pageSize: 2))
+        await foreach (var value in client.SetScanAsync(key, new ScanOptions { Count = 2 }))
         {
             smallPageResults.Add(value);
         }
@@ -352,7 +354,7 @@ public class SetCommandTests(TestConfiguration config)
 
         // Test 2: Scan with pattern matching (should find members 1000-1999)
         List<ValkeyValue> patternScanned = [];
-        await foreach (var member in client.SetScanAsync(key, "member1*"))
+        await foreach (var member in client.SetScanAsync(key, new ScanOptions { MatchPattern = "member1*" }))
         {
             Assert.StartsWith("member1", member);
             patternScanned.Add(member);
@@ -361,19 +363,11 @@ public class SetCommandTests(TestConfiguration config)
 
         // Test 3: Scan with small page size to test pagination
         List<ValkeyValue> smallPageScanned = [];
-        await foreach (var member in client.SetScanAsync(key, pageSize: 100))
+        await foreach (var member in client.SetScanAsync(key, new ScanOptions { Count = 100 }))
         {
             smallPageScanned.Add(member);
         }
         Assert.Equal(25000, smallPageScanned.Count);
-
-        // Test 4: Use pageOffset to skip first 500 results per pagination
-        List<ValkeyValue> offsetResults = [];
-        await foreach (var member in client.SetScanAsync(key, pageSize: 1000, pageOffset: 500))
-        {
-            offsetResults.Add(member);
-        }
-        Assert.Equal(12500, offsetResults.Count);
 
         Assert.Equal(25000, await client.SetCardAsync(key));
     }

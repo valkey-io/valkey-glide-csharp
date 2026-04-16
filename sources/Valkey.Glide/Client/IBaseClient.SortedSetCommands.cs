@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide;
 
 public partial interface IBaseClient
@@ -387,16 +389,30 @@ public partial interface IBaseClient
     /// <returns>A contiguous collection of sorted set entries with the key they were popped from, or <see cref="SortedSetPopResult.Null"/> if no non-empty sorted sets are found or timeout expired.</returns>
     Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout);
 
-    // TODO #287
     /// <summary>
-    /// Iterates elements of the sorted set and their associated scores using a cursor.
+    /// Iterates elements of Sorted Set key and their associated scores using a cursor.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zscan"/>
-    /// <param name="key">The sorted set key.</param>
-    /// <param name="pattern">The pattern to match.</param>
-    /// <param name="pageSize">The page size to iterate by.</param>
-    /// <param name="cursor">The cursor position to start at.</param>
-    /// <param name="pageOffset">The page offset to start at.</param>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="options">Optional scan options including pattern and count hint.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the sorted set.</returns>
-    IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0);
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // Scan all members
+    /// await foreach (SortedSetEntry entry in client.SortedSetScanAsync(key))
+    /// {
+    ///     Console.WriteLine($"{entry.Element}: {entry.Score}");
+    /// }
+    ///
+    /// // Scan with pattern
+    /// var options = new ScanOptions { MatchPattern = "*pattern*" };
+    /// await foreach (SortedSetEntry entry in client.SortedSetScanAsync(key, options))
+    /// {
+    ///     Console.WriteLine($"{entry.Element}: {entry.Score}");
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ScanOptions? options = null);
 }

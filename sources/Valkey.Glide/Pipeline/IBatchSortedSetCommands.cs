@@ -1,13 +1,14 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.Pipeline;
 
 /// <summary>
 /// Supports commands for the "Sorted Set Commands" group for batch operations.
 /// <br/>
-/// See more on <see href="https://valkey.io/commands/?group=sorted-set#sorted-set">valkey.io</see>.
+/// See more on <see href="https://valkey.io/commands/#sorted-set">valkey.io</see>.
 /// </summary>
 internal interface IBatchSortedSetCommands
 {
@@ -231,8 +232,13 @@ internal interface IBatchSortedSetCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetDiffAndStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})" /></returns>
     IBatch SortedSetDiffAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
-    // TODO #287
-    /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)" /></returns>
-    IBatch SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0);
+    /// <summary>
+    /// Iterates elements of Sorted Set key and their associated scores using a cursor (single page).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zscan"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="cursor">The cursor position to start at (use 0 to start a new iteration).</param>
+    /// <param name="options">Optional scan options including pattern and count hint.</param>
+    /// <returns>Command Response - A tuple of (cursor, entries) for the current page.</returns>
+    IBatch SortedSetScan(ValkeyKey key, long cursor = 0, ScanOptions? options = null);
 }

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Commands.Constants.Constants;
 using static Valkey.Glide.Internals.FFI;
 
@@ -341,21 +343,20 @@ internal partial class Request
         return new(requestType, [key, member, ValkeyLiterals.WITHSCORE], true, ToRankAndScore);
     }
 
-    // TODO #287
-    public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0)
+    public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScanAsync(ValkeyKey key, long cursor, ScanOptions? options = null)
     {
         List<GlideString> args = [key, cursor.ToGlideString()];
 
-        if (!pattern.IsNull)
+        if (options?.MatchPattern != null)
         {
             args.Add(MatchKeyword);
-            args.Add(pattern);
+            args.Add(options.MatchPattern.ToGlideString());
         }
 
-        if (pageSize != 250)
+        if (options?.Count > 0)
         {
             args.Add(CountKeyword);
-            args.Add(pageSize.ToGlideString());
+            args.Add(options.Count.Value.ToGlideString());
         }
 
         return new(RequestType.ZScan, [.. args], false, ParseScanResponse);

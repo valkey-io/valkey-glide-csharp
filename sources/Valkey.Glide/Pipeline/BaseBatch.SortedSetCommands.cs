@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Internals.Request;
 
 namespace Valkey.Glide.Pipeline;
@@ -108,6 +110,9 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetRandomMembersWithScores(ValkeyKey, long)" />
     public T SortedSetRandomMembersWithScores(ValkeyKey key, long count) => AddCmd(SortedSetRandomMembersWithScoreAsync(key, count));
 
+    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScan(ValkeyKey, long, ScanOptions)" />
+    public T SortedSetScan(ValkeyKey key, long cursor = 0, ScanOptions? options = null) => AddCmd(SortedSetScanAsync(key, cursor, options));
+
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScore(ValkeyKey, ValkeyValue)" />
     public T SortedSetScore(ValkeyKey key, ValkeyValue member) => AddCmd(SortedSetScoreAsync(key, member));
 
@@ -186,10 +191,6 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetDiffAndStore(ValkeyKey, IEnumerable{ValkeyKey})" />
     public T SortedSetDiffAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SortedSetDiffAndStoreAsync(destination, [.. keys]));
 
-    // TODO #287
-    /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetScan(ValkeyKey, ValkeyValue, int, long)" />
-    public T SortedSetScan(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0) => AddCmd(SortedSetScanAsync(key, pattern, pageSize, cursor));
-
     // Explicit interface implementations for IBatchSortedSetCommands
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, ValkeyValue member, double score) => SortedSetAdd(key, member, score);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, SortedSetEntry member) => SortedSetAdd(key, member);
@@ -220,6 +221,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetRandomMembers(ValkeyKey key, long count) => SortedSetRandomMembers(key, count);
     IBatch IBatchSortedSetCommands.SortedSetRandomMemberWithScore(ValkeyKey key) => SortedSetRandomMemberWithScore(key);
     IBatch IBatchSortedSetCommands.SortedSetRandomMembersWithScores(ValkeyKey key, long count) => SortedSetRandomMembersWithScores(key, count);
+    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, long cursor, ScanOptions? options) => SortedSetScan(key, cursor, options);
     IBatch IBatchSortedSetCommands.SortedSetScore(ValkeyKey key, ValkeyValue member) => SortedSetScore(key, member);
     IBatch IBatchSortedSetCommands.SortedSetScores(ValkeyKey key, IEnumerable<ValkeyValue> members) => SortedSetScores(key, members);
     IBatch IBatchSortedSetCommands.SortedSetRank(ValkeyKey key, ValkeyValue member, Order order) => SortedSetRank(key, member, order);
@@ -246,7 +248,4 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSortedSetCommands.SortedSetInterAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys, Aggregate aggregate) => SortedSetInterAndStore(destination, keys, aggregate);
     IBatch IBatchSortedSetCommands.SortedSetInterAndStore(ValkeyKey destination, IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate) => SortedSetInterAndStore(destination, keysAndWeights, aggregate);
     IBatch IBatchSortedSetCommands.SortedSetDiffAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => SortedSetDiffAndStore(destination, keys);
-
-    // TODO #287
-    IBatch IBatchSortedSetCommands.SortedSetScan(ValkeyKey key, ValkeyValue pattern, int pageSize, long cursor) => SortedSetScan(key, pattern, pageSize, cursor);
 }

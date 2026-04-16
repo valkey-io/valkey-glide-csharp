@@ -277,8 +277,17 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> SortedSetRemoveRangeByScoreAsync(ValkeyKey key, double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int)"/>
+    /// <summary>
+    /// Iterates elements of Sorted Set key and their associated scores using a cursor.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/zscan"/>
+    /// <param name="key">The key of the sorted set.</param>
+    /// <param name="pattern">The pattern to match.</param>
+    /// <param name="pageSize">The number of elements to return per iteration (hint to the server).</param>
+    /// <param name="cursor">The cursor position to start at.</param>
+    /// <param name="pageOffset">The number of elements to skip from the first page.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the sorted set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None);
 
