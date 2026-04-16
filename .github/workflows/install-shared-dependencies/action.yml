@@ -67,7 +67,7 @@ runs:
         # See <https://github.com/Vampire/setup-wsl> for more details.
         - name: Install software dependencies for Windows
           if: "${{ inputs.os == 'windows' }}"
-          uses: Vampire/setup-wsl@v6
+          uses: Vampire/setup-wsl@v7
           with:
               distribution: Ubuntu-22.04
               additional-packages: python3 build-essential git pkg-config libssl-dev
