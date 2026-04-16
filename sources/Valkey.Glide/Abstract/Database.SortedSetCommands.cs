@@ -8,7 +8,7 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen, CommandFlags)"/>
-    public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags)
+    public async Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await SortedSetAddAsync(key, member, score, ToSortedSetAddOptions(when));
