@@ -25,9 +25,9 @@ public sealed class RangeOptions
 
     /// <summary>
     /// The range to query.
-    /// Defaults to <see cref="RankRange.All"/>.
+    /// Defaults to <see cref="IndexRange.FirstToLast"/>.
     /// </summary>
-    public Range Range { get; init; } = RankRange.All;
+    public Range Range { get; init; } = IndexRange.FirstToLast;
 
     /// <summary>
     /// The sort direction for the range query.
@@ -75,7 +75,7 @@ public sealed class RangeOptions
 
         if (Offset != NoOffset || Count != NoCount)
         {
-            if (Range is RankRange)
+            if (Range is IndexRange)
             {
                 throw new ArgumentException("Offset and count are not supported with rank-based ranges. Use score-based or lexicographic range instead.", nameof(Range));
             }

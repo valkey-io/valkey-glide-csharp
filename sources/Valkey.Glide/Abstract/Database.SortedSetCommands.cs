@@ -61,14 +61,14 @@ internal partial class Database
     public async Task<ValkeyValue[]> SortedSetRangeByRankAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetRangeAsync(key, new RangeOptions { Range = RankRange.Between(start, stop), Order = order });
+        return await SortedSetRangeAsync(key, new RangeOptions { Range = IndexRange.Between(start, stop), Order = order });
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByRankWithScoresAsync(ValkeyKey, long, long, Order, CommandFlags)"/>
     public async Task<SortedSetEntry[]> SortedSetRangeByRankWithScoresAsync(ValkeyKey key, long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetRangeWithScoresAsync(key, new RangeOptions { Range = RankRange.Between(start, stop), Order = order });
+        return await SortedSetRangeWithScoresAsync(key, new RangeOptions { Range = IndexRange.Between(start, stop), Order = order });
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByScoreAsync(ValkeyKey, double, double, Exclude, Order, long, long, CommandFlags)"/>
@@ -279,7 +279,7 @@ internal partial class Database
     public Task<long> SortedSetRemoveRangeByRankAsync(ValkeyKey key, long start, long stop, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return SortedSetRemoveRangeAsync(key, RankRange.Between(start, stop));
+        return SortedSetRemoveRangeAsync(key, IndexRange.Between(start, stop));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRemoveRangeByScoreAsync(ValkeyKey, double, double, Exclude, CommandFlags)"/>
@@ -390,7 +390,7 @@ internal partial class Database
 
         Range range = sortedSetOrder switch
         {
-            SortedSetOrder.ByRank => RankRange.Between((long)start, (long)stop),
+            SortedSetOrder.ByRank => IndexRange.Between((long)start, (long)stop),
             SortedSetOrder.ByScore => ToScoreRange((double)start, (double)stop, exclude),
             SortedSetOrder.ByLex => ToLexRange(start, stop, exclude),
             _ => throw new ArgumentOutOfRangeException(nameof(sortedSetOrder), sortedSetOrder, "Unsupported sorted set order."),

@@ -356,7 +356,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test on non-existent key
         Assert.Equal(0, await client.SortedSetCardAsync(key));
-        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(1.0), ScoreBound.Inclusive(10.0))));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(1.0, 10.0)));
 
         // Add members with different scores
         Assert.True(await client.SortedSetAddAsync(key, "member1", 1.0));
@@ -368,18 +368,18 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(4, await client.SortedSetCardAsync(key));
 
         // Test count with range parameters (ZCOUNT)
-        Assert.Equal(2, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(2.0), ScoreBound.Inclusive(6.0))));
-        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), ScoreBound.Inclusive(5.0))));
-        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(2.5), ScoreBound.Exclusive(5.0))));
+        Assert.Equal(2, await client.SortedSetCountAsync(key, ScoreRange.Between(2.0, 6.0)));
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), 5.0)));
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(2.5, ScoreBound.Exclusive(5.0))));
         Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), ScoreBound.Exclusive(5.0))));
 
         // Test with no matches
-        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(15.0), ScoreBound.Inclusive(20.0))));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(15.0, 20.0)));
 
         // Remove a member and test both modes
         Assert.True(await client.SortedSetRemoveAsync(key, "member2"));
         Assert.Equal(3, await client.SortedSetCardAsync(key));
-        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(2.0), ScoreBound.Inclusive(6.0))));
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(2.0, 6.0)));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -410,7 +410,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.All));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.MinToMax));
 
         // Add members with different scores
         Assert.True(await client.SortedSetAddAsync(key, "member1", 1.0));
@@ -419,21 +419,21 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member4", 10.0));
 
         // Test count with default range (all elements)
-        Assert.Equal(4, await client.SortedSetCountAsync(key, ScoreRange.All));
+        Assert.Equal(4, await client.SortedSetCountAsync(key, ScoreRange.MinToMax));
 
         // Test count with specific range
-        Assert.Equal(2, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(2.0), ScoreBound.Inclusive(6.0))));
+        Assert.Equal(2, await client.SortedSetCountAsync(key, ScoreRange.Between(2.0, 6.0)));
 
         // Test count with exclusive bounds
-        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), ScoreBound.Inclusive(5.0))));  // Exclude member2 (2.5), include member3 (5.0)
-        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(2.5), ScoreBound.Exclusive(5.0))));   // Include member2 (2.5), exclude member3 (5.0)
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), 5.0)));  // Exclude member2 (2.5), include member3 (5.0)
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(2.5, ScoreBound.Exclusive(5.0))));   // Include member2 (2.5), exclude member3 (5.0)
         Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), ScoreBound.Exclusive(5.0))));   // Exclude both member2 and member3
 
         // Test count with infinity bounds
-        Assert.Equal(4, await client.SortedSetCountAsync(key, ScoreRange.All));
+        Assert.Equal(4, await client.SortedSetCountAsync(key, ScoreRange.MinToMax));
 
         // Test count with no matches
-        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Inclusive(15.0), ScoreBound.Inclusive(20.0))));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(15.0, 20.0)));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -461,30 +461,30 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("member4", result[3]);
 
         // Test specific range
-        result = await client.SortedSetRangeAsync(key, new() { Range = RankRange.Between(1, 2) });
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(1, 2) });
         Assert.Equal(2, result.Length);
         Assert.Equal("member2", result[0]);
         Assert.Equal("member3", result[1]);
 
         // Test descending order
-        result = await client.SortedSetRangeAsync(key, new() { Range = RankRange.Between(0, 1), Order = Order.Descending });
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(0, 1), Order = Order.Descending });
         Assert.Equal(2, result.Length);
         Assert.Equal("member4", result[0]);
         Assert.Equal("member3", result[1]);
 
         // Test negative indices
-        result = await client.SortedSetRangeAsync(key, new() { Range = RankRange.Between(-2, -1) });
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(-2, -1) });
         Assert.Equal(2, result.Length);
         Assert.Equal("member3", result[0]);
         Assert.Equal("member4", result[1]);
 
         // Test single element range
-        result = await client.SortedSetRangeAsync(key, new() { Range = RankRange.Between(0, 0) });
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(0, 0) });
         _ = Assert.Single(result);
         Assert.Equal("member1", result[0]);
 
         // Test out of range
-        result = await client.SortedSetRangeAsync(key, new() { Range = RankRange.Between(10, 20) });
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(10, 20) });
         Assert.Empty(result);
     }
 
@@ -514,7 +514,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(3.5, result[2].Score);
 
         // Test specific range
-        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = RankRange.Between(0, 1) });
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = IndexRange.Between(0, 1) });
         Assert.Equal(2, result.Length);
         Assert.Equal("member1", result[0].Element);
         Assert.Equal(1.5, result[0].Score);
@@ -522,7 +522,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(2.5, result[1].Score);
 
         // Test descending order
-        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = RankRange.Between(0, 1), Order = Order.Descending });
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = IndexRange.Between(0, 1), Order = Order.Descending });
         Assert.Equal(2, result.Length);
         Assert.Equal("member3", result[0].Element);
         Assert.Equal(3.5, result[0].Score);
@@ -530,7 +530,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(2.5, result[1].Score);
 
         // Test single element
-        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = RankRange.Between(1, 1) });
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = IndexRange.Between(1, 1) });
         _ = Assert.Single(result);
         Assert.Equal("member2", result[0].Element);
         Assert.Equal(2.5, result[0].Score);
@@ -572,7 +572,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        var result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = ScoreRange.All });
+        var result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = ScoreRange.MinToMax });
         Assert.Empty(result);
 
         // Add members with scores
@@ -582,7 +582,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member4", 10.0));
 
         // Test default range (all elements, ascending)
-        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = ScoreRange.All });
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = ScoreRange.MinToMax });
         Assert.Equal(4, result.Length);
         Assert.Equal("member1", result[0].Element);
         Assert.Equal(1.0, result[0].Score);
@@ -596,7 +596,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test specific score range
         result = await client.SortedSetRangeWithScoresAsync(key, new()
         {
-            Range = ScoreRange.Between(ScoreBound.Inclusive(2.0), ScoreBound.Inclusive(6.0))
+            Range = ScoreRange.Between(2.0, 6.0)
         });
         Assert.Equal(2, result.Length);
         Assert.Equal("member2", result[0].Element);
@@ -607,7 +607,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test descending order
         result = await client.SortedSetRangeWithScoresAsync(key, new()
         {
-            Range = ScoreRange.Between(ScoreBound.Inclusive(6.0), ScoreBound.Inclusive(2.0)),
+            Range = ScoreRange.Between(6.0, 2.0),
             Order = Order.Descending
         });
         Assert.Equal(2, result.Length);
@@ -619,7 +619,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test with exclusions
         result = await client.SortedSetRangeWithScoresAsync(key, new()
         {
-            Range = ScoreRange.Between(ScoreBound.Exclusive(2.5), ScoreBound.Inclusive(5.0))
+            Range = ScoreRange.Between(ScoreBound.Exclusive(2.5), 5.0)
         });
         _ = Assert.Single(result);
         Assert.Equal("member3", result[0].Element);
@@ -628,7 +628,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test with limit
         result = await client.SortedSetRangeWithScoresAsync(key, new()
         {
-            Range = ScoreRange.All,
+            Range = ScoreRange.MinToMax,
             Offset = 1,
             Count = 2
         });
@@ -648,7 +648,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test on non-existent key
         ValkeyValue[] result = await client.SortedSetRangeAsync(key, new()
         {
-            Range = LexRange.Between(LexBound.Inclusive("a"), LexBound.Inclusive("z"))
+            Range = LexRange.Between("a", "z")
         });
         Assert.Empty(result);
 
@@ -661,7 +661,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test specific range
         result = await client.SortedSetRangeAsync(key, new()
         {
-            Range = LexRange.Between(LexBound.Inclusive("b"), LexBound.Inclusive("d"))
+            Range = LexRange.Between("b", "d")
         });
         Assert.Equal(2, result.Length);
         Assert.Equal("banana", result[0]);
@@ -670,7 +670,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test with exclusions
         result = await client.SortedSetRangeAsync(key, new()
         {
-            Range = LexRange.Between(LexBound.Exclusive("banana"), LexBound.Inclusive("cherry"))
+            Range = LexRange.Between(LexBound.Exclusive("banana"), "cherry")
         });
         _ = Assert.Single(result);
         Assert.Equal("cherry", result[0]);
@@ -678,7 +678,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test with limit
         result = await client.SortedSetRangeAsync(key, new()
         {
-            Range = LexRange.Between(LexBound.Inclusive("a"), LexBound.Inclusive("z")),
+            Range = LexRange.Between("a", "z"),
             Offset = 1,
             Count = 2
         });
@@ -689,7 +689,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test full range
         result = await client.SortedSetRangeAsync(key, new()
         {
-            Range = LexRange.All
+            Range = LexRange.MinToMax
         });
         Assert.Equal(4, result.Length);
         Assert.Equal("apple", result[0]);
@@ -719,7 +719,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "date", 0.0));
 
         // Test ascending order (default)
-        result = await client.SortedSetRangeAsync(key, new() { Range = LexRange.All });
+        result = await client.SortedSetRangeAsync(key, new() { Range = LexRange.MinToMax });
         Assert.Equal(4, result.Length);
         Assert.Equal("apple", result[0]);
         Assert.Equal("banana", result[1]);
@@ -958,12 +958,12 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test full range
         long result = await client.SortedSetLexCountAsync(key, LexRange.Between(
-            LexBound.Inclusive("a"), LexBound.Inclusive("z")));
+            "a", "z"));
         Assert.Equal(4, result);
 
         // Test specific range
         result = await client.SortedSetLexCountAsync(key, LexRange.Between(
-            LexBound.Inclusive("b"), LexBound.Inclusive("d")));
+            "b", "d"));
         Assert.Equal(2, result); // banana, cherry
 
         // Test with exclusions
@@ -978,7 +978,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test with non-existent key
         result = await client.SortedSetLexCountAsync(Guid.NewGuid().ToString(), LexRange.Between(
-            LexBound.Inclusive("a"), LexBound.Inclusive("z")));
+            "a", "z"));
         Assert.Equal(0, result);
     }
 
@@ -1239,7 +1239,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         });
 
         // Test range and store by rank (default)
-        long result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey, new() { Range = RankRange.Between(0, 1) });
+        long result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey, new() { Range = IndexRange.Between(0, 1) });
         Assert.Equal(2, result);
 
         ValkeyValue[] stored = await client.SortedSetRangeAsync(destKey);
@@ -1251,7 +1251,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string destKey2 = $"{keyPrefix}dest2-{Guid.NewGuid()}";
         result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey2, new()
         {
-            Range = ScoreRange.Between(ScoreBound.Inclusive(8.0), ScoreBound.Inclusive(11.0))
+            Range = ScoreRange.Between(8.0, 11.0)
         });
         Assert.Equal(2, result);
 
@@ -1264,7 +1264,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string destKey3 = $"{keyPrefix}dest3-{Guid.NewGuid()}";
         result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey3, new()
         {
-            Range = ScoreRange.All,
+            Range = ScoreRange.MinToMax,
             Offset = 1,
             Count = 1
         });
@@ -1278,7 +1278,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string destKey4 = $"{keyPrefix}dest4-{Guid.NewGuid()}";
         result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey4, new()
         {
-            Range = RankRange.Between(0, 1),
+            Range = IndexRange.Between(0, 1),
             Order = Order.Descending
         });
         Assert.Equal(2, result);
@@ -1302,7 +1302,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         result = await client.SortedSetRangeAndStoreAsync(lexSourceKey, destKey5, new()
         {
-            Range = LexRange.Between(LexBound.Inclusive("a"), LexBound.Inclusive("c"))
+            Range = LexRange.Between("a", "c")
         });
         Assert.Equal(2, result);
 
@@ -1377,7 +1377,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test remove from non-existent key
         Assert.Equal(0, await client.SortedSetRemoveRangeAsync(key,
-            LexRange.Between(LexBound.Inclusive("a"), LexBound.Inclusive("z"))));
+            LexRange.Between("a", "z")));
 
         // Add test data with same scores for lexicographical ordering
         _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
@@ -1390,7 +1390,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test remove range by value
         long result = await client.SortedSetRemoveRangeAsync(key,
-            LexRange.Between(LexBound.Inclusive("b"), LexBound.Inclusive("d")));
+            LexRange.Between("b", "d"));
         Assert.Equal(2, result); // banana and cherry
 
         ValkeyValue[] remaining = await client.SortedSetRangeAsync(key);
@@ -1406,7 +1406,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test remove from non-existent key
-        Assert.Equal(0, await client.SortedSetRemoveRangeAsync(key, RankRange.Between(0, 1)));
+        Assert.Equal(0, await client.SortedSetRemoveRangeAsync(key, IndexRange.Between(0, 1)));
 
         // Add test data
         _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
@@ -1418,7 +1418,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         });
 
         // Test remove range by rank
-        long result = await client.SortedSetRemoveRangeAsync(key, RankRange.Between(1, 2));
+        long result = await client.SortedSetRemoveRangeAsync(key, IndexRange.Between(1, 2));
         Assert.Equal(2, result); // member1 and member4
 
         ValkeyValue[] remaining = await client.SortedSetRangeAsync(key);
@@ -1435,7 +1435,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test remove from non-existent key
         Assert.Equal(0, await client.SortedSetRemoveRangeAsync(key,
-            ScoreRange.Between(ScoreBound.Inclusive(1.0), ScoreBound.Inclusive(10.0))));
+            ScoreRange.Between(1.0, 10.0)));
 
         // Add test data
         _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
@@ -1448,7 +1448,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
         // Test remove range by score
         long result = await client.SortedSetRemoveRangeAsync(key,
-            ScoreRange.Between(ScoreBound.Inclusive(10.0), ScoreBound.Inclusive(13.0)));
+            ScoreRange.Between(10.0, 13.0));
         Assert.Equal(2, result); // member1 and member4
 
         ValkeyValue[] remaining = await client.SortedSetRangeAsync(key);

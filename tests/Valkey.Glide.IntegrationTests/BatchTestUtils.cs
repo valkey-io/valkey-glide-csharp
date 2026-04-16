@@ -664,7 +664,7 @@ internal partial class BatchTestUtils
         testData.Add(new(1L, "SortedSetCount(key1, 1.5, 2.5)"));
 
         // Test SortedSetCount
-        _ = batch.SortedSetCount(key1, ScoreRange.All);
+        _ = batch.SortedSetCount(key1, ScoreRange.MinToMax);
         testData.Add(new(3L, "SortedSetCount(key1) - all elements"));
 
         _ = batch.SortedSetCount(key1, ScoreRange.Between(ScoreBound.Exclusive(1.0), ScoreBound.Inclusive(3.0)));
@@ -817,7 +817,7 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "SortedSetRangeAndStore(newKey, newDestKey, All)"));
 
         // Test SortedSetRemoveRange (should remove all 3 elements by rank)
-        _ = batch.SortedSetRemoveRange(newKey, RankRange.All);
+        _ = batch.SortedSetRemoveRange(newKey, IndexRange.FirstToLast);
         testData.Add(new(3L, "SortedSetRemoveRange(newKey, All)"));
 
         // Setup data for union operations

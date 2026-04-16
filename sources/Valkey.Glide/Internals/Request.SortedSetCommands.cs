@@ -41,16 +41,7 @@ internal partial class Request
         => Simple<long>(RequestType.ZCard, [key]);
 
     public static Cmd<long, long> SortedSetCountAsync(ValkeyKey key, ScoreRange range)
-    {
-        /// For unbounded ranges, use more efficient <see cref="SortedSetCardAsync"/>.
-        if (range.IsUnbounded())
-        {
-            return SortedSetCardAsync(key);
-        }
-
-        return Simple<long>(RequestType.ZCount, [key, .. range.ToArgs()]);
-    }
-
+        => Simple<long>(RequestType.ZCount, [key, .. range.ToArgs()]);
 
     public static Cmd<object[], ValkeyValue[]> SortedSetUnionAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
     {
@@ -402,7 +393,7 @@ internal partial class Request
 
         RequestType requestType = range switch
         {
-            RankRange => RequestType.ZRemRangeByRank,
+            IndexRange => RequestType.ZRemRangeByRank,
             ScoreRange => RequestType.ZRemRangeByScore,
             LexRange => RequestType.ZRemRangeByLex,
             _ => throw new ArgumentException($"Unsupported range type: {range.GetType()}")

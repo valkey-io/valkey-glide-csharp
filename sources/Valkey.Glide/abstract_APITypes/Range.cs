@@ -23,10 +23,5 @@ public abstract class Range
     /// </summary>
     internal abstract GlideString[] ToArgs();
 
-    /// <summary>
-    /// Returns <see langword="true"/> if this range is unbounded.
-    /// </summary>
-    internal abstract bool IsUnbounded();
-
     #endregion
 }

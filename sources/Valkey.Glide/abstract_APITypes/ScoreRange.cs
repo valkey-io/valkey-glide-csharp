@@ -13,58 +13,46 @@ public sealed class ScoreRange : Range
     #region Constants
 
     /// <summary>
-    /// A range spanning all scores.
+    /// An ascending range spanning all scores (minimum to maximum).
     /// </summary>
-    public static readonly ScoreRange All = new(ScoreBound.Min, ScoreBound.Max);
+    public static readonly ScoreRange MinToMax = new(ScoreBound.Min, ScoreBound.Max);
+
+    /// <summary>
+    /// A descending range spanning all scores (maximum to minimum).
+    /// </summary>
+    public static readonly ScoreRange MaxToMin = new(ScoreBound.Max, ScoreBound.Min);
 
     #endregion
     #region Fields
 
-    private readonly ScoreBound _min;
-    private readonly ScoreBound _max;
+    private readonly ScoreBound _start;
+    private readonly ScoreBound _stop;
 
     #endregion
     #region Constructors
 
-    private ScoreRange(ScoreBound min, ScoreBound max)
+    private ScoreRange(ScoreBound start, ScoreBound stop)
     {
-        _min = min;
-        _max = max;
+        _start = start;
+        _stop = stop;
     }
 
     #endregion
     #region Public Methods
 
     /// <summary>
-    /// Creates a score range from a minimum bound.
+    /// Creates a score range between two bounds.
     /// </summary>
-    /// <param name="min">The minimum score bound.</param>
-    /// <returns>A <see cref="ScoreRange"/> from a minimum bound.</returns>
-    public static ScoreRange From(ScoreBound min) => new(min, ScoreBound.Max);
-
-    /// <summary>
-    /// Creates a score range to a maximum bound.
-    /// </summary>
-    /// <param name="max">The maximum score bound.</param>
-    /// <returns>A <see cref="ScoreRange"/> to a maximum bound.</returns>
-    public static ScoreRange To(ScoreBound max) => new(ScoreBound.Min, max);
-
-    /// <summary>
-    /// Creates a score range between minimum and maximum bounds.
-    /// </summary>
-    /// <param name="min">The minimum score bound.</param>
-    /// <param name="max">The maximum score bound.</param>
-    /// <returns>A <see cref="ScoreRange"/> between minimum and maximum bounds.</returns>
-    public static ScoreRange Between(ScoreBound min, ScoreBound max) => new(min, max);
+    /// <param name="start">The start score bound.</param>
+    /// <param name="stop">The stop score bound.</param>
+    /// <returns>A <see cref="ScoreRange"/> between the two bounds.</returns>
+    public static ScoreRange Between(ScoreBound start, ScoreBound stop) => new(start, stop);
 
     #endregion
     #region Internal Methods
 
     /// <inheritdoc/>
-    internal override bool IsUnbounded() => _min.Equals(ScoreBound.Min) && _max.Equals(ScoreBound.Max);
-
-    /// <inheritdoc/>
-    internal override GlideString[] ToArgs() => [.. _min.ToArgs(), .. _max.ToArgs()];
+    internal override GlideString[] ToArgs() => [.. _start.ToArgs(), .. _stop.ToArgs()];
 
     #endregion
 }
