@@ -139,9 +139,9 @@ public class CommandFlagsTests(TestConfiguration config)
     public async Task HashFieldExpireAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
     {
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldExpireAsync("key", [], TimeSpan.FromSeconds(60), flags: UnsupportedFlag));
+            () => db.HashFieldExpireAsync("key", [], TimeSpan.Zero, flags: UnsupportedFlag));
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldExpireAsync("key", [], DateTime.UtcNow.AddMinutes(5), flags: UnsupportedFlag));
+            () => db.HashFieldExpireAsync("key", [], DateTime.MinValue, flags: UnsupportedFlag));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -185,9 +185,9 @@ public class CommandFlagsTests(TestConfiguration config)
     public async Task HashFieldGetAndSetExpiryAsync_SingleField_ThrowsOnCommandFlags(IDatabaseAsync db)
     {
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldGetAndSetExpiryAsync("key", "field", TimeSpan.FromSeconds(60), false, UnsupportedFlag));
+            () => db.HashFieldGetAndSetExpiryAsync("key", "field", TimeSpan.Zero, flags: UnsupportedFlag));
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldGetAndSetExpiryAsync("key", "field", DateTime.UtcNow.AddMinutes(5), UnsupportedFlag));
+            () => db.HashFieldGetAndSetExpiryAsync("key", "field", DateTime.MinValue, UnsupportedFlag));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -205,9 +205,9 @@ public class CommandFlagsTests(TestConfiguration config)
     public async Task HashFieldSetAndSetExpiryAsync_SingleField_ThrowsOnCommandFlags(IDatabaseAsync db)
     {
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldSetAndSetExpiryAsync("key", "field", "value", TimeSpan.FromSeconds(60), false, When.Always, UnsupportedFlag));
+            () => db.HashFieldSetAndSetExpiryAsync("key", "field", "value", TimeSpan.Zero, flags: UnsupportedFlag));
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldSetAndSetExpiryAsync("key", "field", "value", DateTime.UtcNow.AddMinutes(5), When.Always, UnsupportedFlag));
+            () => db.HashFieldSetAndSetExpiryAsync("key", "field", "value", DateTime.MinValue, flags: UnsupportedFlag));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -325,9 +325,85 @@ public class CommandFlagsTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task StringSetAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    public async Task StringAppendAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.StringSetAsync("key", "value", UnsupportedFlag));
+            () => db.StringAppendAsync("key", "value", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringDecrementAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringDecrementAsync("key", 1, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringDecrementAsync("key", 1.0, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringGetAsync("key", UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringGetAsync([], UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetDeleteAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringGetDeleteAsync("key", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetRangeAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringGetRangeAsync("key", 0, 5, UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetSetAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringGetSetAsync("key", "value", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetSetExpiryAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringGetSetExpiryAsync("key", TimeSpan.Zero, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringGetSetExpiryAsync("key", DateTime.MinValue, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringIncrementAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringIncrementAsync("key", 1, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringIncrementAsync("key", 1.0, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringLengthAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringLengthAsync("key", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringLongestCommonSubsequenceAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringLongestCommonSubsequenceAsync("key1", "key2", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringLongestCommonSubsequenceLengthAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringLongestCommonSubsequenceLengthAsync("key1", "key2", UnsupportedFlag));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -335,8 +411,38 @@ public class CommandFlagsTests(TestConfiguration config)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.StringLongestCommonSubsequenceWithMatchesAsync("key1", "key2", 0, UnsupportedFlag));
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetAndGetAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringSetAndGetAsync("key", "value", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringSetAsync("key", "value", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetAsync_MultiKey_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringSetAsync([], When.Always, UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetRangeAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringSetRangeAsync("key", 0, "value", UnsupportedFlag));
+
     #endregion
     #region Sorted Set Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetAddAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.SortedSetAddAsync("key", "member", 1.0, SortedSetWhen.Always, UnsupportedFlag));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
