@@ -12,7 +12,7 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/zrevrange/"/>
 /// <seealso href="https://valkey.io/commands/zrevrangebylex/"/>
 /// <seealso href="https://valkey.io/commands/zrevrangebyscore/"/>
-public readonly struct RangeOptions()
+public sealed class RangeOptions
 {
     #region Constants
 
