@@ -20,7 +20,7 @@ public class CommandTests
             () => Assert.Equal(["SET", "key", "value", "NX", "PX", "5000"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) }).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "PX", "10000"], Request.SetWithExpiry("key", "value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10))).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "KEEPTTL"], Request.SetWithExpiry("key", "value", SetExpiryOptions.KeepTimeToLive()).GetArgs()),
-            () => Assert.Equal(["GETSET", "key", "value"], Request.GetSet("key", "value").GetArgs()),
+            () => Assert.Equal(["SET", "key", "value", "GET"], Request.GetSet("key", "value", new SetOptions()).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "NX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "XX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfExists }).GetArgs()),
             () => Assert.Equal(["SET", "key", "value", "NX", "PX", "5000", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) }).GetArgs()),

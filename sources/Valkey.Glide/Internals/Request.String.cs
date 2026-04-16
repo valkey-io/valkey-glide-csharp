@@ -25,9 +25,6 @@ internal partial class Request
     public static Cmd<string, bool> SetWithExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry)
         => OKToBool(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. expiry.ToArgs()]);
 
-    public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value)
-        => ToValkeyValue(RequestType.GetSet, [key.ToGlideString(), value.ToGlideString()], isNullable: true);
-
     public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
         => ToValkeyValue(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs(), ValkeyLiterals.GET.ToGlideString()], isNullable: true);
 

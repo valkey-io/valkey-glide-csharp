@@ -35,7 +35,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T SetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => AddCmd(Request.SetWithExpiry(key, value, expiry));
 
     /// <inheritdoc cref="IBatchStringCommands.GetSet(ValkeyKey, ValkeyValue)" />
-    public T GetSetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.GetSet(key, value));
+    public T GetSetAsync(ValkeyKey key, ValkeyValue value) => AddCmd(Request.GetSet(key, value, new SetOptions()));
 
     /// <inheritdoc cref="IBatchStringCommands.GetSet(ValkeyKey, ValkeyValue, SetCondition)" />
     public T GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) => AddCmd(Request.GetSet(key, value, new SetOptions { Condition = condition }));

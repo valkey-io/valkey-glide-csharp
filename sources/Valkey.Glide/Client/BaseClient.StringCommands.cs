@@ -41,7 +41,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc/>
     public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value) =>
-        Command(Request.GetSet(key, value));
+        Command(Request.GetSet(key, value, new SetOptions()));
 
     /// <inheritdoc/>
     public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
