@@ -32,6 +32,10 @@ public class SharedCommandTests(TestConfiguration config)
                 {
                     Assert.IsType(expectedInfo[i].ExpectedValue!.GetType(), actualResult[i]);
                 }
+                else if (expectedInfo[i].ExpectedValue is null)
+                {
+                    Assert.Null(actualResult[i]);
+                }
                 else
                 {
                     // TODO use assertDeepEquals

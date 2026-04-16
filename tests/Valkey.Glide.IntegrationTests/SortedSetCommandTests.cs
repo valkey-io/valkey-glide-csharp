@@ -26,24 +26,60 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetAdd_SingleEntry(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Test adding a new entry
+        Assert.True(await client.SortedSetAddAsync(key, new SortedSetEntry("member1", 10.5)));
+
+        // Test updating existing entry (should return false)
+        Assert.False(await client.SortedSetAddAsync(key, new SortedSetEntry("member1", 15.0)));
+
+        // Verify score was updated
+        Assert.Equal(15.0, await client.SortedSetScoreAsync(key, "member1"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetAdd_MultipleEntries(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        SortedSetEntry[] entries = [new("member1", 10.5), new("member2", 8.25), new("member3", 15.0)];
+        Assert.Equal(3, await client.SortedSetAddAsync(key, entries));
+
+        // Verify scores
+        Assert.Equal(10.5, await client.SortedSetScoreAsync(key, "member1"));
+        Assert.Equal(8.25, await client.SortedSetScoreAsync(key, "member2"));
+        Assert.Equal(15.0, await client.SortedSetScoreAsync(key, "member3"));
+
+        // Adding again should return 0 (all existing)
+        Assert.Equal(0, await client.SortedSetAddAsync(key, entries));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetAdd_MultipleMembers(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        SortedSetEntry[] entries = [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0)
-        ];
+        var members = new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+        };
 
         // Test adding multiple new members
-        Assert.Equal(3, await client.SortedSetAddAsync(key, entries));
+        Assert.Equal(3, await client.SortedSetAddAsync(key, members));
 
         // Test adding mix of new and existing members
-        SortedSetEntry[] newEntries = [
-            new("member1", 20.0), // Update existing
-            new("member4", 12.0)  // Add new
-        ];
-        Assert.Equal(1, await client.SortedSetAddAsync(key, newEntries)); // Only member4 is new
+        var newMembers = new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 20.0, // Update existing
+            ["member4"] = 12.0, // Add new
+        };
+        Assert.Equal(1, await client.SortedSetAddAsync(key, newMembers)); // Only member4 is new
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -56,10 +92,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member1", 10.5));
 
         // Try to add existing member with NX (should fail)
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetWhen.NotExists));
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetAddCondition.OnlyIfNotExists));
 
         // Add new member with NX (should succeed)
-        Assert.True(await client.SortedSetAddAsync(key, "member2", 8.0, SortedSetWhen.NotExists));
+        Assert.True(await client.SortedSetAddAsync(key, "member2", 8.0, SortedSetAddCondition.OnlyIfNotExists));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -69,13 +105,13 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Try to update non-existing member with XX (should fail)
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 10.5, SortedSetWhen.Exists));
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 10.5, SortedSetAddCondition.OnlyIfExists));
 
         // Add member normally first
         Assert.True(await client.SortedSetAddAsync(key, "member1", 10.5));
 
         // Update existing member with XX (should succeed)
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetWhen.Exists));
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetAddCondition.OnlyIfExists));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -88,10 +124,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member1", 10.0));
 
         // Update with higher score using GT (should succeed)
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetWhen.GreaterThan));
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetAddCondition.OnlyIfNotExistsOrGreaterThan));
 
         // Try to update with lower score using GT (should fail)
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 5.0, SortedSetWhen.GreaterThan));
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 5.0, SortedSetAddCondition.OnlyIfNotExistsOrGreaterThan));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -104,10 +140,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member1", 10.0));
 
         // Update with lower score using LT (should succeed)
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 5.0, SortedSetWhen.LessThan));
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 5.0, SortedSetAddCondition.OnlyIfNotExistsOrLessThan));
 
         // Try to update with higher score using LT (should fail)
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetWhen.LessThan));
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetAddCondition.OnlyIfNotExistsOrLessThan));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -117,25 +153,28 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Add initial members
-        SortedSetEntry[] initialEntries = [
-            new("member1", 10.0),
-            new("member2", 8.0)
-        ];
-        Assert.Equal(2, await client.SortedSetAddAsync(key, initialEntries));
+        var initialMembers = new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 8.0,
+        };
+        Assert.Equal(2, await client.SortedSetAddAsync(key, initialMembers));
 
         // Try to add with NX (should only add new members)
-        SortedSetEntry[] nxEntries = [
-            new("member1", 15.0), // Existing, should not update
-            new("member3", 12.0)  // New, should add
-        ];
-        Assert.Equal(1, await client.SortedSetAddAsync(key, nxEntries, SortedSetWhen.NotExists));
+        var nxMembers = new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 15.0, // Existing, should not update
+            ["member3"] = 12.0, // New, should add
+        };
+        Assert.Equal(1, await client.SortedSetAddAsync(key, nxMembers, SortedSetAddCondition.OnlyIfNotExists));
 
         // Update existing members with XX
-        SortedSetEntry[] xxEntries = [
-            new("member1", 20.0), // Existing, should update
-            new("member4", 5.0)   // New, should not add
-        ];
-        Assert.Equal(0, await client.SortedSetAddAsync(key, xxEntries, SortedSetWhen.Exists));
+        var xxMembers = new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 20.0, // Existing, should update
+            ["member4"] = 5.0,  // New, should not add
+        };
+        Assert.Equal(0, await client.SortedSetAddAsync(key, xxMembers, SortedSetAddCondition.OnlyIfExists));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -148,11 +187,13 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member1", -10.5));
         Assert.True(await client.SortedSetAddAsync(key, "member2", -5.0));
 
-        SortedSetEntry[] entries = [
-            new("member3", -15.0),
-            new("member4", 0.0)
-        ];
-        Assert.Equal(2, await client.SortedSetAddAsync(key, entries));
+        var members = new Dictionary<ValkeyValue, double>
+        {
+            ["member3"] = -15.0,
+            ["member4"] = 0.0
+        };
+
+        Assert.Equal(2, await client.SortedSetAddAsync(key, members));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -174,29 +215,25 @@ public class SortedSetCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetAdd_EmptyArray(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        // Adding empty array should throw an exception
-        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.SortedSetAddAsync(key, []));
-    }
+        => _ = await Assert.ThrowsAsync<RequestException>(async ()
+            => await client.SortedSetAddAsync(Guid.NewGuid().ToString(), new Dictionary<ValkeyValue, double>()));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSortedSetAdd_ObsoleteOverloads(BaseClient client)
+    public async Task TestSortedSetAdd_WithOptions(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
-        // Test overload with default parameters
+        // Test overload with default options
         Assert.True(await client.SortedSetAddAsync(key, "member1", 10.5));
 
-        // Test obsolete overload with When enum
-        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, When.Exists));
+        // Test with OnlyIfExists option
+        Assert.False(await client.SortedSetAddAsync(key, "member1", 15.0, SortedSetAddCondition.OnlyIfExists));
 
-        // Test array overloads
-        SortedSetEntry[] entries = [new("member2", 8.0)];
-        Assert.Equal(1, await client.SortedSetAddAsync(key, entries));
-        Assert.Equal(0, await client.SortedSetAddAsync(key, entries, When.Exists));
+        // Test multi-member overload
+        var members = new Dictionary<ValkeyValue, double> { ["member2"] = 8.0 };
+        Assert.Equal(1, await client.SortedSetAddAsync(key, members));
+        Assert.Equal(0, await client.SortedSetAddAsync(key, members, SortedSetAddCondition.OnlyIfExists));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -235,12 +272,13 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(0, await client.SortedSetRemoveAsync(key, ["member1", "member2"]));
 
         // Add members first
-        SortedSetEntry[] entries = [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0),
-            new("member4", 12.0)
-        ];
+        var entries = new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+            ["member4"] = 12.0,
+        };
         Assert.Equal(4, await client.SortedSetAddAsync(key, entries));
 
         // Test removing multiple existing members
@@ -319,8 +357,8 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        Assert.Equal(0, await client.SortedSetLengthAsync(key));
-        Assert.Equal(0, await client.SortedSetLengthAsync(key, 1.0, 10.0));
+        Assert.Equal(0, await client.SortedSetCardAsync(key));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(1.0, 10.0)));
 
         // Add members with different scores
         Assert.True(await client.SortedSetAddAsync(key, "member1", 1.0));
@@ -328,23 +366,22 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member3", 5.0));
         Assert.True(await client.SortedSetAddAsync(key, "member4", 8.0));
 
-        // Test cardinality (default infinity parameters use ZCARD)
-        Assert.Equal(4, await client.SortedSetLengthAsync(key));
-        Assert.Equal(4, await client.SortedSetLengthAsync(key, double.NegativeInfinity, double.PositiveInfinity));
+        // Test cardinality (ZCARD)
+        Assert.Equal(4, await client.SortedSetCardAsync(key));
 
-        // Test count with range parameters (uses ZCOUNT)
-        Assert.Equal(2, await client.SortedSetLengthAsync(key, 2.0, 6.0));
-        Assert.Equal(1, await client.SortedSetLengthAsync(key, 2.5, 5.0, Exclude.Start));
-        Assert.Equal(1, await client.SortedSetLengthAsync(key, 2.5, 5.0, Exclude.Stop));
-        Assert.Equal(0, await client.SortedSetLengthAsync(key, 2.5, 5.0, Exclude.Both));
+        // Test count with range parameters (ZCOUNT)
+        Assert.Equal(2, await client.SortedSetCountAsync(key, ScoreRange.Between(2.0, 6.0)));
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), 5.0)));
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(2.5, ScoreBound.Exclusive(5.0))));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), ScoreBound.Exclusive(5.0))));
 
         // Test with no matches
-        Assert.Equal(0, await client.SortedSetLengthAsync(key, 15.0, 20.0));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(15.0, 20.0)));
 
         // Remove a member and test both modes
         Assert.True(await client.SortedSetRemoveAsync(key, "member2"));
-        Assert.Equal(3, await client.SortedSetLengthAsync(key));
-        Assert.Equal(1, await client.SortedSetLengthAsync(key, 2.0, 6.0));
+        Assert.Equal(3, await client.SortedSetCardAsync(key));
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(2.0, 6.0)));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -375,7 +412,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        Assert.Equal(0, await client.SortedSetCountAsync(key));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.MinToMax));
 
         // Add members with different scores
         Assert.True(await client.SortedSetAddAsync(key, "member1", 1.0));
@@ -384,21 +421,21 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member4", 10.0));
 
         // Test count with default range (all elements)
-        Assert.Equal(4, await client.SortedSetCountAsync(key));
+        Assert.Equal(4, await client.SortedSetCountAsync(key, ScoreRange.MinToMax));
 
         // Test count with specific range
-        Assert.Equal(2, await client.SortedSetCountAsync(key, 2.0, 6.0));
+        Assert.Equal(2, await client.SortedSetCountAsync(key, ScoreRange.Between(2.0, 6.0)));
 
         // Test count with exclusive bounds
-        Assert.Equal(1, await client.SortedSetCountAsync(key, 2.5, 5.0, Exclude.Start));  // Exclude member2 (2.5), include member3 (5.0)
-        Assert.Equal(1, await client.SortedSetCountAsync(key, 2.5, 5.0, Exclude.Stop));   // Include member2 (2.5), exclude member3 (5.0)
-        Assert.Equal(0, await client.SortedSetCountAsync(key, 2.5, 5.0, Exclude.Both));   // Exclude both member2 and member3
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), 5.0)));  // Exclude member2 (2.5), include member3 (5.0)
+        Assert.Equal(1, await client.SortedSetCountAsync(key, ScoreRange.Between(2.5, ScoreBound.Exclusive(5.0))));   // Include member2 (2.5), exclude member3 (5.0)
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(ScoreBound.Exclusive(2.5), ScoreBound.Exclusive(5.0))));   // Exclude both member2 and member3
 
         // Test count with infinity bounds
-        Assert.Equal(4, await client.SortedSetCountAsync(key, double.NegativeInfinity, double.PositiveInfinity));
+        Assert.Equal(4, await client.SortedSetCountAsync(key, ScoreRange.MinToMax));
 
         // Test count with no matches
-        Assert.Equal(0, await client.SortedSetCountAsync(key, 15.0, 20.0));
+        Assert.Equal(0, await client.SortedSetCountAsync(key, ScoreRange.Between(15.0, 20.0)));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -408,7 +445,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        ValkeyValue[] result = await client.SortedSetRangeByRankAsync(key);
+        var result = await client.SortedSetRangeAsync(key);
         Assert.Empty(result);
 
         // Add members with scores
@@ -418,7 +455,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member4", 4.0));
 
         // Test default range (all elements, ascending)
-        result = await client.SortedSetRangeByRankAsync(key);
+        result = await client.SortedSetRangeAsync(key);
         Assert.Equal(4, result.Length);
         Assert.Equal("member1", result[0]);
         Assert.Equal("member2", result[1]);
@@ -426,30 +463,30 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("member4", result[3]);
 
         // Test specific range
-        result = await client.SortedSetRangeByRankAsync(key, 1, 2);
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(1, 2) });
         Assert.Equal(2, result.Length);
         Assert.Equal("member2", result[0]);
         Assert.Equal("member3", result[1]);
 
         // Test descending order
-        result = await client.SortedSetRangeByRankAsync(key, 0, 1, Order.Descending);
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(0, 1), Order = Order.Descending });
         Assert.Equal(2, result.Length);
         Assert.Equal("member4", result[0]);
         Assert.Equal("member3", result[1]);
 
         // Test negative indices
-        result = await client.SortedSetRangeByRankAsync(key, -2, -1);
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(-2, -1) });
         Assert.Equal(2, result.Length);
         Assert.Equal("member3", result[0]);
         Assert.Equal("member4", result[1]);
 
         // Test single element range
-        result = await client.SortedSetRangeByRankAsync(key, 0, 0);
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(0, 0) });
         _ = Assert.Single(result);
         Assert.Equal("member1", result[0]);
 
         // Test out of range
-        result = await client.SortedSetRangeByRankAsync(key, 10, 20);
+        result = await client.SortedSetRangeAsync(key, new() { Range = IndexRange.Between(10, 20) });
         Assert.Empty(result);
     }
 
@@ -460,7 +497,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        SortedSetEntry[] result = await client.SortedSetRangeByRankWithScoresAsync(key);
+        var result = await client.SortedSetRangeWithScoresAsync(key);
         Assert.Empty(result);
 
         // Add members with scores
@@ -469,7 +506,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member3", 3.5));
 
         // Test default range (all elements, ascending)
-        result = await client.SortedSetRangeByRankWithScoresAsync(key);
+        result = await client.SortedSetRangeWithScoresAsync(key);
         Assert.Equal(3, result.Length);
         Assert.Equal("member1", result[0].Element);
         Assert.Equal(1.5, result[0].Score);
@@ -479,7 +516,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(3.5, result[2].Score);
 
         // Test specific range
-        result = await client.SortedSetRangeByRankWithScoresAsync(key, 0, 1);
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = IndexRange.Between(0, 1) });
         Assert.Equal(2, result.Length);
         Assert.Equal("member1", result[0].Element);
         Assert.Equal(1.5, result[0].Score);
@@ -487,7 +524,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(2.5, result[1].Score);
 
         // Test descending order
-        result = await client.SortedSetRangeByRankWithScoresAsync(key, 0, 1, Order.Descending);
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = IndexRange.Between(0, 1), Order = Order.Descending });
         Assert.Equal(2, result.Length);
         Assert.Equal("member3", result[0].Element);
         Assert.Equal(3.5, result[0].Score);
@@ -495,7 +532,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(2.5, result[1].Score);
 
         // Test single element
-        result = await client.SortedSetRangeByRankWithScoresAsync(key, 1, 1);
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = IndexRange.Between(1, 1) });
         _ = Assert.Single(result);
         Assert.Equal("member2", result[0].Element);
         Assert.Equal(2.5, result[0].Score);
@@ -513,14 +550,14 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "posinf", double.PositiveInfinity));
 
         // Test range with special scores
-        ValkeyValue[] result = await client.SortedSetRangeByRankAsync(key);
+        ValkeyValue[] result = await client.SortedSetRangeAsync(key);
         Assert.Equal(3, result.Length);
         Assert.Equal("neginf", result[0]);
         Assert.Equal("zero", result[1]);
         Assert.Equal("posinf", result[2]);
 
         // Test with scores
-        SortedSetEntry[] resultWithScores = await client.SortedSetRangeByRankWithScoresAsync(key);
+        var resultWithScores = await client.SortedSetRangeWithScoresAsync(key);
         Assert.Equal(3, resultWithScores.Length);
         Assert.Equal("neginf", resultWithScores[0].Element);
         Assert.True(double.IsNegativeInfinity(resultWithScores[0].Score));
@@ -537,7 +574,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        SortedSetEntry[] result = await client.SortedSetRangeByScoreWithScoresAsync(key);
+        var result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = ScoreRange.MinToMax });
         Assert.Empty(result);
 
         // Add members with scores
@@ -547,7 +584,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "member4", 10.0));
 
         // Test default range (all elements, ascending)
-        result = await client.SortedSetRangeByScoreWithScoresAsync(key);
+        result = await client.SortedSetRangeWithScoresAsync(key, new() { Range = ScoreRange.MinToMax });
         Assert.Equal(4, result.Length);
         Assert.Equal("member1", result[0].Element);
         Assert.Equal(1.0, result[0].Score);
@@ -559,7 +596,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(10.0, result[3].Score);
 
         // Test specific score range
-        result = await client.SortedSetRangeByScoreWithScoresAsync(key, 2.0, 6.0);
+        result = await client.SortedSetRangeWithScoresAsync(key, new()
+        {
+            Range = ScoreRange.Between(2.0, 6.0)
+        });
         Assert.Equal(2, result.Length);
         Assert.Equal("member2", result[0].Element);
         Assert.Equal(2.5, result[0].Score);
@@ -567,7 +607,11 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(5.0, result[1].Score);
 
         // Test descending order
-        result = await client.SortedSetRangeByScoreWithScoresAsync(key, 2.0, 6.0, order: Order.Descending);
+        result = await client.SortedSetRangeWithScoresAsync(key, new()
+        {
+            Range = ScoreRange.Between(6.0, 2.0),
+            Order = Order.Descending
+        });
         Assert.Equal(2, result.Length);
         Assert.Equal("member3", result[0].Element);
         Assert.Equal(5.0, result[0].Score);
@@ -575,13 +619,21 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(2.5, result[1].Score);
 
         // Test with exclusions
-        result = await client.SortedSetRangeByScoreWithScoresAsync(key, 2.5, 5.0, Exclude.Start);
+        result = await client.SortedSetRangeWithScoresAsync(key, new()
+        {
+            Range = ScoreRange.Between(ScoreBound.Exclusive(2.5), 5.0)
+        });
         _ = Assert.Single(result);
         Assert.Equal("member3", result[0].Element);
         Assert.Equal(5.0, result[0].Score);
 
         // Test with limit
-        result = await client.SortedSetRangeByScoreWithScoresAsync(key, double.NegativeInfinity, double.PositiveInfinity, skip: 1, take: 2);
+        result = await client.SortedSetRangeWithScoresAsync(key, new()
+        {
+            Range = ScoreRange.MinToMax,
+            Offset = 1,
+            Count = 2
+        });
         Assert.Equal(2, result.Length);
         Assert.Equal("member2", result[0].Element);
         Assert.Equal(2.5, result[0].Score);
@@ -596,7 +648,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        ValkeyValue[] result = await client.SortedSetRangeByValueAsync(key, "a", "z", Exclude.None, Order.Ascending, 0, -1);
+        ValkeyValue[] result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between("a", "z")
+        });
         Assert.Empty(result);
 
         // Add members with same score for lexicographical ordering
@@ -606,24 +661,38 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "date", 0.0));
 
         // Test specific range
-        result = await client.SortedSetRangeByValueAsync(key, "b", "d", Exclude.None, Order.Ascending, 0, -1);
+        result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between("b", "d")
+        });
         Assert.Equal(2, result.Length);
         Assert.Equal("banana", result[0]);
         Assert.Equal("cherry", result[1]);
 
         // Test with exclusions
-        result = await client.SortedSetRangeByValueAsync(key, "banana", "cherry", Exclude.Start, Order.Ascending, 0, -1);
+        result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between(LexBound.Exclusive("banana"), "cherry")
+        });
         _ = Assert.Single(result);
         Assert.Equal("cherry", result[0]);
 
         // Test with limit
-        result = await client.SortedSetRangeByValueAsync(key, "a", "z", Exclude.None, Order.Ascending, 1, 2);
+        result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between("a", "z"),
+            Offset = 1,
+            Count = 2
+        });
         Assert.Equal(2, result.Length);
         Assert.Equal("banana", result[0]);
         Assert.Equal("cherry", result[1]);
 
         // Test full range
-        result = await client.SortedSetRangeByValueAsync(key, double.NegativeInfinity, double.PositiveInfinity, Exclude.None, Order.Ascending, 0, -1);
+        result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.MinToMax
+        });
         Assert.Equal(4, result.Length);
         Assert.Equal("apple", result[0]);
         Assert.Equal("banana", result[1]);
@@ -638,7 +707,11 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test on non-existent key
-        ValkeyValue[] result = await client.SortedSetRangeByValueAsync(key, order: Order.Descending);
+        ValkeyValue[] result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between(LexBound.Max, LexBound.Min),
+            Order = Order.Descending
+        });
         Assert.Empty(result);
 
         // Add members with same score for lexicographical ordering
@@ -648,7 +721,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.True(await client.SortedSetAddAsync(key, "date", 0.0));
 
         // Test ascending order (default)
-        result = await client.SortedSetRangeByValueAsync(key, order: Order.Ascending);
+        result = await client.SortedSetRangeAsync(key, new() { Range = LexRange.MinToMax });
         Assert.Equal(4, result.Length);
         Assert.Equal("apple", result[0]);
         Assert.Equal("banana", result[1]);
@@ -656,7 +729,11 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("date", result[3]);
 
         // Test descending order
-        result = await client.SortedSetRangeByValueAsync(key, order: Order.Descending);
+        result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between(LexBound.Max, LexBound.Min),
+            Order = Order.Descending
+        });
         Assert.Equal(4, result.Length);
         Assert.Equal("date", result[0]);
         Assert.Equal("cherry", result[1]);
@@ -664,13 +741,23 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal("apple", result[3]);
 
         // Test specific range with descending order
-        result = await client.SortedSetRangeByValueAsync(key, "b", "d", order: Order.Descending);
+        result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between("d", "b"),
+            Order = Order.Descending
+        });
         Assert.Equal(2, result.Length);
         Assert.Equal("cherry", result[0]);
         Assert.Equal("banana", result[1]);
 
         // Test with limit and descending order
-        result = await client.SortedSetRangeByValueAsync(key, order: Order.Descending, skip: 1, take: 2);
+        result = await client.SortedSetRangeAsync(key, new()
+        {
+            Range = LexRange.Between(LexBound.Max, LexBound.Min),
+            Order = Order.Descending,
+            Offset = 1,
+            Count = 2
+        });
         Assert.Equal(2, result.Length);
         Assert.Equal("cherry", result[0]);
         Assert.Equal("banana", result[1]);
@@ -685,34 +772,36 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key3 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
 
         // Setup test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.0),
-            new("member2", 20.0)
-        ]);
-        _ = await client.SortedSetAddAsync(key2, [
-            new("member2", 15.0),
-            new("member3", 25.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+        });
+        _ = await client.SortedSetAddAsync(key2, new Dictionary<ValkeyValue, double>
+        {
+            ["member2"] = 15.0,
+            ["member3"] = 25.0,
+        });
 
         // Test union
-        ValkeyValue[] result = await client.SortedSetCombineAsync(SetOperation.Union, [key1, key2]);
+        ValkeyValue[] result = await client.SortedSetUnionAsync([key1, key2]);
         Assert.Equal(3, result.Length);
-        Assert.Contains("member1", result.Select(v => v.ToString()));
-        Assert.Contains("member2", result.Select(v => v.ToString()));
-        Assert.Contains("member3", result.Select(v => v.ToString()));
+        Assert.Contains((ValkeyValue)"member1", result);
+        Assert.Contains((ValkeyValue)"member2", result);
+        Assert.Contains((ValkeyValue)"member3", result);
 
         // Test intersection
-        result = await client.SortedSetCombineAsync(SetOperation.Intersect, [key1, key2]);
+        result = await client.SortedSetInterAsync([key1, key2]);
         _ = Assert.Single(result);
-        Assert.Equal("member2", result[0]);
+        Assert.Contains((ValkeyValue)"member2", result);
 
         // Test difference
-        result = await client.SortedSetCombineAsync(SetOperation.Difference, [key1, key2]);
+        result = await client.SortedSetDiffAsync([key1, key2]);
         _ = Assert.Single(result);
-        Assert.Equal("member1", result[0]);
+        Assert.Contains((ValkeyValue)"member1", result);
 
         // Test with non-existent key
-        result = await client.SortedSetCombineAsync(SetOperation.Union, [key1, key3]);
+        result = await client.SortedSetUnionAsync([key1, key3]);
         Assert.Equal(2, result.Length);
     }
 
@@ -724,30 +813,32 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key2 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
 
         // Setup test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.0),
-            new("member2", 20.0)
-        ]);
-        _ = await client.SortedSetAddAsync(key2, [
-            new("member2", 15.0),
-            new("member3", 25.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+        });
+        _ = await client.SortedSetAddAsync(key2, new Dictionary<ValkeyValue, double>
+        {
+            ["member2"] = 15.0,
+            ["member3"] = 25.0,
+        });
 
-        // Test union and store
-        SortedSetEntry[] result = await client.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2]);
-        Assert.Equal(3, result.Length);
+        // Test union with scores
+        var unionResults = await client.SortedSetUnionWithScoreAsync([key1, key2]);
+        Assert.Equal(3, unionResults.Length);
 
         // Test intersection with scores
-        result = await client.SortedSetCombineWithScoresAsync(SetOperation.Intersect, [key1, key2]);
-        _ = Assert.Single(result);
-        Assert.Equal("member2", result[0].Element);
-        Assert.Equal(35.0, result[0].Score); // Sum aggregation: 20 + 15
+        var interResults = await client.SortedSetInterWithScoreAsync([key1, key2]);
+        _ = Assert.Single(interResults);
+        Assert.Equal(35.0, interResults[0].Score); // Sum aggregation: 20 + 15
+        Assert.Equal("member2", interResults[0].Element);
 
         // Test with weights
-        result = await client.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2], [2.0, 0.5]);
-        Assert.Equal(3, result.Length);
-        SortedSetEntry member2Entry = result.First(e => e.Element == "member2");
-        Assert.Equal(47.5, member2Entry.Score); // (20 * 2) + (15 * 0.5)
+        var unionWithScoreResults = await client.SortedSetUnionWithScoreAsync(new Dictionary<ValkeyKey, double> { [key1] = 2.0, [key2] = 0.5 });
+        Assert.Equal(3, unionWithScoreResults.Length);
+        SortedSetEntry member2 = unionWithScoreResults.First(r => r.Element == "member2");
+        Assert.Equal(47.5, member2.Score); // (20 * 2) + (15 * 0.5)
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -759,17 +850,19 @@ public class SortedSetCommandTests(TestConfiguration config)
         string destKey = $"{{sortedSetKey}}-{Guid.NewGuid()}";
 
         // Setup test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.0),
-            new("member2", 20.0)
-        ]);
-        _ = await client.SortedSetAddAsync(key2, [
-            new("member2", 15.0),
-            new("member3", 25.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+        });
+        _ = await client.SortedSetAddAsync(key2, new Dictionary<ValkeyValue, double>
+        {
+            ["member2"] = 15.0,
+            ["member3"] = 25.0,
+        });
 
         // Test union and store
-        long result = await client.SortedSetCombineAndStoreAsync(SetOperation.Union, destKey, key1, key2);
+        long result = await client.SortedSetUnionAndStoreAsync(destKey, [key1, key2]);
         Assert.Equal(3, result);
 
         // Verify stored result
@@ -777,7 +870,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(3, count);
 
         // Test intersection and store with multiple keys
-        result = await client.SortedSetCombineAndStoreAsync(SetOperation.Intersect, destKey, [key1, key2]);
+        result = await client.SortedSetInterAndStoreAsync(destKey, [key1, key2]);
         Assert.Equal(1, result);
 
         count = await client.SortedSetCardAsync(destKey);
@@ -791,25 +884,21 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test increment on non-existent member
-        double result = await client.SortedSetIncrementAsync(key, "member1", 10.5);
-        Assert.Equal(10.5, result);
+        Assert.Equal(10.5, await client.SortedSetIncrementByAsync(key, "member1", 10.5));
 
         // Test increment on existing member
-        result = await client.SortedSetIncrementAsync(key, "member1", 5.0);
-        Assert.Equal(15.5, result);
+        Assert.Equal(15.5, await client.SortedSetIncrementByAsync(key, "member1", 5.0));
 
         // Test negative increment
-        result = await client.SortedSetIncrementAsync(key, "member1", -3.0);
-        Assert.Equal(12.5, result);
+        Assert.Equal(12.5, await client.SortedSetIncrementByAsync(key, "member1", -3.0));
 
         // Test increment by zero
-        result = await client.SortedSetIncrementAsync(key, "member1", 0.0);
-        Assert.Equal(12.5, result);
+        Assert.Equal(12.5, await client.SortedSetIncrementByAsync(key, "member1", 0.0));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSortedSetIntersectionLength(BaseClient client)
+    public async Task TestSortedSetInterCard(BaseClient client)
     {
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZINTERCARD is supported since 7.0.0"
         );
@@ -819,70 +908,79 @@ public class SortedSetCommandTests(TestConfiguration config)
         string emptyKey = $"{{sortedSetKey}}-{Guid.NewGuid()}";
 
         // Setup test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.0),
-            new("member2", 20.0),
-            new("member3", 30.0)
-        ]);
-        _ = await client.SortedSetAddAsync(key2, [
-            new("member2", 15.0),
-            new("member3", 25.0),
-            new("member4", 35.0)
-        ]);
-        _ = await client.SortedSetAddAsync(key3, [
-            new("member3", 40.0),
-            new("member5", 50.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+            ["member3"] = 30.0,
+        });
+        _ = await client.SortedSetAddAsync(key2, new Dictionary<ValkeyValue, double>
+        {
+            ["member2"] = 15.0,
+            ["member3"] = 25.0,
+            ["member4"] = 35.0,
+        });
+        _ = await client.SortedSetAddAsync(key3, new Dictionary<ValkeyValue, double>
+        {
+            ["member3"] = 40.0,
+            ["member5"] = 50.0,
+        });
 
         // Test intersection of two sets
-        long result = await client.SortedSetIntersectionLengthAsync([key1, key2]);
+        long result = await client.SortedSetInterCardAsync([key1, key2]);
         Assert.Equal(2, result); // member2, member3
 
         // Test intersection of three sets
-        result = await client.SortedSetIntersectionLengthAsync([key1, key2, key3]);
+        result = await client.SortedSetInterCardAsync([key1, key2, key3]);
         Assert.Equal(1, result); // member3
 
         // Test with limit
-        result = await client.SortedSetIntersectionLengthAsync([key1, key2], 1);
+        result = await client.SortedSetInterCardAsync([key1, key2], 1);
         Assert.Equal(1, result);
 
         // Test with non-existent key
-        result = await client.SortedSetIntersectionLengthAsync([key1, emptyKey]);
+        result = await client.SortedSetInterCardAsync([key1, emptyKey]);
         Assert.Equal(0, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestSortedSetLengthByValue(BaseClient client)
+    public async Task TestSortedSetLexCount(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
         // Setup test data with same scores for lexicographical ordering
-        _ = await client.SortedSetAddAsync(key, [
-            new("apple", 0.0),
-            new("banana", 0.0),
-            new("cherry", 0.0),
-            new("date", 0.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["apple"] = 0.0,
+            ["banana"] = 0.0,
+            ["cherry"] = 0.0,
+            ["date"] = 0.0,
+        });
 
         // Test full range
-        long result = await client.SortedSetLengthByValueAsync(key, "a", "z");
+        long result = await client.SortedSetLexCountAsync(key, LexRange.Between(
+            "a", "z"));
         Assert.Equal(4, result);
 
         // Test specific range
-        result = await client.SortedSetLengthByValueAsync(key, "b", "d");
+        result = await client.SortedSetLexCountAsync(key, LexRange.Between(
+            "b", "d"));
         Assert.Equal(2, result); // banana, cherry
 
         // Test with exclusions
-        result = await client.SortedSetLengthByValueAsync(key, "b", "d", Exclude.Both);
+        result = await client.SortedSetLexCountAsync(key, LexRange.Between(
+            LexBound.Exclusive("b"), LexBound.Exclusive("d")));
         Assert.Equal(2, result);
 
         // Test with exclusions
-        result = await client.SortedSetLengthByValueAsync(key, "banana", "date", Exclude.Both);
+        result = await client.SortedSetLexCountAsync(key, LexRange.Between(
+            LexBound.Exclusive("banana"), LexBound.Exclusive("date")));
         Assert.Equal(1, result); // cherry
 
         // Test with non-existent key
-        result = await client.SortedSetLengthByValueAsync(Guid.NewGuid().ToString(), "a", "z");
+        result = await client.SortedSetLexCountAsync(Guid.NewGuid().ToString(), LexRange.Between(
+            "a", "z"));
         Assert.Equal(0, result);
     }
 
@@ -897,14 +995,15 @@ public class SortedSetCommandTests(TestConfiguration config)
         string emptyKey = $"{{sortedSetKey}}empty-{Guid.NewGuid()}";
 
         // Setup test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.0),
-            new("member2", 20.0),
-            new("member3", 30.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+            ["member3"] = 30.0,
+        });
 
         // Test pop min (ascending)
-        SortedSetPopResult result = await client.SortedSetPopAsync([key1, key2], 2);
+        var result = await client.SortedSetPopMinAsync([key1, key2], 2);
         Assert.False(result.IsNull);
         Assert.Equal(key1, result.Key);
         Assert.Equal(2, result.Entries.Length);
@@ -914,7 +1013,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(20.0, result.Entries[1].Score);
 
         // Test pop max (descending)
-        result = await client.SortedSetPopAsync([key1], 1, Order.Descending);
+        result = await client.SortedSetPopMaxAsync([key1], 1);
         Assert.False(result.IsNull);
         Assert.Equal(key1, result.Key);
         _ = Assert.Single(result.Entries);
@@ -922,7 +1021,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(30.0, result.Entries[0].Score);
 
         // Test pop from empty sets
-        result = await client.SortedSetPopAsync([emptyKey], 1);
+        result = await client.SortedSetPopMinAsync([emptyKey], 1);
         Assert.True(result.IsNull);
     }
 
@@ -933,11 +1032,12 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Setup test data
-        _ = await client.SortedSetAddAsync(key, [
-            new("member1", 10.5),
-            new("member2", 20.0),
-            new("member3", 30.5)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 20.0,
+            ["member3"] = 30.5,
+        });
 
         // Test getting scores for existing members
         double?[] result = await client.SortedSetScoresAsync(key, ["member1", "member2", "member3"]);
@@ -972,38 +1072,37 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
 
         // Setup test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.0),
-            new("member2", 20.0),
-            new("member3", 30.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+            ["member3"] = 30.0,
+        });
 
         // Test single-key blocking pop with MIN order (single element)
-        SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeout);
-        _ = Assert.NotNull(result);
-        Assert.Equal("member1", result.Value.Element);
-        Assert.Equal(10.0, result.Value.Score);
+        SortedSetEntry result = Assert.NotNull(await client.SortedSetPopMinAsync([key1], BlockingTimeout));
+        Assert.Equal("member1", result.Element);
+        Assert.Equal(10.0, result.Score);
 
         // Test single-key blocking pop with MAX order (single element)
-        result = await client.SortedSetBlockingPopAsync(key1, Order.Descending, BlockingTimeout);
-        _ = Assert.NotNull(result);
-        Assert.Equal("member3", result.Value.Element);
-        Assert.Equal(30.0, result.Value.Score);
+        result = Assert.NotNull(await client.SortedSetPopMaxAsync([key1], BlockingTimeout));
+        Assert.Equal("member3", result.Element);
+        Assert.Equal(30.0, result.Score);
 
         // Test single-key blocking pop with next element
-        result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeout);
-        _ = Assert.NotNull(result);
-        Assert.Equal("member2", result.Value.Element);
-        Assert.Equal(20.0, result.Value.Score);
+        result = Assert.NotNull(await client.SortedSetPopMinAsync([key1], BlockingTimeout));
+        Assert.Equal("member2", result.Element);
+        Assert.Equal(20.0, result.Score);
 
         // Add more test data for multi-key tests
-        _ = await client.SortedSetAddAsync(key2, [
-            new("member4", 40.0),
-            new("member5", 50.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key2, new Dictionary<ValkeyValue, double>
+        {
+            ["member4"] = 40.0,
+            ["member5"] = 50.0,
+        });
 
         // Test multi-key blocking pop with multiple elements
-        SortedSetPopResult popResult = await client.SortedSetBlockingPopAsync([key1, key2], 2, Order.Ascending, BlockingTimeout);
+        SortedSetPopResult popResult = await client.SortedSetPopMinAsync([key1, key2], 2, BlockingTimeout);
         Assert.False(popResult.IsNull);
         Assert.Equal(key2, popResult.Key);
         Assert.Equal(2, popResult.Entries.Length);
@@ -1013,25 +1112,24 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Equal(50.0, popResult.Entries[1].Score);
 
         // Test timeout with empty keys
-        result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeout);
-        Assert.Null(result);
+        Assert.Null(await client.SortedSetPopMinAsync([key1], BlockingTimeout));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetBlockingCommands_NonExistentKeys(BaseClient client)
     {
+        // TODO sorted sets
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "BZMPOP is supported since 7.0.0"
         );
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
 
         // Test single-key blocking pop with non-existent key (should timeout)
-        SortedSetEntry? result = await client.SortedSetBlockingPopAsync(key1, Order.Ascending, BlockingTimeout);
-        Assert.Null(result);
+        Assert.Null(await client.SortedSetPopMinAsync([key1], BlockingTimeout));
 
         // Test multi-key blocking pop with non-existent keys (should timeout)
-        SortedSetPopResult popResult = await client.SortedSetBlockingPopAsync([key1, key2], 1, Order.Ascending, BlockingTimeout);
+        SortedSetPopResult popResult = await client.SortedSetPopMinAsync([key1, key2], 1, BlockingTimeout);
         Assert.True(popResult.IsNull);
     }
 
@@ -1041,52 +1139,53 @@ public class SortedSetCommandTests(TestConfiguration config)
     {
         string key = Guid.NewGuid().ToString();
 
-        // Test pop from non-existent key (min by default)
-        Assert.Null(await client.SortedSetPopAsync(key));
-        _ = await Assert.ThrowsAsync<ArgumentException>(async () => await client.SortedSetPopAsync(key, 2));
+        // Test pop from non-existent key (min)
+        Assert.Null(await client.SortedSetPopMinAsync(key));
 
         // Test pop from non-existent key (max)
-        Assert.Null(await client.SortedSetPopAsync(key, Order.Descending));
-        _ = await Assert.ThrowsAsync<ArgumentException>(async () => await client.SortedSetPopAsync(key, 2, Order.Descending));
+        Assert.Null(await client.SortedSetPopMaxAsync(key));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key, [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+        });
 
-        // Test single pop min (default)
-        SortedSetEntry? minResult = await client.SortedSetPopAsync(key);
-        _ = Assert.NotNull(minResult);
-        Assert.Equal("member2", minResult.Value.Element);
-        Assert.Equal(8.2, minResult.Value.Score);
+        // Test single pop min
+        SortedSetEntry minResult = Assert.NotNull(await client.SortedSetPopMinAsync(key));
+        Assert.Equal("member2", minResult.Element);
+        Assert.Equal(8.2, minResult.Score);
 
         // Test single pop max
-        SortedSetEntry? maxResult = await client.SortedSetPopAsync(key, Order.Descending);
-        _ = Assert.NotNull(maxResult);
-        Assert.Equal("member3", maxResult.Value.Element);
-        Assert.Equal(15.0, maxResult.Value.Score);
+        SortedSetEntry maxResult = Assert.NotNull(await client.SortedSetPopMaxAsync(key));
+        Assert.Equal("member3", maxResult.Element);
+        Assert.Equal(15.0, maxResult.Score);
 
         // Add more test data for multiple pop tests
-        _ = await client.SortedSetAddAsync(key, [
-            new("member4", 20.0),
-            new("member5", 5.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member4"] = 20.0,
+            ["member5"] = 5.0,
+        });
 
-        // Test "multiple" pop min (default)
-        _ = await Assert.ThrowsAsync<ArgumentException>(async () => await client.SortedSetPopAsync(key, 2));
-        SortedSetEntry[] multiMinResult = await client.SortedSetPopAsync(key, 1);
-        _ = Assert.Single(multiMinResult);
+        // Test multiple pop min
+        SortedSetEntry[] multiMinResult = await client.SortedSetPopMinAsync(key, 2);
+        Assert.Equal(2, multiMinResult.Length);
         Assert.Equal("member5", multiMinResult[0].Element);
         Assert.Equal(5.0, multiMinResult[0].Score);
 
-        // Test "multiple" pop max
-        _ = await Assert.ThrowsAsync<ArgumentException>(async () => await client.SortedSetPopAsync(key, 2, Order.Descending));
-        SortedSetEntry[] multiMaxResult = await client.SortedSetPopAsync(key, 1, Order.Descending);
-        _ = Assert.Single(multiMaxResult);
-        Assert.Equal("member4", multiMaxResult[0].Element);
-        Assert.Equal(20.0, multiMaxResult[0].Score);
+        // Test multiple pop max
+        var multiMaxResult = Assert.Single(await client.SortedSetPopMaxAsync(key, 2));
+        Assert.Equal("member4", multiMaxResult.Element);
+        Assert.Equal(20.0, multiMaxResult.Score);
+
+        // Test pop from empty set
+        Assert.Null(await client.SortedSetPopMinAsync(key));
+        Assert.Null(await client.SortedSetPopMaxAsync(key));
+        Assert.Empty(await client.SortedSetPopMinAsync(key, 1));
+        Assert.Empty(await client.SortedSetPopMaxAsync(key, 1));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1098,14 +1197,14 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Test random member from non-existent key
         Assert.Equal(ValkeyValue.Null, await client.SortedSetRandomMemberAsync(key));
         Assert.Empty(await client.SortedSetRandomMembersAsync(key, 2));
-        Assert.Empty(await client.SortedSetRandomMembersWithScoresAsync(key, 2));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key, [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+        });
 
         // Test single random member
         ValkeyValue? result = await client.SortedSetRandomMemberAsync(key);
@@ -1116,14 +1215,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         ValkeyValue[] multiResult = await client.SortedSetRandomMembersAsync(key, 2);
         Assert.Equal(2, multiResult.Length);
 
-        // Test random members with scores
-        SortedSetEntry[] scoreResult = await client.SortedSetRandomMembersWithScoresAsync(key, 2);
-        Assert.Equal(2, scoreResult.Length);
-        Assert.All(scoreResult, entry =>
-        {
-            Assert.Contains(entry.Element.ToString(), new[] { "member1", "member2", "member3" });
-            Assert.True(entry.Score > 0);
-        });
+        // Test random member with score
+        SortedSetEntry scoreResult = Assert.NotNull(await client.SortedSetRandomMemberWithScoreAsync(key));
+        Assert.Contains(scoreResult.Element.ToString(), new[] { "member1", "member2", "member3" });
+        Assert.True(scoreResult.Score > 0);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1135,49 +1230,62 @@ public class SortedSetCommandTests(TestConfiguration config)
         string destKey = $"{keyPrefix}dest-{Guid.NewGuid()}";
 
         // Test range and store from non-existent key
-        Assert.Equal(0, await client.SortedSetRangeAndStoreAsync(sourceKey, destKey, 0, -1));
+        Assert.Equal(0, await client.SortedSetRangeAndStoreAsync(sourceKey, destKey));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(sourceKey, [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0)
-        ]);
+        _ = await client.SortedSetAddAsync(sourceKey, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+        });
 
         // Test range and store by rank (default)
-        long result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey, 0, 1);
+        long result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey, new() { Range = IndexRange.Between(0, 1) });
         Assert.Equal(2, result);
 
-        ValkeyValue[] stored = await client.SortedSetRangeByRankAsync(destKey);
+        ValkeyValue[] stored = await client.SortedSetRangeAsync(destKey);
         Assert.Equal(2, stored.Length);
         Assert.Equal("member2", stored[0]);
         Assert.Equal("member1", stored[1]);
 
         // Test range and store by score
         string destKey2 = $"{keyPrefix}dest2-{Guid.NewGuid()}";
-        result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey2, 8.0, 11.0, SortedSetOrder.ByScore);
+        result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey2, new()
+        {
+            Range = ScoreRange.Between(8.0, 11.0)
+        });
         Assert.Equal(2, result);
 
-        stored = await client.SortedSetRangeByRankAsync(destKey2);
+        stored = await client.SortedSetRangeAsync(destKey2);
         Assert.Equal(2, stored.Length);
         Assert.Equal("member2", stored[0]);
         Assert.Equal("member1", stored[1]);
 
-        // Test range and store with skip and take
+        // Test range and store with offset/count
         string destKey3 = $"{keyPrefix}dest3-{Guid.NewGuid()}";
-        result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey3, 0, -1, SortedSetOrder.ByRank, Exclude.None, Order.Ascending, 1, 1);
+        result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey3, new()
+        {
+            Range = ScoreRange.MinToMax,
+            Offset = 1,
+            Count = 1
+        });
         Assert.Equal(1, result);
 
-        stored = await client.SortedSetRangeByRankAsync(destKey3);
+        stored = await client.SortedSetRangeAsync(destKey3);
         _ = Assert.Single(stored);
         Assert.Equal("member1", stored[0]);
 
         // Test range and store with descending order
         string destKey4 = $"{keyPrefix}dest4-{Guid.NewGuid()}";
-        result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey4, 0, 1, SortedSetOrder.ByRank, Exclude.None, Order.Descending);
+        result = await client.SortedSetRangeAndStoreAsync(sourceKey, destKey4, new()
+        {
+            Range = IndexRange.Between(0, 1),
+            Order = Order.Descending
+        });
         Assert.Equal(2, result);
 
-        stored = await client.SortedSetRangeByRankAsync(destKey4);
+        stored = await client.SortedSetRangeAsync(destKey4);
         Assert.Equal(2, stored.Length);
         Assert.Equal("member1", stored[0]);
         Assert.Equal("member3", stored[1]);
@@ -1187,16 +1295,20 @@ public class SortedSetCommandTests(TestConfiguration config)
         string destKey5 = $"{keyPrefix}dest5-{Guid.NewGuid()}";
 
         // Add test data with same scores for lexicographical ordering
-        _ = await client.SortedSetAddAsync(lexSourceKey, [
-            new("apple", 1.0),
-            new("banana", 1.0),
-            new("cherry", 1.0)
-        ]);
+        _ = await client.SortedSetAddAsync(lexSourceKey, new Dictionary<ValkeyValue, double>
+        {
+            ["apple"] = 1.0,
+            ["banana"] = 1.0,
+            ["cherry"] = 1.0
+        });
 
-        result = await client.SortedSetRangeAndStoreAsync(lexSourceKey, destKey5, "a", "c", SortedSetOrder.ByLex);
+        result = await client.SortedSetRangeAndStoreAsync(lexSourceKey, destKey5, new()
+        {
+            Range = LexRange.Between("a", "c")
+        });
         Assert.Equal(2, result);
 
-        stored = await client.SortedSetRangeByRankAsync(destKey5);
+        stored = await client.SortedSetRangeAsync(destKey5);
         Assert.Equal(2, stored.Length);
         Assert.Equal("apple", stored[0]);
         Assert.Equal("banana", stored[1]);
@@ -1212,11 +1324,12 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Null(await client.SortedSetRankAsync(key, "member"));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key, [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0
+        });
 
         // Test ascending rank (default)
         Assert.Equal(0, await client.SortedSetRankAsync(key, "member2"));
@@ -1238,26 +1351,51 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetRankWithScore(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0
+        });
+
+        Assert.Null(await client.SortedSetRankWithScoreAsync(key, "nonexistent"));
+        Assert.Null(await client.SortedSetRankWithScoreAsync(key, "nonexistent", Order.Descending));
+
+        Assert.Equal((1, 10.5), await client.SortedSetRankWithScoreAsync(key, "member1"));
+        Assert.Equal((0, 8.2), await client.SortedSetRankWithScoreAsync(key, "member2"));
+        Assert.Equal((2, 15.0), await client.SortedSetRankWithScoreAsync(key, "member3"));
+
+        Assert.Equal((2, 8.2), await client.SortedSetRankWithScoreAsync(key, "member2", Order.Descending));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetRemoveRangeByValue(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
         // Test remove from non-existent key
-        Assert.Equal(0, await client.SortedSetRemoveRangeByValueAsync(key, "a", "z"));
+        Assert.Equal(0, await client.SortedSetRemoveRangeAsync(key,
+            LexRange.Between("a", "z")));
 
         // Add test data with same scores for lexicographical ordering
-        _ = await client.SortedSetAddAsync(key, [
-            new("apple", 1.0),
-            new("banana", 1.0),
-            new("cherry", 1.0),
-            new("date", 1.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["apple"] = 1.0,
+            ["banana"] = 1.0,
+            ["cherry"] = 1.0,
+            ["date"] = 1.0,
+        });
 
         // Test remove range by value
-        long result = await client.SortedSetRemoveRangeByValueAsync(key, "b", "d");
+        long result = await client.SortedSetRemoveRangeAsync(key,
+            LexRange.Between("b", "d"));
         Assert.Equal(2, result); // banana and cherry
 
-        ValkeyValue[] remaining = await client.SortedSetRangeByRankAsync(key);
+        ValkeyValue[] remaining = await client.SortedSetRangeAsync(key);
         Assert.Equal(2, remaining.Length);
         Assert.Equal("apple", remaining[0]);
         Assert.Equal("date", remaining[1]);
@@ -1270,21 +1408,22 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test remove from non-existent key
-        Assert.Equal(0, await client.SortedSetRemoveRangeByRankAsync(key, 0, 1));
+        Assert.Equal(0, await client.SortedSetRemoveRangeAsync(key, IndexRange.Between(0, 1)));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key, [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0),
-            new("member4", 12.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+            ["member4"] = 12.0,
+        });
 
         // Test remove range by rank
-        long result = await client.SortedSetRemoveRangeByRankAsync(key, 1, 2);
+        long result = await client.SortedSetRemoveRangeAsync(key, IndexRange.Between(1, 2));
         Assert.Equal(2, result); // member1 and member4
 
-        ValkeyValue[] remaining = await client.SortedSetRangeByRankAsync(key);
+        ValkeyValue[] remaining = await client.SortedSetRangeAsync(key);
         Assert.Equal(2, remaining.Length);
         Assert.Equal("member2", remaining[0]);
         Assert.Equal("member3", remaining[1]);
@@ -1297,21 +1436,24 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Test remove from non-existent key
-        Assert.Equal(0, await client.SortedSetRemoveRangeByScoreAsync(key, 1.0, 10.0));
+        Assert.Equal(0, await client.SortedSetRemoveRangeAsync(key,
+            ScoreRange.Between(1.0, 10.0)));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key, [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0),
-            new("member4", 12.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+            ["member4"] = 12.0,
+        });
 
         // Test remove range by score
-        long result = await client.SortedSetRemoveRangeByScoreAsync(key, 10.0, 13.0);
+        long result = await client.SortedSetRemoveRangeAsync(key,
+            ScoreRange.Between(10.0, 13.0));
         Assert.Equal(2, result); // member1 and member4
 
-        ValkeyValue[] remaining = await client.SortedSetRangeByRankAsync(key);
+        ValkeyValue[] remaining = await client.SortedSetRangeAsync(key);
         Assert.Equal(2, remaining.Length);
         Assert.Equal("member2", remaining[0]);
         Assert.Equal("member3", remaining[1]);
@@ -1332,11 +1474,12 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.Empty(items);
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key, [
-            new("member1", 10.5),
-            new("member2", 8.2),
-            new("member3", 15.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+        });
 
         // Test scan
         List<SortedSetEntry> scanItems = [];
@@ -1365,7 +1508,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
 
         // Create 25000 members
-        SortedSetEntry[] members = [.. Enumerable.Range(0, 25000).Select(i => new SortedSetEntry($"member{i}", i))];
+        var members = Enumerable.Range(0, 25000).ToDictionary(i => (ValkeyValue)$"member{i}", i => (double)i);
         _ = await client.SortedSetAddAsync(key, members);
 
         // Test 1: Scan all members with default settings
@@ -1391,9 +1534,9 @@ public class SortedSetCommandTests(TestConfiguration config)
         {
             smallPageScanned.Add(entry);
         }
-        Assert.Equal(25000, smallPageScanned.Count);
 
-        Assert.Equal(25000, await client.SortedSetLengthAsync(key));
+        Assert.Equal(25000, smallPageScanned.Count);
+        Assert.Equal(25000, await client.SortedSetCardAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1422,31 +1565,32 @@ public class SortedSetCommandTests(TestConfiguration config)
         string key2 = $"{keyPrefix}2-{Guid.NewGuid()}";
 
         // Test union with non-existent keys
-        Assert.Empty(await client.SortedSetCombineAsync(SetOperation.Union, [key1, key2]));
-        Assert.Empty(await client.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2]));
+        Assert.Empty(await client.SortedSetUnionAsync([key1, key2]));
+        Assert.Empty(await client.SortedSetUnionWithScoreAsync([key1, key2]));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.5),
-            new("member2", 8.2)
-        ]);
-        _ = await client.SortedSetAddAsync(key2, [
-            new("member2", 5.0),
-            new("member3", 15.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+        });
+        _ = await client.SortedSetAddAsync(key2, new Dictionary<ValkeyValue, double>
+        {
+            ["member2"] = 5.0,
+            ["member3"] = 15.0,
+        });
 
         // Test union
-        ValkeyValue[] unionResult = await client.SortedSetCombineAsync(SetOperation.Union, [key1, key2]);
+        ValkeyValue[] unionResult = await client.SortedSetUnionAsync([key1, key2]);
         Assert.Equal(3, unionResult.Length);
-        string[] unionStrings = [.. unionResult.Select(v => v.ToString())];
-        Assert.Contains("member1", unionStrings);
-        Assert.Contains("member2", unionStrings);
-        Assert.Contains("member3", unionStrings);
+        Assert.Contains((ValkeyValue)"member1", unionResult);
+        Assert.Contains((ValkeyValue)"member2", unionResult);
+        Assert.Contains((ValkeyValue)"member3", unionResult);
 
         // Test union with scores
-        SortedSetEntry[] unionWithScores = await client.SortedSetCombineWithScoresAsync(SetOperation.Union, [key1, key2]);
+        SortedSetEntry[] unionWithScores = await client.SortedSetUnionWithScoreAsync([key1, key2]);
         Assert.Equal(3, unionWithScores.Length);
-        SortedSetEntry member2Entry = unionWithScores.First(e => e.Element.ToString() == "member2");
+        SortedSetEntry member2Entry = unionWithScores.First(r => r.Element == "member2");
         Assert.Equal(13.2, member2Entry.Score); // 8.2 + 5.0
     }
 
@@ -1460,27 +1604,165 @@ public class SortedSetCommandTests(TestConfiguration config)
         string destKey = $"{keyPrefix}dest-{Guid.NewGuid()}";
 
         // Test union and store with non-existent keys
-        Assert.Equal(0, await client.SortedSetCombineAndStoreAsync(SetOperation.Union, destKey, key1, key2));
+        Assert.Equal(0, await client.SortedSetUnionAndStoreAsync(destKey, [key1, key2]));
 
         // Add test data
-        _ = await client.SortedSetAddAsync(key1, [
-            new("member1", 10.5),
-            new("member2", 8.2)
-        ]);
-        _ = await client.SortedSetAddAsync(key2, [
-            new("member2", 5.0),
-            new("member3", 15.0)
-        ]);
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+        });
+        _ = await client.SortedSetAddAsync(key2, new Dictionary<ValkeyValue, double>
+        {
+            ["member2"] = 5.0,
+            ["member3"] = 15.0,
+        });
 
         // Test union and store
-        long result = await client.SortedSetCombineAndStoreAsync(SetOperation.Union, destKey, key1, key2);
+        long result = await client.SortedSetUnionAndStoreAsync(destKey, [key1, key2]);
         Assert.Equal(3, result);
 
-        ValkeyValue[] stored = await client.SortedSetRangeByRankAsync(destKey);
+        ValkeyValue[] stored = await client.SortedSetRangeAsync(destKey);
         Assert.Equal(3, stored.Length);
         string[] storedStrings = [.. stored.Select(v => v.ToString())];
         Assert.Contains("member1", storedStrings);
         Assert.Contains("member2", storedStrings);
         Assert.Contains("member3", storedStrings);
     }
+
+    #region Multi-Key Pop (ZMPOP)
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetPopMinAsync_MultiKey(BaseClient client)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+
+        string key1 = $"{{testKey}}-{Guid.NewGuid()}";
+        string key2 = $"{{testKey}}-{Guid.NewGuid()}";
+
+        // Pop from non-existent keys
+        ValkeyKey[] keys = [key1, key2];
+        Assert.Null(await client.SortedSetPopMinAsync(keys));
+
+        // Add test data
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+        });
+
+        // Pop single min from multi-key
+        SortedSetEntry result = Assert.NotNull(await client.SortedSetPopMinAsync(keys));
+        Assert.Equal("member1", result.Element);
+        Assert.Equal(10.0, result.Score);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetPopMaxAsync_MultiKey(BaseClient client)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+
+        string key1 = $"{{testKey}}-{Guid.NewGuid()}";
+
+        // Add test data
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+        });
+
+        // Pop single max from multi-key
+        SortedSetEntry result = Assert.NotNull(await client.SortedSetPopMaxAsync([key1]));
+        Assert.Equal("member2", result.Element);
+        Assert.Equal(20.0, result.Score);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetPopMinAsync_MultiKey_WithCount(BaseClient client)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+
+        string key1 = $"{{testKey}}-{Guid.NewGuid()}";
+        string key2 = $"{{testKey}}-{Guid.NewGuid()}";
+
+        // Pop from non-existent keys
+        ValkeyKey[] keys = [key1, key2];
+        Assert.True((await client.SortedSetPopMinAsync(keys, 2)).IsNull);
+
+        // Add test data
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+            ["member3"] = 30.0,
+        });
+
+        // Pop multiple min from multi-key
+        var result = await client.SortedSetPopMinAsync(keys, 2);
+        Assert.False(result.IsNull);
+        Assert.Equal(key1, result.Key);
+        Assert.Equal(2, result.Entries.Length);
+        Assert.Equal("member1", result.Entries[0].Element);
+        Assert.Equal(10.0, result.Entries[0].Score);
+        Assert.Equal("member2", result.Entries[1].Element);
+        Assert.Equal(20.0, result.Entries[1].Score);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetPopMaxAsync_MultiKey_WithCount(BaseClient client)
+    {
+        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+
+        string key1 = $"{{testKey}}-{Guid.NewGuid()}";
+
+        // Add test data
+        _ = await client.SortedSetAddAsync(key1, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.0,
+            ["member2"] = 20.0,
+            ["member3"] = 30.0,
+        });
+
+        // Pop multiple max from multi-key
+        var result = await client.SortedSetPopMaxAsync([key1], 2);
+        Assert.False(result.IsNull);
+        Assert.Equal(key1, result.Key);
+        Assert.Equal(2, result.Entries.Length);
+        Assert.Equal("member3", result.Entries[0].Element);
+        Assert.Equal(30.0, result.Entries[0].Score);
+        Assert.Equal("member2", result.Entries[1].Element);
+        Assert.Equal(20.0, result.Entries[1].Score);
+    }
+
+    #endregion
+    #region SortedSetRandomMemberWithScoreAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSortedSetRandomMemberWithScoreAsync(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        // Non-existent key
+        Assert.Null(await client.SortedSetRandomMemberWithScoreAsync(key));
+
+        // Add test data
+        _ = await client.SortedSetAddAsync(key, new Dictionary<ValkeyValue, double>
+        {
+            ["member1"] = 10.5,
+            ["member2"] = 8.2,
+            ["member3"] = 15.0,
+        });
+
+        // Get random member with score
+        SortedSetEntry result = Assert.NotNull(await client.SortedSetRandomMemberWithScoreAsync(key));
+        Assert.Contains(result.Element.ToString(), new[] { "member1", "member2", "member3" });
+        Assert.True(result.Score > 0);
+    }
+
+    #endregion
 }

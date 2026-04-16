@@ -57,17 +57,29 @@ public class PubSubUnsubscribeTests
 
         // Unsubscribe from all and verify subscriptions.
         if (unsubscribeMode == UnsubscribeMode.Lazy && channelMode == PubSubChannelMode.Exact)
+        {
             await subscriber.UnsubscribeLazyAsync(PubSub.AllChannels);
+        }
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Exact)
-            await subscriber.UnsubscribeAsync(PubSub.AllChannels);
+        {
+            await subscriber.UnsubscribeAsync(PubSub.AllChannels, TimeSpan.Zero);
+        }
         else if (unsubscribeMode == UnsubscribeMode.Lazy && channelMode == PubSubChannelMode.Pattern)
+        {
             await subscriber.PUnsubscribeLazyAsync(PubSub.AllPatterns);
+        }
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Pattern)
-            await subscriber.PUnsubscribeAsync(PubSub.AllPatterns);
+        {
+            await subscriber.PUnsubscribeAsync(PubSub.AllPatterns, TimeSpan.Zero);
+        }
         else if (unsubscribeMode == UnsubscribeMode.Lazy && channelMode == PubSubChannelMode.Sharded)
+        {
             await ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync(PubSub.AllShardedChannels);
+        }
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Sharded)
-            await ((GlideClusterClient)subscriber).SUnsubscribeAsync(PubSub.AllShardedChannels);
+        {
+            await ((GlideClusterClient)subscriber).SUnsubscribeAsync(PubSub.AllShardedChannels, TimeSpan.Zero);
+        }
 
         await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
 
@@ -93,17 +105,29 @@ public class PubSubUnsubscribeTests
 
         // Unsubscribe from all and verify subscriptions.
         if (unsubscribeMode == UnsubscribeMode.Lazy && channelMode == PubSubChannelMode.Exact)
+        {
             await subscriber.UnsubscribeLazyAsync();
+        }
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Exact)
-            await subscriber.UnsubscribeAsync();
+        {
+            await subscriber.UnsubscribeAsync(TimeSpan.Zero);
+        }
         else if (unsubscribeMode == UnsubscribeMode.Lazy && channelMode == PubSubChannelMode.Pattern)
+        {
             await subscriber.PUnsubscribeLazyAsync();
+        }
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Pattern)
-            await subscriber.PUnsubscribeAsync();
+        {
+            await subscriber.PUnsubscribeAsync(TimeSpan.Zero);
+        }
         else if (unsubscribeMode == UnsubscribeMode.Lazy && channelMode == PubSubChannelMode.Sharded)
+        {
             await ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync();
+        }
         else if (unsubscribeMode == UnsubscribeMode.Blocking && channelMode == PubSubChannelMode.Sharded)
-            await ((GlideClusterClient)subscriber).SUnsubscribeAsync();
+        {
+            await ((GlideClusterClient)subscriber).SUnsubscribeAsync(TimeSpan.Zero);
+        }
 
         await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
 

@@ -45,6 +45,7 @@ internal static class ValkeyLiterals
         HISTORY = "HISTORY",
         ID = "ID",
         IDX = "IDX",
+        INCR = "INCR",
         IDLETIME = "IDLETIME",
         KEEPTTL = "KEEPTTL",
         KILL = "KILL",
@@ -102,6 +103,7 @@ internal static class ValkeyLiterals
         USERNAME = "USERNAME",
         WEIGHTS = "WEIGHTS",
         WITHMATCHLEN = "WITHMATCHLEN",
+        WITHSCORE = "WITHSCORE",
         WITHSCORES = "WITHSCORES",
         WITHVALUES = "WITHVALUES",
         XOR = "XOR",
@@ -130,9 +132,15 @@ internal static class ValkeyLiterals
         none = "none",
         sync = "sync",
 
-        MinusSymbol = "-",
-        PlusSymbol = "+",
-        Wildcard = "*",
+        // Sorted set ranges
+        RangeInclusive = "[",
+        RangeExclusive = "(",
+        LexRangeMin = "-",
+        LexRangeMax = "+",
+        ScoreRangeMin = "-inf",
+        ScoreRangeMax = "+inf",
+        RankRangeMin = "0",
+        RankRangeMax = "-1",
 
         // Geo Radius/Search Literals
         BYBOX = "BYBOX",

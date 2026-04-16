@@ -719,7 +719,6 @@ public class BitmapCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region Additional Edge Case Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]

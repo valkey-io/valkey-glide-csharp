@@ -227,13 +227,13 @@ public class PubSubIntrospectionFixture : IAsyncLifetime
         // Subscribe clients.
         foreach (BaseClient client in new BaseClient[] { StandaloneClient, ClusterClient })
         {
-            await client.SubscribeAsync(Channel);
-            await client.PSubscribeAsync(Pattern);
+            await client.SubscribeAsync(Channel, TimeSpan.Zero);
+            await client.PSubscribeAsync(Pattern, TimeSpan.Zero);
         }
 
         if (IsShardedSupported())
         {
-            await ClusterClient.SSubscribeAsync(ShardedChannel);
+            await ClusterClient.SSubscribeAsync(ShardedChannel, TimeSpan.Zero);
         }
     }
 

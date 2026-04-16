@@ -6,13 +6,21 @@ namespace Valkey.Glide.Pipeline;
 
 internal interface IBatchGeospatialCommands
 {
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddCondition)" /></returns>
+    IBatch GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddCondition condition = GeoAddCondition.Always);
+
     /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" /></returns>
-    IBatch GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default);
+    IBatch GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options);
+
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddCondition)" /></returns>
+    IBatch GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddCondition condition = GeoAddCondition.Always);
 
     /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" /></returns>
-    IBatch GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default);
+    IBatch GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options);
 
     /// <inheritdoc cref="IBaseClient.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" /></returns>

@@ -11,6 +11,21 @@ public partial interface IBaseClient
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member name to add or change.</param>
     /// <param name="position">The position of the member.</param>
+    /// <param name="condition">The condition under which to add or update the member.</param>
+    /// <returns><see langword="true"/> if the member was added, <see langword="false"/> otherwise.</returns>
+    Task<bool> GeoAddAsync(
+        ValkeyKey key,
+        ValkeyValue member,
+        GeoPosition position,
+        GeoAddCondition condition = GeoAddCondition.Always);
+
+    /// <summary>
+    /// Adds or changes a geospatial member.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geoadd/"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="member">The member name to add or change.</param>
+    /// <param name="position">The position of the member.</param>
     /// <param name="options">The options for adding or changing the member.</param>
     /// <returns><see langword="true"/> if the member was added (or changed, if
     /// <see cref="GeoAddOptions.Changed"/> is set), <see langword="false"/> otherwise.</returns>
@@ -18,7 +33,20 @@ public partial interface IBaseClient
         ValkeyKey key,
         ValkeyValue member,
         GeoPosition position,
-        GeoAddOptions options = default);
+        GeoAddOptions options);
+
+    /// <summary>
+    /// Adds or changes geospatial members.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geoadd/"/>
+    /// <param name="key">The sorted set key.</param>
+    /// <param name="members">A dictionary of member names and positions.</param>
+    /// <param name="condition">The condition under which to add or update members.</param>
+    /// <returns>The number of members added.</returns>
+    Task<long> GeoAddAsync(
+        ValkeyKey key,
+        IDictionary<ValkeyValue, GeoPosition> members,
+        GeoAddCondition condition = GeoAddCondition.Always);
 
     /// <summary>
     /// Adds or changes geospatial members.
@@ -32,7 +60,7 @@ public partial interface IBaseClient
     Task<long> GeoAddAsync(
         ValkeyKey key,
         IDictionary<ValkeyValue, GeoPosition> members,
-        GeoAddOptions options = default);
+        GeoAddOptions options);
 
     /// <summary>
     /// Returns the distance between two geospatial members.
