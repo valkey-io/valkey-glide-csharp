@@ -366,7 +366,8 @@ public sealed partial class GlideClusterClient :
     /// <inheritdoc/>
     public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
     {
-        GlideString[] glideArgs = options?.ToArgs() ?? [];
+        List<GlideString> glideArgs = [];
+        ScanOptions.AppendTo(glideArgs, options);
         string[] args = [.. glideArgs.Select(a => a.ToString())];
         ClusterScanCursor cursor = ClusterScanCursor.InitialCursor();
 

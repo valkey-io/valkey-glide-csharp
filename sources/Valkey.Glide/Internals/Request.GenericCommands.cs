@@ -301,10 +301,7 @@ internal partial class Request
     {
         List<GlideString> args = [cursor.ToGlideString()];
 
-        if (options != null)
-        {
-            args.AddRange(options.ToArgs());
-        }
+        ScanOptions.AppendTo(args, options);
 
         return new(RequestType.Scan, [.. args], false, arr =>
         {

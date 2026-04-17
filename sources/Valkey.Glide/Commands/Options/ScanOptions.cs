@@ -25,6 +25,17 @@ public class ScanOptions
     public ValkeyType? Type { get; set; }
 
     /// <summary>
+    /// Appends the scan option arguments to the given argument list. No-op if <paramref name="options"/> is <see langword="null"/>.
+    /// </summary>
+    internal static void AppendTo(List<GlideString> args, ScanOptions? options)
+    {
+        if (options is not null)
+        {
+            args.AddRange(options.ToArgs());
+        }
+    }
+
+    /// <summary>
     /// Converts the options to an array of string arguments for scan commands.
     /// </summary>
     /// <returns>Array of string arguments.</returns>
