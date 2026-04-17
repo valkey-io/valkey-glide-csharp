@@ -7,116 +7,100 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 /// <summary>
 /// SER-compatible integration tests for server management commands.
 /// </summary>
-public class ServerManagementTests(SERServerManagementFixture fixture) : IClassFixture<SERServerManagementFixture>
+[Collection(typeof(ServerManagementTests))]
+[CollectionDefinition(DisableParallelization = true)]
+public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixture<ServerManagementFixture>
 {
-    #region Non-Destructive IServer Tests (shared server)
+    #region IServer Tests
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_ConfigGetAsync_ReturnsResults(IServer server)
+    [Fact]
+    public async Task IServer_ConfigGetAsync_ReturnsResults()
     {
-        KeyValuePair<string, string>[] result = await server.ConfigGetAsync("maxmemory");
+        KeyValuePair<string, string>[] result = await fixture.Server.ConfigGetAsync("maxmemory");
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_ConfigSetAsync_SetsValue(IServer server)
+    [Fact]
+    public async Task IServer_ConfigSetAsync_SetsValue()
     {
-        KeyValuePair<string, string>[] original = await server.ConfigGetAsync("lfu-decay-time");
+        KeyValuePair<string, string>[] original = await fixture.Server.ConfigGetAsync("lfu-decay-time");
         string originalValue = original.First(kvp => kvp.Key == "lfu-decay-time").Value;
 
         try
         {
-            await server.ConfigSetAsync("lfu-decay-time", "5");
+            await fixture.Server.ConfigSetAsync("lfu-decay-time", "5");
 
-            KeyValuePair<string, string>[] result = await server.ConfigGetAsync("lfu-decay-time");
+            KeyValuePair<string, string>[] result = await fixture.Server.ConfigGetAsync("lfu-decay-time");
             Assert.Equal("5", result.First(kvp => kvp.Key == "lfu-decay-time").Value);
         }
         finally
         {
-            await server.ConfigSetAsync("lfu-decay-time", originalValue);
+            await fixture.Server.ConfigSetAsync("lfu-decay-time", originalValue);
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_ConfigResetStatisticsAsync_Succeeds(IServer server)
-    {
-        await server.ConfigResetStatisticsAsync();
-    }
+    [Fact]
+    public async Task IServer_ConfigResetStatisticsAsync_Succeeds()
+        => await fixture.Server.ConfigResetStatisticsAsync();
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_LolwutAsync_ReturnsArt(IServer server)
+    [Fact]
+    public async Task IServer_LolwutAsync_ReturnsArt()
     {
-        string result = await server.LolwutAsync();
+        string result = await fixture.Server.LolwutAsync();
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_TimeAsync_ReturnsValidTime(IServer server)
+    [Fact]
+    public async Task IServer_TimeAsync_ReturnsValidTime()
     {
-        DateTime result = await server.TimeAsync();
+        DateTime result = await fixture.Server.TimeAsync();
 
         Assert.True(result > DateTime.UnixEpoch);
         Assert.True(result <= DateTime.UtcNow.AddMinutes(1));
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_LastSaveAsync_ReturnsValidTime(IServer server)
+    [Fact]
+    public async Task IServer_LastSaveAsync_ReturnsValidTime()
     {
-        DateTime result = await server.LastSaveAsync();
+        DateTime result = await fixture.Server.LastSaveAsync();
 
         Assert.True(result >= DateTime.UnixEpoch);
     }
 
-    #endregion
-
-    #region Destructive IServer Tests (isolated fixture)
-
     [Fact]
     public async Task IServer_FlushDatabaseAsync_Succeeds()
-    {
-        await fixture.Server.FlushDatabaseAsync();
-    }
+        => await fixture.Server.FlushDatabaseAsync();
 
     [Fact]
     public async Task IServer_FlushAllDatabasesAsync_Succeeds()
-    {
-        await fixture.Server.FlushAllDatabasesAsync();
-    }
+        => await fixture.Server.FlushAllDatabasesAsync();
 
     #endregion
 }
 
 /// <summary>
-/// Fixture that provides an isolated Valkey server for SER server management flush tests.
+/// Fixture that provides an isolated Valkey server for SER server management tests.
 /// </summary>
-public class SERServerManagementFixture : IDisposable
+public class ServerManagementFixture : IDisposable
 {
     private readonly StandaloneServer _standaloneServer = new();
 
     public IServer Server { get; }
 
-    public SERServerManagementFixture()
+    public ServerManagementFixture()
     {
         ConfigurationOptions config = new();
-        config.EndPoints.Add(_standaloneServer.Addresses.First().Host, _standaloneServer.Addresses.First().Port);
+        (string host, ushort port) = _standaloneServer.Addresses.First();
+        config.EndPoints.Add(host, port);
         ConnectionMultiplexer conn = ConnectionMultiplexer.Connect(config);
         Server = conn.GetServers().First();
     }
 
-    public void Dispose()
-    {
-        _standaloneServer.Dispose();
-    }
+    public void Dispose() => _standaloneServer.Dispose();
 }
