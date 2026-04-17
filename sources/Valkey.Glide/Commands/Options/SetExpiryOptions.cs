@@ -7,7 +7,7 @@ namespace Valkey.Glide.Commands.Options;
 /// </summary>
 /// <seealso href="https://valkey.io/commands/set/"/>
 /// <seealso href="https://valkey.io/commands/hsetex/"/>
-public sealed class SetExpiryOptions : Options
+public sealed class SetExpiryOptions
 {
     #region Internal Properties
 
@@ -52,17 +52,6 @@ public sealed class SetExpiryOptions : Options
     /// </summary>
     /// <returns>A new <see cref="SetExpiryOptions"/> instance.</returns>
     public static SetExpiryOptions KeepTimeToLive() => new();
-
-    #endregion
-    #region Internal Methods
-
-    /// <inheritdoc/>
-    internal override GlideString[] ToArgs() =>
-        Duration.HasValue
-            ? [ValkeyLiterals.PX, ToMilliseconds(Duration.Value)]
-            : Timestamp.HasValue
-                ? [ValkeyLiterals.PXAT, ToUnixMilliseconds(Timestamp.Value)]
-                : [ValkeyLiterals.KEEPTTL];
 
     #endregion
 }

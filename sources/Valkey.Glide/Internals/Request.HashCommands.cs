@@ -99,7 +99,7 @@ internal partial class Request
         if (options.Duration.HasValue)
         {
             args.Add(Constants.PxKeyword);
-            args.Add(ToMilliseconds(options.Duration.Value).ToGlideString());
+            args.Add(ToMilliseconds(options.Duration.Value));
         }
         else if (options.Timestamp.HasValue)
         {
@@ -167,7 +167,21 @@ internal partial class Request
         HashSetOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
-        args.AddRange(options.ToArgs());
+
+        if (options.Condition == HashSetCondition.OnlyIfNoneExist)
+        {
+            args.Add(Constants.FnxKeyword);
+        }
+        else if (options.Condition == HashSetCondition.OnlyIfAllExist)
+        {
+            args.Add(Constants.FxxKeyword);
+        }
+
+        if (options.Expiry is not null)
+        {
+            AddExpiryArgs(args, options.Expiry);
+        }
+
         args.Add(Constants.FieldsKeyword);
         args.Add(hashFieldsAndValues.Count().ToGlideString());
         AddPairs(args, hashFieldsAndValues);
@@ -184,7 +198,7 @@ internal partial class Request
 
     public static Cmd<object[], HashExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
     {
-        List<GlideString> args = [key, ToMilliseconds(expiry).ToGlideString()];
+        List<GlideString> args = [key, ToMilliseconds(expiry)];
 
         AddExpireCondition(args, condition);
         AddFields(args, hashFields);

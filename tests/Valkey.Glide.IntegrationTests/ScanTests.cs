@@ -85,7 +85,7 @@ public class ScanTests(TestConfiguration config)
         var allKeys = new List<ValkeyKey>();
         var options = new ScanOptions
         {
-            MatchPattern = pattern.IsNull ? null : pattern.ToString(),
+            MatchPattern = pattern,
             Count = pageSize
         };
 

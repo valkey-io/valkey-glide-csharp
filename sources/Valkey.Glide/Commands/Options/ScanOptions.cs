@@ -12,7 +12,7 @@ public class ScanOptions
     /// <summary>
     /// Pattern to filter keys against.
     /// </summary>
-    public string? MatchPattern { get; set; }
+    public ValkeyValue MatchPattern { get; set; } = ValkeyValue.Null;
 
     /// <summary>
     /// Hint for the number of keys to return per iteration.
@@ -28,32 +28,33 @@ public class ScanOptions
     /// Converts the options to an array of string arguments for scan commands.
     /// </summary>
     /// <returns>Array of string arguments.</returns>
-    internal string[] ToArgs()
+    internal GlideString[] ToArgs()
     {
-        List<string> args = [];
+        List<GlideString> args = [];
 
-        if (MatchPattern != null)
+        if (!MatchPattern.IsNull)
         {
-            args.Add(MatchKeyword);
-            args.Add(MatchPattern);
+            args.Add(MatchKeyword.ToGlideString());
+            args.Add(MatchPattern.ToGlideString());
         }
 
         if (Count.HasValue)
         {
-            args.Add(CountKeyword);
-            args.Add(Count.Value.ToString());
+            args.Add(CountKeyword.ToGlideString());
+            args.Add(Count.Value.ToGlideString());
         }
 
         if (Type.HasValue)
         {
-            args.Add(TypeKeyword);
+            args.Add(TypeKeyword.ToGlideString());
             args.Add(MapValkeyTypeToString(Type.Value));
         }
 
         return [.. args];
     }
 
-    private static string MapValkeyTypeToString(ValkeyType type) => type switch
+    // TODO - use ToArgs instead
+    private static GlideString MapValkeyTypeToString(ValkeyType type) => type switch
     {
         ValkeyType.String => "string",
         ValkeyType.List => "list",

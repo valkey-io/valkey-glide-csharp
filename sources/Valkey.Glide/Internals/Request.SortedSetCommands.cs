@@ -261,7 +261,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout).ToGlideString()];
+        List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(MinKeyword);
         args.Add(CountKeyword);
@@ -272,7 +272,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout).ToGlideString()];
+        List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(MaxKeyword);
         args.Add(CountKeyword);
@@ -283,7 +283,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout).ToGlideString()];
+        List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(MinKeyword);
         args.Add(CountKeyword);
@@ -294,7 +294,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout).ToGlideString()];
+        List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(MaxKeyword);
         args.Add(CountKeyword);
@@ -347,16 +347,10 @@ internal partial class Request
     {
         List<GlideString> args = [key, cursor.ToGlideString()];
 
-        if (options?.MatchPattern != null)
+        // TODO simplify?
+        if (options != null)
         {
-            args.Add(MatchKeyword);
-            args.Add(options.MatchPattern.ToGlideString());
-        }
-
-        if (options?.Count > 0)
-        {
-            args.Add(CountKeyword);
-            args.Add(options.Count.Value.ToGlideString());
+            args.AddRange(options.ToArgs());
         }
 
         return new(RequestType.ZScan, [.. args], false, ParseScanResponse);

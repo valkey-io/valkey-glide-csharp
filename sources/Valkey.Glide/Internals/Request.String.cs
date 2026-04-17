@@ -17,10 +17,19 @@ internal partial class Request
             [.. array.Select(item => item is null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
 
     public static Cmd<string?, bool> Set(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => NullableOKToBool(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs()]);
+    {
+        List<GlideString> args = [key, value];
+        AddSetOptionsArgs(args, options);
+        return NullableOKToBool(RequestType.Set, [.. args]);
+    }
 
     public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => ToValkeyValue(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs(), ValkeyLiterals.GET.ToGlideString()], isNullable: true);
+    {
+        List<GlideString> args = [key, value];
+        AddSetOptionsArgs(args, options);
+        args.Add(ValkeyLiterals.GET);
+        return ToValkeyValue(RequestType.Set, [.. args], isNullable: true);
+    }
 
     public static Cmd<string, bool> Set(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
         => OKToBool(RequestType.MSet, values.ToGlideStrings());
@@ -59,7 +68,11 @@ internal partial class Request
         => ToValkeyValue(RequestType.GetDel, [key.ToGlideString()], isNullable: true);
 
     public static Cmd<GlideString, ValkeyValue> GetExpiry(ValkeyKey key, GetExpiryOptions options)
-        => ToValkeyValue(RequestType.GetEx, [key.ToGlideString(), .. options.ToArgs()], isNullable: true);
+    {
+        List<GlideString> args = [key];
+        AddGetExpiryOptionsArgs(args, options);
+        return ToValkeyValue(RequestType.GetEx, [.. args], isNullable: true);
+    }
 
     public static Cmd<GlideString, string?> LongestCommonSubsequence(ValkeyKey first, ValkeyKey second)
         => new(RequestType.LCS, [first.ToGlideString(), second.ToGlideString()], true, response => response?.ToString());
@@ -81,6 +94,8 @@ internal partial class Request
 
         return new(RequestType.LCS, [.. args], false, ConvertLCSMatchResult);
     }
+
+    #region Private Methods
 
     private static LCSMatchResult ConvertLCSMatchResult(object response) =>
         // Handle dictionary response (expected format)
@@ -124,4 +139,34 @@ internal partial class Request
 
         return new LCSMatchResult([.. matches], totalLength);
     }
+
+
+    private static void AddSetOptionsArgs(List<GlideString> args, SetOptions options)
+    {
+        args.AddRange(options.Condition.ToArgs());
+        if (options.Expiry is not null)
+        {
+            AddExpiryArgs(args, options.Expiry);
+        }
+    }
+
+    private static void AddGetExpiryOptionsArgs(List<GlideString> args, GetExpiryOptions options)
+    {
+        if (options.Duration.HasValue)
+        {
+            args.Add(ValkeyLiterals.PX);
+            args.Add(ToMilliseconds(options.Duration.Value));
+        }
+        else if (options.Timestamp.HasValue)
+        {
+            args.Add(ValkeyLiterals.PXAT);
+            args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
+        }
+        else
+        {
+            args.Add(ValkeyLiterals.PERSIST);
+        }
+    }
+
+    #endregion
 }

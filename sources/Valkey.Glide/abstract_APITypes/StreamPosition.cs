@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
@@ -7,15 +7,20 @@ namespace Valkey.Glide;
 /// </summary>
 public struct StreamPosition
 {
-    /// <summary>
-    /// Read from the beginning of a stream.
-    /// </summary>
-    public static ValkeyValue Beginning => StreamConstants.ReadMinValue;
+    #region Constants
 
     /// <summary>
-    /// Read new messages.
+    /// The beginning of the stream ("0-0"). Valid for XREAD, XREADGROUP, and XAUTOCLAIM.
     /// </summary>
-    public static ValkeyValue NewMessages => StreamConstants.NewMessages;
+    public static readonly ValkeyValue Beginning = ValkeyLiterals.StreamMinimumId;
+
+    /// <summary>
+    /// Only messages not yet delivered to any consumer in the group (">"). Valid for XREADGROUP.
+    /// </summary>
+    public static readonly ValkeyValue UndeliveredMessages = ValkeyLiterals.StreamUndeliveredMessages;
+
+    #endregion
+    #region Constructors
 
     /// <summary>
     /// Initializes a <see cref="StreamPosition"/> value.
@@ -28,6 +33,9 @@ public struct StreamPosition
         Position = position;
     }
 
+    #endregion
+    #region Public Properties
+
     /// <summary>
     /// The stream key.
     /// </summary>
@@ -38,29 +46,5 @@ public struct StreamPosition
     /// </summary>
     public ValkeyValue Position { get; }
 
-    internal static ValkeyValue Resolve(ValkeyValue value, ValkeyCommand command)
-    {
-        if (value == NewMessages)
-        {
-            return command switch
-            {
-                ValkeyCommand.XREAD => throw new InvalidOperationException("StreamPosition.NewMessages cannot be used with StreamRead."),
-                ValkeyCommand.XREADGROUP => StreamConstants.UndeliveredMessages,
-                ValkeyCommand.XGROUP => StreamConstants.NewMessages,
-                // new is only valid for the above
-                _ => throw new ArgumentException($"Unsupported command in StreamPosition.Resolve: {command}.", nameof(command)),
-            };
-        }
-        else if (value == StreamPosition.Beginning)
-        {
-            switch (command)
-            {
-                case ValkeyCommand.XREAD:
-                case ValkeyCommand.XREADGROUP:
-                case ValkeyCommand.XGROUP:
-                    return StreamConstants.AllMessages;
-            }
-        }
-        return value;
-    }
+    #endregion
 }

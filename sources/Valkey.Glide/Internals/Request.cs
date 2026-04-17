@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -107,18 +109,35 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Converts the given time span to milliseconds.
-    /// <param name="timeSpan">The time span to convert.</param>
-    /// <returns>The number of milliseconds in the time span, rounded to the nearest integer.</returns>
+    /// Converts the given time span to milliseconds as a <see cref="GlideString"/>.
     /// </summary>
-    private static long ToMilliseconds(TimeSpan timeSpan)
-        => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
+    private static GlideString ToMilliseconds(TimeSpan timeSpan)
+        => (timeSpan.Ticks / TimeSpan.TicksPerMillisecond).ToGlideString();
 
     /// <summary>
-    /// Converts the given time span to seconds.
-    /// <param name="timeSpan">The time span to convert.</param>
-    /// <returns>The number of seconds in the time span, as a floating-point number.</returns>
+    /// Converts the given time span to seconds as a <see cref="GlideString"/>.
     /// </summary>
-    private static double ToSeconds(TimeSpan timeSpan)
-        => timeSpan.TotalSeconds;
+    private static GlideString ToSeconds(TimeSpan timeSpan)
+        => timeSpan.TotalSeconds.ToGlideString();
+
+    /// <summary>
+    /// Appends SetExpiryOptions arguments (PX/PXAT/KEEPTTL) to the args list.
+    /// </summary>
+    private static void AddExpiryArgs(List<GlideString> args, SetExpiryOptions options)
+    {
+        if (options.Duration.HasValue)
+        {
+            args.Add(ValkeyLiterals.PX);
+            args.Add(ToMilliseconds(options.Duration.Value));
+        }
+        else if (options.Timestamp.HasValue)
+        {
+            args.Add(ValkeyLiterals.PXAT);
+            args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
+        }
+        else
+        {
+            args.Add(ValkeyLiterals.KEEPTTL);
+        }
+    }
 }

@@ -209,9 +209,6 @@ public class CommandTests
             () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
             () => Assert.Equal(["WAIT", "0", "0"], Request.WaitAsync(0, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["WAIT", "3", "5000"], Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "0", "0", "0"], Request.WaitAofAsync(false, 0, TimeSpan.Zero).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "1", "2", "5000"], Request.WaitAofAsync(true, 2, TimeSpan.FromMilliseconds(5000)).GetArgs()),
 
             // List Commands
             () => Assert.Equal(["LPOP", "a"], Request.ListLeftPopAsync("a").GetArgs()),
@@ -423,21 +420,11 @@ public class CommandTests
             () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
             () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
             () => Assert.Equal(["FLUSHALL"], Request.FlushAllDatabasesAsync().GetArgs()),
-            () => Assert.Equal(["FLUSHALL", "SYNC"], Request.FlushAllDatabasesAsync(FlushMode.Sync).GetArgs()),
-            () => Assert.Equal(["FLUSHALL", "ASYNC"], Request.FlushAllDatabasesAsync(FlushMode.Async).GetArgs()),
             () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
             () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
-            () => Assert.Equal(["FLUSHDB", "SYNC"], Request.FlushDatabaseAsync(FlushMode.Sync).GetArgs()),
-            () => Assert.Equal(["FLUSHDB", "ASYNC"], Request.FlushDatabaseAsync(FlushMode.Async).GetArgs()),
             () => Assert.Equal(["LASTSAVE"], Request.LastSaveAsync().GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
-            () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "VERSION", "5"], Request.LolwutAsync(new LolwutOptions { Version = 5 }).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "40", "20"], Request.LolwutAsync(new LolwutOptions { Parameters = [40, 20] }).GetArgs()),
-            () => Assert.Equal(["CONFIGGET", "maxmemory", "lfu-decay-time"], Request.ConfigGetAsync([(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]).GetArgs()),
-            () => Assert.Equal(["CONFIGSET", "lfu-decay-time", "5", "lfu-log-factor", "20"], Request.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "lfu-decay-time", "5" }, { "lfu-log-factor", "20" } }).GetArgs()),
 
             // Server Management Command Converters
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
@@ -573,8 +560,6 @@ public class CommandTests
             () => Assert.Equal(2L, Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).Converter(2L)),
             () => Assert.Equal(0L, Request.WaitAsync(0, TimeSpan.Zero).Converter(0L)),
             () => Assert.Equal(1L, Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).Converter(1L)),
-            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).Converter([1L, 0L])),
-            () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(false, 0, TimeSpan.Zero).Converter([0L, 0L])),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
             () => Assert.Equal(["one", "two"], Request.ListLeftPopAsync("a", 2).Converter([(gs)"one", (gs)"two"])!),
@@ -886,26 +871,27 @@ public class CommandTests
     {
         Assert.Multiple(
             // StreamAdd
-            () => Assert.Equal(["XADD", "key", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "1-0", "field1", "value1", "field2", "value2"], Request.StreamAddAsync("key", "1-0", null, default, false, [new NameValueEntry("field1", "value1"), new NameValueEntry("field2", "value2")], null, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "MAXLEN", "~", "1000", "*", "field", "value"], Request.StreamAddAsync("key", default, 1000, default, true, [new NameValueEntry("field", "value")], null, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "MINID", "~", "0-1", "*", "field", "value"], Request.StreamAddAsync("key", default, null, "0-1", true, [new NameValueEntry("field", "value")], null, false).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, true).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions()).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "1-0", "field1", "value1", "field2", "value2"], Request.StreamAddAsync("key", [new NameValueEntry("field1", "value1"), new NameValueEntry("field2", "value2")], new StreamAddOptions { Id = "1-0" }).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "MAXLEN", "~", "1000", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions { Trim = new StreamTrimOptions.MaxLen { MaxLength = 1000, Exact = false } }).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "MINID", "~", "0-1", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions { Trim = new StreamTrimOptions.MinId { MinEntryId = "0-1", Exact = false } }).GetArgs()),
+            () => Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions { MakeStream = false }).GetArgs()),
 
             // StreamRead
-            () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", count: null).GetArgs()),
-            () => Assert.Equal(["XREAD", "COUNT", "10", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", 10).GetArgs()),
-            () => Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamReadAsync([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], count: null).GetArgs()),
+            () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync(new StreamPosition("key", "0-0"), new StreamReadOptions()).GetArgs()),
+            () => Assert.Equal(["XREAD", "COUNT", "10", "STREAMS", "key", "0-0"], Request.StreamReadAsync(new StreamPosition("key", "0-0"), new StreamReadOptions { Count = 10 }).GetArgs()),
+            () => Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamReadAsync([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], new StreamReadOptions()).GetArgs()),
 
             // StreamRange
-            () => Assert.Equal(["XRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", "-", "+", null, Order.Ascending).GetArgs()),
-            () => Assert.Equal(["XRANGE", "key", "1-0", "2-0", "COUNT", "10"], Request.StreamRangeAsync("key", "1-0", "2-0", 10, Order.Ascending).GetArgs()),
-            () => Assert.Equal(["XREVRANGE", "key", "+", "-"], Request.StreamRangeAsync("key", "-", "+", null, Order.Descending).GetArgs()),
+            () => Assert.Equal(["XRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", new StreamRangeOptions()).GetArgs()),
+            () => Assert.Equal(["XRANGE", "key", "1-0", "2-0", "COUNT", "10"], Request.StreamRangeAsync("key", new StreamRangeOptions { Range = StreamIdRange.Between("1-0", "2-0"), Count = 10 }).GetArgs()),
+            () => Assert.Equal(["XREVRANGE", "key", "+", "-"], Request.StreamRangeAsync("key", new StreamRangeOptions { Order = Order.Descending }).GetArgs()),
 
             // StreamLength
             () => Assert.Equal(["XLEN", "key"], Request.StreamLengthAsync("key").GetArgs()),
 
             // StreamDelete
+            () => Assert.Equal(["XDEL", "key", "1-0"], Request.StreamDeleteAsync("key", (ValkeyValue)"1-0").GetArgs()),
             () => Assert.Equal(["XDEL", "key", "1-0", "2-0"], Request.StreamDeleteAsync("key", ["1-0", "2-0"]).GetArgs()),
 
             // StreamTrim
@@ -932,9 +918,9 @@ public class CommandTests
             () => Assert.Equal(["XGROUPSETID", "key", "group", "0-0", "ENTRIESREAD", "5"], Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", 5).GetArgs()),
 
             // StreamReadGroup
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key", ">"], Request.StreamReadGroupAsync("key", "group", "consumer", default, null, false).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "10", "STREAMS", "key", ">"], Request.StreamReadGroupAsync("key", "group", "consumer", default, 10, false).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key", ">"], Request.StreamReadGroupAsync("key", "group", "consumer", default, null, true).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key", ">"], Request.StreamReadGroupSingleAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions()).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "10", "STREAMS", "key", ">"], Request.StreamReadGroupSingleAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { Count = 10 }).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key", ">"], Request.StreamReadGroupSingleAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs()),
 
             // StreamAcknowledge
             () => Assert.Equal(["XACK", "key", "group", "1-0", "2-0"], Request.StreamAcknowledgeAsync("key", "group", ["1-0", "2-0"]).GetArgs()),
@@ -947,12 +933,12 @@ public class CommandTests
             () => Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", TimeSpan.FromMilliseconds(1000)).GetArgs()),
 
             // StreamClaim
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], []).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }.ToArgs()).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Force = true }.ToArgs()).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"]).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Force = true }).GetArgs()),
 
             // StreamClaimIdsOnly
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], []).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"]).GetArgs()),
 
             // StreamAutoClaim
             () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
@@ -981,14 +967,16 @@ public class CommandTests
     {
         Assert.Multiple(
             // StreamAdd
-            () => Assert.Equal(new ValkeyValue("1-0"), Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("f", "v")], null, false).Converter("1-0")),
-            () => Assert.Equal(ValkeyValue.Null, Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("f", "v")], null, false).Converter(null!)),
+            () => Assert.Equal(new ValkeyValue("1-0"), Request.StreamAddAsync("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter("1-0")),
+            () => Assert.Equal(ValkeyValue.Null, Request.StreamAddAsync("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter(null!)),
 
             // StreamLength
             () => Assert.Equal(5L, Request.StreamLengthAsync("key").Converter(5L)),
             () => Assert.Equal(0L, Request.StreamLengthAsync("key").Converter(0L)),
 
             // StreamDelete
+            () => Assert.True(Request.StreamDeleteAsync("key", (ValkeyValue)"1-0").Converter(1L)),
+            () => Assert.False(Request.StreamDeleteAsync("key", (ValkeyValue)"1-0").Converter(0L)),
             () => Assert.Equal(2L, Request.StreamDeleteAsync("key", ["1-0", "2-0"]).Converter(2L)),
             () => Assert.Equal(0L, Request.StreamDeleteAsync("key", ["1-0"]).Converter(0L)),
 

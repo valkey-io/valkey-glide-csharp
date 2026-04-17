@@ -245,9 +245,10 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         var options = new ScanOptions();
         if (!pattern.IsNull)
         {
-            options.MatchPattern = pattern.ToString();
+            options.MatchPattern = pattern;
         }
 
+        // TODO how to handle negative
         if (pageSize > 0)
         {
             options.Count = pageSize;

@@ -107,6 +107,7 @@ internal static class ValkeyLiterals
         SKIPME = "SKIPME",
         STATS = "STATS",
         STORE = "STORE",
+        STREAMS = "STREAMS",
         TIME = "TIME",
         TYPE = "TYPE",
         USERNAME = "USERNAME",
@@ -146,6 +147,17 @@ internal static class ValkeyLiterals
         Wildcard = "*",
         ExactTrim = "=",
         ApproxTrim = "~",
+
+        // Stream literals
+        StreamAutoGenerateId = "*",
+        StreamUndeliveredMessages = ">",
+        StreamNewMessages = "$",
+        StreamAllMessages = "0",
+        StreamMinimumId = "0-0",
+        StreamMinId = "-",
+        StreamMaxId = "+",
+        StreamExactTrim = "=",
+        StreamApproxTrim = "~",
 
         // Sorted set ranges
         RangeInclusive = "[",

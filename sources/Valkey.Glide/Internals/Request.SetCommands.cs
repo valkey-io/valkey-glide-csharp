@@ -80,14 +80,10 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
 
-        if (options?.MatchPattern != null)
+        // TODO simplify?
+        if (options != null)
         {
-            args.AddRange([Constants.MatchKeyword.ToGlideString(), options.MatchPattern.ToGlideString()]);
-        }
-
-        if (options?.Count > 0)
-        {
-            args.AddRange([Constants.CountKeyword.ToGlideString(), options.Count.Value.ToGlideString()]);
+            args.AddRange(options.ToArgs());
         }
 
         return new(RequestType.SScan, [.. args], false, arr =>
