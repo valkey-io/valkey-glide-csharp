@@ -18,7 +18,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = $"ser-getbit-{Guid.NewGuid()}";
 
         // Set a string value - ASCII 'A' is 01000001 in binary
-        await db.StringSetAsync(key, "A");
+        _ = await db.StringSetAsync(key, "A");
 
         // Test bit positions in 'A' (01000001)
         Assert.False(await db.StringGetBitAsync(key, 0));
@@ -55,7 +55,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = $"ser-bitcount-{Guid.NewGuid()}";
 
         // Set string to "A" (ASCII 65 = 01000001 in binary = 2 bits set)
-        await db.StringSetAsync(key, "A");
+        _ = await db.StringSetAsync(key, "A");
 
         // Count all bits
         long count = await db.StringBitCountAsync(key);
@@ -73,7 +73,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = $"ser-bitcount-indextype-{Guid.NewGuid()}";
 
         // Set string to "AB" (2 bytes)
-        await db.StringSetAsync(key, "AB");
+        _ = await db.StringSetAsync(key, "AB");
 
         // Count bits using byte index type (default)
         long countByte = await db.StringBitCountAsync(key, 0, 0, StringIndexType.Byte);
@@ -110,7 +110,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = $"ser-bitpos-{Guid.NewGuid()}";
 
         // Set string to "A" (ASCII 65 = 01000001 in binary)
-        await db.StringSetAsync(key, "A");
+        _ = await db.StringSetAsync(key, "A");
 
         // Find first set bit (should be at position 1)
         long pos1 = await db.StringBitPositionAsync(key, true);
@@ -128,7 +128,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string key = $"ser-bitpos-indextype-{Guid.NewGuid()}";
 
         // Set string to "AB"
-        await db.StringSetAsync(key, "AB");
+        _ = await db.StringSetAsync(key, "AB");
 
         // Find first set bit starting from second byte using byte indexing
         long pos = await db.StringBitPositionAsync(key, true, 1, 1, StringIndexType.Byte);
@@ -165,8 +165,8 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = $"{keyPrefix}:result";
 
         // Set key1 to "A" (01000001) and key2 to "B" (01000010)
-        await db.StringSetAsync(key1, "A");
-        await db.StringSetAsync(key2, "B");
+        _ = await db.StringSetAsync(key1, "A");
+        _ = await db.StringSetAsync(key2, "B");
 
         // Perform AND operation using two-key overload
         long size = await db.StringBitOperationAsync(Bitwise.And, result, key1, key2);
@@ -186,7 +186,7 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = $"{keyPrefix}:result";
 
         // Set key1 to "A" (01000001)
-        await db.StringSetAsync(key1, "A");
+        _ = await db.StringSetAsync(key1, "A");
 
         // Perform NOT operation with second = default (only first key used)
         long size = await db.StringBitOperationAsync(Bitwise.Not, result, key1, default);
@@ -209,9 +209,9 @@ public class BitmapCommandTests(TestConfiguration config)
         string result = $"{keyPrefix}:result";
 
         // Set keys with different bit patterns
-        await db.StringSetAsync(key1, "A"); // 01000001
-        await db.StringSetAsync(key2, "B"); // 01000010
-        await db.StringSetAsync(key3, "D"); // 01000100
+        _ = await db.StringSetAsync(key1, "A"); // 01000001
+        _ = await db.StringSetAsync(key2, "B"); // 01000010
+        _ = await db.StringSetAsync(key3, "D"); // 01000100
 
         // Perform OR operation on multiple keys using IEnumerable overload
         ValkeyKey[] keys = [key1, key2, key3];

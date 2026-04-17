@@ -17,8 +17,8 @@ public class ScanTests(TestConfiguration config)
         var key1 = new ValkeyKey($"{prefix}:key1");
         var key2 = new ValkeyKey($"{prefix}:key2");
 
-        await client.StringSetAsync(key1, "value1");
-        await client.StringSetAsync(key2, "value2");
+        await client.SetAsync(key1, "value1");
+        await client.SetAsync(key2, "value2");
 
         // Get all keys with matching prefix.
         var matchingKeys = await ExecuteScanAsync(client, $"{prefix}:*");
@@ -44,7 +44,7 @@ public class ScanTests(TestConfiguration config)
         var listKey = new ValkeyKey($"{prefix}:list");
         var setKey = new ValkeyKey($"{prefix}:set");
 
-        await client.StringSetAsync(stringKey, "value");
+        await client.SetAsync(stringKey, "value");
         _ = await client.ListLeftPushAsync(listKey, "item");
         _ = await client.SetAddAsync(setKey, "member");
 
@@ -67,9 +67,9 @@ public class ScanTests(TestConfiguration config)
         var matchListKey = new ValkeyKey($"{prefix}:match:list");
         var otherStringKey = new ValkeyKey($"{prefix}:other:string");
 
-        await client.StringSetAsync(matchStringKey, "value");
+        await client.SetAsync(matchStringKey, "value");
         _ = await client.ListLeftPushAsync(matchListKey, "item");
-        await client.StringSetAsync(otherStringKey, "value");
+        await client.SetAsync(otherStringKey, "value");
 
         // Get all keys with matching prefix using small page size.
         var matchingKeys = await ExecuteScanAsync(client, $"{prefix}:match:*", pageSize: 1);

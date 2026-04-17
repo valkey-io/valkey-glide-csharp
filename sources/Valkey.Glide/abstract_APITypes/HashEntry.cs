@@ -33,13 +33,6 @@ public readonly struct HashEntry : IEquatable<HashEntry>
     public ValkeyValue Value => value;
 
     /// <summary>
-    /// The name of the hash field.
-    /// </summary>
-    [Browsable(false)]
-    [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Please use Name", false)]
-    public ValkeyValue Key => name;
-
-    /// <summary>
     /// Converts to a key/value pair.
     /// </summary>
     /// <param name="value">The <see cref="HashEntry"/> to create a <see cref="KeyValuePair{TKey, TValue}"/> from.</param>

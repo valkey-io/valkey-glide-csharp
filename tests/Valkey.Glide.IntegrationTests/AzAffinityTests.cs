@@ -60,7 +60,7 @@ public class AzAffinityTests(TestConfiguration config)
 
         for (int i = 0; i < nGetCalls; i++)
         {
-            _ = await azTestClient.StringGetAsync(key);
+            _ = await azTestClient.GetAsync(key);
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.SERVER, Section.COMMANDSTATS], AllNodes);
@@ -130,7 +130,7 @@ public class AzAffinityTests(TestConfiguration config)
         // Execute GET commands
         for (int i = 0; i < nGetCalls; i++)
         {
-            _ = await azTestClient.StringGetAsync(key);
+            _ = await azTestClient.GetAsync(key);
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);
@@ -163,7 +163,7 @@ public class AzAffinityTests(TestConfiguration config)
         // Execute GET commands
         for (int i = 0; i < nGetCalls; i++)
         {
-            _ = await azTestClient.StringGetAsync("foo");
+            _ = await azTestClient.GetAsync("foo");
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.COMMANDSTATS], AllNodes);
@@ -202,8 +202,7 @@ public class AzAffinityTests(TestConfiguration config)
 
         // Verify primary AZ
         ClusterValue<object?> primaryAzResult = await configClient.CustomCommand(["config", "get", "availability-zone"], new SlotKeyRoute(key, SlotType.Primary));
-        object[]? primaryConfigArray = primaryAzResult.SingleValue as object[];
-        if (primaryConfigArray != null && primaryConfigArray.Length >= 2)
+        if (primaryAzResult.SingleValue is object[] primaryConfigArray && primaryConfigArray.Length >= 2)
         {
             Assert.Equal(az, primaryConfigArray[1]?.ToString());
         }
@@ -213,7 +212,7 @@ public class AzAffinityTests(TestConfiguration config)
         // Execute GET commands
         for (int i = 0; i < nReplicas; i++)
         {
-            _ = await azTestClient.StringGetAsync(key);
+            _ = await azTestClient.GetAsync(key);
         }
 
         ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);

@@ -57,7 +57,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        await client.SetAsync(key, "not_a_stream");
 
         // Try to create group on string key - should error
         var exception = await Assert.ThrowsAsync<RequestException>(async () =>
@@ -101,7 +101,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        await client.SetAsync(key, "not_a_stream");
 
         // Try to delete group on string key - should error
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
@@ -253,7 +253,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        await client.SetAsync(key, "not_a_stream");
 
         // Try to read from string key - should error
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
@@ -401,7 +401,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        await client.SetAsync(key, "not_a_stream");
 
         // Try to get pending from string key - should error
         _ = await Assert.ThrowsAsync<RequestException>(async () =>
@@ -467,7 +467,7 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Set key as string
-        await client.StringSetAsync(key, "not_a_stream");
+        await client.SetAsync(key, "not_a_stream");
 
         // Try to claim from string key - should error
         _ = await Assert.ThrowsAsync<RequestException>(async () =>

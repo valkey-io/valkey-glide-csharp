@@ -16,8 +16,8 @@ public abstract partial class BaseClient
         => await Command(Request.HashGetAsync(key, [.. hashFields]));
 
     /// <inheritdoc/>
-    public async Task<IDictionary<ValkeyValue, ValkeyValue>> HashGetAllAsync(ValkeyKey key)
-        => await Command(Request.HashGetAllAsync(key));
+    public async Task<IDictionary<ValkeyValue, ValkeyValue>> HashGetAsync(ValkeyKey key)
+        => await Command(Request.HashGetAsync(key));
 
     /// <inheritdoc/>
     public async Task<long> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues)
@@ -76,30 +76,49 @@ public abstract partial class BaseClient
         => await Command(Request.HashRandomFieldsAsync(key, count));
 
     /// <inheritdoc/>
-    public async Task<KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key)
-        => await Command(Request.HashRandomFieldWithValueAsync(key));
+    public async Task<HashEntry?> HashRandomFieldWithValueAsync(ValkeyKey key)
+    {
+        var result = await Command(Request.HashRandomFieldWithValueAsync(key));
+        return result.HasValue ? new HashEntry(result.Value.Key, result.Value.Value) : null;
+    }
 
     /// <inheritdoc/>
-    public async Task<ICollection<KeyValuePair<ValkeyValue, ValkeyValue>>> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
+    public async Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
         => await Command(Request.HashRandomFieldsWithValuesAsync(key, count));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> HashGetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOption option)
-        => await Command(Request.HashGetExpiryAsync(key, hashFields, option));
+    public async Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)
+        => await Command(Request.HashGetAsync(key, hashFields, options));
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> HashGetExpiryAsync(ValkeyKey key, ValkeyValue hashField, GetExpiryOption option)
-        => (await Command(Request.HashGetExpiryAsync(key, [hashField], option))).First();
+    public async Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField, GetExpiryOptions options)
+        => (await Command(Request.HashGetAsync(key, [hashField], options))).First();
 
     /// <inheritdoc/>
-    public async Task<bool> HashSetExpiryAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        SetExpiryOption option, HashSetCondition condition = HashSetCondition.Always)
-        => await Command(Request.HashSetExpiryAsync(key, hashFieldsAndValues, option, condition));
+    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, HashSetCondition condition)
+        => await Command(Request.HashSetAsync(key, hashField, value, condition));
 
     /// <inheritdoc/>
-    public async Task<bool> HashSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value,
-        SetExpiryOption option, HashSetCondition condition = HashSetCondition.Always)
-        => await HashSetExpiryAsync(key, [new KeyValuePair<ValkeyValue, ValkeyValue>(hashField, value)], option, condition);
+    public async Task<bool> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, HashSetCondition condition)
+        => await Command(Request.HashSetAsync(key, hashFieldsAndValues, condition));
+
+    /// <inheritdoc/>
+    public async Task<bool> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
+        HashSetOptions options)
+        => await Command(Request.HashSetAsync(key, hashFieldsAndValues, options));
+
+    /// <inheritdoc/>
+    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value,
+        HashSetOptions options)
+        => await HashSetAsync(key, [new KeyValuePair<ValkeyValue, ValkeyValue>(hashField, value)], options);
+
+    /// <inheritdoc/>
+    public Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, SetExpiryOptions expiry)
+        => HashSetAsync(key, hashField, value, new HashSetOptions { Expiry = expiry });
+
+    /// <inheritdoc/>
+    public Task<bool> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, SetExpiryOptions expiry)
+        => HashSetAsync(key, hashFieldsAndValues, new HashSetOptions { Expiry = expiry });
 
     /// <inheritdoc/>
     public async Task<HashPersistResult> HashPersistAsync(ValkeyKey key, ValkeyValue hashField)

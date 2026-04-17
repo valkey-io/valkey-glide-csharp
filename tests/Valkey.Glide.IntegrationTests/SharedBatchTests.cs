@@ -28,7 +28,7 @@ public class SharedBatchTests
 
         Pipeline.IBatch batch = isCluster ? new ClusterBatch(isAtomic) : new Batch(isAtomic);
         // TODO replace custom command
-        _ = batch.StringSet(key1, "hello").CustomCommand(["lpop", key1]).CustomCommand(["del", key1]).CustomCommand(["rename", key1, key2]);
+        _ = batch.Set(key1, "hello").CustomCommand(["lpop", key1]).CustomCommand(["del", key1]).CustomCommand(["rename", key1, key2]);
 
         object?[] res = isCluster
             ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch, false))!
@@ -61,7 +61,7 @@ public class SharedBatchTests
         string key2 = "{DumpRestore}" + Guid.NewGuid();
 
         Pipeline.IBatch batch = isCluster ? new ClusterBatch(isAtomic) : new Batch(isAtomic);
-        _ = batch.StringSet(key1, "hello").Dump(key1);
+        _ = batch.Set(key1, "hello").Dump(key1);
 
         object?[] res = isCluster
             ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch, false))!
@@ -107,23 +107,23 @@ public class SharedBatchTests
             await ((GlideClient)client).WatchAsync(keys);
         }
 
-        await client.StringSetAsync(key2, helloString);
+        await client.SetAsync(key2, helloString);
 
         object?[]? execResult;
         if (isCluster)
         {
             var clusterBatch = new ClusterBatch(true);
-            _ = clusterBatch.StringSetAsync(key1, foobarString)
-                           .StringSetAsync(key2, foobarString)
-                           .StringSetAsync(key3, foobarString);
+            _ = clusterBatch.SetAsync(key1, foobarString)
+                           .SetAsync(key2, foobarString)
+                           .SetAsync(key3, foobarString);
             execResult = await ((GlideClusterClient)client).Exec(clusterBatch, true);
         }
         else
         {
             var batch = new Batch(true);
-            _ = batch.StringSetAsync(key1, foobarString)
-                    .StringSetAsync(key2, foobarString)
-                    .StringSetAsync(key3, foobarString);
+            _ = batch.SetAsync(key1, foobarString)
+                    .SetAsync(key2, foobarString)
+                    .SetAsync(key3, foobarString);
             execResult = await ((GlideClient)client).Exec(batch, true);
         }
 
@@ -131,9 +131,9 @@ public class SharedBatchTests
         Assert.Null(execResult);
 
         // Verify the key values: transaction was aborted, so only key2 (set before transaction) should have a value
-        var key1Value = await client.StringGetAsync(key1);
-        var key2Value = await client.StringGetAsync(key2);
-        var key3Value = await client.StringGetAsync(key3);
+        var key1Value = await client.GetAsync(key1);
+        var key2Value = await client.GetAsync(key2);
+        var key3Value = await client.GetAsync(key3);
 
         Assert.True(key1Value.IsNull); // key1 should not be set
         Assert.Equal(helloString, key2Value); // key2 should have the value set before transaction
@@ -171,7 +171,7 @@ public class SharedBatchTests
         {
             await ((GlideClient)client).WatchAsync(keys);
         }
-        await client.StringSetAsync(key2, helloString);
+        await client.SetAsync(key2, helloString);
         if (isCluster)
         {
             await ((GlideClusterClient)client).UnwatchAsync();
@@ -185,19 +185,19 @@ public class SharedBatchTests
         if (isCluster)
         {
             var clusterBatch = new ClusterBatch(true);
-            _ = clusterBatch.StringSetAsync(key1, foobarString).StringSetAsync(key2, foobarString);
+            _ = clusterBatch.SetAsync(key1, foobarString).SetAsync(key2, foobarString);
             execResult = await ((GlideClusterClient)client).Exec(clusterBatch, true);
         }
         else
         {
             var batch = new Batch(true);
-            _ = batch.StringSetAsync(key1, foobarString).StringSetAsync(key2, foobarString);
+            _ = batch.SetAsync(key1, foobarString).SetAsync(key2, foobarString);
             execResult = await ((GlideClient)client).Exec(batch, true);
         }
 
         Assert.NotNull(execResult); // Transaction should succeed after unwatch
         Assert.Equal(2, execResult.Length);
-        Assert.Equal(foobarString, await client.StringGetAsync(key1));
-        Assert.Equal(foobarString, await client.StringGetAsync(key2));
+        Assert.Equal(foobarString, await client.GetAsync(key1));
+        Assert.Equal(foobarString, await client.GetAsync(key2));
     }
 }
