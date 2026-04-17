@@ -80,7 +80,7 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
 
-        ScanOptions.AppendTo(args, options);
+        args.AddRange(ToScanArgs(options));
 
         return new(RequestType.SScan, [.. args], false, arr =>
         {

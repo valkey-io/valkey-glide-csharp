@@ -344,13 +344,7 @@ internal partial class Request
     }
 
     public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScanAsync(ValkeyKey key, long cursor, ScanOptions? options = null)
-    {
-        List<GlideString> args = [key, cursor.ToGlideString()];
-
-        ScanOptions.AppendTo(args, options);
-
-        return new(RequestType.ZScan, [.. args], false, ParseScanResponse);
-    }
+        => new(RequestType.ZScan, [key, cursor.ToGlideString(), .. ToScanArgs(options)], false, ParseScanResponse);
 
     public static Cmd<object[], ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options)
     {

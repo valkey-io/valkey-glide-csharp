@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -119,6 +120,51 @@ internal partial class Request
     /// </summary>
     private static GlideString ToSeconds(TimeSpan timeSpan)
         => timeSpan.TotalSeconds.ToGlideString();
+
+    // TODO should not be internal. Move all related logic to requests.
+    /// <summary>
+    /// Converts scan options to an array of arguments.
+    /// </summary>
+    internal static GlideString[] ToScanArgs(ScanOptions? options)
+    {
+        if (options is null)
+        {
+            return [];
+        }
+
+        List<GlideString> args = [];
+
+        if (!options.MatchPattern.IsNull)
+        {
+            args.Add(Constants.MatchKeyword.ToGlideString());
+            args.Add(options.MatchPattern.ToGlideString());
+        }
+
+        if (options.Count.HasValue)
+        {
+            args.Add(Constants.CountKeyword.ToGlideString());
+            args.Add(options.Count.Value.ToGlideString());
+        }
+
+        if (options.Type.HasValue)
+        {
+            args.Add(Constants.TypeKeyword.ToGlideString());
+            args.Add(ToType(options.Type.Value));
+        }
+
+        return [.. args];
+    }
+
+    private static GlideString ToType(ValkeyType type) => type switch
+    {
+        ValkeyType.String => "string",
+        ValkeyType.List => "list",
+        ValkeyType.Set => "set",
+        ValkeyType.SortedSet => "zset",
+        ValkeyType.Hash => "hash",
+        ValkeyType.Stream => "stream",
+        ValkeyType.Unknown or ValkeyType.None or _ => throw new ArgumentException($"Unsupported ValkeyType for SCAN: {type}")
+    };
 
     /// <summary>
     /// Appends SetExpiryOptions arguments (PX/PXAT/KEEPTTL) to the args list.
