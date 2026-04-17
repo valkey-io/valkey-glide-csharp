@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
-
 namespace Valkey.Glide.IntegrationTests;
 
 internal partial class BatchTestUtils
@@ -12,8 +10,8 @@ internal partial class BatchTestUtils
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
 
-        string groupName = "mygroup";
-        string consumer1 = "consumer1";
+        // string groupName = "mygroup";
+        // string consumer1 = "consumer1";
         // string consumer2 = "consumer2";
 
         List<TestInfo> testData = [];
