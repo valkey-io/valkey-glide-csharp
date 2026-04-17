@@ -268,8 +268,7 @@ public class StreamCommandTests(TestConfiguration config)
         ValkeyValue id1 = await db.StreamAddAsync(key, "field", "value1");
         _ = await db.StreamAddAsync(key, "field", "value2");
 
-        // StreamDeleteAsync requires flags because IStreamBaseCommands has a matching no-flags overload
-        long deleted = await db.StreamDeleteAsync(key, [id1], CommandFlags.None);
+        long deleted = await db.StreamDeleteAsync(key, [id1]);
         Assert.Equal(1, deleted);
         Assert.Equal(1, await db.StreamLengthAsync(key));
     }
