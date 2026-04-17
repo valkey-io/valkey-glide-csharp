@@ -65,10 +65,10 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.LastSaveAsync(CommandFlags)"/>
-    public async Task<DateTime> LastSaveAsync(CommandFlags flags)
+    public Task<DateTime> LastSaveAsync(CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await LastSaveAsync();
+        return LastSaveAsync();
     }
 
     /// <inheritdoc cref="IDatabaseAsync.LastSaveAsync(Route, CommandFlags)"/>
@@ -79,10 +79,10 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.TimeAsync(CommandFlags)"/>
-    public async Task<DateTime> TimeAsync(CommandFlags flags)
+    public Task<DateTime> TimeAsync(CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await TimeAsync();
+        return TimeAsync();
     }
 
     /// <inheritdoc cref="IDatabaseAsync.TimeAsync(Route, CommandFlags)"/>
@@ -93,10 +93,10 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.LolwutAsync(CommandFlags)"/>
-    public async Task<string> LolwutAsync(CommandFlags flags)
+    public Task<string> LolwutAsync(CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await LolwutAsync();
+        return LolwutAsync();
     }
 
     /// <inheritdoc cref="IDatabaseAsync.LolwutAsync(Route, CommandFlags)"/>

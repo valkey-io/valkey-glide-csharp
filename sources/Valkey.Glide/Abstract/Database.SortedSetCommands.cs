@@ -15,47 +15,47 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen, CommandFlags)"/>
-    public async Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags)
+    public Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetAddAsync(key, ToScoresDictionary(values), ToSortedSetAddOptions(when));
+        return SortedSetAddAsync(key, ToScoresDictionary(values), ToSortedSetAddOptions(when));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetUpdateAsync(ValkeyKey, ValkeyValue, double, SortedSetWhen, CommandFlags)"/>
-    public async Task<bool> SortedSetUpdateAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags)
+    public Task<bool> SortedSetUpdateAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetAddAsync(key, member, score, ToSortedSetAddOptions(when) with { Changed = true });
+        return SortedSetAddAsync(key, member, score, ToSortedSetAddOptions(when) with { Changed = true });
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetUpdateAsync(ValkeyKey, IEnumerable{SortedSetEntry}, SortedSetWhen, CommandFlags)"/>
-    public async Task<long> SortedSetUpdateAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags)
+    public Task<long> SortedSetUpdateAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetAddAsync(key, ToScoresDictionary(values), ToSortedSetAddOptions(when) with { Changed = true });
+        return SortedSetAddAsync(key, ToScoresDictionary(values), ToSortedSetAddOptions(when) with { Changed = true });
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRemoveAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
+    public Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetRemoveAsync(key, member);
+        return SortedSetRemoveAsync(key, member);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
+    public Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetRemoveAsync(key, members);
+        return SortedSetRemoveAsync(key, members);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetLengthAsync(ValkeyKey, double, double, Exclude, CommandFlags)"/>
-    public async Task<long> SortedSetLengthAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+    public Task<long> SortedSetLengthAsync(ValkeyKey key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return double.IsNegativeInfinity(min) && double.IsPositiveInfinity(max)
-            ? await SortedSetCardAsync(key)
-            : await SortedSetCountAsync(key, ToScoreRange(min, max, exclude));
+            ? SortedSetCardAsync(key)
+            : SortedSetCountAsync(key, ToScoreRange(min, max, exclude));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeByRankAsync(ValkeyKey, long, long, Order, CommandFlags)"/>
@@ -189,10 +189,10 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetIncrementAsync(ValkeyKey, ValkeyValue, double, CommandFlags)"/>
-    public async Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags)
+    public Task<double> SortedSetIncrementAsync(ValkeyKey key, ValkeyValue member, double value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetIncrementByAsync(key, member, value);
+        return SortedSetIncrementByAsync(key, member, value);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetDecrementAsync(ValkeyKey, ValkeyValue, double, CommandFlags)"/>
@@ -235,17 +235,17 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRandomMemberAsync(ValkeyKey, CommandFlags)"/>
-    public async Task<ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetRandomMemberAsync(key);
+        return SortedSetRandomMemberAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRandomMembersAsync(ValkeyKey, long, CommandFlags)"/>
-    public async Task<ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags)
+    public Task<ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetRandomMembersAsync(key, count);
+        return SortedSetRandomMembersAsync(key, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRandomMembersWithScoresAsync(ValkeyKey, long, CommandFlags)"/>
@@ -343,17 +343,17 @@ internal partial class Database
         => base.SortedSetBlockingPopAsync(keys, count, order, timeout);
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScoreAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
+    public Task<double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetScoreAsync(key, member);
+        return SortedSetScoreAsync(key, member);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScoresAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
+    public Task<double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await SortedSetScoresAsync(key, members);
+        return SortedSetScoresAsync(key, members);
     }
 
     private static void ThrowIfDiffWithAggregate(SetOperation operation, Aggregate aggregate)
