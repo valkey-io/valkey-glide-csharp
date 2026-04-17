@@ -26,6 +26,12 @@ public sealed class GetExpiryOptions
 
     private GetExpiryOptions(TimeSpan? duration = null, DateTimeOffset? timestamp = null)
     {
+        // Only one expiry can be specified.
+        if (duration.HasValue && timestamp.HasValue)
+        {
+            throw new ArgumentException("Duration and Timestamp cannot both be specified.");
+        }
+
         Duration = duration;
         Timestamp = timestamp;
     }
