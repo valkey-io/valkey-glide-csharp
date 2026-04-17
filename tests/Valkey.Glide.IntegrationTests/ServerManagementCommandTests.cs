@@ -9,6 +9,25 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 public class ServerManagementCommandTests
 {
+    /// <summary>
+    /// Polls until the database is empty or the timeout expires.
+    /// Used by async-flush tests where the server returns immediately while the flush continues in the background.
+    /// </summary>
+    private static async Task WaitForEmptyDatabaseAsync(Func<Task<long>> databaseSize, TimeSpan? timeout = null)
+    {
+        TimeSpan effectiveTimeout = timeout ?? TimeSpan.FromSeconds(5);
+        DateTime deadline = DateTime.UtcNow + effectiveTimeout;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (await databaseSize() == 0)
+                return;
+
+            await Task.Delay(100);
+        }
+
+        Assert.Equal(0, await databaseSize());
+    }
     #region FlushMode Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -35,10 +54,8 @@ public class ServerManagementCommandTests
 
         await client.FlushDatabaseAsync(FlushMode.Async);
 
-        // Async flush may not be immediate, but the command should succeed
-        // Wait briefly for async flush to complete
-        await Task.Delay(500);
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        // Async flush returns immediately; poll until the database is empty.
+        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -65,9 +82,8 @@ public class ServerManagementCommandTests
 
         await client.FlushAllDatabasesAsync(FlushMode.Async);
 
-        // Wait briefly for async flush to complete
-        await Task.Delay(500);
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        // Async flush returns immediately; poll until the database is empty.
+        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -94,9 +110,8 @@ public class ServerManagementCommandTests
 
         await client.FlushDatabaseAsync(FlushMode.Async);
 
-        // Wait briefly for async flush to complete
-        await Task.Delay(500);
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        // Async flush returns immediately; poll until the database is empty.
+        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -320,9 +335,8 @@ public class ServerManagementCommandTests
 
         await client.FlushAllDatabasesAsync(FlushMode.Async);
 
-        // Wait briefly for async flush to complete
-        await Task.Delay(500);
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        // Async flush returns immediately; poll until the database is empty.
+        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
