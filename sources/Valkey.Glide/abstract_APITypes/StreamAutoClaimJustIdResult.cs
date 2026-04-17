@@ -7,9 +7,9 @@ namespace Valkey.Glide;
 /// <summary>
 /// Result of the <see href="https://valkey.io/commands/xautoclaim/">XAUTOCLAIM</see> command with the <c>JUSTID</c> option.
 /// </summary>
-public readonly struct StreamAutoClaimIdsOnlyResult
+public readonly struct StreamAutoClaimJustIdResult
 {
-    internal StreamAutoClaimIdsOnlyResult(ValkeyValue nextStartId, ValkeyValue[] claimedIds, ValkeyValue[] deletedIds)
+    internal StreamAutoClaimJustIdResult(ValkeyValue nextStartId, ValkeyValue[] claimedIds, ValkeyValue[] deletedIds)
     {
         NextStartId = nextStartId;
         ClaimedIds = claimedIds;
@@ -17,9 +17,9 @@ public readonly struct StreamAutoClaimIdsOnlyResult
     }
 
     /// <summary>
-    /// A null <see cref="StreamAutoClaimIdsOnlyResult"/>, indicating no results.
+    /// A null <see cref="StreamAutoClaimJustIdResult"/>, indicating no results.
     /// </summary>
-    public static StreamAutoClaimIdsOnlyResult Null { get; } = new StreamAutoClaimIdsOnlyResult(ValkeyValue.Null, Array.Empty<ValkeyValue>(), Array.Empty<ValkeyValue>());
+    public static StreamAutoClaimJustIdResult Null { get; } = new StreamAutoClaimJustIdResult(ValkeyValue.Null, Array.Empty<ValkeyValue>(), Array.Empty<ValkeyValue>());
 
     /// <summary>
     /// Whether this object is null/empty.

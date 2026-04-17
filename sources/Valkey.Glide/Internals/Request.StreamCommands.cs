@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -69,6 +71,20 @@ internal partial class Request
         return new(RequestType.XAdd, [.. args], true, response => (ValkeyValue)response);
     }
 
+    public static Cmd<GlideString, ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, StreamAddOptions? options)
+    {
+        List<GlideString> args = [key.ToGlideString()];
+        args.AddRange((options ?? new StreamAddOptions()).ToArgs());
+
+        foreach (var pair in streamPairs)
+        {
+            args.Add(pair.Name.ToGlideString());
+            args.Add(pair.Value.ToGlideString());
+        }
+
+        return new(RequestType.XAdd, [.. args], true, response => (ValkeyValue)response);
+    }
+
     public static Cmd<object, StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? count)
     {
         return StreamReadAsync([new StreamPosition(key, position)], count, ConvertSingleStreamRead);
@@ -81,12 +97,50 @@ internal partial class Request
 
     private static Cmd<object, TResult> StreamReadAsync<TResult>(StreamPosition[] streamPositions, int? count, Func<object, TResult> converter)
     {
+        return StreamReadAsync(streamPositions, count, null, converter);
+    }
+
+    public static Cmd<object, StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, StreamReadOptions options)
+    {
+        return StreamReadAsyncWithOptions([new StreamPosition(key, position)], options, ConvertSingleStreamRead);
+    }
+
+    public static Cmd<object, ValkeyStream[]> StreamReadAsync(StreamPosition[] streamPositions, StreamReadOptions options)
+    {
+        return StreamReadAsyncWithOptions(streamPositions, options, ConvertMultiStreamRead);
+    }
+
+    private static Cmd<object, TResult> StreamReadAsyncWithOptions<TResult>(StreamPosition[] streamPositions, StreamReadOptions options, Func<object, TResult> converter)
+    {
+        List<GlideString> args = [.. options.ToArgs()];
+
+        args.Add("STREAMS");
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Key.ToGlideString());
+        }
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Position.ToGlideString());
+        }
+
+        return new(RequestType.XRead, [.. args], false, converter, allowConverterToHandleNull: true);
+    }
+
+    private static Cmd<object, TResult> StreamReadAsync<TResult>(StreamPosition[] streamPositions, int? count, TimeSpan? block, Func<object, TResult> converter)
+    {
         List<GlideString> args = [];
 
         if (count.HasValue)
         {
             args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
+        }
+
+        if (block.HasValue)
+        {
+            args.Add("BLOCK");
+            args.Add(((long)block.Value.TotalMilliseconds).ToGlideString());
         }
 
         args.Add("STREAMS");
@@ -102,9 +156,12 @@ internal partial class Request
         return new(RequestType.XRead, [.. args], false, converter, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue start, ValkeyValue end, int? count, Order order)
+    public static Cmd<object, StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue minId, ValkeyValue maxId, int? count, Order messageOrder)
     {
-        List<GlideString> args = [key.ToGlideString(), start.ToGlideString(), end.ToGlideString()];
+        // XREVRANGE expects the higher ID first, so swap minId/maxId for descending order.
+        List<GlideString> args = messageOrder == Order.Descending
+            ? [key.ToGlideString(), maxId.ToGlideString(), minId.ToGlideString()]
+            : [key.ToGlideString(), minId.ToGlideString(), maxId.ToGlideString()];
 
         if (count.HasValue)
         {
@@ -112,7 +169,7 @@ internal partial class Request
             args.Add(count.Value.ToGlideString());
         }
 
-        var requestType = order == Order.Descending ? RequestType.XRevRange : RequestType.XRange;
+        var requestType = messageOrder == Order.Descending ? RequestType.XRevRange : RequestType.XRange;
         return new(requestType, [.. args], false, ConvertXRangeResponse);
     }
 
@@ -391,15 +448,43 @@ internal partial class Request
 
     public static Cmd<object, StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue position, int? count, bool noAck)
     {
-        return StreamReadGroupAsync([new StreamPosition(key, position)], groupName, consumerName, count, noAck, ConvertSingleStreamRead);
+        return StreamReadGroupAsync([new StreamPosition(key, position)], groupName, consumerName, count, noAck, null, ConvertSingleStreamRead);
     }
 
     public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, bool noAck)
     {
-        return StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck, ConvertMultiStreamRead);
+        return StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck, null, ConvertMultiStreamRead);
     }
 
-    private static Cmd<object, TResult> StreamReadGroupAsync<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? count, bool noAck, Func<object, TResult> converter)
+    public static Cmd<object, StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue position, StreamReadGroupOptions options)
+    {
+        return StreamReadGroupAsyncWithOptions([new StreamPosition(key, position)], groupName, consumerName, options, ConvertSingleStreamRead);
+    }
+
+    public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
+    {
+        return StreamReadGroupAsyncWithOptions(streamPositions, groupName, consumerName, options, ConvertMultiStreamRead);
+    }
+
+    private static Cmd<object, TResult> StreamReadGroupAsyncWithOptions<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options, Func<object, TResult> converter)
+    {
+        List<GlideString> args = ["GROUP", groupName.ToGlideString(), consumerName.ToGlideString()];
+        args.AddRange(options.ToArgs());
+
+        args.Add("STREAMS");
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Key.ToGlideString());
+        }
+        foreach (var sp in streamPositions)
+        {
+            args.Add(sp.Position.ToGlideString());
+        }
+
+        return new(RequestType.XReadGroup, [.. args], false, converter, allowConverterToHandleNull: true);
+    }
+
+    private static Cmd<object, TResult> StreamReadGroupAsync<TResult>(StreamPosition[] streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? count, bool noAck, TimeSpan? block, Func<object, TResult> converter)
     {
         List<GlideString> args = ["GROUP", groupName.ToGlideString(), consumerName.ToGlideString()];
 
@@ -407,6 +492,12 @@ internal partial class Request
         {
             args.Add("COUNT");
             args.Add(count.Value.ToGlideString());
+        }
+
+        if (block.HasValue)
+        {
+            args.Add("BLOCK");
+            args.Add(((long)block.Value.TotalMilliseconds).ToGlideString());
         }
 
         if (noAck)
@@ -499,42 +590,24 @@ internal partial class Request
         return result;
     }
 
-    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
+    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, GlideString[] optionArgs)
     {
-        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, false, ConvertXRangeResponse);
+        return StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, optionArgs, false, ConvertXRangeResponse);
     }
 
-    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force)
+    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, GlideString[] optionArgs)
     {
-        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, idleTime, timestamp, retryCount, force, true, ConvertClaimIdsOnly);
+        return StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, optionArgs, true, ConvertClaimIdsOnly);
     }
 
-    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force, bool justId, Func<TResponse, TResult> converter)
+    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, GlideString[] optionArgs, bool justId, Func<TResponse, TResult> converter)
     {
         List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id.ToGlideString());
         }
-        if (idleTime.HasValue)
-        {
-            args.Add("IDLE");
-            args.Add(ToMilliseconds(idleTime.Value).ToGlideString());
-        }
-        if (timestamp.HasValue)
-        {
-            args.Add("TIME");
-            args.Add(timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
-        }
-        if (retryCount.HasValue)
-        {
-            args.Add("RETRYCOUNT");
-            args.Add(retryCount.Value.ToGlideString());
-        }
-        if (force)
-        {
-            args.Add("FORCE");
-        }
+        args.AddRange(optionArgs);
         if (justId)
         {
             args.Add("JUSTID");
@@ -563,7 +636,7 @@ internal partial class Request
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimResult);
     }
 
-    public static Cmd<object[], StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
         List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
         if (count.HasValue)
@@ -583,12 +656,12 @@ internal partial class Request
         return new StreamAutoClaimResult(nextStartId, entries, deletedIds);
     }
 
-    private static StreamAutoClaimIdsOnlyResult ConvertAutoClaimIdsOnlyResult(object[] response)
+    private static StreamAutoClaimJustIdResult ConvertAutoClaimIdsOnlyResult(object[] response)
     {
         var nextStartId = (ValkeyValue)(GlideString)response[0];
         var claimedIds = ((object[])response[1]).Select(id => (ValkeyValue)(GlideString)id).ToArray();
         var deletedIds = response.Length > 2 && response[2] is object[] delArr ? delArr.Select(id => (ValkeyValue)(GlideString)id).ToArray() : [];
-        return new StreamAutoClaimIdsOnlyResult(nextStartId, claimedIds, deletedIds);
+        return new StreamAutoClaimJustIdResult(nextStartId, claimedIds, deletedIds);
     }
 
     public static Cmd<object[], StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key)
@@ -797,5 +870,199 @@ internal partial class Request
         }
 
         return new StreamInfo(length, radixTreeKeys, radixTreeNodes, groups, firstEntry, lastEntry, lastGeneratedId);
+    }
+
+    public static Cmd<object, StreamInfoFull> StreamInfoFullAsync(ValkeyKey key, int? count)
+    {
+        List<GlideString> args = [key.ToGlideString(), "FULL"];
+        if (count.HasValue)
+        {
+            args.Add("COUNT");
+            args.Add(count.Value.ToGlideString());
+        }
+        return new(RequestType.XInfoStream, [.. args], false, ConvertStreamInfoFull);
+    }
+
+    private static StreamInfoFull ConvertStreamInfoFull(object response)
+    {
+        var length = 0L;
+        var radixTreeKeys = 0L;
+        var radixTreeNodes = 0L;
+        var lastGeneratedId = default(ValkeyValue);
+        var maxDeletedEntryId = default(ValkeyValue);
+        var entriesAdded = 0L;
+        var recordedFirstEntryId = default(ValkeyValue);
+        var entries = Array.Empty<StreamEntry>();
+        var groups = Array.Empty<StreamGroupFullInfo>();
+
+        void ProcessKeyValue(string key, object value)
+        {
+            switch (key)
+            {
+                case "length": length = value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
+                case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
+                case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
+                case "max-deleted-entry-id": maxDeletedEntryId = (ValkeyValue)(GlideString)value; break;
+                case "entries-added": entriesAdded = value is GlideString gs5 ? long.Parse(gs5.ToString()) : (long)value; break;
+                case "recorded-first-entry-id": recordedFirstEntryId = (ValkeyValue)(GlideString)value; break;
+                case "entries":
+                    entries = value is object[] arr && arr.Length > 0 ? ConvertStreamEntries(arr) : [];
+                    break;
+                case "groups":
+                    groups = value is object[] groupArr && groupArr.Length > 0 ? ConvertStreamGroupFullInfoArray(groupArr) : [];
+                    break;
+                default: break;
+            }
+        }
+
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+                ProcessKeyValue(kvp.Key.ToString(), kvp.Value);
+        }
+        else
+        {
+            var infoArray = (object[])response;
+            for (int i = 0; i < infoArray.Length; i += 2)
+                ProcessKeyValue(((GlideString)infoArray[i]).ToString(), infoArray[i + 1]);
+        }
+
+        return new StreamInfoFull(length, radixTreeKeys, radixTreeNodes, lastGeneratedId, maxDeletedEntryId, entriesAdded, recordedFirstEntryId, entries, groups);
+    }
+
+    private static StreamGroupFullInfo[] ConvertStreamGroupFullInfoArray(object[] response)
+    {
+        var result = new StreamGroupFullInfo[response.Length];
+        for (int i = 0; i < response.Length; i++)
+        {
+            result[i] = ConvertStreamGroupFullInfo(response[i]);
+        }
+        return result;
+    }
+
+    private static StreamGroupFullInfo ConvertStreamGroupFullInfo(object response)
+    {
+        var name = "";
+        var lastDeliveredId = default(ValkeyValue);
+        var entriesRead = (long?)null;
+        var pelCount = 0L;
+        var consumers = Array.Empty<StreamConsumerFullInfo>();
+        var pendingEntries = Array.Empty<StreamPendingEntryInfo>();
+
+        void ProcessKeyValue(string key, object value)
+        {
+            switch (key)
+            {
+                case "name": name = ((GlideString)value).ToString(); break;
+                case "last-delivered-id": lastDeliveredId = (ValkeyValue)(GlideString)value; break;
+                case "entries-read": entriesRead = value is null ? null : value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
+                case "pel-count": pelCount = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                case "consumers":
+                    consumers = value is object[] arr && arr.Length > 0 ? ConvertStreamConsumerFullInfoArray(arr) : [];
+                    break;
+                case "pending":
+                    pendingEntries = value is object[] pelArr && pelArr.Length > 0 ? ConvertGroupPelEntries(pelArr) : [];
+                    break;
+                default: break;
+            }
+        }
+
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+                ProcessKeyValue(kvp.Key.ToString(), kvp.Value);
+        }
+        else
+        {
+            var groupData = (object[])response;
+            for (int j = 0; j < groupData.Length; j += 2)
+                ProcessKeyValue(((GlideString)groupData[j]).ToString(), groupData[j + 1]);
+        }
+
+        return new StreamGroupFullInfo(name, lastDeliveredId, entriesRead, pelCount, consumers, pendingEntries);
+    }
+
+    private static StreamConsumerFullInfo[] ConvertStreamConsumerFullInfoArray(object[] response)
+    {
+        var result = new StreamConsumerFullInfo[response.Length];
+        for (int i = 0; i < response.Length; i++)
+        {
+            result[i] = ConvertStreamConsumerFullInfo(response[i]);
+        }
+        return result;
+    }
+
+    private static StreamConsumerFullInfo ConvertStreamConsumerFullInfo(object response)
+    {
+        var name = "";
+        var seenTime = 0L;
+        var activeTime = 0L;
+        var pelCount = 0L;
+        var pendingEntries = Array.Empty<StreamPendingEntryInfo>();
+
+        void ProcessKeyValue(string key, object value)
+        {
+            switch (key)
+            {
+                case "name": name = ((GlideString)value).ToString(); break;
+                case "seen-time": seenTime = value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
+                case "active-time": activeTime = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                case "pel-count": pelCount = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
+                case "pending":
+                    pendingEntries = value is object[] pelArr && pelArr.Length > 0 ? ConvertConsumerPelEntries(pelArr) : [];
+                    break;
+                default: break;
+            }
+        }
+
+        if (response is Dictionary<GlideString, object> dict)
+        {
+            foreach (var kvp in dict)
+                ProcessKeyValue(kvp.Key.ToString(), kvp.Value);
+        }
+        else
+        {
+            var consumerData = (object[])response;
+            for (int j = 0; j < consumerData.Length; j += 2)
+                ProcessKeyValue(((GlideString)consumerData[j]).ToString(), consumerData[j + 1]);
+        }
+
+        return new StreamConsumerFullInfo(name, seenTime, activeTime, pelCount, pendingEntries);
+    }
+
+    /// <summary>
+    /// Converts group-level PEL entries: [entry-id, consumer-name, delivery-time, delivery-count]
+    /// </summary>
+    private static StreamPendingEntryInfo[] ConvertGroupPelEntries(object[] pelArray)
+    {
+        var result = new StreamPendingEntryInfo[pelArray.Length];
+        for (int i = 0; i < pelArray.Length; i++)
+        {
+            var entry = (object[])pelArray[i];
+            var entryId = (ValkeyValue)(GlideString)entry[0];
+            var consumerName = ((GlideString)entry[1]).ToString();
+            var deliveryTime = entry[2] is GlideString gs ? long.Parse(gs.ToString()) : (long)entry[2];
+            var deliveryCount = entry[3] is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)entry[3];
+            result[i] = new StreamPendingEntryInfo(entryId, consumerName, deliveryTime, deliveryCount);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Converts consumer-level PEL entries: [entry-id, delivery-time, delivery-count]
+    /// </summary>
+    private static StreamPendingEntryInfo[] ConvertConsumerPelEntries(object[] pelArray)
+    {
+        var result = new StreamPendingEntryInfo[pelArray.Length];
+        for (int i = 0; i < pelArray.Length; i++)
+        {
+            var entry = (object[])pelArray[i];
+            var entryId = (ValkeyValue)(GlideString)entry[0];
+            var deliveryTime = entry[1] is GlideString gs ? long.Parse(gs.ToString()) : (long)entry[1];
+            var deliveryCount = entry[2] is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)entry[2];
+            result[i] = new StreamPendingEntryInfo(entryId, null, deliveryTime, deliveryCount);
+        }
+        return result;
     }
 }

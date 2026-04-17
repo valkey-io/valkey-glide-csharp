@@ -878,14 +878,14 @@ public class CommandTests
             () => Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAddAsync("key", default, null, default, false, [new NameValueEntry("field", "value")], null, true).GetArgs()),
 
             // StreamRead
-            () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", null).GetArgs()),
+            () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", count: null).GetArgs()),
             () => Assert.Equal(["XREAD", "COUNT", "10", "STREAMS", "key", "0-0"], Request.StreamReadAsync("key", "0-0", 10).GetArgs()),
-            () => Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamReadAsync([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], null).GetArgs()),
+            () => Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamReadAsync([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], count: null).GetArgs()),
 
             // StreamRange
             () => Assert.Equal(["XRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", "-", "+", null, Order.Ascending).GetArgs()),
             () => Assert.Equal(["XRANGE", "key", "1-0", "2-0", "COUNT", "10"], Request.StreamRangeAsync("key", "1-0", "2-0", 10, Order.Ascending).GetArgs()),
-            () => Assert.Equal(["XREVRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", "-", "+", null, Order.Descending).GetArgs()),
+            () => Assert.Equal(["XREVRANGE", "key", "+", "-"], Request.StreamRangeAsync("key", "-", "+", null, Order.Descending).GetArgs()),
 
             // StreamLength
             () => Assert.Equal(["XLEN", "key"], Request.StreamLengthAsync("key").GetArgs()),
@@ -932,19 +932,19 @@ public class CommandTests
             () => Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", TimeSpan.FromMilliseconds(1000)).GetArgs()),
 
             // StreamClaim
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], null, null, null, false).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], TimeSpan.FromMilliseconds(500), null, null, false).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], null, null, null, true).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], []).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }.ToArgs()).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Force = true }.ToArgs()).GetArgs()),
 
             // StreamClaimIdsOnly
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], null, null, null, false).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], []).GetArgs()),
 
             // StreamAutoClaim
             () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
             () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "COUNT", "10"], Request.StreamAutoClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", 10).GetArgs()),
 
-            // StreamAutoClaimIdsOnly
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimIdsOnlyAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
+            // StreamAutoClaimJustId
+            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustIdAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
 
             // StreamInfo
             () => Assert.Equal(["XINFOSTREAM", "key"], Request.StreamInfoAsync("key").GetArgs()),
@@ -953,7 +953,11 @@ public class CommandTests
             () => Assert.Equal(["XINFOGROUPS", "key"], Request.StreamGroupInfoAsync("key").GetArgs()),
 
             // StreamConsumerInfo
-            () => Assert.Equal(["XINFOCONSUMERS", "key", "group"], Request.StreamConsumerInfoAsync("key", "group").GetArgs())
+            () => Assert.Equal(["XINFOCONSUMERS", "key", "group"], Request.StreamConsumerInfoAsync("key", "group").GetArgs()),
+
+            // StreamInfoFull
+            () => Assert.Equal(["XINFOSTREAM", "key", "FULL"], Request.StreamInfoFullAsync("key", null).GetArgs()),
+            () => Assert.Equal(["XINFOSTREAM", "key", "FULL", "COUNT", "5"], Request.StreamInfoFullAsync("key", 5).GetArgs())
         );
     }
 

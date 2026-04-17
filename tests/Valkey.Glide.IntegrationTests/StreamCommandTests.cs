@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -50,7 +52,7 @@ public class StreamCommandTests
         // Add 5 entries with maxLength of 3
         for (int i = 0; i < 5; i++)
         {
-            _ = await client.StreamAddAsync(key, "field", $"value{i}", maxLength: 3);
+            _ = await client.StreamAddAsync(key, "field", $"value{i}", new StreamAddOptions { Trim = new StreamTrimOptions.MaxLen { MaxLength = 3 } });
         }
 
         // Verify stream was trimmed to maxLength of 3
@@ -58,7 +60,7 @@ public class StreamCommandTests
         Assert.Equal(3, length);
 
         // Add another entry with maxLength of 3
-        ValkeyValue lastId = await client.StreamAddAsync(key, "field", "final", maxLength: 3);
+        ValkeyValue lastId = await client.StreamAddAsync(key, "field", "final", new StreamAddOptions { Trim = new StreamTrimOptions.MaxLen { MaxLength = 3 } });
         AssertIsValidMessageId(lastId);
 
         // Verify stream is still trimmed to 3
@@ -113,7 +115,7 @@ public class StreamCommandTests
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Try to add to non-existent stream with NOMKSTREAM - should return null
-        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value", noMakeStream: true);
+        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value", new StreamAddOptions { MakeStream = false });
         Assert.True(messageId.IsNull);
     }
 
@@ -127,7 +129,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value1");
 
         // Add to existing stream with NOMKSTREAM - should succeed
-        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value2", noMakeStream: true);
+        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value2", new StreamAddOptions { MakeStream = false });
         AssertIsValidMessageId(messageId);
     }
 
@@ -182,12 +184,12 @@ public class StreamCommandTests
 
         // Use <ms>-* format to auto-generate sequence number for specific timestamp
         long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1", messageId: $"{timestamp}-*");
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1", new StreamAddOptions { Id = $"{timestamp}-*" });
         Assert.False(id1.IsNull);
         Assert.StartsWith($"{timestamp}-", id1.ToString());
 
         // Add another with same timestamp - should get incremented sequence
-        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2", messageId: $"{timestamp}-*");
+        ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2", new StreamAddOptions { Id = $"{timestamp}-*" });
         Assert.False(id2.IsNull);
         Assert.StartsWith($"{timestamp}-", id2.ToString());
 
@@ -202,7 +204,7 @@ public class StreamCommandTests
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Add with explicit ID
-        ValkeyValue id = await client.StreamAddAsync(key, "field", "value", messageId: "1000000000000-0");
+        ValkeyValue id = await client.StreamAddAsync(key, "field", "value", new StreamAddOptions { Id = "1000000000000-0" });
         Assert.Equal("1000000000000-0", id.ToString());
     }
 
@@ -218,7 +220,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read all entries
-        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         Assert.Equal(3, entries.Length);
         Assert.Equal("value1", entries[0]["field"].ToString());
         Assert.Equal("value2", entries[1]["field"].ToString());
@@ -237,7 +239,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read from id1 to id2
-        StreamEntry[] entries = await client.StreamRangeAsync(key, start: id1, end: id2);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions { MinId = id1, MaxId = id2 });
         Assert.Equal(2, entries.Length);
         Assert.Equal(id1.ToString(), entries[0].Id.ToString());
         Assert.Equal(id2.ToString(), entries[1].Id.ToString());
@@ -255,7 +257,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read only 2 entries
-        StreamEntry[] entries = await client.StreamRangeAsync(key, count: 2);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions { Count = 2 });
         Assert.Equal(2, entries.Length);
     }
 
@@ -271,11 +273,11 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Read in ascending order first to verify entries exist
-        StreamEntry[] ascEntries = await client.StreamRangeAsync(key);
+        StreamEntry[] ascEntries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         Assert.Equal(3, ascEntries.Length);
 
-        // Read in descending order (most recent first) - XREVRANGE uses + to -
-        StreamEntry[] entries = await client.StreamRangeAsync(key, start: StreamConstants.ReadMaxValue, end: StreamConstants.ReadMinValue, order: Order.Descending);
+        // Read in descending order (most recent first) - library swaps minId/maxId for XREVRANGE
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions { MessageOrder = Order.Descending });
         Assert.Equal(3, entries.Length);
         Assert.Equal("value3", entries[0]["field"].ToString());
         Assert.Equal("value2", entries[1]["field"].ToString());
@@ -339,7 +341,7 @@ public class StreamCommandTests
         Assert.False(streamId.IsNull);
 
         // Read back - entry should exist
-        StreamEntry[] result = await client.StreamRangeAsync(key);
+        StreamEntry[] result = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(result);
         Assert.Equal(streamId.ToString(), result[0].Id.ToString());
 
@@ -367,7 +369,7 @@ public class StreamCommandTests
         Assert.Equal(2, deleted);
 
         // Verify only one entry remains
-        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(entries);
         Assert.Equal(id3.ToString(), entries[0].Id.ToString());
 
@@ -467,7 +469,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field3", "value3");
 
         // Create a consumer group
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
 
         // Get stream info
         StreamInfo info = await client.StreamInfoAsync(key);
@@ -593,7 +595,7 @@ public class StreamCommandTests
         ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
         ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", StreamConstants.ReadMinValue, StreamConstants.ReadMaxValue);
@@ -612,7 +614,7 @@ public class StreamCommandTests
         ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
         _ = await client.StreamAddAsync(key, "field", "value3");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", id1, id2);
@@ -628,7 +630,7 @@ public class StreamCommandTests
     {
         string key = "{StreamPending}" + Guid.NewGuid();
         _ = await client.StreamAddAsync(key, "field", "value");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
 
         StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1");
@@ -646,7 +648,7 @@ public class StreamCommandTests
         ValkeyValue id1 = await client.StreamAddAsync(key, "field", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
         ValkeyValue id3 = await client.StreamAddAsync(key, "field", "value3");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
         _ = await client.StreamDeleteAsync(key, [id2]);
 
@@ -673,7 +675,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value3");
 
         // Create group with entriesRead parameter (Valkey 7.0+)
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages, entriesRead: 10);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages, entriesRead: 10);
 
         // Verify group was created by checking group info
         StreamGroupInfo[] groups = await client.StreamGroupInfoAsync(key);
@@ -719,7 +721,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value");
         _ = await client.StreamTrimAsync(key, maxLength: 0);
 
-        StreamEntry[] entries = await client.StreamRangeAsync(key);
+        StreamEntry[] entries = await client.StreamRangeAsync(key, new StreamRangeOptions());
         Assert.Empty(entries);
     }
 
@@ -760,7 +762,7 @@ public class StreamCommandTests
         ];
         _ = await client.StreamAddAsync(key, entries);
 
-        StreamEntry[] result = await client.StreamRangeAsync(key);
+        StreamEntry[] result = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(result);
         Assert.Equal(3, result[0].Values.Length);
         Assert.Equal("value1", result[0]["field1"].ToString());
@@ -780,7 +782,7 @@ public class StreamCommandTests
         ];
         _ = await client.StreamAddAsync(key, entries);
 
-        StreamEntry[] result = await client.StreamRangeAsync(key);
+        StreamEntry[] result = await client.StreamRangeAsync(key, new StreamRangeOptions());
         _ = Assert.Single(result);
         Assert.Equal(3, result[0].Values.Length);
         Assert.Equal("field", result[0].Values[0].Name.ToString());
@@ -816,7 +818,7 @@ public class StreamCommandTests
     {
         string key = "{StreamGroup}" + Guid.NewGuid();
         _ = await client.StreamAddAsync(key, "field", "value");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -825,8 +827,8 @@ public class StreamCommandTests
     {
         string key = "{StreamGroup}" + Guid.NewGuid();
         _ = await client.StreamAddAsync(key, "field", "value");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
-        StreamEntry[] entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages, null);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        StreamEntry[] entries = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages, count: null);
         _ = Assert.Single(entries);
     }
 
@@ -838,10 +840,10 @@ public class StreamCommandTests
         string key2 = "{StreamGroup}" + Guid.NewGuid();
         _ = await client.StreamAddAsync(key1, "field", "value1");
         _ = await client.StreamAddAsync(key2, "field", "value2");
-        await client.StreamCreateConsumerGroupAsync(key1, "mygroup", StreamConstants.AllMessages);
-        await client.StreamCreateConsumerGroupAsync(key2, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key1, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key2, "mygroup", StreamConstants.AllMessages);
         StreamPosition[] positions = [new StreamPosition(key1, StreamConstants.UndeliveredMessages), new StreamPosition(key2, StreamConstants.UndeliveredMessages)];
-        ValkeyStream[] streams = await client.StreamReadGroupAsync(positions, "mygroup", "consumer1", null);
+        ValkeyStream[] streams = await client.StreamReadGroupAsync(positions, "mygroup", "consumer1", countPerStream: null);
         Assert.Equal(2, streams.Length);
     }
 
@@ -851,7 +853,7 @@ public class StreamCommandTests
     {
         string key = "{StreamGroup}" + Guid.NewGuid();
         _ = await client.StreamAddAsync(key, "field", "value");
-        await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
         _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
         StreamPendingMessageInfo[] messages = await client.StreamPendingMessagesAsync(key, "mygroup", 10, "consumer1", StreamConstants.ReadMinValue, StreamConstants.ReadMaxValue);
         _ = Assert.Single(messages);
@@ -869,6 +871,118 @@ public class StreamCommandTests
         Assert.Equal(1, trimmed);
         long length = await client.StreamLengthAsync(key);
         Assert.Equal(2, length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_Basic(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+
+        // Add entries
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamAddAsync(key, "field3", "value3");
+
+        // Get full stream info
+        StreamInfoFull info = await client.StreamInfoFullAsync(key);
+        Assert.Equal(3, info.Length);
+        Assert.True(info.RadixTreeKeys > 0);
+        Assert.True(info.RadixTreeNodes > 0);
+        Assert.False(info.LastGeneratedId.IsNull);
+        Assert.Equal(3, info.Entries.Length);
+        Assert.Equal("value1", info.Entries[0]["field1"].ToString());
+        Assert.Equal("value3", info.Entries[2]["field3"].ToString());
+        Assert.Empty(info.Groups);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_WithConsumerGroup(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+
+        // Add entries
+        ValkeyValue id1 = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+
+        // Create a consumer group and read messages to create pending entries
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+
+        // Get full stream info
+        StreamInfoFull info = await client.StreamInfoFullAsync(key);
+        Assert.Equal(2, info.Length);
+        Assert.Equal(2, info.Entries.Length);
+
+        // Verify group info
+        _ = Assert.Single(info.Groups);
+        StreamGroupFullInfo group = info.Groups[0];
+        Assert.Equal("mygroup", group.Name);
+        Assert.False(group.LastDeliveredId.IsNull);
+        Assert.Equal(2, group.PelCount);
+
+        // Verify group-level PEL
+        Assert.Equal(2, group.PendingEntries.Length);
+        Assert.Equal(id1.ToString(), group.PendingEntries[0].EntryId.ToString());
+        Assert.Equal("consumer1", group.PendingEntries[0].ConsumerName);
+        Assert.True(group.PendingEntries[0].DeliveryTime > 0);
+        Assert.Equal(1, group.PendingEntries[0].DeliveryCount);
+
+        // Verify consumer info
+        _ = Assert.Single(group.Consumers);
+        StreamConsumerFullInfo consumer = group.Consumers[0];
+        Assert.Equal("consumer1", consumer.Name);
+        Assert.True(consumer.SeenTime > 0);
+        Assert.Equal(2, consumer.PelCount);
+
+        // Verify consumer-level PEL
+        Assert.Equal(2, consumer.PendingEntries.Length);
+        Assert.Null(consumer.PendingEntries[0].ConsumerName);
+        Assert.True(consumer.PendingEntries[0].DeliveryTime > 0);
+        Assert.Equal(1, consumer.PendingEntries[0].DeliveryCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_WithCount(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+
+        // Add entries and create group with pending messages
+        _ = await client.StreamAddAsync(key, "field1", "value1");
+        _ = await client.StreamAddAsync(key, "field2", "value2");
+        _ = await client.StreamAddAsync(key, "field3", "value3");
+        _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", StreamConstants.AllMessages);
+        _ = await client.StreamReadGroupAsync(key, "mygroup", "consumer1", StreamConstants.UndeliveredMessages);
+
+        // Get full stream info with count=1 to limit PEL entries
+        StreamInfoFull info = await client.StreamInfoFullAsync(key, count: 1);
+        Assert.Equal(3, info.Length);
+        _ = Assert.Single(info.Groups);
+
+        // PEL entries should be limited by count
+        StreamGroupFullInfo group = info.Groups[0];
+        Assert.True(group.PendingEntries.Length <= 1);
+        _ = Assert.Single(group.Consumers);
+        Assert.True(group.Consumers[0].PendingEntries.Length <= 1);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_NonExistentKey_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoFullAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoFullAsync_WrongKeyType_ThrowsError(BaseClient client)
+    {
+        string key = "{StreamInfoFull}" + Guid.NewGuid();
+        await client.SetAsync(key, "not a stream");
+        _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoFullAsync(key));
     }
 
 }

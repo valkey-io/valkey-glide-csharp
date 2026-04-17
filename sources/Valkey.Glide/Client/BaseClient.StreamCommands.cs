@@ -1,12 +1,13 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
 public partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <summary>Appends a new entry to a stream (legacy SER-compatible overload).</summary>
     public async Task<ValkeyValue> StreamAddAsync(
         ValkeyKey key,
         ValkeyValue streamField,
@@ -15,61 +16,36 @@ public partial class BaseClient
         int? maxLength,
         bool useApproximateMaxLength)
     {
-        return await StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength, null, false);
+        var options = new StreamAddOptions { Id = messageId };
+        if (maxLength.HasValue)
+            options = options with { Trim = new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength } };
+        return await StreamAddAsync(key, streamField, streamValue, options);
     }
 
-    /// <inheritdoc/>
+    /// <summary>Appends a new entry to a stream with multiple field-value pairs (legacy SER-compatible overload).</summary>
     public async Task<ValkeyValue> StreamAddAsync(
         ValkeyKey key,
         IEnumerable<NameValueEntry> streamPairs,
         ValkeyValue? messageId,
-         int? maxLength,
-         bool useApproximateMaxLength)
+        int? maxLength,
+        bool useApproximateMaxLength)
     {
-        return await StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength, null, false);
+        var options = new StreamAddOptions { Id = messageId };
+        if (maxLength.HasValue)
+            options = options with { Trim = new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength } };
+        return await StreamAddAsync(key, streamPairs, options);
     }
 
-    /// <inheritdoc/>
-    public async Task<ValkeyValue> StreamAddAsync(
-        ValkeyKey key,
-        ValkeyValue streamField,
-        ValkeyValue streamValue,
-        ValkeyValue? messageId = null,
-        long? maxLength = null,
-        bool useApproximateMaxLength = false,
-        long? limit = null,
-        bool noMakeStream = false)
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, StreamAddOptions?)"/>
+    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, StreamAddOptions? options = null)
     {
-        return await Command(Request.StreamAddAsync(
-            key,
-            messageId ?? default,
-            maxLength,
-            default,
-            useApproximateMaxLength,
-            [new NameValueEntry(streamField, streamValue)],
-            limit,
-            noMakeStream));
+        return await Command(Request.StreamAddAsync(key, [new NameValueEntry(streamField, streamValue)], options));
     }
 
-    /// <inheritdoc/>
-    public async Task<ValkeyValue> StreamAddAsync(
-        ValkeyKey key,
-        IEnumerable<NameValueEntry> streamPairs,
-        ValkeyValue? messageId = null,
-        long? maxLength = null,
-        bool useApproximateMaxLength = false,
-        long? limit = null,
-        bool noMakeStream = false)
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, StreamAddOptions?)"/>
+    public async Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions? options = null)
     {
-        return await Command(Request.StreamAddAsync(
-            key,
-            messageId ?? default,
-            maxLength,
-            default,
-            useApproximateMaxLength,
-            [.. streamPairs],
-            limit,
-            noMakeStream));
+        return await Command(Request.StreamAddAsync(key, [.. streamPairs], options));
     }
 
     /// <inheritdoc/>
@@ -84,36 +60,46 @@ public partial class BaseClient
         return await Command(Request.StreamReadAsync([.. streamPositions], count));
     }
 
-    /// <inheritdoc/>
-    public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? start = null, ValkeyValue? end = null, int? count = null, Order order = Order.Ascending)
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(ValkeyKey, ValkeyValue, StreamReadOptions)"/>
+    public async Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, StreamReadOptions options)
     {
-        if (!start.HasValue)
-        {
-            if (order == Order.Ascending)
-                start = StreamConstants.ReadMinValue;
-            else
-                start = StreamConstants.ReadMaxValue;
-        }
-        if (!end.HasValue)
-        {
-            if (order == Order.Ascending)
-                end = StreamConstants.ReadMaxValue;
-            else
-                end = StreamConstants.ReadMinValue;
-        }
-        return await Command(Request.StreamRangeAsync(key, start ?? StreamConstants.ReadMinValue, end ?? StreamConstants.ReadMaxValue, count, order));
+        return await Command(Request.StreamReadAsync(key, position, options));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition}, StreamReadOptions)"/>
+    public async Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, StreamReadOptions options)
+    {
+        return await Command(Request.StreamReadAsync([.. streamPositions], options));
+    }
+
+    /// <summary>Queries a stream range (legacy SER-compatible overload).</summary>
+    public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending)
+    {
+        return await Command(Request.StreamRangeAsync(key, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, messageOrder));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey, StreamRangeOptions?)"/>
+    public async Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, StreamRangeOptions? options = null)
+    {
+        var opts = options ?? new StreamRangeOptions();
+        return await Command(Request.StreamRangeAsync(
+            key,
+            opts.MinId ?? StreamConstants.ReadMinValue,
+            opts.MaxId ?? StreamConstants.ReadMaxValue,
+            opts.Count,
+            opts.MessageOrder));
     }
 
     /// <inheritdoc/>
-    public async Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position)
+    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position)
     {
-        await StreamCreateConsumerGroupAsync(key, groupName, position, false, null);
+        return await StreamCreateConsumerGroupAsync(key, groupName, position, false, null);
     }
 
     /// <inheritdoc/>
-    public async Task StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null)
+    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null)
     {
-        _ = await Command(Request.StreamCreateConsumerGroupAsync(key, groupName, position ?? default, createStream, entriesRead));
+        return await Command(Request.StreamCreateConsumerGroupAsync(key, groupName, position ?? default, createStream, entriesRead));
     }
 
     /// <inheritdoc/>
@@ -123,9 +109,9 @@ public partial class BaseClient
     }
 
     /// <inheritdoc/>
-    public async Task StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null)
+    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null)
     {
-        _ = await Command(Request.StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead));
+        return await Command(Request.StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead));
     }
 
     /// <inheritdoc/>
@@ -164,6 +150,18 @@ public partial class BaseClient
         return await Command(Request.StreamReadGroupAsync([.. streamPositions], groupName, consumerName, countPerStream, noAck));
     }
 
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, StreamReadGroupOptions)"/>
+    public async Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, StreamReadGroupOptions options)
+    {
+        return await Command(Request.StreamReadGroupAsync(key, groupName, consumerName, position ?? default, options));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, StreamReadGroupOptions)"/>
+    public async Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
+    {
+        return await Command(Request.StreamReadGroupAsync([.. streamPositions], groupName, consumerName, options));
+    }
+
     /// <inheritdoc/>
     public async Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId)
     {
@@ -189,32 +187,34 @@ public partial class BaseClient
     }
 
     /// <inheritdoc/>
-    public async Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null)
+    public async Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName = default, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null)
     {
         return await Command(Request.StreamPendingMessagesAsync(key, groupName, minId ?? StreamConstants.ReadMinValue, maxId ?? StreamConstants.ReadMaxValue, count, consumerName, minIdleTime));
     }
-    /// <inheritdoc/>
+    /// <summary>Claims pending messages for a consumer.</summary>
     public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
-        return await StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, null, null, null, false);
+        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], []));
     }
 
-    /// <inheritdoc/>
-    public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false)
+    /// <inheritdoc cref="IBaseClient.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, StreamClaimOptions)"/>
+    public async Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
     {
-        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], idleTime, timestamp, retryCount, force));
+        var optionArgs = options.ToArgs();
+        return await Command(Request.StreamClaimAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], optionArgs));
     }
 
-    /// <inheritdoc/>
-    public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
+    /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})"/>
+    public async Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds)
     {
-        return await StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, null, null, null, false);
+        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], []));
     }
 
-    /// <inheritdoc/>
-    public async Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime = null, DateTimeOffset? timestamp = null, int? retryCount = null, bool force = false)
+    /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue}, StreamClaimOptions)"/>
+    public async Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
     {
-        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], idleTime, timestamp, retryCount, force));
+        var optionArgs = options.ToArgs();
+        return await Command(Request.StreamClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, [.. messageIds], optionArgs));
     }
     /// <inheritdoc/>
     public async Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null)
@@ -223,9 +223,9 @@ public partial class BaseClient
     }
 
     /// <inheritdoc/>
-    public async Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null)
+    public async Task<StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null)
     {
-        return await Command(Request.StreamAutoClaimIdsOnlyAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
+        return await Command(Request.StreamAutoClaimJustIdAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
     }
     /// <inheritdoc/>
     public async Task<long> StreamLengthAsync(ValkeyKey key)
@@ -273,5 +273,11 @@ public partial class BaseClient
     public async Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName)
     {
         return await Command(Request.StreamConsumerInfoAsync(key, groupName));
+    }
+
+    /// <inheritdoc cref="IBaseClient.StreamInfoFullAsync(ValkeyKey, int?)"/>
+    public async Task<StreamInfoFull> StreamInfoFullAsync(ValkeyKey key, int? count = null)
+    {
+        return await Command(Request.StreamInfoFullAsync(key, count));
     }
 }
