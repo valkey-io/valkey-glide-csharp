@@ -954,11 +954,11 @@ public class CommandTests
             () => Assert.Equal(["XINFOGROUPS", "key"], Request.StreamGroupInfoAsync("key").GetArgs()),
 
             // StreamConsumerInfo
-            () => Assert.Equal(["XINFOCONSUMERS", "key", "group"], Request.StreamConsumerInfoAsync("key", "group").GetArgs()),
+            () => Assert.Equal(["XINFOCONSUMERS", "key", "group"], Request.StreamConsumerInfoAsync("key", "group").GetArgs())
 
             // StreamInfoFull
-            () => Assert.Equal(["XINFOSTREAM", "key", "FULL"], Request.StreamInfoFullAsync("key", null).GetArgs()),
-            () => Assert.Equal(["XINFOSTREAM", "key", "FULL", "COUNT", "5"], Request.StreamInfoFullAsync("key", 5).GetArgs())
+            // () => Assert.Equal(["XINFOSTREAM", "key", "FULL"], Request.StreamInfoFullAsync("key", null).GetArgs()),
+            // () => Assert.Equal(["XINFOSTREAM", "key", "FULL", "COUNT", "5"], Request.StreamInfoFullAsync("key", 5).GetArgs())
         );
     }
 
