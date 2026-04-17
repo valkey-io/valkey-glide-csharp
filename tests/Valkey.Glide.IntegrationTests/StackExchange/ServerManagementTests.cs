@@ -1,15 +1,15 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
 /// SER-compatible integration tests for server management commands.
-/// Tests the IServer interface for CONFIG, LOLWUT, TIME, LASTSAVE,
-/// FLUSHDB, and FLUSHALL operations.
 /// </summary>
-public class ServerManagementTests
+public class ServerManagementTests(SERServerManagementFixture fixture) : IClassFixture<SERServerManagementFixture>
 {
-    #region IServer Tests
+    #region Non-Destructive IServer Tests (shared server)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
@@ -79,19 +79,44 @@ public class ServerManagementTests
         Assert.True(result >= DateTime.UnixEpoch);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_FlushDatabaseAsync_Succeeds(IServer server)
+    #endregion
+
+    #region Destructive IServer Tests (isolated fixture)
+
+    [Fact]
+    public async Task IServer_FlushDatabaseAsync_Succeeds()
     {
-        await server.FlushDatabaseAsync();
+        await fixture.Server.FlushDatabaseAsync();
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_FlushAllDatabasesAsync_Succeeds(IServer server)
+    [Fact]
+    public async Task IServer_FlushAllDatabasesAsync_Succeeds()
     {
-        await server.FlushAllDatabasesAsync();
+        await fixture.Server.FlushAllDatabasesAsync();
     }
 
     #endregion
+}
+
+/// <summary>
+/// Fixture that provides an isolated Valkey server for SER server management flush tests.
+/// </summary>
+public class SERServerManagementFixture : IDisposable
+{
+    private readonly StandaloneServer _standaloneServer = new();
+
+    public IServer Server { get; }
+
+    public SERServerManagementFixture()
+    {
+        ConfigurationOptions config = new();
+        config.EndPoints.Add(_standaloneServer.Addresses.First().Host, _standaloneServer.Addresses.First().Port);
+        ConnectionMultiplexer conn = ConnectionMultiplexer.Connect(config);
+        Server = conn.GetServers().First();
+    }
+
+    public void Dispose()
+    {
+        _standaloneServer.Dispose();
+    }
 }
