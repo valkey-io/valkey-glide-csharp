@@ -981,7 +981,7 @@ public class StreamCommandTests
     public async Task StreamInfoFullAsync_WrongKeyType_ThrowsError(BaseClient client)
     {
         string key = "{StreamInfoFull}" + Guid.NewGuid();
-        await client.StringSetAsync(key, "not a stream");
+        await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoFullAsync(key));
     }
 
