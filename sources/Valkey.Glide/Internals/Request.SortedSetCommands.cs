@@ -2,7 +2,6 @@
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.Commands.Constants.Constants;
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -67,7 +66,7 @@ internal partial class Request
         List<GlideString> args = [];
         AddKeys(args, keys);
         args.AddRange(aggregate.ToArgs());
-        args.Add(WithScoresKeyword);
+        args.Add(ValkeyLiterals.WITHSCORES);
         return new(RequestType.ZUnion, [.. args], false, ToScoreResults);
     }
 
@@ -77,7 +76,7 @@ internal partial class Request
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
         args.AddRange(aggregate.ToArgs());
-        args.Add(WithScoresKeyword);
+        args.Add(ValkeyLiterals.WITHSCORES);
         return new(RequestType.ZUnion, [.. args], false, ToScoreResults);
     }
 
@@ -103,7 +102,7 @@ internal partial class Request
         List<GlideString> args = [];
         AddKeys(args, keys);
         args.AddRange(aggregate.ToArgs());
-        args.Add(WithScoresKeyword);
+        args.Add(ValkeyLiterals.WITHSCORES);
         return new(RequestType.ZInter, [.. args], false, ToScoreResults);
     }
 
@@ -113,7 +112,7 @@ internal partial class Request
         AddKeys(args, keysAndWeights.Keys);
         AddWeights(args, keysAndWeights.Values);
         args.AddRange(aggregate.ToArgs());
-        args.Add(WithScoresKeyword);
+        args.Add(ValkeyLiterals.WITHSCORES);
         return new(RequestType.ZInter, [.. args], false, ToScoreResults);
     }
 
@@ -128,7 +127,7 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        args.Add(WithScoresKeyword);
+        args.Add(ValkeyLiterals.WITHSCORES);
         return new(RequestType.ZDiff, [.. args], false, ToScoreResults);
     }
 
@@ -180,7 +179,7 @@ internal partial class Request
 
         if (limit > 0)
         {
-            args.Add(LimitKeyword);
+            args.Add(ValkeyLiterals.LIMIT);
             args.Add(limit.ToGlideString());
         }
 
@@ -219,8 +218,8 @@ internal partial class Request
         List<GlideString> args = [];
 
         AddKeys(args, keys);
-        args.Add(MinKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MIN);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(1.ToGlideString());
 
         return new(RequestType.ZMPop, [.. args], true, ToSortedSetEntryFromPopResult, true);
@@ -230,8 +229,8 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        args.Add(MaxKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MAX);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(1.ToGlideString());
 
         return new(RequestType.ZMPop, [.. args], true, ToSortedSetEntryFromPopResult, true);
@@ -241,8 +240,8 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        args.Add(MinKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MIN);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(count.ToGlideString());
 
         return new(RequestType.ZMPop, [.. args], true, HandleSortedSetPopResultResponse, true);
@@ -252,8 +251,8 @@ internal partial class Request
     {
         List<GlideString> args = [];
         AddKeys(args, keys);
-        args.Add(MaxKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MAX);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(count.ToGlideString());
 
         return new(RequestType.ZMPop, [.. args], true, HandleSortedSetPopResultResponse, true);
@@ -263,8 +262,8 @@ internal partial class Request
     {
         List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
-        args.Add(MinKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MIN);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(1.ToGlideString());
 
         return new(RequestType.BZMPop, [.. args], true, ToSortedSetEntryFromPopResult, true);
@@ -274,8 +273,8 @@ internal partial class Request
     {
         List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
-        args.Add(MaxKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MAX);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(1.ToGlideString());
 
         return new(RequestType.BZMPop, [.. args], true, ToSortedSetEntryFromPopResult, true);
@@ -285,8 +284,8 @@ internal partial class Request
     {
         List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
-        args.Add(MinKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MIN);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(count.ToGlideString());
 
         return new(RequestType.BZMPop, [.. args], true, HandleSortedSetPopResultResponse, true);
@@ -296,8 +295,8 @@ internal partial class Request
     {
         List<GlideString> args = [ToSeconds(timeout)];
         AddKeys(args, keys);
-        args.Add(MaxKeyword);
-        args.Add(CountKeyword);
+        args.Add(ValkeyLiterals.MAX);
+        args.Add(ValkeyLiterals.COUNT);
         args.Add(count.ToGlideString());
 
         return new(RequestType.BZMPop, [.. args], true, HandleSortedSetPopResultResponse, true);
@@ -305,14 +304,14 @@ internal partial class Request
 
     public static Cmd<object[], SortedSetEntry?> SortedSetRandomMemberWithScoreAsync(ValkeyKey key)
     {
-        List<GlideString> args = [key, 1.ToGlideString(), WithScoresKeyword];
+        List<GlideString> args = [key, 1.ToGlideString(), ValkeyLiterals.WITHSCORES];
 
         return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntryFromPairArray);
     }
 
     public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoreAsync(ValkeyKey key, long count)
     {
-        List<GlideString> args = [key, count.ToGlideString(), WithScoresKeyword];
+        List<GlideString> args = [key, count.ToGlideString(), ValkeyLiterals.WITHSCORES];
 
         return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntriesFromPairArray);
     }
@@ -326,7 +325,7 @@ internal partial class Request
 
     public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count)
     {
-        List<GlideString> args = [key, count.ToGlideString(), WithScoresKeyword];
+        List<GlideString> args = [key, count.ToGlideString(), ValkeyLiterals.WITHSCORES];
 
         return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntriesFromPairArray);
     }
@@ -504,7 +503,7 @@ internal partial class Request
 
     private static void AddWeights(List<GlideString> args, IEnumerable<double> weights)
     {
-        args.Add(WeightsKeyword);
+        args.Add(ValkeyLiterals.WEIGHTS);
         args.AddRange(weights.ToGlideStrings());
     }
 

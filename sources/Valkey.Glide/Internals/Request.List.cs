@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Constants;
-
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -66,21 +64,21 @@ internal partial class Request
             [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListLeftPopAsync(ValkeyKey[] keys, long count)
-        => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), Constants.LeftKeyword, Constants.CountKeyword, count.ToGlideString()], true, dict =>
+        => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), ValkeyLiterals.LEFT, ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListRightPopAsync(ValkeyKey[] keys, long count)
-        => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), Constants.RightKeyword, Constants.CountKeyword, count.ToGlideString()], true, dict =>
+        => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), ValkeyLiterals.RIGHT, ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<GlideString, ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index)
         => new(RequestType.LIndex, [key, index.ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<long, long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
-        => Simple<long>(RequestType.LInsert, [key, Constants.BeforeKeyword, pivot, value]);
+        => Simple<long>(RequestType.LInsert, [key, ValkeyLiterals.BEFORE, pivot, value]);
 
     public static Cmd<long, long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
-        => Simple<long>(RequestType.LInsert, [key, Constants.AfterKeyword, pivot, value]);
+        => Simple<long>(RequestType.LInsert, [key, ValkeyLiterals.AFTER, pivot, value]);
 
     public static Cmd<GlideString, ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide)
         => new(RequestType.LMove, [sourceKey, destinationKey, sourceSide.ToLiteral(), destinationSide.ToLiteral()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
@@ -90,11 +88,11 @@ internal partial class Request
         List<GlideString> args = [key, element];
         if (rank != 1)
         {
-            args.AddRange([Constants.RankKeyword, rank.ToGlideString()]);
+            args.AddRange([ValkeyLiterals.RANK, rank.ToGlideString()]);
         }
         if (maxLength != 0)
         {
-            args.AddRange([Constants.MaxLenKeyword, maxLength.ToGlideString()]);
+            args.AddRange([ValkeyLiterals.MAXLEN, maxLength.ToGlideString()]);
         }
         // Convert null to -1L, similar to how other commands handle their null cases
         return new(RequestType.LPos, [.. args], true, response => response is null ? -1L : (long)response, allowConverterToHandleNull: true);
@@ -102,14 +100,14 @@ internal partial class Request
 
     public static Cmd<object[], long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0)
     {
-        List<GlideString> args = [key, element, Constants.CountKeyword, count.ToGlideString()];
+        List<GlideString> args = [key, element, ValkeyLiterals.COUNT, count.ToGlideString()];
         if (rank != 1)
         {
-            args.AddRange([Constants.RankKeyword, rank.ToGlideString()]);
+            args.AddRange([ValkeyLiterals.RANK, rank.ToGlideString()]);
         }
         if (maxLength != 0)
         {
-            args.AddRange([Constants.MaxLenKeyword, maxLength.ToGlideString()]);
+            args.AddRange([ValkeyLiterals.MAXLEN, maxLength.ToGlideString()]);
         }
         return new(RequestType.LPos, [.. args], false, array => [.. array.Cast<long>()]);
     }
@@ -133,7 +131,7 @@ internal partial class Request
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, long count, TimeSpan timeout)
-        => new(RequestType.BLMPop, [ToSeconds(timeout), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral(), Constants.CountKeyword, count.ToGlideString()], true, dict =>
+        => new(RequestType.BLMPop, [ToSeconds(timeout), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral(), ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     private static ListPopResult ConvertDictToListPopResult(Dictionary<GlideString, object> dict)

@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -136,19 +135,19 @@ internal partial class Request
 
         if (!options.MatchPattern.IsNull)
         {
-            args.Add(Constants.MatchKeyword.ToGlideString());
+            args.Add(ValkeyLiterals.MATCH);
             args.Add(options.MatchPattern.ToGlideString());
         }
 
         if (options.Count.HasValue)
         {
-            args.Add(Constants.CountKeyword.ToGlideString());
+            args.Add(ValkeyLiterals.COUNT);
             args.Add(options.Count.Value.ToGlideString());
         }
 
         if (options.Type.HasValue)
         {
-            args.Add(Constants.TypeKeyword.ToGlideString());
+            args.Add(ValkeyLiterals.TYPE);
             args.Add(ToType(options.Type.Value));
         }
 

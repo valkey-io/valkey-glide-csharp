@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Commands.Constants.Constants;
-
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -79,12 +77,12 @@ public class RestoreOptions
 
         if (ExpireAt.HasValue)
         {
-            resultList.Add((GlideString)AbsttlKeyword);
+            resultList.Add((GlideString)ValkeyLiterals.ABSTTL);
         }
 
         if (Replace)
         {
-            resultList.Add((GlideString)ReplaceKeyword);
+            resultList.Add((GlideString)ValkeyLiterals.REPLACE);
         }
 
         if (IdleTime.HasValue && Frequency.HasValue)
@@ -94,13 +92,13 @@ public class RestoreOptions
 
         if (IdleTime.HasValue)
         {
-            resultList.Add((GlideString)IdletimeKeyword);
+            resultList.Add((GlideString)ValkeyLiterals.IDLETIME);
             resultList.Add(IdleTime.Value.ToGlideString());
         }
 
         if (Frequency.HasValue)
         {
-            resultList.Add((GlideString)FreqKeyword);
+            resultList.Add((GlideString)ValkeyLiterals.FREQ);
             resultList.Add(Frequency.Value.ToGlideString());
         }
 

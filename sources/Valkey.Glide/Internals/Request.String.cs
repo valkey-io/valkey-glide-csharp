@@ -2,7 +2,6 @@
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.Commands.Constants.Constants;
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -78,7 +77,7 @@ internal partial class Request
         => new(RequestType.LCS, [first.ToGlideString(), second.ToGlideString()], true, response => response?.ToString());
 
     public static Cmd<long, long> LongestCommonSubsequenceLength(ValkeyKey first, ValkeyKey second)
-        => Simple<long>(RequestType.LCS, [first.ToGlideString(), second.ToGlideString(), LenKeyword.ToGlideString()]);
+        => Simple<long>(RequestType.LCS, [first.ToGlideString(), second.ToGlideString(), ValkeyLiterals.LEN]);
 
     public static Cmd<object, LCSMatchResult> LongestCommonSubsequenceWithMatches(ValkeyKey first, ValkeyKey second, long minLength = 0)
     {
@@ -86,10 +85,10 @@ internal partial class Request
         [
             first.ToGlideString(),
             second.ToGlideString(),
-            IdxKeyword.ToGlideString(),
-            MinMatchLenKeyword.ToGlideString(),
+            ValkeyLiterals.IDX,
+            ValkeyLiterals.MINMATCHLEN,
             minLength.ToGlideString(),
-            WithMatchLenKeyword.ToGlideString()
+            ValkeyLiterals.WITHMATCHLEN
         ];
 
         return new(RequestType.LCS, [.. args], false, ConvertLCSMatchResult);

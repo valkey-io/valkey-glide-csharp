@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -123,13 +122,13 @@ internal partial class Request
         => Ok(RequestType.FlushAll, []);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync(FlushMode mode)
-        => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? Constants.SyncKeyword : Constants.AsyncKeyword]);
+        => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
         => Ok(RequestType.FlushDB, []);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
-        => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? Constants.SyncKeyword : Constants.AsyncKeyword]);
+        => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<long, DateTime> LastSaveAsync()

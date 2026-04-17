@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Commands.Constants.Constants;
-
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -37,7 +35,7 @@ public class LolwutOptions
         List<string> args = [];
         if (Version is not null)
         {
-            args.Add(VersionKeyword);
+            args.Add(ValkeyLiterals.VERSION.ToString());
             args.Add(Version.Value.ToString());
         }
         if (Parameters is not null)

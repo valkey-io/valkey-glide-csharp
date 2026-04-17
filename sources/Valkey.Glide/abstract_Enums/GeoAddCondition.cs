@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Commands.Constants.Constants;
-
 namespace Valkey.Glide;
 
 /// <summary>
@@ -35,8 +33,8 @@ internal static class GeoAddConditionExtensions
         => condition switch
         {
             GeoAddCondition.Always => [],
-            GeoAddCondition.OnlyIfNotExists => [NxKeyword],
-            GeoAddCondition.OnlyIfExists => [XxKeyword],
+            GeoAddCondition.OnlyIfNotExists => [ValkeyLiterals.NX],
+            GeoAddCondition.OnlyIfExists => [ValkeyLiterals.XX],
             _ => throw new ArgumentOutOfRangeException(nameof(condition)),
         };
 }
