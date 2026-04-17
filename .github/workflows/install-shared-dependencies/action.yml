@@ -65,8 +65,9 @@ runs:
         # In Windows runners, the Valkey servers run within WSL.
         # These can be accessed via the WSL bash shell.
         # See <https://github.com/Vampire/setup-wsl> for more details.
+        # WSL2 is not available on windows-11-arm runners (no Hyper-V), so skip for aarch64.
         - name: Install software dependencies for Windows
-          if: "${{ inputs.os == 'windows' }}"
+          if: "${{ inputs.os == 'windows' && !contains(inputs.target, 'aarch64') }}"
           uses: Vampire/setup-wsl@v7
           with:
               distribution: Ubuntu-22.04
