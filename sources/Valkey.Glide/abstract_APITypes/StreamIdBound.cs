@@ -63,5 +63,10 @@ public sealed class StreamIdBound
     /// </summary>
     public static implicit operator StreamIdBound(ValkeyValue id) => new(id);
 
+    /// <summary>
+    /// Converts a <see cref="ValkeyValue"/> to an inclusive stream ID bound.
+    /// </summary>
+    public static implicit operator StreamIdBound(string id) => new(id);
+
     #endregion
 }
