@@ -52,7 +52,7 @@ public abstract partial class BaseBatch<T>
     public T ListRemove(ValkeyKey key, ValkeyValue value, long count = 0) => AddCmd(ListRemoveAsync(key, value, count));
 
     /// <inheritdoc cref="IBatchListCommands.ListTrim(ValkeyKey, long, long)" />
-    public T ListTrim(ValkeyKey key, long start, long stop) => AddCmd(ListTrimAsync(key, start, stop));
+    public T ListTrim(ValkeyKey key, long start = 0, long stop = -1) => AddCmd(ListTrimAsync(key, start, stop));
 
     /// <inheritdoc cref="IBatchListCommands.ListRange(ValkeyKey, long, long)" />
     public T ListRange(ValkeyKey key, long start = 0, long stop = -1) => AddCmd(ListRangeAsync(key, start, stop));
@@ -63,8 +63,8 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchListCommands.ListRightPop(IEnumerable{ValkeyKey}, long)" />
     public T ListRightPop(IEnumerable<ValkeyKey> keys, long count) => AddCmd(ListRightPopAsync([.. keys], count));
 
-    /// <inheritdoc cref="IBatchListCommands.ListGetByIndex(ValkeyKey, long)" />
-    public T ListGetByIndex(ValkeyKey key, long index) => AddCmd(ListGetByIndexAsync(key, index));
+    /// <inheritdoc cref="IBatchListCommands.ListIndex(ValkeyKey, long)" />
+    public T ListIndex(ValkeyKey key, long index) => AddCmd(ListGetByIndexAsync(key, index));
 
     /// <inheritdoc cref="IBatchListCommands.ListInsertAfter(ValkeyKey, ValkeyValue, ValkeyValue)" />
     public T ListInsertAfter(ValkeyKey key, ValkeyValue pivot, ValkeyValue value) => AddCmd(ListInsertAfterAsync(key, pivot, value));
@@ -81,8 +81,8 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchListCommands.ListPositions(ValkeyKey, ValkeyValue, long, long, long)" />
     public T ListPositions(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0) => AddCmd(ListPositionsAsync(key, element, count, rank, maxLength));
 
-    /// <inheritdoc cref="IBatchListCommands.ListSetByIndex(ValkeyKey, long, ValkeyValue)" />
-    public T ListSetByIndex(ValkeyKey key, long index, ValkeyValue value) => AddCmd(ListSetByIndexAsync(key, index, value));
+    /// <inheritdoc cref="IBatchListCommands.ListSet(ValkeyKey, long, ValkeyValue)" />
+    public T ListSet(ValkeyKey key, long index, ValkeyValue value) => AddCmd(ListSetByIndexAsync(key, index, value));
 
     /// <inheritdoc cref="IBatchListCommands.ListBlockingLeftPop(IEnumerable{ValkeyKey}, TimeSpan)" />
     public T ListBlockingLeftPop(IEnumerable<ValkeyKey> keys, TimeSpan timeout) => AddCmd(ListBlockingLeftPopAsync([.. keys], timeout));
@@ -118,13 +118,13 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchListCommands.ListRange(ValkeyKey key, long start, long stop) => ListRange(key, start, stop);
     IBatch IBatchListCommands.ListLeftPop(IEnumerable<ValkeyKey> keys, long count) => ListLeftPop(keys, count);
     IBatch IBatchListCommands.ListRightPop(IEnumerable<ValkeyKey> keys, long count) => ListRightPop(keys, count);
-    IBatch IBatchListCommands.ListGetByIndex(ValkeyKey key, long index) => ListGetByIndex(key, index);
+    IBatch IBatchListCommands.ListIndex(ValkeyKey key, long index) => ListIndex(key, index);
     IBatch IBatchListCommands.ListInsertAfter(ValkeyKey key, ValkeyValue pivot, ValkeyValue value) => ListInsertAfter(key, pivot, value);
     IBatch IBatchListCommands.ListInsertBefore(ValkeyKey key, ValkeyValue pivot, ValkeyValue value) => ListInsertBefore(key, pivot, value);
     IBatch IBatchListCommands.ListMove(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide) => ListMove(sourceKey, destinationKey, sourceSide, destinationSide);
     IBatch IBatchListCommands.ListPosition(ValkeyKey key, ValkeyValue element, long rank, long maxLength) => ListPosition(key, element, rank, maxLength);
     IBatch IBatchListCommands.ListPositions(ValkeyKey key, ValkeyValue element, long count, long rank, long maxLength) => ListPositions(key, element, count, rank, maxLength);
-    IBatch IBatchListCommands.ListSetByIndex(ValkeyKey key, long index, ValkeyValue value) => ListSetByIndex(key, index, value);
+    IBatch IBatchListCommands.ListSet(ValkeyKey key, long index, ValkeyValue value) => ListSet(key, index, value);
     IBatch IBatchListCommands.ListBlockingLeftPop(IEnumerable<ValkeyKey> keys, TimeSpan timeout) => ListBlockingLeftPop(keys, timeout);
     IBatch IBatchListCommands.ListBlockingRightPop(IEnumerable<ValkeyKey> keys, TimeSpan timeout) => ListBlockingRightPop(keys, timeout);
     IBatch IBatchListCommands.ListBlockingMove(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout) => ListBlockingMove(source, destination, sourceSide, destinationSide, timeout);

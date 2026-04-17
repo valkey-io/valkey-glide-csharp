@@ -7,11 +7,19 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <inheritdoc/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default)
+    public async Task<bool> GeoAddAsync(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddCondition condition = GeoAddCondition.Always)
+        => await GeoAddAsync(key, member, position, new GeoAddOptions { Condition = condition });
+
+    /// <inheritdoc/>
+    public async Task<bool> GeoAddAsync(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options)
         => await Command(Request.GeoAddAsync(key, member, position, options));
 
     /// <inheritdoc/>
-    public async Task<long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default)
+    public async Task<long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddCondition condition = GeoAddCondition.Always)
+        => await GeoAddAsync(key, members, new GeoAddOptions { Condition = condition });
+
+    /// <inheritdoc/>
+    public async Task<long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options)
         => await Command(Request.GeoAddAsync(key, members, options));
 
     /// <inheritdoc/>

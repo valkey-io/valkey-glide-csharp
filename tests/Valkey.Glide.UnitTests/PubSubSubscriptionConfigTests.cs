@@ -94,7 +94,6 @@ public class PubSubSubscriptionConfigTests
     }
 
     #endregion
-
     #region ClusterPubSubSubscriptionConfig Tests
 
     [Fact]

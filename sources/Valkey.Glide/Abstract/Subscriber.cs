@@ -123,12 +123,12 @@ internal sealed class Subscriber : ISubscriber
         _multiplexer.RemoveAllSubscriptions();
 
         // Send unsubscribe commands for all channel modes.
-        await _client.UnsubscribeAsync();
-        await _client.PUnsubscribeAsync();
+        var timeout = GetTimeout();
+        await _client.UnsubscribeAsync(timeout);
+        await _client.PUnsubscribeAsync(timeout);
 
         if (_client.IsCluster)
         {
-
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
             _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
         }

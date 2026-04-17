@@ -41,7 +41,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SSubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout = default);
+    abstract Task SSubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channels and waits for server confirmation.
@@ -51,7 +51,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SSubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout = default);
+    abstract Task SSubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout);
 
     /// <summary>
     /// Subscribes the client to the specified sharded channel and returns without waiting for server confirmation.
@@ -102,7 +102,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SUnsubscribeAsync(TimeSpan timeout = default);
+    abstract Task SUnsubscribeAsync(TimeSpan timeout);
 
     /// <summary>
     /// Unsubscribes the client from the specified sharded channel and waits for server confirmation.
@@ -112,7 +112,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SUnsubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout = default);
+    abstract Task SUnsubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout);
 
     /// <summary>
     /// Unsubscribes the client from the specified sharded channels and waits for server confirmation.
@@ -122,7 +122,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
-    abstract Task SUnsubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout = default);
+    abstract Task SUnsubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout);
 
     /// <summary>
     /// Unsubscribes the client from all sharded channels and returns without waiting for server confirmation.

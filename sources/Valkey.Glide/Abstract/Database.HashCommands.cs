@@ -8,17 +8,17 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc/>
-    public async Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
+    public Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetAsync(key, hashField);
+        return HashGetAsync(key, hashField);
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags)
+    public Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetAsync(key, hashFields);
+        return HashGetAsync(key, hashFields);
     }
 
     /// <inheritdoc/>
@@ -51,38 +51,38 @@ internal partial class Database
     }
 
     /// <inheritdoc/>
-    public async Task<bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
+    public Task<bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashDeleteAsync(key, hashField);
+        return HashDeleteAsync(key, hashField);
     }
 
     /// <inheritdoc/>
-    public async Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags)
+    public Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashDeleteAsync(key, hashFields);
+        return HashDeleteAsync(key, hashFields);
     }
 
     /// <inheritdoc/>
-    public async Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
+    public Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashExistsAsync(key, hashField);
+        return HashExistsAsync(key, hashField);
     }
 
     /// <inheritdoc/>
-    public async Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1, CommandFlags flags = CommandFlags.None)
+    public Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashIncrementByAsync(key, hashField, value);
+        return HashIncrementByAsync(key, hashField, value);
     }
 
     /// <inheritdoc/>
-    public async Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value, CommandFlags flags = CommandFlags.None)
+    public Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashIncrementByAsync(key, hashField, value);
+        return HashIncrementByAsync(key, hashField, value);
     }
 
     /// <inheritdoc/>
@@ -93,17 +93,17 @@ internal partial class Database
     }
 
     /// <inheritdoc/>
-    public async Task<long> HashLengthAsync(ValkeyKey key, CommandFlags flags)
+    public Task<long> HashLengthAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashLengthAsync(key);
+        return HashLengthAsync(key);
     }
 
     /// <inheritdoc/>
-    public async Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
+    public Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashStringLengthAsync(key, hashField);
+        return HashStringLengthAsync(key, hashField);
     }
 
     /// <inheritdoc/>
@@ -114,17 +114,17 @@ internal partial class Database
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue> HashRandomFieldAsync(ValkeyKey key, CommandFlags flags)
+    public Task<ValkeyValue> HashRandomFieldAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashRandomFieldAsync(key);
+        return HashRandomFieldAsync(key);
     }
 
     /// <inheritdoc/>
-    public async Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count, CommandFlags flags)
+    public Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashRandomFieldsAsync(key, count);
+        return HashRandomFieldsAsync(key, count);
     }
 
     /// <inheritdoc/>

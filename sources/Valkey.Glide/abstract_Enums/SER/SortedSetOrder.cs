@@ -1,4 +1,6 @@
-﻿namespace Valkey.Glide;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+namespace Valkey.Glide;
 
 /// <summary>
 /// Enum to manage ordering in sorted sets.
@@ -21,12 +23,17 @@ public enum SortedSetOrder
     ByLex,
 }
 
-internal static class SortedSetOrderByExtensions
+internal static class SortedSetOrderExtensions
 {
-    internal static ValkeyValue GetLiteral(this SortedSetOrder sortedSetOrder) => sortedSetOrder switch
-    {
-        SortedSetOrder.ByLex => ValkeyLiterals.BYLEX,
-        SortedSetOrder.ByScore => ValkeyLiterals.BYSCORE,
-        _ => ValkeyValue.Null,
-    };
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal static GlideString[] ToArgs(this SortedSetOrder sortedSetOrder)
+        => sortedSetOrder switch
+        {
+            SortedSetOrder.ByRank => [],
+            SortedSetOrder.ByScore => [ValkeyLiterals.BYSCORE],
+            SortedSetOrder.ByLex => [ValkeyLiterals.BYLEX],
+            _ => throw new ArgumentOutOfRangeException(nameof(sortedSetOrder)),
+        };
 }

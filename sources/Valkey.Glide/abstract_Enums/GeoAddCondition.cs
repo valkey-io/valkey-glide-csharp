@@ -5,23 +5,23 @@ using static Valkey.Glide.Commands.Constants.Constants;
 namespace Valkey.Glide;
 
 /// <summary>
-/// The condition for an operation to add or change a geospatial item.
+/// The condition for an operation to add or update geospatial items.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/geoadd/"/>
 public enum GeoAddCondition
 {
     /// <summary>
-    /// Always add or change the geospatial item.
+    /// Always add or update the geospatial items.
     /// </summary>
     Always,
 
     /// <summary>
-    /// Only add the geospatial item if it does not exist (NX).
+    /// Only add new geospatial items (NX).
     /// </summary>
     OnlyIfNotExists,
 
     /// <summary>
-    /// Only change the geospatial item if it exists (XX).
+    /// Only update existing geospatial items (XX).
     /// </summary>
     OnlyIfExists,
 }

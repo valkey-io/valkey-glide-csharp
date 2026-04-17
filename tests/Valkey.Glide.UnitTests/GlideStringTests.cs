@@ -2,7 +2,7 @@
 
 namespace Valkey.Glide.UnitTests;
 
-public class GildeStringTests
+public class GlideStringTests
 {
     [Fact]
     public void Sorting()
@@ -150,5 +150,15 @@ public class GildeStringTests
         System.Buffer.BlockCopy(binaryData, 0, expectedBinary, prefix.Length, binaryData.Length);
 
         Assert.Equal(new GlideString(expectedBinary), result);
+    }
+
+    [Fact]
+    public void DoubleFormatting()
+    {
+        Assert.Equal("+inf", double.PositiveInfinity.ToGlideString());
+        Assert.Equal("-inf", double.NegativeInfinity.ToGlideString());
+        Assert.Equal("nan", double.NaN.ToGlideString());
+        Assert.Equal("0", 0.0.ToGlideString());
+        Assert.Equal("10.5", 10.5.ToGlideString());
     }
 }
