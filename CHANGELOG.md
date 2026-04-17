@@ -1,5 +1,11 @@
 # Changelog
 
+### 1.0.0
+
+- Add client-side caching support with TTL-based expiration, LRU/LFU eviction policies, and cache metrics (#330)
+
+### Changes
+
 ## 0.10.0
 
 ### Changes

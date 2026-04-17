@@ -70,8 +70,8 @@ pub enum CompressionBackend {
 #[repr(u32)]
 #[derive(Debug, Clone, Copy)]
 pub enum EvictionPolicy {
-    LRU = 0,
-    LFU = 1,
+    Lru = 0,
+    Lfu = 1,
 }
 
 /// A mirror of [`ClientSideCache`] adopted for FFI.
@@ -331,10 +331,12 @@ pub(crate) unsafe fn create_connection_request(
                 cache_id: unsafe { ptr_to_str(csc.cache_id) },
                 max_cache_kb: csc.max_cache_kb,
                 entry_ttl_seconds: csc.has_entry_ttl_seconds.then_some(csc.entry_ttl_seconds),
-                eviction_policy: csc.has_eviction_policy.then_some(match csc.eviction_policy {
-                    EvictionPolicy::LRU => CoreEvictionPolicy::Lru,
-                    EvictionPolicy::LFU => CoreEvictionPolicy::Lfu,
-                }),
+                eviction_policy: csc
+                    .has_eviction_policy
+                    .then_some(match csc.eviction_policy {
+                        EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
+                        EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
+                    }),
                 enable_metrics: csc.enable_metrics,
             })
         } else {
