@@ -218,7 +218,8 @@ internal partial class FFI
             List<byte[]> rootCertificates,
             uint? pubSubReconciliationIntervalMs,
             CompressionConfig? compressionConfig,
-            bool readOnly)
+            bool readOnly,
+            ClientSideCacheConfig? clientSideCacheConfig)
         {
             _request = new()
             {
@@ -252,6 +253,8 @@ internal partial class FFI
                 HasCompressionConfig = compressionConfig.HasValue,
                 CompressionConfig = compressionConfig ?? default,
                 ReadOnly = readOnly,
+                HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
+                ClientSideCacheConfig = clientSideCacheConfig ?? default,
             };
         }
 
@@ -1127,6 +1130,10 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool ReadOnly;
 
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasClientSideCacheConfig;
+        public ClientSideCacheConfig ClientSideCacheConfig;
+
         // TODO more config params, see ffi.rs
     }
 
@@ -1201,6 +1208,35 @@ internal partial class FFI
 
         /// <summary>Maximum allowed size for decompressed data (prevents decompression bombs).</summary>
         public ulong MaxDecompressedSize = maxDecompressedSize ?? default;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct ClientSideCacheConfig
+    {
+        /// <summary>Unique identifier for the cache instance.</summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string CacheId;
+
+        /// <summary>Maximum size of the cache in kilobytes.</summary>
+        public ulong MaxCacheKb;
+
+        /// <summary>Whether an entry TTL was explicitly specified.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasEntryTtlSeconds;
+
+        /// <summary>Time-To-Live for cached entries in seconds.</summary>
+        public ulong EntryTtlSeconds;
+
+        /// <summary>Whether an eviction policy was explicitly specified.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasEvictionPolicy;
+
+        /// <summary>The eviction policy for the cache.</summary>
+        public EvictionPolicy EvictionPolicy;
+
+        /// <summary>Whether cache metrics collection is enabled.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool EnableMetrics;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1514,5 +1550,18 @@ internal partial class FFI
     {
         ElastiCache = 0,
         MemoryDB = 1,
+    }
+
+    /// <summary>
+    /// Cache metrics type enum matching the Rust core's cache metric methods.
+    /// </summary>
+    internal enum CacheMetricsType : uint
+    {
+        HitRate = 0,
+        MissRate = 1,
+        EntryCount = 2,
+        Evictions = 3,
+        Expirations = 4,
+        TotalLookups = 5,
     }
 }

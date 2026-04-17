@@ -117,6 +117,10 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "get_statistics")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial Statistics GetStatisticsFfi();
+
+    [LibraryImport("libglide_rs", EntryPoint = "get_cache_metrics")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void GetCacheMetricsFfi(IntPtr client, ulong index, uint metricsType);
 #else
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
     public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -185,5 +189,8 @@ internal partial class FFI
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "get_statistics")]
     public static extern Statistics GetStatisticsFfi();
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "get_cache_metrics")]
+    public static extern void GetCacheMetricsFfi(IntPtr client, ulong index, uint metricsType);
 #endif
 }
