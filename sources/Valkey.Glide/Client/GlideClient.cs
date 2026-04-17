@@ -174,6 +174,24 @@ public partial class GlideClient :
         => await Command(Request.ScanAsync(cursor, options));
 
     /// <inheritdoc/>
+    public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
+    {
+        string currentCursor = "0";
+
+        do
+        {
+            (string nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, options));
+
+            foreach (ValkeyKey key in keys)
+            {
+                yield return key;
+            }
+
+            currentCursor = nextCursor;
+        } while (currentCursor != "0");
+    }
+
+    /// <inheritdoc/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
     {
         _ = await Command(Request.Watch(keys));

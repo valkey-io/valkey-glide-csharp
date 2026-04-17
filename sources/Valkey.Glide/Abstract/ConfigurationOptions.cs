@@ -89,13 +89,16 @@ public sealed class ConfigurationOptions : ICloneable
     }
 
     #region Private fields
+
     private bool? _ssl;
     private Proxy? _proxy;
     private RetryStrategy? _reconnectRetryPolicy;
-    #endregion
 
+    #endregion
     #region Internal fields
+
     internal readonly List<byte[]> _trustedIssuers = [];
+
     #endregion
 
     /// <summary>

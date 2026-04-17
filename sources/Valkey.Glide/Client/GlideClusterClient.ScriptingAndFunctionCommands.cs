@@ -107,6 +107,15 @@ public sealed partial class GlideClusterClient
     /// <inheritdoc/>
     public async Task<ClusterValue<string>> FunctionLoadAsync(
         string libraryCode,
+        Route route,
+        CancellationToken cancellationToken = default)
+    {
+        return await Command(Request.FunctionLoadAsync(libraryCode, false).ToClusterValue(route), route);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ClusterValue<string>> FunctionLoadAsync(
+        string libraryCode,
         bool replace,
         Route route,
         CancellationToken cancellationToken = default)
@@ -141,6 +150,13 @@ public sealed partial class GlideClusterClient
     }
 
     /// <inheritdoc/>
+    public new async Task FunctionKillAsync(
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionKillAsync(), Route.AllPrimaries);
+    }
+
+    /// <inheritdoc/>
     public async Task FunctionKillAsync(
         Route route,
         CancellationToken cancellationToken = default)
@@ -152,11 +168,19 @@ public sealed partial class GlideClusterClient
 
     /// <inheritdoc/>
     public async Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
-        FunctionListQuery? query,
+        FunctionListOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await Command(Request.FunctionListAsync(options).ToClusterValue(Route.AllPrimaries), Route.AllPrimaries);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
+        FunctionListOptions? options,
         Route route,
         CancellationToken cancellationToken = default)
     {
-        return await Command(Request.FunctionListAsync(query).ToClusterValue(route), route);
+        return await Command(Request.FunctionListAsync(options).ToClusterValue(route), route);
     }
 
     /// <inheritdoc/>
@@ -170,11 +194,26 @@ public sealed partial class GlideClusterClient
     // ===== Function Persistence with Routing =====
 
     /// <inheritdoc/>
+    public new async Task<byte[]> FunctionDumpAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await Command(Request.FunctionDumpAsync());
+    }
+
+    /// <inheritdoc/>
     public async Task<ClusterValue<byte[]>> FunctionDumpAsync(
         Route route,
         CancellationToken cancellationToken = default)
     {
         return await Command(Request.FunctionDumpAsync().ToClusterValue(route), route);
+    }
+
+    /// <inheritdoc/>
+    public new async Task FunctionRestoreAsync(
+        byte[] payload,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionRestoreAsync(payload, null), Route.AllPrimaries);
     }
 
     /// <inheritdoc/>
@@ -184,6 +223,15 @@ public sealed partial class GlideClusterClient
         CancellationToken cancellationToken = default)
     {
         _ = await Command(Request.FunctionRestoreAsync(payload, null), route);
+    }
+
+    /// <inheritdoc/>
+    public new async Task FunctionRestoreAsync(
+        byte[] payload,
+        FunctionRestorePolicy policy,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await Command(Request.FunctionRestoreAsync(payload, policy), Route.AllPrimaries);
     }
 
     /// <inheritdoc/>

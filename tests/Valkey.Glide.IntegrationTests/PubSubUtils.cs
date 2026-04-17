@@ -573,17 +573,17 @@ public static class PubSubUtils
 
         if (subscriptions[PubSubChannelMode.Exact].Count > 0)
         {
-            await subscriber.SubscribeAsync(subscriptions[PubSubChannelMode.Exact]);
+            await subscriber.SubscribeAsync(subscriptions[PubSubChannelMode.Exact], TimeSpan.Zero);
         }
 
         if (subscriptions[PubSubChannelMode.Pattern].Count > 0)
         {
-            await subscriber.PSubscribeAsync(subscriptions[PubSubChannelMode.Pattern]);
+            await subscriber.PSubscribeAsync(subscriptions[PubSubChannelMode.Pattern], TimeSpan.Zero);
         }
 
         if (subscriptions[PubSubChannelMode.Sharded].Count > 0)
         {
-            await ((GlideClusterClient)subscriber).SSubscribeAsync(subscriptions[PubSubChannelMode.Sharded]);
+            await ((GlideClusterClient)subscriber).SSubscribeAsync(subscriptions[PubSubChannelMode.Sharded], TimeSpan.Zero);
         }
     }
 
@@ -650,17 +650,17 @@ public static class PubSubUtils
                 PubSubChannelMode.Exact =>
                     unsubscribeMode == UnsubscribeMode.Lazy
                         ? subscriber.UnsubscribeLazyAsync(channels)
-                        : subscriber.UnsubscribeAsync(channels),
+                        : subscriber.UnsubscribeAsync(channels, TimeSpan.Zero),
 
                 PubSubChannelMode.Pattern =>
                     unsubscribeMode == UnsubscribeMode.Lazy
                         ? subscriber.PUnsubscribeLazyAsync(channels)
-                        : subscriber.PUnsubscribeAsync(channels),
+                        : subscriber.PUnsubscribeAsync(channels, TimeSpan.Zero),
 
                 PubSubChannelMode.Sharded =>
                     unsubscribeMode == UnsubscribeMode.Lazy
                         ? ((GlideClusterClient)subscriber).SUnsubscribeLazyAsync(channels)
-                        : ((GlideClusterClient)subscriber).SUnsubscribeAsync(channels),
+                        : ((GlideClusterClient)subscriber).SUnsubscribeAsync(channels, TimeSpan.Zero),
 
                 _ => throw new InvalidOperationException($"Unsupported channel mode: {channelMode}")
             });

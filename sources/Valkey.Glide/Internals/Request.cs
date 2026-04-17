@@ -28,6 +28,9 @@ internal partial class Request
     private static Cmd<T, bool> Boolean<T>(RequestType request, GlideString[] args)
         => new(request, args, false, response => Convert.ToInt64(response) == 1);
 
+    private static readonly Func<string, bool> IsOkConverter = response => response == "OK";
+    private static readonly Func<string, ValkeyValue> ToOkConverter = _ => ValkeyValue.Ok;
+
     /// <summary>
     /// Create a Cmd which returns a Boolean value based on the response being OK or not.
     /// </summary>
@@ -35,7 +38,7 @@ internal partial class Request
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals OK)</returns>
     private static Cmd<string, bool> OKToBool(RequestType request, GlideString[] args)
-        => new(request, args, false, response => response == "OK");
+        => new(request, args, false, IsOkConverter);
 
     /// <summary>
     /// Create a Cmd which returns "OK" when it completes.
@@ -44,7 +47,7 @@ internal partial class Request
     /// <param name="args">The command arguments</param>
     /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
     private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[] args)
-        => new(request, args, false, _ => ValkeyValue.Ok);
+        => new(request, args, false, ToOkConverter);
 
     /// <summary>
     /// Create a Cmd which converts the response to a ValkeyValue.
@@ -64,6 +67,12 @@ internal partial class Request
     /// <returns>A command that converts an array to a ValkeyValue array</returns>
     private static Cmd<object[], ValkeyValue[]> ObjectArrayToValkeyValueArray(RequestType request, GlideString[] args)
         => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
+
+    /// <summary>
+    /// Converts a <see cref="HashSet{Object}"/> response to an <see cref="ISet{ValkeyValue}"/>.
+    /// </summary>
+    private static ISet<ValkeyValue> ToValkeyValueSet(HashSet<object> set)
+        => new HashSet<ValkeyValue>(set.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
 
     /// <summary>
     /// Converts an object array to a <see cref="ValkeyKey"/> set and returns the result.

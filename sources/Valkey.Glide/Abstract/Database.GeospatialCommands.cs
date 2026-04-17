@@ -7,17 +7,17 @@ namespace Valkey.Glide;
 internal partial class Database
 {
     /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, double, double, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags = CommandFlags.None)
+    public Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoAddAsync(key, member, new GeoPosition(longitude, latitude));
+        return GeoAddAsync(key, member, new GeoPosition(longitude, latitude));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, GeoEntry, CommandFlags)"/>
-    public async Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags = CommandFlags.None)
+    public Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoAddAsync(key, value.Member, new GeoPosition(value.Longitude, value.Latitude));
+        return GeoAddAsync(key, value.Member, new GeoPosition(value.Longitude, value.Latitude));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoAddAsync(ValkeyKey, IEnumerable{GeoEntry}, CommandFlags)"/>
@@ -43,31 +43,31 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoHashAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
+    public Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoHashAsync(key, member);
+        return GeoHashAsync(key, member);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoHashAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
+    public Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoHashAsync(key, members);
+        return GeoHashAsync(key, members);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoPositionAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
+    public Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoPositionAsync(key, member);
+        return GeoPositionAsync(key, member);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoPositionAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
+    public Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await GeoPositionAsync(key, members);
+        return GeoPositionAsync(key, members);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.GeoSearchAsync(ValkeyKey, ValkeyValue, GeoSearchShape, int, bool, Order?, GeoRadiusOptions, CommandFlags)"/>
