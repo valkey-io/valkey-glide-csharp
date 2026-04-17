@@ -35,7 +35,7 @@ public sealed class ScoreBound
     {
         _score = score;
 
-        // Infinity values are never exclusive.
+        // Infinity values are not inclusive.
         _isExclusive = isExclusive && !double.IsInfinity(_score);
     }
 
