@@ -4,7 +4,6 @@ using System.Globalization;
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.Commands.Constants.Constants;
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -47,7 +46,7 @@ internal partial class Request
             args.Add(ToMilliseconds(options.Block.Value));
         }
 
-        args.Add(StreamsKeyword);
+        args.Add(ValkeyLiterals.STREAMS);
         foreach (var sp in streamPositions)
         {
             args.Add(sp.Key.ToGlideString());
@@ -982,7 +981,7 @@ internal partial class Request
             args.Add(ValkeyLiterals.NOACK);
         }
 
-        args.Add(StreamsKeyword);
+        args.Add(ValkeyLiterals.STREAMS);
         foreach (var sp in streamPositions)
         {
             args.Add(sp.Key.ToGlideString());

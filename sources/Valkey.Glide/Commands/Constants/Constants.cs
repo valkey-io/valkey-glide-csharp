@@ -133,11 +133,6 @@ public static class Constants
     public const string PxAtKeyword = "PXAT";
 
     /// <summary>
-    /// The STREAMS keyword for stream commands.
-    /// </summary>
-    public const string StreamsKeyword = "STREAMS";
-
-    /// <summary>
     /// The KEEPTTL keyword for retaining the time to live associated with the key.
     /// </summary>
     public const string KeepTtlKeyword = "KEEPTTL";
