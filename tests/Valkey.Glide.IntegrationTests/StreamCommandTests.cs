@@ -483,7 +483,7 @@ public class StreamCommandTests
     public async Task StreamReadAsync_NonStreamKey_ThrowsError(BaseClient client)
     {
         string key = "{StreamError}" + Guid.NewGuid();
-        await client.StringSetAsync(key, "not a stream");
+        await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamReadAsync(key, StreamConstants.MinimumId));
     }
 
@@ -501,7 +501,7 @@ public class StreamCommandTests
     public async Task StreamReadGroupAsync_NonStreamKey_ThrowsError(BaseClient client)
     {
         string key = "{StreamError}" + Guid.NewGuid();
-        await client.StringSetAsync(key, "not a stream");
+        await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamReadGroupAsync(key, "group", "consumer", StreamConstants.UndeliveredMessages));
     }
 
@@ -510,7 +510,7 @@ public class StreamCommandTests
     public async Task StreamAcknowledgeAsync_WrongKeyType_ThrowsError(BaseClient client)
     {
         string key = "{StreamError}" + Guid.NewGuid();
-        await client.StringSetAsync(key, "not a stream");
+        await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamAcknowledgeAsync(key, "group", "1-0"));
     }
 
@@ -546,7 +546,7 @@ public class StreamCommandTests
     public async Task StreamPendingAsync_WrongKeyType_ThrowsError(BaseClient client)
     {
         string key = "{StreamError}" + Guid.NewGuid();
-        await client.StringSetAsync(key, "not a stream");
+        await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamPendingAsync(key, "group"));
     }
 
@@ -564,7 +564,7 @@ public class StreamCommandTests
     public async Task StreamClaimAsync_WrongKeyType_ThrowsError(BaseClient client)
     {
         string key = "{StreamError}" + Guid.NewGuid();
-        await client.StringSetAsync(key, "not a stream");
+        await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamClaimAsync(key, "group", "consumer", TimeSpan.Zero, ["1-0"]));
     }
 
@@ -581,7 +581,7 @@ public class StreamCommandTests
     public async Task StreamInfoAsync_WrongKeyType_ThrowsError(BaseClient client)
     {
         string key = "{StreamError}" + Guid.NewGuid();
-        await client.StringSetAsync(key, "not a stream");
+        await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoAsync(key));
     }
 

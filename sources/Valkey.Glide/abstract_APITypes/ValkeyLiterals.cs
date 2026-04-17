@@ -7,6 +7,7 @@ internal static class ValkeyLiterals
     // unlike primary commands, these do not get altered by the command-map; we may as
     // well compute the bytes once and share them
     public static readonly ValkeyValue
+        @default = "default",
         ACLCAT = "ACLCAT",
         ADDR = "ADDR",
         AFTER = "AFTER",
@@ -27,7 +28,6 @@ internal static class ValkeyLiterals
         COPY = "COPY",
         COUNT = "COUNT",
         DB = "DB",
-        @default = "default",
         DESC = "DESC",
         DOCTOR = "DOCTOR",
         ENCODING = "ENCODING",
@@ -44,9 +44,10 @@ internal static class ValkeyLiterals
         GT = "GT",
         HISTORY = "HISTORY",
         ID = "ID",
-        IDX = "IDX",
-        INCR = "INCR",
         IDLETIME = "IDLETIME",
+        IDX = "IDX",
+        IFEQ = "IFEQ",
+        INCR = "INCR",
         KEEPTTL = "KEEPTTL",
         KILL = "KILL",
         LADDR = "LADDR",
@@ -59,8 +60,8 @@ internal static class ValkeyLiterals
         LIST = "LIST",
         LOAD = "LOAD",
         LT = "LT",
-        MATCH = "MATCH",
         MALLOC_STATS = "MALLOC-STATS",
+        MATCH = "MATCH",
         MAX = "MAX",
         MAXAGE = "MAXAGE",
         MAXLEN = "MAXLEN",

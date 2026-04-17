@@ -21,42 +21,42 @@ internal partial class BatchTestUtils
         string value2 = "test-value";
 
         // Use IBatch interface directly - no casting needed
-        _ = batch.StringSet(key1, value1);
-        testData.Add(new(true, "StringSet(key1, value1)"));
-        _ = batch.StringSet(key2, value2);
-        testData.Add(new(true, "StringSet(key2, value2)"));
-        _ = batch.StringGet(key1);
-        testData.Add(new(new ValkeyValue(value1), "StringGet(key1)"));
-        _ = batch.StringGet(key2);
-        testData.Add(new(new ValkeyValue(value2), "StringGet(key2)"));
-        _ = batch.StringLength(key1);
-        testData.Add(new((long)value1.Length, "StringLength(key1)"));
-        _ = batch.StringLength(key2);
-        testData.Add(new((long)value2.Length, "StringLength(key2)"));
-        _ = batch.StringLength(nonExistingKey);
-        testData.Add(new(0L, "StringLength(nonExistingKey)"));
+        _ = batch.Set(key1, value1);
+        testData.Add(new(true, "Set(key1, value1)"));
+        _ = batch.Set(key2, value2);
+        testData.Add(new(true, "Set(key2, value2)"));
+        _ = batch.Get(key1);
+        testData.Add(new(new ValkeyValue(value1), "Get(key1)"));
+        _ = batch.Get(key2);
+        testData.Add(new(new ValkeyValue(value2), "Get(key2)"));
+        _ = batch.Length(key1);
+        testData.Add(new((long)value1.Length, "Length(key1)"));
+        _ = batch.Length(key2);
+        testData.Add(new((long)value2.Length, "Length(key2)"));
+        _ = batch.Length(nonExistingKey);
+        testData.Add(new(0L, "Length(nonExistingKey)"));
 
-        // StringAppend tests
+        // Append tests
         string appendValue = "-appended";
-        _ = batch.StringAppend(key1, appendValue);
-        testData.Add(new((long)(value1.Length + appendValue.Length), "StringAppend(key1, appendValue)"));
+        _ = batch.Append(key1, appendValue);
+        testData.Add(new((long)(value1.Length + appendValue.Length), "Append(key1, appendValue)"));
 
-        _ = batch.StringGet(key1);
-        testData.Add(new(new ValkeyValue(value1 + appendValue), "StringGet(key1) after append"));
+        _ = batch.Get(key1);
+        testData.Add(new(new ValkeyValue(value1 + appendValue), "Get(key1) after append"));
 
         // Append to non-existing key (should create it)
-        _ = batch.StringAppend(nonExistingKey, "new-value");
-        testData.Add(new(9L, "StringAppend(nonExistingKey, new-value)"));
+        _ = batch.Append(nonExistingKey, "new-value");
+        testData.Add(new(9L, "Append(nonExistingKey, new-value)"));
 
-        _ = batch.StringGet(nonExistingKey);
-        testData.Add(new(new ValkeyValue("new-value"), "StringGet(nonExistingKey) after append"));
+        _ = batch.Get(nonExistingKey);
+        testData.Add(new(new ValkeyValue("new-value"), "Get(nonExistingKey) after append"));
 
         // Append empty string
-        _ = batch.StringAppend(key2, "");
-        testData.Add(new((long)value2.Length, "StringAppend(key2, empty-string)"));
+        _ = batch.Append(key2, "");
+        testData.Add(new((long)value2.Length, "Append(key2, empty-string)"));
 
-        _ = batch.StringGet(key2);
-        testData.Add(new(new ValkeyValue(value2), "StringGet(key2) after append empty string"));
+        _ = batch.Get(key2);
+        testData.Add(new(new ValkeyValue(value2), "Get(key2) after append empty string"));
 
         // Increment/Decrement tests
         string numKey1 = $"{atomicPrefix}num1-{Guid.NewGuid()}";
@@ -67,124 +67,124 @@ internal partial class BatchTestUtils
         string floatKey2 = $"{atomicPrefix}float2-{Guid.NewGuid()}";
 
         // Set initial values
-        _ = batch.StringSet(numKey1, "10");
-        testData.Add(new(true, "StringSet(numKey1, 10)"));
+        _ = batch.Set(numKey1, "10");
+        testData.Add(new(true, "Set(numKey1, 10)"));
 
-        _ = batch.StringSet(numKey2, "20");
-        testData.Add(new(true, "StringSet(numKey2, 20)"));
+        _ = batch.Set(numKey2, "20");
+        testData.Add(new(true, "Set(numKey2, 20)"));
 
-        _ = batch.StringSet(floatKey1, "10.5");
-        testData.Add(new(true, "StringSet(floatKey1, 10.5)"));
+        _ = batch.Set(floatKey1, "10.5");
+        testData.Add(new(true, "Set(floatKey1, 10.5)"));
 
-        // Test StringIncrement (by 1)
-        _ = batch.StringIncrement(numKey1);
-        testData.Add(new(11L, "StringIncrement(numKey1)"));
+        // Test Increment (by 1)
+        _ = batch.Increment(numKey1);
+        testData.Add(new(11L, "Increment(numKey1)"));
 
-        _ = batch.StringGet(numKey1);
-        testData.Add(new(new ValkeyValue("11"), "StringGet(numKey1) after increment"));
+        _ = batch.Get(numKey1);
+        testData.Add(new(new ValkeyValue("11"), "Get(numKey1) after increment"));
 
-        // Test StringIncrement with amount
-        _ = batch.StringIncrement(numKey2, 5);
-        testData.Add(new(25L, "StringIncrement(numKey2, 5)"));
+        // Test Increment with amount
+        _ = batch.Increment(numKey2, 5);
+        testData.Add(new(25L, "Increment(numKey2, 5)"));
 
-        _ = batch.StringGet(numKey2);
-        testData.Add(new(new ValkeyValue("25"), "StringGet(numKey2) after increment by 5"));
+        _ = batch.Get(numKey2);
+        testData.Add(new(new ValkeyValue("25"), "Get(numKey2) after increment by 5"));
 
-        // Test StringIncrement with negative amount
-        _ = batch.StringIncrement(numKey2, -3);
-        testData.Add(new(22L, "StringIncrement(numKey2, -3)"));
+        // Test Increment with negative amount
+        _ = batch.Increment(numKey2, -3);
+        testData.Add(new(22L, "Increment(numKey2, -3)"));
 
-        _ = batch.StringGet(numKey2);
-        testData.Add(new(new ValkeyValue("22"), "StringGet(numKey2) after increment by -3"));
+        _ = batch.Get(numKey2);
+        testData.Add(new(new ValkeyValue("22"), "Get(numKey2) after increment by -3"));
 
-        // Test StringIncrement on non-existent key
-        _ = batch.StringIncrement(numKey3);
-        testData.Add(new(1L, "StringIncrement(numKey3) non-existent key"));
+        // Test Increment on non-existent key
+        _ = batch.Increment(numKey3);
+        testData.Add(new(1L, "Increment(numKey3) non-existent key"));
 
-        _ = batch.StringGet(numKey3);
-        testData.Add(new(new ValkeyValue("1"), "StringGet(numKey3) after increment non-existent key"));
+        _ = batch.Get(numKey3);
+        testData.Add(new(new ValkeyValue("1"), "Get(numKey3) after increment non-existent key"));
 
-        // Test StringIncrement with float
-        _ = batch.StringIncrement(floatKey1, 0.5);
-        testData.Add(new(11.0, "StringIncrement(floatKey1, 0.5)"));
+        // Test Increment with float
+        _ = batch.Increment(floatKey1, 0.5);
+        testData.Add(new(11.0, "Increment(floatKey1, 0.5)"));
 
-        _ = batch.StringGet(floatKey1);
-        testData.Add(new(new ValkeyValue("11"), "StringGet(floatKey1) after increment by 0.5"));
+        _ = batch.Get(floatKey1);
+        testData.Add(new(new ValkeyValue("11"), "Get(floatKey1) after increment by 0.5"));
 
-        // Test StringIncrement with float on non-existent key
-        _ = batch.StringIncrement(floatKey2, 0.5);
-        testData.Add(new(0.5, "StringIncrement(floatKey2, 0.5) non-existent key"));
+        // Test Increment with float on non-existent key
+        _ = batch.Increment(floatKey2, 0.5);
+        testData.Add(new(0.5, "Increment(floatKey2, 0.5) non-existent key"));
 
-        _ = batch.StringGet(floatKey2);
-        testData.Add(new(new ValkeyValue("0.5"), "StringGet(floatKey2) after increment non-existent key"));
+        _ = batch.Get(floatKey2);
+        testData.Add(new(new ValkeyValue("0.5"), "Get(floatKey2) after increment non-existent key"));
 
-        // Test StringDecrement (by 1)
-        _ = batch.StringDecrement(numKey1);
-        testData.Add(new(10L, "StringDecrement(numKey1)"));
+        // Test Decrement (by 1)
+        _ = batch.Decrement(numKey1);
+        testData.Add(new(10L, "Decrement(numKey1)"));
 
-        _ = batch.StringGet(numKey1);
-        testData.Add(new(new ValkeyValue("10"), "StringGet(numKey1) after decrement"));
+        _ = batch.Get(numKey1);
+        testData.Add(new(new ValkeyValue("10"), "Get(numKey1) after decrement"));
 
-        // Test StringDecrement with amount
-        _ = batch.StringDecrement(numKey2, 2);
-        testData.Add(new(20L, "StringDecrement(numKey2, 2)"));
+        // Test Decrement with amount
+        _ = batch.Decrement(numKey2, 2);
+        testData.Add(new(20L, "Decrement(numKey2, 2)"));
 
-        _ = batch.StringGet(numKey2);
-        testData.Add(new(new ValkeyValue("20"), "StringGet(numKey2) after decrement by 2"));
+        _ = batch.Get(numKey2);
+        testData.Add(new(new ValkeyValue("20"), "Get(numKey2) after decrement by 2"));
 
-        // Test StringDecrement with negative amount
-        _ = batch.StringDecrement(numKey2, -5);
-        testData.Add(new(25L, "StringDecrement(numKey2, -5)"));
+        // Test Decrement with negative amount
+        _ = batch.Decrement(numKey2, -5);
+        testData.Add(new(25L, "Decrement(numKey2, -5)"));
 
-        _ = batch.StringGet(numKey2);
-        testData.Add(new(new ValkeyValue("25"), "StringGet(numKey2) after decrement by -5"));
+        _ = batch.Get(numKey2);
+        testData.Add(new(new ValkeyValue("25"), "Get(numKey2) after decrement by -5"));
 
-        // Test StringDecrement on non-existent key
-        _ = batch.StringDecrement(numKey4);
-        testData.Add(new(-1L, "StringDecrement(numKey4) non-existent key"));
+        // Test Decrement on non-existent key
+        _ = batch.Decrement(numKey4);
+        testData.Add(new(-1L, "Decrement(numKey4) non-existent key"));
 
-        _ = batch.StringGet(numKey4);
-        testData.Add(new(new ValkeyValue("-1"), "StringGet(numKey4) after decrement non-existent key"));
+        _ = batch.Get(numKey4);
+        testData.Add(new(new ValkeyValue("-1"), "Get(numKey4) after decrement non-existent key"));
 
         // StringGetRange tests
         string rangeKey = $"{atomicPrefix}range-{Guid.NewGuid()}";
         string rangeValue = "Hello World";
-        _ = batch.StringSet(rangeKey, rangeValue);
-        testData.Add(new(true, "StringSet(rangeKey, Hello World)"));
+        _ = batch.Set(rangeKey, rangeValue);
+        testData.Add(new(true, "Set(rangeKey, Hello World)"));
 
-        _ = batch.StringGetRange(rangeKey, 0, 4);
-        testData.Add(new(new ValkeyValue("Hello"), "StringGetRange(rangeKey, 0, 4)"));
+        _ = batch.GetRange(rangeKey, 0, 4);
+        testData.Add(new(new ValkeyValue("Hello"), "GetRange(rangeKey, 0, 4)"));
 
-        _ = batch.StringGetRange(rangeKey, 6, -1);
-        testData.Add(new(new ValkeyValue("World"), "StringGetRange(rangeKey, 6, -1)"));
+        _ = batch.GetRange(rangeKey, 6, -1);
+        testData.Add(new(new ValkeyValue("World"), "GetRange(rangeKey, 6, -1)"));
 
-        _ = batch.StringGetRange(rangeKey, -5, -1);
-        testData.Add(new(new ValkeyValue("World"), "StringGetRange(rangeKey, -5, -1)"));
+        _ = batch.GetRange(rangeKey, -5, -1);
+        testData.Add(new(new ValkeyValue("World"), "GetRange(rangeKey, -5, -1)"));
 
         string nonExistingKey2 = $"{atomicPrefix}nonexisting2-{Guid.NewGuid()}";
-        _ = batch.StringGetRange(nonExistingKey2, 0, 5);
-        testData.Add(new(new ValkeyValue(""), "StringGetRange(nonExistingKey2, 0, 5)"));
+        _ = batch.GetRange(nonExistingKey2, 0, 5);
+        testData.Add(new(new ValkeyValue(""), "GetRange(nonExistingKey2, 0, 5)"));
 
-        // StringSetRange tests
+        // SetRange tests
         string setRangeKey = $"{atomicPrefix}setrange-{Guid.NewGuid()}";
-        _ = batch.StringSet(setRangeKey, "Hello World");
-        testData.Add(new(true, "StringSet(setRangeKey, Hello World)"));
+        _ = batch.Set(setRangeKey, "Hello World");
+        testData.Add(new(true, "Set(setRangeKey, Hello World)"));
 
-        _ = batch.StringSetRange(setRangeKey, 6, "Redis");
-        testData.Add(new((ValkeyValue)11L, "StringSetRange(setRangeKey, 6, Redis)"));
+        _ = batch.SetRange(setRangeKey, 6, "Redis");
+        testData.Add(new((ValkeyValue)11L, "SetRange(setRangeKey, 6, Redis)"));
 
-        _ = batch.StringGet(setRangeKey);
-        testData.Add(new(new ValkeyValue("Hello Redis"), "StringGet(setRangeKey) after setrange"));
+        _ = batch.Get(setRangeKey);
+        testData.Add(new(new ValkeyValue("Hello Redis"), "Get(setRangeKey) after setrange"));
 
-        // StringSetRange on non-existent key (should create it with null padding)
+        // SetRange on non-existent key (should create it with null padding)
         string setRangeKey2 = $"{atomicPrefix}setrange2-{Guid.NewGuid()}";
-        _ = batch.StringSetRange(setRangeKey2, 5, "test");
-        testData.Add(new((ValkeyValue)9L, "StringSetRange(setRangeKey2, 5, test) non-existent key"));
+        _ = batch.SetRange(setRangeKey2, 5, "test");
+        testData.Add(new((ValkeyValue)9L, "SetRange(setRangeKey2, 5, test) non-existent key"));
 
-        _ = batch.StringGet(setRangeKey2);
-        testData.Add(new(new ValkeyValue("\0\0\0\0\0test"), "StringGet(setRangeKey2) after setrange non-existent", true));
+        _ = batch.Get(setRangeKey2);
+        testData.Add(new(new ValkeyValue("\0\0\0\0\0test"), "Get(setRangeKey2) after setrange non-existent", true));
 
-        // Multiple key StringSet and StringGet tests
+        // Multiple key StringSet and Get tests
         string multiKey1 = $"{atomicPrefix}multi1-{Guid.NewGuid()}";
         string multiKey2 = $"{atomicPrefix}multi2-{Guid.NewGuid()}";
         string multiKey3 = $"{atomicPrefix}multi3-{Guid.NewGuid()}";
@@ -196,85 +196,52 @@ internal partial class BatchTestUtils
             new(multiKey3, "value3")
         ];
 
-        _ = batch.StringSet(multiKeyValues);
-        testData.Add(new(true, "StringSet(multiKeyValues)"));
+        _ = batch.Set(multiKeyValues);
+        testData.Add(new(true, "Set(multiKeyValues)"));
 
         string nonExistingKey3 = $"{atomicPrefix}nonexisting3-{Guid.NewGuid()}";
         ValkeyKey[] multiKeys = [multiKey1, multiKey2, multiKey3, nonExistingKey3];
-        _ = batch.StringGet(multiKeys);
-        testData.Add(new(Array.Empty<ValkeyValue>(), "StringGet(multiKeys)", true));
+        _ = batch.Get(multiKeys);
+        testData.Add(new(Array.Empty<ValkeyValue>(), "Get(multiKeys)", true));
 
-        // StringGetDelete tests
+        // GetDelete tests
         string getDelKey = $"{atomicPrefix}getdel-{Guid.NewGuid()}";
-        _ = batch.StringSet(getDelKey, "delete-me");
-        testData.Add(new(true, "StringSet(getDelKey, delete-me)"));
+        _ = batch.Set(getDelKey, "delete-me");
+        testData.Add(new(true, "Set(getDelKey, delete-me)"));
 
-        _ = batch.StringGetDelete(getDelKey);
-        testData.Add(new(new ValkeyValue("delete-me"), "StringGetDelete(getDelKey)"));
+        _ = batch.GetDelete(getDelKey);
+        testData.Add(new(new ValkeyValue("delete-me"), "GetDelete(getDelKey)"));
 
-        _ = batch.StringGet(getDelKey);
-        testData.Add(new(ValkeyValue.Null, "StringGet(getDelKey) after delete"));
+        _ = batch.Get(getDelKey);
+        testData.Add(new(ValkeyValue.Null, "Get(getDelKey) after delete"));
 
         string nonExistingKey4 = $"{atomicPrefix}nonexisting4-{Guid.NewGuid()}";
-        _ = batch.StringGetDelete(nonExistingKey4);
-        testData.Add(new(ValkeyValue.Null, "StringGetDelete(nonExistingKey4)"));
+        _ = batch.GetDelete(nonExistingKey4);
+        testData.Add(new(ValkeyValue.Null, "GetDelete(nonExistingKey4)"));
 
-        // StringGetSetExpiry tests (TimeSpan)
+        // GetExpiry tests (TimeSpan)
         string getSetExpiryKey1 = $"{atomicPrefix}getsetexpiry1-{Guid.NewGuid()}";
-        _ = batch.StringSet(getSetExpiryKey1, "expire-me");
-        testData.Add(new(true, "StringSet(getSetExpiryKey1, expire-me)"));
+        _ = batch.Set(getSetExpiryKey1, "expire-me");
+        testData.Add(new(true, "Set(getSetExpiryKey1, expire-me)"));
 
-        _ = batch.StringGetSetExpiry(getSetExpiryKey1, TimeSpan.FromSeconds(60));
-        testData.Add(new(new ValkeyValue("expire-me"), "StringGetSetExpiry(getSetExpiryKey1, 60s)"));
+        _ = batch.GetExpiry(getSetExpiryKey1, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
+        testData.Add(new(new ValkeyValue("expire-me"), "GetExpiry(getSetExpiryKey1, 60s)"));
 
-        _ = batch.StringGetSetExpiry(getSetExpiryKey1, null);
-        testData.Add(new(new ValkeyValue("expire-me"), "StringGetSetExpiry(getSetExpiryKey1, null) - remove expiry"));
+        _ = batch.GetExpiry(getSetExpiryKey1, GetExpiryOptions.Persist());
+        testData.Add(new(new ValkeyValue("expire-me"), "GetExpiry(getSetExpiryKey1, Persist) - remove expiry"));
 
         string nonExistingKey5 = $"{atomicPrefix}nonexisting5-{Guid.NewGuid()}";
-        _ = batch.StringGetSetExpiry(nonExistingKey5, TimeSpan.FromSeconds(30));
-        testData.Add(new(ValkeyValue.Null, "StringGetSetExpiry(nonExistingKey5, 30s)"));
+        _ = batch.GetExpiry(nonExistingKey5, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(30)));
+        testData.Add(new(ValkeyValue.Null, "GetExpiry(nonExistingKey5, 30s)"));
 
-        // StringGetSetExpiry tests (DateTime)
+        // GetExpiry tests (DateTime)
         string getSetExpiryKey2 = $"{atomicPrefix}getsetexpiry2-{Guid.NewGuid()}";
-        _ = batch.StringSet(getSetExpiryKey2, "expire-me-abs");
-        testData.Add(new(true, "StringSet(getSetExpiryKey2, expire-me-abs)"));
+        _ = batch.Set(getSetExpiryKey2, "expire-me-abs");
+        testData.Add(new(true, "Set(getSetExpiryKey2, expire-me-abs)"));
 
         DateTime futureTime = DateTime.UtcNow.AddMinutes(5);
-        _ = batch.StringGetSetExpiry(getSetExpiryKey2, futureTime);
-        testData.Add(new(new ValkeyValue("expire-me-abs"), "StringGetSetExpiry(getSetExpiryKey2, futureTime)"));
-
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
-        {
-            string lcsKey1 = $"{prefix}lcs1-{Guid.NewGuid()}";
-            string lcsKey2 = $"{prefix}lcs2-{Guid.NewGuid()}";
-
-            _ = batch.StringSet(lcsKey1, "abcdef");
-            testData.Add(new(true, "StringSet(lcsKey1, abcdef)"));
-
-            _ = batch.StringSet(lcsKey2, "acef");
-            testData.Add(new(true, "StringSet(lcsKey2, acef)"));
-
-            _ = batch.StringLongestCommonSubsequence(lcsKey1, lcsKey2);
-            testData.Add(new("acef", "StringLongestCommonSubsequence(lcsKey1, lcsKey2)"));
-
-            _ = batch.StringLongestCommonSubsequenceLength(lcsKey1, lcsKey2);
-            testData.Add(new(4L, "StringLongestCommonSubsequenceLength(lcsKey1, lcsKey2)"));
-
-            _ = batch.StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2);
-            testData.Add(new(LCSMatchResult.Null, "StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2)", true));
-
-            _ = batch.StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2, 2);
-            testData.Add(new(LCSMatchResult.Null, "StringLongestCommonSubsequenceWithMatches(lcsKey1, lcsKey2, minLength=2)", true));
-
-            // Test LCS with non-existent keys
-            string nonExistingKey6 = $"{prefix}nonexisting6-{Guid.NewGuid()}";
-            _ = batch.StringLongestCommonSubsequence(lcsKey1, nonExistingKey6);
-            testData.Add(new("", "StringLongestCommonSubsequence(lcsKey1, nonExistingKey6)"));
-
-            string nonExistingKey7 = $"{prefix}nonexisting7-{Guid.NewGuid()}";
-            _ = batch.StringLongestCommonSubsequenceLength(nonExistingKey7, lcsKey2);
-            testData.Add(new(0L, "StringLongestCommonSubsequenceLength(nonExistingKey7, lcsKey2)"));
-        }
+        _ = batch.GetExpiry(getSetExpiryKey2, GetExpiryOptions.ExpireAt(new DateTimeOffset(futureTime)));
+        testData.Add(new(new ValkeyValue("expire-me-abs"), "GetExpiry(getSetExpiryKey2, futureTime)"));
 
         return testData;
     }
@@ -436,8 +403,8 @@ internal partial class BatchTestUtils
         string testKey = $"{atomicPrefix}test-{Guid.NewGuid()}";
 
         // Set up some test data
-        _ = batch.StringSet(testKey, "test-value");
-        testData.Add(new(true, "StringSet(testKey, test-value)"));
+        _ = batch.Set(testKey, "test-value");
+        testData.Add(new(true, "Set(testKey, test-value)"));
 
         // ConfigGet tests
         _ = batch.ConfigGetAsync("*");
@@ -485,11 +452,11 @@ internal partial class BatchTestUtils
         string genericKey2 = $"{atomicPrefix}generic2-{Guid.NewGuid()}";
         string genericKey3 = $"{atomicPrefix}generic3-{Guid.NewGuid()}";
 
-        _ = batch.StringSet(genericKey1, "value1");
-        testData.Add(new(true, "StringSet(genericKey1, value1)"));
+        _ = batch.Set(genericKey1, "value1");
+        testData.Add(new(true, "Set(genericKey1, value1)"));
 
-        _ = batch.StringSet(genericKey2, "value2");
-        testData.Add(new(true, "StringSet(genericKey2, value2)"));
+        _ = batch.Set(genericKey2, "value2");
+        testData.Add(new(true, "Set(genericKey2, value2)"));
 
         _ = batch.Exists(genericKey1);
         testData.Add(new(true, "KeyExists(genericKey1)"));
@@ -545,8 +512,8 @@ internal partial class BatchTestUtils
         _ = batch.Touch([genericKey1, genericKey2, genericKey3]);
         testData.Add(new(2L, "KeyTouch([genericKey1, genericKey2, genericKey3])"));
 
-        _ = batch.StringSet(prefix + genericKey2, "value2");
-        testData.Add(new(true, "StringSet(prefix + genericKey2, value2)"));
+        _ = batch.Set(prefix + genericKey2, "value2");
+        testData.Add(new(true, "Set(prefix + genericKey2, value2)"));
 
         string renamedKey = $"{prefix}renamed-{Guid.NewGuid()}";
         _ = batch.Rename(prefix + genericKey2, renamedKey);
@@ -568,8 +535,8 @@ internal partial class BatchTestUtils
         _ = batch.Exists(renameIfNotExistsKey);
         testData.Add(new(true, "KeyExists(renameIfNotExistsKey) after RenameIfNotExists"));
 
-        _ = batch.StringSet(prefix + genericKey1, "value1");
-        testData.Add(new(true, "StringSet(prefix + genericKey1, value1)"));
+        _ = batch.Set(prefix + genericKey1, "value1");
+        testData.Add(new(true, "Set(prefix + genericKey1, value1)"));
 
         string copiedKey = $"{prefix}copied-{Guid.NewGuid()}";
         _ = batch.Copy(prefix + genericKey1, copiedKey);
@@ -585,8 +552,8 @@ internal partial class BatchTestUtils
         testData.Add(new(1L, "KeyUnlink([genericKey1, renamedKey, genericKey3])"));
 
         // WAIT command tests
-        _ = batch.StringSet(prefix + "waitkey", "value");
-        testData.Add(new(true, "StringSet(prefix + waitkey, value)"));
+        _ = batch.Set(prefix + "waitkey", "value");
+        testData.Add(new(true, "Set(prefix + waitkey, value)"));
 
         _ = batch.Wait(0, TimeSpan.FromMilliseconds(1000));
         testData.Add(new(0L, "Wait(0, 1000)", true));
@@ -1263,13 +1230,13 @@ internal partial class BatchTestUtils
         _ = batch.HashKeys(nonExistingKey);
         testData.Add(new(new HashSet<ValkeyValue>(), "HashKeys(nonExistingKey)"));
 
-        // HashGetAll test
-        _ = batch.HashGetAll(key1);
+        // HashGet test
+        _ = batch.HashGet(key1);
         testData.Add(new(new Dictionary<ValkeyValue, ValkeyValue> {
             { "field1", value1 },
             { "counter", "16" },
             { "float_counter", "13" }
-        }, "HashGetAll(key1)"));
+        }, "HashGet(key1)"));
 
         // HashValues test
         _ = batch.HashValues(key1);
@@ -1283,7 +1250,7 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue[] { "field1", "counter" }, "HashRandomFields(key1, 2)"));
 
         _ = batch.HashRandomFieldsWithValues(key1, 2);
-        testData.Add(new(new List<KeyValuePair<ValkeyValue, ValkeyValue>>(), "HashRandomFieldsWithValues(key1, 2)", true));
+        testData.Add(new(Array.Empty<HashEntry>(), "HashRandomFieldsWithValues(key1, 2)", true));
 
         // Multi-field operations
         HashEntry[] multiEntries = [
@@ -1312,12 +1279,12 @@ internal partial class BatchTestUtils
             testData.Add(new(true, "HashSet(expireKey, expire_field2, expire_value2)"));
 
             // Test HGETEX
-            _ = batch.HashGetExpiry(expireKey, ["expire_field1"], GetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)));
-            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGetExpiry(expireKey, [expire_field1], 60s)"));
+            _ = batch.HashGet(expireKey, ["expire_field1"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
+            testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGet(expireKey, [expire_field1], 60s)"));
 
             // Test HSETEX
-            _ = batch.HashSetExpiry(expireKey, [new("setex_field", "setex_value")], SetExpiryOption.ExpireIn(TimeSpan.FromSeconds(60)));
-            testData.Add(new(true, "HashSetExpiry(expireKey, {setex_field: setex_value}, 60s)"));
+            _ = batch.HashSet(expireKey, [new("setex_field", "setex_value")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) });
+            testData.Add(new(true, "HashSet(expireKey, {setex_field: setex_value}, 60s)"));
 
             // Test HEXPIRE with seconds
             _ = batch.HashExpire(expireKey, ["expire_field1"], TimeSpan.FromSeconds(30));

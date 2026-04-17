@@ -84,8 +84,8 @@ public class OpenTelemetryTests : IDisposable
     {
         string key = Guid.NewGuid().ToString();
 
-        await client.StringSetAsync(key, "value");
-        _ = await client.StringGetAsync(key);
+        await client.SetAsync(key, "value");
+        _ = await client.GetAsync(key);
         _ = await client.DeleteAsync(key);
 
         await Task.Delay(WaitInterval);
@@ -98,8 +98,8 @@ public class OpenTelemetryTests : IDisposable
         if (client is GlideClient standaloneClient)
         {
             var batch = new Batch(isAtomic: false);
-            _ = batch.StringSetAsync(key, "value");
-            _ = batch.StringGetAsync(key);
+            _ = batch.SetAsync(key, "value");
+            _ = batch.GetAsync(key);
             _ = batch.Delete(key);
 
             _ = await standaloneClient.Exec(batch, raiseOnError: true);
@@ -107,8 +107,8 @@ public class OpenTelemetryTests : IDisposable
         else if (client is GlideClusterClient clusterClient)
         {
             var batch = new ClusterBatch(isAtomic: false);
-            _ = batch.StringSetAsync(key, "value");
-            _ = batch.StringGetAsync(key);
+            _ = batch.SetAsync(key, "value");
+            _ = batch.GetAsync(key);
             _ = batch.Delete(key);
 
             _ = await clusterClient.Exec(batch, raiseOnError: true);
