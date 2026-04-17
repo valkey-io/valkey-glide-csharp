@@ -430,7 +430,7 @@ public class ClusterClientTests(TestConfiguration config)
         var allTimes = await client.TimeAsync();
         Assert.NotEmpty(allTimes);
 
-        DateTime localTime = DateTime.UtcNow;
+        DateTimeOffset localTime = DateTimeOffset.UtcNow;
 
         // Each node should have a reasonable time
         foreach (var serverTime in allTimes.Values)
@@ -457,15 +457,15 @@ public class ClusterClientTests(TestConfiguration config)
         // Each node should have a valid last save time
         foreach (var lastSave in allLastSaves.Values)
         {
-            Assert.NotEqual(DateTime.MinValue, lastSave);
-            Assert.True(lastSave <= DateTime.UtcNow);
-            Assert.True(lastSave >= DateTime.UtcNow.AddDays(-30));
+            Assert.NotEqual(DateTimeOffset.MinValue, lastSave);
+            Assert.True(lastSave <= DateTimeOffset.UtcNow);
+            Assert.True(lastSave >= DateTimeOffset.UtcNow.AddDays(-30));
         }
 
         // Test with specific route
         var singleNodeLastSave = await client.LastSaveAsync(Route.Random);
-        Assert.NotEqual(DateTime.MinValue, singleNodeLastSave.SingleValue);
-        Assert.True(singleNodeLastSave.SingleValue <= DateTime.UtcNow);
+        Assert.NotEqual(DateTimeOffset.MinValue, singleNodeLastSave.SingleValue);
+        Assert.True(singleNodeLastSave.SingleValue <= DateTimeOffset.UtcNow);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

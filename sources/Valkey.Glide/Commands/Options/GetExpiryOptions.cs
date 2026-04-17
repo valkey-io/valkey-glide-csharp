@@ -7,7 +7,7 @@ namespace Valkey.Glide.Commands.Options;
 /// </summary>
 /// <seealso href="https://valkey.io/commands/getex/"/>
 /// <seealso href="https://valkey.io/commands/hgetex/"/>
-public sealed class GetExpiryOptions : Options
+public sealed class GetExpiryOptions
 {
     #region Internal Properties
 
@@ -26,6 +26,12 @@ public sealed class GetExpiryOptions : Options
 
     private GetExpiryOptions(TimeSpan? duration = null, DateTimeOffset? timestamp = null)
     {
+        // Only one expiry can be specified.
+        if (duration.HasValue && timestamp.HasValue)
+        {
+            throw new ArgumentException("Duration and Timestamp cannot both be specified.");
+        }
+
         Duration = duration;
         Timestamp = timestamp;
     }
@@ -52,17 +58,6 @@ public sealed class GetExpiryOptions : Options
     /// </summary>
     /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
     public static GetExpiryOptions Persist() => new();
-
-    #endregion
-    #region Internal Methods
-
-    /// <inheritdoc/>
-    internal override GlideString[] ToArgs() =>
-        Duration.HasValue
-            ? [ValkeyLiterals.PX, ToMilliseconds(Duration.Value)]
-            : Timestamp.HasValue
-                ? [ValkeyLiterals.PXAT, ToUnixMilliseconds(Timestamp.Value)]
-                : [ValkeyLiterals.PERSIST];
 
     #endregion
 }

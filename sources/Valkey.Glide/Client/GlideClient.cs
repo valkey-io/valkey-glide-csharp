@@ -140,16 +140,12 @@ public partial class GlideClient :
     }
 
     /// <inheritdoc/>
-    public async Task<DateTime> LastSaveAsync()
-    {
-        return await Command(Request.LastSaveAsync());
-    }
+    public Task<DateTimeOffset> LastSaveAsync()
+        => Command(Request.LastSaveAsync());
 
     /// <inheritdoc/>
-    public async Task<DateTime> TimeAsync()
-    {
-        return await Command(Request.TimeAsync());
-    }
+    public Task<DateTimeOffset> TimeAsync()
+        => Command(Request.TimeAsync());
 
     /// <inheritdoc/>
     public async Task<string> LolwutAsync()

@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -33,7 +32,7 @@ internal partial class Request
 
         if (expiry.HasValue)
         {
-            args.Add(ToMilliseconds(expiry.Value).ToGlideString());
+            args.Add(ToMilliseconds(expiry.Value));
         }
         else
         {
@@ -130,7 +129,7 @@ internal partial class Request
 
         if (replace)
         {
-            args.Add(Constants.ReplaceKeyword);
+            args.Add(ValkeyLiterals.REPLACE);
         }
 
         return Simple<bool>(RequestType.Copy, [.. args]);
@@ -140,11 +139,11 @@ internal partial class Request
     {
         List<GlideString> args = [source.ToGlideString(), destination.ToGlideString()];
 
-        args.AddRange([Constants.DbKeyword, destinationDatabase.ToGlideString()]);
+        args.AddRange([ValkeyLiterals.DB, destinationDatabase.ToGlideString()]);
 
         if (replace)
         {
-            args.Add(Constants.ReplaceKeyword);
+            args.Add(ValkeyLiterals.REPLACE);
         }
 
         return Simple<bool>(RequestType.Copy, [.. args]);
@@ -175,13 +174,13 @@ internal partial class Request
 
         if (!by.IsNull)
         {
-            args.Add(Constants.ByKeyword);
+            args.Add(ValkeyLiterals.BY);
             args.Add(by.ToGlideString());
         }
 
         if (skip != 0 || take != -1)
         {
-            args.Add(Constants.LimitKeyword);
+            args.Add(ValkeyLiterals.LIMIT);
             args.Add(skip.ToGlideString());
             args.Add(take.ToGlideString());
         }
@@ -190,19 +189,19 @@ internal partial class Request
         {
             foreach (var pattern in get)
             {
-                args.Add(Constants.GetKeyword);
+                args.Add(ValkeyLiterals.GET);
                 args.Add(pattern.ToGlideString());
             }
         }
 
         if (order == Order.Descending)
         {
-            args.Add(Constants.DescKeyword);
+            args.Add(ValkeyLiterals.DESC);
         }
 
         if (sortType == SortType.Alphabetic)
         {
-            args.Add(Constants.AlphaKeyword);
+            args.Add(ValkeyLiterals.ALPHA);
         }
 
         // Use SORT_RO for version 7.0.0+ if server version is available, otherwise use SORT_RO as default
@@ -219,13 +218,13 @@ internal partial class Request
 
         if (!by.IsNull)
         {
-            args.Add(Constants.ByKeyword);
+            args.Add(ValkeyLiterals.BY);
             args.Add(by.ToGlideString());
         }
 
         if (skip != 0 || take != -1)
         {
-            args.Add(Constants.LimitKeyword);
+            args.Add(ValkeyLiterals.LIMIT);
             args.Add(skip.ToGlideString());
             args.Add(take.ToGlideString());
         }
@@ -234,19 +233,19 @@ internal partial class Request
         {
             foreach (var pattern in get)
             {
-                args.Add(Constants.GetKeyword);
+                args.Add(ValkeyLiterals.GET);
                 args.Add(pattern.ToGlideString());
             }
         }
 
         if (order == Order.Descending)
         {
-            args.Add(Constants.DescKeyword);
+            args.Add(ValkeyLiterals.DESC);
         }
 
         if (sortType == SortType.Alphabetic)
         {
-            args.Add(Constants.AlphaKeyword);
+            args.Add(ValkeyLiterals.ALPHA);
         }
 
         return new(RequestType.SortReadOnly, [.. args], false, response => response?.Cast<GlideString>().Select(item => (ValkeyValue)item).ToArray() ?? []);
@@ -258,13 +257,13 @@ internal partial class Request
 
         if (!by.IsNull)
         {
-            args.Add(Constants.ByKeyword);
+            args.Add(ValkeyLiterals.BY);
             args.Add(by.ToGlideString());
         }
 
         if (skip != 0 || take != -1)
         {
-            args.Add(Constants.LimitKeyword);
+            args.Add(ValkeyLiterals.LIMIT);
             args.Add(skip.ToGlideString());
             args.Add(take.ToGlideString());
         }
@@ -273,22 +272,22 @@ internal partial class Request
         {
             foreach (var pattern in get)
             {
-                args.Add(Constants.GetKeyword);
+                args.Add(ValkeyLiterals.GET);
                 args.Add(pattern.ToGlideString());
             }
         }
 
         if (order == Order.Descending)
         {
-            args.Add(Constants.DescKeyword);
+            args.Add(ValkeyLiterals.DESC);
         }
 
         if (sortType == SortType.Alphabetic)
         {
-            args.Add(Constants.AlphaKeyword);
+            args.Add(ValkeyLiterals.ALPHA);
         }
 
-        args.Add(Constants.StoreKeyword);
+        args.Add(ValkeyLiterals.STORE);
         args.Add(destination.ToGlideString());
 
         return Simple<long>(RequestType.Sort, [.. args]);
@@ -301,10 +300,7 @@ internal partial class Request
     {
         List<GlideString> args = [cursor.ToGlideString()];
 
-        if (options != null)
-        {
-            args.AddRange(options.ToArgs().Select(arg => arg.ToGlideString()));
-        }
+        args.AddRange(ToScanArgs(options));
 
         return new(RequestType.Scan, [.. args], false, arr =>
         {
@@ -315,13 +311,13 @@ internal partial class Request
     }
 
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
-        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()]);
+        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout)]);
 
     public static Cmd<object[], long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
-        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()], false, arr =>
-        {
-            long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);
-            long replicas = Convert.ToInt64(arr[1] is GlideString gs1 ? gs1.ToString() : arr[1]);
-            return [local, replicas];
-        });
+        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout)], false, arr =>
+            {
+                long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);
+                long replicas = Convert.ToInt64(arr[1] is GlideString gs1 ? gs1.ToString() : arr[1]);
+                return [local, replicas];
+            });
 }

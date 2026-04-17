@@ -9,46 +9,64 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/xtrim/"/>
 public abstract class StreamTrimOptions
 {
-    /// <summary>
-    /// If <c>true</c>, trims exactly. If <c>false</c>, trims approximately (~) for better performance.
-    /// If <c>null</c>, the server default is used.
-    /// </summary>
-    public bool? Exact { get; init; }
+    #region Public Properties
 
     /// <summary>
-    /// Maximum number of entries to trim per operation. Only applicable when <see cref="Exact"/> is <c>false</c>.
+    /// If <see langword="true"/>, trims exactly. If <see langword="false"/>, trims approximately (~) for better performance.
+    /// If <see langword="null"/>, the server default is used.
     /// </summary>
-    public long? Limit { get; init; }
+    public bool? Exact { get; init; } = null;
 
+    /// <summary>
+    /// Maximum number of entries to trim per operation. Only applicable when <see cref="Exact"/> is <see langword="false"/>.
+    /// </summary>
+    public long? Limit { get; init; } = null;
+
+    #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// The trimming method keyword (e.g., MAXLEN or MINID).
+    /// </summary>
     internal abstract GlideString Method { get; }
 
+    /// <summary>
+    /// The trimming threshold value (e.g., the max length or the minimum entry ID).
+    /// </summary>
     internal abstract GlideString Threshold { get; }
 
+    /// <inheritdoc/>
     internal GlideString[] ToArgs()
     {
-        if (Limit.HasValue && Exact == true)
-            throw new ArgumentException("LIMIT cannot be used with exact trimming.", nameof(Limit));
+        if (Limit.HasValue && Exact != false)
+        {
+            throw new ArgumentException("Limit can only be used when Exact is false.", nameof(Limit));
+        }
 
         List<GlideString> args = [Method];
 
-        if (Exact == true)
-            args.Add(ValkeyLiterals.ExactTrim.ToGlideString());
-        else if (Exact == false)
-            args.Add(ValkeyLiterals.ApproxTrim.ToGlideString());
+        if (Exact.HasValue)
+        {
+            args.Add(Exact.Value
+                ? ValkeyLiterals.StreamExactTrim
+                : ValkeyLiterals.StreamApproxTrim);
+        }
 
         args.Add(Threshold);
 
         if (Limit.HasValue)
         {
-            args.Add(ValkeyLiterals.LIMIT.ToGlideString());
+            args.Add(ValkeyLiterals.LIMIT);
             args.Add(Limit.Value.ToGlideString());
         }
 
         return [.. args];
     }
 
+    #endregion
+
     /// <summary>
-    /// Trim the stream to a maximum length.
+    /// Trim the stream to a maximum number of entries.
     /// </summary>
     public sealed class MaxLen : StreamTrimOptions
     {
@@ -58,7 +76,6 @@ public abstract class StreamTrimOptions
         public required long MaxLength { get; init; }
 
         internal override GlideString Method => ValkeyLiterals.MAXLEN.ToGlideString();
-
         internal override GlideString Threshold => MaxLength.ToGlideString();
     }
 
@@ -68,12 +85,11 @@ public abstract class StreamTrimOptions
     public sealed class MinId : StreamTrimOptions
     {
         /// <summary>
-        /// The minimum entry ID to keep. Entries with lower IDs are trimmed.
+        /// The minimum entry ID to keep. Entries with IDs lower than this value are trimmed.
         /// </summary>
         public required ValkeyValue MinEntryId { get; init; }
 
         internal override GlideString Method => ValkeyLiterals.MINID.ToGlideString();
-
         internal override GlideString Threshold => MinEntryId.ToGlideString();
     }
 }

@@ -223,40 +223,36 @@ public sealed partial class GlideClusterClient :
         => _ = await Command(Request.FlushDatabaseAsync(mode), route);
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, DateTime>> LastSaveAsync()
+    public async Task<Dictionary<string, DateTimeOffset>> LastSaveAsync()
     {
-        ClusterValue<DateTime> result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);
+        var result = await Command(Request.LastSaveAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
             return result.MultiValue;
         }
         // If we got a single value, create a dictionary with a single entry
-        return new Dictionary<string, DateTime> { ["single_node"] = result.SingleValue };
+        return new Dictionary<string, DateTimeOffset> { ["single_node"] = result.SingleValue };
     }
 
     /// <inheritdoc/>
-    public async Task<ClusterValue<DateTime>> LastSaveAsync(Route route)
-    {
-        return await Command(Request.LastSaveAsync().ToClusterValue(route is SingleNodeRoute), route);
-    }
+    public Task<ClusterValue<DateTimeOffset>> LastSaveAsync(Route route)
+        => Command(Request.LastSaveAsync().ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, DateTime>> TimeAsync()
+    public async Task<Dictionary<string, DateTimeOffset>> TimeAsync()
     {
-        ClusterValue<DateTime> result = await Command(Request.TimeAsync().ToClusterValue(false), Route.Random);
+        var result = await Command(Request.TimeAsync().ToClusterValue(false), Route.Random);
         if (result.HasMultiData)
         {
             return result.MultiValue;
         }
         // If we got a single value, create a dictionary with a single entry
-        return new Dictionary<string, DateTime> { ["single_node"] = result.SingleValue };
+        return new Dictionary<string, DateTimeOffset> { ["single_node"] = result.SingleValue };
     }
 
     /// <inheritdoc/>
-    public async Task<ClusterValue<DateTime>> TimeAsync(Route route)
-    {
-        return await Command(Request.TimeAsync().ToClusterValue(route is SingleNodeRoute), route);
-    }
+    public Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route)
+        => Command(Request.TimeAsync().ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc/>
     public async Task<Dictionary<string, string>> LolwutAsync()
@@ -366,7 +362,9 @@ public sealed partial class GlideClusterClient :
     /// <inheritdoc/>
     public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
     {
-        string[] args = options?.ToArgs() ?? [];
+        List<GlideString> glideArgs = [];
+        glideArgs.AddRange(Request.ToScanArgs(options));
+        string[] args = [.. glideArgs.Select(a => a.ToString())];
         ClusterScanCursor cursor = ClusterScanCursor.InitialCursor();
 
         while (!cursor.IsFinished)

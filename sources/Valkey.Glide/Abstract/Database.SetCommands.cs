@@ -137,7 +137,6 @@ internal partial class Database
         return SetMoveAsync(source, destination, value);
     }
 
-    // TODO #287
     /// <inheritdoc cref="IDatabaseAsync.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
     public IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
     {
@@ -150,7 +149,7 @@ internal partial class Database
             options = new ScanOptions();
             if (!pattern.IsNull)
             {
-                options.MatchPattern = pattern.ToString();
+                options.MatchPattern = pattern;
             }
             if (pageSize != 250)
             {

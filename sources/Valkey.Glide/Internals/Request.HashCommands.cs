@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -73,7 +72,7 @@ internal partial class Request
 
     public static Cmd<object[], KeyValuePair<ValkeyValue, ValkeyValue>?> HashRandomFieldWithValueAsync(ValkeyKey key)
     {
-        GlideString[] args = [key.ToGlideString(), 1.ToGlideString(), Constants.WithValuesKeyword];
+        GlideString[] args = [key.ToGlideString(), 1.ToGlideString(), ValkeyLiterals.WITHVALUES];
         return new(RequestType.HRandField, args, false, response =>
             response.Length > 0
                 ? new KeyValuePair<ValkeyValue, ValkeyValue>((GlideString)((object[])response[0])[0], (GlideString)((object[])response[0])[1])
@@ -82,7 +81,7 @@ internal partial class Request
 
     public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
     {
-        GlideString[] args = [key.ToGlideString(), count.ToGlideString(), Constants.WithValuesKeyword];
+        GlideString[] args = [key.ToGlideString(), count.ToGlideString(), ValkeyLiterals.WITHVALUES];
         return new(RequestType.HRandField, args, false, response =>
             [.. response.Select(item =>
             {
@@ -98,17 +97,17 @@ internal partial class Request
 
         if (options.Duration.HasValue)
         {
-            args.Add(Constants.PxKeyword);
-            args.Add(ToMilliseconds(options.Duration.Value).ToGlideString());
+            args.Add(ValkeyLiterals.PX);
+            args.Add(ToMilliseconds(options.Duration.Value));
         }
         else if (options.Timestamp.HasValue)
         {
-            args.Add(Constants.PxAtKeyword);
+            args.Add(ValkeyLiterals.PXAT);
             args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
         }
         else
         {
-            args.Add(Constants.PersistKeyword);
+            args.Add(ValkeyLiterals.PERSIST);
         }
 
         AddFields(args, [.. hashFields]);
@@ -127,14 +126,14 @@ internal partial class Request
 
         if (condition == HashSetCondition.OnlyIfNoneExist)
         {
-            args.Add(Constants.FnxKeyword);
+            args.Add(ValkeyLiterals.FNX);
         }
         else if (condition == HashSetCondition.OnlyIfAllExist)
         {
-            args.Add(Constants.FxxKeyword);
+            args.Add(ValkeyLiterals.FXX);
         }
 
-        args.AddRange([Constants.FieldsKeyword, 1.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
+        args.AddRange([ValkeyLiterals.FIELDS, 1.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
         return Boolean<long>(RequestType.HSetEx, [.. args]);
     }
 
@@ -147,14 +146,14 @@ internal partial class Request
 
         if (condition == HashSetCondition.OnlyIfNoneExist)
         {
-            args.Add(Constants.FnxKeyword);
+            args.Add(ValkeyLiterals.FNX);
         }
         else if (condition == HashSetCondition.OnlyIfAllExist)
         {
-            args.Add(Constants.FxxKeyword);
+            args.Add(ValkeyLiterals.FXX);
         }
 
-        args.Add(Constants.FieldsKeyword);
+        args.Add(ValkeyLiterals.FIELDS);
         args.Add(hashFieldsAndValues.Count().ToGlideString());
         AddPairs(args, hashFieldsAndValues);
 
@@ -167,8 +166,22 @@ internal partial class Request
         HashSetOptions options)
     {
         List<GlideString> args = [key.ToGlideString()];
-        args.AddRange(options.ToArgs());
-        args.Add(Constants.FieldsKeyword);
+
+        if (options.Condition == HashSetCondition.OnlyIfNoneExist)
+        {
+            args.Add(ValkeyLiterals.FNX);
+        }
+        else if (options.Condition == HashSetCondition.OnlyIfAllExist)
+        {
+            args.Add(ValkeyLiterals.FXX);
+        }
+
+        if (options.Expiry is not null)
+        {
+            AddExpiryArgs(args, options.Expiry);
+        }
+
+        args.Add(ValkeyLiterals.FIELDS);
         args.Add(hashFieldsAndValues.Count().ToGlideString());
         AddPairs(args, hashFieldsAndValues);
         return Boolean<long>(RequestType.HSetEx, [.. args]);
@@ -184,7 +197,7 @@ internal partial class Request
 
     public static Cmd<object[], HashExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
     {
-        List<GlideString> args = [key, ToMilliseconds(expiry).ToGlideString()];
+        List<GlideString> args = [key, ToMilliseconds(expiry)];
 
         AddExpireCondition(args, condition);
         AddFields(args, hashFields);
@@ -225,7 +238,7 @@ internal partial class Request
     /// </summary>
     private static void AddFields(List<GlideString> args, ValkeyValue[] fields)
     {
-        args.Add(Constants.FieldsKeyword);
+        args.Add(ValkeyLiterals.FIELDS);
         args.Add(fields.Length.ToGlideString());
         args.AddRange(fields.ToGlideStrings());
     }
@@ -252,16 +265,16 @@ internal partial class Request
             case ExpireCondition.Always:
                 break;
             case ExpireCondition.OnlyIfNotExists:
-                args.Add(Constants.NxKeyword);
+                args.Add(ValkeyLiterals.NX);
                 break;
             case ExpireCondition.OnlyIfExists:
-                args.Add(Constants.XxKeyword);
+                args.Add(ValkeyLiterals.XX);
                 break;
             case ExpireCondition.OnlyIfGreaterThan:
-                args.Add(Constants.GtKeyword);
+                args.Add(ValkeyLiterals.GT);
                 break;
             case ExpireCondition.OnlyIfLessThan:
-                args.Add(Constants.LtKeyword);
+                args.Add(ValkeyLiterals.LT);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(condition));

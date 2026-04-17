@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -32,7 +31,7 @@ internal partial class Request
         List<GlideString> args = [keys.Count().ToGlideString(), .. keys.ToGlideStrings()];
         if (limit > 0)
         {
-            args.AddRange([Constants.LimitKeyword, limit.ToGlideString()]);
+            args.AddRange([ValkeyLiterals.LIMIT, limit.ToGlideString()]);
         }
         return Simple<long>(RequestType.SInterCard, [.. args]);
     }
@@ -80,15 +79,7 @@ internal partial class Request
     {
         List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
 
-        if (options?.MatchPattern != null)
-        {
-            args.AddRange([Constants.MatchKeyword.ToGlideString(), options.MatchPattern.ToGlideString()]);
-        }
-
-        if (options?.Count > 0)
-        {
-            args.AddRange([Constants.CountKeyword.ToGlideString(), options.Count.Value.ToGlideString()]);
-        }
+        args.AddRange(ToScanArgs(options));
 
         return new(RequestType.SScan, [.. args], false, arr =>
         {

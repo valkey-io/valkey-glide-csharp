@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands.Options;
 /// The options for an operation to set the value of a key.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/set/"/>
-public sealed class SetOptions : Options
+public sealed class SetOptions
 {
     #region Public Properties
 
@@ -19,22 +19,6 @@ public sealed class SetOptions : Options
     /// The expiry configuration for the key. If <see langword="null"/>, no expiry is set.
     /// </summary>
     public SetExpiryOptions? Expiry { get; init; }
-
-    #endregion
-    #region Internal Methods
-
-    /// <inheritdoc/>
-    internal override GlideString[] ToArgs()
-    {
-        List<GlideString> args = [.. Condition.ToArgs()];
-
-        if (Expiry is not null)
-        {
-            args.AddRange(Expiry.ToArgs());
-        }
-
-        return [.. args];
-    }
 
     #endregion
 }

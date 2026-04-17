@@ -2,7 +2,6 @@
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.Commands.Constants.Constants;
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -17,10 +16,10 @@ internal partial class Request
             [.. array.Select(item => item is null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
 
     public static Cmd<string?, bool> Set(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => NullableOKToBool(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs()]);
+        => NullableOKToBool(RequestType.Set, [key, value, .. ToSetOptionsArgs(options)]);
 
     public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => ToValkeyValue(RequestType.Set, [key.ToGlideString(), value.ToGlideString(), .. options.ToArgs(), ValkeyLiterals.GET.ToGlideString()], isNullable: true);
+        => ToValkeyValue(RequestType.Set, [key, value, .. ToSetOptionsArgs(options), ValkeyLiterals.GET], isNullable: true);
 
     public static Cmd<string, bool> Set(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
         => OKToBool(RequestType.MSet, values.ToGlideStrings());
@@ -59,13 +58,13 @@ internal partial class Request
         => ToValkeyValue(RequestType.GetDel, [key.ToGlideString()], isNullable: true);
 
     public static Cmd<GlideString, ValkeyValue> GetExpiry(ValkeyKey key, GetExpiryOptions options)
-        => ToValkeyValue(RequestType.GetEx, [key.ToGlideString(), .. options.ToArgs()], isNullable: true);
+        => ToValkeyValue(RequestType.GetEx, [key, .. ToGetExpiryOptionsArgs(options)], isNullable: true);
 
     public static Cmd<GlideString, string?> LongestCommonSubsequence(ValkeyKey first, ValkeyKey second)
         => new(RequestType.LCS, [first.ToGlideString(), second.ToGlideString()], true, response => response?.ToString());
 
     public static Cmd<long, long> LongestCommonSubsequenceLength(ValkeyKey first, ValkeyKey second)
-        => Simple<long>(RequestType.LCS, [first.ToGlideString(), second.ToGlideString(), LenKeyword.ToGlideString()]);
+        => Simple<long>(RequestType.LCS, [first.ToGlideString(), second.ToGlideString(), ValkeyLiterals.LEN]);
 
     public static Cmd<object, LCSMatchResult> LongestCommonSubsequenceWithMatches(ValkeyKey first, ValkeyKey second, long minLength = 0)
     {
@@ -73,14 +72,16 @@ internal partial class Request
         [
             first.ToGlideString(),
             second.ToGlideString(),
-            IdxKeyword.ToGlideString(),
-            MinMatchLenKeyword.ToGlideString(),
+            ValkeyLiterals.IDX,
+            ValkeyLiterals.MINMATCHLEN,
             minLength.ToGlideString(),
-            WithMatchLenKeyword.ToGlideString()
+            ValkeyLiterals.WITHMATCHLEN
         ];
 
         return new(RequestType.LCS, [.. args], false, ConvertLCSMatchResult);
     }
+
+    #region Private Methods
 
     private static LCSMatchResult ConvertLCSMatchResult(object response) =>
         // Handle dictionary response (expected format)
@@ -124,4 +125,33 @@ internal partial class Request
 
         return new LCSMatchResult([.. matches], totalLength);
     }
+
+
+    private static GlideString[] ToSetOptionsArgs(SetOptions options)
+    {
+        List<GlideString> args = [];
+        args.AddRange(options.Condition.ToArgs());
+        if (options.Expiry is not null)
+        {
+            AddExpiryArgs(args, options.Expiry);
+        }
+        return [.. args];
+    }
+
+    private static GlideString[] ToGetExpiryOptionsArgs(GetExpiryOptions options)
+    {
+        if (options.Duration.HasValue)
+        {
+            return [ValkeyLiterals.PX, ToMilliseconds(options.Duration.Value)];
+        }
+
+        if (options.Timestamp.HasValue)
+        {
+            return [ValkeyLiterals.PXAT, options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString()];
+        }
+
+        return [ValkeyLiterals.PERSIST];
+    }
+
+    #endregion
 }

@@ -2,7 +2,8 @@
 
 namespace Valkey.Glide.IntegrationTests;
 
-[Collection("GlideTests")]
+[Collection(typeof(ScriptingCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class ScriptingCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;

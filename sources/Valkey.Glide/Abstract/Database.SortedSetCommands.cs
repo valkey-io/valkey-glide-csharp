@@ -295,6 +295,7 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
+        // TODO - Extract common logic for building ScanOptions from SER arguments.
         // Build ScanOptions from the SER parameters
         ScanOptions? options = null;
         if (!pattern.IsNull || pageSize != 250)
@@ -302,7 +303,7 @@ internal partial class Database
             options = new ScanOptions();
             if (!pattern.IsNull)
             {
-                options.MatchPattern = pattern.ToString();
+                options.MatchPattern = pattern;
             }
             if (pageSize != 250)
             {

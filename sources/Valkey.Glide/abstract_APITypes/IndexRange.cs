@@ -14,22 +14,22 @@ public sealed class IndexRange : Range
     /// <summary>
     /// The first index in the sorted set (rank 0).
     /// </summary>
-    public const long FirstIndex = 0L;
+    public const long First = 0L;
 
     /// <summary>
     /// The last index in the sorted set (rank -1).
     /// </summary>
-    public const long LastIndex = -1L;
+    public const long Last = -1L;
 
     /// <summary>
     /// An ascending range spanning all indices (first to last).
     /// </summary>
-    public static readonly IndexRange FirstToLast = new(FirstIndex, LastIndex);
+    public static readonly IndexRange FirstToLast = new(First, Last);
 
     /// <summary>
     /// A descending range spanning all indices (last to first).
     /// </summary>
-    public static readonly IndexRange LastToFirst = new(LastIndex, FirstIndex);
+    public static readonly IndexRange LastToFirst = new(Last, First);
 
     #endregion
     #region Fields

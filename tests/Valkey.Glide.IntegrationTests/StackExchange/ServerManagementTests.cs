@@ -1,97 +1,106 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
 /// SER-compatible integration tests for server management commands.
-/// Tests the IServer interface for CONFIG, LOLWUT, TIME, LASTSAVE,
-/// FLUSHDB, and FLUSHALL operations.
 /// </summary>
-public class ServerManagementTests
+[Collection(typeof(ServerManagementTests))]
+[CollectionDefinition(DisableParallelization = true)]
+public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixture<ServerManagementFixture>
 {
     #region IServer Tests
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_ConfigGetAsync_ReturnsResults(IServer server)
+    [Fact]
+    public async Task IServer_ConfigGetAsync_ReturnsResults()
     {
-        KeyValuePair<string, string>[] result = await server.ConfigGetAsync("maxmemory");
+        KeyValuePair<string, string>[] result = await fixture.Server.ConfigGetAsync("maxmemory");
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_ConfigSetAsync_SetsValue(IServer server)
+    [Fact]
+    public async Task IServer_ConfigSetAsync_SetsValue()
     {
-        KeyValuePair<string, string>[] original = await server.ConfigGetAsync("lfu-decay-time");
+        KeyValuePair<string, string>[] original = await fixture.Server.ConfigGetAsync("lfu-decay-time");
         string originalValue = original.First(kvp => kvp.Key == "lfu-decay-time").Value;
 
         try
         {
-            await server.ConfigSetAsync("lfu-decay-time", "5");
+            await fixture.Server.ConfigSetAsync("lfu-decay-time", "5");
 
-            KeyValuePair<string, string>[] result = await server.ConfigGetAsync("lfu-decay-time");
+            KeyValuePair<string, string>[] result = await fixture.Server.ConfigGetAsync("lfu-decay-time");
             Assert.Equal("5", result.First(kvp => kvp.Key == "lfu-decay-time").Value);
         }
         finally
         {
-            await server.ConfigSetAsync("lfu-decay-time", originalValue);
+            await fixture.Server.ConfigSetAsync("lfu-decay-time", originalValue);
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_ConfigResetStatisticsAsync_Succeeds(IServer server)
-    {
-        await server.ConfigResetStatisticsAsync();
-    }
+    [Fact]
+    public async Task IServer_ConfigResetStatisticsAsync_Succeeds()
+        => await fixture.Server.ConfigResetStatisticsAsync();
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_LolwutAsync_ReturnsArt(IServer server)
+    [Fact]
+    public async Task IServer_LolwutAsync_ReturnsArt()
     {
-        string result = await server.LolwutAsync();
+        string result = await fixture.Server.LolwutAsync();
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_TimeAsync_ReturnsValidTime(IServer server)
+    [Fact]
+    public async Task IServer_TimeAsync_ReturnsValidTime()
     {
-        DateTime result = await server.TimeAsync();
+        DateTime result = await fixture.Server.TimeAsync();
 
         Assert.True(result > DateTime.UnixEpoch);
         Assert.True(result <= DateTime.UtcNow.AddMinutes(1));
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_LastSaveAsync_ReturnsValidTime(IServer server)
+    [Fact]
+    public async Task IServer_LastSaveAsync_ReturnsValidTime()
     {
-        DateTime result = await server.LastSaveAsync();
+        DateTime result = await fixture.Server.LastSaveAsync();
 
         Assert.True(result >= DateTime.UnixEpoch);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_FlushDatabaseAsync_Succeeds(IServer server)
-    {
-        await server.FlushDatabaseAsync();
-    }
+    [Fact]
+    public async Task IServer_FlushDatabaseAsync_Succeeds()
+        => await fixture.Server.FlushDatabaseAsync();
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task IServer_FlushAllDatabasesAsync_Succeeds(IServer server)
-    {
-        await server.FlushAllDatabasesAsync();
-    }
+    [Fact]
+    public async Task IServer_FlushAllDatabasesAsync_Succeeds()
+        => await fixture.Server.FlushAllDatabasesAsync();
 
     #endregion
+}
+
+/// <summary>
+/// Fixture that provides an isolated Valkey server for SER server management tests.
+/// </summary>
+public class ServerManagementFixture : IDisposable
+{
+    private readonly StandaloneServer _standaloneServer = new();
+
+    public IServer Server { get; }
+
+    public ServerManagementFixture()
+    {
+        ConfigurationOptions config = new();
+        (string host, ushort port) = _standaloneServer.Addresses.First();
+        config.EndPoints.Add(host, port);
+        ConnectionMultiplexer conn = ConnectionMultiplexer.Connect(config);
+        Server = conn.GetServers().First();
+    }
+
+    public void Dispose() => _standaloneServer.Dispose();
 }

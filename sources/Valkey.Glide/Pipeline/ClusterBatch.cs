@@ -23,31 +23,5 @@ namespace Valkey.Glide.Pipeline;
 /// <seealso href="https://glide.valkey.io/how-to/send-batch-commands/">Valkey GLIDE – Send Batch Commands</seealso>
 public sealed class ClusterBatch(bool isAtomic) : BaseBatch<ClusterBatch>(isAtomic), IBatch
 {
-    // Explicit interface implementations for IBatchStreamCommands
-    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, Commands.Options.StreamAddOptions? options) => StreamAdd(key, streamField, streamValue, options);
-    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, Commands.Options.StreamAddOptions? options) => StreamAdd(key, streamPairs, options);
-    IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count) => StreamRead(key, position, count);
-    IBatch IBatchStreamCommands.StreamRead(IEnumerable<StreamPosition> streamPositions, int? count) => StreamRead(streamPositions, count);
-    IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? minId, ValkeyValue? maxId, int? count, Order messageOrder) => StreamRange(key, minId, maxId, count, messageOrder);
-    IBatch IBatchStreamCommands.StreamLength(ValkeyKey key) => StreamLength(key);
-    IBatch IBatchStreamCommands.StreamDelete(ValkeyKey key, IEnumerable<ValkeyValue> messageIds) => StreamDelete(key, messageIds);
-    IBatch IBatchStreamCommands.StreamTrim(ValkeyKey key, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit) => StreamTrim(key, maxLength, minId, useApproximateTrimming, limit);
-    IBatch IBatchStreamCommands.StreamCreateConsumerGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, bool createStream, long? entriesRead) => StreamCreateConsumerGroup(key, groupName, position, createStream, entriesRead);
-    IBatch IBatchStreamCommands.StreamDeleteConsumerGroup(ValkeyKey key, ValkeyValue groupName) => StreamDeleteConsumerGroup(key, groupName);
-    IBatch IBatchStreamCommands.StreamCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName) => StreamCreateConsumer(key, groupName, consumerName);
-    IBatch IBatchStreamCommands.StreamDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName) => StreamDeleteConsumer(key, groupName, consumerName);
-    IBatch IBatchStreamCommands.StreamConsumerGroupSetPosition(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead) => StreamConsumerGroupSetPosition(key, groupName, position, entriesRead);
-    IBatch IBatchStreamCommands.StreamReadGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck) => StreamReadGroup(key, groupName, consumerName, position, count, noAck);
-    IBatch IBatchStreamCommands.StreamReadGroup(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, bool noAck) => StreamReadGroup(streamPositions, groupName, consumerName, countPerStream, noAck);
-    IBatch IBatchStreamCommands.StreamAcknowledge(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds) => StreamAcknowledge(key, groupName, messageIds);
-    IBatch IBatchStreamCommands.StreamPending(ValkeyKey key, ValkeyValue groupName) => StreamPending(key, groupName);
-    IBatch IBatchStreamCommands.StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId, ValkeyValue? maxId, TimeSpan? minIdleTime) => StreamPendingMessages(key, groupName, count, consumerName, minId, maxId, minIdleTime);
-    IBatch IBatchStreamCommands.StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options) => StreamClaim(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, options);
-    IBatch IBatchStreamCommands.StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options) => StreamClaimJustId(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, options);
-    IBatch IBatchStreamCommands.StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaim(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
-    IBatch IBatchStreamCommands.StreamAutoClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaimJustId(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
-    IBatch IBatchStreamCommands.StreamInfo(ValkeyKey key) => StreamInfo(key);
-    IBatch IBatchStreamCommands.StreamGroupInfo(ValkeyKey key) => StreamGroupInfo(key);
-    IBatch IBatchStreamCommands.StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName) => StreamConsumerInfo(key, groupName);
-    IBatch IBatchStreamCommands.StreamInfoFull(ValkeyKey key, int? count) => StreamInfoFull(key, count);
+    // All command implementations are inherited from BaseBatch<T> partials.
 }

@@ -7,107 +7,112 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 internal interface IBatchStreamCommands
 {
-    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, Commands.Options.StreamAddOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, Commands.Options.StreamAddOptions?)" /></returns>
-    IBatch StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, Commands.Options.StreamAddOptions? options = null);
+    #region StreamAdd
 
-    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, Commands.Options.StreamAddOptions?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, Commands.Options.StreamAddOptions?)" /></returns>
-    IBatch StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, Commands.Options.StreamAddOptions? options = null);
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue)" /></returns>
+    IBatch StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue);
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)" /></returns>
-    IBatch StreamRead(ValkeyKey key, ValkeyValue position, int? count = null);
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry})" /></returns>
+    IBatch StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs);
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(IEnumerable{StreamPosition}, int?, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.StreamReadAsync(IEnumerable{StreamPosition}, int?, CommandFlags)" /></returns>
-    IBatch StreamRead(IEnumerable<StreamPosition> streamPositions, int? count = null);
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, Commands.Options.StreamAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, Commands.Options.StreamAddOptions)" /></returns>
+    IBatch StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, Commands.Options.StreamAddOptions options);
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order, CommandFlags)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order, CommandFlags)" /></returns>
-    IBatch StreamRange(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending);
+    /// <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, Commands.Options.StreamAddOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, Commands.Options.StreamAddOptions)" /></returns>
+    IBatch StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, Commands.Options.StreamAddOptions options);
+
+    #endregion
+    #region StreamRead
+
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition)" /></returns>
+    IBatch StreamRead(StreamPosition position);
+
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition})" /></returns>
+    IBatch StreamRead(IEnumerable<StreamPosition> streamPositions);
+
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition, Commands.Options.StreamReadOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition, Commands.Options.StreamReadOptions)" /></returns>
+    IBatch StreamRead(StreamPosition position, Commands.Options.StreamReadOptions options);
+
+    /// <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition}, Commands.Options.StreamReadOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition}, Commands.Options.StreamReadOptions)" /></returns>
+    IBatch StreamRead(IEnumerable<StreamPosition> streamPositions, Commands.Options.StreamReadOptions options);
+
+    #endregion
+    #region StreamLength
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamLengthAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamLengthAsync(ValkeyKey)" /></returns>
     IBatch StreamLength(ValkeyKey key);
 
+    #endregion
+    #region StreamDelete
+
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch StreamDelete(ValkeyKey key, IEnumerable<ValkeyValue> messageIds);
 
-    /// <inheritdoc cref="IBaseClient.StreamTrimAsync(ValkeyKey, long?, bool, long?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamTrimAsync(ValkeyKey, long?, bool, long?)" /></returns>
-    IBatch StreamTrim(ValkeyKey key, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null);
+    /// <inheritdoc cref="IBaseClient.StreamDeleteAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamDeleteAsync(ValkeyKey, ValkeyValue)" /></returns>
+    IBatch StreamDelete(ValkeyKey key, ValkeyValue messageId);
 
-    /// <inheritdoc cref="IBaseClient.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?)" /></returns>
-    IBatch StreamCreateConsumerGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
+    #endregion
+    #region StreamRange
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamDeleteConsumerGroupAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamDeleteConsumerGroupAsync(ValkeyKey, ValkeyValue)" /></returns>
-    IBatch StreamDeleteConsumerGroup(ValkeyKey key, ValkeyValue groupName);
+    /// <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey)" /></returns>
+    IBatch StreamRange(ValkeyKey key);
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamCreateConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamCreateConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue)" /></returns>
-    IBatch StreamCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName);
+    /// <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey, Commands.Options.StreamRangeOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey, Commands.Options.StreamRangeOptions)" /></returns>
+    IBatch StreamRange(ValkeyKey key, Commands.Options.StreamRangeOptions options);
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamDeleteConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamDeleteConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue)" /></returns>
-    IBatch StreamDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName);
+    #endregion
+    #region StreamReadGroup
 
-    /// <inheritdoc cref="IBaseClient.StreamConsumerGroupSetPositionAsync(ValkeyKey, ValkeyValue, ValkeyValue, long?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamConsumerGroupSetPositionAsync(ValkeyKey, ValkeyValue, ValkeyValue, long?)" /></returns>
-    IBatch StreamConsumerGroupSetPosition(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue)" /></returns>
+    IBatch StreamReadGroup(StreamPosition position, ValkeyValue groupName, ValkeyValue consumerName);
 
-    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool)" /></returns>
-    IBatch StreamReadGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false);
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue)" /></returns>
+    IBatch StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName);
 
-    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool)" /></returns>
-    IBatch StreamReadGroup(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false);
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue, Commands.Options.StreamReadGroupOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue, Commands.Options.StreamReadGroupOptions)" /></returns>
+    IBatch StreamReadGroup(StreamPosition position, ValkeyValue groupName, ValkeyValue consumerName, Commands.Options.StreamReadGroupOptions options);
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue})" /></returns>
-    IBatch StreamAcknowledge(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds);
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, Commands.Options.StreamReadGroupOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, Commands.Options.StreamReadGroupOptions)" /></returns>
+    IBatch StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, Commands.Options.StreamReadGroupOptions options);
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamPendingAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamPendingAsync(ValkeyKey, ValkeyValue)" /></returns>
-    IBatch StreamPending(ValkeyKey key, ValkeyValue groupName);
+    #endregion
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamPendingMessagesAsync(ValkeyKey, ValkeyValue, int, ValkeyValue, ValkeyValue?, ValkeyValue?, TimeSpan?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamPendingMessagesAsync(ValkeyKey, ValkeyValue, int, ValkeyValue, ValkeyValue?, ValkeyValue?, TimeSpan?)" /></returns>
-    IBatch StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName = default, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null);
+    // ──────────────────────────────────────────────────────────────────────
+    // Batch methods below are temporarily commented out pending cleanup.
+    // ──────────────────────────────────────────────────────────────────────
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, IEnumerable{ValkeyValue})" /></returns>
-    IBatch StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options = null);
-
-    /// <summary>Claims pending messages for a consumer, returning only IDs.</summary>
-    /// <returns>Command Response - An array of claimed message IDs.</returns>
-    IBatch StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options = null);
-
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan, ValkeyValue, int?)" /></returns>
-    IBatch StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
-
-    /// <summary>Automatically claims pending messages, returning only IDs.</summary>
-    /// <returns>Command Response - Result containing next start ID, claimed IDs, and deleted IDs.</returns>
-    IBatch StreamAutoClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
-
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamInfoAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamInfoAsync(ValkeyKey)" /></returns>
-    IBatch StreamInfo(ValkeyKey key);
-
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamGroupInfoAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamGroupInfoAsync(ValkeyKey)" /></returns>
-    IBatch StreamGroupInfo(ValkeyKey key);
-
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamConsumerInfoAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamConsumerInfoAsync(ValkeyKey, ValkeyValue)" /></returns>
-    IBatch StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName);
-
-    /// <inheritdoc cref="IBaseClient.StreamInfoFullAsync(ValkeyKey, int?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamInfoFullAsync(ValkeyKey, int?)" /></returns>
-    IBatch StreamInfoFull(ValkeyKey key, int? count = null);
+    // IBatch StreamTrim(ValkeyKey key, long? maxLength = null, ValkeyValue? minId = null, bool useApproximateTrimming = false, long? limit = null);
+    // IBatch StreamCreateConsumerGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
+    // IBatch StreamDeleteConsumerGroup(ValkeyKey key, ValkeyValue groupName);
+    // IBatch StreamCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName);
+    // IBatch StreamDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName);
+    // IBatch StreamConsumerGroupSetPosition(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
+    // IBatch StreamAcknowledge(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds);
+    // IBatch StreamPending(ValkeyKey key, ValkeyValue groupName);
+    // IBatch StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName = default, ValkeyValue? minId = null, ValkeyValue? maxId = null, TimeSpan? minIdleTime = null);
+    // IBatch StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options = null);
+    // IBatch StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options = null);
+    // IBatch StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
+    // IBatch StreamAutoClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count = null);
+    // IBatch StreamInfo(ValkeyKey key);
+    // IBatch StreamGroupInfo(ValkeyKey key);
+    // IBatch StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName);
+    // IBatch StreamInfoFull(ValkeyKey key, int? count = null);
 }

@@ -8,67 +8,35 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/xread/"/>
 public class StreamReadOptions
 {
-    /// <summary>
-    /// The maximum number of entries to return per stream.
-    /// Equivalent to the COUNT option.
-    /// </summary>
-    public int? Count { get; init; }
+    #region Public Properties
 
     /// <summary>
-    /// If set, the request will block for the specified duration or until the server has the required
-    /// number of entries. A value of <see cref="TimeSpan.Zero"/> blocks indefinitely.
-    /// Equivalent to the BLOCK option.
+    /// If specified, the maximum number of entries to return per stream (COUNT).
     /// </summary>
-    public TimeSpan? Block { get; init; }
-
-    internal virtual GlideString[] ToArgs()
-    {
-        List<GlideString> args = [];
-
-        if (Count.HasValue)
-        {
-            args.Add(ValkeyLiterals.COUNT.ToGlideString());
-            args.Add(Count.Value.ToGlideString());
-        }
-
-        if (Block.HasValue)
-        {
-            args.Add(ValkeyLiterals.BLOCK.ToGlideString());
-            args.Add(ToMilliseconds(Block.Value).ToGlideString());
-        }
-
-        return [.. args];
-    }
+    public int? Count { get; init; } = null;
 
     /// <summary>
-    /// Converts the given time span to milliseconds without truncation.
+    /// If set, the request will block for the specified duration or until new entries are available.
+    /// A value of <see cref="TimeSpan.Zero"/> blocks indefinitely (BLOCK).
     /// </summary>
-    private protected static long ToMilliseconds(TimeSpan timeSpan)
-        => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
+    public TimeSpan? Block { get; init; } = null;
+
+    #endregion
 }
 
 /// <summary>
 /// Optional arguments for the XREADGROUP command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xreadgroup/"/>
-public class StreamReadGroupOptions : StreamReadOptions
+public sealed class StreamReadGroupOptions : StreamReadOptions
 {
+    #region Public Properties
+
     /// <summary>
-    /// If <c>true</c>, messages are not added to the Pending Entries List (PEL).
+    /// If <see langword="true"/>, messages are not added to the Pending Entries List (PEL).
     /// This is equivalent to acknowledging the message when it is read.
-    /// Equivalent to the NOACK option.
     /// </summary>
-    public bool NoAck { get; init; }
+    public bool NoAck { get; init; } = false;
 
-    internal override GlideString[] ToArgs()
-    {
-        List<GlideString> args = [.. base.ToArgs()];
-
-        if (NoAck)
-        {
-            args.Add(ValkeyLiterals.NOACK.ToGlideString());
-        }
-
-        return [.. args];
-    }
+    #endregion
 }

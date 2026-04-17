@@ -8,7 +8,7 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/zlexcount/"/>
 /// <seealso href="https://valkey.io/commands/zrangebylex/"/>
 /// <seealso href="https://valkey.io/commands/zremrangebylex/"/>
-public sealed class LexBound : Bound, IEquatable<LexBound>, IComparable<LexBound>
+public sealed class LexBound
 {
     #region Constants
 
@@ -73,68 +73,13 @@ public sealed class LexBound : Bound, IEquatable<LexBound>, IComparable<LexBound
     /// </summary>
     public static implicit operator LexBound(ValkeyValue value) => Inclusive((ValkeyValue)value);
 
-    /// <inheritdoc/>
-    public bool Equals(LexBound? other)
-        => other is not null
-        && _value == other._value
-        && _isInclusive == other._isInclusive;
-
-    /// <inheritdoc/>
-    public override bool Equals(Bound? other) => Equals(other as LexBound);
-
-    /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(_value, _isInclusive);
-
-    /// <inheritdoc/>
-    public int CompareTo(LexBound? other)
-    {
-        ArgumentNullException.ThrowIfNull(other);
-
-        bool otherIsMin = other._value == ValkeyLiterals.LexRangeMin;
-        bool otherIsMax = other._value == ValkeyLiterals.LexRangeMax;
-
-        // Min is less than everything except itself.
-        if (_value == ValkeyLiterals.LexRangeMin)
-        {
-            return otherIsMin ? 0 : -1;
-        }
-
-        if (otherIsMin)
-        {
-            return 1;
-        }
-
-        // Max is greater than everything except itself.
-        if (_value == ValkeyLiterals.LexRangeMax)
-        {
-            return otherIsMax ? 0 : 1;
-        }
-
-        if (otherIsMax)
-        {
-            return -1;
-        }
-
-        return _value.CompareTo(other._value);
-    }
-
-    /// <inheritdoc/>
-    public static bool operator <(LexBound left, LexBound right) => left.CompareTo(right) < 0;
-
-    /// <inheritdoc/>
-    public static bool operator <=(LexBound left, LexBound right) => left.CompareTo(right) <= 0;
-
-    /// <inheritdoc/>
-    public static bool operator >(LexBound left, LexBound right) => left.CompareTo(right) > 0;
-
-    /// <inheritdoc/>
-    public static bool operator >=(LexBound left, LexBound right) => left.CompareTo(right) >= 0;
-
     #endregion
     #region Internal Methods
 
-    /// <inheritdoc/>
-    internal override GlideString[] ToArgs()
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal GlideString[] ToArgs()
     {
         if (_value == ValkeyLiterals.LexRangeMin)
         {

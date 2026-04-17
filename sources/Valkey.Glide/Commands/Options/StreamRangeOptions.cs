@@ -7,28 +7,32 @@ namespace Valkey.Glide.Commands.Options;
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xrange/"/>
 /// <seealso href="https://valkey.io/commands/xrevrange/"/>
-public class StreamRangeOptions
+public sealed class StreamRangeOptions
 {
-    /// <summary>
-    /// The minimum ID of the range (inclusive). Use <see cref="StreamConstants.ReadMinValue"/> for the smallest ID.
-    /// Defaults to <c>"-"</c> (smallest ID) if <c>null</c>.
-    /// </summary>
-    public ValkeyValue? MinId { get; init; }
+    #region Public Properties
 
     /// <summary>
-    /// The maximum ID of the range (inclusive). Use <see cref="StreamConstants.ReadMaxValue"/> for the largest ID.
-    /// Defaults to <c>"+"</c> (largest ID) if <c>null</c>.
+    /// The stream ID range to query.
     /// </summary>
-    public ValkeyValue? MaxId { get; init; }
+    public StreamIdRange Range { get; init; } = StreamIdRange.All;
 
     /// <summary>
-    /// The maximum number of entries to return. If <c>null</c>, all matching entries are returned.
+    /// The maximum number of matching entries to return.
+    /// If not specified, all matching entries are returned.
     /// </summary>
-    public int? Count { get; init; }
+    public int? Count { get; init; } = null;
 
     /// <summary>
-    /// The order to return entries. <see cref="Order.Ascending"/> uses XRANGE,
-    /// <see cref="Order.Descending"/> uses XREVRANGE. Defaults to <see cref="Order.Ascending"/>.
+    /// The order to return entries.
     /// </summary>
-    public Order MessageOrder { get; init; } = Order.Ascending;
+    public Order Order { get; init; } = Order.Ascending;
+
+    #endregion
+    #region Internal Methods
+
+    /// <inheritdoc/>
+    internal GlideString[] ToArgs()
+        => Count.HasValue ? [ValkeyLiterals.COUNT, Count.Value.ToGlideString()] : [];
+
+    #endregion
 }

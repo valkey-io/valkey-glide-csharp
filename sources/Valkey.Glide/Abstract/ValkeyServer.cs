@@ -146,13 +146,13 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.LastSaveAsync(), MakeRoute());
+        return (await _conn.Command(Request.LastSaveAsync(), MakeRoute())).DateTime;
     }
 
     public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.TimeAsync(), MakeRoute());
+        return (await _conn.Command(Request.TimeAsync(), MakeRoute())).DateTime;
     }
 
     public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
@@ -245,9 +245,10 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         var options = new ScanOptions();
         if (!pattern.IsNull)
         {
-            options.MatchPattern = pattern.ToString();
+            options.MatchPattern = pattern;
         }
 
+        // TODO how to handle negative
         if (pageSize > 0)
         {
             options.Count = pageSize;
