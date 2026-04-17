@@ -35,17 +35,17 @@ public class StandaloneClientTests(TestConfiguration config)
         string key2 = Guid.NewGuid().ToString();
         string key3 = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
-        await client.StringSetAsync(key1, value);
+        await client.SetAsync(key1, value);
 
         gs dump = (await client.CustomCommand(["DUMP", key1]) as gs)!;
 
         Assert.Equal("OK", await client.CustomCommand(["RESTORE", key2, "0", dump!]));
-        ValkeyValue retrievedValue = await client.StringGetAsync(key2);
+        ValkeyValue retrievedValue = await client.GetAsync(key2);
         Assert.Equal(value, retrievedValue.ToString());
 
         // Set and get a binary value
-        await client.StringSetAsync(key3, dump!);
-        ValkeyValue binaryValue = await client.StringGetAsync(key3);
+        await client.SetAsync(key3, dump!);
+        ValkeyValue binaryValue = await client.GetAsync(key3);
         Assert.Equal(dump, (gs)binaryValue);
     }
 
@@ -219,7 +219,7 @@ public class StandaloneClientTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         string key2 = Guid.NewGuid().ToString();
 
-        await client.StringSetAsync(key, "val");
+        await client.SetAsync(key, "val");
         Assert.True(await client.CopyAsync(key, key2, 1));
         Assert.True(await client.MoveAsync(key, 2));
     }
@@ -239,8 +239,8 @@ public class StandaloneClientTests(TestConfiguration config)
         Pipeline.IBatch batch = new Batch(isAtomic);
 
         // Set up keys
-        _ = batch.StringSet(sourceKey, value);
-        _ = batch.StringSet(moveKey, value);
+        _ = batch.Set(sourceKey, value);
+        _ = batch.Set(moveKey, value);
 
         Batch batch2 = new(isAtomic);
 
@@ -386,7 +386,7 @@ public class StandaloneClientTests(TestConfiguration config)
             Assert.True(initialSize >= 0);
 
             // Add a key
-            await client.StringSetAsync(key, "test-value");
+            await client.SetAsync(key, "test-value");
 
             // Size should increase
             long newSize = await client.DatabaseSizeAsync();

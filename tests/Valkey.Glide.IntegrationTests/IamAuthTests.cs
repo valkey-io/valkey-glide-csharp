@@ -66,13 +66,13 @@ public class IamAuthTests
         await client.RefreshIamTokenAsync();
 
         // Test basic SET/GET operations
-        await client.StringSetAsync("iam_test_key", "iam_test_value");
-        var value = await client.StringGetAsync("iam_test_key");
+        await client.SetAsync("iam_test_key", "iam_test_value");
+        var value = await client.GetAsync("iam_test_key");
         Assert.Equal("iam_test_value", value.ToString());
 
         // Verify operations still work after token refresh
-        await client.StringSetAsync("iam_test_key2", "iam_test_value2");
-        var value2 = await client.StringGetAsync("iam_test_key2");
+        await client.SetAsync("iam_test_key2", "iam_test_value2");
+        var value2 = await client.GetAsync("iam_test_key2");
         Assert.Equal("iam_test_value2", value2.ToString());
     }
 
@@ -96,8 +96,8 @@ public class IamAuthTests
         await Task.Delay(TimeSpan.FromSeconds(3));
 
         // Verify client still works after automatic refresh
-        await client.StringSetAsync("iam_auto_refresh_key", "iam_auto_refresh_value");
-        var value = await client.StringGetAsync("iam_auto_refresh_key");
+        await client.SetAsync("iam_auto_refresh_key", "iam_auto_refresh_value");
+        var value = await client.GetAsync("iam_auto_refresh_key");
         Assert.Equal("iam_auto_refresh_value", value.ToString());
     }
 
@@ -118,8 +118,8 @@ public class IamAuthTests
         await Task.Delay(TimeSpan.FromSeconds(3));
 
         // Verify client still works after automatic refresh
-        await client.StringSetAsync("iam_auto_refresh_key", "iam_auto_refresh_value");
-        var value = await client.StringGetAsync("iam_auto_refresh_key");
+        await client.SetAsync("iam_auto_refresh_key", "iam_auto_refresh_value");
+        var value = await client.GetAsync("iam_auto_refresh_key");
         Assert.Equal("iam_auto_refresh_value", value.ToString());
     }
 }

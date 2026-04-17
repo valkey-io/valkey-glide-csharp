@@ -260,4 +260,17 @@ public interface IHashBaseCommands
     /// </example>
     /// </remarks>
     Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count);
+
+    /// <summary>
+    /// Gets random field-value pairs from the specified hash.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hrandfield"/>
+    /// <param name="key">The key of the hash.</param>
+    /// <param name="count">
+    /// The number of field-value pairs to return.
+    /// If positive, returns up to <paramref name="count"/> distinct pairs.
+    /// If negative, allows duplicates and returns exactly <c>abs(count)</c> pairs.
+    /// </param>
+    /// <returns>An array of field-value pairs, or an empty array if the hash does not exist.</returns>
+    Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count);
 }

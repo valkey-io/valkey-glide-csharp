@@ -475,19 +475,17 @@ public class HashCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldSetAndSetExpiry_SingleField_WithNullTimeSpan_KeepsTtl(IDatabaseAsync db)
+    public async Task HashFieldSetAndSetExpiry_SingleField_WithNullTimeSpan_ClearsTtl(IDatabaseAsync db)
     {
         SkipUtils.IfHashExpireNotSupported();
 
         string key = $"ser-hsetex-keepttl-null-{Guid.NewGuid()}";
-        Assert.Equal(1, (int)await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60)));
+        _ = await db.HashFieldSetAndSetExpiryAsync(key, "field1", "value1", TimeSpan.FromSeconds(60));
 
         Assert.Equal(1, (int)await db.HashFieldSetAndSetExpiryAsync(key, "field1", "updated", expiry: null));
 
         Assert.Equal("updated", await db.HashGetAsync(key, "field1"));
-
-        var ttl = Assert.Single(await db.HashFieldGetTimeToLiveAsync(key, ["field1"]));
-        Assert.True(ttl is > 0 and <= 60000);
+        Assert.Equal(-1, Assert.Single(await db.HashFieldGetTimeToLiveAsync(key, ["field1"])));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

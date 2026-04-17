@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.Pipeline;
 
 /// <summary>
@@ -7,79 +9,92 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 internal interface IBatchStringCommands
 {
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringGetAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringGetAsync(ValkeyKey)" /></returns>
-    IBatch StringGet(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.GetAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetAsync(ValkeyKey)" /></returns>
+    IBatch Get(ValkeyKey key);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringGetAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringGetAsync(IEnumerable{ValkeyKey})" /></returns>
-    IBatch StringGet(IEnumerable<ValkeyKey> keys);
+    /// <inheritdoc cref="IBaseClient.GetAsync(IEnumerable{ValkeyKey})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetAsync(IEnumerable{ValkeyKey})" /></returns>
+    IBatch Get(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringSetAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringSetAsync(ValkeyKey, ValkeyValue)" /></returns>
-    IBatch StringSet(ValkeyKey key, ValkeyValue value);
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue)" /></returns>
+    IBatch Set(ValkeyKey key, ValkeyValue value);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringSetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}}, When)" /></returns>
-    IBatch StringSet(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
+    /// <inheritdoc cref="IBaseClient.SetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" /></returns>
+    IBatch Set(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringGetRangeAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringGetRangeAsync(ValkeyKey, long, long)" /></returns>
-    IBatch StringGetRange(ValkeyKey key, long start, long end);
+    /// <inheritdoc cref="IBaseClient.SetIfNotExistsAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetIfNotExistsAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" /></returns>
+    IBatch SetIfNotExists(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringSetRangeAsync(ValkeyKey, long, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringSetRangeAsync(ValkeyKey, long, ValkeyValue)" /></returns>
-    IBatch StringSetRange(ValkeyKey key, long offset, ValkeyValue value);
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetCondition)" /></returns>
+    IBatch Set(ValkeyKey key, ValkeyValue value, SetCondition condition);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringLengthAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringLengthAsync(ValkeyKey)" /></returns>
-    IBatch StringLength(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetOptions)" /></returns>
+    IBatch Set(ValkeyKey key, ValkeyValue value, SetOptions options);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringAppendAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringAppendAsync(ValkeyKey, ValkeyValue)" /></returns>
-    IBatch StringAppend(ValkeyKey key, ValkeyValue value);
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" /></returns>
+    IBatch SetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringDecrementAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringDecrementAsync(ValkeyKey)" /></returns>
-    IBatch StringDecrement(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue)" /></returns>
+    IBatch GetSet(ValkeyKey key, ValkeyValue value);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringDecrementAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringDecrementAsync(ValkeyKey, long)" /></returns>
-    IBatch StringDecrement(ValkeyKey key, long decrement);
+    /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetCondition)" /></returns>
+    IBatch GetSet(ValkeyKey key, ValkeyValue value, SetCondition condition);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringIncrementAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringIncrementAsync(ValkeyKey)" /></returns>
-    IBatch StringIncrement(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetOptions)" /></returns>
+    IBatch GetSet(ValkeyKey key, ValkeyValue value, SetOptions options);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringIncrementAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringIncrementAsync(ValkeyKey, long)" /></returns>
-    IBatch StringIncrement(ValkeyKey key, long increment);
+    /// <inheritdoc cref="IBaseClient.GetSetExpiryAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetSetExpiryAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)" /></returns>
+    IBatch GetSetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringIncrementAsync(ValkeyKey, double)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringIncrementAsync(ValkeyKey, double)" /></returns>
-    IBatch StringIncrement(ValkeyKey key, double increment);
+    /// <inheritdoc cref="IBaseClient.GetRangeAsync(ValkeyKey, long, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetRangeAsync(ValkeyKey, long, long)" /></returns>
+    IBatch GetRange(ValkeyKey key, long start, long end);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringGetDeleteAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringGetDeleteAsync(ValkeyKey)" /></returns>
-    IBatch StringGetDelete(ValkeyKey key);
+    /// <inheritdoc cref="IBaseClient.SetRangeAsync(ValkeyKey, long, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetRangeAsync(ValkeyKey, long, ValkeyValue)" /></returns>
+    IBatch SetRange(ValkeyKey key, long offset, ValkeyValue value);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringGetSetExpiryAsync(ValkeyKey, TimeSpan?)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringGetSetExpiryAsync(ValkeyKey, TimeSpan?)" /></returns>
-    IBatch StringGetSetExpiry(ValkeyKey key, TimeSpan? expiry);
+    /// <inheritdoc cref="IBaseClient.LengthAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.LengthAsync(ValkeyKey)" /></returns>
+    IBatch Length(ValkeyKey key);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringGetSetExpiryAsync(ValkeyKey, DateTime)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringGetSetExpiryAsync(ValkeyKey, DateTime)" /></returns>
-    IBatch StringGetSetExpiry(ValkeyKey key, DateTime expiry);
+    /// <inheritdoc cref="IBaseClient.AppendAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.AppendAsync(ValkeyKey, ValkeyValue)" /></returns>
+    IBatch Append(ValkeyKey key, ValkeyValue value);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey)" /></returns>
-    IBatch StringLongestCommonSubsequence(ValkeyKey first, ValkeyKey second);
+    /// <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, long)" /></returns>
+    IBatch Decrement(ValkeyKey key, long value = 1);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey)" /></returns>
-    IBatch StringLongestCommonSubsequenceLength(ValkeyKey first, ValkeyKey second);
+    /// <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, double)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, double)" /></returns>
+    IBatch Decrement(ValkeyKey key, double value);
 
-    /// <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStringBaseCommands.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long)" /></returns>
-    IBatch StringLongestCommonSubsequenceWithMatches(ValkeyKey first, ValkeyKey second, long minLength = 0);
+    /// <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, long)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, long)" /></returns>
+    IBatch Increment(ValkeyKey key, long value = 1);
+
+    /// <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, double)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, double)" /></returns>
+    IBatch Increment(ValkeyKey key, double value);
+
+    /// <inheritdoc cref="IBaseClient.GetDeleteAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetDeleteAsync(ValkeyKey)" /></returns>
+    IBatch GetDelete(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)" /></returns>
+    IBatch GetExpiry(ValkeyKey key, GetExpiryOptions options);
+
 }

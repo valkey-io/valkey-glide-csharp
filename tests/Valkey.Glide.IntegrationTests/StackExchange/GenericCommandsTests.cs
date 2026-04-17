@@ -27,7 +27,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-delete-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         Assert.True(await db.KeyExistsAsync(key));
 
         Assert.True(await db.KeyDeleteAsync(key));
@@ -40,7 +40,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-delete-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         bool result = await db.KeyDeleteAsync(key, CommandFlags.None);
         Assert.True(result);
     }
@@ -57,8 +57,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key1 = $"ser-delete-multi-{Guid.NewGuid()}";
         string key2 = $"ser-delete-multi-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key1, "value1");
-        await db.StringSetAsync(key2, "value2");
+        _ = await db.StringSetAsync(key1, "value1");
+        _ = await db.StringSetAsync(key2, "value2");
 
         ValkeyKey[] keys = [key1, key2];
         long deleted = await db.KeyDeleteAsync(keys);
@@ -71,7 +71,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key1 = $"ser-delete-multi-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key1, "value1");
+        _ = await db.StringSetAsync(key1, "value1");
         ValkeyKey[] keys = [key1];
         long deleted = await db.KeyDeleteAsync(keys, CommandFlags.None);
         Assert.Equal(1, deleted);
@@ -97,7 +97,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
 
         Assert.False(await db.KeyExistsAsync(key));
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         Assert.True(await db.KeyExistsAsync(key));
     }
 
@@ -107,7 +107,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-exists-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         bool exists = await db.KeyExistsAsync(key, CommandFlags.None);
         Assert.True(exists);
     }
@@ -125,8 +125,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key2 = $"ser-exists-multi-{Guid.NewGuid()}";
         string key3 = $"ser-exists-multi-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key1, "value1");
-        await db.StringSetAsync(key2, "value2");
+        _ = await db.StringSetAsync(key1, "value1");
+        _ = await db.StringSetAsync(key2, "value2");
 
         ValkeyKey[] keys = [key1, key2, key3];
         long count = await db.KeyExistsAsync(keys);
@@ -139,7 +139,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key1 = $"ser-exists-multi-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key1, "value1");
+        _ = await db.StringSetAsync(key1, "value1");
         ValkeyKey[] keys = [key1];
         long count = await db.KeyExistsAsync(keys, CommandFlags.None);
         Assert.Equal(1, count);
@@ -163,7 +163,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-expire-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         Assert.True(await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10)));
 
         TimeSpan? ttl = await db.KeyTimeToLiveAsync(key);
@@ -177,7 +177,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-expire-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         bool result = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10), CommandFlags.None);
         Assert.True(result);
     }
@@ -193,7 +193,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-expireat-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         DateTime expiry = DateTime.UtcNow.AddSeconds(10);
         Assert.True(await db.KeyExpireAsync(key, expiry));
 
@@ -208,7 +208,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-expireat-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         DateTime expiry = DateTime.UtcNow.AddSeconds(10);
         bool result = await db.KeyExpireAsync(key, expiry, CommandFlags.None);
         Assert.True(result);
@@ -229,7 +229,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-ttl-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         Assert.Null(await db.KeyTimeToLiveAsync(key));
 
         _ = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
@@ -254,7 +254,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-ttl-noexpiry-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
 
         // Key exists but has no expiry should return null (sentinel -1 converted to null)
         Assert.Null(await db.KeyTimeToLiveAsync(key));
@@ -266,7 +266,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-ttl-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         _ = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
         TimeSpan? ttl = await db.KeyTimeToLiveAsync(key, CommandFlags.None);
         _ = Assert.NotNull(ttl);
@@ -288,7 +288,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string stringKey = $"ser-type-string-{Guid.NewGuid()}";
         string listKey = $"ser-type-list-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(stringKey, "value");
+        _ = await db.StringSetAsync(stringKey, "value");
         Assert.Equal(ValkeyType.String, await db.KeyTypeAsync(stringKey));
 
         _ = await fixture.Client.ListLeftPushAsync(listKey, "item");
@@ -301,7 +301,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-type-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         ValkeyType type = await db.KeyTypeAsync(key, CommandFlags.None);
         Assert.Equal(ValkeyType.String, type);
     }
@@ -322,7 +322,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string oldKey = $"ser-rename-old-{Guid.NewGuid()}";
         string newKey = $"ser-rename-new-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(oldKey, "value");
+        _ = await db.StringSetAsync(oldKey, "value");
         _ = await db.KeyRenameAsync(oldKey, newKey);
 
         Assert.False(await db.KeyExistsAsync(oldKey));
@@ -336,7 +336,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string oldKey = $"ser-rename-when-always-old-{Guid.NewGuid()}";
         string newKey = $"ser-rename-when-always-new-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(oldKey, "value");
+        _ = await db.StringSetAsync(oldKey, "value");
         bool result = await db.KeyRenameAsync(oldKey, newKey, When.Always);
         Assert.True(result);
         Assert.False(await db.KeyExistsAsync(oldKey));
@@ -350,7 +350,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string oldKey = $"ser-rename-when-notexists-old-{Guid.NewGuid()}";
         string newKey = $"ser-rename-when-notexists-new-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(oldKey, "value");
+        _ = await db.StringSetAsync(oldKey, "value");
         bool result = await db.KeyRenameAsync(oldKey, newKey, When.NotExists);
         Assert.True(result);
         Assert.False(await db.KeyExistsAsync(oldKey));
@@ -364,8 +364,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string oldKey = $"ser-rename-when-notexists-fail-old-{Guid.NewGuid()}";
         string newKey = $"ser-rename-when-notexists-fail-new-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(oldKey, "value1");
-        await db.StringSetAsync(newKey, "value2");
+        _ = await db.StringSetAsync(oldKey, "value1");
+        _ = await db.StringSetAsync(newKey, "value2");
         bool result = await db.KeyRenameAsync(oldKey, newKey, When.NotExists);
         Assert.False(result);
         // Both keys should still exist
@@ -385,7 +385,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string oldKey = $"ser-rename-flags-old-{Guid.NewGuid()}";
         string newKey = $"ser-rename-flags-new-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(oldKey, "value");
+        _ = await db.StringSetAsync(oldKey, "value");
         bool result = await db.KeyRenameAsync(oldKey, newKey, When.Always, CommandFlags.None);
         Assert.True(result);
     }
@@ -405,7 +405,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-persist-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         _ = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
         _ = Assert.NotNull(await db.KeyTimeToLiveAsync(key));
 
@@ -419,7 +419,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-persist-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         _ = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
         bool result = await db.KeyPersistAsync(key, CommandFlags.None);
         Assert.True(result);
@@ -440,7 +440,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-dump-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         byte[]? dump = await db.KeyDumpAsync(key);
         Assert.NotNull(dump);
         Assert.NotEmpty(dump);
@@ -452,7 +452,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-dump-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         byte[]? dump = await db.KeyDumpAsync(key, CommandFlags.None);
         Assert.NotNull(dump);
     }
@@ -473,7 +473,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string sourceKey = $"ser-restore-src-{Guid.NewGuid()}";
         string destKey = $"ser-restore-dst-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(sourceKey, "value");
+        _ = await db.StringSetAsync(sourceKey, "value");
         byte[]? dump = await db.KeyDumpAsync(sourceKey);
         Assert.NotNull(dump);
 
@@ -489,7 +489,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string sourceKey = $"ser-restore-flags-src-{Guid.NewGuid()}";
         string destKey = $"ser-restore-flags-dst-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(sourceKey, "value");
+        _ = await db.StringSetAsync(sourceKey, "value");
         byte[]? dump = await db.KeyDumpAsync(sourceKey);
         Assert.NotNull(dump);
 
@@ -509,7 +509,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string sourceKey = $"ser-restore-dt-src-{Guid.NewGuid()}";
         string destKey = $"ser-restore-dt-dst-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(sourceKey, "value");
+        _ = await db.StringSetAsync(sourceKey, "value");
         byte[]? dump = await db.KeyDumpAsync(sourceKey);
         Assert.NotNull(dump);
 
@@ -526,7 +526,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string sourceKey = $"ser-restore-dt-flags-src-{Guid.NewGuid()}";
         string destKey = $"ser-restore-dt-flags-dst-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(sourceKey, "value");
+        _ = await db.StringSetAsync(sourceKey, "value");
         byte[]? dump = await db.KeyDumpAsync(sourceKey);
         Assert.NotNull(dump);
 
@@ -553,7 +553,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-touch-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         Assert.True(await db.KeyTouchAsync(key));
     }
 
@@ -563,7 +563,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-touch-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         bool result = await db.KeyTouchAsync(key, CommandFlags.None);
         Assert.True(result);
     }
@@ -580,8 +580,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string key1 = $"ser-touch-multi-{Guid.NewGuid()}";
         string key2 = $"ser-touch-multi-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key1, "value1");
-        await db.StringSetAsync(key2, "value2");
+        _ = await db.StringSetAsync(key1, "value1");
+        _ = await db.StringSetAsync(key2, "value2");
 
         ValkeyKey[] keys = [key1, key2];
         long touched = await db.KeyTouchAsync(keys);
@@ -594,7 +594,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key1 = $"ser-touch-multi-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key1, "value1");
+        _ = await db.StringSetAsync(key1, "value1");
         ValkeyKey[] keys = [key1];
         long touched = await db.KeyTouchAsync(keys, CommandFlags.None);
         Assert.Equal(1, touched);
@@ -619,7 +619,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string sourceKey = $"ser-copy-src-{Guid.NewGuid()}";
         string destKey = $"ser-copy-dst-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(sourceKey, "value");
+        _ = await db.StringSetAsync(sourceKey, "value");
         Assert.True(await db.KeyCopyAsync(sourceKey, destKey));
 
         Assert.True(await db.KeyExistsAsync(sourceKey));
@@ -634,7 +634,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         string sourceKey = $"ser-copy-flags-src-{Guid.NewGuid()}";
         string destKey = $"ser-copy-flags-dst-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(sourceKey, "value");
+        _ = await db.StringSetAsync(sourceKey, "value");
         bool result = await db.KeyCopyAsync(sourceKey, destKey, -1, false, CommandFlags.None);
         Assert.True(result);
     }
@@ -654,7 +654,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-idletime-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         TimeSpan? idleTime = await db.KeyIdleTimeAsync(key);
         _ = Assert.NotNull(idleTime);
         Assert.True(idleTime.Value.TotalSeconds >= 0);
@@ -676,7 +676,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-idletime-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         TimeSpan? idleTime = await db.KeyIdleTimeAsync(key, CommandFlags.None);
         _ = Assert.NotNull(idleTime);
     }
@@ -696,7 +696,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-random-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         ValkeyKey randomKey = await db.KeyRandomAsync();
         Assert.False(randomKey.IsNull);
     }
@@ -707,7 +707,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var db = fixture.Database;
         string key = $"ser-random-flags-{Guid.NewGuid()}";
 
-        await db.StringSetAsync(key, "value");
+        _ = await db.StringSetAsync(key, "value");
         ValkeyKey randomKey = await db.KeyRandomAsync(CommandFlags.None);
         Assert.False(randomKey.IsNull);
     }

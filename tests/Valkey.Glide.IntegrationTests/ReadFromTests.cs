@@ -62,7 +62,7 @@ public class ReadFromTests(TestConfiguration config)
         // Test data operations to verify the ReadFrom configuration is active
         string testKey = Guid.NewGuid().ToString();
         string testValue = useStandalone ? "standalone-end-to-end-test" : "cluster-end-to-end-test";
-        await database.StringSetAsync(testKey, testValue);
+        _ = await database.StringSetAsync(testKey, testValue);
         string? retrievedValue = await database.StringGetAsync(testKey);
         Assert.Equal(testValue, retrievedValue);
     }
@@ -93,7 +93,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test data operations to verify default behavior works
             string testKey = Guid.NewGuid().ToString();
             string testValue = "connection-string-default-behavior-test";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
@@ -103,7 +103,7 @@ public class ReadFromTests(TestConfiguration config)
 
         else
         {
-            ConfigurationOptions configOptions = new ConfigurationOptions
+            ConfigurationOptions configOptions = new()
             {
                 ReadFrom = null
             };
@@ -125,7 +125,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test data operations to verify default behavior works
             string testKey = Guid.NewGuid().ToString();
             string testValue = "config-options-null-readfrom-test";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
@@ -143,7 +143,7 @@ public class ReadFromTests(TestConfiguration config)
         // Test that validation errors propagate correctly through the entire configuration pipeline
 
         // Arrange: Create configuration with invalid ReadFrom combination
-        ConfigurationOptions configOptions = new ConfigurationOptions();
+        var configOptions = new ConfigurationOptions();
         configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
         configOptions.Ssl = TestConfiguration.TLS;
 
@@ -164,7 +164,7 @@ public class ReadFromTests(TestConfiguration config)
     public async Task ConfigurationPipeline_ClonePreservesReadFromConfiguration()
     {
         // Arrange
-        ConfigurationOptions originalConfig = new ConfigurationOptions
+        var originalConfig = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a")
         };
@@ -210,7 +210,7 @@ public class ReadFromTests(TestConfiguration config)
         if (useConfigurationOptions)
         {
             // Arrange: Create a legacy-style configuration without ReadFrom
-            ConfigurationOptions legacyConfig = new ConfigurationOptions();
+            var legacyConfig = new ConfigurationOptions();
             legacyConfig.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
             legacyConfig.Ssl = TestConfiguration.TLS;
             legacyConfig.ResponseTimeout = 5000;
@@ -233,7 +233,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test basic operations to ensure legacy behavior works
             string testKey = "legacy-config-test-key";
             string testValue = "legacy-config-test-value";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 
@@ -263,7 +263,7 @@ public class ReadFromTests(TestConfiguration config)
             // Test basic operations to ensure legacy behavior works
             string testKey = "legacy-connection-string-test-key";
             string testValue = "legacy-connection-string-test-value";
-            await database.StringSetAsync(testKey, testValue);
+            _ = await database.StringSetAsync(testKey, testValue);
             string? retrievedValue = await database.StringGetAsync(testKey);
             Assert.Equal(testValue, retrievedValue);
 

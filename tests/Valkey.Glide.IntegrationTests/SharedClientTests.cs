@@ -15,23 +15,17 @@ public class SharedClientTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CommandsWithLargeKey(BaseClient client)
-    {
-        await StringCommandTests.GetAndSetValuesAsync(client, LargeString, SmallString);
-    }
+        => await StringCommandTests.GetAndSetValuesAsync(client, LargeString, SmallString);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CommandsWithLargeValue(BaseClient client)
-    {
-        await StringCommandTests.GetAndSetValuesAsync(client, SmallString, LargeString);
-    }
+        => await StringCommandTests.GetAndSetValuesAsync(client, SmallString, LargeString);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CommandsWithLargeKeyAndValue(BaseClient client)
-    {
-        await StringCommandTests.GetAndSetValuesAsync(client, LargeString, LargeString);
-    }
+        => await StringCommandTests.GetAndSetValuesAsync(client, LargeString, LargeString);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -40,7 +34,7 @@ public class SharedClientTests(TestConfiguration config)
         using var script = new Script("return KEYS[1]");
         var options = new ScriptOptions().WithKeys(LargeString);
 
-        var result = await client.ScriptInvokeAsync(script, options);
+        var result = await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken);
 
         Assert.Equal(LargeString, result.ToString());
     }
@@ -52,7 +46,7 @@ public class SharedClientTests(TestConfiguration config)
         using var script = new Script("return ARGV[1]");
         var options = new ScriptOptions().WithArgs(LargeString);
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken);
 
         Assert.Equal(LargeString, result.ToString());
     }
@@ -66,7 +60,7 @@ public class SharedClientTests(TestConfiguration config)
             .WithKeys(LargeString)
             .WithArgs(LargeString);
 
-        var result = await client.ScriptInvokeAsync(script, options);
+        var result = await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken);
 
         Assert.Equal((string[])[LargeString, LargeString], result.AsStringArray());
     }
@@ -76,7 +70,7 @@ public class SharedClientTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [Trait("duration", "long")]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public void ConcurrentOperationsWork(BaseClient client)
+    public async Task ConcurrentOperationsWork(BaseClient client)
     {
         List<Task> operations = [];
 
@@ -93,13 +87,13 @@ public class SharedClientTests(TestConfiguration config)
                     }
                     else
                     {
-                        ValkeyValue result = await client.StringGetAsync(Guid.NewGuid().ToString());
+                        ValkeyValue result = await client.GetAsync(Guid.NewGuid().ToString());
                         Assert.True(result.IsNull);
                     }
                 }
-            }));
+            }, TestContext.Current.CancellationToken));
         }
 
-        Task.WaitAll([.. operations]);
+        await Task.WhenAll(operations);
     }
 }

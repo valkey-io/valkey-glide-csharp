@@ -33,16 +33,16 @@ public interface ITransactionBaseCommands
     ///
     /// // Execute transaction
     /// var batch = new Batch(true)
-    ///     .StringSetAsync("sampleKey", "foobar");
+    ///     .SetAsync("sampleKey", "foobar");
     /// object[] transactionResult = await client.Exec(batch, false);
     /// // transactionResult is not null if transaction executed successfully
     ///
     /// // Watch key again
     /// await client.WatchAsync(["sampleKey"]);
     /// var batch2 = new Batch(true)
-    ///     .StringSetAsync("sampleKey", "foobar");
+    ///     .SetAsync("sampleKey", "foobar");
     /// // Modify the watched key from another client/connection
-    /// await client.StringSetAsync("sampleKey", "hello world");
+    /// await client.SetAsync("sampleKey", "hello world");
     /// object[] transactionResult2 = await client.Exec(batch2, true);
     /// // transactionResult2 is null because the watched key was modified
     /// </code>

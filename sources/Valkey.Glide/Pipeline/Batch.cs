@@ -30,11 +30,11 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
     IBatch IBatchStandalone.SelectAsync(long index) => SelectAsync(index);
 
     // Explicit interface implementations for IBatchStreamCommands
-    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamField, streamValue, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
-    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit, bool noMakeStream) => StreamAdd(key, streamPairs, messageId, maxLength, minId, useApproximateTrimming, limit, noMakeStream);
+    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, Commands.Options.StreamAddOptions? options) => StreamAdd(key, streamField, streamValue, options);
+    IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, Commands.Options.StreamAddOptions? options) => StreamAdd(key, streamPairs, options);
     IBatch IBatchStreamCommands.StreamRead(ValkeyKey key, ValkeyValue position, int? count) => StreamRead(key, position, count);
     IBatch IBatchStreamCommands.StreamRead(IEnumerable<StreamPosition> streamPositions, int? count) => StreamRead(streamPositions, count);
-    IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? start, ValkeyValue? end, int? count, Order order) => StreamRange(key, start, end, count, order);
+    IBatch IBatchStreamCommands.StreamRange(ValkeyKey key, ValkeyValue? minId, ValkeyValue? maxId, int? count, Order messageOrder) => StreamRange(key, minId, maxId, count, messageOrder);
     IBatch IBatchStreamCommands.StreamLength(ValkeyKey key) => StreamLength(key);
     IBatch IBatchStreamCommands.StreamDelete(ValkeyKey key, IEnumerable<ValkeyValue> messageIds) => StreamDelete(key, messageIds);
     IBatch IBatchStreamCommands.StreamTrim(ValkeyKey key, long? maxLength, ValkeyValue? minId, bool useApproximateTrimming, long? limit) => StreamTrim(key, maxLength, minId, useApproximateTrimming, limit);
@@ -48,11 +48,12 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
     IBatch IBatchStreamCommands.StreamAcknowledge(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds) => StreamAcknowledge(key, groupName, messageIds);
     IBatch IBatchStreamCommands.StreamPending(ValkeyKey key, ValkeyValue groupName) => StreamPending(key, groupName);
     IBatch IBatchStreamCommands.StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId, ValkeyValue? maxId, TimeSpan? minIdleTime) => StreamPendingMessages(key, groupName, count, consumerName, minId, maxId, minIdleTime);
-    IBatch IBatchStreamCommands.StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force) => StreamClaim(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, idleTime, timestamp, retryCount, force);
-    IBatch IBatchStreamCommands.StreamClaimIdsOnly(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, TimeSpan? idleTime, DateTimeOffset? timestamp, int? retryCount, bool force) => StreamClaimIdsOnly(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, idleTime, timestamp, retryCount, force);
+    IBatch IBatchStreamCommands.StreamClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options) => StreamClaim(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, options);
+    IBatch IBatchStreamCommands.StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, Commands.Options.StreamClaimOptions? options) => StreamClaimJustId(key, consumerGroup, claimingConsumer, minIdleTime, messageIds, options);
     IBatch IBatchStreamCommands.StreamAutoClaim(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaim(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
-    IBatch IBatchStreamCommands.StreamAutoClaimIdsOnly(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaimIdsOnly(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
+    IBatch IBatchStreamCommands.StreamAutoClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, ValkeyValue startAtId, int? count) => StreamAutoClaimJustId(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count);
     IBatch IBatchStreamCommands.StreamInfo(ValkeyKey key) => StreamInfo(key);
     IBatch IBatchStreamCommands.StreamGroupInfo(ValkeyKey key) => StreamGroupInfo(key);
     IBatch IBatchStreamCommands.StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName) => StreamConsumerInfo(key, groupName);
+    IBatch IBatchStreamCommands.StreamInfoFull(ValkeyKey key, int? count) => StreamInfoFull(key, count);
 }
