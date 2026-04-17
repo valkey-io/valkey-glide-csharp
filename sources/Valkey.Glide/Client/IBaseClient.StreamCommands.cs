@@ -11,6 +11,76 @@ namespace Valkey.Glide;
 public partial interface IBaseClient
 {
     /// <summary>
+    /// Creates a consumer group for a stream.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xgroup-create"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="position">The position from which to start reading. Use <see cref="StreamConstants.NewMessages"/> for new messages, <see cref="StreamConstants.AllMessages"/> for all messages. Defaults to <see cref="StreamConstants.NewMessages"/> if null.</param>
+    /// <param name="createStream">If true, creates the stream if it doesn't exist.</param>
+    /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
+    /// <returns><c>true</c> if the consumer group was created successfully.</returns>
+    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null);
+
+    /// <summary>
+    /// Sets the position from which to read a stream for a consumer group.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xgroup-setid"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="position">The position from which to read.</param>
+    /// <param name="entriesRead">Valkey 7.0+: Sets the entries_read counter to an arbitrary value.</param>
+    /// <returns><c>true</c> if the position was set successfully.</returns>
+    Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
+
+    /// <summary>
+    /// Reads entries from a stream for a consumer group.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xreadgroup"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name.</param>
+    /// <param name="position">The position from which to read. Use <see cref="StreamConstants.UndeliveredMessages"/> for new messages only. Defaults to <see cref="StreamConstants.UndeliveredMessages"/> if null.</param>
+    /// <param name="count">The maximum number of entries to return.</param>
+    /// <param name="noAck">If true, messages are not added to the pending entries list.</param>
+    /// <returns>An array of stream entries.</returns>
+    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false);
+
+    /// <summary>
+    /// Reads entries from multiple streams for a consumer group.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xreadgroup"/>
+    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name.</param>
+    /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
+    /// <param name="noAck">If true, messages are not added to the pending entries list.</param>
+    /// <returns>An array of streams with their entries.</returns>
+    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false);
+
+    /// <summary>
+    /// Trims the stream to a specified size.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xtrim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="maxLength">The maximum length of the stream.</param>
+    /// <param name="useApproximateMaxLength">If true, uses approximate trimming (~) for better performance.</param>
+    /// <param name="limit">The maximum number of entries to trim. Only applicable when useApproximateMaxLength is true.</param>
+    /// <returns>The number of entries deleted.</returns>
+    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null);
+
+    /// <summary>
+    /// Trims the stream by minimum ID.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xtrim"/>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="minId">Trim entries with IDs lower than this.</param>
+    /// <param name="useApproximateMaxLength">If true, uses approximate trimming (~) for better performance.</param>
+    /// <param name="limit">The maximum number of entries to trim.</param>
+    /// <returns>The number of entries deleted.</returns>
+    Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null);
+
+    /// <summary>
     /// Appends a new entry to a stream with a single field-value pair.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xadd"/>

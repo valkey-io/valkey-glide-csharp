@@ -6,18 +6,20 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
+    // TODO - assess all the base methods
+
     /// <inheritdoc cref="IDatabaseAsync.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)"/>
     public Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength);
+        return base.StreamAddAsync(key, streamField, streamValue, messageId, maxLength, useApproximateMaxLength);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, ValkeyValue?, int?, bool, CommandFlags)"/>
     public Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId, int? maxLength, bool useApproximateMaxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength);
+        return base.StreamAddAsync(key, streamPairs, messageId, maxLength, useApproximateMaxLength);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
@@ -46,35 +48,35 @@ internal partial class Database
     public Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? countPerStream = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadAsync(key, position, countPerStream);
+        return base.StreamReadAsync(key, position, countPerStream);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(IEnumerable{StreamPosition}, int?, CommandFlags)"/>
     public Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, int? countPerStream = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadAsync(streamPositions, countPerStream);
+        return base.StreamReadAsync(streamPositions, countPerStream);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order, CommandFlags)"/>
     public Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamRangeAsync(key, minId, maxId, count, messageOrder);
+        return base.StreamRangeAsync(key, minId, maxId, count, messageOrder);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, CommandFlags)"/>
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamCreateConsumerGroupAsync(key, groupName, position);
+        return await base.StreamCreateConsumerGroupAsync(key, groupName, position);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?, CommandFlags)"/>
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamCreateConsumerGroupAsync(key, groupName, position, createStream, entriesRead);
+        return await base.StreamCreateConsumerGroupAsync(key, groupName, position, createStream, entriesRead);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamDeleteConsumerGroupAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
@@ -102,35 +104,35 @@ internal partial class Database
     public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead);
+        return await base.StreamConsumerGroupSetPositionAsync(key, groupName, position, entriesRead);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, CommandFlags)"/>
     public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadGroupAsync(key, groupName, consumerName, position, count);
+        return base.StreamReadGroupAsync(key, groupName, consumerName, position, count);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)"/>
     public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck);
+        return base.StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, CommandFlags)"/>
     public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream);
+        return base.StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, CommandFlags)"/>
     public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck);
+        return base.StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
@@ -207,7 +209,7 @@ internal partial class Database
     public Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamTrimAsync(key, maxLength, useApproximateMaxLength);
+        return base.StreamTrimAsync(key, maxLength, useApproximateMaxLength);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
@@ -215,7 +217,7 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
-        return StreamTrimAsync(key, maxLength, useApproximateMaxLength, limit);
+        return base.StreamTrimAsync(key, maxLength, useApproximateMaxLength, limit);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimByMinIdAsync(ValkeyKey, ValkeyValue, bool, long?, StreamTrimMode, CommandFlags)"/>
@@ -223,7 +225,7 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
-        return StreamTrimByMinIdAsync(key, minId, useApproximateMaxLength, limit);
+        return base.StreamTrimByMinIdAsync(key, minId, useApproximateMaxLength, limit);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamInfoAsync(ValkeyKey, CommandFlags)"/>

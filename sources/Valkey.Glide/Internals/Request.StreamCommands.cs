@@ -961,7 +961,7 @@ internal partial class Request
                 case "consumers":
                     consumers = value is object[] arr && arr.Length > 0 ? ConvertStreamConsumerFullInfoArray(arr) : [];
                     break;
-                case "pel":
+                case "pending":
                     pendingEntries = value is object[] pelArr && pelArr.Length > 0 ? ConvertGroupPelEntries(pelArr) : [];
                     break;
                 default: break;
@@ -1009,7 +1009,7 @@ internal partial class Request
                 case "seen-time": seenTime = value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
                 case "active-time": activeTime = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
                 case "pel-count": pelCount = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
-                case "pel":
+                case "pending":
                     pendingEntries = value is object[] pelArr && pelArr.Length > 0 ? ConvertConsumerPelEntries(pelArr) : [];
                     break;
                 default: break;
