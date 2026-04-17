@@ -402,25 +402,25 @@ public class StandaloneClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task LastSaveAsync_ReturnsLastSaveTime(GlideClient client)
     {
-        DateTime lastSave = await client.LastSaveAsync();
+        DateTimeOffset lastSave = await client.LastSaveAsync();
 
         // Should be a valid date (not default)
-        Assert.NotEqual(DateTime.MinValue, lastSave);
-        Assert.NotEqual(DateTime.MaxValue, lastSave);
+        Assert.NotEqual(DateTimeOffset.MinValue, lastSave);
+        Assert.NotEqual(DateTimeOffset.MaxValue, lastSave);
 
         // Should be in the past
-        Assert.True(lastSave <= DateTime.UtcNow);
+        Assert.True(lastSave <= DateTimeOffset.UtcNow);
 
         // Should be reasonable (not too far in the past)
-        Assert.True(lastSave >= DateTime.UtcNow.AddDays(-30));
+        Assert.True(lastSave >= DateTimeOffset.UtcNow.AddDays(-30));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TimeAsync_ReturnsServerTime(GlideClient client)
     {
-        DateTime serverTime = await client.TimeAsync();
-        DateTime localTime = DateTime.UtcNow;
+        DateTimeOffset serverTime = await client.TimeAsync();
+        DateTimeOffset localTime = DateTimeOffset.UtcNow;
 
         // Server time should be close to local time (within 10 seconds)
         TimeSpan diff = (serverTime - localTime).Duration();

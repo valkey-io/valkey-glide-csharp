@@ -130,17 +130,15 @@ internal partial class Request
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
         => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    public static Cmd<long, DateTime> LastSaveAsync()
-        => new(RequestType.LastSave, [], false, l => DateTime.UnixEpoch.AddSeconds(l));
+    public static Cmd<long, DateTimeOffset> LastSaveAsync()
+        => new(RequestType.LastSave, [], false, DateTimeOffset.FromUnixTimeSeconds);
 
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    public static Cmd<object[], DateTime> TimeAsync()
+    public static Cmd<object[], DateTimeOffset> TimeAsync()
         => new(RequestType.Time, [], false, arr =>
         {
             long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
             long microseconds = long.Parse(arr[1] is GlideString gs2 ? gs2.ToString() : arr[1].ToString()!);
-            return DateTime.UnixEpoch.AddSeconds(seconds)
+            return DateTimeOffset.FromUnixTimeSeconds(seconds)
 #if NET8_0_OR_GREATER
                 .AddMicroseconds(microseconds);
 #else

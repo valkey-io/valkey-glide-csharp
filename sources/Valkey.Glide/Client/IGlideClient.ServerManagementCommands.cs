@@ -157,28 +157,26 @@ public partial interface IGlideClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// DateTime lastSave = await client.LastSaveAsync();
+    /// var lastSave = await client.LastSaveAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<DateTime> LastSaveAsync();
+    Task<DateTimeOffset> LastSaveAsync();
 
     /// <summary>
     /// The TIME command returns the current server time in UTC format.
-    /// Use the <see cref="DateTime.ToLocalTime"/> method to get local time.
+    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/time/"/>
     /// <returns>The server's current time.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// DateTime serverTime = await client.TimeAsync();
+    /// var serverTime = await client.TimeAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<DateTime> TimeAsync();
+    Task<DateTimeOffset> TimeAsync();
 
     /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.

@@ -430,11 +430,11 @@ internal partial class BatchTestUtils
 
         // LastSave
         _ = batch.LastSaveAsync();
-        testData.Add(new(DateTime.MinValue, "LastSaveAsync()", true));
+        testData.Add(new(DateTimeOffset.MinValue, "LastSaveAsync()", true));
 
         // Time
         _ = batch.TimeAsync();
-        testData.Add(new(DateTime.MinValue, "TimeAsync()", true));
+        testData.Add(new(DateTimeOffset.MinValue, "TimeAsync()", true));
 
         // Lolwut
         _ = batch.LolwutAsync();

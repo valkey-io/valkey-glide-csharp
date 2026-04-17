@@ -302,12 +302,11 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, DateTime&gt; lastSaves = await client.LastSaveAsync();
+    /// var lastSaves = await client.LastSaveAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<Dictionary<string, DateTime>> LastSaveAsync();
+    Task<Dictionary<string, DateTimeOffset>> LastSaveAsync();
 
     /// <summary>
     /// Return the time of the last DB save executed with success.
@@ -320,22 +319,21 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing UNIX TIME of the last DB save executed with success.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, DateTime&gt;</c> with each address as the key and its corresponding
+    /// with a <c>Dictionary&lt;string, DateTimeOffset&gt;</c> with each address as the key and its corresponding
     /// last save time. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;DateTime&gt; lastSave = await client.LastSaveAsync(Route.AllPrimaries);
+    /// var lastSave = await client.LastSaveAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<ClusterValue<DateTime>> LastSaveAsync(Route route);
+    Task<ClusterValue<DateTimeOffset>> LastSaveAsync(Route route);
 
     /// <summary>
     /// The TIME command returns the current server time in UTC format.
-    /// Use the <see cref="DateTime.ToLocalTime"/> method to get local time.<br />
+    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.<br />
     /// The command will be routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/time/"/>
@@ -343,16 +341,15 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, DateTime&gt; times = await client.TimeAsync();
+    /// var times = await client.TimeAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<Dictionary<string, DateTime>> TimeAsync();
+    Task<Dictionary<string, DateTimeOffset>> TimeAsync();
 
     /// <summary>
     /// The TIME command returns the current server time in UTC format.
-    /// Use the <see cref="DateTime.ToLocalTime"/> method to get local time.
+    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/time/"/>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
@@ -360,18 +357,17 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the server's current time.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, DateTime&gt;</c> with each address as the key and its corresponding
+    /// with a <c>Dictionary&lt;string, DateTimeOffset&gt;</c> with each address as the key and its corresponding
     /// server time. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;DateTime&gt; time = await client.TimeAsync(Route.AllPrimaries);
+    /// var time = await client.TimeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    // TODO #269: Replace DateTime with DateTimeOffset.
-    Task<ClusterValue<DateTime>> TimeAsync(Route route);
+    Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route);
 
     /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.
