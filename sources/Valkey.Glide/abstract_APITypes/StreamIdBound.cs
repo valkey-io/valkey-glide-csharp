@@ -32,17 +32,13 @@ public sealed class StreamIdBound
     #endregion
     #region Constructors
 
-    /// <summary>
-    /// Creates an inclusive stream ID bound.
-    /// </summary>
-    /// <param name="id">The stream entry ID.</param>
-    public StreamIdBound(ValkeyValue id)
+    private StreamIdBound(ValkeyValue id)
     {
         Value = id;
     }
 
     #endregion
-    #region Public Methods
+    #region ValkeyValue Builders
 
     /// <summary>
     /// Creates an inclusive stream ID bound.
@@ -58,13 +54,25 @@ public sealed class StreamIdBound
     /// <returns>An exclusive <see cref="StreamIdBound"/>.</returns>
     public static StreamIdBound Exclusive(ValkeyValue id) => new(ValkeyLiterals.RangeExclusive + id);
 
+    #endregion
+    #region String Builders
+
+    /// <inheritdoc cref="Inclusive(ValkeyValue)"/>
+    public static StreamIdBound Inclusive(string id) => new(id);
+
+    /// <inheritdoc cref="Exclusive(ValkeyValue)"/>
+    public static StreamIdBound Exclusive(string id) => new(ValkeyLiterals.RangeExclusive + id);
+
+    #endregion
+    #region Overloads
+
     /// <summary>
     /// Converts a <see cref="ValkeyValue"/> to an inclusive stream ID bound.
     /// </summary>
     public static implicit operator StreamIdBound(ValkeyValue id) => new(id);
 
     /// <summary>
-    /// Converts a <see cref="ValkeyValue"/> to an inclusive stream ID bound.
+    /// Converts a <see cref="string"/> to an inclusive stream ID bound.
     /// </summary>
     public static implicit operator StreamIdBound(string id) => new(id);
 
