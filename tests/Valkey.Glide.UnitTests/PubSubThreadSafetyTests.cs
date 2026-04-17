@@ -2,6 +2,8 @@
 
 using System.Collections.Concurrent;
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.UnitTests;
 
 /// <summary>
@@ -233,5 +235,10 @@ public class PubSubThreadSafetyTests
         public override Task<ValkeyValue> PingAsync() => Task.FromResult((ValkeyValue)"PONG");
         public override Task<ValkeyValue> PingAsync(ValkeyValue message) => Task.FromResult(message);
         public override Task SelectAsync(long index) => Task.CompletedTask;
+        public override Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => Task.CompletedTask;
+        public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
+        public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;
+        public override Task FlushDatabaseAsync(FlushMode mode) => Task.CompletedTask;
+        public override Task<string> LolwutAsync(LolwutOptions options) => Task.FromResult(string.Empty);
     }
 }

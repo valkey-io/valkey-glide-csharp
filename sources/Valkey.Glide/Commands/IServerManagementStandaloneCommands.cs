@@ -1,4 +1,4 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide.Commands;
 
@@ -6,9 +6,9 @@ namespace Valkey.Glide.Commands;
 // by both Valkey GLIDE clients and StackExchange.Redis databases.
 
 /// <summary>
-/// Server management commands for cluster clients.
+/// Server management commands for standalone clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
-public interface IServerManagementClusterCommands
+public interface IServerManagementStandaloneCommands
 {
 }

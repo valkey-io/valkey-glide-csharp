@@ -1,7 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
-
 namespace Valkey.Glide.IntegrationTests;
 
 public class DatabaseTests(TestConfiguration config)
@@ -12,7 +10,7 @@ public class DatabaseTests(TestConfiguration config)
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
     public async Task Basic(ConnectionMultiplexer conn, bool isCluster)
     {
-        IDatabase db = conn.GetDatabase();
+        var db = conn.GetDatabase();
         string key = Guid.NewGuid().ToString();
 
         ValkeyValue result = await db.StringGetAsync(key);
@@ -21,11 +19,14 @@ public class DatabaseTests(TestConfiguration config)
         ValkeyValue retrievedValue = await db.StringGetAsync(key);
         Assert.Equal("val", retrievedValue.ToString());
 
-        string info = await db.InfoAsync([InfoOptions.Section.CLUSTER]);
+        // InfoAsync is a server management command on the GLIDE client layer, not on IDatabase.
+        // Use IServer.InfoRawAsync to get server info through the SER-compatible path.
+        IServer server = conn.GetServer(conn.GetEndPoints(true).First());
+        string? info = await server.InfoRawAsync("cluster");
 
         Assert.True(isCluster
-            ? info.Contains("cluster_enabled:1")
-            : info.Contains("cluster_enabled:0"));
+            ? info!.Contains("cluster_enabled:1")
+            : info!.Contains("cluster_enabled:0"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

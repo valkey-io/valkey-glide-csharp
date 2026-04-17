@@ -281,4 +281,19 @@ public static class Constants
     /// The FNX keyword for hash field operations to set only new fields.
     /// </summary>
     public const string FnxKeyword = "FNX";
+
+    /// <summary>
+    /// The SYNC keyword for synchronous flush operations.
+    /// </summary>
+    public const string SyncKeyword = "SYNC";
+
+    /// <summary>
+    /// The ASYNC keyword for asynchronous flush operations.
+    /// </summary>
+    public const string AsyncKeyword = "ASYNC";
+
+    /// <summary>
+    /// The VERSION keyword for specifying the version in LOLWUT commands.
+    /// </summary>
+    public const string VersionKeyword = "VERSION";
 }

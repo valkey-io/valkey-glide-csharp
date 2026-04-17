@@ -1042,4 +1042,55 @@ public class CommandFlagsTests(TestConfiguration config)
             () => db.StringSetRangeAsync("key", 0, "value", UnsupportedFlag));
 
     #endregion
+    #region Server Management Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigGetAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ConfigGetAsync(flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigSetAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ConfigSetAsync("lfu-decay-time", "1", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigResetStatisticsAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ConfigResetStatisticsAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_LolwutAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.LolwutAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_TimeAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.TimeAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_LastSaveAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.LastSaveAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_FlushDatabaseAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.FlushDatabaseAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_FlushAllDatabasesAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.FlushAllDatabasesAsync(UnsupportedFlag));
+
+    #endregion
 }

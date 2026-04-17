@@ -70,7 +70,7 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         Assert.Empty(keys);
 
         // Clear database.
-        await db.FlushDatabaseAsync();
+        await server.FlushDatabaseAsync();
     }
 
     [Fact]

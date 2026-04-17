@@ -16,12 +16,12 @@ internal interface IBatch : IBatchSetCommands, IBatchStringCommands, IBatchListC
     /// <returns>Command Response - <inheritdoc cref="IGenericCommands.CustomCommand(IEnumerable{GlideString})" /></returns>
     IBatch CustomCommand(IEnumerable<GlideString> args);
 
-    /// <inheritdoc cref="IServerManagementCommands.InfoAsync()" path="/summary" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync()" /></returns>
+    /// <inheritdoc cref="IGlideClient.InfoAsync()" path="/summary" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.InfoAsync()" /></returns>
     IBatch Info();
 
-    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(IEnumerable{Section})" path="/summary" />
-    /// <inheritdoc cref="IServerManagementCommands.InfoAsync(IEnumerable{Section})" path="/param" />
-    /// <returns>Command Response - <inheritdoc cref="IServerManagementCommands.InfoAsync(IEnumerable{Section})" /></returns>
+    /// <inheritdoc cref="IGlideClient.InfoAsync(IEnumerable{Section})" path="/summary" />
+    /// <inheritdoc cref="IGlideClient.InfoAsync(IEnumerable{Section})" path="/param" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.InfoAsync(IEnumerable{Section})" /></returns>
     IBatch Info(IEnumerable<Section> sections);
 }

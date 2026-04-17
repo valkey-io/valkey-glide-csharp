@@ -104,6 +104,12 @@ public partial class GlideClient :
     }
 
     /// <inheritdoc/>
+    public override async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
+    {
+        _ = await Command(Request.ConfigSetAsync(parameters));
+    }
+
+    /// <inheritdoc/>
     public async Task<long> DatabaseSizeAsync()
     {
         return await Command(Request.DatabaseSizeAsync());
@@ -116,9 +122,21 @@ public partial class GlideClient :
     }
 
     /// <inheritdoc/>
+    public override async Task FlushAllDatabasesAsync(FlushMode mode)
+    {
+        _ = await Command(Request.FlushAllDatabasesAsync(mode));
+    }
+
+    /// <inheritdoc/>
     public async Task FlushDatabaseAsync()
     {
         _ = await Command(Request.FlushDatabaseAsync());
+    }
+
+    /// <inheritdoc/>
+    public override async Task FlushDatabaseAsync(FlushMode mode)
+    {
+        _ = await Command(Request.FlushDatabaseAsync(mode));
     }
 
     /// <inheritdoc/>
@@ -138,6 +156,22 @@ public partial class GlideClient :
     {
         return await Command(Request.LolwutAsync());
     }
+
+    /// <inheritdoc/>
+    public override async Task<string> LolwutAsync(LolwutOptions options)
+    {
+        return await Command(Request.LolwutAsync(options));
+    }
+
+    /// <inheritdoc/>
+    public override async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
+    {
+        return await Command(Request.ConfigGetAsync(patterns));
+    }
+
+    /// <inheritdoc/>
+    public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
+        => await Command(Request.ScanAsync(cursor, options));
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)

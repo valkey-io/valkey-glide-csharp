@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Flush mode for script and function cache operations.
+/// Flush mode for database, script, and function cache operations.
 /// </summary>
 public enum FlushMode
 {

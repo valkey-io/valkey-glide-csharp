@@ -15,7 +15,7 @@ namespace Valkey.Glide;
 public partial interface IGlideClient :
     IBaseClient,
     IGenericCommands,
-    IServerManagementCommands
+    IServerManagementStandaloneCommands
 {
     /// <summary>
     /// Moves key from the currently selected database to the specified destination database.

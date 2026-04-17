@@ -164,7 +164,7 @@ public partial interface IServer : IRedisAsync
     /// </remarks>
     Task<long> DatabaseSizeAsync(CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IServerManagementCommands.FlushAllDatabasesAsync()"/>
+    /// <inheritdoc cref="IGlideClient.FlushAllDatabasesAsync()"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None);

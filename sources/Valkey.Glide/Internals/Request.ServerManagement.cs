@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Constants;
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -29,6 +30,17 @@ internal partial class Request
     public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
         GlideString[] args = pattern.IsNull ? ["*"] : [pattern.ToGlideString()];
+        return ConfigGetAsyncInternal(args);
+    }
+
+    public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
+    {
+        GlideString[] args = [.. patterns.Select(p => p.ToGlideString())];
+        return ConfigGetAsyncInternal(args);
+    }
+
+    private static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsyncInternal(GlideString[] args)
+    {
         return new(RequestType.ConfigGet, args, false, response =>
         {
             // Handle both array and dictionary formats
@@ -93,14 +105,31 @@ internal partial class Request
         return Ok(RequestType.ConfigSet, args);
     }
 
+    public static Cmd<string, ValkeyValue> ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
+    {
+        List<GlideString> args = [];
+        foreach (KeyValuePair<ValkeyValue, ValkeyValue> kvp in parameters)
+        {
+            args.Add(kvp.Key.ToGlideString());
+            args.Add(kvp.Value.ToGlideString());
+        }
+        return Ok(RequestType.ConfigSet, [.. args]);
+    }
+
     public static Cmd<long, long> DatabaseSizeAsync()
         => new(RequestType.DBSize, [], false, l => l);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
         => Ok(RequestType.FlushAll, []);
 
+    public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync(FlushMode mode)
+        => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? Constants.SyncKeyword : Constants.AsyncKeyword]);
+
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
         => Ok(RequestType.FlushDB, []);
+
+    public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
+        => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? Constants.SyncKeyword : Constants.AsyncKeyword]);
 
     // TODO #269: Replace DateTime with DateTimeOffset.
     public static Cmd<long, DateTime> LastSaveAsync()
@@ -120,8 +149,11 @@ internal partial class Request
 #endif
         });
 
-    public static Cmd<GlideString, string> LolwutAsync()
-        => new(RequestType.Lolwut, [], false, gs => gs.ToString());
+    public static Cmd<GlideString, string> LolwutAsync(LolwutOptions? options = null)
+    {
+        GlideString[] args = options is null ? [] : [.. options.ToArgs().Select(a => a.ToGlideString())];
+        return new(RequestType.Lolwut, args, false, gs => gs.ToString());
+    }
 
     public static Cmd<string, ValkeyValue> Select(long index)
         => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
