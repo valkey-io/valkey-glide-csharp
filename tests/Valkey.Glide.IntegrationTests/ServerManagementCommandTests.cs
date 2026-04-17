@@ -1,177 +1,179 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
+using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Tests for server management commands: FlushMode, LOLWUT version/parameters, CONFIG GET/SET multi-parameter.
+/// Tests for server management commands
 /// </summary>
-public class ServerManagementCommandTests
+[Collection(typeof(ServerManagementCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
+public class ServerManagementCommandTests(ServerManagementFixture fixture) : IClassFixture<ServerManagementFixture>
 {
+    private GlideClient StandaloneClient => fixture.StandaloneClient!;
+    private GlideClusterClient ClusterClient => fixture.ClusterClient!;
+
     /// <summary>
     /// Polls until the database is empty or the timeout expires.
-    /// Used by async-flush tests where the server returns immediately while the flush continues in the background.
     /// </summary>
     private static async Task WaitForEmptyDatabaseAsync(Func<Task<long>> databaseSize, TimeSpan? timeout = null)
     {
         TimeSpan effectiveTimeout = timeout ?? TimeSpan.FromSeconds(5);
-        DateTime deadline = DateTime.UtcNow + effectiveTimeout;
+        DateTimeOffset deadline = DateTimeOffset.UtcNow + effectiveTimeout;
 
-        while (DateTime.UtcNow < deadline)
+        while (DateTimeOffset.UtcNow < deadline)
         {
             if (await databaseSize() == 0)
+            {
                 return;
+            }
 
             await Task.Delay(100);
         }
 
         Assert.Equal(0, await databaseSize());
     }
+
     #region FlushMode Tests
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushDatabaseAsync_Standalone_WithSyncMode(GlideClient client)
+    [Fact]
+    public async Task FlushDatabaseAsync_Standalone_WithSyncMode()
     {
         string key = $"flush-sync-test-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await StandaloneClient.SetAsync(key, "test-value");
+        Assert.True(await StandaloneClient.ExistsAsync(key));
 
-        await client.FlushDatabaseAsync(FlushMode.Sync);
+        await StandaloneClient.FlushDatabaseAsync(FlushMode.Sync);
 
-        Assert.False(await client.ExistsAsync(key));
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        Assert.False(await StandaloneClient.ExistsAsync(key));
+        Assert.Equal(0, await StandaloneClient.DatabaseSizeAsync());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushDatabaseAsync_Standalone_WithAsyncMode(GlideClient client)
+    [Fact]
+    public async Task FlushDatabaseAsync_Standalone_WithAsyncMode()
     {
         string key = $"flush-async-test-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await StandaloneClient.SetAsync(key, "test-value");
+        Assert.True(await StandaloneClient.ExistsAsync(key));
 
-        await client.FlushDatabaseAsync(FlushMode.Async);
+        await StandaloneClient.FlushDatabaseAsync(FlushMode.Async);
 
-        // Async flush returns immediately; poll until the database is empty.
-        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
+        await WaitForEmptyDatabaseAsync(StandaloneClient.DatabaseSizeAsync);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Standalone_WithSyncMode(GlideClient client)
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Standalone_WithSyncMode()
     {
         string key = $"flushall-sync-test-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await StandaloneClient.SetAsync(key, "test-value");
+        Assert.True(await StandaloneClient.ExistsAsync(key));
 
-        await client.FlushAllDatabasesAsync(FlushMode.Sync);
+        await StandaloneClient.FlushAllDatabasesAsync(FlushMode.Sync);
 
-        Assert.False(await client.ExistsAsync(key));
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        Assert.False(await StandaloneClient.ExistsAsync(key));
+        Assert.Equal(0, await StandaloneClient.DatabaseSizeAsync());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Standalone_WithAsyncMode(GlideClient client)
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Standalone_WithAsyncMode()
     {
         string key = $"flushall-async-test-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await StandaloneClient.SetAsync(key, "test-value");
+        Assert.True(await StandaloneClient.ExistsAsync(key));
 
-        await client.FlushAllDatabasesAsync(FlushMode.Async);
+        await StandaloneClient.FlushAllDatabasesAsync(FlushMode.Async);
 
-        // Async flush returns immediately; poll until the database is empty.
-        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
+        await WaitForEmptyDatabaseAsync(StandaloneClient.DatabaseSizeAsync);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushDatabaseAsync_Cluster_WithSyncMode(GlideClusterClient client)
+    [Fact]
+    public async Task FlushDatabaseAsync_Cluster_WithSyncMode()
     {
         string key = $"flush-cluster-sync-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await client.FlushDatabaseAsync(FlushMode.Sync);
+        await ClusterClient.FlushDatabaseAsync(FlushMode.Sync);
 
-        Assert.False(await client.ExistsAsync(key));
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        Assert.False(await ClusterClient.ExistsAsync(key));
+        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushDatabaseAsync_Cluster_WithAsyncMode(GlideClusterClient client)
+    [Fact]
+    public async Task FlushDatabaseAsync_Cluster_WithAsyncMode()
     {
         string key = $"flush-cluster-async-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await client.FlushDatabaseAsync(FlushMode.Async);
+        await ClusterClient.FlushDatabaseAsync(FlushMode.Async);
 
-        // Async flush returns immediately; poll until the database is empty.
-        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
+        await WaitForEmptyDatabaseAsync(ClusterClient.DatabaseSizeAsync);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushDatabaseAsync_Cluster_WithSyncMode_AndRoute(GlideClusterClient client)
+    [Fact]
+    public async Task FlushDatabaseAsync_Cluster_WithSyncMode_AndRoute()
     {
         string key = $"flush-cluster-sync-route-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await client.FlushDatabaseAsync(FlushMode.Sync, Route.AllPrimaries);
+        await ClusterClient.FlushDatabaseAsync(FlushMode.Sync, Route.AllPrimaries);
 
-        Assert.False(await client.ExistsAsync(key));
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        Assert.False(await ClusterClient.ExistsAsync(key));
+        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
     }
 
     #endregion
 
     #region LOLWUT Tests
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task LolwutAsync_Standalone_WithVersion(GlideClient client)
+    [Fact]
+    public async Task LolwutAsync_Standalone_WithVersion()
     {
-        string result = await client.LolwutAsync(new LolwutOptions { Version = 5 });
-
-        Assert.NotNull(result);
+        string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5 });
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task LolwutAsync_Standalone_WithVersionAndParameters(GlideClient client)
+    [Fact]
+    public async Task LolwutAsync_Standalone_WithVersionAndParameters()
     {
-        string result = await client.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
-
-        Assert.NotNull(result);
+        string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task LolwutAsync_Cluster_WithVersion(GlideClusterClient client)
+    [Fact]
+    public async Task LolwutAsync_Cluster_WithVersion()
     {
-        string result = await client.LolwutAsync(new LolwutOptions { Version = 5 });
-
-        Assert.NotNull(result);
+        string result = await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5 });
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task LolwutAsync_Cluster_WithVersionAndParameters(GlideClusterClient client)
+    [Fact]
+    public async Task LolwutAsync_Cluster_WithVersionAndParameters()
     {
-        string result = await client.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
+        string result = await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
+        Assert.NotEmpty(result);
+        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+    }
 
-        Assert.NotNull(result);
+    [Fact]
+    public async Task LolwutAsync_Standalone_WithParametersOnly()
+    {
+        string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
+        Assert.NotEmpty(result);
+        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task LolwutAsync_Cluster_WithParametersOnly()
+    {
+        string result = await ClusterClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
         Assert.NotEmpty(result);
         Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
     }
@@ -180,25 +182,21 @@ public class ServerManagementCommandTests
 
     #region CONFIG GET/SET Multi-Parameter Tests
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task ConfigGetAsync_Standalone_MultiplePatterns(GlideClient client)
+    [Fact]
+    public async Task ConfigGetAsync_Standalone_MultiplePatterns()
     {
-        KeyValuePair<string, string>[] result = await client.ConfigGetAsync(
+        KeyValuePair<string, string>[] result = await StandaloneClient.ConfigGetAsync(
             [(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]);
 
-        Assert.NotNull(result);
         Assert.True(result.Length >= 2);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
         Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task ConfigSetAsync_Standalone_MultipleParameters(GlideClient client)
+    [Fact]
+    public async Task ConfigSetAsync_Standalone_MultipleParameters()
     {
-        // Get original values
-        KeyValuePair<string, string>[] original = await client.ConfigGetAsync(
+        KeyValuePair<string, string>[] original = await StandaloneClient.ConfigGetAsync(
             [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"]);
 
         string originalDecayTime = original.First(kvp => kvp.Key == "lfu-decay-time").Value;
@@ -206,15 +204,13 @@ public class ServerManagementCommandTests
 
         try
         {
-            // Set multiple parameters at once
-            await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
+            await StandaloneClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
             {
                 { "lfu-decay-time", "5" },
                 { "lfu-log-factor", "20" }
             });
 
-            // Verify the values were set
-            KeyValuePair<string, string>[] result = await client.ConfigGetAsync(
+            KeyValuePair<string, string>[] result = await StandaloneClient.ConfigGetAsync(
                 [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"]);
 
             Assert.Equal("5", result.First(kvp => kvp.Key == "lfu-decay-time").Value);
@@ -222,8 +218,7 @@ public class ServerManagementCommandTests
         }
         finally
         {
-            // Restore original values
-            await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
+            await StandaloneClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
             {
                 { "lfu-decay-time", originalDecayTime },
                 { "lfu-log-factor", originalLogFactor }
@@ -231,29 +226,24 @@ public class ServerManagementCommandTests
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task ConfigGetAsync_Cluster_MultiplePatterns(GlideClusterClient client)
+    [Fact]
+    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
     {
-        KeyValuePair<string, string>[] result = await client.ConfigGetAsync(
+        KeyValuePair<string, string>[] result = await ClusterClient.ConfigGetAsync(
             [(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]);
 
-        Assert.NotNull(result);
         Assert.True(result.Length >= 2);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
         Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task ConfigSetAsync_Cluster_MultipleParameters(GlideClusterClient client)
+    [Fact]
+    public async Task ConfigSetAsync_Cluster_MultipleParameters()
     {
-        // Get original values
-        ClusterValue<KeyValuePair<string, string>[]> original = await client.ConfigGetAsync(
+        ClusterValue<KeyValuePair<string, string>[]> original = await ClusterClient.ConfigGetAsync(
             [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"],
             Route.AllPrimaries);
 
-        // Get original values from first node
         KeyValuePair<string, string>[] firstNodeOriginal = original.HasMultiData
             ? original.MultiValue.Values.First()
             : original.SingleValue;
@@ -263,15 +253,13 @@ public class ServerManagementCommandTests
 
         try
         {
-            // Set multiple parameters at once
-            await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
+            await ClusterClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
             {
                 { "lfu-decay-time", "5" },
                 { "lfu-log-factor", "20" }
             });
 
-            // Verify the values were set
-            ClusterValue<KeyValuePair<string, string>[]> result = await client.ConfigGetAsync(
+            ClusterValue<KeyValuePair<string, string>[]> result = await ClusterClient.ConfigGetAsync(
                 [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"],
                 Route.AllPrimaries);
 
@@ -284,8 +272,7 @@ public class ServerManagementCommandTests
         }
         finally
         {
-            // Restore original values
-            await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
+            await ClusterClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
             {
                 { "lfu-decay-time", originalDecayTime },
                 { "lfu-log-factor", originalLogFactor }
@@ -297,123 +284,119 @@ public class ServerManagementCommandTests
 
     #region FlushAllDatabases Cluster Tests
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases(GlideClusterClient client)
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases()
     {
         string key = $"flushall-cluster-test-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await client.FlushAllDatabasesAsync();
+        await ClusterClient.FlushAllDatabasesAsync();
 
-        Assert.False(await client.ExistsAsync(key));
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        Assert.False(await ClusterClient.ExistsAsync(key));
+        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Cluster_WithSyncMode(GlideClusterClient client)
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Cluster_WithSyncMode()
     {
         string key = $"flushall-cluster-sync-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await client.FlushAllDatabasesAsync(FlushMode.Sync);
+        await ClusterClient.FlushAllDatabasesAsync(FlushMode.Sync);
 
-        Assert.False(await client.ExistsAsync(key));
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        Assert.False(await ClusterClient.ExistsAsync(key));
+        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Cluster_WithAsyncMode(GlideClusterClient client)
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Cluster_WithAsyncMode()
     {
         string key = $"flushall-cluster-async-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await client.FlushAllDatabasesAsync(FlushMode.Async);
+        await ClusterClient.FlushAllDatabasesAsync(FlushMode.Async);
 
-        // Async flush returns immediately; poll until the database is empty.
-        await WaitForEmptyDatabaseAsync(client.DatabaseSizeAsync);
+        await WaitForEmptyDatabaseAsync(ClusterClient.DatabaseSizeAsync);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task FlushAllDatabasesAsync_Cluster_WithRoute(GlideClusterClient client)
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Cluster_WithRoute()
     {
         string key = $"flushall-cluster-route-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
-        Assert.True(await client.ExistsAsync(key));
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await client.FlushAllDatabasesAsync(Route.AllPrimaries);
+        await ClusterClient.FlushAllDatabasesAsync(Route.AllPrimaries);
 
-        Assert.False(await client.ExistsAsync(key));
-        Assert.Equal(0, await client.DatabaseSizeAsync());
+        Assert.False(await ClusterClient.ExistsAsync(key));
+        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
     }
 
     #endregion
 
     #region WAITAOF Tests
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task WaitAofAsync_Standalone_ReturnsResults(GlideClient client)
+    [Fact]
+    public async Task WaitAofAsync_Standalone_ReturnsResults()
     {
         string key = $"waitaof-test-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
+        await StandaloneClient.SetAsync(key, "test-value");
 
-        long[] result = await client.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
+        long[] result = await StandaloneClient.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
 
-        Assert.NotNull(result);
         Assert.Equal(2, result.Length);
-        // result[0] = local AOF count, result[1] = replica AOF count
-        // With no replicas, we expect [0 or 1, 0]
         Assert.True(result[0] >= 0);
         Assert.True(result[1] >= 0);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task WaitAofAsync_Cluster_ReturnsResults(GlideClusterClient client)
+    [Fact]
+    public async Task WaitAofAsync_Cluster_ReturnsResults()
     {
         string key = $"waitaof-cluster-test-{Guid.NewGuid()}";
-        await client.SetAsync(key, "test-value");
+        await ClusterClient.SetAsync(key, "test-value");
 
-        long[] result = await client.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
+        long[] result = await ClusterClient.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
 
-        Assert.NotNull(result);
         Assert.Equal(2, result.Length);
         Assert.True(result[0] >= 0);
         Assert.True(result[1] >= 0);
     }
 
     #endregion
+}
 
-    #region LOLWUT Params-Only Tests
+/// <summary>
+/// Fixture that provides isolated Valkey server instances for server management tests.
+/// Tests that call FlushAll/FlushDB need their own servers to avoid interfering with other tests.
+/// </summary>
+public class ServerManagementFixture : IAsyncLifetime
+{
+    private StandaloneServer? _standaloneServer;
+    private ClusterServer? _clusterServer;
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task LolwutAsync_Standalone_WithParametersOnly(GlideClient client)
+    public GlideClient? StandaloneClient { get; private set; }
+    public GlideClusterClient? ClusterClient { get; private set; }
+
+    public async ValueTask InitializeAsync()
     {
-        string result = await client.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
+        _standaloneServer = new StandaloneServer();
+        _clusterServer = new ClusterServer();
 
-        Assert.NotNull(result);
-        Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        StandaloneClient = await _standaloneServer.CreateStandaloneClientAsync();
+        ClusterClient = await _clusterServer.CreateClusterClientAsync();
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task LolwutAsync_Cluster_WithParametersOnly(GlideClusterClient client)
+    public ValueTask DisposeAsync()
     {
-        string result = await client.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
+        StandaloneClient?.Dispose();
+        ClusterClient?.Dispose();
 
-        Assert.NotNull(result);
-        Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        _standaloneServer?.Dispose();
+        _clusterServer?.Dispose();
+
+        return new ValueTask();
     }
-
-    #endregion
 }
