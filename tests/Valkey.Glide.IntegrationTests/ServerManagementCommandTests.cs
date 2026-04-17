@@ -35,7 +35,7 @@ public class ServerManagementCommandTests
     public async Task FlushDatabaseAsync_Standalone_WithSyncMode(GlideClient client)
     {
         string key = $"flush-sync-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushDatabaseAsync(FlushMode.Sync);
@@ -49,7 +49,7 @@ public class ServerManagementCommandTests
     public async Task FlushDatabaseAsync_Standalone_WithAsyncMode(GlideClient client)
     {
         string key = $"flush-async-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushDatabaseAsync(FlushMode.Async);
@@ -63,7 +63,7 @@ public class ServerManagementCommandTests
     public async Task FlushAllDatabasesAsync_Standalone_WithSyncMode(GlideClient client)
     {
         string key = $"flushall-sync-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushAllDatabasesAsync(FlushMode.Sync);
@@ -77,7 +77,7 @@ public class ServerManagementCommandTests
     public async Task FlushAllDatabasesAsync_Standalone_WithAsyncMode(GlideClient client)
     {
         string key = $"flushall-async-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushAllDatabasesAsync(FlushMode.Async);
@@ -91,7 +91,7 @@ public class ServerManagementCommandTests
     public async Task FlushDatabaseAsync_Cluster_WithSyncMode(GlideClusterClient client)
     {
         string key = $"flush-cluster-sync-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushDatabaseAsync(FlushMode.Sync);
@@ -105,7 +105,7 @@ public class ServerManagementCommandTests
     public async Task FlushDatabaseAsync_Cluster_WithAsyncMode(GlideClusterClient client)
     {
         string key = $"flush-cluster-async-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushDatabaseAsync(FlushMode.Async);
@@ -119,7 +119,7 @@ public class ServerManagementCommandTests
     public async Task FlushDatabaseAsync_Cluster_WithSyncMode_AndRoute(GlideClusterClient client)
     {
         string key = $"flush-cluster-sync-route-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushDatabaseAsync(FlushMode.Sync, Route.AllPrimaries);
@@ -302,7 +302,7 @@ public class ServerManagementCommandTests
     public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases(GlideClusterClient client)
     {
         string key = $"flushall-cluster-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushAllDatabasesAsync();
@@ -316,7 +316,7 @@ public class ServerManagementCommandTests
     public async Task FlushAllDatabasesAsync_Cluster_WithSyncMode(GlideClusterClient client)
     {
         string key = $"flushall-cluster-sync-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushAllDatabasesAsync(FlushMode.Sync);
@@ -330,7 +330,7 @@ public class ServerManagementCommandTests
     public async Task FlushAllDatabasesAsync_Cluster_WithAsyncMode(GlideClusterClient client)
     {
         string key = $"flushall-cluster-async-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushAllDatabasesAsync(FlushMode.Async);
@@ -344,7 +344,7 @@ public class ServerManagementCommandTests
     public async Task FlushAllDatabasesAsync_Cluster_WithRoute(GlideClusterClient client)
     {
         string key = $"flushall-cluster-route-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
         Assert.True(await client.ExistsAsync(key));
 
         await client.FlushAllDatabasesAsync(Route.AllPrimaries);
@@ -362,7 +362,7 @@ public class ServerManagementCommandTests
     public async Task WaitAofAsync_Standalone_ReturnsResults(GlideClient client)
     {
         string key = $"waitaof-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
 
         long[] result = await client.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
 
@@ -379,7 +379,7 @@ public class ServerManagementCommandTests
     public async Task WaitAofAsync_Cluster_ReturnsResults(GlideClusterClient client)
     {
         string key = $"waitaof-cluster-test-{Guid.NewGuid()}";
-        await client.StringSetAsync(key, "test-value");
+        await client.SetAsync(key, "test-value");
 
         long[] result = await client.WaitAofAsync(false, 0, TimeSpan.FromSeconds(2));
 
