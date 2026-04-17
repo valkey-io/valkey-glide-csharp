@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Commands.Constants.Constants;
@@ -411,7 +413,7 @@ internal partial class Request
 
     private static StreamPendingInfo ConvertStreamPendingInfo(object[] response)
     {
-        var pendingCount = response[0] is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)response[0];
+        var pendingCount = response[0] is GlideString gs ? int.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (int)(long)response[0];
         var lowestId = response[1] is null ? default : (ValkeyValue)(GlideString)response[1];
         var highestId = response[2] is null ? default : (ValkeyValue)(GlideString)response[2];
         var consumersArray = response[3] as object[];
@@ -421,7 +423,7 @@ internal partial class Request
             for (int i = 0; i < consumersArray.Length; i++)
             {
                 var consumerData = (object[])consumersArray[i];
-                var count = consumerData[1] is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)consumerData[1];
+                var count = consumerData[1] is GlideString gs2 ? int.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (int)(long)consumerData[1];
                 consumers[i] = new StreamConsumer((ValkeyValue)(GlideString)consumerData[0], count);
             }
         }
@@ -567,11 +569,11 @@ internal partial class Request
                     switch (key)
                     {
                         case "name": name = ((GlideString)value).ToString(); break;
-                        case "consumers": consumers = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
-                        case "pending": pending = value is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)value; break;
+                        case "consumers": consumers = value is GlideString gs ? int.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                        case "pending": pending = value is GlideString gs2 ? int.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
                         case "last-delivered-id": lastDeliveredId = (ValkeyValue)(GlideString)value; break;
-                        case "entries-read": entriesRead = value is null ? null : value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
-                        case "lag": lag = value is null ? null : value is GlideString gs4 ? long.Parse(gs4.ToString()) : (long)value; break;
+                        case "entries-read": entriesRead = value is null ? null : value is GlideString gs3 ? long.Parse(gs3.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
+                        case "lag": lag = value is null ? null : value is GlideString gs4 ? long.Parse(gs4.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                         default: break;
                     }
                 }
@@ -586,11 +588,11 @@ internal partial class Request
                     switch (key)
                     {
                         case "name": name = ((GlideString)value).ToString(); break;
-                        case "consumers": consumers = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
-                        case "pending": pending = value is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)value; break;
+                        case "consumers": consumers = value is GlideString gs ? int.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                        case "pending": pending = value is GlideString gs2 ? int.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
                         case "last-delivered-id": lastDeliveredId = (ValkeyValue)(GlideString)value; break;
-                        case "entries-read": entriesRead = value is null ? null : value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
-                        case "lag": lag = value is null ? null : value is GlideString gs4 ? long.Parse(gs4.ToString()) : (long)value; break;
+                        case "entries-read": entriesRead = value is null ? null : value is GlideString gs3 ? long.Parse(gs3.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
+                        case "lag": lag = value is null ? null : value is GlideString gs4 ? long.Parse(gs4.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                         default: break;
                     }
                 }
@@ -618,8 +620,8 @@ internal partial class Request
                     switch (key)
                     {
                         case "name": name = ((GlideString)value).ToString(); break;
-                        case "pending": pending = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
-                        case "idle": idle = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                        case "pending": pending = value is GlideString gs ? int.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                        case "idle": idle = value is GlideString gs2 ? long.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                         default: break;
                     }
                 }
@@ -634,8 +636,8 @@ internal partial class Request
                     switch (key)
                     {
                         case "name": name = ((GlideString)value).ToString(); break;
-                        case "pending": pending = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
-                        case "idle": idle = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                        case "pending": pending = value is GlideString gs ? int.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                        case "idle": idle = value is GlideString gs2 ? long.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                         default: break;
                     }
                 }
@@ -718,10 +720,10 @@ internal partial class Request
                 var value = kvp.Value;
                 switch (key)
                 {
-                    case "length": length = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
-                    case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)value; break;
-                    case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? int.Parse(gs3.ToString()) : (int)(long)value; break;
-                    case "groups": groups = value is GlideString gs4 ? int.Parse(gs4.ToString()) : (int)(long)value; break;
+                    case "length": length = value is GlideString gs ? int.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                    case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? int.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                    case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? int.Parse(gs3.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                    case "groups": groups = value is GlideString gs4 ? int.Parse(gs4.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
                     case "first-entry": firstEntry = value is object[] arr ? ConvertStreamEntries([arr])[0] : default; break;
                     case "last-entry": lastEntry = value is object[] arr2 ? ConvertStreamEntries([arr2])[0] : default; break;
                     case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
@@ -738,10 +740,10 @@ internal partial class Request
                 var value = infoArray[i + 1];
                 switch (key)
                 {
-                    case "length": length = value is GlideString gs ? int.Parse(gs.ToString()) : (int)(long)value; break;
-                    case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)value; break;
-                    case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? int.Parse(gs3.ToString()) : (int)(long)value; break;
-                    case "groups": groups = value is GlideString gs4 ? int.Parse(gs4.ToString()) : (int)(long)value; break;
+                    case "length": length = value is GlideString gs ? int.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                    case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? int.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                    case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? int.Parse(gs3.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
+                    case "groups": groups = value is GlideString gs4 ? int.Parse(gs4.ToString(), CultureInfo.InvariantCulture) : (int)(long)value; break;
                     case "first-entry": firstEntry = value is object[] arr ? ConvertStreamEntries([arr])[0] : default; break;
                     case "last-entry": lastEntry = value is object[] arr2 ? ConvertStreamEntries([arr2])[0] : default; break;
                     case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
@@ -780,12 +782,12 @@ internal partial class Request
         {
             switch (key)
             {
-                case "length": length = value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
-                case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
-                case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
+                case "length": length = value is GlideString gs ? long.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
+                case "radix-tree-keys": radixTreeKeys = value is GlideString gs2 ? long.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
+                case "radix-tree-nodes": radixTreeNodes = value is GlideString gs3 ? long.Parse(gs3.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                 case "last-generated-id": lastGeneratedId = (ValkeyValue)(GlideString)value; break;
                 case "max-deleted-entry-id": maxDeletedEntryId = (ValkeyValue)(GlideString)value; break;
-                case "entries-added": entriesAdded = value is GlideString gs5 ? long.Parse(gs5.ToString()) : (long)value; break;
+                case "entries-added": entriesAdded = value is GlideString gs5 ? long.Parse(gs5.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                 case "recorded-first-entry-id": recordedFirstEntryId = (ValkeyValue)(GlideString)value; break;
                 case "entries":
                     entries = value is object[] arr && arr.Length > 0 ? ConvertStreamEntries(arr) : [];
@@ -841,8 +843,8 @@ internal partial class Request
             {
                 case "name": name = ((GlideString)value).ToString(); break;
                 case "last-delivered-id": lastDeliveredId = (ValkeyValue)(GlideString)value; break;
-                case "entries-read": entriesRead = value is null ? null : value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
-                case "pel-count": pelCount = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
+                case "entries-read": entriesRead = value is null ? null : value is GlideString gs ? long.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
+                case "pel-count": pelCount = value is GlideString gs2 ? long.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                 case "consumers":
                     consumers = value is object[] arr && arr.Length > 0 ? ConvertStreamConsumerFullInfoArray(arr) : [];
                     break;
@@ -895,9 +897,9 @@ internal partial class Request
             switch (key)
             {
                 case "name": name = ((GlideString)value).ToString(); break;
-                case "seen-time": seenTime = value is GlideString gs ? long.Parse(gs.ToString()) : (long)value; break;
-                case "active-time": activeTime = value is GlideString gs2 ? long.Parse(gs2.ToString()) : (long)value; break;
-                case "pel-count": pelCount = value is GlideString gs3 ? long.Parse(gs3.ToString()) : (long)value; break;
+                case "seen-time": seenTime = value is GlideString gs ? long.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
+                case "active-time": activeTime = value is GlideString gs2 ? long.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
+                case "pel-count": pelCount = value is GlideString gs3 ? long.Parse(gs3.ToString(), CultureInfo.InvariantCulture) : (long)value; break;
                 case "pending":
                     pendingEntries = value is object[] pelArr && pelArr.Length > 0 ? ConvertConsumerPelEntries(pelArr) : [];
                     break;
@@ -935,8 +937,8 @@ internal partial class Request
             var entry = (object[])pelArray[i];
             var entryId = (ValkeyValue)(GlideString)entry[0];
             var consumerName = ((GlideString)entry[1]).ToString();
-            var deliveryTime = entry[2] is GlideString gs ? long.Parse(gs.ToString()) : (long)entry[2];
-            var deliveryCount = entry[3] is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)entry[3];
+            var deliveryTime = entry[2] is GlideString gs ? long.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (long)entry[2];
+            var deliveryCount = entry[3] is GlideString gs2 ? int.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (int)(long)entry[3];
             result[i] = new StreamPendingEntryInfo(entryId, consumerName, deliveryTime, deliveryCount);
         }
         return result;
@@ -952,8 +954,8 @@ internal partial class Request
         {
             var entry = (object[])pelArray[i];
             var entryId = (ValkeyValue)(GlideString)entry[0];
-            var deliveryTime = entry[1] is GlideString gs ? long.Parse(gs.ToString()) : (long)entry[1];
-            var deliveryCount = entry[2] is GlideString gs2 ? int.Parse(gs2.ToString()) : (int)(long)entry[2];
+            var deliveryTime = entry[1] is GlideString gs ? long.Parse(gs.ToString(), CultureInfo.InvariantCulture) : (long)entry[1];
+            var deliveryCount = entry[2] is GlideString gs2 ? int.Parse(gs2.ToString(), CultureInfo.InvariantCulture) : (int)(long)entry[2];
             result[i] = new StreamPendingEntryInfo(entryId, null, deliveryTime, deliveryCount);
         }
         return result;
