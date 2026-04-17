@@ -22,7 +22,6 @@ public partial interface IDatabaseAsync :
     IHyperLogLogBaseCommands,
     IListBaseCommands,
     IScriptingAndFunctionBaseCommands,
-    IServerManagementCommands,
     ISetBaseCommands,
     ISortedSetBaseCommands,
     IStreamBaseCommands,

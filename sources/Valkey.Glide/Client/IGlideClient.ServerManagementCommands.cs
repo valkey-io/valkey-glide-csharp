@@ -1,23 +1,24 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
 
-namespace Valkey.Glide.Commands;
+namespace Valkey.Glide;
 
-// ATTENTION: Methods should only be added to this interface if they are implemented
-// by both Valkey GLIDE clients and StackExchange.Redis databases.
+// ATTENTION: Methods should only be added to this interface if they are implemented by Valkey GLIDE clients
+// but NOT by StackExchange.Redis databases. Methods implemented by both should be added to the corresponding
+// Commands interface instead.
 
 /// <summary>
-/// Server management commands for standalone clients.
+/// Server management commands for Valkey GLIDE standalone client.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
-public interface IServerManagementCommands
+public partial interface IGlideClient
 {
     /// <summary>
     /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync()" path="/remarks" />
+    /// <inheritdoc cref="IGlideClusterClient.InfoAsync()" path="/remarks" />
     /// <returns>A <see langword="string" /> containing the information for the sections requested.</returns>
     /// <remarks>
     /// <example>
@@ -33,8 +34,8 @@ public interface IServerManagementCommands
     /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(IEnumerable{Section})" path="/remarks" />
-    /// <inheritdoc cref="IServerManagementClusterCommands.InfoAsync(IEnumerable{Section})" path="/param" />
+    /// <inheritdoc cref="IGlideClusterClient.InfoAsync(IEnumerable{Section})" path="/remarks" />
+    /// <inheritdoc cref="IGlideClusterClient.InfoAsync(IEnumerable{Section})" path="/param" />
     /// <returns>
     /// <inheritdoc cref="InfoAsync()" />
     /// </returns>
@@ -192,5 +193,4 @@ public interface IServerManagementCommands
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync();
-
 }

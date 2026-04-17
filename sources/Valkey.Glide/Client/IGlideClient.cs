@@ -11,11 +11,11 @@ namespace Valkey.Glide;
 /// <summary>
 /// Interface for Valkey GLIDE standalone client.
 /// </summary>
-public interface IGlideClient :
+public partial interface IGlideClient :
     IBaseClient,
     IGenericCommands,
     IScriptingAndFunctionStandaloneCommands,
-    IServerManagementCommands
+    IServerManagementStandaloneCommands
 {
     /// <summary>
     /// Moves key from the currently selected database to the specified destination database.
