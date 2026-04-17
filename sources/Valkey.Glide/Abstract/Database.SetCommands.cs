@@ -142,7 +142,6 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // TODO cleanup?
         // Build ScanOptions from the SER parameters
         ScanOptions? options = null;
         if (!pattern.IsNull || pageSize != 250)
