@@ -346,7 +346,6 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
     /// <summary>
     /// Asserts that the result contains the expected server name.
     /// </summary>
-    /// <param name="result"></param>
     private static void AssertContainsServerName(string result)
         => Assert.Contains(["VALKEY", "REDIS"], name => result.Contains(name, StringComparison.OrdinalIgnoreCase));
 }
