@@ -253,11 +253,14 @@ jobs:
                   fi
 
             - name: Patch IT suite to run tests using freshly published version
-              working-directory: tests/Valkey.Glide.IntegrationTests
               shell: bash
               run: |
-                  dotnet remove reference ../../sources/Valkey.Glide/Valkey.Glide.csproj
-                  dotnet add package Valkey.Glide --version $RELEASE_VERSION
+                  # Remove local project references to Valkey.Glide
+                  dotnet remove tests/Valkey.Glide.TestUtils reference sources/Valkey.Glide/Valkey.Glide.csproj
+                  dotnet remove tests/Valkey.Glide.IntegrationTests reference sources/Valkey.Glide/Valkey.Glide.csproj
+                  # Replace with the published NuGet package
+                  dotnet add tests/Valkey.Glide.TestUtils package Valkey.Glide --version $RELEASE_VERSION
+                  dotnet add tests/Valkey.Glide.IntegrationTests package Valkey.Glide --version $RELEASE_VERSION
                   git diff
 
             - name: Install server
