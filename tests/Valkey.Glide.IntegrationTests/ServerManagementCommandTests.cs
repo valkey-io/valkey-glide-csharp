@@ -132,51 +132,27 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
 
     [Fact]
     public async Task LolwutAsync_Standalone_WithVersion()
-    {
-        string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5 });
-        Assert.NotEmpty(result);
-        AssertContainsServerName(result);
-    }
+        => AssertContainsServerName(await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5 }));
 
     [Fact]
     public async Task LolwutAsync_Standalone_WithVersionAndParameters()
-    {
-        string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
-        Assert.NotEmpty(result);
-        AssertContainsServerName(result);
-    }
+        => AssertContainsServerName(await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] }));
 
     [Fact]
     public async Task LolwutAsync_Cluster_WithVersion()
-    {
-        string result = await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5 });
-        Assert.NotEmpty(result);
-        AssertContainsServerName(result);
-    }
+        => AssertContainsServerName(await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5 }));
 
     [Fact]
     public async Task LolwutAsync_Cluster_WithVersionAndParameters()
-    {
-        string result = await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
-        Assert.NotEmpty(result);
-        AssertContainsServerName(result);
-    }
+        => AssertContainsServerName(await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] }));
 
     [Fact]
     public async Task LolwutAsync_Standalone_WithParametersOnly()
-    {
-        string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
-        Assert.NotEmpty(result);
-        AssertContainsServerName(result);
-    }
+        => AssertContainsServerName(await StandaloneClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] }));
 
     [Fact]
     public async Task LolwutAsync_Cluster_WithParametersOnly()
-    {
-        string result = await ClusterClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
-        Assert.NotEmpty(result);
-        AssertContainsServerName(result);
-    }
+        => AssertContainsServerName(await ClusterClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] }));
 
     #endregion
 
