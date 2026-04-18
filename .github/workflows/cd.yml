@@ -263,8 +263,16 @@ jobs:
                   dotnet add tests/Valkey.Glide.IntegrationTests package Valkey.Glide --version $RELEASE_VERSION
                   git diff
 
+            - name: Setup WSL (Windows only)
+              # WSL2 is not available on windows-11-arm runners (no Hyper-V).
+              if: ${{ matrix.host.OS == 'windows' && matrix.host.ARCH != 'arm64' }}
+              uses: Vampire/setup-wsl@v7
+              with:
+                  distribution: Ubuntu-22.04
+                  additional-packages: build-essential git make pkg-config libssl-dev
+
             - name: Install server
-              # WSL2 is not available on windows-11-arm runners (no Hyper-V), so we cannot run Valkey server there.
+              # WSL2 is not available on windows-11-arm runners (no Hyper-V).
               if: ${{ !(matrix.host.OS == 'windows' && matrix.host.ARCH == 'arm64') }}
               uses: ./.github/workflows/install-server
               with:
