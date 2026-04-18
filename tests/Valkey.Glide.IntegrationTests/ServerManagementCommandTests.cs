@@ -10,7 +10,7 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 [Collection(typeof(ServerManagementCommandTests))]
 [CollectionDefinition(DisableParallelization = true)]
-public class ServerManagementCommandTests(ServerManagementFixture fixture) : IClassFixture<ServerManagementFixture>
+public class ServerManagementCommandTests(ServerManagementCommandFixture fixture) : IClassFixture<ServerManagementCommandFixture>
 {
     private GlideClient StandaloneClient => fixture.StandaloneClient!;
     private GlideClusterClient ClusterClient => fixture.ClusterClient!;
@@ -135,7 +135,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5 });
         Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        AssertContainsServerName(result);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
         Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        AssertContainsServerName(result);
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         string result = await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5 });
         Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        AssertContainsServerName(result);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         string result = await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
         Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        AssertContainsServerName(result);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         string result = await StandaloneClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
         Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        AssertContainsServerName(result);
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     {
         string result = await ClusterClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
         Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
+        AssertContainsServerName(result);
     }
 
     #endregion
@@ -366,13 +366,20 @@ public class ServerManagementCommandTests(ServerManagementFixture fixture) : ICl
     }
 
     #endregion
+
+    /// <summary>
+    /// Asserts that the result contains the expected server name.
+    /// </summary>
+    /// <param name="result"></param>
+    private static void AssertContainsServerName(string result)
+        => Assert.Contains(["VALKEY", "REDIS"], name => result.Contains(name, StringComparison.OrdinalIgnoreCase));
 }
 
 /// <summary>
 /// Fixture that provides isolated Valkey server instances for server management tests.
 /// Tests that call FlushAll/FlushDB need their own servers to avoid interfering with other tests.
 /// </summary>
-public class ServerManagementFixture : IAsyncLifetime
+public class ServerManagementCommandFixture : IAsyncLifetime
 {
     private StandaloneServer? _standaloneServer;
     private ClusterServer? _clusterServer;
