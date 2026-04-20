@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Commands.Constants.Constants;
-
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -23,7 +21,7 @@ public enum FtAggregateOrderBy
 public interface IFtAggregateClause
 {
     /// <summary>Returns the command arguments for this clause.</summary>
-    string[] ToArgs();
+    GlideString[] ToArgs();
 }
 
 /// <summary>
@@ -37,7 +35,7 @@ public class FtAggregateLimit(int offset, int count) : IFtAggregateClause
     public int Count { get; } = count;
 
     /// <inheritdoc/>
-    public string[] ToArgs() => [LimitKeyword, Offset.ToString(), Count.ToString()];
+    public GlideString[] ToArgs() => [ValkeyLiterals.LIMIT, Offset.ToString(), Count.ToString()];
 }
 
 /// <summary>
@@ -49,7 +47,7 @@ public class FtAggregateFilter(string expression) : IFtAggregateClause
     public string Expression { get; } = expression;
 
     /// <inheritdoc/>
-    public string[] ToArgs() => [FilterKeyword, Expression];
+    public GlideString[] ToArgs() => [ValkeyLiterals.FILTER, Expression];
 }
 
 /// <summary>
@@ -64,11 +62,11 @@ public class FtAggregateReducer(string function)
     /// <summary>Optional user-defined output property name.</summary>
     public string? Name { get; set; }
 
-    internal string[] ToArgs()
+    internal GlideString[] ToArgs()
     {
-        List<string> args = [ReduceKeyword, Function, Args.Length.ToString()];
-        args.AddRange(Args);
-        if (Name is not null) { args.Add(AsKeyword); args.Add(Name); }
+        List<GlideString> args = [ValkeyLiterals.REDUCE, Function, Args.Length.ToString()];
+        foreach (var a in Args) args.Add(a);
+        if (Name is not null) { args.Add(ValkeyLiterals.AS); args.Add(Name); }
         return [.. args];
     }
 }
@@ -84,10 +82,10 @@ public class FtAggregateGroupBy(params string[] properties) : IFtAggregateClause
     public FtAggregateReducer[] Reducers { get; set; } = [];
 
     /// <inheritdoc/>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
-        List<string> args = [GroupByKeyword, Properties.Length.ToString()];
-        args.AddRange(Properties);
+        List<GlideString> args = [ValkeyLiterals.GROUPBY, Properties.Length.ToString()];
+        foreach (var p in Properties) args.Add(p);
         foreach (var r in Reducers) args.AddRange(r.ToArgs());
         return [.. args];
     }
@@ -115,20 +113,20 @@ public class FtAggregateSortBy(params FtAggregateSortProperty[] properties) : IF
     public int? Max { get; set; }
 
     /// <inheritdoc/>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
-        List<string> args = [SortByKeyword, (Properties.Length * 2).ToString()];
+        List<GlideString> args = [ValkeyLiterals.SORTBY, (Properties.Length * 2).ToString()];
         foreach (var p in Properties)
         {
             args.Add(p.Property);
             args.Add(p.Order switch
             {
-                FtAggregateOrderBy.ASC => AscKeyword,
-                FtAggregateOrderBy.DESC => DescKeyword,
+                FtAggregateOrderBy.ASC => ValkeyLiterals.ASC,
+                FtAggregateOrderBy.DESC => ValkeyLiterals.DESC,
                 _ => p.Order.ToString(),
             });
         }
-        if (Max.HasValue) { args.Add(MaxKeyword); args.Add(Max.Value.ToString()); }
+        if (Max.HasValue) { args.Add(ValkeyLiterals.MAX); args.Add(Max.Value.ToString()); }
         return [.. args];
     }
 }
@@ -144,7 +142,7 @@ public class FtAggregateApply(string expression, string name) : IFtAggregateClau
     public string Name { get; } = name;
 
     /// <inheritdoc/>
-    public string[] ToArgs() => [ApplyKeyword, Expression, AsKeyword, Name];
+    public GlideString[] ToArgs() => [ValkeyLiterals.APPLY, Expression, ValkeyLiterals.AS, Name];
 }
 
 /// <summary>
@@ -186,21 +184,21 @@ public class FtAggregateOptions
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
         if (LoadAll && LoadFields is { Length: > 0 })
             throw new ArgumentException("LoadAll and LoadFields are mutually exclusive.");
 
-        List<string> args = [];
-        if (Verbatim) args.Add(VerbatimKeyword);
-        if (InOrder) args.Add(InOrderKeyword);
-        if (Slop.HasValue) { args.Add(SlopKeyword); args.Add(Slop.Value.ToString()); }
-        if (LoadAll) { args.Add(LoadKeyword); args.Add("*"); }
-        else if (LoadFields is { Length: > 0 }) { args.Add(LoadKeyword); args.Add(LoadFields.Length.ToString()); args.AddRange(LoadFields); }
-        if (Timeout.HasValue) { args.Add(TimeoutKeyword); args.Add(Timeout.Value.ToString()); }
+        List<GlideString> args = [];
+        if (Verbatim) args.Add(ValkeyLiterals.VERBATIM);
+        if (InOrder) args.Add(ValkeyLiterals.INORDER);
+        if (Slop.HasValue) { args.Add(ValkeyLiterals.SLOP); args.Add(Slop.Value.ToString()); }
+        if (LoadAll) { args.Add(ValkeyLiterals.LOAD); args.Add("*"); }
+        else if (LoadFields is { Length: > 0 }) { args.Add(ValkeyLiterals.LOAD); args.Add(LoadFields.Length.ToString()); foreach (var f in LoadFields) args.Add(f); }
+        if (Timeout.HasValue) { args.Add(ValkeyLiterals.TIMEOUT); args.Add(Timeout.Value.ToString()); }
         if (Params is { Length: > 0 })
         {
-            args.Add(ParamsKeyword);
+            args.Add(ValkeyLiterals.PARAMS);
             args.Add((Params.Length * 2).ToString());
             foreach (var p in Params) { args.Add(p.Key); args.Add(p.Value); }
         }
@@ -208,7 +206,7 @@ public class FtAggregateOptions
         {
             foreach (var clause in Clauses) args.AddRange(clause.ToArgs());
         }
-        if (Dialect.HasValue) { args.Add(DialectKeyword); args.Add(Dialect.Value.ToString()); }
+        if (Dialect.HasValue) { args.Add(ValkeyLiterals.DIALECT); args.Add(Dialect.Value.ToString()); }
         return [.. args];
     }
 }

@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Commands.Constants.Constants;
-
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -77,7 +75,7 @@ public interface IField
     /// <summary>
     /// Returns the command arguments for this field definition.
     /// </summary>
-    string[] ToArgs();
+    GlideString[] ToArgs();
 }
 
 /// <summary>
@@ -102,19 +100,19 @@ public class TextField(string name) : IField
     public bool NoSuffixTrie { get; set; }
 
     /// <inheritdoc/>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
         if (WithSuffixTrie && NoSuffixTrie)
             throw new ArgumentException("WithSuffixTrie and NoSuffixTrie are mutually exclusive.");
 
-        List<string> args = [Name];
-        if (Alias is not null) { args.Add(AsKeyword); args.Add(Alias); }
+        List<GlideString> args = [Name];
+        if (Alias is not null) { args.Add(ValkeyLiterals.AS); args.Add(Alias); }
         args.Add(nameof(FieldType.Text).ToUpper());
-        if (NoStem) args.Add(NoStemKeyword);
-        if (Weight.HasValue) { args.Add(WeightKeyword); args.Add(Weight.Value.ToString("G")); }
-        if (WithSuffixTrie) args.Add(WithSuffixTrieKeyword);
-        else if (NoSuffixTrie) args.Add(NoSuffixTrieKeyword);
-        if (Sortable) args.Add(SortableKeyword);
+        if (NoStem) args.Add(ValkeyLiterals.NOSTEM);
+        if (Weight.HasValue) { args.Add(ValkeyLiterals.WEIGHT); args.Add(Weight.Value.ToString("G")); }
+        if (WithSuffixTrie) args.Add(ValkeyLiterals.WITHSUFFIXTRIE);
+        else if (NoSuffixTrie) args.Add(ValkeyLiterals.NOSUFFIXTRIE);
+        if (Sortable) args.Add(ValkeyLiterals.SORTABLE);
         return [.. args];
     }
 }
@@ -137,14 +135,14 @@ public class TagField(string name) : IField
     public bool CaseSensitive { get; set; }
 
     /// <inheritdoc/>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
-        List<string> args = [Name];
-        if (Alias is not null) { args.Add(AsKeyword); args.Add(Alias); }
+        List<GlideString> args = [Name];
+        if (Alias is not null) { args.Add(ValkeyLiterals.AS); args.Add(Alias); }
         args.Add(nameof(FieldType.Tag).ToUpper());
-        if (Separator is not null) { args.Add(SeparatorKeyword); args.Add(Separator); }
-        if (CaseSensitive) args.Add(CaseSensitiveKeyword);
-        if (Sortable) args.Add(SortableKeyword);
+        if (Separator is not null) { args.Add(ValkeyLiterals.SEPARATOR); args.Add(Separator); }
+        if (CaseSensitive) args.Add(ValkeyLiterals.CASESENSITIVE);
+        if (Sortable) args.Add(ValkeyLiterals.SORTABLE);
         return [.. args];
     }
 }
@@ -163,12 +161,12 @@ public class NumericField(string name) : IField
     public bool Sortable { get; set; }
 
     /// <inheritdoc/>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
-        List<string> args = [Name];
-        if (Alias is not null) { args.Add(AsKeyword); args.Add(Alias); }
+        List<GlideString> args = [Name];
+        if (Alias is not null) { args.Add(ValkeyLiterals.AS); args.Add(Alias); }
         args.Add(nameof(FieldType.Numeric).ToUpper());
-        if (Sortable) args.Add(SortableKeyword);
+        if (Sortable) args.Add(ValkeyLiterals.SORTABLE);
         return [.. args];
     }
 }
@@ -193,20 +191,20 @@ public class VectorFieldFlat(string name, DistanceMetric distanceMetric, int dim
     public int? InitialCap { get; set; }
 
     /// <inheritdoc/>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
-        List<string> args = [Name];
-        if (Alias is not null) { args.Add(AsKeyword); args.Add(Alias); }
-        args.Add("VECTOR");
+        List<GlideString> args = [Name];
+        if (Alias is not null) { args.Add(ValkeyLiterals.AS); args.Add(Alias); }
+        args.Add(ValkeyLiterals.VECTOR);
         args.Add(nameof(VectorAlgorithm.FLAT));
 
-        List<string> attrs =
+        List<GlideString> attrs =
         [
-            "DIM", Dimensions.ToString(),
-            "DISTANCE_METRIC", DistanceMetric.ToString(),
-            "TYPE", Type.ToString(),
+            ValkeyLiterals.DIM, Dimensions.ToString(),
+            ValkeyLiterals.DISTANCE_METRIC, DistanceMetric.ToString(),
+            ValkeyLiterals.TYPE, Type.ToString(),
         ];
-        if (InitialCap.HasValue) { attrs.Add("INITIAL_CAP"); attrs.Add(InitialCap.Value.ToString()); }
+        if (InitialCap.HasValue) { attrs.Add(ValkeyLiterals.INITIAL_CAP); attrs.Add(InitialCap.Value.ToString()); }
 
         args.Add(attrs.Count.ToString());
         args.AddRange(attrs);
@@ -240,23 +238,23 @@ public class VectorFieldHnsw(string name, DistanceMetric distanceMetric, int dim
     public int? VectorsExaminedOnRuntime { get; set; }
 
     /// <inheritdoc/>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
-        List<string> args = [Name];
-        if (Alias is not null) { args.Add(AsKeyword); args.Add(Alias); }
-        args.Add("VECTOR");
+        List<GlideString> args = [Name];
+        if (Alias is not null) { args.Add(ValkeyLiterals.AS); args.Add(Alias); }
+        args.Add(ValkeyLiterals.VECTOR);
         args.Add(nameof(VectorAlgorithm.HNSW));
 
-        List<string> attrs =
+        List<GlideString> attrs =
         [
-            "DIM", Dimensions.ToString(),
-            "DISTANCE_METRIC", DistanceMetric.ToString(),
-            "TYPE", Type.ToString(),
+            ValkeyLiterals.DIM, Dimensions.ToString(),
+            ValkeyLiterals.DISTANCE_METRIC, DistanceMetric.ToString(),
+            ValkeyLiterals.TYPE, Type.ToString(),
         ];
-        if (InitialCap.HasValue) { attrs.Add("INITIAL_CAP"); attrs.Add(InitialCap.Value.ToString()); }
-        if (NumberOfEdges.HasValue) { attrs.Add("M"); attrs.Add(NumberOfEdges.Value.ToString()); }
-        if (VectorsExaminedOnConstruction.HasValue) { attrs.Add("EF_CONSTRUCTION"); attrs.Add(VectorsExaminedOnConstruction.Value.ToString()); }
-        if (VectorsExaminedOnRuntime.HasValue) { attrs.Add("EF_RUNTIME"); attrs.Add(VectorsExaminedOnRuntime.Value.ToString()); }
+        if (InitialCap.HasValue) { attrs.Add(ValkeyLiterals.INITIAL_CAP); attrs.Add(InitialCap.Value.ToString()); }
+        if (NumberOfEdges.HasValue) { attrs.Add(ValkeyLiterals.M); attrs.Add(NumberOfEdges.Value.ToString()); }
+        if (VectorsExaminedOnConstruction.HasValue) { attrs.Add(ValkeyLiterals.EF_CONSTRUCTION); attrs.Add(VectorsExaminedOnConstruction.Value.ToString()); }
+        if (VectorsExaminedOnRuntime.HasValue) { attrs.Add(ValkeyLiterals.EF_RUNTIME); attrs.Add(VectorsExaminedOnRuntime.Value.ToString()); }
 
         args.Add(attrs.Count.ToString());
         args.AddRange(attrs);
@@ -296,25 +294,25 @@ public class FtCreateOptions
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
         if (WithOffsets && NoOffsets)
             throw new ArgumentException("WithOffsets and NoOffsets are mutually exclusive.");
         if (NoStopWords && StopWords is { Length: > 0 })
             throw new ArgumentException("NoStopWords and StopWords are mutually exclusive.");
 
-        List<string> args = [];
-        if (DataType.HasValue) { args.Add(OnKeyword); args.Add(DataType.Value.ToString().ToUpper()); }
-        if (Prefixes is { Length: > 0 }) { args.Add(PrefixKeyword); args.Add(Prefixes.Length.ToString()); args.AddRange(Prefixes); }
-        if (Score.HasValue) { args.Add(ScoreKeyword); args.Add(Score.Value.ToString("G")); }
-        if (Language is not null) { args.Add(LanguageKeyword); args.Add(Language); }
-        if (SkipInitialScan) args.Add(SkipInitialScanKeyword);
-        if (MinStemSize.HasValue) { args.Add(MinStemSizeKeyword); args.Add(MinStemSize.Value.ToString()); }
-        if (WithOffsets) args.Add(WithOffsetsKeyword);
-        else if (NoOffsets) args.Add(NoOffsetsKeyword);
-        if (NoStopWords) args.Add(NoStopWordsKeyword);
-        else if (StopWords is { Length: > 0 }) { args.Add(StopWordsKeyword); args.Add(StopWords.Length.ToString()); args.AddRange(StopWords); }
-        if (Punctuation is not null) { args.Add(PunctuationKeyword); args.Add(Punctuation); }
+        List<GlideString> args = [];
+        if (DataType.HasValue) { args.Add(ValkeyLiterals.ON); args.Add(DataType.Value.ToString().ToUpper()); }
+        if (Prefixes is { Length: > 0 }) { args.Add(ValkeyLiterals.PREFIX); args.Add(Prefixes.Length.ToString()); foreach (var p in Prefixes) args.Add(p); }
+        if (Score.HasValue) { args.Add(ValkeyLiterals.SCORE); args.Add(Score.Value.ToString("G")); }
+        if (Language is not null) { args.Add(ValkeyLiterals.LANGUAGE); args.Add(Language); }
+        if (SkipInitialScan) args.Add(ValkeyLiterals.SKIPINITIALSCAN);
+        if (MinStemSize.HasValue) { args.Add(ValkeyLiterals.MINSTEMSIZE); args.Add(MinStemSize.Value.ToString()); }
+        if (WithOffsets) args.Add(ValkeyLiterals.WITHOFFSETS);
+        else if (NoOffsets) args.Add(ValkeyLiterals.NOOFFSETS);
+        if (NoStopWords) args.Add(ValkeyLiterals.NOSTOPWORDS);
+        else if (StopWords is { Length: > 0 }) { args.Add(ValkeyLiterals.STOPWORDS); args.Add(StopWords.Length.ToString()); foreach (var sw in StopWords) args.Add(sw); }
+        if (Punctuation is not null) { args.Add(ValkeyLiterals.PUNCTUATION); args.Add(Punctuation); }
         return [.. args];
     }
 }

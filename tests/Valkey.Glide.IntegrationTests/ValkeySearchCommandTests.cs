@@ -135,8 +135,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         // to avoid UTF-8 encoding corruption of bytes >= 0x80.
         byte[] vec0 = new byte[8];
         byte[] vec1 = [0, 0, 0, 0, 0, 0, 0x80, 0xBF];
-        await client.HashSetAsync(prefix + "0", [new HashEntry("vec", (ValkeyValue)vec0)]);
-        await client.HashSetAsync(prefix + "1", [new HashEntry("vec", (ValkeyValue)vec1)]);
+        _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", (ValkeyValue)vec0)]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("vec", (ValkeyValue)vec1)]);
         await Task.Delay(1000);
 
         FtSearchResult result = await client.FtSearchAsync(idx, "*=>[KNN 2 @VEC $query_vec]",
@@ -164,8 +164,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
         byte[] vec0 = new byte[8];
-        await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
-        await client.HashSetAsync(prefix + "1", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
+        _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
         await Task.Delay(1000);
 
         FtSearchResult result = await client.FtSearchAsync(idx, "*=>[KNN 2 @VEC $query_vec]",
@@ -209,9 +209,9 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new NumericField("price") { Sortable = true }, new TextField("name")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
-        await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
-        await client.HashSetAsync(prefix + "3", [new HashEntry("price", "30"), new HashEntry("name", "Zebra")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
+        _ = await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
+        _ = await client.HashSetAsync(prefix + "3", [new HashEntry("price", "30"), new HashEntry("name", "Zebra")]);
         await Task.Delay(1000);
 
         // ASC — verify documents are returned in ascending price order
@@ -249,10 +249,10 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
-        await client.HashSetAsync(prefix + "2", [new HashEntry("title", "hello there")]);
-        await client.HashSetAsync(prefix + "3", [new HashEntry("title", "goodbye world")]);
-        await client.HashSetAsync(prefix + "4", [new HashEntry("title", "world hello")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
+        _ = await client.HashSetAsync(prefix + "2", [new HashEntry("title", "hello there")]);
+        _ = await client.HashSetAsync(prefix + "3", [new HashEntry("title", "goodbye world")]);
+        _ = await client.HashSetAsync(prefix + "4", [new HashEntry("title", "world hello")]);
         await Task.Delay(1000);
 
         // VERBATIM — no stemming
@@ -286,8 +286,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TagField("tag"), new NumericField("score")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("tag", "test"), new HashEntry("score", "1")]);
-        await client.HashSetAsync(prefix + "2", [new HashEntry("tag", "test"), new HashEntry("score", "2")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("tag", "test"), new HashEntry("score", "1")]);
+        _ = await client.HashSetAsync(prefix + "2", [new HashEntry("tag", "test"), new HashEntry("score", "2")]);
         await Task.Delay(1000);
 
         FtSearchResult r1 = await client.FtSearchAsync(idx, "@tag:{test}",
@@ -330,7 +330,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string[] conditions = ["new", "used", "used", "used", "used", "new", "new", "new", "new", "refurbished"];
         for (int i = 0; i < conditions.Length; i++)
         {
-            await client.HashSetAsync(prefix + i,
+            _ = await client.HashSetAsync(prefix + i,
             [
                 new HashEntry("model", "bike" + i),
                 new HashEntry("price", (100 + i * 10).ToString()),
@@ -375,8 +375,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new NumericField("score"), new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("score", "10"), new HashEntry("title", "hello world")]);
-        await client.HashSetAsync(prefix + "2", [new HashEntry("score", "20"), new HashEntry("title", "hello there")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("score", "10"), new HashEntry("title", "hello world")]);
+        _ = await client.HashSetAsync(prefix + "2", [new HashEntry("score", "20"), new HashEntry("title", "hello there")]);
         await Task.Delay(1000);
 
         // VERBATIM
@@ -444,7 +444,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         await client.FtCreateAsync(idx,
             [new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000);
 
         Dictionary<string, object> localInfo = await client.FtInfoAsync(idx,
@@ -556,7 +556,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], NoStopWords = true });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "the quick fox")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "the quick fox")]);
         await Task.Delay(1000);
 
         FtSearchResult r = await client.FtSearchAsync(idx, "the", null);
@@ -581,7 +581,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             ],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello"), new HashEntry("price", "10"), new HashEntry("tag", "a,b")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello"), new HashEntry("price", "10"), new HashEntry("tag", "a,b")]);
         await Task.Delay(1000);
 
         // sortable numeric field works with SORTBY
@@ -612,9 +612,9 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new NumericField("price") { Sortable = true }, new TextField("name")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
-        await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
-        await client.HashSetAsync(prefix + "3", [new HashEntry("price", "30"), new HashEntry("name", "Zebra")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
+        _ = await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
+        _ = await client.HashSetAsync(prefix + "3", [new HashEntry("price", "30"), new HashEntry("name", "Zebra")]);
         await Task.Delay(1000);
 
         FtSearchResult result = await client.FtSearchAsync(idx, "@price:[1 +inf]",
@@ -661,7 +661,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
         byte[] vec0 = new byte[8];
-        await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
+        _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
         await Task.Delay(1000);
 
         FtSearchResult result = await client.FtSearchAsync(idx, "*=>[KNN 1 @VEC $query_vec]",
@@ -691,8 +691,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], MinStemSize = 6 });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "running")]);
-        await client.HashSetAsync(prefix + "2", [new HashEntry("title", "plays")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "running")]);
+        _ = await client.HashSetAsync(prefix + "2", [new HashEntry("title", "plays")]);
         await Task.Delay(1000);
 
         // "running" (7 chars) is stemmed to "run"
@@ -720,7 +720,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], StopWords = ["fox", "an"] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "the quick fox")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "the quick fox")]);
         await Task.Delay(1000);
 
         // Non-stop words are searchable
@@ -750,7 +750,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], NoOffsets = true });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello")]);
         await Task.Delay(1000);
 
         // Basic search works
@@ -778,7 +778,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title") { WithSuffixTrie = true }],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000);
 
         FtSearchResult r = await client.FtSearchAsync(idx, "*orld", null);
@@ -799,7 +799,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title") { NoSuffixTrie = true }],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000);
 
         _ = await Assert.ThrowsAnyAsync<Exception>(() =>
@@ -880,7 +880,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         for (int i = 0; i < movies.Length; i++)
         {
             var m = movies[i];
-            await client.HashSetAsync(prefix + (11002 + i),
+            _ = await client.HashSetAsync(prefix + (11002 + i),
             [
                 new HashEntry("title", m.title),
                 new HashEntry("release_year", m.year),
@@ -945,7 +945,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         await client.FtCreateAsync(idx,
             [new TextField("title")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
-        await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000);
 
         // PRIMARY scope — works if coordinator is enabled, otherwise rejected with specific error
@@ -989,9 +989,9 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new NumericField("price") { Sortable = true }, new TextField("name")],
             new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
 
-        await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
-        await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
-        await client.HashSetAsync(prefix + "3", [new HashEntry("price", "30"), new HashEntry("name", "Zebra")]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
+        _ = await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
+        _ = await client.HashSetAsync(prefix + "3", [new HashEntry("price", "30"), new HashEntry("name", "Zebra")]);
         await Task.Delay(1000);
 
         // When NOCONTENT is set, the server ignores WITHSORTKEYS entirely —

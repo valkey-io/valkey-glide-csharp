@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Commands.Constants.Constants;
-
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -114,68 +112,68 @@ public class FtSearchOptions
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
         if (WithSortKeys && SortBy is null)
             throw new ArgumentException("WithSortKeys requires SortBy to be set.");
         if (SortByOrder.HasValue && SortBy is null)
             throw new ArgumentException("SortByOrder requires SortBy to be set.");
 
-        List<string> args = [];
+        List<GlideString> args = [];
         if (ShardScope.HasValue)
             args.Add(ShardScope.Value switch
             {
-                FtSearchShardScope.ALLSHARDS => AllShardsKeyword,
-                FtSearchShardScope.SOMESHARDS => SomeShardsKeyword,
+                FtSearchShardScope.ALLSHARDS => ValkeyLiterals.ALLSHARDS,
+                FtSearchShardScope.SOMESHARDS => ValkeyLiterals.SOMESHARDS,
                 _ => ShardScope.Value.ToString(),
             });
         if (Consistency.HasValue)
             args.Add(Consistency.Value switch
             {
-                FtSearchConsistencyMode.CONSISTENT => ConsistentKeyword,
-                FtSearchConsistencyMode.INCONSISTENT => InconsistentKeyword,
+                FtSearchConsistencyMode.CONSISTENT => ValkeyLiterals.CONSISTENT,
+                FtSearchConsistencyMode.INCONSISTENT => ValkeyLiterals.INCONSISTENT,
                 _ => Consistency.Value.ToString(),
             });
-        if (NoContent) args.Add(NoContentKeyword);
-        if (Verbatim) args.Add(VerbatimKeyword);
-        if (InOrder) args.Add(InOrderKeyword);
-        if (Slop.HasValue) { args.Add(SlopKeyword); args.Add(Slop.Value.ToString()); }
+        if (NoContent) args.Add(ValkeyLiterals.NOCONTENT);
+        if (Verbatim) args.Add(ValkeyLiterals.VERBATIM);
+        if (InOrder) args.Add(ValkeyLiterals.INORDER);
+        if (Slop.HasValue) { args.Add(ValkeyLiterals.SLOP); args.Add(Slop.Value.ToString()); }
         if (ReturnFields is { Length: > 0 })
         {
-            List<string> fieldArgs = [];
+            List<GlideString> fieldArgs = [];
             foreach (var rf in ReturnFields)
             {
                 fieldArgs.Add(rf.FieldIdentifier);
-                if (rf.Alias is not null) { fieldArgs.Add(AsKeyword); fieldArgs.Add(rf.Alias); }
+                if (rf.Alias is not null) { fieldArgs.Add(ValkeyLiterals.AS); fieldArgs.Add(rf.Alias); }
             }
-            args.Add(ReturnKeyword);
+            args.Add(ValkeyLiterals.RETURN);
             args.Add(fieldArgs.Count.ToString());
             args.AddRange(fieldArgs);
         }
         if (SortBy is not null)
         {
-            args.Add(SortByKeyword);
+            args.Add(ValkeyLiterals.SORTBY);
             args.Add(SortBy);
             if (SortByOrder.HasValue)
                 args.Add(SortByOrder.Value switch
                 {
-                    FtSearchSortOrder.ASC => AscKeyword,
-                    FtSearchSortOrder.DESC => DescKeyword,
+                    FtSearchSortOrder.ASC => ValkeyLiterals.ASC,
+                    FtSearchSortOrder.DESC => ValkeyLiterals.DESC,
                     _ => SortByOrder.Value.ToString(),
                 });
         }
         // Server ignores WITHSORTKEYS when NOCONTENT is set (sort keys are not
         // returned), so we silently strip it to avoid a Rust-core parse error.
-        if (WithSortKeys && !NoContent) args.Add(WithSortKeysKeyword);
-        if (Timeout.HasValue) { args.Add(TimeoutKeyword); args.Add(Timeout.Value.ToString()); }
+        if (WithSortKeys && !NoContent) args.Add(ValkeyLiterals.WITHSORTKEYS);
+        if (Timeout.HasValue) { args.Add(ValkeyLiterals.TIMEOUT); args.Add(Timeout.Value.ToString()); }
         if (Params is { Length: > 0 })
         {
-            args.Add(ParamsKeyword);
+            args.Add(ValkeyLiterals.PARAMS);
             args.Add((Params.Length * 2).ToString());
             foreach (var p in Params) { args.Add(p.Key); args.Add(p.Value); }
         }
-        if (Limit is not null) { args.Add(LimitKeyword); args.Add(Limit.Offset.ToString()); args.Add(Limit.Count.ToString()); }
-        if (Dialect.HasValue) { args.Add(DialectKeyword); args.Add(Dialect.Value.ToString()); }
+        if (Limit is not null) { args.Add(ValkeyLiterals.LIMIT); args.Add(Limit.Offset.ToString()); args.Add(Limit.Count.ToString()); }
+        if (Dialect.HasValue) { args.Add(ValkeyLiterals.DIALECT); args.Add(Dialect.Value.ToString()); }
         return [.. args];
     }
 }

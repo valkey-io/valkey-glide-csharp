@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Commands.Constants.Constants;
-
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -58,29 +56,29 @@ public class FtInfoOptions
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public string[] ToArgs()
+    public GlideString[] ToArgs()
     {
-        List<string> args = [];
+        List<GlideString> args = [];
         if (Scope.HasValue)
             args.Add(Scope.Value switch
             {
-                FtInfoScope.LOCAL => LocalKeyword,
-                FtInfoScope.PRIMARY => PrimaryKeyword,
-                FtInfoScope.CLUSTER => ClusterKeyword,
+                FtInfoScope.LOCAL => ValkeyLiterals.LOCAL,
+                FtInfoScope.PRIMARY => ValkeyLiterals.PRIMARY,
+                FtInfoScope.CLUSTER => ValkeyLiterals.CLUSTER,
                 _ => Scope.Value.ToString(),
             });
         if (ShardScope.HasValue)
             args.Add(ShardScope.Value switch
             {
-                FtInfoShardScope.ALLSHARDS => AllShardsKeyword,
-                FtInfoShardScope.SOMESHARDS => SomeShardsKeyword,
+                FtInfoShardScope.ALLSHARDS => ValkeyLiterals.ALLSHARDS,
+                FtInfoShardScope.SOMESHARDS => ValkeyLiterals.SOMESHARDS,
                 _ => ShardScope.Value.ToString(),
             });
         if (Consistency.HasValue)
             args.Add(Consistency.Value switch
             {
-                FtInfoConsistencyMode.CONSISTENT => ConsistentKeyword,
-                FtInfoConsistencyMode.INCONSISTENT => InconsistentKeyword,
+                FtInfoConsistencyMode.CONSISTENT => ValkeyLiterals.CONSISTENT,
+                FtInfoConsistencyMode.INCONSISTENT => ValkeyLiterals.INCONSISTENT,
                 _ => Consistency.Value.ToString(),
             });
         return [.. args];

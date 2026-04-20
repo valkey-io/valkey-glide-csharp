@@ -2,7 +2,6 @@
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.Commands.Constants.Constants;
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -14,12 +13,12 @@ internal partial class Request
         List<GlideString> args = [indexName];
         if (options is not null)
         {
-            foreach (var a in options.ToArgs()) args.Add(a);
+            args.AddRange(options.ToArgs());
         }
-        args.Add(SchemaKeyword);
+        args.Add(ValkeyLiterals.SCHEMA);
         foreach (var field in schema)
         {
-            foreach (var a in field.ToArgs()) args.Add(a);
+            args.AddRange(field.ToArgs());
         }
         return Simple<string>(RequestType.FtCreate, [.. args]);
     }
@@ -37,7 +36,7 @@ internal partial class Request
         bool withSortKeys = options is { WithSortKeys: true, NoContent: false };
         if (options is not null)
         {
-            foreach (var a in options.ToArgs()) args.Add(a);
+            args.AddRange(options.ToArgs());
         }
         return new(RequestType.FtSearch, [.. args], false, data => ParseFtSearchResponse(data, withSortKeys));
     }
@@ -47,7 +46,7 @@ internal partial class Request
         List<GlideString> args = [indexName, query];
         if (options is not null)
         {
-            foreach (var a in options.ToArgs()) args.Add(a);
+            args.AddRange(options.ToArgs());
         }
         return new(RequestType.FtAggregate, [.. args], false, ParseFtAggregateResponse);
     }
@@ -57,7 +56,7 @@ internal partial class Request
         List<GlideString> args = [indexName];
         if (options is not null)
         {
-            foreach (var a in options.ToArgs()) args.Add(a);
+            args.AddRange(options.ToArgs());
         }
         return new(RequestType.FtInfo, [.. args], false, ParseFtInfoResponse);
     }
