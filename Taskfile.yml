@@ -8,8 +8,6 @@ vars:
     INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
     FRAMEWORK: '{{.FRAMEWORK | default "all"}}'
     FRAMEWORK_FLAG: '{{if ne .FRAMEWORK "all"}}--framework {{.FRAMEWORK}}{{end}}'
-    filter: ""
-    FILTER_FLAG: '{{if .filter}}--filter "{{.filter}}"{{end}}'
 
 tasks:
     clean:
@@ -31,13 +29,13 @@ tasks:
         desc: Run unit tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}} {{.FILTER_FLAG}}
+            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
 
     test:integration:
         desc: Run integration tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}} {{.FILTER_FLAG}}
+            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
 
     test:coverage:unit:
         desc: Run unit tests with coverage collection
@@ -51,7 +49,6 @@ tasks:
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
               {{.FRAMEWORK_FLAG}}
-              {{.FILTER_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     test:coverage:integration:
@@ -66,7 +63,6 @@ tasks:
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
               {{.FRAMEWORK_FLAG}}
-              {{.FILTER_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     test:coverage:all:
@@ -81,7 +77,6 @@ tasks:
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
               {{.FRAMEWORK_FLAG}}
-              {{.FILTER_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     coverage:merge:
@@ -220,6 +215,3 @@ tasks:
         desc: "Check for broken links"
         cmds:
             - lychee --config lychee.toml .
-
-    # Test
-    # ----------
