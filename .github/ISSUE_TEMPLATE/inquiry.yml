@@ -14,9 +14,6 @@ body:
       validations:
           required: true
 
-    # Client Version
-    # --------------
-
     - type: dropdown
       id: client-version
       attributes:
@@ -24,6 +21,7 @@ body:
           options:
               - v1.0.0
               - v0.9.0
+              - Not Applicable
               - Other
       validations:
           required: false
@@ -37,9 +35,6 @@ body:
       validations:
           required: false
 
-    # .NET Version
-    # ------------
-
     - type: dropdown
       id: dotnet-version
       attributes:
@@ -47,6 +42,7 @@ body:
           options:
               - ".NET 8"
               - ".NET 9"
+              - Not Applicable
               - Other
       validations:
           required: false
@@ -59,9 +55,6 @@ body:
       validations:
           required: false
 
-    # Engine Version
-    # --------------
-
     - type: dropdown
       id: engine-version
       attributes:
@@ -73,6 +66,7 @@ body:
               - Valkey 7.2
               - Redis 7.0
               - Redis 6.2
+              - Not Applicable
               - Other
       validations:
           required: false
@@ -85,9 +79,6 @@ body:
       validations:
           required: false
 
-    # OS
-    # --
-
     - type: dropdown
       id: operating-system
       attributes:
@@ -98,6 +89,7 @@ body:
               - Debian
               - Amazon Linux
               - Windows
+              - Not Applicable
               - Other
       validations:
           required: false
@@ -110,15 +102,33 @@ body:
       validations:
           required: false
 
-    # Additional Information
+    # Additional information
     # ----------------------
 
     - type: textarea
-      id: additional-info
       attributes:
-          label: Additional Technical Information
-          description: Any additional context or details that might help answer your question.
+          label: Related
+          description: List related issues, pull requests, or external references that could help contributors understand the inquiry.
           value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Additional Information
+          description: Add any additional information that could help contributors understand the inquiry.
+          value: |
+              -
+              -
+
+              or...
+
               :white_circle: None
       validations:
           required: true
