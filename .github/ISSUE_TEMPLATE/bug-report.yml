@@ -5,6 +5,10 @@ title: "fix(<area>): <description>"
 labels: ["type/bug", "status/triage"]
 assignees: []
 body:
+
+    # Description of the bug
+    # ----------------------
+
     - type: textarea
       id: description
       attributes:
@@ -12,9 +16,6 @@ body:
           description: Provide clear and concise description of the bug.
       validations:
           required: true
-
-    # Expected and Current Behavior
-    # -----------------------------
 
     - type: textarea
       id: expected
@@ -37,46 +38,8 @@ body:
       validations:
           required: true
 
-    # Reproduction Steps
-    # ------------------
-
-    - type: textarea
-      id: reproduction
-      attributes:
-          label: Reproduction Steps
-          description: |
-              Provide a self-contained, concise snippet of code that can be used to reproduce the issue.
-              For more complex issues provide a repo with the smallest sample that reproduces the bug.
-
-              Avoid including business logic or unrelated code, it makes diagnosis more difficult.
-              The code sample should be an SSCCE. See http://sscce.org/ for details.
-              In short, please provide a code sample that we can copy/paste, run and reproduce.
-          value: |
-              1.
-              2.
-              ...
-      validations:
-          required: true
-
-    # Possible Solution
-    # -----------------
-
-    - type: textarea
-      id: solution
-      attributes:
-          label: Possible Solution
-          description: Suggest a fix/reason for the bug.
-          value: |
-              Possible solution:
-
-              or...
-
-              :white_circle: Unknown
-      validations:
-          required: true
-
-    # Client Version
-    # --------------
+    # Information about the bug
+    # -------------------------
 
     - type: dropdown
       id: client-version
@@ -98,9 +61,6 @@ body:
       validations:
           required: false
 
-    # .NET Version
-    # ------------
-
     - type: dropdown
       id: dotnet-version
       attributes:
@@ -119,9 +79,6 @@ body:
           description: If you selected "Other" above, specify the .NET version.
       validations:
           required: false
-
-    # Engine Version
-    # --------------
 
     - type: dropdown
       id: engine-version
@@ -146,9 +103,6 @@ body:
       validations:
           required: false
 
-    # Engine Environment
-    # ------------------
-
     - type: dropdown
       id: engine-environment
       attributes:
@@ -169,9 +123,6 @@ body:
           description: If you selected "Other" above, specify the engine environment.
       validations:
           required: false
-
-    # Operating system
-    # ----------------
 
     - type: dropdown
       id: operating-system
@@ -195,8 +146,27 @@ body:
       validations:
           required: false
 
-    # Additional Information
-    # ----------------------
+    - type: textarea
+      id: logs
+      attributes:
+          label: Logs
+          description: Client and/or server logs.
+          value: |
+              Client logs:
+              ```text
+
+              ```
+
+              Server logs:
+              ```text
+
+              ```
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
 
     - type: textarea
       id: cluster-info
@@ -204,26 +174,79 @@ body:
           label: Cluster information
           description: Cluster topology, number of shards, number of replicas, used data types.
           value: |
+              - Topology: standalone / cluster
+              - Shards: ?
+              - Replicas per shard: ?
+
+              or...
+
               :white_circle: None
       validations:
           required: true
 
+
+    # How to reproduce and fix
+    # -------------------------
+
     - type: textarea
-      id: logs
+      id: reproduction
       attributes:
-          label: Logs
-          description: Client and/or server logs.
+          label: Reproduction Steps
+          description: |
+              Provide a self-contained, concise snippet of code that can be used to reproduce the issue.
+              For more complex issues provide a repo with the smallest sample that reproduces the bug.
+
+              Avoid including business logic or unrelated code, it makes diagnosis more difficult.
+              The code sample should be an SSCCE. See http://sscce.org/ for details.
+              In short, please provide a code sample that we can copy/paste, run and reproduce.
           value: |
+              1.
+              2.
+              ...
+      validations:
+          required: true
+
+    - type: textarea
+      id: solution
+      attributes:
+          label: Possible Solution
+          description: Suggest a fix for the bug
+          value: |
+              Possible solution: ?
+
+              or...
+
+              :white_circle: Unknown
+      validations:
+          required: true
+
+    # Additional Information
+    # ----------------------
+
+    - type: textarea
+      attributes:
+          label: Related
+          description: List related issues, pull requests, or external references that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
               :white_circle: None
       validations:
           required: true
 
     - type: textarea
-      id: other
       attributes:
           label: Additional Information
-          description: Any other context that could be useful — detailed explanation, stacktraces, related issues, suggestions how to fix, links, etc.
+          description: Add any additional information (notes, constraints, limitations, unknowns, or open questions) that could be useful to the assignee or help contributors understand the issue.
           value: |
+              -
+              -
+
+              or...
+
               :white_circle: None
       validations:
           required: true

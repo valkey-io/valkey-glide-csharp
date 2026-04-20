@@ -6,10 +6,9 @@ labels: ["type/task", "status/triage"]
 assignees: []
 
 body:
-    - type: markdown
-      attributes:
-          value: |
-              ## Task Description
+
+    # Description task and steps to complete
+    # --------------------------------------
 
     - type: textarea
       attributes:
@@ -32,6 +31,9 @@ body:
       validations:
           required: true
 
+    # Additional information
+    # ----------------------
+
     - type: textarea
       attributes:
           label: Related
@@ -48,8 +50,8 @@ body:
 
     - type: textarea
       attributes:
-          label: Additional Notes
-          description: Add any additional notes, constraints, limitations, unknowns, or open questions that could be useful to the assignee or help contributors understand the issue.
+          label: Additional Information
+          description: Add any additional information (notes, constraints, limitations, unknowns, or open questions) that could be useful to the assignee or help contributors understand the issue.
           value: |
               -
               -
