@@ -23,7 +23,7 @@ jobs:
                   submodules: true
 
             - name: Check links
-              uses: lycheeverse/lychee-action@v2.7.0
+              uses: lycheeverse/lychee-action@v2.8.0
               with:
                   args: --config lychee.toml .
                   fail: true
