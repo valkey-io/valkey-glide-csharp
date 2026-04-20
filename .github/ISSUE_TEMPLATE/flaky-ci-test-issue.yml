@@ -6,7 +6,6 @@ labels: ["type/bug", "area/ci", "area/tests", "status/triage", "flaky-test"]
 assignees: []
 
 body:
-
     # Information about the failing test
     # ----------------------------------
 

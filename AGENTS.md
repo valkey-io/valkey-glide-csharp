@@ -14,43 +14,26 @@ This document gives AI agents the minimum, accurate context needed to work produ
 - Rust core (glide-core) accessed via P/Invoke; be careful with marshaling.
 - Commands organized via partials in `BaseClient.*.cs`; cluster features use routing (`Route`, `ClusterValue<T>`).
 
-## Build and Test Rules (Agents)
+## Build, Test, Lint, and Format Rules (Agents)
 
-- Always target `net8.0` when building or testing.
-- Prefer `Task` runner commands when available; otherwise use `dotnet` directly with `--framework net8.0`.
-- Never pass individual `.cs` files to `dotnet test`; use project folders and filters.
+All task definitions live in `Taskfile.yml` at the repo root — refer to it for exact commands and flags. Always use `task` commands. If you must invoke `dotnet` directly, always pass `--framework net8.0`.
 
 Common commands:
 
-- Build (library or solution):
-  - `task build` (preferred)
-  - `dotnet build --framework net8.0`
-  - `dotnet build sources/Valkey.Glide/ --framework net8.0`
+- `task build` — build the solution.
+- `task test` — build and run all tests.
+- `task lint` — run all linters. Scope to what changed: `task lint:csharp`, `task lint:rust`, `task lint:yaml`.
+- `task format` — auto-fix formatting for all languages. Scope to what changed: `task format:csharp`, `task format:rust`, `task format:yaml`.
 
-- Test (all or by project):
-  - `task test` (preferred)
-  - `dotnet test --framework net8.0`
-  - `dotnet test tests/Valkey.Glide.UnitTests/ --framework net8.0`
-  - `dotnet test tests/Valkey.Glide.IntegrationTests/ --framework net8.0`
+Test filtering (pass `filter` variable to any test task):
 
-- Filter tests:
-  - By class: `--filter "FullyQualifiedName~ClassName"`
-  - By method: `--filter "FullyQualifiedName~MethodName"`
-  - By display name pattern: `--filter "DisplayName~Pattern"`
+- By class: `task test filter="FullyQualifiedName~ClassName"`
+- By method: `task test:unit filter="FullyQualifiedName~MethodName"`
 
-- Coverage and reports (preferred via Task):
-  - `task coverage`, `task coverage:unit`, `task coverage:integration`
-  - Reports go to `reports/`; test artifacts to `testresults/`
+Rules:
 
-## Lint and Format Rules (Agents)
-
-- Prefer `task` commands for linting and formatting.
-- Lint checks (read-only, fail on issues):
-  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`
-- Auto-fix formatting:
-  - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`
-- Link checking (separate from lint, slower):
-  - `task check-links`
+- Never pass individual `.cs` files to `dotnet test`; use project folders and filters.
+- Treat `reports/`, `testresults/`, `bin/`, `obj/` as generated; do not commit.
 
 ## Contribution Requirements
 
@@ -88,7 +71,7 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 - Message format:
 
   ```text
-  <type>(<scope>): <description>
+  <type>(<area>): <description>
 
   [optional body]
 
@@ -132,8 +115,6 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
   - `valkey-glide/` is a read-only submodule.
   - Only `valkey-glide/glide-core/` is relevant to this repo; ignore other language folders.
   - Do not edit submodule code from this repository.
-- Generated outputs:
-  - Treat `reports/`, `testresults/`, `bin/`, `obj/` as generated; do not commit.
 - API compatibility:
   - Maintain StackExchange.Redis API compatibility (target version 2.8.58) in the public API surface whenever possible.
 - Analyzer quirks:

@@ -6,7 +6,6 @@ labels: ["type/task", "status/triage"]
 assignees: []
 
 body:
-
     # Description task and steps to complete
     # --------------------------------------
 

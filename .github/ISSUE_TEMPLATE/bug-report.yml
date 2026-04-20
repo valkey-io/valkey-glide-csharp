@@ -5,7 +5,6 @@ title: "fix(<area>): <description>"
 labels: ["type/bug", "status/triage"]
 assignees: []
 body:
-
     # Description of the bug
     # ----------------------
 
@@ -183,7 +182,6 @@ body:
               :white_circle: None
       validations:
           required: true
-
 
     # How to reproduce and fix
     # -------------------------
