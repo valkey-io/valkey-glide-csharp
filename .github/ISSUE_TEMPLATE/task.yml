@@ -1,0 +1,61 @@
+---
+name: Task
+description: Create a task to manage work
+title: "[Task]"
+labels: ["type/task", "status/triage"]
+assignees: []
+
+body:
+    - type: markdown
+      attributes:
+          value: |
+              ## Task Description
+
+    - type: textarea
+      attributes:
+          label: Description
+          description: Describe the task in detail. Include the problem, objective, scope, proposed solution, and any relevant background or context.
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Checklist
+          description: Break the task into concrete steps or deliverables. Check items off as they are completed.
+          value: |
+              - [ ]
+              - [ ]
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Related
+          description: List related issues, pull requests, or external references that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Additional Notes
+          description: Add any additional notes, constraints, limitations, unknowns, or open questions that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
