@@ -45,10 +45,10 @@ GitHub-recognized labels and other cross-cutting concerns.
 
 ## Mapping to Issue Templates
 
-| Template                                                           | Issue Type | Default Labels                               |
-| ------------------------------------------------------------------ | ---------- | -------------------------------------------- |
-| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | Bug        | `status/triage`                              |
-| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | Feature    | `status/triage`                              |
-| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | Task       | `status/triage`                              |
-| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | Task       | `status/triage`                              |
-| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | Bug        | `ci`, `tests`, `status/triage`, `flaky-test` |
+| Template                                                           | Issue Type | Default Labels                          |
+| ------------------------------------------------------------------ | ---------- | --------------------------------------- |
+| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | Bug        | `triage`                                |
+| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | Feature    | `triage`                                |
+| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | Task       | `triage`                                |
+| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | Task       | `triage`                                |
+| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | Bug        | `ci`, `tests`, `triage`, `flaky-test`   |
