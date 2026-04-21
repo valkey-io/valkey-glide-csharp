@@ -1,0 +1,80 @@
+---
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "feat(<area>): <description>"
+type: "Feature"
+labels: ["triage"]
+assignees: []
+body:
+    # Description of the feature
+    # --------------------------
+
+    - type: textarea
+      id: description
+      attributes:
+          label: Describe the feature
+          description: A clear and concise description of the feature you are proposing.
+      validations:
+          required: true
+
+    - type: textarea
+      id: use-case
+      attributes:
+          label: Use Case
+          description: Why do you need this feature?
+      validations:
+          required: true
+
+    # Proposed solution
+    # -----------------
+
+    - type: textarea
+      id: solution
+      attributes:
+          label: Proposed Solution
+          description: Suggest how to implement the addition or change. Include prototype, sketch, reference implementation, or similar if possible.
+          value: |
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: checkboxes
+      id: ack
+      attributes:
+          label: Acknowledgements
+          options:
+              - label: I may be able to implement this feature request
+                required: false
+              - label: This feature might cause a breaking change
+                required: false
+
+    # Additional Information
+    # ----------------------
+
+    - type: textarea
+      attributes:
+          label: Related
+          description: List related issues, pull requests, or external references that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Additional Information
+          description: Add any additional information (notes, constraints, limitations, unknowns, or open questions) that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
