@@ -18,7 +18,7 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 Visit the official Valkey GLIDE [documentation site](https://glide.valkey.io).
 
 - [Key Features](https://glide.valkey.io/overview/#key-features)
-- [Quick Start](https://glide.valkey.io/getting-started/quickstart/?lang=csharp)
+- [Quick Start](https://glide.valkey.io/getting-started/quickstart/?lang=c%23)
 - [Supported Engine Versions](https://glide.valkey.io/overview/#supported-engine-versions)
 - [Basic Operations](https://glide.valkey.io/getting-started/basic-operations/)
 - [Client Initialization](https://glide.valkey.io/how-to/client-initialization/)
