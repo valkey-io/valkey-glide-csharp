@@ -5,7 +5,6 @@ GitHub label scheme for `valkey-io/valkey-glide-csharp`. Labels are grouped into
 ## Issue Types
 
 Use GitHub's built-in issue types instead of type labels. The default types are **Bug**, **Feature**, and **Task**.
-Epics use the Task type with the `epic` special label.
 
 ## Area
 
@@ -33,16 +32,15 @@ Workflow state. Applied and updated as the issue progresses. New issues are 'tri
 
 GitHub-recognized labels and other cross-cutting concerns.
 
-| Label              | Color            | Description                                     |
-| ------------------ | ---------------- | ----------------------------------------------- |
-| `breaking`         | `#ededed` – grey | Introduces a breaking change                    |
-| `compatibility`    | `#ededed` – grey | StackExchange.Redis API compatibility           |
-| `dependencies`     | `#ededed` – grey | Dependency updates (auto-applied by Dependabot) |
-| `epic`             | `#ededed` – grey | Large body of work spanning multiple issues     |
-| `flaky-test`       | `#ededed` – grey | Flaky test in CI                                |
-| `good first issue` | `#ededed` – grey | Good for new contributors                       |
-| `help wanted`      | `#ededed` – grey | Extra attention is needed                       |
-| `inquiry`          | `#ededed` – grey | Question about how something works              |
+| Label              | Color              | Description                                     |
+| ------------------ | ------------------ | ----------------------------------------------- |
+| `breaking`         | `#0e8a16` – green  | Introduces a breaking change                    |
+| `compatibility`    | `#0e8a16` – green  | StackExchange.Redis API compatibility           |
+| `dependencies`     | `#0e8a16` – green  | Dependency updates (auto-applied by Dependabot) |
+| `flaky-test`       | `#0e8a16` – green  | Flaky test in CI                                |
+| `good first issue` | `#0e8a16` – green  | Good for new contributors                       |
+| `help wanted`      | `#0e8a16` – green  | Extra attention is needed                       |
+| `inquiry`          | `#0e8a16` – green  | Question about how something works              |
 
 ## Mapping to Issue Templates
 
