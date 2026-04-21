@@ -2,6 +2,7 @@
 name: Inquiry
 description: Ask a question about the project
 title: "inquiry(<area>): <description>"
+type: "Task"
 labels: ["triage"]
 assignees: []
 

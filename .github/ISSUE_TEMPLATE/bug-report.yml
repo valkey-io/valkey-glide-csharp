@@ -2,6 +2,7 @@
 name: "Bug Report"
 description: Report something that isn't working
 title: "fix(<area>): <description>"
+type: "Bug"
 labels: ["triage"]
 assignees: []
 body:

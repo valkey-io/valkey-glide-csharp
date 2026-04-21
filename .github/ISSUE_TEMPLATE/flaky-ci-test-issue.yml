@@ -2,6 +2,7 @@
 name: Flaky CI Test Issue
 description: Report a flaky test in CI
 title: "fix(tests): <test-name>"
+type: "Bug"
 labels: ["ci", "tests", "triage", "flaky-test"]
 assignees: []
 
