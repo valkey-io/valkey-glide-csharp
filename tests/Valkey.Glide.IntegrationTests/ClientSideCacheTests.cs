@@ -33,7 +33,7 @@ public class ClientSideCacheTests
     public async Task BasicCacheHitWithMetrics_Standalone()
     {
         var cache = new ClientSideCacheConfig(1024)
-            .WithEntryTtlSeconds(60)
+            .WithEntryTtlMs(60000)
             .WithMetrics(true);
 
         await using var client = await CreateStandaloneClientWithCache(cache);
@@ -72,7 +72,7 @@ public class ClientSideCacheTests
     public async Task BasicCacheHitWithMetrics_Cluster()
     {
         var cache = new ClientSideCacheConfig(1024)
-            .WithEntryTtlSeconds(60)
+            .WithEntryTtlMs(60000)
             .WithMetrics(true);
 
         await using var client = await CreateClusterClientWithCache(cache);
@@ -111,7 +111,7 @@ public class ClientSideCacheTests
     public async Task WithoutMetrics_MetricCallsFail_Standalone()
     {
         var cache = new ClientSideCacheConfig(1024)
-            .WithEntryTtlSeconds(60)
+            .WithEntryTtlMs(60000)
             .WithMetrics(false);
 
         await using var client = await CreateStandaloneClientWithCache(cache);
@@ -161,7 +161,7 @@ public class ClientSideCacheTests
     public async Task MultipleKeys_Standalone()
     {
         var cache = new ClientSideCacheConfig(1024)
-            .WithEntryTtlSeconds(60)
+            .WithEntryTtlMs(60000)
             .WithMetrics(true);
 
         await using var client = await CreateStandaloneClientWithCache(cache);
@@ -201,7 +201,7 @@ public class ClientSideCacheTests
     public async Task TTLExpiration_Standalone()
     {
         var cache = new ClientSideCacheConfig(1024)
-            .WithEntryTtlSeconds(2) // 2 seconds
+            .WithEntryTtlMs(2000) // 2 seconds
             .WithMetrics(true);
 
         await using var client = await CreateStandaloneClientWithCache(cache);
@@ -351,22 +351,22 @@ public class ClientSideCacheTests
     }
 
     [Fact]
-    public void ClientSideCacheConfig_EntryTtlSecondsMustBePositive()
+    public void ClientSideCacheConfig_EntryTtlMsMustBePositive()
     {
         var config = new ClientSideCacheConfig(1024);
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithEntryTtlSeconds(0));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithEntryTtlMs(0));
     }
 
     [Fact]
     public void ClientSideCacheConfig_FluentBuilderChaining()
     {
         var config = new ClientSideCacheConfig(2048)
-            .WithEntryTtlSeconds(120)
+            .WithEntryTtlMs(120000)
             .WithEvictionPolicy(EvictionPolicy.LFU)
             .WithMetrics(true);
 
         Assert.Equal(2048UL, config.MaxCacheKb);
-        Assert.Equal(120UL, config.EntryTtlSeconds);
+        Assert.Equal(120000UL, config.EntryTtlMs);
         Assert.Equal(EvictionPolicy.LFU, config.EvictionPolicy);
         Assert.True(config.EnableMetrics);
         Assert.NotNull(config.CacheId);
@@ -388,7 +388,7 @@ public class ClientSideCacheTests
         var config = new ClientSideCacheConfig(512);
 
         Assert.Equal(512UL, config.MaxCacheKb);
-        Assert.Null(config.EntryTtlSeconds);
+        Assert.Null(config.EntryTtlMs);
         Assert.Null(config.EvictionPolicy);
         Assert.False(config.EnableMetrics);
     }

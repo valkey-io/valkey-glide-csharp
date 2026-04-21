@@ -1222,10 +1222,10 @@ internal partial class FFI
 
         /// <summary>Whether an entry TTL was explicitly specified.</summary>
         [MarshalAs(UnmanagedType.U1)]
-        public bool HasEntryTtlSeconds;
+        public bool HasEntryTtlMs;
 
-        /// <summary>Time-To-Live for cached entries in seconds.</summary>
-        public ulong EntryTtlSeconds;
+        /// <summary>Time-To-Live for cached entries in milliseconds.</summary>
+        public ulong EntryTtlMs;
 
         /// <summary>Whether an eviction policy was explicitly specified.</summary>
         [MarshalAs(UnmanagedType.U1)]

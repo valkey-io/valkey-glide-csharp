@@ -54,11 +54,11 @@ public sealed class ClientSideCacheConfig
     public ulong MaxCacheKb { get; }
 
     /// <summary>
-    /// The Time-To-Live for cached entries in seconds.
+    /// The Time-To-Live for cached entries in milliseconds.
     /// After this duration, entries automatically expire and are removed from the cache.
     /// If <see langword="null"/>, no expiration is applied.
     /// </summary>
-    public ulong? EntryTtlSeconds { get; private set; }
+    public ulong? EntryTtlMs { get; private set; }
 
     /// <summary>
     /// The policy for evicting entries when the cache reaches its maximum size.
@@ -79,7 +79,7 @@ public sealed class ClientSideCacheConfig
     /// <example>
     /// <code>
     /// var cache = new ClientSideCacheConfig(1024)          // 1 MB cache
-    ///     .WithEntryTtlSeconds(60)                         // 1 minute TTL
+    ///     .WithEntryTtlMs(60000)                           // 1 minute TTL
     ///     .WithEvictionPolicy(EvictionPolicy.LRU)
     ///     .WithMetrics(true);
     ///
@@ -108,19 +108,19 @@ public sealed class ClientSideCacheConfig
     }
 
     /// <summary>
-    /// Sets the TTL for cache entries in seconds.
+    /// Sets the TTL for cache entries in milliseconds.
     /// </summary>
-    /// <param name="ttlSeconds">Time-To-Live in seconds. Must be positive.</param>
+    /// <param name="ttlMs">Time-To-Live in milliseconds. Must be positive.</param>
     /// <returns>This instance for method chaining.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="ttlSeconds"/> is zero.</exception>
-    public ClientSideCacheConfig WithEntryTtlSeconds(ulong ttlSeconds)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="ttlMs"/> is zero.</exception>
+    public ClientSideCacheConfig WithEntryTtlMs(ulong ttlMs)
     {
-        if (ttlSeconds == 0)
+        if (ttlMs == 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(ttlSeconds), "ttlSeconds must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(ttlMs), "ttlMs must be positive.");
         }
 
-        EntryTtlSeconds = ttlSeconds;
+        EntryTtlMs = ttlMs;
         return this;
     }
 
@@ -153,8 +153,8 @@ public sealed class ClientSideCacheConfig
     {
         CacheId = CacheId,
         MaxCacheKb = MaxCacheKb,
-        HasEntryTtlSeconds = EntryTtlSeconds.HasValue,
-        EntryTtlSeconds = EntryTtlSeconds ?? default,
+        HasEntryTtlMs = EntryTtlMs.HasValue,
+        EntryTtlMs = EntryTtlMs ?? default,
         HasEvictionPolicy = EvictionPolicy.HasValue,
         EvictionPolicy = EvictionPolicy ?? default,
         EnableMetrics = EnableMetrics,
