@@ -2,17 +2,10 @@
 
 GitHub label scheme for `valkey-io/valkey-glide-csharp`. Labels are grouped into categories for consistency and filtering.
 
-## Type
+## Issue Types
 
-What kind of work is this? Every issue should have exactly one type label.
-
-| Label          | Color                | Description                                          |
-| -------------- | -------------------- | ---------------------------------------------------- |
-| `type/epic`    | `#3b1f8e` – purple   | Large body of work spanning multiple issues          |
-| `type/bug`     | `#7057ff` – purple   | Something isn't working                              |
-| `type/feature` | `#7057ff` – purple   | New feature or enhancement                           |
-| `type/task`    | `#7057ff` – purple   | Implementation work, cleanup, refactoring, or chores |
-| `type/inquiry` | `#7057ff` – purple   | Question about how something works                   |
+Use GitHub's built-in issue types instead of type labels. The default types are **Bug**, **Feature**, and **Task**.
+Epics use the Task type with the `epic` special label.
 
 ## Area
 
@@ -41,21 +34,21 @@ Workflow state. Applied and updated as the issue progresses. New issues are 'tri
 
 GitHub-recognized labels and other cross-cutting concerns.
 
-| Label              | Color              | Description                                     |
-| ------------------ | ------------------ | ----------------------------------------------- |
-| `good first issue` | `#ededed` – grey   | Good for new contributors                       |
-| `help wanted`      | `#ededed` – grey   | Extra attention is needed                       |
-| `breaking`         | `#ededed` – grey   | Introduces a breaking change                    |
-| `compatibility`    | `#ededed` – grey   | Related to StackExchange.Redis compatibility    |
-| `dependencies`     | `#ededed` – grey   | Dependency updates (auto-applied by Dependabot) |
-| `flaky-test`       | `#ededed` – grey   | Flaky test in CI                                |
+| Label              | Color                    | Description                                     |
+| ------------------ | ------------------------ | ----------------------------------------------- |
+| `epic`             | `#3b1f8e` – dark purple  | Large body of work spanning multiple issues     |
+| `good first issue` | `#ededed` – grey         | Good for new contributors                       |
+| `help wanted`      | `#ededed` – grey         | Extra attention is needed                       |
+| `breaking`         | `#ededed` – grey         | Introduces a breaking change                    |
+| `dependencies`     | `#ededed` – grey         | Dependency updates (auto-applied by Dependabot) |
+| `flaky-test`       | `#ededed` – grey         | Flaky test in CI                                |
 
 ## Mapping to Issue Templates
 
-| Template                                                           | Default Labels                                                     |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | `bug`, `status/triage`                                        |
-| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | `feature`, `status/triage`                                    |
-| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | `task`, `status/triage`                                       |
-| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | `inquiry`, `status/triage`                                    |
-| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | `bug`, `ci`, `tests`, `status/triage`, `flaky-test`           |
+| Template                                                           | Issue Type | Default Labels                                  |
+| ------------------------------------------------------------------ | ---------- | ----------------------------------------------- |
+| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | Bug        | `status/triage`                                 |
+| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | Feature    | `status/triage`                                 |
+| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | Task       | `status/triage`                                 |
+| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | Task       | `status/triage`                                 |
+| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | Bug        | `ci`, `tests`, `status/triage`, `flaky-test`    |
