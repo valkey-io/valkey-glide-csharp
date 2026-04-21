@@ -2,7 +2,7 @@
 name: Task
 description: Track implementation work, cleanup, refactoring, or chores
 title: "task(<area>): <description>"
-labels: ["type/task", "status/triage"]
+labels: ["task", "status/triage"]
 assignees: []
 
 body:

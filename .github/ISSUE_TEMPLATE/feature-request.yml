@@ -2,7 +2,7 @@
 name: Feature Request
 description: Suggest a new feature or enhancement
 title: "feat(<area>): <description>"
-labels: ["type/feature", "status/triage"]
+labels: ["feature", "status/triage"]
 assignees: []
 body:
     # Description of the feature

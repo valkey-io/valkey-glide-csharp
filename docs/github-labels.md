@@ -6,13 +6,13 @@ GitHub label scheme for `valkey-io/valkey-glide-csharp`. Labels are grouped into
 
 What kind of work is this? Every issue should have exactly one type label.
 
-| Label     | Color                | Description                                          |
-| --------- | -------------------- | ---------------------------------------------------- |
-| `epic`    | `#3b1f8e` – purple   | Large body of work spanning multiple issues          |
-| `bug`     | `#7057ff` – purple   | Something isn't working                              |
-| `feature` | `#7057ff` – purple   | New feature or enhancement                           |
-| `task`    | `#7057ff` – purple   | Implementation work, cleanup, refactoring, or chores |
-| `inquiry` | `#7057ff` – purple   | Question about how something works                   |
+| Label          | Color                | Description                                          |
+| -------------- | -------------------- | ---------------------------------------------------- |
+| `type/epic`    | `#3b1f8e` – purple   | Large body of work spanning multiple issues          |
+| `type/bug`     | `#7057ff` – purple   | Something isn't working                              |
+| `type/feature` | `#7057ff` – purple   | New feature or enhancement                           |
+| `type/task`    | `#7057ff` – purple   | Implementation work, cleanup, refactoring, or chores |
+| `type/inquiry` | `#7057ff` – purple   | Question about how something works                   |
 
 ## Area
 
@@ -54,8 +54,8 @@ GitHub-recognized labels and other cross-cutting concerns.
 
 | Template                                                           | Default Labels                                                     |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | `type/bug`, `status/triage`                                        |
-| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | `type/feature`, `status/triage`                                    |
-| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | `type/task`, `status/triage`                                       |
-| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | `type/inquiry`, `status/triage`                                    |
-| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | `type/bug`, `area/ci`, `area/tests`, `status/triage`, `flaky-test` |
+| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | `bug`, `status/triage`                                        |
+| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | `feature`, `status/triage`                                    |
+| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | `task`, `status/triage`                                       |
+| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | `inquiry`, `status/triage`                                    |
+| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | `bug`, `ci`, `tests`, `status/triage`, `flaky-test`           |
