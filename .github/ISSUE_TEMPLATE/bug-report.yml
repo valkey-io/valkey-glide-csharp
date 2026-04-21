@@ -2,7 +2,7 @@
 name: "Bug Report"
 description: Report something that isn't working
 title: "fix(<area>): <description>"
-labels: ["status/triage"]
+labels: ["triage"]
 assignees: []
 body:
     # Description of the bug
