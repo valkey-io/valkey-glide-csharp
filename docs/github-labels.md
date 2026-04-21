@@ -18,7 +18,6 @@ Which part of the codebase or project does this affect? An issue can have multip
 | `ci`            | `#3b1f8e` – dark purple | CI/CD pipelines and GitHub Actions               |
 | `docs`          | `#3b1f8e` – dark purple | Documentation and developer guides               |
 | `rust`          | `#3b1f8e` – dark purple | Rust FFI layer (`rust/`)                         |
-| `compatibility` | `#3b1f8e` – dark purple | StackExchange.Redis API compatibility            |
 
 ## Status
 
@@ -37,11 +36,13 @@ GitHub-recognized labels and other cross-cutting concerns.
 | Label              | Color            | Description                                     |
 | ------------------ | ---------------- | ----------------------------------------------- |
 | `epic`             | `#ededed` – grey | Large body of work spanning multiple issues     |
+| `inquiry`          | `#ededed` – grey | Question about how something works              |
 | `good first issue` | `#ededed` – grey | Good for new contributors                       |
 | `help wanted`      | `#ededed` – grey | Extra attention is needed                       |
 | `breaking`         | `#ededed` – grey | Introduces a breaking change                    |
 | `dependencies`     | `#ededed` – grey | Dependency updates (auto-applied by Dependabot) |
 | `flaky-test`       | `#ededed` – grey | Flaky test in CI                                |
+| `compatibility`    | `#ededed` – grey | StackExchange.Redis API compatibility           |
 
 ## Mapping to Issue Templates
 
@@ -50,5 +51,5 @@ GitHub-recognized labels and other cross-cutting concerns.
 | [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | Bug        | `triage`                                |
 | [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | Feature    | `triage`                                |
 | [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | Task       | `triage`                                |
-| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | Task       | `triage`                                |
+| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | Task       | `triage`, `inquiry`                     |
 | [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | Bug        | `ci`, `tests`, `triage`, `flaky-test`   |
