@@ -565,7 +565,7 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct CmdInfo
+    private struct CmdInfo // TODO - make readonly, add primary constructor
     {
         public RequestType RequestType;
         public IntPtr Args;
@@ -574,7 +574,7 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct BatchInfo
+    private struct BatchInfo // TODO - make readonly, add primary constructor
     {
         public nuint CmdCount;
         public IntPtr Cmds;
@@ -584,7 +584,7 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct BatchOptionsInfo
+    private struct BatchOptionsInfo // TODO - make readonly, add primary constructor
     {
         [MarshalAs(UnmanagedType.U1)]
         public bool RetryServerError;
@@ -1048,7 +1048,7 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    private struct RouteInfo
+    private struct RouteInfo // TODO - make readonly, add primary constructor
     {
         public RouteType Type;
         public int SlotId;
@@ -1131,7 +1131,7 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct PubSubConfigInfo
+    private struct PubSubConfigInfo // TODO - make readonly, add primary constructor
     {
         public IntPtr ChannelsPtr;
         public uint ChannelCount;
@@ -1141,8 +1141,9 @@ internal partial class FFI
         public uint ShardedChannelCount;
     }
 
+    // TODO - make readonly
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct NodeAddress
+    internal struct NodeAddress // TODO - make readonly, add primary constructor
     {
         [MarshalAs(UnmanagedType.LPStr)]
         public string Host;
@@ -1157,13 +1158,14 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct ScriptHashBuffer
+    private struct ScriptHashBuffer // TODO - make readonly, add primary constructor
     {
         public IntPtr Ptr;
         public UIntPtr Len;
         public UIntPtr Capacity;
     }
 
+    // TODO - make readonly, add primary constructor
     [StructLayout(LayoutKind.Sequential)]
     internal struct CompressionConfig
     {
@@ -1185,6 +1187,7 @@ internal partial class FFI
         public bool Enabled;
     }
 
+    // TODO - use primary constructor
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct Statistics
     {
@@ -1379,7 +1382,7 @@ internal partial class FFI
         /// </summary>
         [MarshalAs(UnmanagedType.U1)]
         public readonly bool HasFlushIntervalMs = flushIntervalMs.HasValue;
-        public readonly uint? FlushIntervalMs = flushIntervalMs ?? default;
+        public readonly uint? FlushIntervalMs = flushIntervalMs ?? default; // TODO
     }
 
     [StructLayout(LayoutKind.Sequential)]

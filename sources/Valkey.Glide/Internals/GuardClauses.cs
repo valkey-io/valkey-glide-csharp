@@ -64,6 +64,7 @@ internal static class GuardClauses
         }
     }
 
+    // TODO - move to trim mode struct
     /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if the stream trim mode is not supported.
     /// </summary>
