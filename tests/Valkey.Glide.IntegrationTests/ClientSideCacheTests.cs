@@ -388,7 +388,7 @@ public class ClientSideCacheTests
         var config = new ClientSideCacheConfig(512);
 
         Assert.Equal(512UL, config.MaxCacheKb);
-        Assert.Null(config.EntryTtlMs);
+        Assert.Equal(0UL, config.EntryTtlMs);
         Assert.Null(config.EvictionPolicy);
         Assert.False(config.EnableMetrics);
     }

@@ -56,9 +56,9 @@ public sealed class ClientSideCacheConfig
     /// <summary>
     /// The Time-To-Live for cached entries in milliseconds.
     /// After this duration, entries automatically expire and are removed from the cache.
-    /// If <see langword="null"/>, no expiration is applied.
+    /// A value of <c>0</c> means no expiration is applied.
     /// </summary>
-    public ulong? EntryTtlMs { get; private set; }
+    public ulong EntryTtlMs { get; private set; }
 
     /// <summary>
     /// The policy for evicting entries when the cache reaches its maximum size.
@@ -153,8 +153,7 @@ public sealed class ClientSideCacheConfig
     {
         CacheId = CacheId,
         MaxCacheKb = MaxCacheKb,
-        HasEntryTtlMs = EntryTtlMs.HasValue,
-        EntryTtlMs = EntryTtlMs ?? default,
+        EntryTtlMs = EntryTtlMs,
         HasEvictionPolicy = EvictionPolicy.HasValue,
         EvictionPolicy = EvictionPolicy ?? default,
         EnableMetrics = EnableMetrics,

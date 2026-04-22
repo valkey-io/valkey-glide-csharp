@@ -1220,11 +1220,7 @@ internal partial class FFI
         /// <summary>Maximum size of the cache in kilobytes.</summary>
         public ulong MaxCacheKb;
 
-        /// <summary>Whether an entry TTL was explicitly specified.</summary>
-        [MarshalAs(UnmanagedType.U1)]
-        public bool HasEntryTtlMs;
-
-        /// <summary>Time-To-Live for cached entries in milliseconds.</summary>
+        /// <summary>Time-To-Live for cached entries in milliseconds (0 = no expiration).</summary>
         public ulong EntryTtlMs;
 
         /// <summary>Whether an eviction policy was explicitly specified.</summary>
