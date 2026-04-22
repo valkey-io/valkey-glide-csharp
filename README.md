@@ -2,9 +2,6 @@
 
 Valkey General Language Independent Driver for the Enterprise (GLIDE) is the official open-source Valkey client library for C#. Built on a robust Rust core, it provides high-performance, reliable connectivity to Valkey and Redis OSS servers with comprehensive async/await support.
 
-> [!IMPORTANT]
-> Valkey.Glide C# wrapper is in a preview state and still has many features that remain to be implemented before GA.
-
 ## Why Choose Valkey GLIDE?
 
 - **Community and Open Source** – Join our vibrant community and contribute to the project. We are always here to respond, and the client is for the community.
