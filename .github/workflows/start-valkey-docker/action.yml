@@ -6,6 +6,9 @@ description: >
     tests. Module-specific tests read the env vars written here to connect.
     Assumes valkey-cli is already on the host (installed by install-server).
 
+    NOTE: This action requires Linux. It uses --network host (not supported
+    on macOS/Windows Docker) and assumes a Linux-based CI runner.
+
 inputs:
     engine-version:
         description: >
@@ -23,7 +26,7 @@ runs:
               ENGINE_VERSION: ${{ inputs.engine-version }}
           run: |
               # TEMPORARY: Pin to 9.1-rc1 until stable per-version valkey-bundle tags exist.
-              # TODO: switch to valkey/valkey-bundle:${ENGINE_VERSION} once stable tags are published.
+              # TODO #346: switch to valkey/valkey-bundle:${ENGINE_VERSION} once stable tags are published.
               IMAGE="valkey/valkey-bundle:9.1-rc1"
               echo "image=$IMAGE" >> $GITHUB_OUTPUT
               echo "Using Docker image: $IMAGE"
@@ -40,12 +43,13 @@ runs:
           shell: bash
           env:
               IMAGE: ${{ steps.docker-image.outputs.image }}
+              MODULES_STANDALONE_PORT: "6389"
           run: |
-              echo "=== Starting standalone Valkey server with modules on port 6389 ==="
+              echo "=== Starting standalone Valkey server with modules on port $MODULES_STANDALONE_PORT ==="
 
               docker run -d --name valkey-modules-standalone --network host \
                 "$IMAGE" valkey-server \
-                --port 6389 \
+                --port "$MODULES_STANDALONE_PORT" \
                 --enable-debug-command yes \
                 --protected-mode no \
                 --save ""
@@ -53,8 +57,8 @@ runs:
               # Wait for ready
               READY=false
               for i in $(seq 1 30); do
-                if valkey-cli -p 6389 PING 2>/dev/null | grep -q PONG; then
-                  echo "Standalone server with modules ready on port 6389"
+                if valkey-cli -p "$MODULES_STANDALONE_PORT" PING 2>/dev/null | grep -q PONG; then
+                  echo "Standalone server with modules ready on port $MODULES_STANDALONE_PORT"
                   READY=true
                   break
                 fi
@@ -62,28 +66,29 @@ runs:
               done
 
               if [ "$READY" != "true" ]; then
-                echo "ERROR: Standalone module server on port 6389 failed to start"
+                echo "ERROR: Standalone module server on port $MODULES_STANDALONE_PORT failed to start"
                 docker logs valkey-modules-standalone 2>&1 || true
                 exit 1
               fi
 
-              echo "modules-standalone-endpoint=127.0.0.1:6389" >> $GITHUB_ENV
+              echo "modules-standalone-endpoint=127.0.0.1:${MODULES_STANDALONE_PORT}" >> $GITHUB_ENV
 
         - name: Start Valkey cluster with modules (Docker)
           shell: bash
           env:
               IMAGE: ${{ steps.docker-image.outputs.image }}
               ENGINE_VERSION: ${{ inputs.engine-version }}
+              MODULES_CLUSTER_PORTS: "8001 8002 8003 8004 8005 8006"
           run: |
-              echo "=== Starting Valkey cluster with modules on ports 8001-8006 ==="
+              echo "=== Starting Valkey cluster with modules on ports $MODULES_CLUSTER_PORTS ==="
 
               MAJOR=$(echo "$ENGINE_VERSION" | cut -d. -f1)
-              EXTRA_ARGS=""
+              EXTRA_ARGS=()
               if [ "$MAJOR" -ge 9 ]; then
-                EXTRA_ARGS="--cluster-databases 16"
+                EXTRA_ARGS+=(--cluster-databases 16)
               fi
 
-              for port in 8001 8002 8003 8004 8005 8006; do
+              for port in $MODULES_CLUSTER_PORTS; do
                 docker run -d --name "valkey-modules-cluster-${port}" --network host \
                   "$IMAGE" valkey-server \
                   --port "$port" \
@@ -94,14 +99,14 @@ runs:
                   --protected-mode no \
                   --enable-debug-command yes \
                   --save "" \
-                  $EXTRA_ARGS
+                  "${EXTRA_ARGS[@]}"
               done
 
               # Wait for all nodes
-              for port in 8001 8002 8003 8004 8005 8006; do
+              for port in $MODULES_CLUSTER_PORTS; do
                 READY=false
                 for i in $(seq 1 30); do
-                  if valkey-cli -p $port PING 2>/dev/null | grep -q PONG; then
+                  if valkey-cli -p "$port" PING 2>/dev/null | grep -q PONG; then
                     echo "  Cluster node $port: ready"
                     READY=true
                     break
@@ -115,21 +120,23 @@ runs:
                 fi
               done
 
+              # Build comma-separated endpoint list for env var
+              ENDPOINTS=""
+              for port in $MODULES_CLUSTER_PORTS; do
+                [ -n "$ENDPOINTS" ] && ENDPOINTS="${ENDPOINTS},"
+                ENDPOINTS="${ENDPOINTS}127.0.0.1:${port}"
+              done
+
+              # Build node list for cluster create
+              NODES=""
+              for port in $MODULES_CLUSTER_PORTS; do
+                NODES="${NODES} 127.0.0.1:${port}"
+              done
+
               # Form the cluster (3 primaries, 3 replicas)
-              valkey-cli --cluster create \
-                127.0.0.1:8001 127.0.0.1:8002 127.0.0.1:8003 \
-                127.0.0.1:8004 127.0.0.1:8005 127.0.0.1:8006 \
+              valkey-cli --cluster create $NODES \
                 --cluster-replicas 1 \
                 --cluster-yes
 
-              echo "modules-cluster-endpoints=127.0.0.1:8001,127.0.0.1:8002,127.0.0.1:8003,127.0.0.1:8004,127.0.0.1:8005,127.0.0.1:8006" >> $GITHUB_ENV
-              echo "Cluster with modules ready on ports 8001-8006"
-
-        - name: Verify module servers
-          shell: bash
-          run: |
-              echo "=== Module server verification ==="
-              echo "Standalone with modules (6389): $(valkey-cli -p 6389 PING)"
-              for port in 8001 8002 8003 8004 8005 8006; do
-                echo "Cluster with modules node $port: $(valkey-cli -p $port PING)"
-              done
+              echo "modules-cluster-endpoints=${ENDPOINTS}" >> $GITHUB_ENV
+              echo "Cluster with modules ready on ports $MODULES_CLUSTER_PORTS"

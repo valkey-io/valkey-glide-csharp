@@ -78,9 +78,8 @@ runs:
           with:
               target: ${{ inputs.target }}
 
-        # Always build from source first. This provides valkey-server and
-        # valkey-cli on the host for TLS tests (cluster_manager.py), benchmarks,
-        # and — on the Docker path — the CLI needed to form the cluster.
+        # Always build from source first. This installs 'valkey-cli', which is
+        # needed by 'start-valkey-docker' to start servers in Docker.
         - name: Install server from source
           if: "${{ inputs.server-version }}"
           uses: ./.github/workflows/install-server
