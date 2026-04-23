@@ -558,7 +558,11 @@ pub unsafe extern "C-unwind" fn command(
 
     // Apply compression to command arguments if compression is enabled
     if let Some(compression_manager) = core.client.compression_manager()
-        && let Err(err) = compress_cmd(&mut cmd, resolved_request_type, compression_manager.as_ref())
+        && let Err(err) = compress_cmd(
+            &mut cmd,
+            resolved_request_type,
+            compression_manager.as_ref(),
+        )
     {
         panic_guard.panicked = false;
         unsafe {
