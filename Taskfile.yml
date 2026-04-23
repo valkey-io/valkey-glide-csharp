@@ -215,3 +215,8 @@ tasks:
         desc: "Check for broken links"
         cmds:
             - lychee --config lychee.toml .
+
+    check-examples:
+        desc: "Extract and validate C# code examples in doc comments"
+        cmds:
+            - python3 scripts/check_examples.py --glide_root .
