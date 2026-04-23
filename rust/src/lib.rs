@@ -525,6 +525,7 @@ pub unsafe extern "C-unwind" fn command(
     let mut cmd = match unsafe { create_cmd(cmd_ptr) } {
         Ok(cmd) => cmd,
         Err(err) => {
+            panic_guard.panicked = false;
             unsafe {
                 report_error(
                     core.failure_callback,
@@ -541,10 +542,25 @@ pub unsafe extern "C-unwind" fn command(
 
     let request_type = unsafe { (*cmd_ptr).request_type };
 
+    // Resolve the actual command type for CustomCommand (needed for compression/decompression)
+    let resolved_request_type = if matches!(request_type, RequestType::CustomCommand) {
+        let all_args: Vec<Vec<u8>> = cmd
+            .args_iter()
+            .filter_map(|arg| match arg {
+                redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
+                redis::Arg::Cursor => None,
+            })
+            .collect();
+        resolve_custom_command_type(&all_args)
+    } else {
+        request_type
+    };
+
     // Apply compression to command arguments if compression is enabled
     if let Some(compression_manager) = core.client.compression_manager()
-        && let Err(err) = compress_cmd(&mut cmd, request_type, compression_manager.as_ref())
+        && let Err(err) = compress_cmd(&mut cmd, resolved_request_type, compression_manager.as_ref())
     {
+        panic_guard.panicked = false;
         unsafe {
             report_error(
                 core.failure_callback,
@@ -570,7 +586,7 @@ pub unsafe extern "C-unwind" fn command(
                 let original = value.clone();
                 let value = glide_core::compression::process_response_for_decompression(
                     value,
-                    request_type,
+                    resolved_request_type,
                     core.client.compression_manager().as_deref(),
                 )
                 .unwrap_or_else(|e| {
@@ -634,6 +650,7 @@ pub unsafe extern "C-unwind" fn batch(
     let pipeline = match unsafe { create_pipeline(batch_ptr) } {
         Ok(pipeline) => pipeline,
         Err(err) => {
+            panic_guard.panicked = false;
             unsafe {
                 report_error(
                     core.failure_callback,
@@ -939,6 +956,7 @@ pub unsafe extern "C-unwind" fn invoke_script(
     let hash_str = match unsafe { CStr::from_ptr(hash).to_str() } {
         Ok(s) => s.to_string(),
         Err(e) => {
+            panic_guard.panicked = false;
             unsafe {
                 report_error(
                     core.failure_callback,
@@ -1673,9 +1691,25 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     Some(command_name.to_string())
 }
 
+/// Resolves the actual RequestType for a CustomCommand by parsing the command name from the first argument.
+/// This is needed for compression validation since CustomCommand doesn't carry the actual command type.
+fn resolve_custom_command_type(args: &[Vec<u8>]) -> RequestType {
+    if args.is_empty() {
+        return RequestType::CustomCommand;
+    }
+
+    let command_name = &args[0];
+    let command_str = String::from_utf8_lossy(command_name);
+
+    // Use the centralized from_command_name method in glide-core
+    RequestType::from_command_name(&command_str).unwrap_or(RequestType::CustomCommand)
+}
+
 /// Applies compression to command arguments if the command supports it.
 ///
 /// Returns `Ok(())` if compression was applied or skipped, `Err` if compression failed.
+/// Note: The request_type should already be resolved (i.e., CustomCommand should be resolved
+/// to the actual command type before calling this function).
 fn compress_cmd(
     cmd: &mut redis::Cmd,
     request_type: RequestType,
@@ -1696,6 +1730,7 @@ fn compress_cmd(
     let command_name = &all_args[0];
 
     let mut args: Vec<Vec<u8>> = all_args[1..].to_vec();
+
     glide_core::compression::process_command_args_for_compression(
         &mut args,
         request_type,

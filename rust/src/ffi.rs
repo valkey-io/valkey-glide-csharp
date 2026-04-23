@@ -300,6 +300,7 @@ pub(crate) unsafe fn create_connection_request(
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
+        client_side_cache: None,
     }
 }
 
