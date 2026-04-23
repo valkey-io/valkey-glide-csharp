@@ -253,7 +253,7 @@ public interface IHashBaseCommands
     /// var distinctFields = await client.HashRandomFieldsAsync(key, 3);
     /// </code>
     /// </example>
-    /// /// <example>
+    /// <example>
     /// <code>
     /// var randomFields = await client.HashRandomFieldsAsync(key, -3);
     /// </code>
