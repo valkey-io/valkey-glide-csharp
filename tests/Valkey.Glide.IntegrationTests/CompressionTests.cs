@@ -453,4 +453,428 @@ public class CompressionTests(TestConfiguration config)
         ValkeyValue retrieved = await client.GetAsync(key);
         Assert.Equal(value, retrieved.ToString());
     }
+
+    // ============================================================================
+    // CustomCommand Tests for Compression
+    // ============================================================================
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_SetExViaCustomCommand_CompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key = $"setex_custom_test_{Guid.NewGuid()}";
+        string value = new('s', LargeValueSize);
+
+        // SETEX via custom command should compress value
+        var result = await client.CustomCommand(["SETEX", key, "10", value]);
+        Assert.Equal("OK", result?.ToString());
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"SETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify value can be retrieved and decompressed
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal(value, retrieved.ToString());
+
+        // Verify TTL was set
+        var ttl = await client.TimeToLiveAsync(key);
+        Assert.True(ttl.HasTimeToLive);
+        Assert.True(ttl.TimeToLive!.Value.TotalSeconds > 0 && ttl.TimeToLive!.Value.TotalSeconds <= 10);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_PSetExViaCustomCommand_CompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key = $"psetex_custom_test_{Guid.NewGuid()}";
+        string value = new('p', LargeValueSize);
+
+        // PSETEX via custom command should compress value
+        var result = await client.CustomCommand(["PSETEX", key, "10000", value]);
+        Assert.Equal("OK", result?.ToString());
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"PSETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify value can be retrieved and decompressed
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal(value, retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_SetNXViaCustomCommand_CompressesValue(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        // Ensure key doesn't exist
+        string key = $"setnx_custom_test_{Guid.NewGuid()}";
+        await client.DeleteAsync(key);
+
+        var statsBefore = BaseClient.GetStatistics();
+
+        string value = new('n', LargeValueSize);
+
+        // SETNX via custom command should compress value
+        var result = await client.CustomCommand(["SETNX", key, value]);
+        Assert.Equal(1L, result);
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"SETNX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify value can be retrieved and decompressed
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal(value, retrieved.ToString());
+    }
+
+    // ============================================================================
+    // Incompatible Command Tests - These should error when compression is enabled
+    // ============================================================================
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_Append_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"append_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "initial");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.AppendAsync(key, "_suffix"));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_GetRange_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"getrange_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "Hello World");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.GetRangeAsync(key, 0, 4));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_SetRange_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"setrange_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "Hello World");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.SetRangeAsync(key, 6, "Valkey"));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_StrLen_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"strlen_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "Hello");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.LengthAsync(key));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_Incr_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"incr_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "100");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.IncrementAsync(key));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_IncrBy_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"incrby_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "100");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.IncrementAsync(key, 10));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_IncrByFloat_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"incrbyfloat_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "100.5");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.IncrementAsync(key, 0.5));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_Decr_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"decr_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "100");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.DecrementAsync(key));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_DecrBy_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"decrby_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "100");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.DecrementAsync(key, 10));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_GetBit_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"getbit_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "Hello");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.GetBitAsync(key, 0));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_SetBit_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"setbit_test_{Guid.NewGuid()}";
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.SetBitAsync(key, 7, true));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_BitCount_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"bitcount_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "foobar");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.BitCountAsync(key));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // ============================================================================
+    // Incompatible Commands via CustomCommand - These should also error
+    // ============================================================================
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_IncrViaCustomCommand_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"incr_custom_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "100");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.CustomCommand(["INCR", key]));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_AppendViaCustomCommand_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"append_custom_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "Hello");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.CustomCommand(["APPEND", key, " World"]));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task Compression_StrLenViaCustomCommand_ThrowsIncompatibleError(GlideClient _)
+    {
+        var clientConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"strlen_custom_test_{Guid.NewGuid()}";
+        await client.SetAsync(key, "Hello");
+
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            await client.CustomCommand(["STRLEN", key]));
+
+        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }
