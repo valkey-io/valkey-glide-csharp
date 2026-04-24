@@ -41,7 +41,7 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.SortedSetRemoveAsync(key, "member1");
+    /// bool result = await client.SortedSetRemoveAsync("zset", "member1");
     /// </code>
     /// </example>
     /// </remarks>
@@ -58,7 +58,7 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.SortedSetRemoveAsync(key, ["member1", "member2"]);
+    /// long result = await client.SortedSetRemoveAsync("zset", ["member1", "member2"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -74,7 +74,7 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.SortedSetRandomMemberAsync(key);
+    /// ValkeyValue result = await client.SortedSetRandomMemberAsync("zset");
     /// </code>
     /// </example>
     /// </remarks>
@@ -91,7 +91,7 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] result = await client.SortedSetRandomMembersAsync(key, 3);
+    /// ValkeyValue[] result = await client.SortedSetRandomMembersAsync("zset", 3);
     /// </code>
     /// </example>
     /// </remarks>
@@ -107,7 +107,7 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// double? score = await client.SortedSetScoreAsync(key, "member1");
+    /// double? score = await client.SortedSetScoreAsync("zset", "member1");
     /// </code>
     /// </example>
     /// </remarks>
@@ -127,7 +127,7 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// double?[] scores = await client.SortedSetScoresAsync(key, ["member1", "member2", "member3"]);
+    /// double?[] scores = await client.SortedSetScoresAsync("zset", ["member1", "member2", "member3"]);
     /// </code>
     /// </example>
     /// </remarks>

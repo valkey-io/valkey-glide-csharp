@@ -27,14 +27,14 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Query all pub/sub clients
-    /// ClusterValue&lt;object?&gt; result = await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
+    /// var result = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
     /// GlideString response = (result.SingleValue as GlideString)!;
     /// </code>
     /// </example>
     /// <example>
     /// <code>
     /// // Query all pub/sub clients on all nodes
-    /// object result = await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes);
+    /// var result = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes);
     /// </code>
     /// </example>
     /// </summary>
@@ -56,8 +56,8 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Query all pub/sub clients
-    /// Dictionary&lt;string, object?&gt; result = (await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes)).MultiValue;
-    /// foreach (var pair in result)
+    /// var response = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes);
+    /// foreach (var pair in response.MultiValue)
     /// {
     ///     Console.WriteLine($"Response from {pair.Key}: {pair.Value}");
     /// }
@@ -112,7 +112,7 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
-    /// ClusterBatch batch = new ClusterBatch(true) // Atomic (Transaction)
+    /// var batch = new Pipeline.ClusterBatch(true) // Atomic (Transaction)
     ///     .Set("key", "1")
     ///     .Incr("key")
     ///     .Get("key");
@@ -124,7 +124,7 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// ClusterBatch batch = new ClusterBatch(false) // Non-Atomic (Pipeline)
+    /// var batch = new Pipeline.ClusterBatch(false) // Non-Atomic (Pipeline)
     ///     .Set("key1", "value1")
     ///     .Set("key2", "value2")
     ///     .Get("key1")
@@ -207,11 +207,10 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction) all keys must share the same hash slot
-    /// ClusterBatchOptions options = new(
-    ///     timeout: 1000, // Set a timeout of 1000 milliseconds
-    ///     raiseOnError: false); // Do not raise an error on failure
+    /// Pipeline.Options.ClusterBatchOptions options = new(
+    ///     timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
-    /// ClusterBatch batch = new ClusterBatch(true) // Atomic (Transaction)
+    /// var batch = new Pipeline.ClusterBatch(true) // Atomic (Transaction)
     ///     .Set("key", "1")
     ///     .Incr("key")
     ///     .Get("key");
@@ -223,9 +222,10 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// ClusterBatchOptions options = new(retryStrategy: new(retryServerError: true, retryConnectionError: false));
+    /// var retryStrategy = new Pipeline.Options.ClusterBatchRetryStrategy(retryServerError: true, retryConnectionError: false);
+    /// Pipeline.Options.ClusterBatchOptions options = new(retryStrategy: retryStrategy);
     ///
-    /// ClusterBatch batch = new ClusterBatch(false) // Non-Atomic (Pipeline) keys may span different hash slots
+    /// var batch = new Pipeline.ClusterBatch(false) // Non-Atomic (Pipeline) keys may span different hash slots
     ///     .Set("key1", "value1")
     ///     .Set("key2", "value2")
     ///     .Get("key1")

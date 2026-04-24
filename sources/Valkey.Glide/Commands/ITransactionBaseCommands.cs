@@ -32,14 +32,14 @@ public interface ITransactionBaseCommands
     /// await client.WatchAsync(["sampleKey"]);
     ///
     /// // Execute transaction
-    /// var batch = new Batch(true)
+    /// var batch = new Pipeline.Batch(true)
     ///     .SetAsync("sampleKey", "foobar");
     /// object[] transactionResult = await client.Exec(batch, false);
     /// // transactionResult is not null if transaction executed successfully
     ///
     /// // Watch key again
     /// await client.WatchAsync(["sampleKey"]);
-    /// var batch2 = new Batch(true)
+    /// var batch2 = new Pipeline.Batch(true)
     ///     .SetAsync("sampleKey", "foobar");
     /// // Modify the watched key from another client/connection
     /// await client.SetAsync("sampleKey", "hello world");

@@ -28,10 +28,14 @@ public partial interface IDatabaseAsync
     /// <see cref="IBaseClient.ListLeftPushIfExistsAsync(ValkeyKey, ValkeyValue)"/>.
     /// <example>
     /// <code>
-    /// // Regular LPUSH
-    /// long result = await db.ListLeftPushAsync(key, value);
-    /// // LPUSHX (only push if key exists)
-    /// long result = await db.ListLeftPushAsync(key, value, When.Exists);
+    /// var length = await db.ListLeftPushAsync("key", "value");
+    /// Console.WriteLine($"List length after push: {length}");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var length = await db.ListLeftPushAsync("key", "value", When.Exists);
+    /// Console.WriteLine($"List length after push: {length}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -54,10 +58,14 @@ public partial interface IDatabaseAsync
     /// <see cref="IBaseClient.ListLeftPushIfExistsAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>.
     /// <example>
     /// <code>
-    /// // Regular LPUSH
-    /// long result = await db.ListLeftPushAsync(key, values);
-    /// // LPUSHX (only push if key exists)
-    /// long result = await db.ListLeftPushAsync(key, values, When.Exists);
+    /// var length = await db.ListLeftPushAsync("key", ["a", "b", "c"]);
+    /// Console.WriteLine($"List length after push: {length}");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var length = await db.ListLeftPushAsync("key", ["a", "b", "c"], When.Exists);
+    /// Console.WriteLine($"List length after push: {length}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -79,10 +87,14 @@ public partial interface IDatabaseAsync
     /// <see cref="IBaseClient.ListRightPushIfExistsAsync(ValkeyKey, ValkeyValue)"/>.
     /// <example>
     /// <code>
-    /// // Regular RPUSH
-    /// long result = await db.ListRightPushAsync(key, value);
-    /// // RPUSHX (only push if key exists)
-    /// long result = await db.ListRightPushAsync(key, value, When.Exists);
+    /// var length = await db.ListRightPushAsync("key", "value");
+    /// Console.WriteLine($"List length after push: {length}");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var length = await db.ListRightPushAsync("key", "value", When.Exists);
+    /// Console.WriteLine($"List length after push: {length}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -105,10 +117,14 @@ public partial interface IDatabaseAsync
     /// <see cref="IBaseClient.ListRightPushIfExistsAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>.
     /// <example>
     /// <code>
-    /// // Regular RPUSH
-    /// long result = await db.ListRightPushAsync(key, values);
-    /// // RPUSHX (only push if key exists)
-    /// long result = await db.ListRightPushAsync(key, values, When.Exists);
+    /// var length = await db.ListRightPushAsync("key", ["a", "b", "c"]);
+    /// Console.WriteLine($"List length after push: {length}");
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var length = await db.ListRightPushAsync("key", ["a", "b", "c"], When.Exists);
+    /// Console.WriteLine($"List length after push: {length}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -128,7 +144,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags);
 
-    /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    /// <inheritdoc cref="ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when, CommandFlags flags);
@@ -138,7 +154,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
 
-    /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    /// <inheritdoc cref="ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when, CommandFlags flags);
@@ -163,7 +179,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count, CommandFlags flags);
 
-    /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>
+    /// <inheritdoc cref="ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when, CommandFlags flags);
@@ -173,7 +189,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
 
-    /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
+    /// <inheritdoc cref="ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when, CommandFlags flags);
@@ -263,13 +279,14 @@ public partial interface IDatabaseAsync
     /// <see cref="IBaseClient.ListIndexAsync(ValkeyKey, long)"/>.
     /// <example>
     /// <code>
-    /// ValkeyValue result = await db.ListGetByIndexAsync(key, 0);
+    /// var result = await db.ListGetByIndexAsync("key", 0);
+    /// Console.WriteLine($"Element at index 0: {result}");
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index);
 
-    /// <inheritdoc cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long)"/>
+    /// <inheritdoc cref="ListGetByIndexAsync(ValkeyKey, long)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index, CommandFlags flags);
@@ -290,13 +307,13 @@ public partial interface IDatabaseAsync
     /// <see cref="IBaseClient.ListSetAsync(ValkeyKey, long, ValkeyValue)"/>.
     /// <example>
     /// <code>
-    /// await db.ListSetByIndexAsync(key, 0, "new_value");
+    /// await db.ListSetByIndexAsync("key", 0, "new_value");
     /// </code>
     /// </example>
     /// </remarks>
     Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value);
 
-    /// <inheritdoc cref="IDatabaseAsync.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)"/>
+    /// <inheritdoc cref="ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)"/>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value, CommandFlags flags);

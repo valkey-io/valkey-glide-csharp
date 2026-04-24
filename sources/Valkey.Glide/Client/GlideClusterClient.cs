@@ -43,7 +43,7 @@ public sealed partial class GlideClusterClient :
     /// </list>
     /// <example>
     /// <code>
-    /// var config = new ClusterClientConfigurationBuilder()
+    /// var config = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
     ///     .WithAddress("address1.example.com", 6379)
     ///     .WithAddress("address2.example.com", 6379)
     ///     .WithAuthentication("user1", "passwordA")

@@ -40,7 +40,7 @@ public partial class GlideClient :
     /// </list>
     /// <example>
     /// <code>
-    /// var config = new StandaloneClientConfigurationBuilder()
+    /// var config = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
     ///     .WithAddress("primary.example.com", 6379)
     ///     .WithAddress("replica1.example.com", 6379)
     ///     .WithDatabaseId(1)

@@ -19,6 +19,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// ValkeyKey key = "myset";
     /// // Scan all members
     /// await foreach (ValkeyValue value in client.SetScanAsync(key))
     /// {

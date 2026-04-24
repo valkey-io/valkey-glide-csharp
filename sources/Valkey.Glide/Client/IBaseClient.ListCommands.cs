@@ -232,7 +232,7 @@ public partial interface IBaseClient
     /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
-    /// long result = await client.ListLeftPushIfExistsAsync(key, value);
+    /// long result = await client.ListLeftPushIfExistsAsync("key", "value");
     /// </code>
     /// </example>
     /// </remarks>
@@ -251,7 +251,7 @@ public partial interface IBaseClient
     /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
-    /// long result = await client.ListLeftPushIfExistsAsync(key, values);
+    /// long result = await client.ListLeftPushIfExistsAsync("key", [ "a", "b", "c"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -270,6 +270,8 @@ public partial interface IBaseClient
     /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
+    /// ValkeyKey key = "mylist";
+    /// ValkeyValue value = "myvalue";
     /// long result = await client.ListRightPushIfExistsAsync(key, value);
     /// </code>
     /// </example>
@@ -289,6 +291,8 @@ public partial interface IBaseClient
     /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
+    /// ValkeyKey key = "mylist";
+    /// IEnumerable&lt;ValkeyValue&gt; values = new ValkeyValue[] { "a", "b", "c" };
     /// long result = await client.ListRightPushIfExistsAsync(key, values);
     /// </code>
     /// </example>
@@ -315,6 +319,7 @@ public partial interface IBaseClient
     /// <see cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long, CommandFlags)"/>.
     /// <example>
     /// <code>
+    /// ValkeyKey key = "mylist";
     /// ValkeyValue result = await client.ListIndexAsync(key, 0);
     /// </code>
     /// </example>
@@ -337,6 +342,7 @@ public partial interface IBaseClient
     /// <see cref="IDatabaseAsync.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>.
     /// <example>
     /// <code>
+    /// ValkeyKey key = "mylist";
     /// await client.ListSetAsync(key, 0, "new_value");
     /// </code>
     /// </example>

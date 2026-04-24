@@ -143,12 +143,14 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// // AND operation between two keys
-    /// long size = await client.BitOpAsync(Bitwise.And, "result", new[] { "key1", "key2" });
+    /// var size = await client.BitOpAsync(Bitwise.And, "result", ["key1", "key2"]);
     /// Console.WriteLine($"Result string size: {size} bytes");
-    ///
-    /// // NOT operation (single key)
-    /// long notSize = await client.BitOpAsync(Bitwise.Not, "inverted", new[] { "key1" });
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var size = await client.BitOpAsync(Bitwise.Not, "inverted", ["key1"]);
+    /// Console.WriteLine($"Result string size: {size} bytes");
     /// </code>
     /// </example>
     /// </remarks>
@@ -167,11 +169,11 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var subCommands = new IBitFieldSubCommand[]
+    /// var subCommands = new BitFieldOptions.IBitFieldSubCommand[]
     /// {
-    ///     new BitFieldGet(new SignedEncoding(8), new BitOffset(0)),
-    ///     new BitFieldSet(new UnsignedEncoding(4), new BitOffset(8), 15),
-    ///     new BitFieldIncrBy(new SignedEncoding(8), new BitOffset(0), 1)
+    ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffset(0)),
+    ///     new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(8), 15),
+    ///     new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffset(0), 1)
     /// };
     /// long?[] results = await client.BitFieldAsync("mykey", subCommands);
     /// </code>
@@ -191,7 +193,11 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long? value = await client.BitFieldAsync("mykey", new BitFieldGet(Encoding.Signed(8), new BitOffset(0)));
+    /// var encoding = BitFieldOptions.Encoding.Signed(8);
+    /// var offset = new BitFieldOptions.BitOffset(0);
+    /// var getCommand = new BitFieldOptions.BitFieldGet(encoding, offset);
+    /// var fieldValue = await client.BitFieldAsync("mykey", getCommand);
+    /// Console.WriteLine($"BitField value: {fieldValue}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -208,10 +214,10 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var subCommands = new IBitFieldReadOnlySubCommand[]
+    /// var subCommands = new BitFieldOptions.IBitFieldReadOnlySubCommand[]
     /// {
-    ///     new BitFieldGet(new SignedEncoding(8), new BitOffset(0)),
-    ///     new BitFieldGet(new UnsignedEncoding(16), new BitOffset(8))
+    ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffset(0)),
+    ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(16), new BitFieldOptions.BitOffset(8))
     /// };
     /// long[] results = await client.BitFieldReadOnlyAsync("mykey", subCommands);
     /// </code>
@@ -230,7 +236,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long value = await client.BitFieldReadOnlyAsync("mykey", new BitFieldGet(Encoding.Unsigned(8), new BitOffset(0)));
+    /// long value = await client.BitFieldReadOnlyAsync("mykey", new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)));
     /// </code>
     /// </example>
     /// </remarks>

@@ -24,8 +24,8 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.InfoAsync();
-    /// response.Split().First(l => l.Contains("total_net_input_bytes"));
+    /// var response = await clusterClient.InfoAsync();
+    /// var firstNodeInfo = response.Values.First();
     /// </code>
     /// </example>
     /// </remarks>
@@ -41,8 +41,8 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.InfoAsync([ Section.STATS ]);
-    /// response.Split().First(l => l.Contains("total_net_input_bytes"));
+    /// var response = await clusterClient.InfoAsync([Section.STATS]);
+    /// var firstNodeInfo = response.Values.First();
     /// </code>
     /// </example>
     /// </remarks>
@@ -58,10 +58,10 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, string&gt; response = (await client.InfoAsync(Route.AllNodes)).MultiValue;
-    /// response.Select(pair =>
-    ///         (Node: pair.Key, Value: pair.Value.Split().First(l => l.Contains("total_net_input_bytes")))
-    ///     ).ToDictionary(p => p.Key, p => p.Value);
+    /// var response = (await clusterClient.InfoAsync(Route.AllNodes)).MultiValue;
+    /// var filtered = response.Select(pair =>
+    ///         (Node: pair.Key, Value: pair.Value.Split('\n').First(l => l.Contains("total_net_input_bytes")))
+    ///     ).ToDictionary(p => p.Node, p => p.Value);
     /// </code>
     /// </example>
     /// </remarks>
@@ -80,10 +80,10 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, string&gt; response = (await client.InfoAsync([ Section.STATS ], Route.AllNodes)).MultiValue;
-    /// response.Select(pair =>
-    ///         (Node: pair.Key, Value: pair.Value.Split().First(l => l.Contains("total_net_input_bytes")))
-    ///     ).ToDictionary(p => p.Key, p => p.Value);
+    /// var response = (await clusterClient.InfoAsync([Section.STATS], Route.AllNodes)).MultiValue;
+    /// var filtered = response.Select(pair =>
+    ///         (Node: pair.Key, Value: pair.Value.Split('\n').First(l => l.Contains("total_net_input_bytes")))
+    ///     ).ToDictionary(p => p.Node, p => p.Value);
     /// </code>
     /// </example>
     /// </remarks>
@@ -109,7 +109,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;KeyValuePair&lt;string, string&gt;[]&gt; config = await client.ConfigGetAsync("max*");
+    /// var config = await clusterClient.ConfigGetAsync("max*");
     /// </code>
     /// </example>
     /// </remarks>
@@ -131,7 +131,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;KeyValuePair&lt;string, string&gt;[]&gt; config = await client.ConfigGetAsync("max*", Route.AllPrimaries);
+    /// var config = await clusterClient.ConfigGetAsync("max*", Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -145,7 +145,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigResetStatisticsAsync();
+    /// await clusterClient.ConfigResetStatisticsAsync();
     /// </code>
     /// </example>
     /// </remarks>
@@ -160,7 +160,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigResetStatisticsAsync(Route.AllPrimaries);
+    /// await clusterClient.ConfigResetStatisticsAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -176,7 +176,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigRewriteAsync();
+    /// await clusterClient.ConfigRewriteAsync();
     /// </code>
     /// </example>
     /// </remarks>
@@ -193,7 +193,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigRewriteAsync(Route.AllPrimaries);
+    /// await clusterClient.ConfigRewriteAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -210,7 +210,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigSetAsync("maxmemory", "100mb");
+    /// await clusterClient.ConfigSetAsync("maxmemory", "100mb");
     /// </code>
     /// </example>
     /// </remarks>
@@ -228,7 +228,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigSetAsync("maxmemory", "100mb", Route.AllPrimaries);
+    /// await clusterClient.ConfigSetAsync("maxmemory", "100mb", Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -242,7 +242,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long totalKeys = await client.DatabaseSizeAsync();
+    /// long totalKeys = await clusterClient.DatabaseSizeAsync();
     /// </code>
     /// </example>
     /// </remarks>
@@ -257,7 +257,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long totalKeys = await client.DatabaseSizeAsync(Route.AllPrimaries);
+    /// long totalKeys = await clusterClient.DatabaseSizeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -271,7 +271,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FlushAllDatabasesAsync(Route.AllPrimaries);
+    /// await clusterClient.FlushAllDatabasesAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -285,7 +285,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FlushDatabaseAsync(Route.AllPrimaries);
+    /// await clusterClient.FlushDatabaseAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -302,7 +302,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var lastSaves = await client.LastSaveAsync();
+    /// var lastSaves = await clusterClient.LastSaveAsync();
     /// </code>
     /// </example>
     /// </remarks>
@@ -325,7 +325,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var lastSave = await client.LastSaveAsync(Route.AllPrimaries);
+    /// var lastSave = await clusterClient.LastSaveAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -341,7 +341,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var times = await client.TimeAsync();
+    /// var times = await clusterClient.TimeAsync();
     /// </code>
     /// </example>
     /// </remarks>
@@ -363,7 +363,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var time = await client.TimeAsync(Route.AllPrimaries);
+    /// var time = await clusterClient.TimeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -384,7 +384,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; art = await client.LolwutAsync(Route.AllPrimaries);
+    /// var art = await clusterClient.LolwutAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -401,7 +401,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
+    /// await clusterClient.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
     /// {
     ///     { "maxmemory", "100mb" },
     ///     { "maxmemory-policy", "allkeys-lru" }
@@ -421,7 +421,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;KeyValuePair&lt;string, string&gt;[]&gt; config = await client.ConfigGetAsync(["max*", "bind*"], Route.AllPrimaries);
+    /// var config = await clusterClient.ConfigGetAsync(["max*", "bind*"], Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -437,7 +437,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FlushAllDatabasesAsync(FlushMode.Async, Route.AllPrimaries);
+    /// await clusterClient.FlushAllDatabasesAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -453,7 +453,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FlushDatabaseAsync(FlushMode.Async, Route.AllPrimaries);
+    /// await clusterClient.FlushDatabaseAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -472,7 +472,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; art = await client.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }, Route.AllNodes);
+    /// var art = await clusterClient.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }, Route.AllNodes);
     /// </code>
     /// </example>
     /// </remarks>
@@ -493,7 +493,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] result = await client.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1), route);
+    /// var result = await clusterClient.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1), Route.AllPrimaries);
     /// // result[0] = number of local nodes, result[1] = number of replica nodes
     /// </code>
     /// </example>
