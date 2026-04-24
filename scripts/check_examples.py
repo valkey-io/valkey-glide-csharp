@@ -120,6 +120,7 @@ class ExampleChecker:
         "Valkey.Glide.Pipeline.ClusterBatch",
         "Valkey.Glide.Commands.Options.InfoOptions",
         "Valkey.Glide.Commands.Options.BitFieldOptions",
+        "Valkey.Glide.Commands.Options.BitFieldOptions.Encoding",
     ]
 
     # Matches a C# using directive (e.g. "using Foo.Bar;" or "using static Foo.Bar;")
