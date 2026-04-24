@@ -108,14 +108,16 @@ class ExampleChecker:
 
     # Imports to include in every generated wrapper file.
     _USINGS = [
-        "System",
-        "System.Collections.Generic",
-        "System.Linq",
-        "System.Threading.Tasks",
         "Valkey.Glide",
         "Valkey.Glide.Commands",
         "Valkey.Glide.Commands.Options",
+        "static Valkey.Glide.Commands.Options.InfoOptions",
+        "static Valkey.Glide.Commands.Options.BitFieldOptions",
     ]
+
+    # Matches a C# using directive (e.g. "using Foo.Bar;" or "using static Foo.Bar;")
+    # but not a using declaration (e.g. "using var x = ...").
+    _USING_DIRECTIVE = re.compile(r"^\s*using\s+(static\s+)?[A-Z][\w.]*\s*;")
 
     # Template for the .csproj that references the main library.
     _CSPROJ_TEMPLATE = """\
@@ -295,7 +297,7 @@ public class {class_name}
         example_usings = []
         code_lines = []
         for line in content.splitlines():
-            if re.match(r"^\s*using\s+", line):
+            if self._USING_DIRECTIVE.match(line):
                 example_usings.append(line.rstrip().rstrip(";") + ";")
             else:
                 code_lines.append(line)
