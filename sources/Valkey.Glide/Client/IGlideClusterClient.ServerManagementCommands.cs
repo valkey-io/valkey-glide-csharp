@@ -25,7 +25,7 @@ public partial interface IGlideClusterClient
     /// <example>
     /// <code>
     /// var response = await client.InfoAsync();
-    /// response.Split().First(l => l.Contains("total_net_input_bytes"))
+    /// response.Split().First(l => l.Contains("total_net_input_bytes"));
     /// </code>
     /// </example>
     /// </remarks>
@@ -42,7 +42,7 @@ public partial interface IGlideClusterClient
     /// <example>
     /// <code>
     /// var response = await client.InfoAsync([ Section.STATS ]);
-    /// response.Split().First(l => l.Contains("total_net_input_bytes"))
+    /// response.Split().First(l => l.Contains("total_net_input_bytes"));
     /// </code>
     /// </example>
     /// </remarks>
@@ -61,7 +61,7 @@ public partial interface IGlideClusterClient
     /// Dictionary&lt;string, string&gt; response = (await client.InfoAsync(Route.AllNodes)).MultiValue;
     /// response.Select(pair =>
     ///         (Node: pair.Key, Value: pair.Value.Split().First(l => l.Contains("total_net_input_bytes")))
-    ///     ).ToDictionary(p => p.Key, p => p.Value)
+    ///     ).ToDictionary(p => p.Key, p => p.Value);
     /// </code>
     /// </example>
     /// </remarks>
@@ -83,7 +83,7 @@ public partial interface IGlideClusterClient
     /// Dictionary&lt;string, string&gt; response = (await client.InfoAsync([ Section.STATS ], Route.AllNodes)).MultiValue;
     /// response.Select(pair =>
     ///         (Node: pair.Key, Value: pair.Value.Split().First(l => l.Contains("total_net_input_bytes")))
-    ///     ).ToDictionary(p => p.Key, p => p.Value)
+    ///     ).ToDictionary(p => p.Key, p => p.Value);
     /// </code>
     /// </example>
     /// </remarks>

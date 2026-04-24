@@ -59,7 +59,7 @@ public interface IGenericClusterCommands
     /// Dictionary&lt;string, object?&gt; result = (await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes)).MultiValue;
     /// foreach (var pair in result)
     /// {
-    ///     Console.WriteLine($"Response from {pair.Key}: {pair.Value});
+    ///     Console.WriteLine($"Response from {pair.Key}: {pair.Value}");
     /// }
     /// </code>
     /// </example>

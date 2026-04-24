@@ -43,16 +43,13 @@ public sealed partial class GlideClusterClient :
     /// </list>
     /// <example>
     /// <code>
-    /// using Valkey.Glide;
-    /// using static Valkey.Glide.ConnectionConfiguration;
-    ///
     /// var config = new ClusterClientConfigurationBuilder()
     ///     .WithAddress("address1.example.com", 6379)
     ///     .WithAddress("address2.example.com", 6379)
     ///     .WithAuthentication("user1", "passwordA")
     ///     .WithTls()
     ///     .Build();
-    /// await using GlideClusterClient client = await GlideClusterClient.CreateClient(config);
+    /// await using var client = await GlideClusterClient.CreateClient(config);
     /// </code>
     /// </example>
     /// </remarks>
