@@ -291,8 +291,20 @@ public class {class_name}
         # that need to be mapped to the corresponding character.
         content = html.unescape(content)
 
+        # Extract using directives from the example and merge with defaults.
+        example_usings = []
+        code_lines = []
+        for line in content.splitlines():
+            if re.match(r"^\s*using\s+", line):
+                example_usings.append(line.rstrip().rstrip(";") + ";")
+            else:
+                code_lines.append(line)
+        content = "\n".join(code_lines).strip()
+
+        all_usings = [f"using {ns};" for ns in self._USINGS] + example_usings
+        usings = "\n".join(dict.fromkeys(all_usings))  # deduplicate, preserve order
+
         class_name = f"Example_{uuid.uuid4().hex}"
-        usings = "\n".join(f"using {ns};" for ns in self._USINGS)
         indented_code = textwrap.indent(content, "        ")
 
         file_content = self._WRAPPER_TEMPLATE.format(
