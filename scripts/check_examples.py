@@ -2,8 +2,8 @@
 
 """Check Valkey GLIDE C# code examples by extracting and compiling them.
 
-Extracts example code blocks from Valkey GLIDE source files (or loads them
-from a JSON file), wraps each in a compilable C# harness, runs `dotnet build`,
+Extracts example code blocks from Valkey GLIDE source files or loads them
+from a JSON file, wraps each in a compilable C# harness, runs `dotnet build`,
 and reports failures mapped back to their source.
 
 If provided, the examples JSON file should map from a source key to the
@@ -39,12 +39,11 @@ class ExampleExtractor:
 
     # Matches an <example><code>...</code></example> block in XML doc comments.
     # Captures the code content between <code> and </code> tags.
+    # Flexible with whitespace/newlines between tags.
     _EXAMPLE_PATTERN = re.compile(
-        r"^\s*///\s*<example>\s*\n"
-        r"\s*///\s*<code>\s*\n"
+        r"<example>\s*(?:///\s*)?<code>\s*\n"
         r"(.*?)"
-        r"^\s*///\s*</code>\s*\n"
-        r"\s*///\s*</example>",
+        r"^\s*///\s*</code>\s*(?:///\s*)?</example>",
         re.MULTILINE | re.DOTALL,
     )
 
@@ -203,15 +202,10 @@ public class {class_name}
         if not self._examples:
             return {}
 
-        self._write_csproj()
-
-        # Generate wrapper files and track filename -> source.
-        file_to_source: dict[str, str] = {}
-        for source, content in self._examples.items():
-            filename = self._generate_wrapper(source, content)
-            file_to_source[filename] = source
-
-        return self._build(file_to_source)
+        # Create and populate the temp project,
+        # then build it and identify any example failures.
+        file_to_source = self._create_project()
+        return self._build_project(file_to_source)
 
     def _check_prerequisites(self):
         """Verify that dotnet is installed and the project is available.
@@ -244,13 +238,24 @@ public class {class_name}
             )
             sys.exit(1)
 
-    def _write_csproj(self):
-        """Generate the .csproj file in the working directory."""
+    def _create_project(self) -> dict[str, str]:
+        """Generate the .csproj and wrapper files in the temp directory.
+
+        Returns:
+            A dict mapping generated filenames to source references.
+        """
         project_ref = os.path.relpath(self._csproj_path, self._temp_dir.name)
-        content = self._CSPROJ_TEMPLATE.format(project_ref=project_ref)
+        csproj_content = self._CSPROJ_TEMPLATE.format(project_ref=project_ref)
 
         with open(os.path.join(self._temp_dir.name, "ExampleValidation.csproj"), "w") as f:
-            f.write(content)
+            f.write(csproj_content)
+
+        file_to_source: dict[str, str] = {}
+        for source, content in self._examples.items():
+            filename = self._generate_wrapper(source, content)
+            file_to_source[filename] = source
+
+        return file_to_source
 
     def _generate_wrapper(self, source: str, content: str) -> str:
         """Generate and write a .cs wrapper file for a single example.
@@ -284,7 +289,7 @@ public class {class_name}
 
         return filename
 
-    def _build(self, file_to_source: dict[str, str]) -> dict[str, list[str]]:
+    def _build_project(self, file_to_source: dict[str, str]) -> dict[str, list[str]]:
         """Run dotnet build and return errors mapped by source.
 
         Args:
