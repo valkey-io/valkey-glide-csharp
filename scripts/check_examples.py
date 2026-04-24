@@ -106,13 +106,20 @@ class ExampleExtractor:
 class ExampleChecker:
     """Checks C# code examples by compiling them in a temporary .NET project."""
 
-    # Imports to include in every generated wrapper file.
-    _USINGS = [
+    # Namespace imports to include by default.
+    _USING_NAMESPACES = [
         "Valkey.Glide",
+        "Valkey.Glide.Pipeline",
         "Valkey.Glide.Commands",
         "Valkey.Glide.Commands.Options",
-        "static Valkey.Glide.Commands.Options.InfoOptions",
-        "static Valkey.Glide.Commands.Options.BitFieldOptions",
+    ]
+
+    # Type imports (using static) to include by default.
+    _USING_TYPES = [
+        "Valkey.Glide.Pipeline.Batch",
+        "Valkey.Glide.Pipeline.ClusterBatch",
+        "Valkey.Glide.Commands.Options.InfoOptions",
+        "Valkey.Glide.Commands.Options.BitFieldOptions",
     ]
 
     # Matches a C# using directive (e.g. "using Foo.Bar;" or "using static Foo.Bar;")
@@ -303,7 +310,10 @@ public class {class_name}
                 code_lines.append(line)
         content = "\n".join(code_lines).strip()
 
-        all_usings = [f"using {ns};" for ns in self._USINGS] + example_usings
+        default_usings = [f"using {ns};" for ns in self._USING_NAMESPACES] + [
+            f"using static {t};" for t in self._USING_TYPES
+        ]
+        all_usings = default_usings + example_usings
         usings = "\n".join(dict.fromkeys(all_usings))  # deduplicate, preserve order
 
         class_name = f"Example_{uuid.uuid4().hex}"

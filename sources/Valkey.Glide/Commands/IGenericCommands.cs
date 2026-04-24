@@ -51,7 +51,7 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
-    /// var batch = new Pipeline.Batch(true) // Atomic (Transaction)
+    /// var batch = new Batch(true) // Atomic (Transaction)
     ///     .SetAsync("key", "1")
     ///     .IncrementAsync("key")
     ///     .GetAsync("key");
@@ -63,7 +63,7 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// var batch = new Pipeline.Batch(false) // Non-Atomic (Pipeline)
+    /// var batch = new Batch(false) // Non-Atomic (Pipeline)
     ///     .SetAsync("key1", "value1")
     ///     .SetAsync("key2", "value2")
     ///     .GetAsync("key1")
@@ -127,7 +127,7 @@ public interface IGenericCommands
     /// Pipeline.Options.BatchOptions options = new(
     ///     timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
-    /// var batch = new Pipeline.Batch(true) // Atomic (Transaction)
+    /// var batch = new Batch(true) // Atomic (Transaction)
     ///     .SetAsync("key", "1")
     ///     .IncrementAsync("key")
     ///     .GetAsync("key");
@@ -142,7 +142,7 @@ public interface IGenericCommands
     /// Pipeline.Options.BatchOptions options = new(
     ///     timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
-    /// var batch = new Pipeline.Batch(false) // Non-Atomic (Pipeline) keys may span different hash slots
+    /// var batch = new Batch(false) // Non-Atomic (Pipeline) keys may span different hash slots
     ///     .SetAsync("key1", "value1")
     ///     .SetAsync("key2", "value2")
     ///     .GetAsync("key1")

@@ -80,8 +80,8 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = (await clusterClient.InfoAsync([Section.STATS], Route.AllNodes)).MultiValue;
-    /// var filtered = response.Select(pair =>
+    /// var response = (await clusterClient.InfoAsync([Section.STATS], Route.AllNodes));
+    /// var filtered = response.MultiValue.Select(pair =>
     ///         (Node: pair.Key, Value: pair.Value.Split('\n').First(l => l.Contains("total_net_input_bytes")))
     ///     ).ToDictionary(p => p.Node, p => p.Value);
     /// </code>

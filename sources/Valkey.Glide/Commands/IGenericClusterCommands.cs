@@ -112,7 +112,7 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
-    /// var batch = new Pipeline.ClusterBatch(true) // Atomic (Transaction)
+    /// var batch = new ClusterBatch(true) // Atomic (Transaction)
     ///     .SetAsync("key", "1")
     ///     .IncrementAsync("key")
     ///     .GetAsync("key");
@@ -124,7 +124,7 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// var batch = new Pipeline.ClusterBatch(false) // Non-Atomic (Pipeline)
+    /// var batch = new ClusterBatch(false) // Non-Atomic (Pipeline)
     ///     .SetAsync("key1", "value1")
     ///     .SetAsync("key2", "value2")
     ///     .GetAsync("key1")
@@ -210,7 +210,7 @@ public interface IGenericClusterCommands
     /// Pipeline.Options.ClusterBatchOptions options = new(
     ///     timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
-    /// var batch = new Pipeline.ClusterBatch(true) // Atomic (Transaction)
+    /// var batch = new ClusterBatch(true) // Atomic (Transaction)
     ///     .SetAsync("key", "1")
     ///     .IncrementAsync("key")
     ///     .GetAsync("key");
@@ -225,7 +225,7 @@ public interface IGenericClusterCommands
     /// var retryStrategy = new Pipeline.Options.ClusterBatchRetryStrategy(retryServerError: true, retryConnectionError: false);
     /// Pipeline.Options.ClusterBatchOptions options = new(retryStrategy: retryStrategy);
     ///
-    /// var batch = new Pipeline.ClusterBatch(false) // Non-Atomic (Pipeline) keys may span different hash slots
+    /// var batch = new ClusterBatch(false) // Non-Atomic (Pipeline) keys may span different hash slots
     ///     .SetAsync("key1", "value1")
     ///     .SetAsync("key2", "value2")
     ///     .GetAsync("key1")
