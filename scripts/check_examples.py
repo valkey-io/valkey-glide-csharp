@@ -113,6 +113,8 @@ class ExampleChecker:
         "System.Linq",
         "System.Threading.Tasks",
         "Valkey.Glide",
+        "Valkey.Glide.Commands",
+        "Valkey.Glide.Commands.Options",
     ]
 
     # Template for the .csproj that references the main library.
@@ -127,7 +129,9 @@ class ExampleChecker:
     </NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="{project_ref}" />
+    <Reference Include="Valkey.Glide">
+      <HintPath>{dll_path}</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
 """
@@ -180,10 +184,52 @@ public class {class_name}
             project_path: Path to the .csproj to compile examples against.
         """
         self._examples = examples
-        self._csproj_path = os.path.abspath(project_path)
         self._temp_dir = tempfile.TemporaryDirectory()
+        self._glide_root = os.path.abspath(project_path)
 
-        self._check_prerequisites()
+        # Verify that Valkey GLIDE root exists.
+        if not os.path.exists(self._glide_root):
+            print(
+                f"Error: Project not found at '{self._glide_root}'.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        # Verify that Valkey GLIDE DLL exists.
+        self._glide_dll_path = None
+
+        for config in ("Release", "Debug"):
+            path = os.path.join(
+                self._glide_root, "bin", config, "net8.0", "Valkey.Glide.dll"
+            )
+            if path:
+                self._glide_dll_path = path
+                continue
+
+        if self._glide_dll_path is None:
+            print(
+                f"Error: Built DLL not found in '{self._glide_root}/bin/{{Release,Debug}}/net8.0/'. "
+                "Run 'dotnet build' first.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        # Verify that dotnet is installed.
+        try:
+            result = subprocess.run(
+                ["dotnet", "--version"],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                print(
+                    "Error: 'dotnet' is installed but returned an error.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+        except FileNotFoundError:
+            print("Error: 'dotnet' is not installed or not on PATH.", file=sys.stderr)
+            sys.exit(1)
 
     def __enter__(self):
         return self
@@ -207,45 +253,13 @@ public class {class_name}
         file_to_source = self._create_project()
         return self._build_project(file_to_source)
 
-    def _check_prerequisites(self):
-        """Verify that dotnet is installed and the project is available.
-
-        Raises:
-            SystemExit: If prerequisites are not met.
-        """
-        try:
-            result = subprocess.run(
-                ["dotnet", "--version"],
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode != 0:
-                print(
-                    "Error: 'dotnet' is installed but returned an error.",
-                    file=sys.stderr,
-                )
-                sys.exit(1)
-        except FileNotFoundError:
-            print(
-                "Error: 'dotnet' is not installed or not on PATH.", file=sys.stderr
-            )
-            sys.exit(1)
-
-        if not os.path.exists(self._csproj_path):
-            print(
-                f"Error: Project not found at '{self._csproj_path}'.",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-
     def _create_project(self) -> dict[str, str]:
         """Generate the .csproj and wrapper files in the temp directory.
 
         Returns:
             A dict mapping generated filenames to source references.
         """
-        project_ref = os.path.relpath(self._csproj_path, self._temp_dir.name)
-        csproj_content = self._CSPROJ_TEMPLATE.format(project_ref=project_ref)
+        csproj_content = self._CSPROJ_TEMPLATE.format(dll_path=self._glide_dll_path)
 
         with open(os.path.join(self._temp_dir.name, "ExampleValidation.csproj"), "w") as f:
             f.write(csproj_content)
