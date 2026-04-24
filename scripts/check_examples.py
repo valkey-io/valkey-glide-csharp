@@ -134,9 +134,6 @@ class ExampleChecker:
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>
-        CS0219  // Variable assigned but never used
-    </NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Valkey.Glide">
@@ -343,10 +340,14 @@ public class {class_name}
         Returns:
             A dict mapping source references to lists of error messages.
         """
+
+        # Merge stderr into stdout so all build errors are captured in one stream.
         result = subprocess.run(
             ["dotnet", "build", "--framework", "net8.0"],
             cwd=self._temp_dir.name,
-            capture_output=True,
+            capture_output=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
         )
 
@@ -360,6 +361,16 @@ public class {class_name}
                 basename = os.path.basename(match.group("file"))
                 source = file_to_source.get(basename, basename)
                 errors.setdefault(source, []).append(match.group("message").strip())
+
+        # Fallback: if the build failed but no errors matched the regex,
+        # report the raw output so failures aren't silently swallowed.
+        if not errors:
+            fallback = [f"dotnet build failed with exit code {result.returncode}."]
+            raw = result.stdout.strip()
+            if raw:
+                fallback.append("Raw build output:")
+                fallback.extend(raw.splitlines())
+            errors["<build>"] = fallback
 
         return errors
 

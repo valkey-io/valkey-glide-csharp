@@ -327,7 +327,7 @@ internal partial class Database
     /// </summary>
     /// <param name="trimMode">The stream trim mode to validate.</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="trimMode"/> is not <see cref="StreamTrimMode.KeepReferences"/>.</exception>
-    public static void ThrowIfUnsupportedTrimMode(StreamTrimMode trimMode)
+    private static void ThrowIfUnsupportedTrimMode(StreamTrimMode trimMode)
     {
         if (trimMode != StreamTrimMode.KeepReferences)
         {
