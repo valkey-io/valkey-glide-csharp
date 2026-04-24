@@ -170,22 +170,22 @@ public class {class_name}
         r"(?P<file>[^(]+)\(\d+,\d+\):\s*error\s+(?P<message>CS\d+:\s*[^[]*)"
     )
 
-    def __init__(self, examples: dict[str, str], project_path: str):
+    def __init__(self, examples: dict[str, str], glide_root: str):
         """Initialize the checker.
 
         Use as a context manager to ensure cleanup of temporary files:
 
-            with ExampleChecker(examples, "path/to/Project.csproj") as checker:
+            with ExampleChecker(examples, "path/to/valkey-glide-csharp") as checker:
                 errors = checker.check()
 
         Args:
             examples: Dict mapping source references (e.g. "File.cs:42")
                 to code example strings.
-            project_path: Path to the .csproj to compile examples against.
+            glide_root: Path to the Valkey GLIDE project
         """
         self._examples = examples
         self._temp_dir = tempfile.TemporaryDirectory()
-        self._glide_root = os.path.abspath(project_path)
+        self._glide_root = os.path.abspath(glide_root)
 
         # Verify that Valkey GLIDE root exists.
         if not os.path.exists(self._glide_root):
@@ -200,15 +200,21 @@ public class {class_name}
 
         for config in ("Release", "Debug"):
             path = os.path.join(
-                self._glide_root, "bin", config, "net8.0", "Valkey.Glide.dll"
+                self._glide_root,
+                "sources",
+                "Valkey.Glide",
+                "bin",
+                config,
+                "net8.0",
+                "Valkey.Glide.dll",
             )
-            if path:
+            if os.path.exists(path):
                 self._glide_dll_path = path
-                continue
+                break
 
         if self._glide_dll_path is None:
             print(
-                f"Error: Built DLL not found in '{self._glide_root}/bin/{{Release,Debug}}/net8.0/'. "
+                f"Error: Built DLL. "
                 "Run 'dotnet build' first.",
                 file=sys.stderr,
             )
@@ -362,11 +368,7 @@ def main():
         extractor = ExampleExtractor(args.glide_root)
         examples = extractor.extract()
 
-    project = os.path.join(
-        args.glide_root, "sources", "Valkey.Glide", "Valkey.Glide.csproj"
-    )
-
-    with ExampleChecker(examples, project) as checker:
+    with ExampleChecker(examples, args.glide_root) as checker:
         print(f"Checking {len(examples)} examples...")
         errors = checker.check()
 
