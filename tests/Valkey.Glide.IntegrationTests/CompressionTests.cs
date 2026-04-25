@@ -607,4 +607,44 @@ public class CompressionTests(CompressionFixture fixture)
         Assert.Equal(LargeValue, results[2]?.ToString());
         Assert.Equal(LargeValue, results[3]?.ToString());
     }
+
+    [Fact]
+    public async Task Compression_BatchWithMGet_DecompressesMultipleValues()
+    {
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key1 = $"batch_mget_1_{Guid.NewGuid()}";
+        string key2 = $"batch_mget_2_{Guid.NewGuid()}";
+        string key3 = $"batch_mget_3_{Guid.NewGuid()}";
+        string value1 = new('a', LargeValueSize);
+        string value2 = new('b', LargeValueSize);
+        string value3 = new('c', LargeValueSize);
+
+        // Batch with SET commands followed by MGET (via GetAsync with multiple keys)
+        var batch = new Batch(false)
+            .SetAsync(key1, value1)
+            .SetAsync(key2, value2)
+            .SetAsync(key3, value3)
+            .GetAsync([key1, key2, key3]);
+
+        var results = await ZstdClient.Exec(batch, true);
+
+        var statsAfter = BaseClient.GetStatistics();
+
+        // Verify compression occurred (3 SET commands should compress)
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"Batch should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify results - first 3 are SET results (OK), last is MGET result (array)
+        Assert.NotNull(results);
+        Assert.Equal(4, results.Length);
+
+        // MGET returns an array of values
+        var mgetResult = results[3] as ValkeyValue[];
+        Assert.NotNull(mgetResult);
+        Assert.Equal(3, mgetResult.Length);
+        Assert.Equal(value1, mgetResult[0].ToString());
+        Assert.Equal(value2, mgetResult[1].ToString());
+        Assert.Equal(value3, mgetResult[2].ToString());
+    }
 }
