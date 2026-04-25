@@ -435,185 +435,50 @@ public class CompressionTests(CompressionFixture fixture)
     // Incompatible Command Tests - These should error when compression is enabled
     // ============================================================================
 
-    [Fact]
-    public async Task Compression_Append_ThrowsIncompatibleError()
+    /// <summary>
+    /// Test data for incompatible commands that should throw when compression is enabled.
+    /// Each entry contains: command name (for display), command arguments (with {key} placeholder).
+    /// </summary>
+    public static TheoryData<string, string[]> IncompatibleCommands => new()
     {
-        string key = $"append_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "initial");
+        // String manipulation commands
+        { "APPEND", ["APPEND", "{key}", "suffix"] },
+        { "GETRANGE", ["GETRANGE", "{key}", "0", "4"] },
+        { "SETRANGE", ["SETRANGE", "{key}", "0", "test"] },
+        { "STRLEN", ["STRLEN", "{key}"] },
+        { "SUBSTR", ["SUBSTR", "{key}", "0", "4"] },
+
+        // Numeric commands
+        { "INCR", ["INCR", "{key}"] },
+        { "INCRBY", ["INCRBY", "{key}", "10"] },
+        { "INCRBYFLOAT", ["INCRBYFLOAT", "{key}", "1.5"] },
+        { "DECR", ["DECR", "{key}"] },
+        { "DECRBY", ["DECRBY", "{key}", "10"] },
+
+        // Bit commands
+        { "GETBIT", ["GETBIT", "{key}", "0"] },
+        { "SETBIT", ["SETBIT", "{key}", "7", "1"] },
+        { "BITCOUNT", ["BITCOUNT", "{key}"] },
+        { "BITPOS", ["BITPOS", "{key}", "1"] },
+        { "BITFIELD", ["BITFIELD", "{key}", "GET", "u8", "0"] },
+        { "BITFIELD_RO", ["BITFIELD_RO", "{key}", "GET", "u8", "0"] },
+        { "BITOP", ["BITOP", "AND", "{key}", "{key}"] },
+
+        // LCS command
+        { "LCS", ["LCS", "{key}", "{key}"] },
+    };
+
+    [Theory]
+    [MemberData(nameof(IncompatibleCommands))]
+    public async Task Compression_IncompatibleCommand_ThrowsError(string commandName, string[] commandArgs)
+    {
+        string key = $"incompatible_{commandName.ToLower()}_{Guid.NewGuid()}";
+
+        // Replace {key} placeholder with actual key and convert to GlideString
+        GlideString[] args = [.. commandArgs.Select(arg => (GlideString)arg.Replace("{key}", key))];
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.AppendAsync(key, "_suffix"));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_GetRange_ThrowsIncompatibleError()
-    {
-        string key = $"getrange_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "Hello World");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.GetRangeAsync(key, 0, 4));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_SetRange_ThrowsIncompatibleError()
-    {
-        string key = $"setrange_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "Hello World");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.SetRangeAsync(key, 6, "Valkey"));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_StrLen_ThrowsIncompatibleError()
-    {
-        string key = $"strlen_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "Hello");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.LengthAsync(key));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_Incr_ThrowsIncompatibleError()
-    {
-        string key = $"incr_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "100");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.IncrementAsync(key));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_IncrBy_ThrowsIncompatibleError()
-    {
-        string key = $"incrby_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "100");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.IncrementAsync(key, 10));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_IncrByFloat_ThrowsIncompatibleError()
-    {
-        string key = $"incrbyfloat_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "100.5");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.IncrementAsync(key, 1.5));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_Decr_ThrowsIncompatibleError()
-    {
-        string key = $"decr_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "100");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.DecrementAsync(key));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_DecrBy_ThrowsIncompatibleError()
-    {
-        string key = $"decrby_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "100");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.DecrementAsync(key, 10));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_GetBit_ThrowsIncompatibleError()
-    {
-        string key = $"getbit_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "Hello");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.GetBitAsync(key, 0));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_SetBit_ThrowsIncompatibleError()
-    {
-        string key = $"setbit_test_{Guid.NewGuid()}";
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.SetBitAsync(key, 7, true));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_BitCount_ThrowsIncompatibleError()
-    {
-        string key = $"bitcount_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "Hello");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.BitCountAsync(key));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    // ============================================================================
-    // CustomCommand Incompatible Tests
-    // ============================================================================
-
-    [Fact]
-    public async Task Compression_IncrViaCustomCommand_ThrowsIncompatibleError()
-    {
-        string key = $"incr_custom_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "100");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.CustomCommand(["INCR", key]));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_AppendViaCustomCommand_ThrowsIncompatibleError()
-    {
-        string key = $"append_custom_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "Hello");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.CustomCommand(["APPEND", key, " World"]));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Compression_StrLenViaCustomCommand_ThrowsIncompatibleError()
-    {
-        string key = $"strlen_custom_test_{Guid.NewGuid()}";
-        await ZstdClient.SetAsync(key, "Hello");
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.CustomCommand(["STRLEN", key]));
+            await ZstdClient.CustomCommand(args));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
