@@ -6,8 +6,54 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.IntegrationTests;
 
-[Collection("GlideTests")]
-public class CompressionTests(TestConfiguration config)
+/// <summary>
+/// Fixture that provides shared compression-enabled clients for tests.
+/// </summary>
+public class CompressionFixture : IAsyncLifetime
+{
+    public GlideClient? ZstdClient { get; private set; }
+    public GlideClient? Lz4Client { get; private set; }
+    public GlideClusterClient? ZstdClusterClient { get; private set; }
+
+    public async ValueTask InitializeAsync()
+    {
+        var zstdConfig = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        var lz4Config = new StandaloneClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Lz4())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        var clusterConfig = new ClusterClientConfigurationBuilder()
+            .WithAddress(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port)
+            .WithCompression(CompressionConfig.Zstd())
+            .WithTls(TestConfiguration.TLS)
+            .Build();
+
+        ZstdClient = await GlideClient.CreateClient(zstdConfig);
+        Lz4Client = await GlideClient.CreateClient(lz4Config);
+        ZstdClusterClient = await GlideClusterClient.CreateClient(clusterConfig);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        ZstdClient?.Dispose();
+        Lz4Client?.Dispose();
+        ZstdClusterClient?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}
+
+[CollectionDefinition("CompressionTests")]
+public class CompressionTestsCollection : ICollectionFixture<CompressionFixture>;
+
+[Collection("CompressionTests")]
+public class CompressionTests(CompressionFixture fixture)
 {
     private const int LargeValueSize = 1000;
     private const int SmallValueSize = 100;
@@ -18,26 +64,19 @@ public class CompressionTests(TestConfiguration config)
     private const int MultiOpSizeIncrement = 100;
     private static readonly string LargeValue = new('y', LargeValueSize);
 
-    public TestConfiguration Config { get; } = config;
+    private GlideClient ZstdClient => fixture.ZstdClient!;
+    private GlideClient Lz4Client => fixture.Lz4Client!;
+    private GlideClusterClient ZstdClusterClient => fixture.ZstdClusterClient!;
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Zstd_Standalone_CompressesAndDecompresses(GlideClient _)
+    [Fact]
+    public async Task Compression_Zstd_Standalone_CompressesAndDecompresses()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_test_{Guid.NewGuid()}";
 
-        await client.SetAsync(key, LargeValue);
-        var retrieved = await client.GetAsync(key);
+        await ZstdClient.SetAsync(key, LargeValue);
+        var retrieved = await ZstdClient.GetAsync(key);
 
         Assert.Equal(LargeValue, retrieved.ToString());
 
@@ -46,24 +85,15 @@ public class CompressionTests(TestConfiguration config)
         Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed, $"Expected bytes compressed. Before: {statsBefore.TotalBytesCompressed}, After: {statsAfter.TotalBytesCompressed}");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Lz4_Standalone_CompressesAndDecompresses(GlideClient _)
+    [Fact]
+    public async Task Compression_Lz4_Standalone_CompressesAndDecompresses()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Lz4())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_lz4_test_{Guid.NewGuid()}";
 
-        await client.SetAsync(key, LargeValue);
-        var retrieved = await client.GetAsync(key);
+        await Lz4Client.SetAsync(key, LargeValue);
+        var retrieved = await Lz4Client.GetAsync(key);
 
         Assert.Equal(LargeValue, retrieved.ToString());
 
@@ -71,24 +101,15 @@ public class CompressionTests(TestConfiguration config)
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Zstd_Cluster_CompressesAndDecompresses(GlideClusterClient _)
+    [Fact]
+    public async Task Compression_Zstd_Cluster_CompressesAndDecompresses()
     {
-        var clientConfig = new ClusterClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClusterClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"compression_cluster_test_{Guid.NewGuid()}";
 
-        await client.SetAsync(key, LargeValue);
-        var retrieved = await client.GetAsync(key);
+        await ZstdClusterClient.SetAsync(key, LargeValue);
+        var retrieved = await ZstdClusterClient.GetAsync(key);
 
         Assert.Equal(LargeValue, retrieved.ToString());
 
@@ -96,10 +117,10 @@ public class CompressionTests(TestConfiguration config)
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_MinSize_SkipsSmallValues(GlideClient _)
+    [Fact]
+    public async Task Compression_MinSize_SkipsSmallValues()
     {
+        // This test needs a custom client with minSize threshold
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
             .WithCompression(CompressionConfig.Zstd(minCompressionSize: MinSizeThreshold))
@@ -127,10 +148,10 @@ public class CompressionTests(TestConfiguration config)
         Assert.True(compressedCountLarge > 0, $"Large value should have been compressed. Compressed delta: {compressedCountLarge}");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_CustomLevel_WorksCorrectly(GlideClient _)
+    [Fact]
+    public async Task Compression_CustomLevel_WorksCorrectly()
     {
+        // This test needs a custom client with custom compression level
         var clientConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
             .WithCompression(CompressionConfig.Zstd(compressionLevel: CustomCompressionLevel))
@@ -147,10 +168,10 @@ public class CompressionTests(TestConfiguration config)
         Assert.Equal(LargeValue, retrieved.ToString());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_BackwardCompatibility_ReadsUncompressedData(GlideClient _)
+    [Fact]
+    public async Task Compression_BackwardCompatibility_ReadsUncompressedData()
     {
+        // This test needs a client without compression
         var configNoCompression = new StandaloneClientConfigurationBuilder()
             .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
             .WithTls(TestConfiguration.TLS)
@@ -163,86 +184,52 @@ public class CompressionTests(TestConfiguration config)
 
         await clientNoCompression.SetAsync(key, value);
 
-        var configWithCompression = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(configWithCompression);
-
-        var retrieved = await client.GetAsync(key);
+        // Read with compression-enabled client
+        var retrieved = await ZstdClient.GetAsync(key);
         Assert.Equal(value, retrieved.ToString());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_MultipleOperations_MaintainsDataIntegrity(GlideClient _)
+    [Fact]
+    public async Task Compression_MultipleOperations_MaintainsDataIntegrity()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Lz4())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var testData = new Dictionary<string, string>();
         for (int i = 0; i < MultiOpCount; i++)
         {
             string key = $"multi_op_test_{i}_{Guid.NewGuid()}";
             string value = new((char)('a' + i), MultiOpBaseSize + (i * MultiOpSizeIncrement));
             testData[key] = value;
-            await client.SetAsync(key, value);
+            await Lz4Client.SetAsync(key, value);
         }
 
         foreach (var kvp in testData)
         {
-            var retrieved = await client.GetAsync(kvp.Key);
+            var retrieved = await Lz4Client.GetAsync(kvp.Key);
             Assert.Equal(kvp.Value, retrieved.ToString());
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_BinaryData_HandlesCorrectly(GlideClient _)
+    [Fact]
+    public async Task Compression_BinaryData_HandlesCorrectly()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"binary_test_{Guid.NewGuid()}";
         byte[] binaryData = new byte[LargeValueSize];
         new Random().NextBytes(binaryData);
 
-        await client.SetAsync(key, binaryData);
-        var retrieved = await client.GetAsync(key);
+        await ZstdClient.SetAsync(key, binaryData);
+        var retrieved = await ZstdClient.GetAsync(key);
 
         Assert.Equal(binaryData, (byte[]?)retrieved);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Statistics_ReflectOperations(GlideClient _)
+    [Fact]
+    public async Task Compression_Statistics_ReflectOperations()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"stats_test_{Guid.NewGuid()}";
 
-        await client.SetAsync(key, LargeValue);
-        ValkeyValue retrieved = await client.GetAsync(key);
+        await ZstdClient.SetAsync(key, LargeValue);
+        _ = await ZstdClient.GetAsync(key);
 
         var statsAfter = BaseClient.GetStatistics();
 
@@ -251,29 +238,20 @@ public class CompressionTests(TestConfiguration config)
         Assert.True(statsAfter.TotalBytesCompressed > statsBefore.TotalBytesCompressed, $"Expected compressed bytes. Before: {statsBefore.TotalBytesCompressed}, After: {statsAfter.TotalBytesCompressed}");
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_MGet_DecompressesValues(GlideClient _)
+    [Fact]
+    public async Task Compression_MGet_DecompressesValues()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var keysAndValues = new KeyValuePair<ValkeyKey, ValkeyValue>[5];
         for (int i = 0; i < 5; i++)
         {
             string key = $"mget_test_{i}_{Guid.NewGuid()}";
             string value = new((char)('a' + i), LargeValueSize);
             keysAndValues[i] = new(key, value);
-            await client.SetAsync(key, value);
+            await ZstdClient.SetAsync(key, value);
         }
 
         ValkeyKey[] keys = [.. keysAndValues.Select(kv => kv.Key)];
-        ValkeyValue[] results = await client.GetAsync(keys);
+        ValkeyValue[] results = await ZstdClient.GetAsync(keys);
 
         for (int i = 0; i < 5; i++)
         {
@@ -281,62 +259,35 @@ public class CompressionTests(TestConfiguration config)
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_GetEx_DecompressesValue(GlideClient _)
+    [Fact]
+    public async Task Compression_GetEx_DecompressesValue()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"getex_test_{Guid.NewGuid()}";
 
-        await client.SetAsync(key, LargeValue);
-        ValkeyValue retrieved = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)));
+        await ZstdClient.SetAsync(key, LargeValue);
+        ValkeyValue retrieved = await ZstdClient.GetExpiryAsync(key, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)));
 
         Assert.Equal(LargeValue, retrieved.ToString());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_GetDel_DecompressesValue(GlideClient _)
+    [Fact]
+    public async Task Compression_GetDel_DecompressesValue()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"getdel_test_{Guid.NewGuid()}";
 
-        await client.SetAsync(key, LargeValue);
-        ValkeyValue retrieved = await client.GetDeleteAsync(key);
+        await ZstdClient.SetAsync(key, LargeValue);
+        ValkeyValue retrieved = await ZstdClient.GetDeleteAsync(key);
 
         Assert.Equal(LargeValue, retrieved.ToString());
 
         // Verify key was deleted
-        ValkeyValue afterDelete = await client.GetAsync(key);
+        ValkeyValue afterDelete = await ZstdClient.GetAsync(key);
         Assert.True(afterDelete.IsNull);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_MSet_CompressesValues(GlideClient _)
+    [Fact]
+    public async Task Compression_MSet_CompressesValues()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         var keysAndValues = new KeyValuePair<ValkeyKey, ValkeyValue>[3];
@@ -345,7 +296,7 @@ public class CompressionTests(TestConfiguration config)
             keysAndValues[i] = new($"mset_test_{i}_{Guid.NewGuid()}", new string((char)('a' + i), LargeValueSize));
         }
 
-        await client.SetAsync(keysAndValues);
+        await ZstdClient.SetAsync(keysAndValues);
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
@@ -354,23 +305,14 @@ public class CompressionTests(TestConfiguration config)
         // Verify values can be retrieved and decompressed
         foreach (var kv in keysAndValues)
         {
-            ValkeyValue retrieved = await client.GetAsync(kv.Key);
+            ValkeyValue retrieved = await ZstdClient.GetAsync(kv.Key);
             Assert.Equal(kv.Value.ToString(), retrieved.ToString());
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_MSetNX_CompressesValues(GlideClient _)
+    [Fact]
+    public async Task Compression_MSetNX_CompressesValues()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         var keysAndValues = new KeyValuePair<ValkeyKey, ValkeyValue>[3];
@@ -379,7 +321,7 @@ public class CompressionTests(TestConfiguration config)
             keysAndValues[i] = new($"msetnx_test_{i}_{Guid.NewGuid()}", new string((char)('a' + i), LargeValueSize));
         }
 
-        bool result = await client.SetIfNotExistsAsync(keysAndValues);
+        bool result = await ZstdClient.SetIfNotExistsAsync(keysAndValues);
         Assert.True(result, "MSETNX should succeed for new keys");
 
         var statsAfter = BaseClient.GetStatistics();
@@ -389,62 +331,44 @@ public class CompressionTests(TestConfiguration config)
         // Verify values can be retrieved and decompressed
         foreach (var kv in keysAndValues)
         {
-            ValkeyValue retrieved = await client.GetAsync(kv.Key);
+            ValkeyValue retrieved = await ZstdClient.GetAsync(kv.Key);
             Assert.Equal(kv.Value.ToString(), retrieved.ToString());
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_SetWithExpiry_CompressesValue(GlideClient _)
+    [Fact]
+    public async Task Compression_SetWithExpiry_CompressesValue()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"set_expiry_test_{Guid.NewGuid()}";
 
-        await client.SetAsync(key, LargeValue);
-        bool expired = await client.ExpireAsync(key, TimeSpan.FromSeconds(10));
+        await ZstdClient.SetAsync(key, LargeValue);
+        _ = await ZstdClient.ExpireAsync(key, TimeSpan.FromSeconds(10));
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"SET should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
-        ValkeyValue retrieved = await client.GetAsync(key);
+        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
         Assert.Equal(LargeValue, retrieved.ToString());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Setnx_CompressesValue(GlideClient _)
+    [Fact]
+    public async Task Compression_Setnx_CompressesValue()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"setnx_test_{Guid.NewGuid()}";
 
-        bool result = await client.SetAsync(key, LargeValue, SetCondition.OnlyIfDoesNotExist);
+        bool result = await ZstdClient.SetAsync(key, LargeValue, SetCondition.OnlyIfDoesNotExist);
         Assert.True(result);
 
         var statsAfter = BaseClient.GetStatistics();
         Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"SET NX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
-        ValkeyValue retrieved = await client.GetAsync(key);
+        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
         Assert.Equal(LargeValue, retrieved.ToString());
     }
 
@@ -452,24 +376,15 @@ public class CompressionTests(TestConfiguration config)
     // CustomCommand Tests for Compression
     // ============================================================================
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_SetExViaCustomCommand_CompressesValue(GlideClient _)
+    [Fact]
+    public async Task Compression_SetExViaCustomCommand_CompressesValue()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"setex_custom_test_{Guid.NewGuid()}";
 
         // SETEX via custom command should compress value
-        var result = await client.CustomCommand(["SETEX", key, "10", LargeValue]);
+        var result = await ZstdClient.CustomCommand(["SETEX", key, "10", LargeValue]);
         Assert.Equal("OK", result?.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
@@ -477,33 +392,24 @@ public class CompressionTests(TestConfiguration config)
             $"SETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify value can be retrieved and decompressed
-        ValkeyValue retrieved = await client.GetAsync(key);
+        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
         Assert.Equal(LargeValue, retrieved.ToString());
 
         // Verify TTL was set
-        var ttl = await client.TimeToLiveAsync(key);
+        var ttl = await ZstdClient.TimeToLiveAsync(key);
         Assert.True(ttl.HasTimeToLive);
         Assert.True(ttl.TimeToLive!.Value.TotalSeconds > 0 && ttl.TimeToLive!.Value.TotalSeconds <= 10);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_PSetExViaCustomCommand_CompressesValue(GlideClient _)
+    [Fact]
+    public async Task Compression_PSetExViaCustomCommand_CompressesValue()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"psetex_custom_test_{Guid.NewGuid()}";
 
         // PSETEX via custom command should compress value
-        var result = await client.CustomCommand(["PSETEX", key, "10000", LargeValue]);
+        var result = await ZstdClient.CustomCommand(["PSETEX", key, "10000", LargeValue]);
         Assert.Equal("OK", result?.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
@@ -511,32 +417,23 @@ public class CompressionTests(TestConfiguration config)
             $"PSETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify value can be retrieved and decompressed
-        ValkeyValue retrieved = await client.GetAsync(key);
+        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
         Assert.Equal(LargeValue, retrieved.ToString());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_SetNXViaCustomCommand_CompressesValue(GlideClient _)
+    [Fact]
+    public async Task Compression_SetNXViaCustomCommand_CompressesValue()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         // Ensure key doesn't exist
         string key = $"setnx_custom_test_{Guid.NewGuid()}";
 #pragma warning disable IDE0058 // Expression value is never used
-        await client.DeleteAsync(key);
+        await ZstdClient.DeleteAsync(key);
 #pragma warning restore IDE0058
 
         var statsBefore = BaseClient.GetStatistics();
 
         // SETNX via custom command should compress value
-        var result = await client.CustomCommand(["SETNX", key, LargeValue]);
+        var result = await ZstdClient.CustomCommand(["SETNX", key, LargeValue]);
         Assert.Equal(1L, result);
 
         var statsAfter = BaseClient.GetStatistics();
@@ -544,7 +441,7 @@ public class CompressionTests(TestConfiguration config)
             $"SETNX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify value can be retrieved and decompressed
-        ValkeyValue retrieved = await client.GetAsync(key);
+        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
         Assert.Equal(LargeValue, retrieved.ToString());
     }
 
@@ -552,320 +449,185 @@ public class CompressionTests(TestConfiguration config)
     // Incompatible Command Tests - These should error when compression is enabled
     // ============================================================================
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Append_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_Append_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"append_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "initial");
+        await ZstdClient.SetAsync(key, "initial");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.AppendAsync(key, "_suffix"));
+            await ZstdClient.AppendAsync(key, "_suffix"));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_GetRange_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_GetRange_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"getrange_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "Hello World");
+        await ZstdClient.SetAsync(key, "Hello World");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.GetRangeAsync(key, 0, 4));
+            await ZstdClient.GetRangeAsync(key, 0, 4));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_SetRange_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_SetRange_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"setrange_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "Hello World");
+        await ZstdClient.SetAsync(key, "Hello World");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.SetRangeAsync(key, 6, "Valkey"));
+            await ZstdClient.SetRangeAsync(key, 6, "Valkey"));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_StrLen_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_StrLen_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"strlen_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "Hello");
+        await ZstdClient.SetAsync(key, "Hello");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.LengthAsync(key));
+            await ZstdClient.LengthAsync(key));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Incr_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_Incr_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"incr_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "100");
+        await ZstdClient.SetAsync(key, "100");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.IncrementAsync(key));
+            await ZstdClient.IncrementAsync(key));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_IncrBy_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_IncrBy_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"incrby_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "100");
+        await ZstdClient.SetAsync(key, "100");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.IncrementAsync(key, 10));
+            await ZstdClient.IncrementAsync(key, 10));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_IncrByFloat_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_IncrByFloat_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"incrbyfloat_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "100.5");
+        await ZstdClient.SetAsync(key, "100.5");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.IncrementAsync(key, 0.5));
+            await ZstdClient.IncrementAsync(key, 1.5));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_Decr_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_Decr_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"decr_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "100");
+        await ZstdClient.SetAsync(key, "100");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.DecrementAsync(key));
+            await ZstdClient.DecrementAsync(key));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_DecrBy_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_DecrBy_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"decrby_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "100");
+        await ZstdClient.SetAsync(key, "100");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.DecrementAsync(key, 10));
+            await ZstdClient.DecrementAsync(key, 10));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_GetBit_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_GetBit_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"getbit_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "Hello");
+        await ZstdClient.SetAsync(key, "Hello");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.GetBitAsync(key, 0));
+            await ZstdClient.GetBitAsync(key, 0));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_SetBit_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_SetBit_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"setbit_test_{Guid.NewGuid()}";
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.SetBitAsync(key, 7, true));
+            await ZstdClient.SetBitAsync(key, 7, true));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_BitCount_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_BitCount_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"bitcount_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "foobar");
+        await ZstdClient.SetAsync(key, "Hello");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.BitCountAsync(key));
+            await ZstdClient.BitCountAsync(key));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     // ============================================================================
-    // Incompatible Commands via CustomCommand - These should also error
+    // CustomCommand Incompatible Tests
     // ============================================================================
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_IncrViaCustomCommand_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_IncrViaCustomCommand_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"incr_custom_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "100");
+        await ZstdClient.SetAsync(key, "100");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.CustomCommand(["INCR", key]));
+            await ZstdClient.CustomCommand(["INCR", key]));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_AppendViaCustomCommand_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_AppendViaCustomCommand_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"append_custom_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "Hello");
+        await ZstdClient.SetAsync(key, "Hello");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.CustomCommand(["APPEND", key, " World"]));
+            await ZstdClient.CustomCommand(["APPEND", key, " World"]));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task Compression_StrLenViaCustomCommand_ThrowsIncompatibleError(GlideClient _)
+    [Fact]
+    public async Task Compression_StrLenViaCustomCommand_ThrowsIncompatibleError()
     {
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
-            .Build();
-
-        await using var client = await GlideClient.CreateClient(clientConfig);
-
         string key = $"strlen_custom_test_{Guid.NewGuid()}";
-        await client.SetAsync(key, "Hello");
+        await ZstdClient.SetAsync(key, "Hello");
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.CustomCommand(["STRLEN", key]));
+            await ZstdClient.CustomCommand(["STRLEN", key]));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
