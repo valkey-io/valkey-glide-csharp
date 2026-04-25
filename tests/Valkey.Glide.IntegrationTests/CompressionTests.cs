@@ -383,7 +383,7 @@ public class CompressionTests(CompressionFixture fixture)
         // Verify TTL was set
         var ttl = await ZstdClient.TimeToLiveAsync(key);
         Assert.True(ttl.HasTimeToLive);
-        Assert.True(ttl.TimeToLive!.Value.TotalSeconds > 0 && ttl.TimeToLive!.Value.TotalSeconds <= 10);
+        Assert.InRange(ttl.TimeToLive!.Value.TotalSeconds, 0.1, 10);
     }
 
     [Fact]
@@ -408,7 +408,7 @@ public class CompressionTests(CompressionFixture fixture)
         // Verify TTL was set
         var ttl = await ZstdClient.TimeToLiveAsync(key);
         Assert.True(ttl.HasTimeToLive);
-        Assert.True(ttl.TimeToLive!.Value.TotalSeconds > 0 && ttl.TimeToLive!.Value.TotalSeconds <= 10);
+        Assert.InRange(ttl.TimeToLive!.Value.TotalSeconds, 0.1, 10);
     }
 
     [Fact]
