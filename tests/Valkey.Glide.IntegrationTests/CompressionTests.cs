@@ -393,7 +393,7 @@ public class CompressionTests(CompressionFixture fixture)
 
         string key = $"psetex_custom_test_{Guid.NewGuid()}";
 
-        // PSETEX via custom command should compress value
+        // PSETEX via custom command should compress value (10000ms = 10s)
         var result = await ZstdClient.CustomCommand(["PSETEX", key, "10000", LargeValue]);
         Assert.Equal("OK", result?.ToString());
 
@@ -404,6 +404,11 @@ public class CompressionTests(CompressionFixture fixture)
         // Verify value can be retrieved and decompressed
         ValkeyValue retrieved = await ZstdClient.GetAsync(key);
         Assert.Equal(LargeValue, retrieved.ToString());
+
+        // Verify TTL was set
+        var ttl = await ZstdClient.TimeToLiveAsync(key);
+        Assert.True(ttl.HasTimeToLive);
+        Assert.True(ttl.TimeToLive!.Value.TotalSeconds > 0 && ttl.TimeToLive!.Value.TotalSeconds <= 10);
     }
 
     [Fact]
