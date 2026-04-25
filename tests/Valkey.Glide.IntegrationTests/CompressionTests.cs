@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
+using Valkey.Glide.Pipeline;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -481,5 +482,129 @@ public class CompressionTests(CompressionFixture fixture)
             await ZstdClient.CustomCommand(args));
 
         Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // ============================================================================
+    // Batch/Pipeline Compression Tests
+    // ============================================================================
+
+    [Fact]
+    public async Task Compression_Batch_CompressesAndDecompresses()
+    {
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key1 = $"batch_test_1_{Guid.NewGuid()}";
+        string key2 = $"batch_test_2_{Guid.NewGuid()}";
+        string key3 = $"batch_test_3_{Guid.NewGuid()}";
+
+        var batch = new Batch(false)
+            .SetAsync(key1, LargeValue)
+            .SetAsync(key2, LargeValue)
+            .SetAsync(key3, LargeValue)
+            .GetAsync(key1)
+            .GetAsync(key2)
+            .GetAsync(key3);
+
+        var results = await ZstdClient.Exec(batch, true);
+
+        var statsAfter = BaseClient.GetStatistics();
+
+        // Verify compression occurred (3 SET commands should compress)
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"Batch should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify results - first 3 are SET results (OK), last 3 are GET results
+        Assert.NotNull(results);
+        Assert.Equal(6, results.Length);
+        Assert.Equal(LargeValue, results[3]?.ToString());
+        Assert.Equal(LargeValue, results[4]?.ToString());
+        Assert.Equal(LargeValue, results[5]?.ToString());
+    }
+
+    [Fact]
+    public async Task Compression_Transaction_CompressesAndDecompresses()
+    {
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key1 = $"transaction_test_1_{Guid.NewGuid()}";
+        string key2 = $"transaction_test_2_{Guid.NewGuid()}";
+
+        // isAtomic = true makes it a transaction
+        var transaction = new Batch(true)
+            .SetAsync(key1, LargeValue)
+            .SetAsync(key2, LargeValue)
+            .GetAsync(key1)
+            .GetAsync(key2);
+
+        var results = await ZstdClient.Exec(transaction, true);
+
+        var statsAfter = BaseClient.GetStatistics();
+
+        // Verify compression occurred
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"Transaction should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify results
+        Assert.NotNull(results);
+        Assert.Equal(4, results.Length);
+        Assert.Equal(LargeValue, results[2]?.ToString());
+        Assert.Equal(LargeValue, results[3]?.ToString());
+    }
+
+    [Fact]
+    public async Task Compression_BatchWithCustomCommand_CompressesValue()
+    {
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key = $"batch_custom_test_{Guid.NewGuid()}";
+
+        // Use CustomCommand in a batch - this tests that CustomCommand compression works in batches
+        var batch = new Batch(false)
+            .CustomCommand(["SETEX", key, "10", LargeValue])
+            .CustomCommand(["GET", key]);
+
+        var results = await ZstdClient.Exec(batch, true);
+
+        var statsAfter = BaseClient.GetStatistics();
+
+        // Verify compression occurred for SETEX via CustomCommand in batch
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"Batch CustomCommand should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify results
+        Assert.NotNull(results);
+        Assert.Equal(2, results.Length);
+        Assert.Equal("OK", results[0]?.ToString());
+        Assert.Equal(LargeValue, results[1]?.ToString());
+    }
+
+    [Fact]
+    public async Task Compression_ClusterBatch_CompressesAndDecompresses()
+    {
+        var statsBefore = BaseClient.GetStatistics();
+
+        // Use same hash slot by using {tag} pattern
+        string key1 = $"{{cluster_batch}}_test_1_{Guid.NewGuid()}";
+        string key2 = $"{{cluster_batch}}_test_2_{Guid.NewGuid()}";
+
+        var batch = new ClusterBatch(false)
+            .SetAsync(key1, LargeValue)
+            .SetAsync(key2, LargeValue)
+            .GetAsync(key1)
+            .GetAsync(key2);
+
+        var results = await ZstdClusterClient.Exec(batch, true);
+
+        var statsAfter = BaseClient.GetStatistics();
+
+        // Verify compression occurred
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+            $"Cluster batch should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+
+        // Verify results
+        Assert.NotNull(results);
+        Assert.Equal(4, results.Length);
+        Assert.Equal(LargeValue, results[2]?.ToString());
+        Assert.Equal(LargeValue, results[3]?.ToString());
     }
 }

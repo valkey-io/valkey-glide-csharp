@@ -522,7 +522,7 @@ pub unsafe extern "C-unwind" fn command(
         callback_index,
     };
 
-    let mut cmd = match unsafe { create_cmd(cmd_ptr) } {
+    let mut cmd = match unsafe { create_cmd(cmd_ptr, core.client.compression_manager().as_ref()) } {
         Ok(cmd) => cmd,
         Err(err) => {
             panic_guard.panicked = false;
@@ -542,32 +542,12 @@ pub unsafe extern "C-unwind" fn command(
 
     let request_type = unsafe { (*cmd_ptr).request_type };
 
-    // Resolve the actual command type for CustomCommand (needed for compression/decompression)
+    // Resolve the actual command type for CustomCommand (needed for decompression)
     let resolved_request_type = if matches!(request_type, RequestType::CustomCommand) {
         resolve_custom_command_type(&extract_cmd_args(&cmd))
     } else {
         request_type
     };
-
-    // Apply compression to command arguments if compression is enabled
-    if let Some(compression_manager) = core.client.compression_manager()
-        && let Err(err) = compress_cmd(
-            &mut cmd,
-            resolved_request_type,
-            compression_manager.as_ref(),
-        )
-    {
-        panic_guard.panicked = false;
-        unsafe {
-            report_error(
-                core.failure_callback,
-                callback_index,
-                format!("Compression failed: {}", err),
-                RequestErrorType::Unspecified,
-            );
-        }
-        return;
-    }
 
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
@@ -644,7 +624,7 @@ pub unsafe extern "C-unwind" fn batch(
         callback_index,
     };
 
-    let pipeline = match unsafe { create_pipeline(batch_ptr) } {
+    let pipeline = match unsafe { create_pipeline(batch_ptr, core.client.compression_manager().as_ref()) } {
         Ok(pipeline) => pipeline,
         Err(err) => {
             panic_guard.panicked = false;
@@ -661,6 +641,9 @@ pub unsafe extern "C-unwind" fn batch(
     };
 
     let (routing, timeout, pipeline_retry_strategy) = unsafe { get_pipeline_options(options_ptr) };
+
+    // Clone compression manager for use in async block
+    let compression_manager = core.client.compression_manager();
 
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
@@ -686,9 +669,31 @@ pub unsafe extern "C-unwind" fn batch(
                 )
                 .await
         };
+
+        // Process batch response for decompression if compression is enabled
         match result {
             Ok(value) => {
-                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
+                let final_value = if let Some(ref manager) = compression_manager {
+                    match glide_core::compression::decompress_batch_response(
+                        value.clone(),
+                        manager.as_ref(),
+                    ) {
+                        Ok(decompressed) => decompressed,
+                        Err(e) => {
+                            logger_core::log_warn(
+                                "batch_decompression",
+                                format!(
+                                    "Failed to decompress batch response: {}, returning original",
+                                    e
+                                ),
+                            );
+                            value
+                        }
+                    }
+                } else {
+                    value
+                };
+                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(final_value)));
                 unsafe { (core.success_callback)(callback_index, ptr) };
             }
             Err(err) => unsafe {
@@ -1711,43 +1716,6 @@ fn resolve_custom_command_type(args: &[Vec<u8>]) -> RequestType {
 
     // Use the centralized from_command_name method in glide-core
     RequestType::from_command_name(&command_str).unwrap_or(RequestType::CustomCommand)
-}
-
-/// Applies compression to command arguments if the command supports it.
-///
-/// Returns `Ok(())` if compression was applied or skipped, `Err` if compression failed.
-/// Note: The request_type should already be resolved (i.e., CustomCommand should be resolved
-/// to the actual command type before calling this function).
-fn compress_cmd(
-    cmd: &mut redis::Cmd,
-    request_type: RequestType,
-    compression_manager: &glide_core::compression::CompressionManager,
-) -> Result<(), String> {
-    let all_args = extract_cmd_args(cmd);
-
-    if all_args.is_empty() {
-        return Ok(());
-    }
-
-    let command_name = &all_args[0];
-
-    let mut args: Vec<Vec<u8>> = all_args[1..].to_vec();
-
-    glide_core::compression::process_command_args_for_compression(
-        &mut args,
-        request_type,
-        Some(compression_manager),
-    )
-    .map_err(|err| err.to_string())?;
-
-    // Rebuild command with compressed arguments
-    *cmd = redis::Cmd::new();
-    cmd.arg(command_name);
-    for arg in args {
-        cmd.arg(arg);
-    }
-
-    Ok(())
 }
 
 /// Returns a new span for the given command name.
