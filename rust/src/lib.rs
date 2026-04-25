@@ -544,14 +544,7 @@ pub unsafe extern "C-unwind" fn command(
 
     // Resolve the actual command type for CustomCommand (needed for compression/decompression)
     let resolved_request_type = if matches!(request_type, RequestType::CustomCommand) {
-        let all_args: Vec<Vec<u8>> = cmd
-            .args_iter()
-            .filter_map(|arg| match arg {
-                redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
-                redis::Arg::Cursor => None,
-            })
-            .collect();
-        resolve_custom_command_type(&all_args)
+        resolve_custom_command_type(&extract_cmd_args(&cmd))
     } else {
         request_type
     };
@@ -1695,6 +1688,17 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     Some(command_name.to_string())
 }
 
+/// Extracts all simple arguments from a redis command as byte vectors.
+/// Filters out cursor arguments and collects only simple byte arguments.
+fn extract_cmd_args(cmd: &redis::Cmd) -> Vec<Vec<u8>> {
+    cmd.args_iter()
+        .filter_map(|arg| match arg {
+            redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
+            redis::Arg::Cursor => None,
+        })
+        .collect()
+}
+
 /// Resolves the actual RequestType for a CustomCommand by parsing the command name from the first argument.
 /// This is needed for compression validation since CustomCommand doesn't carry the actual command type.
 fn resolve_custom_command_type(args: &[Vec<u8>]) -> RequestType {
@@ -1719,13 +1723,7 @@ fn compress_cmd(
     request_type: RequestType,
     compression_manager: &glide_core::compression::CompressionManager,
 ) -> Result<(), String> {
-    let all_args: Vec<Vec<u8>> = cmd
-        .args_iter()
-        .filter_map(|arg| match arg {
-            redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
-            redis::Arg::Cursor => None,
-        })
-        .collect();
+    let all_args = extract_cmd_args(cmd);
 
     if all_args.is_empty() {
         return Ok(());
