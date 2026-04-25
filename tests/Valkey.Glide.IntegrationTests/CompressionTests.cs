@@ -414,11 +414,7 @@ public class CompressionTests(CompressionFixture fixture)
     [Fact]
     public async Task Compression_SetNXViaCustomCommand_CompressesValue()
     {
-        // Ensure key doesn't exist
         string key = $"setnx_custom_test_{Guid.NewGuid()}";
-#pragma warning disable IDE0058 // Expression value is never used
-        await ZstdClient.DeleteAsync(key);
-#pragma warning restore IDE0058
 
         var statsBefore = BaseClient.GetStatistics();
 
