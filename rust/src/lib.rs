@@ -624,21 +624,22 @@ pub unsafe extern "C-unwind" fn batch(
         callback_index,
     };
 
-    let pipeline = match unsafe { create_pipeline(batch_ptr, core.client.compression_manager().as_ref()) } {
-        Ok(pipeline) => pipeline,
-        Err(err) => {
-            panic_guard.panicked = false;
-            unsafe {
-                report_error(
-                    core.failure_callback,
-                    callback_index,
-                    err,
-                    RequestErrorType::Unspecified,
-                );
+    let pipeline =
+        match unsafe { create_pipeline(batch_ptr, core.client.compression_manager().as_ref()) } {
+            Ok(pipeline) => pipeline,
+            Err(err) => {
+                panic_guard.panicked = false;
+                unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        err,
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return;
             }
-            return;
-        }
-    };
+        };
 
     let (routing, timeout, pipeline_retry_strategy) = unsafe { get_pipeline_options(options_ptr) };
 
