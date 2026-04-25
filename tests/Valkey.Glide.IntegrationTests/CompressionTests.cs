@@ -2,8 +2,6 @@
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.ConnectionConfiguration;
-
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -17,22 +15,16 @@ public class CompressionFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        var zstdConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+        var zstdConfig = TestConfiguration.DefaultClientConfig()
             .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
             .Build();
 
-        var lz4Config = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+        var lz4Config = TestConfiguration.DefaultClientConfig()
             .WithCompression(CompressionConfig.Lz4())
-            .WithTls(TestConfiguration.TLS)
             .Build();
 
-        var clusterConfig = new ClusterClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port)
+        var clusterConfig = TestConfiguration.DefaultClusterClientConfig()
             .WithCompression(CompressionConfig.Zstd())
-            .WithTls(TestConfiguration.TLS)
             .Build();
 
         ZstdClient = await GlideClient.CreateClient(zstdConfig);
@@ -121,10 +113,8 @@ public class CompressionTests(CompressionFixture fixture)
     public async Task Compression_MinSize_SkipsSmallValues()
     {
         // This test needs a custom client with minSize threshold
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+        var clientConfig = TestConfiguration.DefaultClientConfig()
             .WithCompression(CompressionConfig.Zstd(minCompressionSize: MinSizeThreshold))
-            .WithTls(TestConfiguration.TLS)
             .Build();
 
         await using var client = await GlideClient.CreateClient(clientConfig);
@@ -152,10 +142,8 @@ public class CompressionTests(CompressionFixture fixture)
     public async Task Compression_CustomLevel_WorksCorrectly()
     {
         // This test needs a custom client with custom compression level
-        var clientConfig = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
+        var clientConfig = TestConfiguration.DefaultClientConfig()
             .WithCompression(CompressionConfig.Zstd(compressionLevel: CustomCompressionLevel))
-            .WithTls(TestConfiguration.TLS)
             .Build();
 
         await using var client = await GlideClient.CreateClient(clientConfig);
@@ -172,10 +160,7 @@ public class CompressionTests(CompressionFixture fixture)
     public async Task Compression_BackwardCompatibility_ReadsUncompressedData()
     {
         // This test needs a client without compression
-        var configNoCompression = new StandaloneClientConfigurationBuilder()
-            .WithAddress(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port)
-            .WithTls(TestConfiguration.TLS)
-            .Build();
+        var configNoCompression = TestConfiguration.DefaultClientConfig().Build();
 
         await using var clientNoCompression = await GlideClient.CreateClient(configNoCompression);
 
