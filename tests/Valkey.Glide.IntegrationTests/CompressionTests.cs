@@ -140,12 +140,11 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         string key = $"compression_level_test_{Guid.NewGuid()}";
-        string value = new('z', LargeValueSize);
 
-        await client.SetAsync(key, value);
+        await client.SetAsync(key, LargeValue);
         var retrieved = await client.GetAsync(key);
 
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -241,9 +240,8 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"stats_test_{Guid.NewGuid()}";
-        string value = new('m', LargeValueSize);
 
-        await client.SetAsync(key, value);
+        await client.SetAsync(key, LargeValue);
         ValkeyValue retrieved = await client.GetAsync(key);
 
         var statsAfter = BaseClient.GetStatistics();
@@ -296,12 +294,11 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         string key = $"getex_test_{Guid.NewGuid()}";
-        string value = new('g', LargeValueSize);
 
-        await client.SetAsync(key, value);
+        await client.SetAsync(key, LargeValue);
         ValkeyValue retrieved = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)));
 
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -317,12 +314,11 @@ public class CompressionTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(clientConfig);
 
         string key = $"getdel_test_{Guid.NewGuid()}";
-        string value = new('d', LargeValueSize);
 
-        await client.SetAsync(key, value);
+        await client.SetAsync(key, LargeValue);
         ValkeyValue retrieved = await client.GetDeleteAsync(key);
 
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
 
         // Verify key was deleted
         ValkeyValue afterDelete = await client.GetAsync(key);
@@ -413,9 +409,8 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"set_expiry_test_{Guid.NewGuid()}";
-        string value = new('s', LargeValueSize);
 
-        await client.SetAsync(key, value);
+        await client.SetAsync(key, LargeValue);
         bool expired = await client.ExpireAsync(key, TimeSpan.FromSeconds(10));
 
         var statsAfter = BaseClient.GetStatistics();
@@ -423,7 +418,7 @@ public class CompressionTests(TestConfiguration config)
             $"SET should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -441,9 +436,8 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"setnx_test_{Guid.NewGuid()}";
-        string value = new('n', LargeValueSize);
 
-        bool result = await client.SetAsync(key, value, SetCondition.OnlyIfDoesNotExist);
+        bool result = await client.SetAsync(key, LargeValue, SetCondition.OnlyIfDoesNotExist);
         Assert.True(result);
 
         var statsAfter = BaseClient.GetStatistics();
@@ -451,7 +445,7 @@ public class CompressionTests(TestConfiguration config)
             $"SET NX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
     }
 
     // ============================================================================
@@ -473,10 +467,9 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"setex_custom_test_{Guid.NewGuid()}";
-        string value = new('s', LargeValueSize);
 
         // SETEX via custom command should compress value
-        var result = await client.CustomCommand(["SETEX", key, "10", value]);
+        var result = await client.CustomCommand(["SETEX", key, "10", LargeValue]);
         Assert.Equal("OK", result?.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
@@ -485,7 +478,7 @@ public class CompressionTests(TestConfiguration config)
 
         // Verify value can be retrieved and decompressed
         ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
 
         // Verify TTL was set
         var ttl = await client.TimeToLiveAsync(key);
@@ -508,10 +501,9 @@ public class CompressionTests(TestConfiguration config)
         var statsBefore = BaseClient.GetStatistics();
 
         string key = $"psetex_custom_test_{Guid.NewGuid()}";
-        string value = new('p', LargeValueSize);
 
         // PSETEX via custom command should compress value
-        var result = await client.CustomCommand(["PSETEX", key, "10000", value]);
+        var result = await client.CustomCommand(["PSETEX", key, "10000", LargeValue]);
         Assert.Equal("OK", result?.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
@@ -520,7 +512,7 @@ public class CompressionTests(TestConfiguration config)
 
         // Verify value can be retrieved and decompressed
         ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -543,10 +535,8 @@ public class CompressionTests(TestConfiguration config)
 
         var statsBefore = BaseClient.GetStatistics();
 
-        string value = new('n', LargeValueSize);
-
         // SETNX via custom command should compress value
-        var result = await client.CustomCommand(["SETNX", key, value]);
+        var result = await client.CustomCommand(["SETNX", key, LargeValue]);
         Assert.Equal(1L, result);
 
         var statsAfter = BaseClient.GetStatistics();
@@ -555,7 +545,7 @@ public class CompressionTests(TestConfiguration config)
 
         // Verify value can be retrieved and decompressed
         ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal(value, retrieved.ToString());
+        Assert.Equal(LargeValue, retrieved.ToString());
     }
 
     // ============================================================================
