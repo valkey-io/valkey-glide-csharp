@@ -28,7 +28,7 @@ jobs:
 
             - name: Gate on full-matrix runs
               id: gate
-              uses: actions/github-script@v8
+              uses: actions/github-script@v9
               with:
                   github-token: ${{ github.token }}
                   script: |
@@ -163,7 +163,7 @@ jobs:
 
             - name: Find or create rolling failure issue
               id: ensure_issue
-              uses: actions/github-script@v8
+              uses: actions/github-script@v9
               if: ${{ steps.gate.outputs.result == 'true' }}
               env:
                   SUMMARY_PATH: ${{ steps.aggregate.outputs.summary_path }}
