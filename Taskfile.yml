@@ -156,12 +156,6 @@ tasks:
         cmds:
             - task: test:coverage:all
 
-    default:
-        desc: Default task - build and run coverage
-        cmds:
-            - task: build
-            - task: coverage
-
     lint:
         desc: "Run all linters"
         deps: [lint:rust, lint:csharp, lint:yaml]
