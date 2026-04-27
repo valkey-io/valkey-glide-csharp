@@ -382,4 +382,4 @@ Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main
 
 ## Community and Feedback
 
-We encourage you to join our community to support, share feedback, and ask questions. You can approach us for anything on our Valkey Slack: [Join Valkey Slack](https://join.slack.com/t/valkey-oss-developer/shared_invite/zt-2nxs51chx-EB9hu9Qdch3GMfRcztTSkQ).
+We encourage you to join our community to support, share feedback, and ask questions. You can approach us for anything on our Valkey Slack: [Join Valkey Slack](https://valkey.io/slack/).

@@ -25,7 +25,7 @@ Visit the official Valkey GLIDE [documentation site](https://glide.valkey.io).
 ## Getting Help
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/valkey-io/valkey-glide-csharp/issues)
-- **Valkey Slack**: [Join our community](https://join.slack.com/t/valkey-oss-developer/shared_invite/zt-2nxs51chx-EB9hu9Qdch3GMfRcztTSkQ)
+- **Valkey Slack**: [Join our community](https://valkey.io/slack/)
 - **Documentation**: [Official documentation](https://glide.valkey.io)
 
 ## Contributing
