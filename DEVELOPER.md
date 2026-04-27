@@ -201,7 +201,7 @@ In Windows, run from following commands from the appropriate Visual Studio Comma
     task coverage:integration  # Integration tests with coverage
 
     # Run tests for specific framework
-    task test FRAMEWORK=net8.0
+    task test framework=net8.0
 
     # Clean test results and reports
     task clean
@@ -236,6 +236,7 @@ task install-tools
 
 # Build and test workflows
 task build                  # Build the solution
+task build target=lib       # Build only Valkey.Glide
 task test                   # Build and run all tests with coverage
 task coverage               # Run tests with coverage and generate HTML reports
 

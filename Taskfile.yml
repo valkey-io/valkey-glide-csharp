@@ -6,8 +6,12 @@ vars:
     COVERAGE_FILE: "{{.TEST_RESULTS_DIR}}/coverage.cobertura.xml"
     UNIT_TEST_PROJECT: tests/Valkey.Glide.UnitTests/Valkey.Glide.UnitTests.csproj
     INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
-    FRAMEWORK: '{{.FRAMEWORK | default "all"}}'
+
+    # Build options
+    FRAMEWORK: '{{.framework | default "all"}}'
     FRAMEWORK_FLAG: '{{if ne .FRAMEWORK "all"}}--framework {{.FRAMEWORK}}{{end}}'
+    TARGET: '{{.target | default "all"}}'
+    TARGET_PATH: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
 
 tasks:
     clean:
@@ -148,7 +152,7 @@ tasks:
     build:
         desc: Build the solution
         cmds:
-            - dotnet build --configuration Release {{.FRAMEWORK_FLAG}}
+            - dotnet build {{.TARGET_PATH}} --configuration Release {{.FRAMEWORK_FLAG}}
 
     test:
         desc: Build and run all tests
