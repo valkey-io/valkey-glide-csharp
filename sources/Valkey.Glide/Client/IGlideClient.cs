@@ -29,6 +29,7 @@ public partial interface IGlideClient :
     /// <remarks>
     /// <example>
     /// <code>
+    /// ValkeyKey key = "mykey";
     /// bool result = await client.MoveAsync(key, 2);
     /// </code>
     /// </example>
@@ -50,6 +51,8 @@ public partial interface IGlideClient :
     /// <remarks>
     /// <example>
     /// <code>
+    /// ValkeyKey source = "source";
+    /// ValkeyKey dest = "dest";
     /// bool result = await client.CopyAsync(source, dest, 1, replace: true);
     /// </code>
     /// </example>

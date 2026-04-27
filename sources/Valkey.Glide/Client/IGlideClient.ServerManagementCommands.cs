@@ -42,7 +42,8 @@ public partial interface IGlideClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// string info = await client.InfoAsync([Section.SERVER, Section.MEMORY]);
+    /// var sections = new Section[] { Section.SERVER, Section.MEMORY };
+    /// string info = await client.InfoAsync(sections);
     /// </code>
     /// </example>
     /// </remarks>

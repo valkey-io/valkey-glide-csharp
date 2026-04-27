@@ -22,16 +22,15 @@ This document gives AI agents the minimum, accurate context needed to work produ
 
 Common commands:
 
-- Build (library or solution):
-  - `task build` (preferred)
-  - `dotnet build --framework net8.0`
-  - `dotnet build sources/Valkey.Glide/ --framework net8.0`
+- Build:
+  - `task build` (complete solution)
+  - `task build target=lib` (Valkey.Glide library only)
+  - `task build framework=net8.0` (.NET 8.0 only)
 
-- Test (all or by project):
-  - `task test` (preferred)
-  - `dotnet test --framework net8.0`
-  - `dotnet test tests/Valkey.Glide.UnitTests/ --framework net8.0`
-  - `dotnet test tests/Valkey.Glide.IntegrationTests/ --framework net8.0`
+- Test:
+  - `task test` (all tests)
+  - `task test:unit` (unit tests only)
+  - `task test:integration` (integration tests only)
 
 - Filter tests:
   - By class: `--filter "FullyQualifiedName~ClassName"`

@@ -65,6 +65,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// using var script = new Script("return 1");
     /// bool exists = await client.ScriptExistsAsync(script.Hash);
     /// </code>
     /// </example>
@@ -82,6 +83,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// using var script1 = new Script("return 1");
+    /// using var script2 = new Script("return 2");
     /// bool[] exists = await client.ScriptExistsAsync([script1.Hash, script2.Hash]);
     /// </code>
     /// </example>
@@ -131,6 +134,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// using var script = new Script("return 1");
     /// string? source = await client.ScriptShowAsync(script.Hash);
     /// </code>
     /// </example>
@@ -351,6 +355,7 @@ public partial interface IBaseClient
     /// Uses the default APPEND policy. Use the overload with <see cref="FunctionRestorePolicy"/> to specify a different policy.
     /// <example>
     /// <code>
+    /// byte[] backup = await client.FunctionDumpAsync();
     /// await client.FunctionRestoreAsync(backup);
     /// </code>
     /// </example>
@@ -369,6 +374,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// byte[] backup = await client.FunctionDumpAsync();
     /// await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
     /// </code>
     /// </example>

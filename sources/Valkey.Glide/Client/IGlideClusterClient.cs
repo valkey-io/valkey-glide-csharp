@@ -34,8 +34,8 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;ValkeyValue&gt; response = await client.ClientGetNameAsync(Route.AllPrimaries);
-    /// if (response.HasSingleValue)
+    /// var response = await clusterClient.ClientGetNameAsync(Route.AllPrimaries);
+    /// if (response.HasSingleData)
     /// {
     ///     Console.WriteLine($"Connection name: {response.SingleValue}");
     /// }
@@ -43,7 +43,8 @@ public partial interface IGlideClusterClient :
     /// {
     ///     foreach (var kvp in response.MultiValue)
     ///     {
-    ///         Console.WriteLine($"Node {kvp.Key}: {kvp.Value ?? "No name set"}");
+    ///         string name = kvp.Value.IsNull ? "No name set" : kvp.Value.ToString();
+    ///         Console.WriteLine($"Node {kvp.Key}: {name}");
     ///     }
     /// }
     /// </code>
@@ -66,8 +67,8 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;long&gt; response = await client.ClientIdAsync(Route.AllPrimaries);
-    /// if (response.HasSingleValue)
+    /// var response = await clusterClient.ClientIdAsync(Route.AllPrimaries);
+    /// if (response.HasSingleData)
     /// {
     ///     Console.WriteLine($"Connection ID: {response.SingleValue}");
     /// }
@@ -99,7 +100,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;ValkeyValue&gt; response = await client.EchoAsync("Hello World", Route.AllPrimaries);
+    /// var response = await clusterClient.EchoAsync("Hello World", Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -115,7 +116,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.PingAsync(Route.AllPrimaries);
+    /// var response = await clusterClient.PingAsync(Route.AllPrimaries);
     /// Console.WriteLine(response); // Output: "PONG"
     /// </code>
     /// </example>
@@ -133,7 +134,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.PingAsync("Hello World", Route.AllPrimaries);
+    /// var response = await clusterClient.PingAsync("Hello World", Route.AllPrimaries);
     /// Console.WriteLine(response); // Output: "Hello World"
     /// </code>
     /// </example>

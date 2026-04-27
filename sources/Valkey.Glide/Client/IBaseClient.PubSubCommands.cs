@@ -85,7 +85,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// <example>
     /// <code>
-    /// var channels = new string[] { "news", "updates" };
+    /// var channels = new ValkeyKey[] { "news", "updates" };
     /// await client.SubscribeLazyAsync(channels);
     /// Console.WriteLine("Subscribed to 'news' and 'updates' channels");
     /// </code>
@@ -144,7 +144,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var patterns = new string[] { "news.*", "updates.*" };
+    /// var patterns = new ValkeyKey[] { "news.*", "updates.*" };
     /// await client.PSubscribeLazyAsync(patterns);
     /// Console.WriteLine("Subscribed to 'news.*' and 'updates.*' patterns");
     /// </code>
@@ -237,7 +237,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var channels = new string[] { "news", "updates" };
+    /// var channels = new ValkeyKey[] { "news", "updates" };
     /// await client.UnsubscribeLazyAsync(channels);
     /// Console.WriteLine("Unsubscribed from 'news' and 'updates' channels");
     /// </code>
@@ -331,7 +331,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var patterns = new string[] { "news.*", "updates.*" };
+    /// var patterns = new ValkeyKey[] { "news.*", "updates.*" };
     /// await client.PUnsubscribeLazyAsync(patterns);
     /// Console.WriteLine("Unsubscribed from 'news.*' and 'updates.*' patterns");
     /// </code>
@@ -404,7 +404,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var channels = new string[] { "news", "updates" };
+    /// var channels = new ValkeyKey[] { "news", "updates" };
     /// var counts = await client.PubSubNumSubAsync(channels);
     /// foreach (var kvp in counts)
     /// {

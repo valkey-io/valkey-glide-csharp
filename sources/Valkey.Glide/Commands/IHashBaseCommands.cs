@@ -21,7 +21,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue value = await client.HashGetAsync(key, hashField);
+    /// ValkeyValue value = await client.HashGetAsync("key", "field");
     /// </code>
     /// </example>
     /// </remarks>
@@ -39,7 +39,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] values = await client.HashGetAsync(key, [field1, field2]);
+    /// ValkeyValue[] values = await client.HashGetAsync("key", ["field1", "field2"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -56,7 +56,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool added = await client.HashSetAsync(key, hashField, value);
+    /// bool added = await client.HashSetAsync("key", "field", "value");
     /// </code>
     /// </example>
     /// </remarks>
@@ -72,6 +72,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
+    /// ValkeyKey key = "myhash";
     /// long added = await client.HashSetAsync(key, new KeyValuePair&lt;ValkeyValue, ValkeyValue&gt;[] { new("field1", "value1"), new("field2", "value2") });
     /// </code>
     /// </example>
@@ -91,7 +92,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool added = await client.HashSetIfNotExistsAsync(key, hashField, value);
+    /// bool added = await client.HashSetIfNotExistsAsync("key", "field", "value");
     /// </code>
     /// </example>
     /// </remarks>
@@ -107,7 +108,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool removed = await client.HashDeleteAsync(key, hashField);
+    /// bool removed = await client.HashDeleteAsync("key", "field");
     /// </code>
     /// </example>
     /// </remarks>
@@ -123,7 +124,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long removedCount = await client.HashDeleteAsync(key, [field1, field2]);
+    /// long removedCount = await client.HashDeleteAsync("key", ["field1", "field2"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -139,7 +140,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool exists = await client.HashExistsAsync(key, hashField);
+    /// bool exists = await client.HashExistsAsync("key", "field");
     /// </code>
     /// </example>
     /// </remarks>
@@ -158,7 +159,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long newValue = await client.HashIncrementByAsync(key, hashField, 5);
+    /// long newValue = await client.HashIncrementByAsync("key", "field", 5);
     /// </code>
     /// </example>
     /// </remarks>
@@ -177,7 +178,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// double newValue = await client.HashIncrementByAsync(key, hashField, 2.5);
+    /// double newValue = await client.HashIncrementByAsync("key", "field", 2.5);
     /// </code>
     /// </example>
     /// </remarks>
@@ -192,7 +193,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long fieldCount = await client.HashLengthAsync(key);
+    /// long fieldCount = await client.HashLengthAsync("key");
     /// </code>
     /// </example>
     /// </remarks>
@@ -209,7 +210,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long length = await client.HashStringLengthAsync(key, hashField);
+    /// long length = await client.HashStringLengthAsync("key", "field");
     /// </code>
     /// </example>
     /// </remarks>
@@ -227,7 +228,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue randomField = await client.HashRandomFieldAsync(key);
+    /// ValkeyValue randomField = await client.HashRandomFieldAsync("key");
     /// </code>
     /// </example>
     /// </remarks>
@@ -250,12 +251,12 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var distinctFields = await client.HashRandomFieldsAsync(key, 3);
+    /// var distinctFields = await client.HashRandomFieldsAsync("key", 3);
     /// </code>
     /// </example>
-    /// /// <example>
+    /// <example>
     /// <code>
-    /// var randomFields = await client.HashRandomFieldsAsync(key, -3);
+    /// var randomFields = await client.HashRandomFieldsAsync("key", -3);
     /// </code>
     /// </example>
     /// </remarks>
