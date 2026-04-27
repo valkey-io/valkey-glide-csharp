@@ -14,7 +14,7 @@ exclude = [
     "file://.*example", # Example file URIs
 
     # Valkey Search alias command pages do not exist yet on valkey.io.
-    # TODO: Remove these exclusions after alias command docs are published on valkey.io
+    # TODO #353: Remove these exclusions after alias command docs are published on valkey.io
     "https://valkey\\.io/commands/ft\\.aliasadd/",
     "https://valkey\\.io/commands/ft\\.aliasdel/",
     "https://valkey\\.io/commands/ft\\.aliasupdate/",
