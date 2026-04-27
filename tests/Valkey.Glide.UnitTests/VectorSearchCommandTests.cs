@@ -7,9 +7,7 @@ namespace Valkey.Glide.UnitTests;
 public class VectorSearchCommandTests
 {
     [Fact]
-    public void ValidateFtCreateArgs()
-    {
-        Assert.Multiple(
+    public void ValidateFtCreateArgs() => Assert.Multiple(
             // Basic create with text field
             () => Assert.Equal(
                 ["FT.CREATE", "myindex", "SCHEMA", "title", "TEXT"],
@@ -84,24 +82,15 @@ public class VectorSearchCommandTests
                 Request.FtCreate("idx", [new TextField("f")],
                     new FtCreateOptions { StopWords = ["the", "a"] }).GetArgs())
         );
-    }
 
     [Fact]
-    public void ValidateFtDropIndexArgs()
-    {
-        Assert.Equal(["FT.DROPINDEX", "myindex"], Request.FtDropIndex("myindex").GetArgs());
-    }
+    public void ValidateFtDropIndexArgs() => Assert.Equal(["FT.DROPINDEX", "myindex"], Request.FtDropIndex("myindex").GetArgs());
 
     [Fact]
-    public void ValidateFtListArgs()
-    {
-        Assert.Equal(["FT._LIST"], Request.FtList().GetArgs());
-    }
+    public void ValidateFtListArgs() => Assert.Equal(["FT._LIST"], Request.FtList().GetArgs());
 
     [Fact]
-    public void ValidateFtSearchArgs()
-    {
-        Assert.Multiple(
+    public void ValidateFtSearchArgs() => Assert.Multiple(
             // Basic search
             () => Assert.Equal(
                 ["FT.SEARCH", "idx", "*"],
@@ -141,7 +130,7 @@ public class VectorSearchCommandTests
             // Search with TIMEOUT and DIALECT
             () => Assert.Equal(
                 ["FT.SEARCH", "idx", "*", "TIMEOUT", "5000", "DIALECT", "2"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { Timeout = 5000, Dialect = 2 }).GetArgs()),
+                Request.FtSearch("idx", "*", new FtSearchOptions { Timeout = TimeSpan.FromMilliseconds(5000), Dialect = 2 }).GetArgs()),
 
             // Search with WITHSORTKEYS
             () => Assert.Equal(
@@ -176,12 +165,9 @@ public class VectorSearchCommandTests
                     Consistency = FtSearchConsistencyMode.CONSISTENT
                 }).GetArgs())
         );
-    }
 
     [Fact]
-    public void ValidateFtAggregateArgs()
-    {
-        Assert.Multiple(
+    public void ValidateFtAggregateArgs() => Assert.Multiple(
             // Basic aggregate
             () => Assert.Equal(
                 ["FT.AGGREGATE", "idx", "*"],
@@ -206,7 +192,7 @@ public class VectorSearchCommandTests
                     [
                         new FtAggregateGroupBy("@color")
                         {
-                            Reducers = [new FtAggregateReducer("COUNT") { Name = "count" }]
+                            Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" }]
                         }
                     ]
                 }).GetArgs()),
@@ -218,7 +204,7 @@ public class VectorSearchCommandTests
                 {
                     Clauses =
                     [
-                        new FtAggregateSortBy(new FtAggregateSortProperty("@score", FtAggregateOrderBy.DESC)) { Max = 10 }
+                        new FtAggregateSortBy(new FtAggregateSortProperty("@score", SortOrder.Descending)) { Max = 10 }
                     ]
                 }).GetArgs()),
 
@@ -243,7 +229,7 @@ public class VectorSearchCommandTests
                 ["FT.AGGREGATE", "idx", "*", "LIMIT", "0", "10"],
                 Request.FtAggregate("idx", "*", new FtAggregateOptions
                 {
-                    Clauses = [new FtAggregateLimit(0, 10)]
+                    Clauses = [new FtAggregateLimit { Offset = 0, Count = 10 }]
                 }).GetArgs()),
 
             // Aggregate with VERBATIM, TIMEOUT, PARAMS, DIALECT
@@ -252,17 +238,14 @@ public class VectorSearchCommandTests
                 Request.FtAggregate("idx", "*", new FtAggregateOptions
                 {
                     Verbatim = true,
-                    Timeout = 3000,
+                    Timeout = TimeSpan.FromMilliseconds(3000),
                     Params = [new FtAggregateParam("k", "v")],
                     Dialect = 2
                 }).GetArgs())
         );
-    }
 
     [Fact]
-    public void ValidateFtInfoArgs()
-    {
-        Assert.Multiple(
+    public void ValidateFtInfoArgs() => Assert.Multiple(
             () => Assert.Equal(["FT.INFO", "idx"], Request.FtInfo("idx", null).GetArgs()),
             () => Assert.Equal(
                 ["FT.INFO", "idx", "LOCAL"],
@@ -276,18 +259,14 @@ public class VectorSearchCommandTests
                     Consistency = FtInfoConsistencyMode.CONSISTENT
                 }).GetArgs())
         );
-    }
 
     [Fact]
-    public void ValidateFtAliasArgs()
-    {
-        Assert.Multiple(
+    public void ValidateFtAliasArgs() => Assert.Multiple(
             () => Assert.Equal(["FT.ALIASADD", "myalias", "myindex"], Request.FtAliasAdd("myalias", "myindex").GetArgs()),
             () => Assert.Equal(["FT.ALIASDEL", "myalias"], Request.FtAliasDel("myalias").GetArgs()),
             () => Assert.Equal(["FT.ALIASUPDATE", "myalias", "newindex"], Request.FtAliasUpdate("myalias", "newindex").GetArgs()),
             () => Assert.Equal(["FT._ALIASLIST"], Request.FtAliasList().GetArgs())
         );
-    }
 
     [Fact]
     public void ValidateFtCreateOptionsValidation()
@@ -318,10 +297,139 @@ public class VectorSearchCommandTests
     }
 
     [Fact]
-    public void ValidateFtAggregateOptionsValidation()
-    {
+    public void ValidateFtAggregateOptionsValidation() =>
         // LoadAll and LoadFields are mutually exclusive
         _ = Assert.Throws<ArgumentException>(() =>
             new FtAggregateOptions { LoadAll = true, LoadFields = ["@f1"] }.ToArgs());
-    }
+
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder() => Assert.Multiple(
+            // WithAllFields emits LOAD *
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder().WithAllFields().Build()).GetArgs()),
+
+            // WithField adds a single field
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LOAD", "1", "@title"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder().WithField("@title").Build()).GetArgs()),
+
+            // WithField called multiple times accumulates fields
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@f1", "@f2"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder().WithField("@f1").WithField("@f2").Build()).GetArgs()),
+
+            // WithFields replaces any previously accumulated fields
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@a", "@b"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .WithField("@old")
+                        .WithFields(["@a", "@b"])
+                        .Build()).GetArgs()),
+
+            // WithAllFields after WithField clears the field list and sets LOAD *
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder().WithField("@f1").WithAllFields().Build()).GetArgs()),
+
+            // WithField after WithAllFields clears the LOAD * flag
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LOAD", "1", "@f1"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder().WithAllFields().WithField("@f1").Build()).GetArgs()),
+
+            // WithParam adds a single param; called twice accumulates both
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "PARAMS", "4", "k1", "v1", "k2", "v2", "DIALECT", "2"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .WithParam(new FtAggregateParam("k1", "v1"))
+                        .WithParam(new FtAggregateParam("k2", "v2"))
+                        .Dialect(2)
+                        .Build()).GetArgs()),
+
+            // WithParams replaces any previously accumulated params
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "PARAMS", "2", "k2", "v2"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .WithParam(new FtAggregateParam("k1", "v1"))
+                        .WithParams([new FtAggregateParam("k2", "v2")])
+                        .Build()).GetArgs()),
+
+            // WithClause appends a single clause; called twice preserves order
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "FILTER", "@score > 5", "LIMIT", "0", "10"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .WithClause(new FtAggregateFilter("@score > 5"))
+                        .WithClause(new FtAggregateLimit { Offset = 0, Count = 10 })
+                        .Build()).GetArgs()),
+
+            // WithClauses replaces any previously accumulated clauses
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LIMIT", "0", "5"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .WithClause(new FtAggregateFilter("@score > 5"))
+                        .WithClauses([new FtAggregateLimit { Offset = 0, Count = 5 }])
+                        .Build()).GetArgs()),
+
+            // Builder and object-initializer produce identical args for a full options set
+            () =>
+            {
+                var fromBuilder = Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .WithField("@f1").WithField("@f2")
+                        .Verbatim()
+                        .Timeout(TimeSpan.FromSeconds(3))
+                        .WithParam(new FtAggregateParam("k", "v"))
+                        .Dialect(2)
+                        .GroupBy(["@condition"], new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" })
+                        .SortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], max: 10)
+                        .Filter("@score > 5")
+                        .Limit(0, 10)
+                        .Build()).GetArgs();
+
+                var fromInitializer = Request.FtAggregate("idx", "*",
+                    new FtAggregateOptions
+                    {
+                        LoadFields = ["@f1", "@f2"],
+                        Verbatim = true,
+                        Timeout = TimeSpan.FromSeconds(3),
+                        Params = [new FtAggregateParam("k", "v")],
+                        Dialect = 2,
+                        Clauses =
+                        [
+                            new FtAggregateGroupBy("@condition") { Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" }] },
+                            new FtAggregateSortBy(new FtAggregateSortProperty("@score", SortOrder.Descending)) { Max = 10 },
+                            new FtAggregateFilter("@score > 5"),
+                            new FtAggregateLimit { Offset = 0, Count = 10 },
+                        ]
+                    }).GetArgs();
+
+                Assert.Equal(fromInitializer, fromBuilder);
+            },
+
+            // When(true) applies the configure action
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .When(true, b => b.WithAllFields())
+                        .Build()).GetArgs()),
+
+            // When(false) skips the configure action
+            () => Assert.Equal(
+                ["FT.AGGREGATE", "idx", "*"],
+                Request.FtAggregate("idx", "*",
+                    new FtAggregateOptionsBuilder()
+                        .When(false, b => b.WithAllFields())
+                        .Build()).GetArgs())
+        );
 }

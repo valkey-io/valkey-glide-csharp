@@ -44,7 +44,7 @@ public enum FtInfoConsistencyMode
 /// Optional arguments for the FT.INFO command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.info/">valkey.io</seealso>
-public class FtInfoOptions
+public sealed class FtInfoOptions
 {
     /// <summary>Controls the scope of information returned.</summary>
     public FtInfoScope? Scope { get; set; }

@@ -109,7 +109,7 @@ public interface IVectorSearchCommands
     ///         [
     ///             new FtAggregateGroupBy("@condition")
     ///             {
-    ///                 Reducers = [new FtAggregateReducer("COUNT") { Name = "count" }]
+    ///                 Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" }]
     ///             }
     ///         ]
     ///     });

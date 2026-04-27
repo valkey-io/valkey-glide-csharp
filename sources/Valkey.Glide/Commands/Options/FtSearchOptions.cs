@@ -42,7 +42,7 @@ public enum FtSearchConsistencyMode
 /// Specifies a field to return in FT.SEARCH results.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public class FtSearchReturnField(string fieldIdentifier)
+public sealed class FtSearchReturnField(string fieldIdentifier)
 {
     /// <summary>The field name to return.</summary>
     public string FieldIdentifier { get; } = fieldIdentifier;
@@ -54,7 +54,7 @@ public class FtSearchReturnField(string fieldIdentifier)
 /// Provides pagination for FT.SEARCH results.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public class FtSearchLimit(int offset, int count)
+public sealed class FtSearchLimit(int offset, int count)
 {
     /// <summary>Number of results to skip.</summary>
     public int Offset { get; } = offset;
@@ -66,7 +66,7 @@ public class FtSearchLimit(int offset, int count)
 /// A key/value pair passed as a query parameter for FT.SEARCH.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public class FtSearchParam(string key, string value)
+public sealed class FtSearchParam(string key, string value)
 {
     /// <summary>The parameter key.</summary>
     public string Key { get; } = key;
@@ -78,12 +78,12 @@ public class FtSearchParam(string key, string value)
 /// Optional arguments for the FT.SEARCH command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public class FtSearchOptions
+public sealed class FtSearchOptions
 {
     /// <summary>Fields to return. If empty, all fields are returned.</summary>
     public FtSearchReturnField[]? ReturnFields { get; set; }
-    /// <summary>Overrides the module timeout in milliseconds.</summary>
-    public int? Timeout { get; set; }
+    /// <summary>Overrides the module timeout.</summary>
+    public TimeSpan? Timeout { get; set; }
     /// <summary>Key/value pairs referenced from within the query expression.</summary>
     public FtSearchParam[]? Params { get; set; }
     /// <summary>Pagination. Only keys satisfying offset and count are returned.</summary>
@@ -115,28 +115,51 @@ public class FtSearchOptions
     public GlideString[] ToArgs()
     {
         if (WithSortKeys && SortBy is null)
+        {
             throw new ArgumentException("WithSortKeys requires SortBy to be set.");
+        }
+
         if (SortByOrder.HasValue && SortBy is null)
+        {
             throw new ArgumentException("SortByOrder requires SortBy to be set.");
+        }
 
         List<GlideString> args = [];
         if (ShardScope.HasValue)
+        {
             args.Add(ShardScope.Value switch
             {
                 FtSearchShardScope.ALLSHARDS => ValkeyLiterals.ALLSHARDS,
                 FtSearchShardScope.SOMESHARDS => ValkeyLiterals.SOMESHARDS,
                 _ => ShardScope.Value.ToString(),
             });
+        }
+
         if (Consistency.HasValue)
+        {
             args.Add(Consistency.Value switch
             {
                 FtSearchConsistencyMode.CONSISTENT => ValkeyLiterals.CONSISTENT,
                 FtSearchConsistencyMode.INCONSISTENT => ValkeyLiterals.INCONSISTENT,
                 _ => Consistency.Value.ToString(),
             });
-        if (NoContent) args.Add(ValkeyLiterals.NOCONTENT);
-        if (Verbatim) args.Add(ValkeyLiterals.VERBATIM);
-        if (InOrder) args.Add(ValkeyLiterals.INORDER);
+        }
+
+        if (NoContent)
+        {
+            args.Add(ValkeyLiterals.NOCONTENT);
+        }
+
+        if (Verbatim)
+        {
+            args.Add(ValkeyLiterals.VERBATIM);
+        }
+
+        if (InOrder)
+        {
+            args.Add(ValkeyLiterals.INORDER);
+        }
+
         if (Slop.HasValue) { args.Add(ValkeyLiterals.SLOP); args.Add(Slop.Value.ToString()); }
         if (ReturnFields is { Length: > 0 })
         {
@@ -155,17 +178,23 @@ public class FtSearchOptions
             args.Add(ValkeyLiterals.SORTBY);
             args.Add(SortBy);
             if (SortByOrder.HasValue)
+            {
                 args.Add(SortByOrder.Value switch
                 {
                     FtSearchSortOrder.ASC => ValkeyLiterals.ASC,
                     FtSearchSortOrder.DESC => ValkeyLiterals.DESC,
                     _ => SortByOrder.Value.ToString(),
                 });
+            }
         }
         // Server ignores WITHSORTKEYS when NOCONTENT is set (sort keys are not
         // returned), so we silently strip it to avoid a Rust-core parse error.
-        if (WithSortKeys && !NoContent) args.Add(ValkeyLiterals.WITHSORTKEYS);
-        if (Timeout.HasValue) { args.Add(ValkeyLiterals.TIMEOUT); args.Add(Timeout.Value.ToString()); }
+        if (WithSortKeys && !NoContent)
+        {
+            args.Add(ValkeyLiterals.WITHSORTKEYS);
+        }
+
+        if (Timeout.HasValue) { args.Add(ValkeyLiterals.TIMEOUT); args.Add(((long)Timeout.Value.TotalMilliseconds).ToString()); }
         if (Params is { Length: > 0 })
         {
             args.Add(ValkeyLiterals.PARAMS);

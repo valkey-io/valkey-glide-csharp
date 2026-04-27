@@ -8,7 +8,7 @@ namespace Valkey.Glide.Commands.Options;
 /// returned by the server, which is significant when SORTBY is used.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public class FtSearchDocument(string key, Dictionary<string, object?> fields, string sortKey = "")
+public sealed class FtSearchDocument(string key, Dictionary<string, object?> fields, string sortKey = "")
 {
     /// <summary>The document key (e.g. the Valkey key name).</summary>
     public string Key { get; } = key;
@@ -32,7 +32,7 @@ public class FtSearchDocument(string key, Dictionary<string, object?> fields, st
 /// iteration order, which matters when SORTBY is specified.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public class FtSearchResult(long totalResults, List<FtSearchDocument> documents)
+public sealed class FtSearchResult(long totalResults, List<FtSearchDocument> documents)
 {
     /// <summary>The total number of documents matching the query.</summary>
     public long TotalResults { get; } = totalResults;

@@ -12,7 +12,7 @@ namespace Valkey.Glide.Commands.Options;
 /// </para>
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.aggregate/">valkey.io</seealso>
-public class FtAggregateRow(IReadOnlyDictionary<string, object> fields)
+public sealed class FtAggregateRow(IReadOnlyDictionary<string, object> fields)
 {
     /// <summary>The field/value pairs for this result row.</summary>
     public IReadOnlyDictionary<string, object> Fields { get; } = fields;

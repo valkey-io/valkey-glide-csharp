@@ -82,7 +82,7 @@ public interface IField
 /// Represents a full-text search field in an index schema.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public class TextField(string name) : IField
+public sealed class TextField(string name) : IField
 {
     /// <summary>The field name.</summary>
     public string Name { get; } = name;
@@ -121,7 +121,7 @@ public class TextField(string name) : IField
 /// Represents a tag field in an index schema.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public class TagField(string name) : IField
+public sealed class TagField(string name) : IField
 {
     /// <summary>The field name.</summary>
     public string Name { get; } = name;
@@ -151,7 +151,7 @@ public class TagField(string name) : IField
 /// Represents a numeric field in an index schema.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public class NumericField(string name) : IField
+public sealed class NumericField(string name) : IField
 {
     /// <summary>The field name.</summary>
     public string Name { get; } = name;
@@ -175,7 +175,7 @@ public class NumericField(string name) : IField
 /// Represents a vector field using the FLAT (brute force) algorithm.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public class VectorFieldFlat(string name, DistanceMetric distanceMetric, int dimensions) : IField
+public sealed class VectorFieldFlat(string name, DistanceMetric distanceMetric, int dimensions) : IField
 {
     /// <summary>The field name.</summary>
     public string Name { get; } = name;
@@ -216,7 +216,7 @@ public class VectorFieldFlat(string name, DistanceMetric distanceMetric, int dim
 /// Represents a vector field using the HNSW algorithm.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public class VectorFieldHnsw(string name, DistanceMetric distanceMetric, int dimensions) : IField
+public sealed class VectorFieldHnsw(string name, DistanceMetric distanceMetric, int dimensions) : IField
 {
     /// <summary>The field name.</summary>
     public string Name { get; } = name;
@@ -266,7 +266,7 @@ public class VectorFieldHnsw(string name, DistanceMetric distanceMetric, int dim
 /// Optional arguments for the FT.CREATE command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public class FtCreateOptions
+public sealed class FtCreateOptions
 {
     /// <summary>The index data type. If not set, a HASH index is created.</summary>
     public IndexDataType? DataType { get; set; }
