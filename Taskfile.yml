@@ -8,8 +8,6 @@ vars:
     INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
 
     # Build options
-    FRAMEWORK: '{{.framework | default "all"}}'
-    FRAMEWORK_FLAG: '{{if ne .FRAMEWORK "all"}}--framework {{.FRAMEWORK}}{{end}}'
     TARGET: '{{.target | default "all"}}'
     TARGET_PATH: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
 
@@ -33,13 +31,13 @@ tasks:
         desc: Run unit tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
+            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal
 
     test:integration:
         desc: Run integration tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
+            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal
 
     test:coverage:unit:
         desc: Run unit tests with coverage collection
@@ -52,7 +50,6 @@ tasks:
               --logger trx
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
-              {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     test:coverage:integration:
@@ -66,7 +63,6 @@ tasks:
               --logger trx
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
-              {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     test:coverage:all:
@@ -80,7 +76,6 @@ tasks:
               --logger trx
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
-              {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     coverage:merge:
@@ -152,7 +147,7 @@ tasks:
     build:
         desc: Build the solution
         cmds:
-            - dotnet build {{.TARGET_PATH}} --configuration Release {{.FRAMEWORK_FLAG}}
+            - dotnet build {{.TARGET_PATH}} --configuration Release
 
     test:
         desc: Build and run all tests

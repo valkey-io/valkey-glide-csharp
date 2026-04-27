@@ -23,7 +23,7 @@ runs:
         - name: Build and run coverage
           shell: bash
           run: |
-              task coverage framework=net8.0
+              task coverage
 
         - name: Extract coverage metrics
           id: extract-coverage

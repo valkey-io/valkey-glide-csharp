@@ -35,7 +35,7 @@ jobs:
               run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
             - name: Build Valkey.Glide
-              run: task build target=lib framework=net8.0
+              run: task build target=lib
 
             - name: Check examples
               run: task check-examples
