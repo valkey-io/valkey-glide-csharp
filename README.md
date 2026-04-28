@@ -2,9 +2,6 @@
 
 Valkey General Language Independent Driver for the Enterprise (GLIDE) is the official open-source Valkey client library for C#. Built on a robust Rust core, it provides high-performance, reliable connectivity to Valkey and Redis OSS servers with comprehensive async/await support.
 
-> [!IMPORTANT]
-> Valkey.Glide C# wrapper is in a preview state and still has many features that remain to be implemented before GA.
-
 ## Why Choose Valkey GLIDE?
 
 - **Community and Open Source** – Join our vibrant community and contribute to the project. We are always here to respond, and the client is for the community.
@@ -18,7 +15,7 @@ Valkey General Language Independent Driver for the Enterprise (GLIDE) is the off
 Visit the official Valkey GLIDE [documentation site](https://glide.valkey.io).
 
 - [Key Features](https://glide.valkey.io/overview/#key-features)
-- [Quick Start](https://glide.valkey.io/getting-started/quickstart/?lang=csharp)
+- [Quick Start](https://glide.valkey.io/getting-started/quickstart/?lang=c%23)
 - [Supported Engine Versions](https://glide.valkey.io/overview/#supported-engine-versions)
 - [Basic Operations](https://glide.valkey.io/getting-started/basic-operations/)
 - [Client Initialization](https://glide.valkey.io/how-to/client-initialization/)
@@ -28,7 +25,7 @@ Visit the official Valkey GLIDE [documentation site](https://glide.valkey.io).
 ## Getting Help
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/valkey-io/valkey-glide-csharp/issues)
-- **Valkey Slack**: [Join our community](https://join.slack.com/t/valkey-oss-developer/shared_invite/zt-2nxs51chx-EB9hu9Qdch3GMfRcztTSkQ)
+- **Valkey Slack**: [Join our community](https://valkey.io/slack/)
 - **Documentation**: [Official documentation](https://glide.valkey.io)
 
 ## Contributing

@@ -98,14 +98,6 @@ public sealed class CompressionConfig
     /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
     /// </summary>
-    internal Internals.FFI.CompressionConfig ToFfi() => new()
-    {
-        MinCompressionSize = MinCompressionSize,
-        HasCompressionLevel = CompressionLevel.HasValue,
-        CompressionLevel = CompressionLevel ?? default,
-        Backend = Backend,
-        Enabled = true,
-        HasMaxDecompressedSize = MaxDecompressedSize.HasValue,
-        MaxDecompressedSize = MaxDecompressedSize ?? default,
-    };
+    internal Internals.FFI.CompressionConfig ToFfi()
+        => new(MinCompressionSize, CompressionLevel, Backend, true, MaxDecompressedSize);
 }

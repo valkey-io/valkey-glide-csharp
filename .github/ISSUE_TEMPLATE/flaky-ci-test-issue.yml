@@ -1,0 +1,160 @@
+---
+name: Flaky CI Test Issue
+description: Report a flaky test in CI
+title: "fix(tests): <test-name>"
+type: "Bug"
+labels: ["ci", "tests", "triage", "flaky-test"]
+assignees: []
+
+body:
+    # Information about the failing test
+    # ----------------------------------
+
+    - type: input
+      id: test-name
+      attributes:
+          label: Test Name
+          description: Name of the test that is flaky.
+          placeholder: "e.g., StreamCommandTests.StreamAddAsync_BasicUsage"
+      validations:
+          required: true
+
+    - type: input
+      id: test-location
+      attributes:
+          label: Test Location
+          description: File and line number or test suite.
+          placeholder: "e.g., tests/Valkey.Glide.IntegrationTests/StreamCommandTests.cs line 42"
+      validations:
+          required: true
+
+    - type: dropdown
+      id: dotnet-version
+      attributes:
+          label: .NET version
+          options:
+              - ".NET 8"
+              - ".NET 9"
+              - Not Applicable
+              - Other
+      validations:
+          required: true
+
+    - type: dropdown
+      id: engine-version
+      attributes:
+          label: Engine type and version
+          options:
+              - Valkey 9.0
+              - Valkey 8.1
+              - Valkey 8.0
+              - Valkey 7.2
+              - Redis 7.0
+              - Redis 6.2
+              - Not Applicable
+              - Other
+      validations:
+          required: true
+
+    - type: dropdown
+      id: github-runner
+      attributes:
+          label: GitHub Runner
+          options:
+              - ubuntu-24.04 (x64)
+              - ubuntu-24.04-arm (arm64)
+              - amazon-linux (container, x64)
+              - macos-15 (arm64)
+              - macos-15-intel (x64)
+              - windows-2025 (x64)
+              - windows-11-arm (arm64)
+      validations:
+          required: true
+
+    - type: input
+      id: failure-permlink
+      attributes:
+          label: Failure Permlink
+          description: Permlink to the failure line in the test run.
+          placeholder: "e.g., https://github.com/valkey-io/valkey-glide-csharp/actions/runs/..."
+      validations:
+          required: true
+
+    - type: input
+      id: frequency
+      attributes:
+          label: Frequency
+          description: How often does the test fail?
+          placeholder: "e.g., 1 in 10 runs"
+      validations:
+          required: true
+
+    - type: textarea
+      id: logs
+      attributes:
+          label: Logs
+          description: Include any relevant logs or error messages.
+          value: |
+              :white_circle: None
+      validations:
+          required: true
+
+    # How to reproduce and fix
+    # -------------------------
+
+    - type: textarea
+      id: steps-to-reproduce
+      attributes:
+          label: Steps to Reproduce
+          description: List the steps required to reproduce the flaky test.
+          value: |
+              1.
+              2.
+              ...
+      validations:
+          required: true
+
+    - type: textarea
+      id: solution
+      attributes:
+          label: Possible Solution
+          description: Suggest a fix for the flaky test
+          value: |
+              Possible solution: ?
+
+              or...
+
+              :white_circle: Unknown
+      validations:
+          required: true
+
+    # Additional Information
+    # ----------------------
+
+    - type: textarea
+      attributes:
+          label: Related
+          description: List related issues, pull requests, or external references that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Additional Information
+          description: Add any additional information (notes, constraints, limitations, unknowns, or open questions) that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true

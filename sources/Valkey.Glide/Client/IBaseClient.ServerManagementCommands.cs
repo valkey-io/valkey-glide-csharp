@@ -23,11 +23,12 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
+    /// var parameters = new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
     /// {
     ///     { "maxmemory", "100mb" },
     ///     { "maxmemory-policy", "allkeys-lru" }
-    /// });
+    /// };
+    /// await client.ConfigSetAsync(parameters);
     /// </code>
     /// </example>
     /// </remarks>
@@ -42,7 +43,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// KeyValuePair&lt;string, string&gt;[] config = await client.ConfigGetAsync(["max*", "bind*"]);
+    /// var patterns = new ValkeyValue[] { "max*", "bind*" };
+    /// var config = await client.ConfigGetAsync(patterns);
     /// </code>
     /// </example>
     /// </remarks>
@@ -57,7 +59,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FlushAllDatabasesAsync(FlushMode.Async);
+    /// var mode = FlushMode.Async;
+    /// await client.FlushAllDatabasesAsync(mode);
     /// </code>
     /// </example>
     /// </remarks>
@@ -72,7 +75,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FlushDatabaseAsync(FlushMode.Async);
+    /// var mode = FlushMode.Async;
+    /// await client.FlushDatabaseAsync(mode);
     /// </code>
     /// </example>
     /// </remarks>
@@ -87,7 +91,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// string art = await client.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] });
+    /// var options = new LolwutOptions { Version = 6, Parameters = new int[] { 40, 20 } };
+    /// string art = await client.LolwutAsync(options);
     /// </code>
     /// </example>
     /// </remarks>

@@ -22,7 +22,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.SetAddAsync(key, value);
+    /// bool result = await client.SetAddAsync("set", "member");
     /// </code>
     /// </example>
     /// </remarks>
@@ -39,7 +39,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.SetAddAsync(key, [value1, value2]);
+    /// long result = await client.SetAddAsync("set", ["member1", "member2"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -56,7 +56,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.SetRemoveAsync(key, value);
+    /// bool result = await client.SetRemoveAsync("set", "member");
     /// </code>
     /// </example>
     /// </remarks>
@@ -73,7 +73,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.SetRemoveAsync(key, [value1, value2]);
+    /// long result = await client.SetRemoveAsync("set", ["member1", "member2"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -88,7 +88,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.SetPopAsync(key);
+    /// ValkeyValue result = await client.SetPopAsync("set");
     /// </code>
     /// </example>
     /// </remarks>
@@ -103,7 +103,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.SetRandomMemberAsync(key);
+    /// ValkeyValue result = await client.SetRandomMemberAsync("set");
     /// </code>
     /// </example>
     /// </remarks>
@@ -127,7 +127,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] result = await client.SetRandomMembersAsync(key, 3);
+    /// ValkeyValue[] result = await client.SetRandomMembersAsync("set", 3);
     /// </code>
     /// </example>
     /// </remarks>
@@ -146,7 +146,7 @@ public interface ISetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.SetMoveAsync(sourceKey, destKey, value);
+    /// bool result = await client.SetMoveAsync("source_set", "dest_set", "member");
     /// </code>
     /// </example>
     /// </remarks>

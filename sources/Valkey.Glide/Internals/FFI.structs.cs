@@ -1142,11 +1142,11 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct NodeAddress
+    internal readonly struct NodeAddress(string host, ushort port)
     {
         [MarshalAs(UnmanagedType.LPStr)]
-        public string Host;
-        public ushort Port;
+        public readonly string Host = host;
+        public readonly ushort Port = port;
     }
 
     internal enum TlsMode : uint
@@ -1157,63 +1157,103 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct ScriptHashBuffer
+    private readonly struct ScriptHashBuffer
     {
-        public IntPtr Ptr;
-        public UIntPtr Len;
-        public UIntPtr Capacity;
+        public readonly IntPtr Ptr;
+        public readonly UIntPtr Len;
+        public readonly UIntPtr Capacity;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct CompressionConfig
+    internal struct CompressionConfig(
+        nuint minSize,
+        int? level,
+        CompressionBackend backend,
+        bool enabled,
+        ulong? maxDecompressedSize = null)
     {
-        /// <summary>Minimum value size in bytes to compress.</summary>
-        public nuint MinCompressionSize;
+        /// <summary>
+        /// Minimum value size in bytes to compress.
+        /// </summary>
+        public nuint MinCompressionSize = minSize;
 
-        /// <summary>Whether a compression level was explicitly specified.</summary>
+        /// <summary>
+        /// Compression level for the backend.
+        /// </summary>
         [MarshalAs(UnmanagedType.U1)]
-        public bool HasCompressionLevel;
+        public bool HasCompressionLevel = level.HasValue;
+        public int CompressionLevel = level ?? default;
 
-        /// <summary>Compression level for the backend.</summary>
-        public int CompressionLevel;
+        /// <summary>
+        /// The compression backend to use.
+        /// </summary>
+        public CompressionBackend Backend = backend;
 
-        /// <summary>The compression backend to use.</summary>
-        public CompressionBackend Backend;
-
-        /// <summary>Whether compression is enabled.</summary>
+        /// <summary>
+        /// Whether compression is enabled.
+        /// </summary>
         [MarshalAs(UnmanagedType.U1)]
-        public bool Enabled;
+        public bool Enabled = enabled;
 
         /// <summary>Whether a max decompressed size was explicitly specified.</summary>
         [MarshalAs(UnmanagedType.U1)]
-        public bool HasMaxDecompressedSize;
+        public bool HasMaxDecompressedSize = maxDecompressedSize.HasValue;
 
         /// <summary>Maximum allowed size for decompressed data (prevents decompression bombs).</summary>
-        public ulong MaxDecompressedSize;
+        public ulong MaxDecompressedSize = maxDecompressedSize ?? default;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct Statistics
     {
-        /// <summary>Total number of connections opened to Valkey.</summary>
+        /// <summary>
+        /// Total number of connections opened to Valkey.
+        /// </summary>
         public readonly ulong TotalConnections;
-        /// <summary>Total number of GLIDE clients.</summary>
+
+        /// <summary>
+        /// Total number of GLIDE clients.
+        /// </summary>
         public readonly ulong TotalClients;
-        /// <summary>Total number of values compressed.</summary>
+
+        /// <summary>
+        /// Total number of values compressed.
+        /// </summary>
         public readonly ulong TotalValuesCompressed;
-        /// <summary>Total number of values decompressed.</summary>
+
+        /// <summary>
+        /// Total number of values decompressed.
+        /// </summary>
         public readonly ulong TotalValuesDecompressed;
-        /// <summary>Total original bytes before compression.</summary>
+
+        /// <summary>
+        /// Total original bytes before compression.
+        /// </summary>
         public readonly ulong TotalOriginalBytes;
-        /// <summary>Total bytes after compression.</summary>
+
+        /// <summary>
+        /// Total bytes after compression.
+        /// </summary>
         public readonly ulong TotalBytesCompressed;
-        /// <summary>Total bytes after decompression.</summary>
+
+        /// <summary>
+        /// Total bytes after decompression.
+        /// </summary>
         public readonly ulong TotalBytesDecompressed;
-        /// <summary>Number of times compression was skipped.</summary>
+
+        /// <summary>
+        /// Number of times compression was skipped.
+        /// </summary>
         public readonly ulong CompressionSkippedCount;
-        /// <summary>Number of subscriptions that are out of sync.</summary>
+
+        /// <summary>
+        /// Number of subscriptions that are out of sync.
+        /// </summary>
         public readonly ulong SubscriptionOutOfSyncCount;
-        /// <summary>Timestamp of the last subscription synchronization.</summary>
+
+        /// <summary>
+        /// Timestamp of the last subscription synchronization.
+        /// </summary>
         public readonly ulong SubscriptionLastSyncTimestamp;
     }
 
@@ -1386,7 +1426,7 @@ internal partial class FFI
         /// </summary>
         [MarshalAs(UnmanagedType.U1)]
         public readonly bool HasFlushIntervalMs = flushIntervalMs.HasValue;
-        public readonly uint? FlushIntervalMs = flushIntervalMs ?? default;
+        public readonly uint FlushIntervalMs = flushIntervalMs ?? default;
     }
 
     [StructLayout(LayoutKind.Sequential)]

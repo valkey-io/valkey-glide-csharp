@@ -399,6 +399,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// ValkeyKey key = "myzset";
     /// // Scan all members
     /// await foreach (SortedSetEntry entry in client.SortedSetScanAsync(key))
     /// {

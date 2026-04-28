@@ -6,8 +6,10 @@ vars:
     COVERAGE_FILE: "{{.TEST_RESULTS_DIR}}/coverage.cobertura.xml"
     UNIT_TEST_PROJECT: tests/Valkey.Glide.UnitTests/Valkey.Glide.UnitTests.csproj
     INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
-    FRAMEWORK: '{{.FRAMEWORK | default "all"}}'
-    FRAMEWORK_FLAG: '{{if ne .FRAMEWORK "all"}}--framework {{.FRAMEWORK}}{{end}}'
+
+    # Build options
+    TARGET: '{{.target | default "all"}}'
+    TARGET_PATH: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
 
 tasks:
     clean:
@@ -29,13 +31,13 @@ tasks:
         desc: Run unit tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
+            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal
 
     test:integration:
         desc: Run integration tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal {{.FRAMEWORK_FLAG}}
+            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal
 
     test:coverage:unit:
         desc: Run unit tests with coverage collection
@@ -48,7 +50,6 @@ tasks:
               --logger trx
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
-              {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     test:coverage:integration:
@@ -62,7 +63,6 @@ tasks:
               --logger trx
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
-              {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     test:coverage:all:
@@ -76,7 +76,6 @@ tasks:
               --logger trx
               --logger "console;verbosity=detailed"
               --logger "html;LogFileName=TestReport.html"
-              {{.FRAMEWORK_FLAG}}
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
     coverage:merge:
@@ -148,19 +147,13 @@ tasks:
     build:
         desc: Build the solution
         cmds:
-            - dotnet build --configuration Release {{.FRAMEWORK_FLAG}}
+            - dotnet build {{.TARGET_PATH}} --configuration Release
 
     test:
         desc: Build and run all tests
         deps: [build]
         cmds:
             - task: test:coverage:all
-
-    default:
-        desc: Default task - build and run coverage
-        cmds:
-            - task: build
-            - task: coverage
 
     lint:
         desc: "Run all linters"
@@ -215,3 +208,8 @@ tasks:
         desc: "Check for broken links"
         cmds:
             - lychee --config lychee.toml .
+
+    check-examples:
+        desc: "Extract and validate C# code examples in doc comments"
+        cmds:
+            - python3 scripts/check_examples.py --glide_root .

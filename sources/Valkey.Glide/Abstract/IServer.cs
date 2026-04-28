@@ -92,7 +92,8 @@ public partial interface IServer : IRedisAsync
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan result = await client.PingAsync("ping!");
+    /// var latency = await server.PingAsync("ping!");
+    /// Console.WriteLine($"Received response after {latency.TotalSeconds} seconds");
     /// </code>
     /// </example>
     /// </remarks>
@@ -109,7 +110,8 @@ public partial interface IServer : IRedisAsync
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.EchoAsync(key, value);
+    /// var echo = await server.EchoAsync("hello");
+    /// Console.WriteLine($"Server echoed: {echo}");
     /// </code>
     /// </example>
     /// </remarks>

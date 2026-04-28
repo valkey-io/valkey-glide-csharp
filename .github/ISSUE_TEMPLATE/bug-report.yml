@@ -1,0 +1,251 @@
+---
+name: "Bug Report"
+description: Report something that isn't working
+title: "fix(<area>): <description>"
+type: "Bug"
+labels: ["triage"]
+assignees: []
+body:
+    # Description of the bug
+    # ----------------------
+
+    - type: textarea
+      id: description
+      attributes:
+          label: Describe the bug
+          description: Provide clear and concise description of the bug.
+      validations:
+          required: true
+
+    - type: textarea
+      id: expected
+      attributes:
+          label: Expected Behavior
+          description: What did you expect to happen?
+      validations:
+          required: true
+
+    - type: textarea
+      id: current
+      attributes:
+          label: Current Behavior
+          description: |
+              What actually happened?
+
+              Please include full errors, uncaught exceptions, stack traces, and relevant logs.
+              If service responses are relevant, please include wire logs.
+              Provide any information that could be useful to the assignee or help contributors understand the issue.
+      validations:
+          required: true
+
+    # Information about the bug
+    # -------------------------
+
+    - type: dropdown
+      id: client-version
+      attributes:
+          label: Valkey GLIDE C# client version
+          options:
+              - v1.0.0
+              - v0.9.0
+              - Other
+      validations:
+          required: true
+
+    - type: input
+      id: client-version-other
+      attributes:
+          label: Valkey GLIDE C# client version (Other)
+          description: If you selected "Other" above, specify the version or Git commit hash.
+          placeholder: "e.g., v1.2.3 or abc1234"
+      validations:
+          required: false
+
+    - type: dropdown
+      id: dotnet-version
+      attributes:
+          label: .NET version
+          options:
+              - ".NET 8"
+              - ".NET 9"
+              - Other
+      validations:
+          required: true
+
+    - type: input
+      id: dotnet-version-other
+      attributes:
+          label: .NET version (Other)
+          description: If you selected "Other" above, specify the .NET version.
+      validations:
+          required: false
+
+    - type: dropdown
+      id: engine-version
+      attributes:
+          label: Engine type and version
+          options:
+              - Valkey 9.0
+              - Valkey 8.1
+              - Valkey 8.0
+              - Valkey 7.2
+              - Redis 7.0
+              - Redis 6.2
+              - Other
+      validations:
+          required: true
+
+    - type: input
+      id: engine-version-other
+      attributes:
+          label: Engine type and version (Other)
+          description: If you selected "Other" above, specify the engine type and version.
+      validations:
+          required: false
+
+    - type: dropdown
+      id: engine-environment
+      attributes:
+          label: Engine Environment
+          options:
+              - Local
+              - Docker
+              - ElastiCache Serverless
+              - ElastiCache Provisioned
+              - Other
+      validations:
+          required: true
+
+    - type: input
+      id: engine-environment-other
+      attributes:
+          label: Engine Environment (Other)
+          description: If you selected "Other" above, specify the engine environment.
+      validations:
+          required: false
+
+    - type: dropdown
+      id: operating-system
+      attributes:
+          label: OS
+          options:
+              - macOS
+              - Ubuntu
+              - Debian
+              - Amazon Linux
+              - Windows
+              - Other
+      validations:
+          required: true
+
+    - type: input
+      id: operating-system-other
+      attributes:
+          label: OS (Other)
+          description: If you selected "Other" above, specify the operating system.
+      validations:
+          required: false
+
+    - type: textarea
+      id: logs
+      attributes:
+          label: Logs
+          description: Client and/or server logs.
+          value: |
+              Client logs:
+              ```text
+
+              ```
+
+              Server logs:
+              ```text
+
+              ```
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      id: cluster-info
+      attributes:
+          label: Cluster information
+          description: Cluster topology, number of shards, number of replicas, used data types.
+          value: |
+              - Topology: standalone / cluster
+              - Shards: ?
+              - Replicas per shard: ?
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    # How to reproduce and fix
+    # -------------------------
+
+    - type: textarea
+      id: reproduction
+      attributes:
+          label: Reproduction Steps
+          description: |
+              Provide a self-contained, concise snippet of code that can be used to reproduce the issue.
+              For more complex issues provide a repo with the smallest sample that reproduces the bug.
+
+              Avoid including business logic or unrelated code, it makes diagnosis more difficult.
+              The code sample should be an SSCCE. See http://sscce.org/ for details.
+              In short, please provide a code sample that we can copy/paste, run and reproduce.
+          value: |
+              1.
+              2.
+              ...
+      validations:
+          required: true
+
+    - type: textarea
+      id: solution
+      attributes:
+          label: Possible Solution
+          description: Suggest a fix for the bug
+          value: |
+              Possible solution: ?
+
+              or...
+
+              :white_circle: Unknown
+      validations:
+          required: true
+
+    # Additional Information
+    # ----------------------
+
+    - type: textarea
+      attributes:
+          label: Related
+          description: List related issues, pull requests, or external references that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Additional Information
+          description: Add any additional information (notes, constraints, limitations, unknowns, or open questions) that could be useful to the assignee or help contributors understand the issue.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true

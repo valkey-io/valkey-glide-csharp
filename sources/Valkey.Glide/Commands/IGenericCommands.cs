@@ -51,10 +51,10 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
-    /// Batch batch = new Batch(true) // Atomic (Transaction)
-    ///     .Set("key", "1")
-    ///     .Incr("key")
-    ///     .Get("key");
+    /// var batch = new Batch(true) // Atomic (Transaction)
+    ///     .SetAsync("key", "1")
+    ///     .IncrementAsync("key")
+    ///     .GetAsync("key");
     ///
     /// var result = await client.Exec(batch, true);
     /// // Expected result: ["OK", 2, 2]
@@ -63,11 +63,11 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// Batch batch = new Batch(false) // Non-Atomic (Pipeline)
-    ///     .Set("key1", "value1")
-    ///     .Set("key2", "value2")
-    ///     .Get("key1")
-    ///     .Get("key2");
+    /// var batch = new Batch(false) // Non-Atomic (Pipeline)
+    ///     .SetAsync("key1", "value1")
+    ///     .SetAsync("key2", "value2")
+    ///     .GetAsync("key1")
+    ///     .GetAsync("key2");
     ///
     /// var result = await client.Exec(batch, true);
     /// // Expected result: ["OK", "OK", "value1", "value2"]
@@ -124,14 +124,13 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction) all keys must share the same hash slot
-    /// BatchOptions options = new(
-    ///     timeout: 1000, // Set a timeout of 1000 milliseconds
-    ///     raiseOnError: false); // Do not raise an error on failure
+    /// Pipeline.Options.BatchOptions options = new(
+    ///     timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
-    /// Batch batch = new Batch(true) // Atomic (Transaction)
-    ///     .Set("key", "1")
-    ///     .Incr("key")
-    ///     .Get("key");
+    /// var batch = new Batch(true) // Atomic (Transaction)
+    ///     .SetAsync("key", "1")
+    ///     .IncrementAsync("key")
+    ///     .GetAsync("key");
     ///
     /// var result = await client.Exec(batch, false, options);
     /// // Expected result: ["OK", 2, 2]
@@ -140,15 +139,14 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// BatchOptions options = new(
-    ///     timeout: 1000, // Set a timeout of 1000 milliseconds
-    ///     raiseOnError: false); // Do not raise an error on failure
+    /// Pipeline.Options.BatchOptions options = new(
+    ///     timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
-    /// Batch batch = new Batch(false) // Non-Atomic (Pipeline) keys may span different hash slots
-    ///     .Set("key1", "value1")
-    ///     .Set("key2", "value2")
-    ///     .Get("key1")
-    ///     .Get("key2");
+    /// var batch = new Batch(false) // Non-Atomic (Pipeline) keys may span different hash slots
+    ///     .SetAsync("key1", "value1")
+    ///     .SetAsync("key2", "value2")
+    ///     .GetAsync("key1")
+    ///     .GetAsync("key2");
     ///
     /// var result = await client.Exec(batch, false, options);
     /// // Expected result: ["OK", "OK", "value1", "value2"]

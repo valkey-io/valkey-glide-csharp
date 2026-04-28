@@ -23,7 +23,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.ListLeftPopAsync(key);
+    /// var result = await client.ListLeftPopAsync("key");
     /// </code>
     /// </example>
     /// </remarks>
@@ -41,7 +41,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] result = await client.ListLeftPopAsync(key, 2);
+    /// var result = await client.ListLeftPopAsync("list", 2);
     /// </code>
     /// </example>
     /// </remarks>
@@ -61,7 +61,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ListPopResult result = await client.ListLeftPopAsync(keys, 2);
+    /// var result = await client.ListLeftPopAsync(["list1", "list2"], 2);
     /// </code>
     /// </example>
     /// </remarks>
@@ -78,7 +78,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListLeftPushAsync(key, value);
+    /// var result = await client.ListLeftPushAsync("list", "value");
     /// </code>
     /// </example>
     /// </remarks>
@@ -96,7 +96,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListLeftPushAsync(key, values);
+    /// long result = await client.ListLeftPushAsync("list", ["value1", "value2"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -113,7 +113,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListRightPushAsync(key, value);
+    /// long result = await client.ListRightPushAsync("list", "value");
     /// </code>
     /// </example>
     /// </remarks>
@@ -131,7 +131,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListRightPushAsync(key, values);
+    /// long result = await client.ListRightPushAsync("list", ["value1", "value2"]);
     /// </code>
     /// </example>
     /// </remarks>
@@ -149,7 +149,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.ListRightPopAsync(key);
+    /// var result = await client.ListRightPopAsync("list");
     /// </code>
     /// </example>
     /// </remarks>
@@ -167,7 +167,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] result = await client.ListRightPopAsync(key, 2);
+    /// var result = await client.ListRightPopAsync("list", 2);
     /// </code>
     /// </example>
     /// </remarks>
@@ -187,7 +187,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ListPopResult result = await client.ListRightPopAsync(keys, 2);
+    /// var result = await client.ListRightPopAsync(["list1", "list2"], 2);
     /// </code>
     /// </example>
     /// </remarks>
@@ -205,7 +205,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListLengthAsync(key);
+    /// var result = await client.ListLengthAsync("list");
     /// </code>
     /// </example>
     /// </remarks>
@@ -231,7 +231,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListRemoveAsync(key, value, count);
+    /// var result = await client.ListRemoveAsync("list", "value", 2);
     /// </code>
     /// </example>
     /// </remarks>
@@ -254,7 +254,7 @@ public interface IListBaseCommands
     ///	If <paramref name="key" /> does not exist, the command will return without changes to the database.
     /// <example>
     /// <code>
-    /// await client.ListTrimAsync(key, start, stop);
+    /// await client.ListTrimAsync("list", 0, 2);
     /// </code>
     /// </example>
     /// </remarks>
@@ -278,7 +278,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] result = await client.ListRangeAsync(key, start, stop);
+    /// ValkeyValue[] result = await client.ListRangeAsync("list", 0, -1);
     /// </code>
     /// </example>
     /// </remarks>
@@ -299,7 +299,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListInsertAfterAsync(key, "pivot", "new_element");
+    /// long result = await client.ListInsertAfterAsync("list", "pivot", "new_element");
     /// </code>
     /// </example>
     /// </remarks>
@@ -320,7 +320,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListInsertBeforeAsync(key, "pivot", "new_element");
+    /// long result = await client.ListInsertBeforeAsync("list", "pivot", "new_element");
     /// </code>
     /// </example>
     /// </remarks>
@@ -342,7 +342,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.ListMoveAsync(sourceKey, destKey, ListSide.Left, ListSide.Right);
+    /// ValkeyValue result = await client.ListMoveAsync("source_list", "dest_list", ListSide.Left, ListSide.Right);
     /// </code>
     /// </example>
     /// </remarks>
@@ -363,7 +363,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ListPositionAsync(key, "element", 1, 0);
+    /// long result = await client.ListPositionAsync("list", "element", 1, 0);
     /// </code>
     /// </example>
     /// </remarks>
@@ -385,7 +385,7 @@ public interface IListBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] result = await client.ListPositionsAsync(key, "element", 10, 1, 0);
+    /// long[] result = await client.ListPositionsAsync("list", "element", 10, 1, 0);
     /// </code>
     /// </example>
     /// </remarks>

@@ -1,0 +1,135 @@
+---
+name: Inquiry
+description: Ask a question about the project
+title: "inquiry(<area>): <description>"
+type: "Task"
+labels: ["triage", "inquiry"]
+assignees: []
+
+body:
+    - type: textarea
+      id: question-description
+      attributes:
+          label: Inquiry
+          description: Describe your question in detail.
+      validations:
+          required: true
+
+    - type: dropdown
+      id: client-version
+      attributes:
+          label: Valkey GLIDE C# client version
+          options:
+              - v1.0.0
+              - v0.9.0
+              - Not Applicable
+              - Other
+      validations:
+          required: false
+
+    - type: input
+      id: client-version-other
+      attributes:
+          label: Valkey GLIDE C# client version (Other)
+          description: If you selected "Other" above, specify the version or Git commit hash.
+          placeholder: "e.g., v1.2.3 or abc1234"
+      validations:
+          required: false
+
+    - type: dropdown
+      id: dotnet-version
+      attributes:
+          label: .NET version
+          options:
+              - ".NET 8"
+              - ".NET 9"
+              - Not Applicable
+              - Other
+      validations:
+          required: false
+
+    - type: input
+      id: dotnet-version-other
+      attributes:
+          label: .NET version (Other)
+          description: If you selected "Other" above, specify the .NET version.
+      validations:
+          required: false
+
+    - type: dropdown
+      id: engine-version
+      attributes:
+          label: Engine type and version
+          options:
+              - Valkey 9.0
+              - Valkey 8.1
+              - Valkey 8.0
+              - Valkey 7.2
+              - Redis 7.0
+              - Redis 6.2
+              - Not Applicable
+              - Other
+      validations:
+          required: false
+
+    - type: input
+      id: engine-version-other
+      attributes:
+          label: Engine type and version (Other)
+          description: If you selected "Other" above, specify the engine type and version.
+      validations:
+          required: false
+
+    - type: dropdown
+      id: operating-system
+      attributes:
+          label: OS
+          options:
+              - macOS
+              - Ubuntu
+              - Debian
+              - Amazon Linux
+              - Windows
+              - Not Applicable
+              - Other
+      validations:
+          required: false
+
+    - type: input
+      id: operating-system-other
+      attributes:
+          label: OS (Other)
+          description: If you selected "Other" above, specify the operating system.
+      validations:
+          required: false
+
+    # Additional information
+    # ----------------------
+
+    - type: textarea
+      attributes:
+          label: Related
+          description: List related issues, pull requests, or external references that could help contributors understand the inquiry.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true
+
+    - type: textarea
+      attributes:
+          label: Additional Information
+          description: Add any additional information that could help contributors understand the inquiry.
+          value: |
+              -
+              -
+
+              or...
+
+              :white_circle: None
+      validations:
+          required: true

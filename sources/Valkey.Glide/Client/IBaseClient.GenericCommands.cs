@@ -23,7 +23,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.DeleteAsync(key);
+    /// var deleted = await client.DeleteAsync("key");
+    /// Console.WriteLine($"Key was deleted: {deleted}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -44,7 +45,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.DeleteAsync([key1, key2]);
+    /// var deleted = await client.DeleteAsync(["key1", "key2"]);
+    /// Console.WriteLine($"Number of keys deleted: {deleted}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -60,7 +62,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.UnlinkAsync(key);
+    /// var unlinked = await client.UnlinkAsync("key");
+    /// Console.WriteLine($"Key was unlinked: {unlinked}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -82,7 +85,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.UnlinkAsync([key1, key2]);
+    /// var unlinked = await client.UnlinkAsync(["key1", "key2"]);
+    /// Console.WriteLine($"Number of keys unlinked: {unlinked}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -97,7 +101,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.ExistsAsync(key);
+    /// var exists = await client.ExistsAsync("key");
+    /// Console.WriteLine($"Key exists: {exists}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -118,7 +123,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.ExistsAsync([key1, key2]);
+    /// var existing = await client.ExistsAsync(["key1", "key2"]);
+    /// Console.WriteLine($"Number of existing keys: {existing}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -138,7 +144,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.ExpireAsync(key, TimeSpan.FromSeconds(10));
+    /// var set = await client.ExpireAsync("key", TimeSpan.FromSeconds(10));
+    /// Console.WriteLine($"Timeout was set: {set}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -159,7 +166,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.ExpireAsync(key, DateTimeOffset.UtcNow.AddMinutes(5));
+    /// var set = await client.ExpireAsync("key", DateTimeOffset.UtcNow.AddMinutes(5));
+    /// Console.WriteLine($"Timeout was set: {set}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -179,10 +187,20 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var ttl = await client.TimeToLiveAsync(key);
-    /// if (!ttl.Exists) Console.WriteLine("Key does not exist");
-    /// else if (!ttl.HasTimeToLive) Console.WriteLine("Key has no expiry");
-    /// else Console.WriteLine($"TTL: {ttl.TimeToLive}");
+    /// var ttlResult = await client.TimeToLiveAsync("key");
+    ///
+    /// if (!ttlResult.Exists)
+    /// {
+    ///     Console.WriteLine("Key does not exist");
+    /// }
+    /// else if (!ttlResult.HasTimeToLive)
+    /// {
+    ///     Console.WriteLine("Key has no expiry");
+    /// }
+    /// else
+    /// {
+    ///     Console.WriteLine($"TTL: {ttlResult.TimeToLive}");
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
@@ -198,7 +216,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyType result = await client.TypeAsync(key);
+    /// var type = await client.TypeAsync("key");
+    /// Console.WriteLine($"Key type: {type}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -216,7 +235,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.RenameAsync(oldKey, newKey);
+    /// await client.RenameAsync("oldkey", "newkey");
     /// </code>
     /// </example>
     /// </remarks>
@@ -233,7 +252,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.RenameIfNotExistsAsync(oldKey, newKey);
+    /// var renamed = await client.RenameIfNotExistsAsync("oldkey", "newkey");
+    /// Console.WriteLine($"Key was renamed: {renamed}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -249,7 +269,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.PersistAsync(key);
+    /// var removed = await client.PersistAsync("key");
+    /// Console.WriteLine($"Timeout was removed: {removed}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -267,7 +288,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// byte[]? result = await client.DumpAsync(key);
+    /// var serialized = await client.DumpAsync("key");
+    /// Console.WriteLine($"Serialized value: {serialized}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -285,17 +307,29 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Restore with no expiry (persist indefinitely)
-    /// await client.RestoreAsync(key, serializedValue);
-    ///
-    /// // Restore with TTL
-    /// await client.RestoreAsync(key, serializedValue, new RestoreOptions { Ttl = TimeSpan.FromMinutes(5) });
-    ///
-    /// // Restore with absolute expiry
-    /// await client.RestoreAsync(key, serializedValue, new RestoreOptions { ExpireAt = DateTimeOffset.UtcNow.AddHours(1) });
-    ///
-    /// // Restore with replace option
-    /// await client.RestoreAsync(key, serializedValue, new RestoreOptions { Replace = true, Ttl = TimeSpan.FromMinutes(5) });
+    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
+    /// await client.RestoreAsync("key", bytes);
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
+    /// var options = new RestoreOptions { Ttl = TimeSpan.FromMinutes(5) };
+    /// await client.RestoreAsync("key", bytes, options);
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
+    /// var options = new RestoreOptions { ExpireAt = DateTimeOffset.UtcNow.AddHours(1) };
+    /// await client.RestoreAsync("key", bytes, options);
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
+    /// var options = new RestoreOptions { Replace = true, Ttl = TimeSpan.FromMinutes(5) };
+    /// await client.RestoreAsync("key", bytes, options);
     /// </code>
     /// </example>
     /// </remarks>
@@ -310,7 +344,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.TouchAsync(key);
+    /// var touched = await client.TouchAsync("key");
+    /// Console.WriteLine($"Key was touched: {touched}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -331,7 +366,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.TouchAsync([key1, key2]);
+    /// var touched = await client.TouchAsync(["key1", "key2"]);
+    /// Console.WriteLine($"Number of keys touched: {touched}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -349,9 +385,16 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// DateTimeOffset? expiration = await client.ExpireTimeAsync(key);
-    /// if (expiration is null) Console.WriteLine("Key does not exist or has no expiry");
-    /// else Console.WriteLine($"Expires at: {expiration}");
+    /// var expiration = await client.ExpireTimeAsync("key");
+    ///
+    /// if (expiration is null)
+    /// {
+    ///     Console.WriteLine("Key does not exist or has no expiry");
+    /// }
+    /// else
+    /// {
+    ///     Console.WriteLine($"Expires at: {expiration}");
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
@@ -366,7 +409,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// string? encoding = await client.ObjectEncodingAsync(key);
+    /// var encoding = await client.ObjectEncodingAsync("key");
+    /// Console.WriteLine($"Encoding: {encoding}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -381,7 +425,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long? frequency = await client.ObjectFrequencyAsync(key);
+    /// var frequency = await client.ObjectFrequencyAsync("key");
+    /// Console.WriteLine($"Frequency: {frequency}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -396,7 +441,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// TimeSpan? idleTime = await client.ObjectIdleTimeAsync(key);
+    /// var idleTime = await client.ObjectIdleTimeAsync("key");
+    /// Console.WriteLine($"Idle time: {idleTime}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -411,7 +457,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long? refCount = await client.ObjectRefCountAsync(key);
+    /// var refCount = await client.ObjectRefCountAsync("key");
+    /// Console.WriteLine($"Reference count: {refCount}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -432,7 +479,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.CopyAsync(source, dest, replace: true);
+    /// var copied = await client.CopyAsync("source", "destination", replace: true);
+    /// Console.WriteLine($"Key was copied: {copied}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -446,7 +494,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyKey? randomKey = await client.RandomKeyAsync();
+    /// var randomKey = await client.RandomKeyAsync();
+    /// Console.WriteLine($"Random key: {randomKey}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -463,7 +512,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.WaitAsync(1, TimeSpan.FromSeconds(1));
+    /// var acknowledged = await client.WaitAsync(1, TimeSpan.FromSeconds(1));
+    /// Console.WriteLine($"Number of replicas that acknowledged: {acknowledged}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -482,8 +532,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// long[] result = await client.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1));
-    /// // result[0] = number of local nodes, result[1] = number of replica nodes
+    /// var acknowledged = await client.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1));
+    /// Console.WriteLine($"Local: {acknowledged[0]}, Replicas: {acknowledged[1]}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -500,9 +550,9 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
-    /// var options = new SortOptions { Order = Order.Descending };
-    /// ValkeyValue[] result = await client.SortAsync("mylist", options);
-    /// // result is ["3", "2", "1"]
+    /// var options = new SortOptions { Order = SortOrder.Descending };
+    /// var sorted = await client.SortAsync("mylist", options);
+    /// Console.WriteLine($"Sorted: {string.Join(", ", sorted)}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -520,9 +570,9 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
-    /// var options = new SortOptions { Order = Order.Descending };
-    /// long count = await client.SortAndStoreAsync("sorted", "mylist", options);
-    /// // count is 3
+    /// var options = new SortOptions { Order = SortOrder.Descending };
+    /// var stored = await client.SortAndStoreAsync("sorted", "mylist", options);
+    /// Console.WriteLine($"Number of elements stored: {stored}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -546,8 +596,8 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
-    /// ValkeyValue[] result = await client.SortReadOnlyAsync("mylist");
-    /// // result is ["1", "2", "3"]
+    /// var sorted = await client.SortReadOnlyAsync("mylist");
+    /// Console.WriteLine($"Sorted: {string.Join(", ", sorted)}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -566,9 +616,9 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
-    /// var options = new SortOptions { Order = Order.Descending };
-    /// ValkeyValue[] result = await client.SortReadOnlyAsync("mylist", options);
-    /// // result is ["3", "2", "1"]
+    /// var options = new SortOptions { Order = SortOrder.Descending };
+    /// var sorted = await client.SortReadOnlyAsync("mylist", options);
+    /// Console.WriteLine($"Sorted: {string.Join(", ", sorted)}");
     /// </code>
     /// </example>
     /// </remarks>

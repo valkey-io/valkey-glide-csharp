@@ -162,3 +162,7 @@ testresults/
 
 # Lychee link checker cache
 .lycheecache
+
+# Python bytecode
+__pycache__/
+*.pyc

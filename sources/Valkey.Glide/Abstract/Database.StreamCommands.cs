@@ -263,7 +263,7 @@ internal partial class Database
     public Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
+        ThrowIfUnsupportedTrimMode(trimMode);
         return Command(Request.StreamTrimAsync(key, maxLength, default, useApproximateMaxLength, limit));
     }
 
@@ -274,7 +274,7 @@ internal partial class Database
     public Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GuardClauses.ThrowIfUnsupportedTrimMode(trimMode);
+        ThrowIfUnsupportedTrimMode(trimMode);
         return Command(Request.StreamTrimAsync(key, null, minId, useApproximateMaxLength, limit));
     }
 
@@ -309,7 +309,11 @@ internal partial class Database
     }
 
     #endregion
+    #region Private Methods
 
+    /// <summary>
+    /// Converts the given arguments to a <see cref="StreamAddOptions"/> instance.
+    /// </summary>
     private static StreamAddOptions ToStreamAddOptions(ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit = null) => new()
     {
         Id = messageId ?? StreamAddOptions.AutoGenerateId,
@@ -317,4 +321,19 @@ internal partial class Database
             ? new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit }
             : null
     };
+
+    /// <summary>
+    /// Throws a <see cref="NotImplementedException"/> if the stream trim mode is not supported.
+    /// </summary>
+    /// <param name="trimMode">The stream trim mode to validate.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="trimMode"/> is not <see cref="StreamTrimMode.KeepReferences"/>.</exception>
+    private static void ThrowIfUnsupportedTrimMode(StreamTrimMode trimMode)
+    {
+        if (trimMode != StreamTrimMode.KeepReferences)
+        {
+            throw new NotImplementedException($"Stream trim mode {trimMode} is not supported by Valkey GLIDE");
+        }
+    }
+
+    #endregion
 }
