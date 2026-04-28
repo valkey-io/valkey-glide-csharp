@@ -268,7 +268,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Assert.Equal(3L, asc.TotalResults);
         Assert.Equal(3, asc.Documents.Count);
         var ascPrices = asc.Documents
-            .Select(d => d.Fields["price"]?.ToString())
+            .Select(d => d.Fields["price"])
             .ToList();
         Assert.Equal(["10", "20", "30"], ascPrices);
 
@@ -278,7 +278,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Assert.Equal(3L, desc.TotalResults);
         Assert.Equal(3, desc.Documents.Count);
         var descPrices = desc.Documents
-            .Select(d => d.Fields["price"]?.ToString())
+            .Select(d => d.Fields["price"])
             .ToList();
         Assert.Equal(["30", "20", "10"], descPrices);
 
@@ -402,7 +402,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         Assert.Equal(3, result.Length);
         var condCounts = result.ToDictionary(
-            r => r["condition"]?.ToString() ?? "",
+            r => r["condition"].ToString(),
             r => Convert.ToDouble(r["bicycles"]));
         Assert.Equal(5.0, condCounts["new"]);
         Assert.Equal(4.0, condCounts["used"]);
@@ -446,7 +446,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         FtAggregateRow[] r4 = await client.FtAggregateAsync(idx, "@score:[20 +inf]",
             new FtAggregateOptions { LoadAll = true });
         _ = Assert.Single(r4);
-        Assert.Equal("hello there", r4[0]["title"]?.ToString());
+        Assert.Equal("hello there", r4[0]["title"].ToString());
 
         await client.FtDropIndexAsync(idx);
     }
@@ -678,7 +678,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         HashSet<string> foundPrices = [];
         foreach (var doc in result.Documents)
         {
-            Assert.NotEmpty(doc.SortKey);
+            Assert.NotNull(doc.SortKey);
             foreach (string p in new[] { "10", "20", "30" })
             {
                 if (doc.SortKey.Contains(p))
@@ -964,7 +964,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Assert.Equal(3, result.Length);
 
         var genreMap = result.ToDictionary(
-            r => r["genre"]?.ToString() ?? "",
+            r => r["genre"].ToString(),
             r => r);
 
         Assert.Equal(1.0, Convert.ToDouble(genreMap["Drama"]["nb_of_movies"]));
@@ -1059,7 +1059,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         foreach (var doc in result.Documents)
         {
             Assert.Empty(doc.Fields);
-            Assert.Empty(doc.SortKey);
+            Assert.Null(doc.SortKey);
         }
 
         // All three keys should be present
@@ -1146,7 +1146,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         Assert.Equal(3, result.Length);
         var condCounts = result.ToDictionary(
-            r => r["$.condition"]?.ToString() ?? "",
+            r => r["$.condition"].ToString(),
             r => Convert.ToDouble(r["bicycles"]));
         Assert.Equal(5.0, condCounts["new"]);
         Assert.Equal(4.0, condCounts["used"]);

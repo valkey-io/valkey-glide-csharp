@@ -10,7 +10,7 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
 public sealed class FtSearchDocument
 {
-    internal FtSearchDocument(string key, Dictionary<string, object?> fields, string sortKey = "")
+    internal FtSearchDocument(ValkeyKey key, Dictionary<string, ValkeyValue> fields, string? sortKey = null)
     {
         Key = key;
         Fields = fields;
@@ -20,19 +20,21 @@ public sealed class FtSearchDocument
     /// <summary>
     /// The document key (e.g. the Valkey key name).
     /// </summary>
-    public string Key { get; }
+    public ValkeyKey Key { get; }
 
     /// <summary>
     /// The document's field data as key-value pairs.
+    /// Field names are always strings (schema-defined). Field values are <see cref="ValkeyValue"/>
+    /// to preserve binary data (e.g. raw vector bytes returned via RETURN).
     /// Empty when NOCONTENT is used.
     /// </summary>
-    public Dictionary<string, object?> Fields { get; }
+    public Dictionary<string, ValkeyValue> Fields { get; }
 
     /// <summary>
     /// The sort key value returned when WITHSORTKEYS is used.
-    /// Empty string when WITHSORTKEYS is not requested.
+    /// <see langword="null"/> when WITHSORTKEYS is not requested.
     /// </summary>
-    public string SortKey { get; }
+    public string? SortKey { get; }
 }
 
 /// <summary>

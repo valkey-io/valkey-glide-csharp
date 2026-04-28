@@ -7,81 +7,92 @@ namespace Valkey.Glide.UnitTests;
 public class VectorSearchCommandTests
 {
     [Fact]
-    public void ValidateFtCreateArgs() => Assert.Multiple(
-            // Basic create with text field
-            () => Assert.Equal(
-                ["FT.CREATE", "myindex", "SCHEMA", "title", "TEXT"],
-                Request.FtCreate("myindex", [new TextField("title")], null).GetArgs()),
+    public void FtCreate_BasicWithTextField() =>
+        Assert.Equal(
+            ["FT.CREATE", "myindex", "SCHEMA", "title", "TEXT"],
+            Request.FtCreate("myindex", [new TextField("title")], null).GetArgs());
 
-            // Create with options: ON HASH, PREFIX
-            () => Assert.Equal(
-                ["FT.CREATE", "myindex", "ON", "HASH", "PREFIX", "1", "doc:", "SCHEMA", "title", "TEXT"],
-                Request.FtCreate("myindex", [new TextField("title")],
-                    new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["doc:"] }).GetArgs()),
+    [Fact]
+    public void FtCreate_WithOnHashAndPrefix() =>
+        Assert.Equal(
+            ["FT.CREATE", "myindex", "ON", "HASH", "PREFIX", "1", "doc:", "SCHEMA", "title", "TEXT"],
+            Request.FtCreate("myindex", [new TextField("title")],
+                new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["doc:"] }).GetArgs());
 
-            // Create with multiple prefixes
-            () => Assert.Equal(
-                ["FT.CREATE", "myindex", "ON", "JSON", "PREFIX", "2", "a:", "b:", "SCHEMA", "score", "NUMERIC"],
-                Request.FtCreate("myindex", [new NumericField("score")],
-                    new FtCreateOptions { DataType = IndexDataType.Json, Prefixes = ["a:", "b:"] }).GetArgs()),
+    [Fact]
+    public void FtCreate_WithMultiplePrefixes() =>
+        Assert.Equal(
+            ["FT.CREATE", "myindex", "ON", "JSON", "PREFIX", "2", "a:", "b:", "SCHEMA", "score", "NUMERIC"],
+            Request.FtCreate("myindex", [new NumericField("score")],
+                new FtCreateOptions { DataType = IndexDataType.Json, Prefixes = ["a:", "b:"] }).GetArgs());
 
-            // TextField with all options
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "SCHEMA", "title", "AS", "t", "TEXT", "NOSTEM", "WEIGHT", "2", "WITHSUFFIXTRIE", "SORTABLE"],
-                Request.FtCreate("idx", [new TextField("title") { Alias = "t", NoStem = true, Weight = 2.0, SuffixTrie = true, Sortable = true }], null).GetArgs()),
+    [Fact]
+    public void FtCreate_TextFieldWithAllOptions() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "SCHEMA", "title", "AS", "t", "TEXT", "NOSTEM", "WEIGHT", "2", "WITHSUFFIXTRIE", "SORTABLE"],
+            Request.FtCreate("idx", [new TextField("title") { Alias = "t", NoStem = true, Weight = 2.0, SuffixTrie = true, Sortable = true }], null).GetArgs());
 
-            // TagField with separator and case sensitive
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "SCHEMA", "tags", "TAG", "SEPARATOR", ",", "CASESENSITIVE", "SORTABLE"],
-                Request.FtCreate("idx", [new TagField("tags") { Separator = ",", CaseSensitive = true, Sortable = true }], null).GetArgs()),
+    [Fact]
+    public void FtCreate_TagFieldWithSeparatorAndCaseSensitive() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "SCHEMA", "tags", "TAG", "SEPARATOR", ",", "CASESENSITIVE", "SORTABLE"],
+            Request.FtCreate("idx", [new TagField("tags") { Separator = ",", CaseSensitive = true, Sortable = true }], null).GetArgs());
 
-            // NumericField with alias and sortable
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "SCHEMA", "price", "AS", "p", "NUMERIC", "SORTABLE"],
-                Request.FtCreate("idx", [new NumericField("price") { Alias = "p", Sortable = true }], null).GetArgs()),
+    [Fact]
+    public void FtCreate_NumericFieldWithAliasAndSortable() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "SCHEMA", "price", "AS", "p", "NUMERIC", "SORTABLE"],
+            Request.FtCreate("idx", [new NumericField("price") { Alias = "p", Sortable = true }], null).GetArgs());
 
-            // VectorFieldFlat
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "FLAT", "6", "DIM", "128", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT32"],
-                Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.Euclidean, 128)], null).GetArgs()),
+    [Fact]
+    public void FtCreate_VectorFieldFlat() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "FLAT", "6", "DIM", "128", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT32"],
+            Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.Euclidean, 128)], null).GetArgs());
 
-            // VectorFieldFlat with InitialCap
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "FLAT", "8", "DIM", "4", "DISTANCE_METRIC", "COSINE", "TYPE", "FLOAT32", "INITIAL_CAP", "100"],
-                Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.Cosine, 4) { InitialCap = 100 }], null).GetArgs()),
+    [Fact]
+    public void FtCreate_VectorFieldFlatWithInitialCap() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "FLAT", "8", "DIM", "4", "DISTANCE_METRIC", "COSINE", "TYPE", "FLOAT32", "INITIAL_CAP", "100"],
+            Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.Cosine, 4) { InitialCap = 100 }], null).GetArgs());
 
-            // VectorFieldHnsw with all options
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "HNSW", "14", "DIM", "256", "DISTANCE_METRIC", "IP", "TYPE", "FLOAT32", "INITIAL_CAP", "1000", "M", "32", "EF_CONSTRUCTION", "200", "EF_RUNTIME", "50"],
-                Request.FtCreate("idx", [new VectorFieldHnsw("vec", DistanceMetric.InnerProduct, 256)
-                {
-                    InitialCap = 1000, NumberOfEdges = 32,
-                    VectorsExaminedOnConstruction = 200, VectorsExaminedOnRuntime = 50
-                }], null).GetArgs()),
+    [Fact]
+    public void FtCreate_VectorFieldHnswWithAllOptions() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "HNSW", "14", "DIM", "256", "DISTANCE_METRIC", "IP", "TYPE", "FLOAT32", "INITIAL_CAP", "1000", "M", "32", "EF_CONSTRUCTION", "200", "EF_RUNTIME", "50"],
+            Request.FtCreate("idx", [new VectorFieldHnsw("vec", DistanceMetric.InnerProduct, 256)
+            {
+                InitialCap = 1000,
+                NumberOfEdges = 32,
+                VectorsExaminedOnConstruction = 200,
+                VectorsExaminedOnRuntime = 50
+            }], null).GetArgs());
 
-            // Multiple fields
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "ON", "HASH", "PREFIX", "1", "doc:", "SCHEMA", "title", "TEXT", "score", "NUMERIC", "embedding", "VECTOR", "FLAT", "6", "DIM", "4", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT32"],
-                Request.FtCreate("idx",
-                [
-                    new TextField("title"),
-                    new NumericField("score"),
-                    new VectorFieldFlat("embedding", DistanceMetric.Euclidean, 4),
-                ],
-                new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["doc:"] }).GetArgs()),
+    [Fact]
+    public void FtCreate_MultipleFields() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "ON", "HASH", "PREFIX", "1", "doc:", "SCHEMA", "title", "TEXT", "score", "NUMERIC", "embedding", "VECTOR", "FLAT", "6", "DIM", "4", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT32"],
+            Request.FtCreate("idx",
+            [
+                new TextField("title"),
+                new NumericField("score"),
+                new VectorFieldFlat("embedding", DistanceMetric.Euclidean, 4),
+            ],
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["doc:"] }).GetArgs());
 
-            // Create with SkipInitialScan, NoOffsets, NoStopWords
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "SKIPINITIALSCAN", "NOOFFSETS", "NOSTOPWORDS", "SCHEMA", "f", "TEXT"],
-                Request.FtCreate("idx", [new TextField("f")],
-                    new FtCreateOptions { SkipInitialScan = true, Offsets = false, NoStopWords = true }).GetArgs()),
+    [Fact]
+    public void FtCreate_WithSkipInitialScanNoOffsetsNoStopWords() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "SKIPINITIALSCAN", "NOOFFSETS", "NOSTOPWORDS", "SCHEMA", "f", "TEXT"],
+            Request.FtCreate("idx", [new TextField("f")],
+                new FtCreateOptions { SkipInitialScan = true, Offsets = false, NoStopWords = true }).GetArgs());
 
-            // Create with StopWords
-            () => Assert.Equal(
-                ["FT.CREATE", "idx", "STOPWORDS", "2", "the", "a", "SCHEMA", "f", "TEXT"],
-                Request.FtCreate("idx", [new TextField("f")],
-                    new FtCreateOptions { StopWords = ["the", "a"] }).GetArgs())
-        );
+    [Fact]
+    public void FtCreate_WithStopWords() =>
+        Assert.Equal(
+            ["FT.CREATE", "idx", "STOPWORDS", "2", "the", "a", "SCHEMA", "f", "TEXT"],
+            Request.FtCreate("idx", [new TextField("f")],
+                new FtCreateOptions { StopWords = ["the", "a"] }).GetArgs());
 
     [Fact]
     public void ValidateFtDropIndexArgs() => Assert.Equal(["FT.DROPINDEX", "myindex"], Request.FtDropIndex("myindex").GetArgs());

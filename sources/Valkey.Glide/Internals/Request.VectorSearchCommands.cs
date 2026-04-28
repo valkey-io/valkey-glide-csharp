@@ -80,7 +80,9 @@ internal partial class Request
     {
         // Format: [count, {key1: fields1, key2: fields2, ...}]
         if (data.Length < 2)
+        {
             return new FtSearchResult(0, []);
+        }
 
         long count = Convert.ToInt64(data[0]);
         List<FtSearchDocument> docs = [];
@@ -89,25 +91,25 @@ internal partial class Request
         {
             foreach (var kvp in map)
             {
-                string key = kvp.Key.ToString();
-                string sortKey = "";
-                Dictionary<string, object?> fields = [];
+                ValkeyKey key = (ValkeyKey)kvp.Key.Bytes;
+                string? sortKey = null;
+                Dictionary<string, ValkeyValue> fields = [];
 
                 if (withSortKeys && kvp.Value is object[] pair && pair.Length == 2)
                 {
-                    sortKey = pair[0] is GlideString gs ? gs.ToString() : pair[0]?.ToString() ?? "";
+                    sortKey = pair[0] is GlideString gs ? gs.ToString() : pair[0]?.ToString();
                     if (pair[1] is Dictionary<GlideString, object> fieldMap)
                     {
                         fields = fieldMap.ToDictionary(
                             f => f.Key.ToString(),
-                            f => ConvertFtValue(f.Value));
+                            f => (ValkeyValue)(GlideString)f.Value);
                     }
                 }
-                else
+                else if (kvp.Value is Dictionary<GlideString, object> directFieldMap)
                 {
-                    var converted = ConvertFtValue(kvp.Value);
-                    if (converted is Dictionary<string, object?> fieldDict)
-                        fields = fieldDict;
+                    fields = directFieldMap.ToDictionary(
+                        f => f.Key.ToString(),
+                        f => (ValkeyValue)(GlideString)f.Value);
                 }
 
                 docs.Add(new FtSearchDocument(key, fields, sortKey));
@@ -127,35 +129,27 @@ internal partial class Request
             {
                 results.Add(new FtAggregateRow(map.ToDictionary(
                     kvp => kvp.Key.ToString(),
-                    kvp => ConvertFtValue(kvp.Value)!)));
+                    kvp => ToValkeyValue(kvp.Value))));
             }
         }
         return [.. results];
     }
 
-    private static Dictionary<string, object> ParseFtInfoResponse(object data)
+    private static ValkeyValue ToValkeyValue(object? value) => value switch
     {
-        // May arrive as a Map or as a flat key/value array.
-        if (data is Dictionary<GlideString, object> map)
-        {
-            return map.ToDictionary(
+        null => ValkeyValue.Null,
+        GlideString gs => (ValkeyValue)gs,
+        long l => (ValkeyValue)l,
+        double d => (ValkeyValue)d,
+        bool b => (ValkeyValue)b,
+        _ => (ValkeyValue)value.ToString()!,
+    };
+
+    private static Dictionary<string, object> ParseFtInfoResponse(object data) => data is Dictionary<GlideString, object> map
+            ? map.ToDictionary(
                 kvp => kvp.Key.ToString(),
-                kvp => ConvertFtValue(kvp.Value)!);
-        }
-
-        if (data is object[] arr)
-        {
-            Dictionary<string, object> result = [];
-            for (int i = 0; i + 1 < arr.Length; i += 2)
-            {
-                string key = arr[i] is GlideString gs ? gs.ToString() : i.ToString();
-                result[key] = ConvertFtValue(arr[i + 1])!;
-            }
-            return result;
-        }
-
-        return [];
-    }
+                kvp => ConvertFtValue(kvp.Value)!)
+            : [];
 
     private static object? ConvertFtValue(object? value) => value switch
     {

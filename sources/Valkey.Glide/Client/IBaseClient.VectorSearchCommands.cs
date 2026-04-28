@@ -2,14 +2,13 @@
 
 using Valkey.Glide.Commands.Options;
 
-namespace Valkey.Glide.Commands;
+namespace Valkey.Glide;
 
 /// <summary>
-/// Supports commands for the "Vector Search" (FT.*) command group for standalone and cluster clients.
-/// <br />
-/// See more on <see href="https://valkey.io/docs/topics/search/">valkey.io</see>.
+/// Vector Search (FT.*) commands for Valkey GLIDE clients.
 /// </summary>
-public interface IVectorSearchCommands
+/// <seealso href="https://valkey.io/docs/topics/search/">valkey.io</seealso>
+public partial interface IBaseClient
 {
     /// <summary>
     /// Creates a new search index.
@@ -123,9 +122,9 @@ public interface IVectorSearchCommands
     /// <param name="indexName">The name of the index to aggregate.</param>
     /// <param name="query">The filter query string.</param>
     /// <returns>
-    /// An array of result rows. Each row's field values are typed as <see cref="object"/>:
-    /// fields loaded from documents are <see cref="string"/>, while reducer outputs
-    /// (e.g. COUNT, AVG, SUM) are <see cref="double"/>.
+    /// An array of result rows. Each row's field values are typed as <see cref="object"/>
+    /// because the glide-core layer does not coerce FT.AGGREGATE values, so the actual
+    /// runtime type depends on the server and RESP protocol version.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -144,9 +143,9 @@ public interface IVectorSearchCommands
     /// <param name="query">The filter query string.</param>
     /// <param name="options">Aggregation parameters.</param>
     /// <returns>
-    /// An array of result rows. Each row's field values are typed as <see cref="object"/>:
-    /// fields loaded from documents are <see cref="string"/>, while reducer outputs
-    /// (e.g. COUNT, AVG, SUM) are <see cref="double"/>.
+    /// An array of result rows. Each row's field values are typed as <see cref="object"/>
+    /// because the glide-core layer does not coerce FT.AGGREGATE values, so the actual
+    /// runtime type depends on the server and RESP protocol version.
     /// </returns>
     /// <remarks>
     /// <example>
