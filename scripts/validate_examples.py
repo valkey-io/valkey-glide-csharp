@@ -15,11 +15,20 @@ The examples JSON file must map from a source key to the associated code example
 ```
 
 Usage:
-    python scripts/validate_examples.py --examples path/to/examples.json
+    python scripts/validate_examples.py
+        --examples path/to/examples.json
+        [--add-imports]
+        [--add-clients]
+
+Options:
+    --examples      Path to an existing JSON file containing examples to validate.
+    --add-imports   Include default using directives (Valkey.Glide namespaces) in
+                    the generated classes. Disabled by default.
+    --add-clients   Include static client fields (GlideClient, GlideClusterClient,
+                    IDatabase, IServer) in the generated classes. Disabled by default.
 """
 
 import argparse
-import html
 import json
 import os
 import re
@@ -34,10 +43,10 @@ import uuid
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-class ExampleChecker:
-    """Checks C# code examples by compiling them in a temporary .NET project."""
+class ExamplesValidator:
+    """Validates C# code examples by compiling them in a temporary .NET project."""
 
-    # Namespace imports to include by default.
+    # Namespace imports to include when --add-imports is specified.
     _USING_NAMESPACES = [
         "Valkey.Glide",
         "Valkey.Glide.Pipeline",
@@ -45,7 +54,7 @@ class ExampleChecker:
         "Valkey.Glide.Commands.Options",
     ]
 
-    # Type imports (using static) to include by default.
+    # Type imports (using static) to include when --add-imports is specified.
     _USING_TYPES = [
         "Valkey.Glide.Pipeline.Batch",
         "Valkey.Glide.Pipeline.ClusterBatch",
@@ -54,12 +63,20 @@ class ExampleChecker:
         "Valkey.Glide.Commands.Options.BitFieldOptions.Encoding",
     ]
 
+    # Client fields to include when --add-clients is specified.
+    _CLIENT_FIELDS = [
+        "static GlideClient client = null!;",
+        "static GlideClusterClient clusterClient = null!;",
+        "static IDatabase db = null!;",
+        "static IServer server = null!;",
+    ]
+
     # Matches a C# using directive (e.g. "using Foo.Bar;" or "using static Foo.Bar;")
     # but not a using declaration (e.g. "using var x = ...").
     _USING_DIRECTIVE = re.compile(r"^\s*using\s+(static\s+)?[A-Z][\w.]*\s*;")
 
     # Template for the .csproj that references the main library.
-    _CSPROJ_TEMPLATE = """\
+    _PROJECT_TEMPLATE = """\
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -74,8 +91,8 @@ class ExampleChecker:
 </Project>
 """
 
-    # Template for each generated .cs wrapper file.
-    _WRAPPER_TEMPLATE = """\
+    # Template for each generated C# class.
+    _CLASS_TEMPLATE = """\
 // Auto-generated from {source}
 
 {usings}
@@ -84,13 +101,7 @@ namespace Valkey.Glide.ExampleValidation;
 
 public class {class_name}
 {{
-    // Valkey GLIDE
-    static GlideClient client = null!;
-    static GlideClusterClient clusterClient = null!;
-
-    // StackExchange.Redis
-    static IDatabase db = null!;
-    static IServer server = null!;
+{fields}
 
     static async Task Run()
     {{
@@ -104,19 +115,29 @@ public class {class_name}
         r"(?P<file>[^(]+)\(\d+,\d+\):\s*error\s+(?P<message>CS\d+:\s*[^[]*)"
     )
 
-    def __init__(self, examples: dict[str, str]):
-        """Initialize the checker.
+    def __init__(
+        self,
+        examples: dict[str, str],
+        *,
+        add_imports: bool = False,
+        add_clients: bool = False,
+    ):
+        """Initialize the validator.
 
         Use as a context manager to ensure cleanup of temporary files:
 
-            with ExampleChecker(examples) as checker:
-                errors = checker.check()
+            with ExamplesValidator(examples, add_imports=True, add_clients=True) as validator:
+                errors = validator.validate()
 
         Args:
             examples: Dict mapping source references (e.g. "File.cs:42")
                 to code example strings.
+            add_imports: If True, include default using directives in the generated class.
+            add_clients: If True, include static client fields in the generated class.
         """
         self._examples = examples
+        self._add_imports = add_imports
+        self._add_clients = add_clients
         self._temp_dir = tempfile.TemporaryDirectory()
 
         # Locate the built Valkey GLIDE DLL.
@@ -166,8 +187,8 @@ public class {class_name}
     def __exit__(self, *_):
         self._temp_dir.cleanup()
 
-    def check(self) -> dict[str, list[str]]:
-        """Check the examples by compiling them.
+    def validate(self) -> dict[str, list[str]]:
+        """Validate the examples by compiling them.
 
         Returns:
             A dict mapping source references to lists of error messages for
@@ -182,44 +203,52 @@ public class {class_name}
 
     def _create_project(self) -> dict[str, str]:
         """Generate the .csproj and wrapper files in the temp directory."""
-        csproj_content = self._CSPROJ_TEMPLATE.format(dll_path=self._glide_dll_path)
+        csproj_content = self._PROJECT_TEMPLATE.format(dll_path=self._glide_dll_path)
 
         with open(os.path.join(self._temp_dir.name, "ExampleValidation.csproj"), "w") as f:
             f.write(csproj_content)
 
         file_to_source: dict[str, str] = {}
         for source, content in self._examples.items():
-            filename = self._generate_wrapper(source, content)
+            filename = self._generate_class(source, content)
             file_to_source[filename] = source
 
         return file_to_source
 
-    def _generate_wrapper(self, source: str, content: str) -> str:
-        """Generate and write a .cs wrapper file for a single example."""
-        content = html.unescape(content)
+    def _generate_class(self, source: str, content: str) -> str:
+        """Generate and write a C# class for a single example."""
 
-        example_usings = []
+        # Extract 'using' directives from code.
+        usings = []
         code_lines = []
         for line in content.splitlines():
             if self._USING_DIRECTIVE.match(line):
-                example_usings.append(line.rstrip().rstrip(";") + ";")
+                usings.append(line)
             else:
                 code_lines.append(line)
-        content = "\n".join(code_lines).strip()
 
-        default_usings = [f"using {ns};" for ns in self._USING_NAMESPACES] + [
-            f"using static {t};" for t in self._USING_TYPES
-        ]
-        all_usings = default_usings + example_usings
-        usings = "\n".join(dict.fromkeys(all_usings))
+        if self._add_imports:
+            usings = (
+                [f"using {ns};" for ns in self._USING_NAMESPACES]
+                + [f"using static {t};" for t in self._USING_TYPES]
+                + usings
+            )
+
+        # Get fields to include
+        fields = []
+        if self._add_clients:
+            fields += self._CLIENT_FIELDS
 
         class_name = f"Example_{uuid.uuid4().hex}"
-        indented_code = textwrap.indent(content, "        ")
+        usings_str = "\n".join(dict.fromkeys(usings))
+        fields_str = "\n".join(f"    {f}" for f in fields)
+        indented_code = textwrap.indent("\n".join(code_lines).strip(), "        ")
 
-        file_content = self._WRAPPER_TEMPLATE.format(
-            source=source,
-            usings=usings,
+        file_content = self._CLASS_TEMPLATE.format(
             class_name=class_name,
+            source=source,
+            usings=usings_str,
+            fields=fields_str + "\n" if fields_str else "",
             indented_code=indented_code,
         )
 
@@ -272,6 +301,18 @@ def main():
         required=True,
         help="Path to an existing JSON file containing examples to validate.",
     )
+    parser.add_argument(
+        "--add-imports",
+        action="store_true",
+        default=False,
+        help="Include default using directives in the generated classes.",
+    )
+    parser.add_argument(
+        "--add-clients",
+        action="store_true",
+        default=False,
+        help="Include static client fields in the generated classes.",
+    )
     args = parser.parse_args()
 
     if not os.path.isfile(args.examples):
@@ -285,9 +326,11 @@ def main():
         print("No examples found in the provided file.")
         sys.exit(0)
 
-    with ExampleChecker(examples) as checker:
-        print(f"Checking {len(examples)} examples...")
-        errors = checker.check()
+    with ExamplesValidator(
+        examples, add_imports=args.add_imports, add_clients=args.add_clients
+    ) as validator:
+        print(f"Validating {len(examples)} examples...")
+        errors = validator.validate()
 
     if errors:
         print(f"\n{'='*60}")
