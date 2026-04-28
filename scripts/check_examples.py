@@ -12,9 +12,36 @@ import sys
 import tempfile
 
 _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT = os.path.dirname(_SCRIPTS_DIR)
+
+
+def _find_glide_dll() -> str | None:
+    """Locate the built Valkey.Glide.dll, preferring Release over Debug."""
+    for config in ("Release", "Debug"):
+        path = os.path.join(
+            _PROJECT_ROOT,
+            "sources",
+            "Valkey.Glide",
+            "bin",
+            config,
+            "net8.0",
+            "Valkey.Glide.dll",
+        )
+        if os.path.exists(path):
+            return path
+    return None
 
 
 def main():
+    # Locate the built DLL before running extraction/validation.
+    glide_dll = _find_glide_dll()
+    if glide_dll is None:
+        print(
+            "Error: Built DLL not found. Run 'dotnet build' first.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     tmp_path = os.path.join(tempfile.gettempdir(), f"examples_{os.getpid()}.json")
 
     try:
@@ -38,6 +65,8 @@ def main():
                 os.path.join(_SCRIPTS_DIR, "validate_examples.py"),
                 "--examples",
                 tmp_path,
+                "--glide-dll",
+                glide_dll,
                 "--add-imports",
                 "--add-clients",
             ],
