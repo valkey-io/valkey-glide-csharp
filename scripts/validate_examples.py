@@ -63,10 +63,10 @@ class ExamplesValidator:
 
     # Client fields to include when --add-clients is specified.
     _CLIENT_FIELDS = [
-        "static GlideClient client = null!;",
-        "static GlideClusterClient clusterClient = null!;",
-        "static IDatabase db = null!;",
-        "static IServer server = null!;",
+        "static Valkey.Glide.GlideClient client = null!;",
+        "static Valkey.Glide.GlideClusterClient clusterClient = null!;",
+        "static Valkey.Glide.IDatabase db = null!;",
+        "static Valkey.Glide.IServer server = null!;",
     ]
 
     # Matches a C# using directive (e.g. "using Foo.Bar;" or "using static Foo.Bar;")
@@ -138,7 +138,7 @@ public class {class_name}
         self._add_imports = add_imports
         self._add_clients = add_clients
         self._temp_dir = tempfile.TemporaryDirectory()
-        self._glide_dll_path = glide_dll
+        self._glide_dll_path = os.path.abspath(glide_dll)
 
         # Verify that dotnet is installed.
         try:
