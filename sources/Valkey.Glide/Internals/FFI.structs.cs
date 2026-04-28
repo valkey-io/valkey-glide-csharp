@@ -1169,7 +1169,8 @@ internal partial class FFI
         nuint minSize,
         int? level,
         CompressionBackend backend,
-        bool enabled)
+        bool enabled,
+        ulong? maxDecompressedSize = null)
     {
         /// <summary>
         /// Minimum value size in bytes to compress.
@@ -1193,6 +1194,13 @@ internal partial class FFI
         /// </summary>
         [MarshalAs(UnmanagedType.U1)]
         public bool Enabled = enabled;
+
+        /// <summary>Whether a max decompressed size was explicitly specified.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasMaxDecompressedSize = maxDecompressedSize.HasValue;
+
+        /// <summary>Maximum allowed size for decompressed data (prevents decompression bombs).</summary>
+        public ulong MaxDecompressedSize = maxDecompressedSize ?? default;
     }
 
     [StructLayout(LayoutKind.Sequential)]
