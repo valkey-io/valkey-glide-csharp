@@ -13,6 +13,7 @@ public class CompressionFixture : IAsyncLifetime
     public GlideClient? ZstdClient { get; private set; }
     public GlideClient? Lz4Client { get; private set; }
     public GlideClusterClient? ZstdClusterClient { get; private set; }
+    public GlideClusterClient? Lz4ClusterClient { get; private set; }
 
     public async ValueTask InitializeAsync()
     {
@@ -24,13 +25,18 @@ public class CompressionFixture : IAsyncLifetime
             .WithCompression(CompressionConfig.Lz4())
             .Build();
 
-        var clusterConfig = TestConfiguration.DefaultClusterClientConfig()
+        var zstdClusterConfig = TestConfiguration.DefaultClusterClientConfig()
             .WithCompression(CompressionConfig.Zstd())
+            .Build();
+
+        var lz4ClusterConfig = TestConfiguration.DefaultClusterClientConfig()
+            .WithCompression(CompressionConfig.Lz4())
             .Build();
 
         ZstdClient = await GlideClient.CreateClient(zstdConfig);
         Lz4Client = await GlideClient.CreateClient(lz4Config);
-        ZstdClusterClient = await GlideClusterClient.CreateClient(clusterConfig);
+        ZstdClusterClient = await GlideClusterClient.CreateClient(zstdClusterConfig);
+        Lz4ClusterClient = await GlideClusterClient.CreateClient(lz4ClusterConfig);
     }
 
     public ValueTask DisposeAsync()
@@ -38,6 +44,7 @@ public class CompressionFixture : IAsyncLifetime
         ZstdClient?.Dispose();
         Lz4Client?.Dispose();
         ZstdClusterClient?.Dispose();
+        Lz4ClusterClient?.Dispose();
         return ValueTask.CompletedTask;
     }
 }
@@ -60,6 +67,7 @@ public class CompressionTests(CompressionFixture fixture)
     private GlideClient ZstdClient => fixture.ZstdClient!;
     private GlideClient Lz4Client => fixture.Lz4Client!;
     private GlideClusterClient ZstdClusterClient => fixture.ZstdClusterClient!;
+    private GlideClusterClient Lz4ClusterClient => fixture.Lz4ClusterClient!;
 
     [Fact]
     public async Task Compression_Zstd_Standalone_CompressesAndDecompresses()
@@ -103,6 +111,22 @@ public class CompressionTests(CompressionFixture fixture)
 
         await ZstdClusterClient.SetAsync(key, LargeValue);
         var retrieved = await ZstdClusterClient.GetAsync(key);
+
+        Assert.Equal(LargeValue, retrieved.ToString());
+
+        var statsAfter = BaseClient.GetStatistics();
+        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed, $"Expected compression. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
+    }
+
+    [Fact]
+    public async Task Compression_Lz4_Cluster_CompressesAndDecompresses()
+    {
+        var statsBefore = BaseClient.GetStatistics();
+
+        string key = $"compression_lz4_cluster_test_{Guid.NewGuid()}";
+
+        await Lz4ClusterClient.SetAsync(key, LargeValue);
+        var retrieved = await Lz4ClusterClient.GetAsync(key);
 
         Assert.Equal(LargeValue, retrieved.ToString());
 
