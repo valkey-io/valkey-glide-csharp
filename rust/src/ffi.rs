@@ -55,6 +55,8 @@ pub struct CompressionConfig {
     pub compression_level: i32,
     pub backend: CompressionBackend,
     pub enabled: bool,
+    pub has_max_decompressed_size: bool,
+    pub max_decompressed_size: u64,
 }
 
 #[repr(u32)]
@@ -290,6 +292,10 @@ pub(crate) unsafe fn create_connection_request(
                     }
                     CompressionBackend::Lz4 => glide_core::compression::CompressionBackendType::Lz4,
                 },
+                max_decompressed_size: config
+                    .compression_config
+                    .has_max_decompressed_size
+                    .then_some(config.compression_config.max_decompressed_size as usize),
             },
         ),
         read_only: config.read_only,

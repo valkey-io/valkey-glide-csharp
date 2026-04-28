@@ -1183,6 +1183,13 @@ internal partial class FFI
         /// <summary>Whether compression is enabled.</summary>
         [MarshalAs(UnmanagedType.U1)]
         public bool Enabled;
+
+        /// <summary>Whether a max decompressed size was explicitly specified.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasMaxDecompressedSize;
+
+        /// <summary>Maximum allowed size for decompressed data (prevents decompression bombs).</summary>
+        public ulong MaxDecompressedSize;
     }
 
     [StructLayout(LayoutKind.Sequential)]

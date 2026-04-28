@@ -37,16 +37,25 @@ public sealed class CompressionConfig
     public CompressionBackend Backend { get; }
 
     /// <summary>
+    /// Maximum allowed size for decompressed data in bytes.
+    /// This prevents decompression bombs by limiting the maximum decompressed size.
+    /// Null means use the default (512 MB).
+    /// </summary>
+    public ulong? MaxDecompressedSize { get; }
+
+    /// <summary>
     /// Creates a new compression configuration.
     /// </summary>
     /// <param name="backend">The compression backend to use.</param>
     /// <param name="compressionLevel">Optional compression level. If null, uses backend default.</param>
     /// <param name="minCompressionSize">Minimum value size to compress.</param>
+    /// <param name="maxDecompressedSize">Maximum allowed size for decompressed data. If null, uses default (512 MB).</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if minCompressionSize is less than 16 bytes.</exception>
     public CompressionConfig(
         CompressionBackend backend,
         int? compressionLevel = null,
-        nuint minCompressionSize = DefaultMinCompressionSize)
+        nuint minCompressionSize = DefaultMinCompressionSize,
+        ulong? maxDecompressedSize = null)
     {
         if (minCompressionSize < MinCompressionSizeLimit)
         {
@@ -57,6 +66,7 @@ public sealed class CompressionConfig
         MinCompressionSize = minCompressionSize;
         CompressionLevel = compressionLevel;
         Backend = backend;
+        MaxDecompressedSize = maxDecompressedSize;
     }
 
     /// <summary>
@@ -64,18 +74,26 @@ public sealed class CompressionConfig
     /// </summary>
     /// <param name="compressionLevel">Optional compression level.</param>
     /// <param name="minCompressionSize">Minimum value size to compress.</param>
+    /// <param name="maxDecompressedSize">Maximum allowed size for decompressed data. If null, uses default (512 MB).</param>
     /// <returns>A new CompressionConfig instance.</returns>
-    public static CompressionConfig Zstd(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>
-        new(CompressionBackend.Zstd, compressionLevel, minCompressionSize);
+    public static CompressionConfig Zstd(
+        int? compressionLevel = null,
+        nuint minCompressionSize = DefaultMinCompressionSize,
+        ulong? maxDecompressedSize = null) =>
+        new(CompressionBackend.Zstd, compressionLevel, minCompressionSize, maxDecompressedSize);
 
     /// <summary>
     /// Creates a compression configuration with LZ4 backend.
     /// </summary>
     /// <param name="compressionLevel">Optional compression level.</param>
     /// <param name="minCompressionSize">Minimum value size to compress.</param>
+    /// <param name="maxDecompressedSize">Maximum allowed size for decompressed data. If null, uses default (512 MB).</param>
     /// <returns>A new CompressionConfig instance.</returns>
-    public static CompressionConfig Lz4(int? compressionLevel = null, nuint minCompressionSize = DefaultMinCompressionSize) =>
-        new(CompressionBackend.Lz4, compressionLevel, minCompressionSize);
+    public static CompressionConfig Lz4(
+        int? compressionLevel = null,
+        nuint minCompressionSize = DefaultMinCompressionSize,
+        ulong? maxDecompressedSize = null) =>
+        new(CompressionBackend.Lz4, compressionLevel, minCompressionSize, maxDecompressedSize);
 
     /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
@@ -87,5 +105,7 @@ public sealed class CompressionConfig
         CompressionLevel = CompressionLevel ?? default,
         Backend = Backend,
         Enabled = true,
+        HasMaxDecompressedSize = MaxDecompressedSize.HasValue,
+        MaxDecompressedSize = MaxDecompressedSize ?? default,
     };
 }

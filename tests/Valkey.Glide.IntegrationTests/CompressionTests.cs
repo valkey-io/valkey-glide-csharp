@@ -158,6 +158,63 @@ public class CompressionTests(CompressionFixture fixture)
     }
 
     [Fact]
+    public async Task Compression_MaxDecompressedSize_WorksCorrectly()
+    {
+        // Test with custom max decompressed size (1GB)
+        var clientConfig = TestConfiguration.DefaultClientConfig()
+            .WithCompression(CompressionConfig.Zstd(maxDecompressedSize: 1024 * 1024 * 1024))
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"max_decompressed_size_test_{Guid.NewGuid()}";
+
+        await client.SetAsync(key, LargeValue);
+        var retrieved = await client.GetAsync(key);
+
+        Assert.Equal(LargeValue, retrieved.ToString());
+    }
+
+    [Fact]
+    public async Task Compression_Lz4_MaxDecompressedSize_WorksCorrectly()
+    {
+        // Test LZ4 with custom max decompressed size
+        var clientConfig = TestConfiguration.DefaultClientConfig()
+            .WithCompression(CompressionConfig.Lz4(maxDecompressedSize: 512 * 1024 * 1024))
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"lz4_max_decompressed_size_test_{Guid.NewGuid()}";
+
+        await client.SetAsync(key, LargeValue);
+        var retrieved = await client.GetAsync(key);
+
+        Assert.Equal(LargeValue, retrieved.ToString());
+    }
+
+    [Fact]
+    public async Task Compression_AllOptions_WorksCorrectly()
+    {
+        // Test with all compression options set
+        var clientConfig = TestConfiguration.DefaultClientConfig()
+            .WithCompression(CompressionConfig.Zstd(
+                compressionLevel: 5,
+                minCompressionSize: 100,
+                maxDecompressedSize: 256 * 1024 * 1024))
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(clientConfig);
+
+        string key = $"all_options_test_{Guid.NewGuid()}";
+
+        await client.SetAsync(key, LargeValue);
+        var retrieved = await client.GetAsync(key);
+
+        Assert.Equal(LargeValue, retrieved.ToString());
+    }
+
+    [Fact]
     public async Task Compression_BackwardCompatibility_ReadsUncompressedData()
     {
         // This test needs a client without compression
