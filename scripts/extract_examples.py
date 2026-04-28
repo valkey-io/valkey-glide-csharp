@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import html
 import json
 import os
 import re
@@ -73,7 +74,7 @@ class ExamplesExtractor:
 
         for match in self._EXAMPLE_PATTERN.finditer(content):
             line_number = content[: match.start()].count("\n") + 1
-            code = self._DOC_PREFIX.sub("", match.group(1)).strip()
+            code = html.unescape(self._DOC_PREFIX.sub("", match.group(1)).strip())
             source = f"{filepath}:{line_number}"
             results[source] = code
 
