@@ -17,11 +17,13 @@ The examples JSON file must map from a source key to the associated code example
 Usage:
     python scripts/validate_examples.py
         --examples path/to/examples.json
+        --glide-dll path/to/Valkey.Glide.dll
         [--add-imports]
         [--add-clients]
 
 Options:
     --examples      Path to an existing JSON file containing examples to validate.
+    --glide-dll     Path to the built Valkey.Glide.dll to reference during compilation.
     --add-imports   Include default using directives (Valkey.Glide namespaces) in
                     the generated classes. Disabled by default.
     --add-clients   Include static client fields (GlideClient, GlideClusterClient,
@@ -37,10 +39,6 @@ import sys
 import tempfile
 import textwrap
 import uuid
-
-
-# Project root is one level up from this script's directory (scripts/).
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class ExamplesValidator:
@@ -117,8 +115,9 @@ public class {class_name}
 
     def __init__(
         self,
-        examples: dict[str, str],
         *,
+        examples: dict[str, str],
+        glide_dll: str,
         add_imports: bool = False,
         add_clients: bool = False,
     ):
@@ -126,12 +125,12 @@ public class {class_name}
 
         Use as a context manager to ensure cleanup of temporary files:
 
-            with ExamplesValidator(examples, add_imports=True, add_clients=True) as validator:
+            with ExamplesValidator(examples=examples, glide_dll=path) as validator:
                 errors = validator.validate()
 
         Args:
-            examples: Dict mapping source references (e.g. "File.cs:42")
-                to code example strings.
+            examples: Dict mapping source references to code example strings.
+            glide_dll: Path to the built Valkey.Glide.dll to reference during compilation.
             add_imports: If True, include default using directives in the generated class.
             add_clients: If True, include static client fields in the generated class.
         """
@@ -139,30 +138,7 @@ public class {class_name}
         self._add_imports = add_imports
         self._add_clients = add_clients
         self._temp_dir = tempfile.TemporaryDirectory()
-
-        # Locate the built Valkey GLIDE DLL.
-        self._glide_dll_path = None
-
-        for config in ("Release", "Debug"):
-            path = os.path.join(
-                _PROJECT_ROOT,
-                "sources",
-                "Valkey.Glide",
-                "bin",
-                config,
-                "net8.0",
-                "Valkey.Glide.dll",
-            )
-            if os.path.exists(path):
-                self._glide_dll_path = path
-                break
-
-        if self._glide_dll_path is None:
-            print(
-                "Error: Built DLL not found. Run 'dotnet build' first.",
-                file=sys.stderr,
-            )
-            sys.exit(1)
+        self._glide_dll_path = glide_dll
 
         # Verify that dotnet is installed.
         try:
@@ -302,6 +278,11 @@ def main():
         help="Path to an existing JSON file containing examples to validate.",
     )
     parser.add_argument(
+        "--glide-dll",
+        required=True,
+        help="Path to the built Valkey.Glide.dll to reference during compilation.",
+    )
+    parser.add_argument(
         "--add-imports",
         action="store_true",
         default=False,
@@ -319,6 +300,10 @@ def main():
         print(f"Error: '{args.examples}' not found", file=sys.stderr)
         sys.exit(1)
 
+    if not os.path.isfile(args.glide_dll):
+        print(f"Error: '{args.glide_dll}' not found", file=sys.stderr)
+        sys.exit(1)
+
     with open(args.examples, "r") as f:
         examples = json.load(f)
 
@@ -327,7 +312,10 @@ def main():
         sys.exit(0)
 
     with ExamplesValidator(
-        examples, add_imports=args.add_imports, add_clients=args.add_clients
+        examples=examples,
+        glide_dll=args.glide_dll,
+        add_imports=args.add_imports,
+        add_clients=args.add_clients,
     ) as validator:
         print(f"Validating {len(examples)} examples...")
         errors = validator.validate()
