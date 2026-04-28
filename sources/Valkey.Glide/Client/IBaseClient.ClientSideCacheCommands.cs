@@ -3,8 +3,7 @@
 namespace Valkey.Glide;
 
 /// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
-/// by both should be added to the corresponding Commands interface instead.
+/// by Valkey GLIDE clients but NOT by StackExchange.Redis databases.
 
 /// <summary>
 /// Client-side cache commands for Valkey GLIDE clients.

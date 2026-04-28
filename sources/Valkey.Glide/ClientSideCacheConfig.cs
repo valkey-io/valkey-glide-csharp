@@ -12,17 +12,18 @@ namespace Valkey.Glide;
 /// <remarks>
 /// <list type="bullet">
 ///   <item>
-///     Glide currently supports TTL-based caching only. Invalidation-based client-side
-///     caching (where the server notifies clients of key changes) is not currently supported.
+///     Valkey GLIDE supports TTL-based caching only. Invalidation-based client-side
+///     caching (where the server notifies clients of key changes) is not supported.
 ///     This means cached values may become stale if updated on the server before the TTL expires.
 ///   </item>
 ///   <item>
-///     Currently, Glide's client-side cache supports lazy eviction only. Expired entries
+///     Valkey GLIDE client-side cache supports lazy eviction only. Expired entries
 ///     are removed only when accessed after their TTL has expired. There is no proactive
 ///     background cleanup of expired entries.
 ///   </item>
 ///   <item>
-///     Currently, only read commands that retrieve entire values are cached (GET, HGETALL, SMEMBERS).
+///     Only read commands that retrieve entire values are cached
+///     (GET, HGETALL, SMEMBERS).
 ///   </item>
 /// </list>
 /// In order for two clients to share the same cache, they must be created with the same
@@ -36,15 +37,12 @@ namespace Valkey.Glide;
 /// <seealso cref="EvictionPolicy"/>
 public sealed class ClientSideCacheConfig
 {
-    private static readonly object CounterLock = new();
-    private static readonly string UuidPrefix = Guid.NewGuid().ToString("N")[..8];
-    private static ulong s_counter;
-
     /// <summary>
     /// A unique identifier for the cache instance.
     /// Multiple clients can share the same cache by using the same <see cref="ClientSideCacheConfig"/> instance.
     /// </summary>
-    public string CacheId { get; }
+    // Internal for testing.
+    internal string CacheId { get; } = Guid.NewGuid().ToString("N");
 
     /// <summary>
     /// The maximum size of the cache in kilobytes (KB).
@@ -54,17 +52,17 @@ public sealed class ClientSideCacheConfig
     public ulong MaxCacheKb { get; }
 
     /// <summary>
-    /// The Time-To-Live for cached entries in milliseconds.
+    /// The Time-To-Live for cached entries.
     /// After this duration, entries automatically expire and are removed from the cache.
-    /// A value of <c>0</c> means no expiration is applied.
+    /// <see cref="TimeSpan.Zero"/> means no expiration is applied (entries remain until evicted).
     /// </summary>
-    public ulong EntryTtlMs { get; private set; }
+    public TimeSpan EntryTtl { get; }
 
     /// <summary>
     /// The policy for evicting entries when the cache reaches its maximum size.
-    /// If <see langword="null"/>, the default policy of <see cref="Valkey.Glide.EvictionPolicy.LRU"/> will be used.
+    /// Defaults to <see cref="Valkey.Glide.EvictionPolicy.LRU"/>.
     /// </summary>
-    public EvictionPolicy? EvictionPolicy { get; private set; }
+    public EvictionPolicy EvictionPolicy { get; private set; } = EvictionPolicy.LRU;
 
     /// <summary>
     /// Whether collection of cache metrics (hit/miss rates, evictions, etc.) is enabled.
@@ -75,11 +73,11 @@ public sealed class ClientSideCacheConfig
     /// Creates a new <see cref="ClientSideCacheConfig"/> with an auto-generated unique cache ID.
     /// </summary>
     /// <param name="maxCacheKb">Maximum size of the cache in kilobytes (KB). Must be positive.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxCacheKb"/> is zero.</exception>
+    /// <param name="entryTtl">Time-To-Live for cached entries. Use <see cref="TimeSpan.Zero"/> to disable expiration.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxCacheKb"/> is zero or <paramref name="entryTtl"/> is negative.</exception>
     /// <example>
     /// <code>
-    /// var cache = new ClientSideCacheConfig(1024)          // 1 MB cache
-    ///     .WithEntryTtlMs(60000)                           // 1 minute TTL
+    /// var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
     ///     .WithEvictionPolicy(EvictionPolicy.LRU)
     ///     .WithMetrics(true);
     ///
@@ -89,39 +87,20 @@ public sealed class ClientSideCacheConfig
     ///     .Build();
     /// </code>
     /// </example>
-    public ClientSideCacheConfig(ulong maxCacheKb)
+    public ClientSideCacheConfig(ulong maxCacheKb, TimeSpan entryTtl)
     {
         if (maxCacheKb == 0)
         {
             throw new ArgumentOutOfRangeException(nameof(maxCacheKb), "maxCacheKb must be positive.");
         }
 
-        string cacheId;
-        lock (CounterLock)
+        if (entryTtl < TimeSpan.Zero)
         {
-            cacheId = $"{UuidPrefix}-{s_counter}";
-            s_counter++;
+            throw new ArgumentOutOfRangeException(nameof(entryTtl), "entryTtl must not be negative.");
         }
 
-        CacheId = cacheId;
         MaxCacheKb = maxCacheKb;
-    }
-
-    /// <summary>
-    /// Sets the TTL for cache entries in milliseconds.
-    /// </summary>
-    /// <param name="ttlMs">Time-To-Live in milliseconds. Must be positive.</param>
-    /// <returns>This instance for method chaining.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="ttlMs"/> is zero.</exception>
-    public ClientSideCacheConfig WithEntryTtlMs(ulong ttlMs)
-    {
-        if (ttlMs == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(ttlMs), "ttlMs must be positive.");
-        }
-
-        EntryTtlMs = ttlMs;
-        return this;
+        EntryTtl = entryTtl;
     }
 
     /// <summary>
@@ -149,13 +128,11 @@ public sealed class ClientSideCacheConfig
     /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
     /// </summary>
-    internal Internals.FFI.ClientSideCacheConfig ToFfi() => new()
-    {
-        CacheId = CacheId,
-        MaxCacheKb = MaxCacheKb,
-        EntryTtlMs = EntryTtlMs,
-        HasEvictionPolicy = EvictionPolicy.HasValue,
-        EvictionPolicy = EvictionPolicy ?? default,
-        EnableMetrics = EnableMetrics,
-    };
+    internal Internals.FFI.ClientSideCacheConfig ToFfi() => new(
+        CacheId,
+        MaxCacheKb,
+        (ulong)EntryTtl.TotalMilliseconds,
+        EvictionPolicy,
+        EnableMetrics
+    );
 }

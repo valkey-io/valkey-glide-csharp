@@ -1211,28 +1211,29 @@ internal partial class FFI
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    internal struct ClientSideCacheConfig
+    internal readonly struct ClientSideCacheConfig(
+        string cacheId,
+        ulong maxCacheKb,
+        ulong entryTtlMs,
+        EvictionPolicy evictionPolicy,
+        bool enableMetrics)
     {
         /// <summary>Unique identifier for the cache instance.</summary>
         [MarshalAs(UnmanagedType.LPStr)]
-        public string CacheId;
+        public readonly string CacheId = cacheId;
 
         /// <summary>Maximum size of the cache in kilobytes.</summary>
-        public ulong MaxCacheKb;
+        public readonly ulong MaxCacheKb = maxCacheKb;
 
         /// <summary>Time-To-Live for cached entries in milliseconds (0 = no expiration).</summary>
-        public ulong EntryTtlMs;
-
-        /// <summary>Whether an eviction policy was explicitly specified.</summary>
-        [MarshalAs(UnmanagedType.U1)]
-        public bool HasEvictionPolicy;
+        public readonly ulong EntryTtlMs = entryTtlMs;
 
         /// <summary>The eviction policy for the cache.</summary>
-        public EvictionPolicy EvictionPolicy;
+        public readonly EvictionPolicy EvictionPolicy = evictionPolicy;
 
         /// <summary>Whether cache metrics collection is enabled.</summary>
         [MarshalAs(UnmanagedType.U1)]
-        public bool EnableMetrics;
+        public readonly bool EnableMetrics = enableMetrics;
     }
 
     [StructLayout(LayoutKind.Sequential)]

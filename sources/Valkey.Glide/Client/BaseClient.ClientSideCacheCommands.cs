@@ -9,16 +9,14 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
-    public async Task<double> GetCacheHitRateAsync()
+    private async Task<T> GetCacheMetricAsync<T>(CacheMetricsType type, Func<object?, T> convert)
     {
         Message message = MessageContainer.GetMessageForCall();
-        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)CacheMetricsType.HitRate);
+        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)type);
         IntPtr response = await message;
         try
         {
-            object? value = HandleResponse(response);
-            return value is double d ? d : Convert.ToDouble(value);
+            return convert(HandleResponse(response));
         }
         finally
         {
@@ -27,87 +25,26 @@ public abstract partial class BaseClient
     }
 
     /// <inheritdoc/>
-    public async Task<double> GetCacheMissRateAsync()
-    {
-        Message message = MessageContainer.GetMessageForCall();
-        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)CacheMetricsType.MissRate);
-        IntPtr response = await message;
-        try
-        {
-            object? value = HandleResponse(response);
-            return value is double d ? d : Convert.ToDouble(value);
-        }
-        finally
-        {
-            FreeResponse(response);
-        }
-    }
+    public Task<double> GetCacheHitRateAsync()
+        => GetCacheMetricAsync(CacheMetricsType.HitRate, v => Convert.ToDouble(v));
 
     /// <inheritdoc/>
-    public async Task<long> GetCacheEntryCountAsync()
-    {
-        Message message = MessageContainer.GetMessageForCall();
-        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)CacheMetricsType.EntryCount);
-        IntPtr response = await message;
-        try
-        {
-            object? value = HandleResponse(response);
-            return value is long l ? l : Convert.ToInt64(value);
-        }
-        finally
-        {
-            FreeResponse(response);
-        }
-    }
+    public Task<double> GetCacheMissRateAsync()
+        => GetCacheMetricAsync(CacheMetricsType.MissRate, v => Convert.ToDouble(v));
 
     /// <inheritdoc/>
-    public async Task<long> GetCacheEvictionsAsync()
-    {
-        Message message = MessageContainer.GetMessageForCall();
-        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)CacheMetricsType.Evictions);
-        IntPtr response = await message;
-        try
-        {
-            object? value = HandleResponse(response);
-            return value is long l ? l : Convert.ToInt64(value);
-        }
-        finally
-        {
-            FreeResponse(response);
-        }
-    }
+    public Task<long> GetCacheEntryCountAsync()
+        => GetCacheMetricAsync(CacheMetricsType.EntryCount, v => Convert.ToInt64(v));
 
     /// <inheritdoc/>
-    public async Task<long> GetCacheExpirationsAsync()
-    {
-        Message message = MessageContainer.GetMessageForCall();
-        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)CacheMetricsType.Expirations);
-        IntPtr response = await message;
-        try
-        {
-            object? value = HandleResponse(response);
-            return value is long l ? l : Convert.ToInt64(value);
-        }
-        finally
-        {
-            FreeResponse(response);
-        }
-    }
+    public Task<long> GetCacheEvictionsAsync()
+        => GetCacheMetricAsync(CacheMetricsType.Evictions, v => Convert.ToInt64(v));
 
     /// <inheritdoc/>
-    public async Task<long> GetCacheTotalLookupsAsync()
-    {
-        Message message = MessageContainer.GetMessageForCall();
-        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)CacheMetricsType.TotalLookups);
-        IntPtr response = await message;
-        try
-        {
-            object? value = HandleResponse(response);
-            return value is long l ? l : Convert.ToInt64(value);
-        }
-        finally
-        {
-            FreeResponse(response);
-        }
-    }
+    public Task<long> GetCacheExpirationsAsync()
+        => GetCacheMetricAsync(CacheMetricsType.Expirations, v => Convert.ToInt64(v));
+
+    /// <inheritdoc/>
+    public Task<long> GetCacheTotalLookupsAsync()
+        => GetCacheMetricAsync(CacheMetricsType.TotalLookups, v => Convert.ToInt64(v));
 }

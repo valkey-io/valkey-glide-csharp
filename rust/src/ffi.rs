@@ -80,9 +80,7 @@ pub enum EvictionPolicy {
 pub struct ClientSideCacheConfig {
     pub cache_id: *const c_char,
     pub max_cache_kb: u64,
-    pub has_entry_ttl_ms: bool,
     pub entry_ttl_ms: u64,
-    pub has_eviction_policy: bool,
     pub eviction_policy: EvictionPolicy,
     pub enable_metrics: bool,
 }
@@ -330,13 +328,11 @@ pub(crate) unsafe fn create_connection_request(
             Some(glide_core::client::ClientSideCache {
                 cache_id: unsafe { ptr_to_str(csc.cache_id) },
                 max_cache_kb: csc.max_cache_kb,
-                entry_ttl_ms: if csc.has_entry_ttl_ms { csc.entry_ttl_ms } else { 0 },
-                eviction_policy: csc
-                    .has_eviction_policy
-                    .then_some(match csc.eviction_policy {
-                        EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
-                        EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
-                    }),
+                entry_ttl_ms: csc.entry_ttl_ms,
+                eviction_policy: Some(match csc.eviction_policy {
+                    EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
+                    EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
+                }),
                 enable_metrics: csc.enable_metrics,
             })
         } else {
