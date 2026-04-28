@@ -14,15 +14,21 @@ public interface IScriptingAndFunctionBaseCommands
     // ===== StackExchange.Redis Compatibility Methods =====
 
     /// <summary>
-    /// Evaluates a Lua script on the server (StackExchange.Redis compatibility).
+    /// Evaluates a Lua script on the server.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/eval/">Valkey commands – EVAL</seealso>
     /// <param name="script">The Lua script to evaluate.</param>
     /// <param name="keys">The keys to pass to the script.</param>
     /// <param name="values">The values to pass to the script.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <returns>The result of the script execution.</returns>
     /// <remarks>
-    /// This method uses EVAL to execute the script. For better performance with repeated executions,
-    /// consider using LuaScript.Prepare() or pre-loading scripts with IServer.ScriptLoadAsync().
+    /// For better performance with repeated executions, consider using
+    /// <see cref="LuaScript"/>.Prepare() or pre-loading scripts with IServer.ScriptLoadAsync().
+    /// <example>
+    /// <code>
+    /// var scriptResult = await client.ScriptEvaluateAsync("return 'hello'");  // "hello"
+    /// </code>
+    /// </example>
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(
         string script,
@@ -30,15 +36,22 @@ public interface IScriptingAndFunctionBaseCommands
         IEnumerable<ValkeyValue>? values = null);
 
     /// <summary>
-    /// Evaluates a pre-loaded Lua script on the server using its SHA1 hash (StackExchange.Redis compatibility).
+    /// Evaluates a pre-loaded Lua script on the server using its SHA1 hash.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/evalsha/">Valkey commands – EVALSHA</seealso>
     /// <param name="hash">The SHA1 hash of the script to evaluate.</param>
     /// <param name="keys">The keys to pass to the script.</param>
     /// <param name="values">The values to pass to the script.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <returns>The result of the script execution.</returns>
     /// <remarks>
-    /// This method uses EVALSHA to execute the script by its hash. If the script is not cached on the server,
-    /// a NOSCRIPT error will be thrown. Use IServer.ScriptLoadAsync() to pre-load scripts.
+    /// If the script is not cached on the server, a NOSCRIPT error will be thrown.
+    /// Use IServer.ScriptLoadAsync() to pre-load scripts.
+    /// <example>
+    /// <code>
+    /// byte[] scriptHash = await server.ScriptLoadAsync("return 'hello'");
+    /// var scriptResult = await client.ScriptEvaluateAsync(scriptHash);  // "hello"
+    /// </code>
+    /// </example>
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(
         byte[] hash,
@@ -46,27 +59,40 @@ public interface IScriptingAndFunctionBaseCommands
         IEnumerable<ValkeyValue>? values = null);
 
     /// <summary>
-    /// Evaluates a LuaScript with named parameter support (StackExchange.Redis compatibility).
+    /// Evaluates a <see cref="LuaScript"/> with named parameter support.
     /// </summary>
-    /// <param name="script">The LuaScript to evaluate.</param>
+    /// <seealso href="https://valkey.io/commands/eval/">Valkey commands – EVAL</seealso>
+    /// <param name="script">The <see cref="LuaScript"/> to evaluate.</param>
     /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <returns>The result of the script execution.</returns>
     /// <remarks>
-    /// This method extracts parameter values from the provided object and passes them to the script.
-    /// Parameters of type ValkeyKey are treated as keys, while other types are treated
-    /// as arguments.
+    /// Parameters of type <see cref="ValkeyKey"/> are treated as keys, while other types are treated as arguments.
+    /// <example>
+    /// <code>
+    /// var luaScript = LuaScript.Prepare("return @value");
+    /// var scriptResult = await client.ScriptEvaluateAsync(luaScript, new { value = "hello" });  // "hello"
+    /// </code>
+    /// </example>
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null);
 
     /// <summary>
-    /// Evaluates a pre-loaded LuaScript using EVALSHA (StackExchange.Redis compatibility).
+    /// Evaluates a pre-loaded <see cref="LoadedLuaScript"/> using EVALSHA.
     /// </summary>
-    /// <param name="script">The LoadedLuaScript to evaluate.</param>
+    /// <seealso href="https://valkey.io/commands/evalsha/">Valkey commands – EVALSHA</seealso>
+    /// <param name="script">The <see cref="LoadedLuaScript"/> to evaluate.</param>
     /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
+    /// <returns>The result of the script execution.</returns>
     /// <remarks>
-    /// This method uses EVALSHA to execute the script by its hash. If the script is not cached on the server,
-    /// a NOSCRIPT error will be thrown.
+    /// If the script is not cached on the server, a NOSCRIPT error will be thrown.
+    /// <example>
+    /// <code>
+    /// // LoadedLuaScript is obtained via LuaScript.LoadAsync(server)
+    /// var luaScript = LuaScript.Prepare("return 'hello'");
+    /// var loaded = await luaScript.LoadAsync(server);
+    /// var scriptResult = await client.ScriptEvaluateAsync(loaded);  // "hello"
+    /// </code>
+    /// </example>
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters = null);
 

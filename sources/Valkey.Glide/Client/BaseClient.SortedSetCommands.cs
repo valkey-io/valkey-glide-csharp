@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
@@ -7,43 +8,43 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)"/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score)
         => Command(Request.SortedSetAddAsync(key, member, score));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, SortedSetEntry)"/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, SortedSetEntry member)
         => SortedSetAddAsync(key, member.Element, member.Score);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, IEnumerable{SortedSetEntry})"/>
     public Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> members)
         => Command(Request.SortedSetAddAsync(key, members));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)"/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddCondition condition)
         => SortedSetAddAsync(key, member, score, new SortedSetAddOptions { Condition = condition });
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddOptions)"/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options)
         => Command(Request.SortedSetAddAsync(key, member, score, options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, IDictionary{ValkeyValue, double})"/>
     public Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members)
         => SortedSetAddAsync(key, members.Select(kvp => new SortedSetEntry(kvp.Key, kvp.Value)));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, IDictionary{ValkeyValue, double}, SortedSetAddCondition)"/>
     public Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddCondition condition)
         => SortedSetAddAsync(key, members, new SortedSetAddOptions { Condition = condition });
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, IDictionary{ValkeyValue, double}, SortedSetAddOptions)"/>
     public Task<long> SortedSetAddAsync(ValkeyKey key, IDictionary<ValkeyValue, double> members, SortedSetAddOptions options)
         => Command(Request.SortedSetAddAsync(key, members.Select(kvp => new SortedSetEntry(kvp.Key, kvp.Value)), options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetRemoveAsync(ValkeyKey, ValkeyValue)"/>
     public Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member)
         => Command(Request.SortedSetRemoveAsync(key, member));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members)
         => Command(Request.SortedSetRemoveAsync(key, members));
 
@@ -59,15 +60,15 @@ public abstract partial class BaseClient
     public Task<long> SortedSetLexCountAsync(ValkeyKey key, LexRange range)
         => Command(Request.SortedSetLexCountAsync(key, range));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetIncrementByAsync(ValkeyKey, ValkeyValue, double)"/>
     public Task<double> SortedSetIncrementByAsync(ValkeyKey key, ValkeyValue member, double value)
         => Command(Request.SortedSetIncrementByAsync(key, member, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetIncrementByAsync(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)"/>
     public Task<double?> SortedSetIncrementByAsync(ValkeyKey key, ValkeyValue member, double value, SortedSetAddCondition condition)
         => SortedSetIncrementByAsync(key, member, value, new SortedSetAddOptions { Condition = condition });
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetIncrementByAsync(ValkeyKey, ValkeyValue, double, SortedSetAddOptions)"/>
     public Task<double?> SortedSetIncrementByAsync(ValkeyKey key, ValkeyValue member, double value, SortedSetAddOptions options)
         => Command(Request.SortedSetIncrementByAsync(key, member, value, options));
 
@@ -75,41 +76,41 @@ public abstract partial class BaseClient
     public Task<long> SortedSetInterCardAsync(IEnumerable<ValkeyKey> keys, long limit = 0)
         => Command(Request.SortedSetInterCardAsync(keys, limit));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMinAsync(ValkeyKey)"/>
     public Task<SortedSetEntry?> SortedSetPopMinAsync(ValkeyKey key)
         => Command(Request.SortedSetPopMinAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMaxAsync(ValkeyKey)"/>
     public Task<SortedSetEntry?> SortedSetPopMaxAsync(ValkeyKey key)
         => Command(Request.SortedSetPopMaxAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMinAsync(ValkeyKey, long)"/>
     public Task<SortedSetEntry[]> SortedSetPopMinAsync(ValkeyKey key, long count)
         => Command(Request.SortedSetPopMinAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMaxAsync(ValkeyKey, long)"/>
     public Task<SortedSetEntry[]> SortedSetPopMaxAsync(ValkeyKey key, long count)
         => Command(Request.SortedSetPopMaxAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMinAsync(IEnumerable{ValkeyKey}, TimeSpan?)"/>
     public Task<SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null)
         => timeout.HasValue
             ? Command(Request.SortedSetPopMinAsync(keys, timeout.Value))
             : Command(Request.SortedSetPopMinAsync(keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMaxAsync(IEnumerable{ValkeyKey}, TimeSpan?)"/>
     public Task<SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null)
         => timeout.HasValue
             ? Command(Request.SortedSetPopMaxAsync(keys, timeout.Value))
             : Command(Request.SortedSetPopMaxAsync(keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMinAsync(IEnumerable{ValkeyKey}, long, TimeSpan?)"/>
     public Task<SortedSetPopResult> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null)
         => timeout.HasValue
             ? Command(Request.SortedSetPopMinAsync(keys, count, timeout.Value))
             : Command(Request.SortedSetPopMinAsync(keys, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetPopMaxAsync(IEnumerable{ValkeyKey}, long, TimeSpan?)"/>
     public Task<SortedSetPopResult> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null)
         => timeout.HasValue
             ? Command(Request.SortedSetPopMaxAsync(keys, count, timeout.Value))
@@ -123,35 +124,35 @@ public abstract partial class BaseClient
     public Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count)
         => Command(Request.SortedSetRandomMembersWithScoreAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetUnionAsync(IEnumerable{ValkeyKey}, Aggregate)"/>
     public Task<ValkeyValue[]> SortedSetUnionAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetUnionAsync(keys, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetUnionAsync(IDictionary{ValkeyKey, double}, Aggregate)"/>
     public Task<ValkeyValue[]> SortedSetUnionAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetUnionAsync(keysAndWeights, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetUnionWithScoreAsync(IEnumerable{ValkeyKey}, Aggregate)"/>
     public Task<SortedSetEntry[]> SortedSetUnionWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetUnionWithScoreAsync(keys, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetUnionWithScoreAsync(IDictionary{ValkeyKey, double}, Aggregate)"/>
     public Task<SortedSetEntry[]> SortedSetUnionWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetUnionWithScoreAsync(keysAndWeights, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetInterAsync(IEnumerable{ValkeyKey}, Aggregate)"/>
     public Task<ValkeyValue[]> SortedSetInterAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetInterAsync(keys, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetInterAsync(IDictionary{ValkeyKey, double}, Aggregate)"/>
     public Task<ValkeyValue[]> SortedSetInterAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetInterAsync(keysAndWeights, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetInterWithScoreAsync(IEnumerable{ValkeyKey}, Aggregate)"/>
     public Task<SortedSetEntry[]> SortedSetInterWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetInterWithScoreAsync(keys, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetInterWithScoreAsync(IDictionary{ValkeyKey, double}, Aggregate)"/>
     public Task<SortedSetEntry[]> SortedSetInterWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetInterWithScoreAsync(keysAndWeights, aggregate));
 
@@ -163,19 +164,19 @@ public abstract partial class BaseClient
     public Task<SortedSetEntry[]> SortedSetDiffWithScoreAsync(IEnumerable<ValkeyKey> keys)
         => Command(Request.SortedSetDiffWithScoreAsync(keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetUnionAndStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, Aggregate)"/>
     public Task<long> SortedSetUnionAndStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetUnionAndStoreAsync(destination, keys, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetUnionAndStoreAsync(ValkeyKey, IDictionary{ValkeyKey, double}, Aggregate)"/>
     public Task<long> SortedSetUnionAndStoreAsync(ValkeyKey destination, IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetUnionAndStoreAsync(destination, keysAndWeights, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetInterAndStoreAsync(ValkeyKey, IEnumerable{ValkeyKey}, Aggregate)"/>
     public Task<long> SortedSetInterAndStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetInterAndStoreAsync(destination, keys, aggregate));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetInterAndStoreAsync(ValkeyKey, IDictionary{ValkeyKey, double}, Aggregate)"/>
     public Task<long> SortedSetInterAndStoreAsync(ValkeyKey destination, IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
         => Command(Request.SortedSetInterAndStoreAsync(destination, keysAndWeights, aggregate));
 
@@ -191,27 +192,27 @@ public abstract partial class BaseClient
     public Task<(long Rank, double Score)?> SortedSetRankWithScoreAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending)
         => Command(Request.SortedSetRankWithScoreAsync(key, member, order));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey)"/>
     public Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key)
         => SortedSetRangeAsync(key, new RangeOptions());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeAsync(ValkeyKey, RangeOptions)"/>
     public Task<ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options)
         => Command(Request.SortedSetRangeAsync(key, options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey)"/>
     public Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key)
         => SortedSetRangeWithScoresAsync(key, new RangeOptions());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeWithScoresAsync(ValkeyKey, RangeOptions)"/>
     public Task<SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options)
         => Command(Request.SortedSetRangeWithScoresAsync(key, options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey)"/>
     public Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination)
         => SortedSetRangeAndStoreAsync(source, destination, new RangeOptions());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, RangeOptions)"/>
     public Task<long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options)
         => Command(Request.SortedSetRangeAndStoreAsync(source, destination, options));
 
@@ -235,13 +236,13 @@ public abstract partial class BaseClient
     public Task<ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count)
         => Command(Request.SortedSetRandomMembersAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetBlockingPopAsync(ValkeyKey, Order, TimeSpan)"/>
     public async Task<SortedSetEntry?> SortedSetBlockingPopAsync(ValkeyKey key, Order order, TimeSpan timeout)
         => order == Order.Ascending
             ? await SortedSetPopMinAsync([key], timeout)
             : await SortedSetPopMaxAsync([key], timeout);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SortedSetBlockingPopAsync(IEnumerable{ValkeyKey}, long, Order, TimeSpan)"/>
     public async Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout)
         => order == Order.Ascending
             ? await SortedSetPopMinAsync(keys, count, timeout)

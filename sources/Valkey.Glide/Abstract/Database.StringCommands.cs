@@ -7,6 +7,8 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
+    #region Public Methods
+
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public async Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
     {
@@ -65,7 +67,7 @@ internal partial class Database
         }
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringGetSetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<ValkeyValue> StringGetSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -86,28 +88,28 @@ internal partial class Database
         return GetAsync(keys);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringGetRangeAsync(ValkeyKey, long, long, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return GetRangeAsync(key, start, end);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringSetRangeAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<ValkeyValue> StringSetRangeAsync(ValkeyKey key, long offset, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return SetRangeAsync(key, offset, value);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringLengthAsync(ValkeyKey, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<long> StringLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return LengthAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringAppendAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<long> StringAppendAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -142,7 +144,7 @@ internal partial class Database
         return IncrementAsync(key, value);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringGetDeleteAsync(ValkeyKey, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<ValkeyValue> StringGetDeleteAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -164,27 +166,28 @@ internal partial class Database
         return GetExpiryAsync(key, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return Command(Request.LongestCommonSubsequence(first, second));
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return Command(Request.LongestCommonSubsequenceLength(first, second));
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return Command(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
     }
 
+    #endregion
     #region Private Methods
 
     private static SetOptions ToSetOptions(When when, TimeSpan? expiry, bool keepTtl)

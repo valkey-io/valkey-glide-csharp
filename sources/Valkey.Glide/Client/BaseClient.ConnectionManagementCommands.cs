@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
+
 namespace Valkey.Glide;
 
 public abstract partial class BaseClient
@@ -13,10 +15,10 @@ public abstract partial class BaseClient
     /// <inheritdoc/>
     public abstract Task<ValkeyValue> EchoAsync(ValkeyValue message);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PingAsync()"/>
     public abstract Task<ValkeyValue> PingAsync();
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PingAsync(ValkeyValue)"/>
     public abstract Task<ValkeyValue> PingAsync(ValkeyValue message);
 
     /// <inheritdoc/>

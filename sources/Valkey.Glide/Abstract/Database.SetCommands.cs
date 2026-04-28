@@ -35,7 +35,7 @@ internal partial class Database
         return SetRemoveAsync(key, values);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SetMembersAsync(ValkeyKey, CommandFlags)"/>
+    /// <inheritdoc/>
     public async Task<ValkeyValue[]> SetMembersAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -43,14 +43,14 @@ internal partial class Database
         return [.. result];
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SetLengthAsync(ValkeyKey, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<long> SetLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return SetCardAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SetIntersectionLengthAsync(IEnumerable{ValkeyKey}, long, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<long> SetIntersectionLengthAsync(IEnumerable<ValkeyKey> keys, long limit = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -116,28 +116,28 @@ internal partial class Database
         return SetIsMemberAsync(key, values);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SetRandomMemberAsync(ValkeyKey, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return SetRandomMemberAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SetRandomMembersAsync(ValkeyKey, long, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return SetRandomMembersAsync(key, count);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SetMoveAsync(ValkeyKey, ValkeyKey, ValkeyValue, CommandFlags)"/>
+    /// <inheritdoc/>
     public Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return SetMoveAsync(source, destination, value);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
+    /// <inheritdoc/>
     public IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

@@ -7,31 +7,31 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue)"/>
     public Task SetAsync(ValkeyKey key, ValkeyValue value)
         => Command(Request.Set(key, value, new SetOptions()));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetCondition)"/>
     public Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
         Command(Request.Set(key, value, new SetOptions { Condition = condition }));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetOptions)"/>
     public Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) =>
         Command(Request.Set(key, value, options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)"/>
     public Task SetAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) =>
         Command(Request.Set(key, value, new SetOptions { Expiry = expiry }));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetAsync(ValkeyKey)"/>
     public Task<ValkeyValue> GetAsync(ValkeyKey key) =>
         Command(Request.Get(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetAsync(IEnumerable{ValkeyKey})"/>
     public Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys) =>
         Command(Request.Get(keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})"/>
     public Task SetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
         Command(Request.Set([.. values]));
 
@@ -39,15 +39,15 @@ public abstract partial class BaseClient
     public Task<bool> SetIfNotExistsAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
         Command(Request.SetIfNotExists([.. values]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue)"/>
     public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value) =>
         Command(Request.GetSet(key, value, new SetOptions()));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetCondition)"/>
     public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition) =>
         Command(Request.GetSet(key, value, new SetOptions { Condition = condition }));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetOptions)"/>
     public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) =>
         Command(Request.GetSet(key, value, options));
 
@@ -71,23 +71,23 @@ public abstract partial class BaseClient
     public Task<long> AppendAsync(ValkeyKey key, ValkeyValue value) =>
         Command(Request.Append(key, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, long)"/>
     public Task<long> DecrementAsync(ValkeyKey key, long value = 1) =>
         value == 1
             ? Command(Request.Decrement(key))
             : Command(Request.DecrementBy(key, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, double)"/>
     public Task<double> DecrementAsync(ValkeyKey key, double value) =>
         Command(Request.IncrementByFloat(key, -value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, long)"/>
     public Task<long> IncrementAsync(ValkeyKey key, long value = 1) =>
         value == 1
             ? Command(Request.Increment(key))
             : Command(Request.IncrementBy(key, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, double)"/>
     public Task<double> IncrementAsync(ValkeyKey key, double value) =>
         Command(Request.IncrementByFloat(key, value));
 

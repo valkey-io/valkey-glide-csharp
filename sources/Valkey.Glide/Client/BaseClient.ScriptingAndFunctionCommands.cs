@@ -2,6 +2,7 @@
 
 using System.Runtime.InteropServices;
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 using static Valkey.Glide.Internals.ResponseHandler;
@@ -12,7 +13,7 @@ public abstract partial class BaseClient
 {
     // ===== Script Execution =====
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptInvokeAsync(Script, CancellationToken)"/>
     public async Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
         CancellationToken cancellationToken = default)
@@ -25,7 +26,7 @@ public abstract partial class BaseClient
         return await ScriptInvokeInternalAsync(script.Hash, null, null);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptInvokeAsync(Script, ScriptOptions, CancellationToken)"/>
     public async Task<ValkeyResult> ScriptInvokeAsync(
         Script script,
         ScriptOptions options,
@@ -214,7 +215,7 @@ public abstract partial class BaseClient
 
     // ===== Script Management =====
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptExistsAsync(string, CancellationToken)"/>
     public async Task<bool> ScriptExistsAsync(
         string sha1Hash,
         CancellationToken cancellationToken = default)
@@ -223,7 +224,7 @@ public abstract partial class BaseClient
         return results[0];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptExistsAsync(IEnumerable{string}, CancellationToken)"/>
     public async Task<bool[]> ScriptExistsAsync(
         IEnumerable<string> sha1Hashes,
         CancellationToken cancellationToken = default)
@@ -231,14 +232,14 @@ public abstract partial class BaseClient
         return await Command(Request.ScriptExistsAsync([.. sha1Hashes]));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptFlushAsync(CancellationToken)"/>
     public async Task ScriptFlushAsync(
         CancellationToken cancellationToken = default)
     {
         _ = await Command(Request.ScriptFlushAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptFlushAsync(FlushMode, CancellationToken)"/>
     public async Task ScriptFlushAsync(
         FlushMode mode,
         CancellationToken cancellationToken = default)
@@ -271,7 +272,7 @@ public abstract partial class BaseClient
 
     // ===== Function Execution =====
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FCallAsync(string, CancellationToken)"/>
     public async Task<ValkeyResult> FCallAsync(
         string function,
         CancellationToken cancellationToken = default)
@@ -279,7 +280,7 @@ public abstract partial class BaseClient
         return await Command(Request.FCallAsync(function, null, null));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FCallAsync(string, IEnumerable{string}, IEnumerable{string}, CancellationToken)"/>
     public async Task<ValkeyResult> FCallAsync(
         string function,
         IEnumerable<string> keys,
@@ -289,7 +290,7 @@ public abstract partial class BaseClient
         return await Command(Request.FCallAsync(function, [.. keys], [.. args]));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FCallReadOnlyAsync(string, CancellationToken)"/>
     public async Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
         CancellationToken cancellationToken = default)
@@ -297,7 +298,7 @@ public abstract partial class BaseClient
         return await Command(Request.FCallReadOnlyAsync(function, null, null));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FCallReadOnlyAsync(string, IEnumerable{string}, IEnumerable{string}, CancellationToken)"/>
     public async Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
         IEnumerable<string> keys,
@@ -318,14 +319,14 @@ public abstract partial class BaseClient
         return await Command(Request.FunctionLoadAsync(libraryCode, replace));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionFlushAsync(CancellationToken)"/>
     public async Task FunctionFlushAsync(
         CancellationToken cancellationToken = default)
     {
         _ = await Command(Request.FunctionFlushAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionFlushAsync(FlushMode, CancellationToken)"/>
     public async Task FunctionFlushAsync(
         FlushMode mode,
         CancellationToken cancellationToken = default)
@@ -357,7 +358,7 @@ public abstract partial class BaseClient
         return await Command(Request.FunctionDumpAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionRestoreAsync(byte[], CancellationToken)"/>
     public async Task FunctionRestoreAsync(
         byte[] payload,
         CancellationToken cancellationToken = default)
@@ -365,7 +366,7 @@ public abstract partial class BaseClient
         _ = await Command(Request.FunctionRestoreAsync(payload, null));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionRestoreAsync(byte[], FunctionRestorePolicy, CancellationToken)"/>
     public async Task FunctionRestoreAsync(
         byte[] payload,
         FunctionRestorePolicy policy,
@@ -376,7 +377,7 @@ public abstract partial class BaseClient
 
     // ===== StackExchange.Redis Compatibility Methods =====
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}, IEnumerable{ValkeyValue})"/>
     public async Task<ValkeyResult> ScriptEvaluateAsync(
         string script, IEnumerable<ValkeyKey>? keys = null,
         IEnumerable<ValkeyValue>? values = null)
@@ -393,7 +394,7 @@ public abstract partial class BaseClient
         return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(byte[], IEnumerable{ValkeyKey}, IEnumerable{ValkeyValue})"/>
     public async Task<ValkeyResult> ScriptEvaluateAsync(
         byte[] hash,
         IEnumerable<ValkeyKey>? keys = null,
@@ -410,7 +411,7 @@ public abstract partial class BaseClient
         return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LuaScript, object)"/>
     public async Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null)
     {
         if (script == null)
@@ -436,7 +437,7 @@ public abstract partial class BaseClient
         return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LoadedLuaScript, object)"/>
     public async Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters = null)
     {
         if (script == null)
@@ -462,25 +463,25 @@ public abstract partial class BaseClient
 
     // ===== Synchronous Wrappers =====
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}, IEnumerable{ValkeyValue})"/>
     public ValkeyResult ScriptEvaluate(
         string script,
         IEnumerable<ValkeyKey>? keys = null,
         IEnumerable<ValkeyValue>? values = null)
     => ScriptEvaluateAsync(script, keys, values).GetAwaiter().GetResult();
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(byte[], IEnumerable{ValkeyKey}, IEnumerable{ValkeyValue})"/>
     public ValkeyResult ScriptEvaluate(
         byte[] hash,
         IEnumerable<ValkeyKey>? keys = null,
         IEnumerable<ValkeyValue>? values = null)
     => ScriptEvaluateAsync(hash, keys, values).GetAwaiter().GetResult();
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LuaScript, object)"/>
     public ValkeyResult ScriptEvaluate(LuaScript script, object? parameters = null)
         => ScriptEvaluateAsync(script, parameters).GetAwaiter().GetResult();
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LoadedLuaScript, object)"/>
     public ValkeyResult ScriptEvaluate(LoadedLuaScript script, object? parameters = null)
         => ScriptEvaluateAsync(script, parameters).GetAwaiter().GetResult();
 }

@@ -58,8 +58,11 @@ public partial interface IDatabaseAsync
     Task<ValkeyValue[]> SetPopAsync(ValkeyKey key, long count, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns the members of the set resulting from the specified <paramref name="operation"/> of the sets stored at <paramref name="first"/> and <paramref name="second"/>.
+    /// Returns the members of the set resulting from the specified operation on two sets.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunion/">Valkey commands – SUNION</seealso>
+    /// <seealso href="https://valkey.io/commands/sinter/">Valkey commands – SINTER</seealso>
+    /// <seealso href="https://valkey.io/commands/sdiff/">Valkey commands – SDIFF</seealso>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="first">The key of the first set.</param>
     /// <param name="second">The key of the second set.</param>
@@ -69,8 +72,11 @@ public partial interface IDatabaseAsync
     Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Returns the members of the set resulting from the specified <paramref name="operation"/> of the sets stored at the given <paramref name="keys"/>.
+    /// Returns the members of the set resulting from the specified operation on multiple sets.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunion/">Valkey commands – SUNION</seealso>
+    /// <seealso href="https://valkey.io/commands/sinter/">Valkey commands – SINTER</seealso>
+    /// <seealso href="https://valkey.io/commands/sdiff/">Valkey commands – SDIFF</seealso>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="keys">The keys of the sets to combine.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -79,9 +85,11 @@ public partial interface IDatabaseAsync
     Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Performs the specified <paramref name="operation"/> on the sets stored at <paramref name="first"/> and <paramref name="second"/>,
-    /// and stores the result in the <paramref name="destination"/> key.
+    /// Performs the specified operation on two sets and stores the result in a destination key.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunionstore/">Valkey commands – SUNIONSTORE</seealso>
+    /// <seealso href="https://valkey.io/commands/sinterstore/">Valkey commands – SINTERSTORE</seealso>
+    /// <seealso href="https://valkey.io/commands/sdiffstore/">Valkey commands – SDIFFSTORE</seealso>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="destination">The key to store the resulting set.</param>
     /// <param name="first">The key of the first set.</param>
@@ -92,9 +100,11 @@ public partial interface IDatabaseAsync
     Task<long> SetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Performs the specified <paramref name="operation"/> on the sets stored at the given <paramref name="keys"/>,
-    /// and stores the result in the <paramref name="destination"/> key.
+    /// Performs the specified operation on multiple sets and stores the result in a destination key.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/sunionstore/">Valkey commands – SUNIONSTORE</seealso>
+    /// <seealso href="https://valkey.io/commands/sinterstore/">Valkey commands – SINTERSTORE</seealso>
+    /// <seealso href="https://valkey.io/commands/sdiffstore/">Valkey commands – SDIFFSTORE</seealso>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="destination">The key to store the resulting set.</param>
     /// <param name="keys">The keys of the sets to combine.</param>
@@ -129,9 +139,9 @@ public partial interface IDatabaseAsync
     Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value, CommandFlags flags);
 
     /// <summary>
-    /// Iterates elements over a set.
+    /// Iterates over elements of a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sscan"/>
+    /// <seealso href="https://valkey.io/commands/sscan/">Valkey commands – SSCAN</seealso>
     /// <param name="key">The key of the set.</param>
     /// <param name="pattern">The pattern to match.</param>
     /// <param name="pageSize">The number of elements to return per iteration (hint to the server).</param>

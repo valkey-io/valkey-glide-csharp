@@ -1,40 +1,41 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>
     public async Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key)
         => await Command(Request.ListLeftPopAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListLeftPopAsync(ValkeyKey, long)"/>
     public async Task<ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count)
         => await Command(Request.ListLeftPopAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.ListLeftPushAsync(key, value, When.Always));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.ListLeftPushAsync(key, [.. values], When.Always));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListRightPopAsync(ValkeyKey)"/>
     public async Task<ValkeyValue> ListRightPopAsync(ValkeyKey key)
         => await Command(Request.ListRightPopAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListRightPopAsync(ValkeyKey, long)"/>
     public async Task<ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count)
         => await Command(Request.ListRightPopAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.ListRightPushAsync(key, value, When.Always));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.ListRightPushAsync(key, [.. values], When.Always));
 
@@ -54,11 +55,11 @@ public abstract partial class BaseClient
     public async Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1)
         => await Command(Request.ListRangeAsync(key, start, stop));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListLeftPopAsync(IEnumerable{ValkeyKey}, long)"/>
     public async Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count)
         => await Command(Request.ListLeftPopAsync([.. keys], count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListRightPopAsync(IEnumerable{ValkeyKey}, long)"/>
     public async Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count)
         => await Command(Request.ListRightPopAsync([.. keys], count));
 
@@ -92,19 +93,19 @@ public abstract partial class BaseClient
 
     // Blocking list operations (Blocking Commands aren't supported in SER so this is according to our own implementation)
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingLeftPopAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task<ValkeyValue[]?> ListBlockingLeftPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
         => await Command(Request.ListBlockingLeftPopAsync([.. keys], timeout));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingLeftPopAsync(ValkeyKey, TimeSpan)"/>
     public async Task<ValkeyValue[]?> ListBlockingLeftPopAsync(ValkeyKey key, TimeSpan timeout)
         => await ListBlockingLeftPopAsync([key], timeout);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingRightPopAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
         => await Command(Request.ListBlockingRightPopAsync([.. keys], timeout));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingRightPopAsync(ValkeyKey, TimeSpan)"/>
     public async Task<ValkeyValue[]?> ListBlockingRightPopAsync(ValkeyKey key, TimeSpan timeout)
         => await ListBlockingRightPopAsync([key], timeout);
 
@@ -112,37 +113,37 @@ public abstract partial class BaseClient
     public async Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout)
         => await Command(Request.ListBlockingMoveAsync(source, destination, sourceSide, destinationSide, timeout));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, TimeSpan)"/>
     public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout)
         => await Command(Request.ListBlockingPopAsync([.. keys], side, timeout));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingPopAsync(ValkeyKey, ListSide, TimeSpan)"/>
     public async Task<ListPopResult> ListBlockingPopAsync(ValkeyKey key, ListSide side, TimeSpan timeout)
         => await ListBlockingPopAsync([key], side, timeout);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingPopAsync(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan)"/>
     public async Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout)
         => await Command(Request.ListBlockingPopAsync([.. keys], side, count, timeout));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingPopAsync(ValkeyKey, ListSide, long, TimeSpan)"/>
     public async Task<ListPopResult> ListBlockingPopAsync(ValkeyKey key, ListSide side, long count, TimeSpan timeout)
         => await ListBlockingPopAsync([key], side, count, timeout);
 
     // LPUSHX / RPUSHX - Explicit Methods (GLIDE-style API)
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListLeftPushIfExistsAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.ListLeftPushAsync(key, value, When.Exists));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListLeftPushIfExistsAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.ListLeftPushAsync(key, [.. values], When.Exists));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListRightPushIfExistsAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<long> ListRightPushIfExistsAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.ListRightPushAsync(key, value, When.Exists));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListRightPushIfExistsAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<long> ListRightPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.ListRightPushAsync(key, [.. values], When.Exists));
 }

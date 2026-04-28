@@ -10,27 +10,27 @@ namespace Valkey.Glide;
 public partial interface IBaseClient
 {
     /// <summary>
-    /// Iterates elements over a set.
+    /// Iterates over elements of a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sscan"/>
-    /// <param name="key">The key of the set.</param>
+    /// <seealso href="https://valkey.io/commands/sscan/">Valkey commands – SSCAN</seealso>
+    /// <param name="key">The set key.</param>
     /// <param name="options">Optional scan options including pattern and count hint.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the set.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyKey key = "myset";
-    /// // Scan all members
-    /// await foreach (ValkeyValue value in client.SetScanAsync(key))
+    /// await foreach (var member in client.SetScanAsync("myset"))
     /// {
-    ///     Console.WriteLine(value);
+    ///     Console.WriteLine(member);
     /// }
-    ///
-    /// // Scan with pattern
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
     /// var options = new ScanOptions { MatchPattern = "*pattern*" };
-    /// await foreach (ValkeyValue value in client.SetScanAsync(key, options))
+    /// await foreach (var member in client.SetScanAsync("myset", options))
     /// {
-    ///     Console.WriteLine(value);
+    ///     Console.WriteLine(member);
     /// }
     /// </code>
     /// </example>
@@ -40,7 +40,7 @@ public partial interface IBaseClient
     /// <summary>
     /// Returns the members of the set resulting from the union of all given sets.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sunion"/>
+    /// <seealso href="https://valkey.io/commands/sunion/">Valkey commands – SUNION</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sets to union.</param>
     /// <returns>A set containing all members that exist in at least one of the given sets.</returns>
@@ -49,7 +49,8 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SetAddAsync("set1", ["a", "b"]);
     /// await client.SetAddAsync("set2", ["b", "c"]);
-    /// var result = await client.SetUnionAsync(["set1", "set2"]);  // result is {"a", "b", "c"}
+    /// var union = await client.SetUnionAsync(["set1", "set2"]);
+    /// // union contains {"a", "b", "c"}
     /// </code>
     /// </example>
     /// </remarks>
@@ -58,7 +59,7 @@ public partial interface IBaseClient
     /// <summary>
     /// Returns the members of the set resulting from the intersection of all given sets.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sinter"/>
+    /// <seealso href="https://valkey.io/commands/sinter/">Valkey commands – SINTER</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sets to intersect.</param>
     /// <returns>A set containing only members that exist in all of the given sets.</returns>
@@ -67,7 +68,8 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SetAddAsync("set1", ["a", "b", "c"]);
     /// await client.SetAddAsync("set2", ["b", "c", "d"]);
-    /// var result = await client.SetInterAsync(["set1", "set2"]);  // result is {"b", "c"}
+    /// var intersection = await client.SetInterAsync(["set1", "set2"]);
+    /// // intersection contains {"b", "c"}
     /// </code>
     /// </example>
     /// </remarks>
@@ -76,7 +78,7 @@ public partial interface IBaseClient
     /// <summary>
     /// Returns the members of the set resulting from the difference between the first set and all successive sets.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sdiff"/>
+    /// <seealso href="https://valkey.io/commands/sdiff/">Valkey commands – SDIFF</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sets. The first key is the base set; subsequent keys are subtracted from it.</param>
     /// <returns>A set containing members that exist in the first set but not in any of the subsequent sets.</returns>
@@ -85,7 +87,8 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SetAddAsync("set1", ["a", "b", "c"]);
     /// await client.SetAddAsync("set2", ["b", "c", "d"]);
-    /// var result = await client.SetDiffAsync(["set1", "set2"]);  // result is {"a"}
+    /// var difference = await client.SetDiffAsync(["set1", "set2"]);
+    /// // difference contains {"a"}
     /// </code>
     /// </example>
     /// </remarks>
@@ -93,9 +96,8 @@ public partial interface IBaseClient
 
     /// <summary>
     /// Stores the union of all given sets into <paramref name="destination"/>.
-    /// Returns the number of elements in the resulting set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sunionstore"/>
+    /// <seealso href="https://valkey.io/commands/sunionstore/">Valkey commands – SUNIONSTORE</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key of the destination set.</param>
     /// <param name="keys">The keys of the sets to union.</param>
@@ -105,7 +107,7 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SetAddAsync("set1", ["a", "b"]);
     /// await client.SetAddAsync("set2", ["b", "c"]);
-    /// long count = await client.SetUnionStoreAsync("dest", ["set1", "set2"]); // count is 3, dest contains {"a", "b", "c"}
+    /// var count = await client.SetUnionStoreAsync("dest", ["set1", "set2"]);  // 3
     /// </code>
     /// </example>
     /// </remarks>
@@ -113,9 +115,8 @@ public partial interface IBaseClient
 
     /// <summary>
     /// Stores the intersection of all given sets into <paramref name="destination"/>.
-    /// Returns the number of elements in the resulting set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sinterstore"/>
+    /// <seealso href="https://valkey.io/commands/sinterstore/">Valkey commands – SINTERSTORE</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key of the destination set.</param>
     /// <param name="keys">The keys of the sets to intersect.</param>
@@ -125,7 +126,7 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SetAddAsync("set1", ["a", "b", "c"]);
     /// await client.SetAddAsync("set2", ["b", "c", "d"]);
-    /// long count = await client.SetInterStoreAsync("dest", ["set1", "set2"]);  // count is 2, dest contains {"b", "c"}
+    /// var count = await client.SetInterStoreAsync("dest", ["set1", "set2"]);  // 2
     /// </code>
     /// </example>
     /// </remarks>
@@ -133,9 +134,8 @@ public partial interface IBaseClient
 
     /// <summary>
     /// Stores the difference between the first set and all successive sets into <paramref name="destination"/>.
-    /// Returns the number of elements in the resulting set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sdiffstore"/>
+    /// <seealso href="https://valkey.io/commands/sdiffstore/">Valkey commands – SDIFFSTORE</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key of the destination set.</param>
     /// <param name="keys">The keys of the sets. The first key is the base set; subsequent keys are subtracted from it.</param>
@@ -145,7 +145,7 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SetAddAsync("set1", ["a", "b", "c"]);
     /// await client.SetAddAsync("set2", ["b", "c", "d"]);
-    /// long count = await client.SetDiffStoreAsync("dest", ["set1", "set2"]);  // count is 1, dest contains {"a"}
+    /// var count = await client.SetDiffStoreAsync("dest", ["set1", "set2"]);  // 1
     /// </code>
     /// </example>
     /// </remarks>
@@ -153,10 +153,10 @@ public partial interface IBaseClient
 
     /// <summary>
     /// Returns the number of elements in the intersection of all given sets.
-    /// Optionally limited by <paramref name="limit"/>.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sintercard"/>
+    /// <seealso href="https://valkey.io/commands/sintercard/">Valkey commands – SINTERCARD</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
+    /// <note>Since Valkey 7.0.0 and above.</note>
     /// <param name="keys">The keys of the sets to intersect.</param>
     /// <param name="limit">
     /// The maximum number of elements to count. A value of <c>0</c> means no limit.
@@ -167,36 +167,38 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SetAddAsync("set1", ["a", "b", "c"]);
     /// await client.SetAddAsync("set2", ["b", "c", "d"]);
-    /// long count = await client.SetInterCardAsync(["set1", "set2"]);              // count is 2
-    /// long limited = await client.SetInterCardAsync(["set1", "set2"], limit: 1);  // limited is 1
+    /// var count = await client.SetInterCardAsync(["set1", "set2"]);  // 2
+    ///
+    /// var limited = await client.SetInterCardAsync(["set1", "set2"], limit: 1);  // 1
     /// </code>
     /// </example>
     /// </remarks>
     Task<long> SetInterCardAsync(IEnumerable<ValkeyKey> keys, long limit = 0);
 
     /// <summary>
-    /// Returns whether the specified value is a member of the set stored at <paramref name="key"/>.
+    /// Checks whether <paramref name="value"/> is a member of a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sismember"/>
-    /// <param name="key">The key of the set.</param>
+    /// <seealso href="https://valkey.io/commands/sismember/">Valkey commands – SISMEMBER</seealso>
+    /// <param name="key">The set key.</param>
     /// <param name="value">The value to check for membership.</param>
     /// <returns><see langword="true"/> if the value is a member of the set; <see langword="false"/> otherwise.</returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAddAsync("myset", ["a", "b", "c"]);
-    /// bool isMember = await client.SetIsMemberAsync("myset", "a");   // isMember is true
-    /// bool notMember = await client.SetIsMemberAsync("myset", "z");  // notMember is false
+    /// var isMember = await client.SetIsMemberAsync("myset", "a");   // true
+    ///
+    /// var notMember = await client.SetIsMemberAsync("myset", "z");  // false
     /// </code>
     /// </example>
     /// </remarks>
     Task<bool> SetIsMemberAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>
-    /// Returns whether each specified value is a member of the set stored at <paramref name="key"/>.
+    /// Checks whether each specified value is a member of a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/smismember"/>
-    /// <param name="key">The key of the set.</param>
+    /// <seealso href="https://valkey.io/commands/smismember/">Valkey commands – SMISMEMBER</seealso>
+    /// <param name="key">The set key.</param>
     /// <param name="values">The values to check for membership.</param>
     /// <returns>
     /// An array of <see cref="bool"/> values, one per input value, where each element is
@@ -206,59 +208,62 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAddAsync("myset", ["a", "b", "c"]);
-    /// bool[] results = await client.SetIsMemberAsync("myset", ["a", "z"]);  // results is [true, false]
+    /// var membership = await client.SetIsMemberAsync("myset", ["a", "z"]);
+    /// // membership[0] == true, membership[1] == false
     /// </code>
     /// </example>
     /// </remarks>
     Task<bool[]> SetIsMemberAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
-    /// Returns all members of the set stored at <paramref name="key"/>.
+    /// Returns all members of a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/smembers"/>
-    /// <param name="key">The key of the set.</param>
-    /// <returns>A set containing all members, or an empty set if the key does not exist.</returns>
+    /// <seealso href="https://valkey.io/commands/smembers/">Valkey commands – SMEMBERS</seealso>
+    /// <param name="key">The set key.</param>
+    /// <returns>A set containing all members, or an empty set if <paramref name="key"/> does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAddAsync("myset", ["a", "b", "c"]);
-    /// var members = await client.SetMembersAsync("myset");  // members is {"a", "b", "c"}
+    /// var members = await client.SetMembersAsync("myset");
+    /// // members contains {"a", "b", "c"}
     /// </code>
     /// </example>
     /// </remarks>
     Task<ISet<ValkeyValue>> SetMembersAsync(ValkeyKey key);
 
     /// <summary>
-    /// Returns the set cardinality (number of elements) of the set stored at <paramref name="key"/>.
+    /// Returns the number of elements in a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/scard"/>
-    /// <param name="key">The key of the set.</param>
-    /// <returns>The cardinality (number of elements) of the set, or 0 if the key does not exist.</returns>
+    /// <seealso href="https://valkey.io/commands/scard/">Valkey commands – SCARD</seealso>
+    /// <param name="key">The set key.</param>
+    /// <returns>The cardinality (number of elements) of the set, or <c>0</c> if <paramref name="key"/> does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAddAsync("myset", ["a", "b", "c"]);
-    /// long count = await client.SetCardAsync("myset");  // count is 3
+    /// var count = await client.SetCardAsync("myset");  // 3
     /// </code>
     /// </example>
     /// </remarks>
     Task<long> SetCardAsync(ValkeyKey key);
 
     /// <summary>
-    /// Removes and returns the specified number of random elements from the set stored at <paramref name="key"/>.
+    /// Removes and returns the specified number of random elements from a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/spop"/>
-    /// <param name="key">The key of the set.</param>
+    /// <seealso href="https://valkey.io/commands/spop/">Valkey commands – SPOP</seealso>
+    /// <param name="key">The set key.</param>
     /// <param name="count">
     /// The number of members to pop.
-    /// If count is larger than the set's cardinality, pops the entire set.
+    /// If <paramref name="count"/> is larger than the set's cardinality, the entire set is returned.
     /// </param>
-    /// <returns>A set of popped elements, or an empty set when the key does not exist.</returns>
+    /// <returns>A set of popped elements, or an empty set if <paramref name="key"/> does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAddAsync("myset", ["a", "b", "c"]);
-    /// var popped = await client.SetPopAsync("myset", 2);  // popped contains 2 random elements
+    /// var popped = await client.SetPopAsync("myset", 2);
+    /// // popped.Count == 2
     /// </code>
     /// </example>
     /// </remarks>

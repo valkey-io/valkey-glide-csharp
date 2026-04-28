@@ -14,7 +14,7 @@ public interface IConnectionManagementBaseCommands
     /// <summary>
     /// Changes the currently selected database.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/select"/>
+    /// <seealso href="https://valkey.io/commands/select/">Valkey commands – SELECT</seealso>
     /// <param name="index">The index of the database to select.</param>
     /// <remarks>
     /// Unlike StackExchange.Redis, GLIDE does not support per-database connections. Instead,

@@ -25,6 +25,7 @@ public partial interface IDatabaseAsync
     /// <param name="when">The condition under which the key should be set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="StringSetAsync(ValkeyKey, ValkeyValue, TimeSpan?, bool, When, CommandFlags)" path="/summary"/>
@@ -34,6 +35,7 @@ public partial interface IDatabaseAsync
     /// <param name="when">The condition under which the key should be set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry, When when, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="StringSetAsync(ValkeyKey, ValkeyValue, TimeSpan?, bool, When, CommandFlags)" path="/summary"/>
@@ -52,6 +54,7 @@ public partial interface IDatabaseAsync
     /// <param name="when">The condition under which the key should be set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The old value stored at key, or <see cref="ValkeyValue.Null"/> when key did not exist.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StringSetAndGetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="StringSetAndGetAsync(ValkeyKey, ValkeyValue, TimeSpan?, bool, When, CommandFlags)" path="/summary"/>
@@ -61,6 +64,7 @@ public partial interface IDatabaseAsync
     /// <param name="when">The condition under which the key should be set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The old value stored at key, or <see cref="ValkeyValue.Null"/> when key did not exist.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StringSetAndGetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry, When when, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.SetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})"/>
@@ -75,13 +79,11 @@ public partial interface IDatabaseAsync
     Task<ValkeyValue> StringGetSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.GetAsync(ValkeyKey)"/>
-    /// <param name="key">The key to retrieve from the database.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.GetAsync(IEnumerable{ValkeyKey})"/>
-    /// <param name="keys">A list of keys to retrieve values for.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
@@ -107,35 +109,26 @@ public partial interface IDatabaseAsync
     Task<long> StringAppendAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, long)"/>
-    /// <param name="key">The key of the string to decrement.</param>
-    /// <param name="value">The amount to decrement by. Defaults to 1.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StringDecrementAsync(ValkeyKey key, long value = 1, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, double)"/>
-    /// <param name="key">The key of the string to decrement.</param>
-    /// <param name="value">The amount to decrement by.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<double> StringDecrementAsync(ValkeyKey key, double value, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, long)"/>
-    /// <param name="key">The key of the string to increment.</param>
-    /// <param name="value">The amount to increment by. Defaults to 1.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StringIncrementAsync(ValkeyKey key, long value = 1, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, double)"/>
-    /// <param name="key">The key of the string to increment.</param>
-    /// <param name="value">The amount to increment by.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<double> StringIncrementAsync(ValkeyKey key, double value, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.GetDeleteAsync(ValkeyKey)"/>
-    /// <param name="key">The key to get and delete.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StringGetDeleteAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
@@ -160,7 +153,7 @@ public partial interface IDatabaseAsync
     /// Returns the longest common subsequence between the values at <paramref name="first"/> and <paramref name="second"/>,
     /// returning a string containing the common sequence.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lcs/">valkey.io</seealso>
+    /// <seealso href="https://valkey.io/commands/lcs/">Valkey commands – LCS</seealso>
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="first">The key that stores the first string.</param>
     /// <param name="second">The key that stores the second string.</param>
@@ -173,7 +166,7 @@ public partial interface IDatabaseAsync
     /// Returns the longest common subsequence between the values at <paramref name="first"/> and <paramref name="second"/>,
     /// returning the length of the common sequence.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lcs/">valkey.io</seealso>
+    /// <seealso href="https://valkey.io/commands/lcs/">Valkey commands – LCS</seealso>
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="first">The key that stores the first string.</param>
     /// <param name="second">The key that stores the second string.</param>
@@ -186,7 +179,7 @@ public partial interface IDatabaseAsync
     /// Returns the longest common subsequence between the values at <paramref name="first"/> and <paramref name="second"/>,
     /// returning a list of all common sequences with their positions and match information.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lcs/">valkey.io</seealso>
+    /// <seealso href="https://valkey.io/commands/lcs/">Valkey commands – LCS</seealso>
     /// <param name="first">The key that stores the first string.</param>
     /// <param name="second">The key that stores the second string.</param>
     /// <param name="minLength">Can be used to restrict the list of matches to the ones of a given minimum length. Defaults to 0.</param>

@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
@@ -7,19 +8,19 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetAddAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<bool> SetAddAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.SetAddAsync(key, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetAddAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.SetAddAsync(key, values));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetRemoveAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<bool> SetRemoveAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.SetRemoveAsync(key, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetRemoveAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.SetRemoveAsync(key, values));
 
@@ -35,11 +36,11 @@ public abstract partial class BaseClient
     public async Task<long> SetInterCardAsync(IEnumerable<ValkeyKey> keys, long limit = 0)
         => await Command(Request.SetInterCardAsync(keys, limit));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetPopAsync(ValkeyKey)"/>
     public async Task<ValkeyValue> SetPopAsync(ValkeyKey key)
         => await Command(Request.SetPopAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetPopAsync(ValkeyKey, long)"/>
     public async Task<ISet<ValkeyValue>> SetPopAsync(ValkeyKey key, long count)
         => await Command(Request.SetPopAsync(key, count));
 
@@ -67,11 +68,11 @@ public abstract partial class BaseClient
     public async Task<long> SetDiffStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys)
         => await Command(Request.SetDiffStoreAsync(destination, keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<bool> SetIsMemberAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.SetIsMemberAsync(key, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<bool[]> SetIsMemberAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.SetIsMemberAsync(key, values));
 

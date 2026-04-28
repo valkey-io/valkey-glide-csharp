@@ -96,26 +96,30 @@ are described inline:
 
 #### StackExchange.Redis Compatibility Layer
 
-The compatibility layer (`IDatabaseAsync.*`, `Database.*`) has additional conventions:
+The compatibility layer (`IDatabaseAsync.*`) documents methods using one of three approaches,
+chosen based on how closely the method maps to an existing shared or Valkey GLIDE method.
 
-##### Inheriting Documentation (`<inheritdoc>`)
+1. When the StackExchange.Redis method simply wraps a corresponding method (shared or Valkey
+GLIDE-only) and only adds `CommandFlags`, use `<inheritdoc cref="..."/>` to pull in the
+existing documentation. Add only the `<param>` for `flags` and the `<exception>` tag.
+2. When the StackExchange.Redis method has parameters that differ from the shared method,
+use `<inheritdoc cref="..." path="/summary"/>` to inherit only the summary, then redocument
+all parameters, `<returns>`, and `<exception>` inline.
+3. When `<inheritdoc>` is not suitable — the StackExchange.Redis method has a fundamentally
+different summary, a different return type, or no shared/Valkey GLIDE counterpart — write
+the documentation inline. Copy the wording from StackExchange.Redis with the following
+substitutions:
 
-Use `<inheritdoc cref="..." />` to inherit the summary from the corresponding `IBaseClient` method
-when the behavior is identical or nearly identical.
+    - Replace StackExchange.Redis types with Valkey GLIDE types (e.g. `RedisValue` with `ValkeyValue`).
+    - Replace `redis.io` links with equivalent `valkey.io` links in `seealso` blocks.
+    - Omit references to StackExchange.Redis-specific internals or implementation details.
 
-```xml
-/// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetOptions)" path="/summary"/>
-```
+##### Common rules for all approaches
 
-##### CommandFlags
-
-- All compatibility-layer methods accept a `CommandFlags` parameter.
-- Document it consistently:
-
-```xml
-/// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-/// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-```
+- The `flags` parameter is always documented as:
+  `Command flags (currently not supported by GLIDE).`
+- Always include the `<exception>` tag:
+  `Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.`
 
 ---
 
@@ -166,49 +170,44 @@ Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys);
 
 ### StackExchange.Redis Compatibility Layer Method
 
-```csharp
-/// <summary>
-/// Gets the value of a key.
-/// </summary>
-/// <seealso href="https://valkey.io/commands/get/">Valkey commands – GET</seealso>
-/// <param name="key">The key to retrieve.</param>
-/// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-/// <returns>The value of the key, or <see cref="ValkeyValue.Null"/> if it doesn't exist.
-/// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-/// </returns>
-/// <remarks>
-/// <example>
-/// <code>
-/// await client.StringSetAsync("key", "hello");
-/// var value = await client.StringGetAsync("key");  // "hello"
-/// </code>
-/// </example>
-/// <example>
-/// <code>
-/// var missing = await client.StringGetAsync("nonexistent");  // ValkeyValue.Null
-/// </code>
-/// </example>
-/// </remarks>
-Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+When the StackExchange.Redis method simply wraps a corresponding method (shared or Valkey GLIDE-only)
+without command flags, use `<inheritdoc>` to avoid duplication:
 
-/// <summary>
-/// Returns the values of keys.
-/// </summary>
-/// <seealso href="https://valkey.io/commands/mget/">Valkey commands – MGET</seealso>
-/// <param name="keys">The keys to retrieve.</param>
+```csharp
+/// <inheritdoc cref="IBaseClient.GetAsync(ValkeyKey)"/>
 /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-/// <returns>An array with the value for each key, or <see cref="ValkeyValue.Null"/> if it does not exist.
 /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-/// </returns>
-/// <remarks>
-/// <example>
-/// <code>
-/// await client.StringSetAsync("key", "hello");
-/// var values = await client.StringGetAsync(["key", "nonexistent"]);  // ["hello", ValkeyValue.Null]
-/// </code>
-/// </example>
-/// </remarks>
-Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
+Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 ```
 
----
+When the StackExchange.Redis method has some elements that differ from the shared method, use `path` filtering
+to exclude inherited params and redocument them:
+
+```csharp
+/// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetOptions)" path="/summary"/>
+/// <param name="key">The key to store.</param>
+/// <param name="value">The value to store.</param>
+/// <param name="expiry">The expiry to set. <see langword="null"/> means no expiry.</param>
+/// <param name="keepTtl">Whether to retain the existing TTL.</param>
+/// <param name="when">The condition under which the key should be set.</param>
+/// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+/// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
+/// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None);
+```
+
+When `<inheritdoc>` is not suitable (e.g. the StackExchange.Redis method has a different summary, return type,
+or no shared or Valkey GLIDE counterpart), write the documentation inline using StackExchange.Redis wording with
+type substitutions:
+
+```csharp
+/// <summary>
+/// Get the value of key. If the key does not exist the special value <see cref="ValkeyValue.Null"/> is returned.
+/// An error is returned if the value stored at key is not a string, because GET only handles string values.
+/// </summary>
+/// <param name="key">The key of the string.</param>
+/// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+/// <returns>The value of key, or <see cref="ValkeyValue.Null"/> when key does not exist.</returns>
+/// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+```

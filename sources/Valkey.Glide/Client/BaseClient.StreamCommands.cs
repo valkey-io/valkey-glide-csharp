@@ -1,11 +1,12 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-public partial class BaseClient
+public abstract partial class BaseClient
 {
     #region StreamAddAsync
 
@@ -84,7 +85,7 @@ public partial class BaseClient
     #endregion
     #region StreamDeleteAsync
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds)
         => Command(Request.StreamDeleteAsync(key, [.. messageIds]));
 

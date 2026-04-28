@@ -7,7 +7,7 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient
 {
     /// <summary>
-    /// Maps from the channel mode strings returned by GLIDE core to the corresponding PubSubChannelMode enum value
+    /// Maps from the channel mode strings returned by GLIDE core to the corresponding PubSubChannelMode enum value.
     /// </summary>
     private static readonly Dictionary<string, PubSubChannelMode> ChannelModeMap = new()
     {
@@ -25,138 +25,138 @@ public abstract partial class BaseClient
     #endregion
     #region SubscribeCommands
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task SubscribeAsync(ValkeyKey channel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SubscribeBlocking([channel], timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task SubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.SubscribeBlocking(channels.ToGlideStrings(), timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SubscribeLazyAsync(ValkeyKey)"/>
     public async Task SubscribeLazyAsync(ValkeyKey channel)
         => await Command(Request.Subscribe([channel]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SubscribeLazyAsync(IEnumerable{ValkeyKey})"/>
     public async Task SubscribeLazyAsync(IEnumerable<ValkeyKey> channels)
         => await Command(Request.Subscribe(channels.ToGlideStrings()));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PSubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task PSubscribeAsync(ValkeyKey pattern, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PSubscribeBlocking([pattern], timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PSubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task PSubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PSubscribeBlocking(patterns.ToGlideStrings(), timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PSubscribeLazyAsync(ValkeyKey)"/>
     public async Task PSubscribeLazyAsync(ValkeyKey pattern)
         => await Command(Request.PSubscribe([pattern]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PSubscribeLazyAsync(IEnumerable{ValkeyKey})"/>
     public async Task PSubscribeLazyAsync(IEnumerable<ValkeyKey> patterns)
         => await Command(Request.PSubscribe(patterns.ToGlideStrings()));
 
     #endregion
     #region UnsubscribeCommands
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.UnsubscribeAsync(TimeSpan)"/>
     public async Task UnsubscribeAsync(TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.UnsubscribeBlocking([], timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.UnsubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task UnsubscribeAsync(ValkeyKey channel, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.UnsubscribeBlocking([channel], timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.UnsubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task UnsubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.UnsubscribeBlocking(channels.ToGlideStrings(), timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.UnsubscribeLazyAsync()"/>
     public async Task UnsubscribeLazyAsync()
         => await Command(Request.Unsubscribe([]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.UnsubscribeLazyAsync(ValkeyKey)"/>
     public async Task UnsubscribeLazyAsync(ValkeyKey channel)
         => await Command(Request.Unsubscribe([channel]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.UnsubscribeLazyAsync(IEnumerable{ValkeyKey})"/>
     public async Task UnsubscribeLazyAsync(IEnumerable<ValkeyKey> channels)
         => await Command(Request.Unsubscribe(channels.ToGlideStrings()));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PUnsubscribeAsync(TimeSpan)"/>
     public async Task PUnsubscribeAsync(TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PUnsubscribeBlocking([], timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PUnsubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task PUnsubscribeAsync(ValkeyKey pattern, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PUnsubscribeBlocking([pattern], timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PUnsubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task PUnsubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout)
     {
         GuardClauses.ThrowIfTimeSpanNegative(timeout);
         _ = await Command(Request.PUnsubscribeBlocking(patterns.ToGlideStrings(), timeout));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PUnsubscribeLazyAsync()"/>
     public async Task PUnsubscribeLazyAsync()
         => await Command(Request.PUnsubscribe([]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PUnsubscribeLazyAsync(ValkeyKey)"/>
     public async Task PUnsubscribeLazyAsync(ValkeyKey pattern)
         => await Command(Request.PUnsubscribe([pattern]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PUnsubscribeLazyAsync(IEnumerable{ValkeyKey})"/>
     public async Task PUnsubscribeLazyAsync(IEnumerable<ValkeyKey> patterns)
         => await Command(Request.PUnsubscribe(patterns.ToGlideStrings()));
 
     #endregion
     #region IntrospectionCommands
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PubSubChannelsAsync()"/>
     public async Task<ISet<ValkeyKey>> PubSubChannelsAsync()
         => await Command(Request.PubSubChannels());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PubSubChannelsAsync(ValkeyKey)"/>
     public async Task<ISet<ValkeyKey>> PubSubChannelsAsync(ValkeyKey pattern)
         => await Command(Request.PubSubChannels(pattern));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PubSubNumSubAsync(ValkeyKey)"/>
     public async Task<long> PubSubNumSubAsync(ValkeyKey channel)
     {
         Dictionary<ValkeyKey, long> result = await Command(Request.PubSubNumSub([channel]));
         return result.GetValueOrDefault(channel, 0L);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PubSubNumSubAsync(IEnumerable{ValkeyKey})"/>
     public async Task<Dictionary<ValkeyKey, long>> PubSubNumSubAsync(IEnumerable<ValkeyKey> channels)
         => await Command(Request.PubSubNumSub(channels.ToGlideStrings()));
 

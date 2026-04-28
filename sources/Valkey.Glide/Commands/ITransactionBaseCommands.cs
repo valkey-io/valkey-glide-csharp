@@ -16,6 +16,7 @@ public interface ITransactionBaseCommands
     /// will only execute commands if the watched keys are not modified before execution of the
     /// transaction. Keys that do not exist are watched as if they were empty.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/watch/">Valkey commands – WATCH</seealso>
     /// <param name="keys">The keys to watch.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <remarks>
@@ -48,6 +49,5 @@ public interface ITransactionBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
-    /// <seealso href="https://valkey.io/commands/watch/"/>
     Task WatchAsync(IEnumerable<ValkeyKey> keys);
 }

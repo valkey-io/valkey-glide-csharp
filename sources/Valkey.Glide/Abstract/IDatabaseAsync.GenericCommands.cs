@@ -13,13 +13,7 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Removes the specified key from the database using the DEL command.
     /// </summary>
-    /// <remarks>
-    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
-    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(ValkeyKey, CommandFlags)"/> directly if you want
-    /// non-blocking deletion (UNLINK).
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/del"/>
-    /// <seealso cref="KeyUnlinkAsync(ValkeyKey, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/del/">Valkey commands – DEL</seealso>
     /// <param name="key">The key to delete.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was removed.</returns>
@@ -29,13 +23,7 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Removes the specified keys from the database using the DEL command.
     /// </summary>
-    /// <remarks>
-    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
-    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)"/> directly if you want
-    /// non-blocking deletion (UNLINK).
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/del"/>
-    /// <seealso cref="KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/del/">Valkey commands – DEL</seealso>
     /// <param name="keys">The keys to delete.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of keys that were removed.</returns>
@@ -45,13 +33,7 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Removes the specified key from the database using the UNLINK command (non-blocking).
     /// </summary>
-    /// <remarks>
-    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
-    /// making it non-blocking. This is the command used by StackExchange.Redis when
-    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/unlink"/>
-    /// <seealso cref="KeyDeleteAsync(ValkeyKey, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/unlink/">Valkey commands – UNLINK</seealso>
     /// <param name="key">The key to unlink.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was unlinked.</returns>
@@ -61,13 +43,7 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Removes the specified keys from the database using the UNLINK command (non-blocking).
     /// </summary>
-    /// <remarks>
-    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
-    /// making it non-blocking. This is the command used by StackExchange.Redis when
-    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/unlink"/>
-    /// <seealso cref="KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/unlink/">Valkey commands – UNLINK</seealso>
     /// <param name="keys">The keys to unlink.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of keys that were unlinked.</returns>
@@ -85,9 +61,9 @@ public partial interface IDatabaseAsync
     Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Set a timeout on key. After the timeout has expired, the key will automatically be deleted.
+    /// Sets a timeout on key. After the timeout has expired, the key will automatically be deleted.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/expire"/>
+    /// <seealso href="https://valkey.io/commands/expire/">Valkey commands – EXPIRE</seealso>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">Duration for the key to expire.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -97,12 +73,14 @@ public partial interface IDatabaseAsync
 
     /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)"/>
     /// <param name="when">The condition for setting the expiry.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets a timeout on key using an absolute timestamp.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/expireat"/>
+    /// <seealso href="https://valkey.io/commands/expireat/">Valkey commands – EXPIREAT</seealso>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">The timestamp for expiry.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -112,13 +90,14 @@ public partial interface IDatabaseAsync
 
     /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)"/>
     /// <param name="when">The condition for setting the expiry.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
-
 
     /// <summary>
     /// Returns the remaining time to live of a key that has a timeout.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pttl"/>
+    /// <seealso href="https://valkey.io/commands/pttl/">Valkey commands – PTTL</seealso>
     /// <param name="key">The key to return its timeout.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>TTL, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
@@ -164,9 +143,9 @@ public partial interface IDatabaseAsync
     Task<byte[]?> KeyDumpAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// Creates a key associated with a value obtained by deserializing the provided serialized value.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <seealso href="https://valkey.io/commands/restore/">Valkey commands – RESTORE</seealso>
     /// <param name="key">The key to create.</param>
     /// <param name="value">The serialized value to deserialize and assign to key.</param>
     /// <param name="expiry">The expiry to set as a duration.</param>
@@ -175,9 +154,9 @@ public partial interface IDatabaseAsync
     Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// Creates a key associated with a value obtained by deserializing the provided serialized value.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <seealso href="https://valkey.io/commands/restore/">Valkey commands – RESTORE</seealso>
     /// <param name="key">The key to create.</param>
     /// <param name="value">The serialized value to deserialize and assign to key.</param>
     /// <param name="expiry">The expiry to set as an absolute timestamp.</param>
@@ -223,7 +202,7 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Copies the value stored at the source to the destination key.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/copy"/>
+    /// <seealso href="https://valkey.io/commands/copy/">Valkey commands – COPY</seealso>
     /// <param name="sourceKey">The key to the source value.</param>
     /// <param name="destinationKey">The key where the value should be copied to.</param>
     /// <param name="destinationDatabase">The database ID to store destinationKey in. A value of -1 means the current database.</param>
@@ -241,7 +220,7 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Returns a random key from the database.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/randomkey"/>
+    /// <seealso href="https://valkey.io/commands/randomkey/">Valkey commands – RANDOMKEY</seealso>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A random key, or default when the database is empty.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
