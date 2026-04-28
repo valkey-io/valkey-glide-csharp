@@ -190,13 +190,14 @@ public class ClientSideCacheTests
 
     #region TTL Expiration
 
-    [Fact]
-    public async Task TTLExpiration_Standalone()
+    [Theory]
+    [MemberData(nameof(ClusterModes))]
+    public async Task TTLExpiration(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1024, TimeSpan.FromSeconds(2))
             .WithMetrics(true);
 
-        await using var client = await CreateStandaloneClientWithCache(cache);
+        await using var client = await CreateClientWithCache(cache, clusterMode);
 
         string key = $"ttl_{Guid.NewGuid()}";
 
@@ -233,14 +234,15 @@ public class ClientSideCacheTests
 
     #region Eviction Policy LRU
 
-    [Fact]
-    public async Task EvictionPolicyLRU_Standalone()
+    [Theory]
+    [MemberData(nameof(ClusterModes))]
+    public async Task EvictionPolicyLRU(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1, TimeSpan.FromMinutes(1)) // 1 KB to force eviction
             .WithEvictionPolicy(EvictionPolicy.LRU)
             .WithMetrics(true);
 
-        await using var client = await CreateStandaloneClientWithCache(cache);
+        await using var client = await CreateClientWithCache(cache, clusterMode);
 
         string prefix = Guid.NewGuid().ToString();
         string largeValue = new('x', 250); // ~250 bytes
@@ -282,14 +284,15 @@ public class ClientSideCacheTests
 
     #region Eviction Policy LFU
 
-    [Fact]
-    public async Task EvictionPolicyLFU_Standalone()
+    [Theory]
+    [MemberData(nameof(ClusterModes))]
+    public async Task EvictionPolicyLFU(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1, TimeSpan.FromMinutes(1)) // 1 KB to force eviction
             .WithEvictionPolicy(EvictionPolicy.LFU)
             .WithMetrics(true);
 
-        await using var client = await CreateStandaloneClientWithCache(cache);
+        await using var client = await CreateClientWithCache(cache, clusterMode);
 
         string prefix = Guid.NewGuid().ToString();
         string largeValue = new('x', 250);
