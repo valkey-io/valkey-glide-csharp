@@ -13,9 +13,8 @@ This document defines guidelines for documentation in the Valkey GLIDE C# client
 
 ### Language and Tone
 
-- Use clear, concise, imperative language.
+- Use clear, concise language.
 - Terminate sentences with a period.
-- Use present tense (e.g. "returns", "sets", "removes").
 - Write from the perspective of the member's purpose or actions.
 - Avoid redundant phrases like "This method..." or "Use this to...", or
   verbose phrases like "the key of the list" instead of "the list key".
@@ -46,6 +45,7 @@ are described inline:
    - Keep it concise — do not duplicate information already covered by other tags or
      the linked Valkey command reference.
    - For commands that map to multiple Valkey commands, describe the unified behavior.
+   - Use third-person present tense (e.g. "Returns", "Sets", "Removes").
 
 2. **`<seealso>`** — Required. One or more occurrences.
    - Link to the corresponding Valkey command documentation.
@@ -75,10 +75,10 @@ are described inline:
 7. **`<remarks>` / `<example>` / `<code>`** — Required. Zero or more `<example>` blocks inside a single `<remarks>`.
    - Examples must be self-contained and demonstrate the most common usage.
    - Examples should follow code format and style conventions from this project.
-   - Where helpful, examples may use `Console.WriteLine` with an `// Output:` comment to show expected results.
    - For methods with notable edge cases, include multiple `<example>` blocks.
    - Prefer `var` for variables types for more concise examples.
    - Use descriptive variables names to improve readabibility; avoid generic names like `result`.
+   - Where helpful, examples may use a comment or `Console.WriteLine` to show expected results.
 
 ```xml
 /// <summary>...</summary>
@@ -100,16 +100,8 @@ The compatibility layer (`IDatabaseAsync.*`, `Database.*`) has additional conven
 
 ##### Inheriting Documentation (`<inheritdoc>`)
 
-- Use `<inheritdoc cref="..." />` to inherit documentation from the corresponding `IBaseClient` method
-  when the behavior is identical or nearly identical.
-- Use XPath `path` selectors to inherit specific elements while overriding others:
-
-```xml
-/// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::returns)]"/>
-/// <returns><see langword="true"/> always (throws on failure).</returns>
-```
-
-- When inheriting only the summary:
+Use `<inheritdoc cref="..." />` to inherit the summary from the corresponding `IBaseClient` method
+when the behavior is identical or nearly identical.
 
 ```xml
 /// <inheritdoc cref="IBaseClient.GetSetAsync(ValkeyKey, ValkeyValue, SetOptions)" path="/summary"/>
@@ -129,44 +121,94 @@ The compatibility layer (`IDatabaseAsync.*`, `Database.*`) has additional conven
 
 ## Examples
 
-### GLIDE Interface Method (Full)
+### GLIDE Interface Method
 
 ```csharp
 /// <summary>
-/// Removes and returns the first element from a list.
+/// Gets the value of a key.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/lpop/">Valkey commands – LPOP</seealso>
-/// <param name="key">The list key.</param>
-/// <returns>The value of the first element, or <see cref="ValkeyValue.Null"/> if <paramref name="key" /> does not exist.</returns>
+/// <seealso href="https://valkey.io/commands/get/">Valkey commands – GET</seealso>
+/// <param name="key">The key to retrieve.</param>
+/// <returns>The value of the key, or <see cref="ValkeyValue.Null"/> if it doesn't exist.
+/// </returns>
 /// <remarks>
 /// <example>
 /// <code>
-/// await client.ListRightPushAsync("key", ["a", "b", "c"]);
-/// var value = await client.ListLeftPopAsync("key");
-/// Console.WriteLine(value); // Output: "a"
+/// await client.SetAsync("key", "hello");
+/// var value = await client.GetAsync("key");  // "hello"
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// var missing = await client.GetAsync("nonexistent");  // ValkeyValue.Null
 /// </code>
 /// </example>
 /// </remarks>
+Task<ValkeyValue> GetAsync(ValkeyKey key);
+
+/// <summary>
+/// Returns the values of keys.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/mget/">Valkey commands – MGET</seealso>
+/// <param name="keys">The keys to retrieve.</param>
+/// <returns>An array with the value for each key, or <see cref="ValkeyValue.Null"/> if it does not exist.
+/// </returns>
+/// <remarks>
+/// <example>
+/// <code>
+/// await client.SetAsync("key", "hello");
+/// var values = await client.GetAsync(["key", "nonexistent"]);  // ["hello", ValkeyValue.Null]
+/// </code>
+/// </example>
+/// </remarks>
+Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys);
 ```
 
 ### StackExchange.Redis Compatibility Layer Method
 
 ```csharp
-/// <inheritdoc cref="IBaseClient.GetAsync(ValkeyKey)"/>
-/// <param name="key">The key to retrieve from the database.</param>
+/// <summary>
+/// Gets the value of a key.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/get/">Valkey commands – GET</seealso>
+/// <param name="key">The key to retrieve.</param>
 /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+/// <returns>The value of the key, or <see cref="ValkeyValue.Null"/> if it doesn't exist.
 /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+/// </returns>
+/// <remarks>
+/// <example>
+/// <code>
+/// await client.StringSetAsync("key", "hello");
+/// var value = await client.StringGetAsync("key");  // "hello"
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// var missing = await client.StringGetAsync("nonexistent");  // ValkeyValue.Null
+/// </code>
+/// </example>
+/// </remarks>
 Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
-```
 
-### StackExchange.Redis Compatibility Layer Method (with partial inheritdoc)
-
-```csharp
-/// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::returns)]"/>
+/// <summary>
+/// Returns the values of keys.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/mget/">Valkey commands – MGET</seealso>
+/// <param name="keys">The keys to retrieve.</param>
 /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-/// <returns><see langword="true"/> always (throws on failure).</returns>
+/// <returns>An array with the value for each key, or <see cref="ValkeyValue.Null"/> if it does not exist.
 /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags);
+/// </returns>
+/// <remarks>
+/// <example>
+/// <code>
+/// await client.StringSetAsync("key", "hello");
+/// var values = await client.StringGetAsync(["key", "nonexistent"]);  // ["hello", ValkeyValue.Null]
+/// </code>
+/// </example>
+/// </remarks>
+Task<ValkeyValue[]> StringGetAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 ```
 
 ---
