@@ -746,7 +746,7 @@ pub(crate) unsafe fn create_cmd(
         // and process compression on args[1..] since args[0] is the command name
         let is_custom_command = matches!(info.request_type, RequestType::CustomCommand);
         let effective_command_type = if is_custom_command {
-            resolve_custom_command_type(&owned_args)
+            resolve_custom_command_type(&owned_args)?
         } else {
             info.request_type
         };
@@ -782,15 +782,15 @@ pub(crate) unsafe fn create_cmd(
 }
 
 /// Resolves the actual RequestType for a CustomCommand by parsing the command name from the first argument.
-fn resolve_custom_command_type(args: &[Vec<u8>]) -> RequestType {
+fn resolve_custom_command_type(args: &[Vec<u8>]) -> Result<RequestType, String> {
     if args.is_empty() {
-        return RequestType::CustomCommand;
+        return Err("CustomCommand requires at least one argument (the command name)".into());
     }
 
     let command_name = &args[0];
     let command_str = String::from_utf8_lossy(command_name);
 
-    RequestType::from_command_name(&command_str).unwrap_or(RequestType::CustomCommand)
+    Ok(RequestType::from_command_name(&command_str).unwrap_or(RequestType::CustomCommand))
 }
 
 /// Convert [`BatchInfo`] to a [`Pipeline`].
