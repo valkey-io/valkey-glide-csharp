@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Represents a single result row returned by <see cref="IVectorSearchCommands.FtAggregateAsync"/>.
+/// Represents a single result row returned by <see cref="IVectorSearchCommands.FtAggregateAsync(ValkeyKey, ValkeyValue)"/>.
 /// Each row is a flat set of field/value pairs produced by the aggregate pipeline.
 /// <para>
 /// Values are typed as <see cref="object"/> because the type depends on the pipeline stage:

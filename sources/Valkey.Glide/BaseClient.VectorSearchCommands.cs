@@ -9,11 +9,15 @@ namespace Valkey.Glide;
 public abstract partial class BaseClient : IVectorSearchCommands
 {
     /// <inheritdoc/>
-    public async Task FtCreateAsync(string indexName, IEnumerable<IField> schema, FtCreateOptions? options = null)
+    public async Task FtCreateAsync(ValkeyKey indexName, IEnumerable<IField> schema)
+        => await Command(Request.FtCreate(indexName, schema, null));
+
+    /// <inheritdoc/>
+    public async Task FtCreateAsync(ValkeyKey indexName, IEnumerable<IField> schema, FtCreateOptions options)
         => await Command(Request.FtCreate(indexName, schema, options));
 
     /// <inheritdoc/>
-    public async Task FtDropIndexAsync(string indexName)
+    public async Task FtDropIndexAsync(ValkeyKey indexName)
         => await Command(Request.FtDropIndex(indexName));
 
     /// <inheritdoc/>
@@ -21,19 +25,31 @@ public abstract partial class BaseClient : IVectorSearchCommands
         => await Command(Request.FtList());
 
     /// <inheritdoc/>
-    public async Task<FtSearchResult> FtSearchAsync(string indexName, string query, FtSearchOptions? options = null)
+    public async Task<FtSearchResult> FtSearchAsync(ValkeyKey indexName, ValkeyValue query)
+        => await Command(Request.FtSearch(indexName, query, null));
+
+    /// <inheritdoc/>
+    public async Task<FtSearchResult> FtSearchAsync(ValkeyKey indexName, ValkeyValue query, FtSearchOptions options)
         => await Command(Request.FtSearch(indexName, query, options));
 
     /// <inheritdoc/>
-    public async Task<FtAggregateRow[]> FtAggregateAsync(string indexName, string query, FtAggregateOptions? options = null)
+    public async Task<FtAggregateRow[]> FtAggregateAsync(ValkeyKey indexName, ValkeyValue query)
+        => await Command(Request.FtAggregate(indexName, query, null));
+
+    /// <inheritdoc/>
+    public async Task<FtAggregateRow[]> FtAggregateAsync(ValkeyKey indexName, ValkeyValue query, FtAggregateOptions options)
         => await Command(Request.FtAggregate(indexName, query, options));
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, object>> FtInfoAsync(string indexName, FtInfoOptions? options = null)
+    public async Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName)
+        => await Command(Request.FtInfo(indexName, null));
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName, FtInfoOptions options)
         => await Command(Request.FtInfo(indexName, options));
 
     /// <inheritdoc/>
-    public async Task FtAliasAddAsync(string alias, string indexName)
+    public async Task FtAliasAddAsync(string alias, ValkeyKey indexName)
         => await Command(Request.FtAliasAdd(alias, indexName));
 
     /// <inheritdoc/>
@@ -41,7 +57,7 @@ public abstract partial class BaseClient : IVectorSearchCommands
         => await Command(Request.FtAliasDel(alias));
 
     /// <inheritdoc/>
-    public async Task FtAliasUpdateAsync(string alias, string indexName)
+    public async Task FtAliasUpdateAsync(string alias, ValkeyKey indexName)
         => await Command(Request.FtAliasUpdate(alias, indexName));
 
     /// <inheritdoc/>

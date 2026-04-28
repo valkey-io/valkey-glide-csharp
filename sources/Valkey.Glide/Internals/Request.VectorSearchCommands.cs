@@ -8,7 +8,7 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
-    public static Cmd<string, string> FtCreate(string indexName, IEnumerable<IField> schema, FtCreateOptions? options)
+    public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<IField> schema, FtCreateOptions? options)
     {
         List<GlideString> args = [indexName];
         if (options is not null)
@@ -23,17 +23,17 @@ internal partial class Request
         return Simple<string>(RequestType.FtCreate, [.. args]);
     }
 
-    public static Cmd<string, string> FtDropIndex(string indexName)
+    public static Cmd<string, string> FtDropIndex(ValkeyKey indexName)
         => Simple<string>(RequestType.FtDropIndex, [(GlideString)indexName]);
 
     public static Cmd<object[], ISet<string>> FtList()
-        => new(RequestType.FtList, [], false, arr => arr.Cast<GlideString>().Select(gs => gs.ToString()).ToHashSet());
+        => new(RequestType.FtList, [], false, ToStringSet);
 
-    public static Cmd<object[], FtSearchResult> FtSearch(string indexName, string query, FtSearchOptions? options)
+    public static Cmd<object[], FtSearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, FtSearchOptions? options)
     {
         List<GlideString> args = [indexName, query];
         // Server ignores WITHSORTKEYS when NOCONTENT is set, so treat as plain search.
-        bool withSortKeys = options is { WithSortKeys: true, NoContent: false };
+        bool withSortKeys = options is { SortBy.WithSortKeys: true, NoContent: false };
         if (options is not null)
         {
             args.AddRange(options.ToArgs());
@@ -41,7 +41,7 @@ internal partial class Request
         return new(RequestType.FtSearch, [.. args], false, data => ParseFtSearchResponse(data, withSortKeys));
     }
 
-    public static Cmd<object[], FtAggregateRow[]> FtAggregate(string indexName, string query, FtAggregateOptions? options)
+    public static Cmd<object[], FtAggregateRow[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, FtAggregateOptions? options)
     {
         List<GlideString> args = [indexName, query];
         if (options is not null)
@@ -51,7 +51,7 @@ internal partial class Request
         return new(RequestType.FtAggregate, [.. args], false, ParseFtAggregateResponse);
     }
 
-    public static Cmd<object, Dictionary<string, object>> FtInfo(string indexName, FtInfoOptions? options)
+    public static Cmd<object, Dictionary<string, object>> FtInfo(ValkeyKey indexName, FtInfoOptions? options)
     {
         List<GlideString> args = [indexName];
         if (options is not null)
@@ -61,13 +61,13 @@ internal partial class Request
         return new(RequestType.FtInfo, [.. args], false, ParseFtInfoResponse);
     }
 
-    public static Cmd<string, string> FtAliasAdd(string alias, string indexName)
+    public static Cmd<string, string> FtAliasAdd(string alias, ValkeyKey indexName)
         => Simple<string>(RequestType.FtAliasAdd, [(GlideString)alias, (GlideString)indexName]);
 
     public static Cmd<string, string> FtAliasDel(string alias)
         => Simple<string>(RequestType.FtAliasDel, [(GlideString)alias]);
 
-    public static Cmd<string, string> FtAliasUpdate(string alias, string indexName)
+    public static Cmd<string, string> FtAliasUpdate(string alias, ValkeyKey indexName)
         => Simple<string>(RequestType.FtAliasUpdate, [(GlideString)alias, (GlideString)indexName]);
 
     public static Cmd<Dictionary<GlideString, object>, Dictionary<string, string>> FtAliasList()

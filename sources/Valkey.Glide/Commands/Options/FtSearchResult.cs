@@ -8,22 +8,31 @@ namespace Valkey.Glide.Commands.Options;
 /// returned by the server, which is significant when SORTBY is used.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public sealed class FtSearchDocument(string key, Dictionary<string, object?> fields, string sortKey = "")
+public sealed class FtSearchDocument
 {
-    /// <summary>The document key (e.g. the Valkey key name).</summary>
-    public string Key { get; } = key;
+    internal FtSearchDocument(string key, Dictionary<string, object?> fields, string sortKey = "")
+    {
+        Key = key;
+        Fields = fields;
+        SortKey = sortKey;
+    }
+
+    /// <summary>
+    /// The document key (e.g. the Valkey key name).
+    /// </summary>
+    public string Key { get; }
 
     /// <summary>
     /// The document's field data as key-value pairs.
     /// Empty when NOCONTENT is used.
     /// </summary>
-    public Dictionary<string, object?> Fields { get; } = fields;
+    public Dictionary<string, object?> Fields { get; }
 
     /// <summary>
     /// The sort key value returned when WITHSORTKEYS is used.
     /// Empty string when WITHSORTKEYS is not requested.
     /// </summary>
-    public string SortKey { get; } = sortKey;
+    public string SortKey { get; }
 }
 
 /// <summary>
@@ -32,14 +41,23 @@ public sealed class FtSearchDocument(string key, Dictionary<string, object?> fie
 /// iteration order, which matters when SORTBY is specified.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public sealed class FtSearchResult(long totalResults, List<FtSearchDocument> documents)
+public sealed class FtSearchResult
 {
-    /// <summary>The total number of documents matching the query.</summary>
-    public long TotalResults { get; } = totalResults;
+    internal FtSearchResult(long totalResults, List<FtSearchDocument> documents)
+    {
+        TotalResults = totalResults;
+        Documents = documents;
+    }
+
+    /// <summary>
+    /// The total number of documents matching the query across the entire index,
+    /// regardless of any LIMIT applied to this response.
+    /// </summary>
+    public long TotalResults { get; }
 
     /// <summary>
     /// An ordered list of search result documents.
     /// The list preserves the order returned by the server.
     /// </summary>
-    public List<FtSearchDocument> Documents { get; } = documents;
+    public List<FtSearchDocument> Documents { get; }
 }

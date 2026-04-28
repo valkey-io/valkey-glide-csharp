@@ -39,7 +39,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
     {
         await SkipIfModuleNotAvailable(client);
         await client.FtCreateAsync(Guid.NewGuid().ToString(),
-            [new VectorFieldHnsw("vec", DistanceMetric.L2, 2) { Alias = "VEC" }], null);
+            [new VectorFieldHnsw("vec", DistanceMetric.Euclidean, 2) { Alias = "VEC" }]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -48,8 +48,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
     {
         await SkipIfModuleNotAvailable(client);
         await client.FtCreateAsync(Guid.NewGuid().ToString(),
-            [new VectorFieldFlat("$.vec", DistanceMetric.L2, 6) { Alias = "VEC" }],
-            new FtCreateOptions { DataType = IndexDataType.JSON, Prefixes = ["json:"] });
+            [new VectorFieldFlat("$.vec", DistanceMetric.Euclidean, 6) { Alias = "VEC" }],
+            new FtCreateOptions { DataType = IndexDataType.Json, Prefixes = ["json:"] });
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -58,13 +58,13 @@ public class ValkeySearchCommandTests(TestConfiguration config)
     {
         await SkipIfModuleNotAvailable(client);
         await client.FtCreateAsync(Guid.NewGuid().ToString(),
-            [new VectorFieldHnsw("doc_embedding", DistanceMetric.COSINE, 1536)
+            [new VectorFieldHnsw("doc_embedding", DistanceMetric.Cosine, 1536)
             {
                 NumberOfEdges = 40,
                 VectorsExaminedOnConstruction = 250,
                 VectorsExaminedOnRuntime = 40,
             }],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = ["docs:"] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["docs:"] });
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -74,7 +74,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         await SkipIfModuleNotAvailable(client);
         await client.FtCreateAsync(Guid.NewGuid().ToString(),
             [new TextField("title"), new NumericField("published_at"), new TagField("category")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = ["blog:post:"] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["blog:post:"] });
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -83,9 +83,20 @@ public class ValkeySearchCommandTests(TestConfiguration config)
     {
         await SkipIfModuleNotAvailable(client);
         string idx = Guid.NewGuid().ToString();
-        await client.FtCreateAsync(idx, [new TextField("title")], null);
+        await client.FtCreateAsync(idx, [new TextField("title")]);
         _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtCreateAsync(idx, [new TextField("title")], null));
+            client.FtCreateAsync(idx, [new TextField("title")]));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task FtCreate_BinaryIndexName_ReturnsOk(BaseClient client)
+    {
+        await SkipIfModuleNotAvailable(client);
+        // Index names are Valkey keys and can contain arbitrary bytes.
+        byte[] binaryName = [0x01, 0x02, 0x03, (byte)'i', (byte)'d', (byte)'x'];
+        await client.FtCreateAsync((ValkeyKey)binaryName, [new TextField("title")]);
+        await client.FtDropIndexAsync((ValkeyKey)binaryName);
     }
 
     // ── FT.DROPINDEX + FT._LIST ───────────────────────────────────────────────
@@ -96,7 +107,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
     {
         await SkipIfModuleNotAvailable(client);
         string idx = Guid.NewGuid().ToString();
-        await client.FtCreateAsync(idx, [new VectorFieldHnsw("vec", DistanceMetric.L2, 2)], null);
+        await client.FtCreateAsync(idx, [new VectorFieldHnsw("vec", DistanceMetric.Euclidean, 2)]);
 
         ISet<string> before = await client.FtListAsync();
         Assert.Contains(idx, before);
@@ -120,6 +131,43 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task FtSearch_QueryAsValkeyValue_Works(BaseClient client)
+    {
+        await SkipIfModuleNotAvailable(client);
+        string prefix = "{" + Guid.NewGuid() + "}:";
+        string idx = prefix + "index";
+        await client.FtCreateAsync(idx,
+            [new TextField("title")],
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
+
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello")]);
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
+
+        // ValkeyValue wrapping a byte[] is accepted as a query argument.
+        FtSearchResult result = await client.FtSearchAsync(idx,
+            (ValkeyValue)System.Text.Encoding.UTF8.GetBytes("@title:hello"));
+        Assert.Equal(1L, result.TotalResults);
+
+        await client.FtDropIndexAsync(idx);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task FtSearch_InvalidBinaryQuery_Throws(BaseClient client)
+    {
+        await SkipIfModuleNotAvailable(client);
+        string idx = Guid.NewGuid().ToString();
+        await client.FtCreateAsync(idx, [new TextField("title")]);
+
+        // Raw non-ASCII bytes are not parseable as query syntax — the server must reject them.
+        _ = await Assert.ThrowsAnyAsync<Exception>(() =>
+            client.FtSearchAsync(idx, (ValkeyValue)new byte[] { 0x01, 0x02, 0x03 }));
+
+        await client.FtDropIndexAsync(idx);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FtSearch_VectorKnn_ReturnsBothDocs(BaseClient client)
     {
         await SkipIfModuleNotAvailable(client);
@@ -127,8 +175,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = prefix + "index";
 
         await client.FtCreateAsync(idx,
-            [new VectorFieldHnsw("vec", DistanceMetric.L2, 2) { Alias = "VEC" }],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            [new VectorFieldHnsw("vec", DistanceMetric.Euclidean, 2) { Alias = "VEC" }],
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         // Two 2D float32 vectors as raw bytes — matching the Go test exactly.
         // Go passes raw byte slices via string([]byte{...}); in C# we use byte[] → ValkeyValue
@@ -160,8 +208,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = prefix + "index";
 
         await client.FtCreateAsync(idx,
-            [new VectorFieldFlat("vec", DistanceMetric.L2, 2) { Alias = "VEC" }],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            [new VectorFieldFlat("vec", DistanceMetric.Euclidean, 2) { Alias = "VEC" }],
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         byte[] vec0 = new byte[8];
         _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
@@ -192,7 +240,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
     {
         await SkipIfModuleNotAvailable(client);
         _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtSearchAsync(Guid.NewGuid().ToString(), "*", null));
+            client.FtSearchAsync(Guid.NewGuid().ToString(), "*"));
     }
 
     // ── FT.SEARCH 1.2 options ─────────────────────────────────────────────────
@@ -207,7 +255,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new NumericField("price") { Sortable = true }, new TextField("name")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
         _ = await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
@@ -216,7 +264,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         // ASC — verify documents are returned in ascending price order
         FtSearchResult asc = await client.FtSearchAsync(idx, "@price:[1 +inf]",
-            new FtSearchOptions { SortBy = "price", SortByOrder = FtSearchSortOrder.ASC });
+            new FtSearchOptions { SortBy = new FtSearchSortBy("price", FtSearchSortOrder.Ascending) });
         Assert.Equal(3L, asc.TotalResults);
         Assert.Equal(3, asc.Documents.Count);
         var ascPrices = asc.Documents
@@ -226,7 +274,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         // DESC — verify documents are returned in descending price order
         FtSearchResult desc = await client.FtSearchAsync(idx, "@price:[1 +inf]",
-            new FtSearchOptions { SortBy = "price", SortByOrder = FtSearchSortOrder.DESC });
+            new FtSearchOptions { SortBy = new FtSearchSortBy("price", FtSearchSortOrder.Descending) });
         Assert.Equal(3L, desc.TotalResults);
         Assert.Equal(3, desc.Documents.Count);
         var descPrices = desc.Documents
@@ -247,7 +295,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         _ = await client.HashSetAsync(prefix + "2", [new HashEntry("title", "hello there")]);
@@ -284,7 +332,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TagField("tag"), new NumericField("score")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("tag", "test"), new HashEntry("score", "1")]);
         _ = await client.HashSetAsync(prefix + "2", [new HashEntry("tag", "test"), new HashEntry("score", "2")]);
@@ -293,16 +341,16 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         FtSearchResult r1 = await client.FtSearchAsync(idx, "@tag:{test}",
             new FtSearchOptions
             {
-                ShardScope = FtSearchShardScope.SOMESHARDS,
-                Consistency = FtSearchConsistencyMode.INCONSISTENT,
+                ShardScope = FtSearchShardScope.SomeShards,
+                Consistency = FtSearchConsistencyMode.Inconsistent,
             });
         Assert.Equal(2L, r1.TotalResults);
 
         FtSearchResult r2 = await client.FtSearchAsync(idx, "@tag:{test}",
             new FtSearchOptions
             {
-                ShardScope = FtSearchShardScope.ALLSHARDS,
-                Consistency = FtSearchConsistencyMode.CONSISTENT,
+                ShardScope = FtSearchShardScope.AllShards,
+                Consistency = FtSearchConsistencyMode.Consistent,
             });
         Assert.Equal(2L, r2.TotalResults);
 
@@ -325,7 +373,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
                 new NumericField("price"),
                 new TagField("condition") { Separator = "," },
             ],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         string[] conditions = ["new", "used", "used", "used", "used", "new", "new", "new", "new", "refurbished"];
         for (int i = 0; i < conditions.Length; i++)
@@ -347,7 +395,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
                 [
                     new FtAggregateGroupBy("@condition")
                     {
-                        Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "bicycles" }]
+                        Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "bicycles" }]
                     }
                 ]
             });
@@ -373,7 +421,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new NumericField("score"), new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("score", "10"), new HashEntry("title", "hello world")]);
         _ = await client.HashSetAsync(prefix + "2", [new HashEntry("score", "20"), new HashEntry("title", "hello there")]);
@@ -413,10 +461,10 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = Guid.NewGuid().ToString();
         await client.FtCreateAsync(idx,
             [
-                new VectorFieldHnsw("$.vec", DistanceMetric.COSINE, 42) { Alias = "VEC" },
+                new VectorFieldHnsw("$.vec", DistanceMetric.Cosine, 42) { Alias = "VEC" },
                 new TextField("$.name") { Alias = "name" },
             ],
-            new FtCreateOptions { DataType = IndexDataType.JSON, Prefixes = ["123"] });
+            new FtCreateOptions { DataType = IndexDataType.Json, Prefixes = ["123"] });
 
         Dictionary<string, object> info = await client.FtInfoAsync(idx);
         Assert.Equal(idx, info["index_name"]?.ToString());
@@ -443,12 +491,12 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         Dictionary<string, object> localInfo = await client.FtInfoAsync(idx,
-            new FtInfoOptions { Scope = FtInfoScope.LOCAL });
+            new FtInfoOptions { Scope = FtInfoScope.Local });
         Assert.Equal(idx, localInfo["index_name"]?.ToString());
         Assert.NotNull(localInfo["num_docs"]);
 
@@ -456,9 +504,9 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Dictionary<string, object> withFlags = await client.FtInfoAsync(idx,
             new FtInfoOptions
             {
-                Scope = FtInfoScope.LOCAL,
-                ShardScope = FtInfoShardScope.ALLSHARDS,
-                Consistency = FtInfoConsistencyMode.CONSISTENT,
+                Scope = FtInfoScope.Local,
+                ShardScope = FtInfoShardScope.AllShards,
+                Consistency = FtInfoConsistencyMode.Consistent,
             });
         Assert.Equal(idx, withFlags["index_name"]?.ToString());
 
@@ -466,9 +514,9 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Dictionary<string, object> withAltFlags = await client.FtInfoAsync(idx,
             new FtInfoOptions
             {
-                Scope = FtInfoScope.LOCAL,
-                ShardScope = FtInfoShardScope.SOMESHARDS,
-                Consistency = FtInfoConsistencyMode.INCONSISTENT,
+                Scope = FtInfoScope.Local,
+                ShardScope = FtInfoShardScope.SomeShards,
+                Consistency = FtInfoConsistencyMode.Inconsistent,
             });
         Assert.Equal(idx, withAltFlags["index_name"]?.ToString());
 
@@ -487,7 +535,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = Guid.NewGuid() + "-index";
 
         await client.FtCreateAsync(idx,
-            [new VectorFieldFlat("vec", DistanceMetric.L2, 2)], null);
+            [new VectorFieldFlat("vec", DistanceMetric.Euclidean, 2)]);
 
         // AliasAdd
         await client.FtAliasAddAsync(alias1, idx);
@@ -535,7 +583,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             [new TextField("title")],
             new FtCreateOptions
             {
-                DataType = IndexDataType.HASH,
+                DataType = IndexDataType.Hash,
                 Prefixes = [prefix],
                 Score = 1.0,
                 Language = "english",
@@ -554,12 +602,12 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], NoStopWords = true });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix], NoStopWords = true });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "the quick fox")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
-        FtSearchResult r = await client.FtSearchAsync(idx, "the", null);
+        FtSearchResult r = await client.FtSearchAsync(idx, "the");
         Assert.Equal(1L, r.TotalResults);
 
         await client.FtDropIndexAsync(idx);
@@ -579,20 +627,20 @@ public class ValkeySearchCommandTests(TestConfiguration config)
                 new NumericField("price") { Sortable = true },
                 new TagField("tag") { Separator = ",", Sortable = true },
             ],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello"), new HashEntry("price", "10"), new HashEntry("tag", "a,b")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         // sortable numeric field works with SORTBY
         FtSearchResult r0 = await client.FtSearchAsync(idx, "@price:[1 +inf]",
-            new FtSearchOptions { SortBy = "price", SortByOrder = FtSearchSortOrder.ASC });
+            new FtSearchOptions { SortBy = new FtSearchSortBy("price", FtSearchSortOrder.Ascending) });
         Assert.Equal(1L, r0.TotalResults);
 
         // nostem: "hello" matches, "hellos" does not
-        FtSearchResult r1 = await client.FtSearchAsync(idx, "hello", null);
+        FtSearchResult r1 = await client.FtSearchAsync(idx, "hello");
         Assert.Equal(1L, r1.TotalResults);
-        FtSearchResult r2 = await client.FtSearchAsync(idx, "hellos", null);
+        FtSearchResult r2 = await client.FtSearchAsync(idx, "hellos");
         Assert.Equal(0L, r2.TotalResults);
 
         await client.FtDropIndexAsync(idx);
@@ -610,7 +658,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new NumericField("price") { Sortable = true }, new TextField("name")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
         _ = await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
@@ -620,9 +668,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         FtSearchResult result = await client.FtSearchAsync(idx, "@price:[1 +inf]",
             new FtSearchOptions
             {
-                SortBy = "price",
-                SortByOrder = FtSearchSortOrder.ASC,
-                WithSortKeys = true,
+                SortBy = new FtSearchSortBy("price", FtSearchSortOrder.Ascending, withSortKeys: true),
             });
 
         Assert.Equal(3L, result.TotalResults);
@@ -659,8 +705,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = prefix + "index";
 
         await client.FtCreateAsync(idx,
-            [new VectorFieldFlat("vec", DistanceMetric.L2, 2) { Alias = "VEC" }],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            [new VectorFieldFlat("vec", DistanceMetric.Euclidean, 2) { Alias = "VEC" }],
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         byte[] vec0 = new byte[8];
         _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
@@ -691,18 +737,18 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], MinStemSize = 6 });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix], MinStemSize = 6 });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "running")]);
         _ = await client.HashSetAsync(prefix + "2", [new HashEntry("title", "plays")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         // "running" (7 chars) is stemmed to "run"
-        FtSearchResult r1 = await client.FtSearchAsync(idx, "run", null);
+        FtSearchResult r1 = await client.FtSearchAsync(idx, "run");
         Assert.Equal(1L, r1.TotalResults);
 
         // "plays" (5 chars) is NOT stemmed (< 6 chars)
-        FtSearchResult r2 = await client.FtSearchAsync(idx, "play", null);
+        FtSearchResult r2 = await client.FtSearchAsync(idx, "play");
         Assert.Equal(0L, r2.TotalResults);
 
         await client.FtDropIndexAsync(idx);
@@ -720,20 +766,20 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], StopWords = ["fox", "an"] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix], StopWords = ["fox", "an"] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "the quick fox")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         // Non-stop words are searchable
-        FtSearchResult r1 = await client.FtSearchAsync(idx, "the", null);
+        FtSearchResult r1 = await client.FtSearchAsync(idx, "the");
         Assert.Equal(1L, r1.TotalResults);
-        FtSearchResult r2 = await client.FtSearchAsync(idx, "quick", null);
+        FtSearchResult r2 = await client.FtSearchAsync(idx, "quick");
         Assert.Equal(1L, r2.TotalResults);
 
         // Custom stop word "fox" should be rejected
         _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtSearchAsync(idx, "fox", null));
+            client.FtSearchAsync(idx, "fox"));
 
         await client.FtDropIndexAsync(idx);
     }
@@ -750,13 +796,13 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix], NoOffsets = true });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix], Offsets = false });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         // Basic search works
-        FtSearchResult r = await client.FtSearchAsync(idx, "hello", null);
+        FtSearchResult r = await client.FtSearchAsync(idx, "hello");
         Assert.Equal(1L, r.TotalResults);
 
         // SLOP requires offsets — should fail
@@ -777,13 +823,13 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = prefix + "index";
 
         await client.FtCreateAsync(idx,
-            [new TextField("title") { WithSuffixTrie = true }],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            [new TextField("title") { SuffixTrie = true }],
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
-        FtSearchResult r = await client.FtSearchAsync(idx, "*orld", null);
+        FtSearchResult r = await client.FtSearchAsync(idx, "*orld");
         Assert.Equal(1L, r.TotalResults);
 
         await client.FtDropIndexAsync(idx);
@@ -798,14 +844,14 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = prefix + "index";
 
         await client.FtCreateAsync(idx,
-            [new TextField("title") { NoSuffixTrie = true }],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            [new TextField("title") { SuffixTrie = false }],
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtSearchAsync(idx, "*orld", null));
+            client.FtSearchAsync(idx, "*orld"));
 
         await client.FtDropIndexAsync(idx);
     }
@@ -826,7 +872,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             ],
             new FtCreateOptions
             {
-                DataType = IndexDataType.HASH,
+                DataType = IndexDataType.Hash,
                 Prefixes = ["author:details:", "book:details:"],
             });
     }
@@ -839,7 +885,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
     {
         await SkipIfModuleNotAvailable(client);
         _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtCreateAsync(Guid.NewGuid().ToString(), [], null));
+            client.FtCreateAsync(Guid.NewGuid().ToString(), []));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -849,7 +895,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         await SkipIfModuleNotAvailable(client);
         _ = await Assert.ThrowsAnyAsync<Exception>(() =>
             client.FtCreateAsync(Guid.NewGuid().ToString(),
-                [new TextField("name"), new TextField("name")], null));
+                [new TextField("name"), new TextField("name")]));
     }
 
     // ── FT.AGGREGATE movies (APPLY + GROUPBY + SORTBY) ───────────────────────
@@ -870,7 +916,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
                 new TagField("genre"),
                 new NumericField("votes"),
             ],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         (string title, string year, string genre, string rating, string votes)[] movies =
         [
@@ -904,14 +950,14 @@ public class ValkeySearchCommandTests(TestConfiguration config)
                     {
                         Reducers =
                         [
-                            new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "nb_of_movies" },
-                            new FtAggregateReducer(FtReducerFunction.SUM) { Args = ["@votes"], Name = "nb_of_votes" },
-                            new FtAggregateReducer(FtReducerFunction.AVG) { Args = ["@r_rating"], Name = "avg_rating" },
+                            new FtAggregateReducer(FtReducerFunction.Count) { Name = "nb_of_movies" },
+                            new FtAggregateReducer(FtReducerFunction.Sum) { Args = ["@votes"], Name = "nb_of_votes" },
+                            new FtAggregateReducer(FtReducerFunction.Avg) { Args = ["@r_rating"], Name = "avg_rating" },
                         ]
                     },
-                    new FtAggregateSortBy(
+                    new FtAggregateSortBy([
                         new FtAggregateSortProperty("@avg_rating", SortOrder.Descending),
-                        new FtAggregateSortProperty("@nb_of_votes", SortOrder.Descending)),
+                        new FtAggregateSortProperty("@nb_of_votes", SortOrder.Descending)]),
                 ]
             });
 
@@ -946,7 +992,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new TextField("title")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
@@ -954,7 +1000,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         try
         {
             Dictionary<string, object> primaryInfo = await client.FtInfoAsync(idx,
-                new FtInfoOptions { Scope = FtInfoScope.PRIMARY });
+                new FtInfoOptions { Scope = FtInfoScope.Primary });
             Assert.Equal(idx, primaryInfo["index_name"]?.ToString());
         }
         catch (Exception ex)
@@ -966,7 +1012,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         try
         {
             Dictionary<string, object> clusterInfo = await client.FtInfoAsync(idx,
-                new FtInfoOptions { Scope = FtInfoScope.CLUSTER });
+                new FtInfoOptions { Scope = FtInfoScope.Cluster });
             Assert.Equal(idx, clusterInfo["index_name"]?.ToString());
         }
         catch (Exception ex)
@@ -989,7 +1035,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         await client.FtCreateAsync(idx,
             [new NumericField("price") { Sortable = true }, new TextField("name")],
-            new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("price", "10"), new HashEntry("name", "Aardvark")]);
         _ = await client.HashSetAsync(prefix + "2", [new HashEntry("price", "20"), new HashEntry("name", "Mango")]);
@@ -1002,9 +1048,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         FtSearchResult result = await client.FtSearchAsync(idx, "@price:[1 +inf]",
             new FtSearchOptions
             {
-                SortBy = "price",
-                SortByOrder = FtSearchSortOrder.ASC,
-                WithSortKeys = true,
+                SortBy = new FtSearchSortBy("price", FtSearchSortOrder.Ascending, withSortKeys: true),
                 NoContent = true,
             });
 
@@ -1043,7 +1087,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
                 new NumericField("$.price") { Alias = "price" },
                 new TagField("$.condition") { Alias = "condition", Separator = "," },
             ],
-            new FtCreateOptions { DataType = IndexDataType.JSON, Prefixes = [prefix] });
+            new FtCreateOptions { DataType = IndexDataType.Json, Prefixes = [prefix] });
 
         // JSON.SET via CustomCommand — replace once JSON module commands are implemented
         string[] bicycles =
@@ -1095,7 +1139,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
                 [
                     new FtAggregateGroupBy("@condition")
                     {
-                        Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "bicycles" }]
+                        Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "bicycles" }]
                     }
                 ]
             });

@@ -17,18 +17,18 @@ public class VectorSearchCommandTests
             () => Assert.Equal(
                 ["FT.CREATE", "myindex", "ON", "HASH", "PREFIX", "1", "doc:", "SCHEMA", "title", "TEXT"],
                 Request.FtCreate("myindex", [new TextField("title")],
-                    new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = ["doc:"] }).GetArgs()),
+                    new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["doc:"] }).GetArgs()),
 
             // Create with multiple prefixes
             () => Assert.Equal(
                 ["FT.CREATE", "myindex", "ON", "JSON", "PREFIX", "2", "a:", "b:", "SCHEMA", "score", "NUMERIC"],
                 Request.FtCreate("myindex", [new NumericField("score")],
-                    new FtCreateOptions { DataType = IndexDataType.JSON, Prefixes = ["a:", "b:"] }).GetArgs()),
+                    new FtCreateOptions { DataType = IndexDataType.Json, Prefixes = ["a:", "b:"] }).GetArgs()),
 
             // TextField with all options
             () => Assert.Equal(
                 ["FT.CREATE", "idx", "SCHEMA", "title", "AS", "t", "TEXT", "NOSTEM", "WEIGHT", "2", "WITHSUFFIXTRIE", "SORTABLE"],
-                Request.FtCreate("idx", [new TextField("title") { Alias = "t", NoStem = true, Weight = 2.0, WithSuffixTrie = true, Sortable = true }], null).GetArgs()),
+                Request.FtCreate("idx", [new TextField("title") { Alias = "t", NoStem = true, Weight = 2.0, SuffixTrie = true, Sortable = true }], null).GetArgs()),
 
             // TagField with separator and case sensitive
             () => Assert.Equal(
@@ -43,17 +43,17 @@ public class VectorSearchCommandTests
             // VectorFieldFlat
             () => Assert.Equal(
                 ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "FLAT", "6", "DIM", "128", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT32"],
-                Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.L2, 128)], null).GetArgs()),
+                Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.Euclidean, 128)], null).GetArgs()),
 
             // VectorFieldFlat with InitialCap
             () => Assert.Equal(
                 ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "FLAT", "8", "DIM", "4", "DISTANCE_METRIC", "COSINE", "TYPE", "FLOAT32", "INITIAL_CAP", "100"],
-                Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.COSINE, 4) { InitialCap = 100 }], null).GetArgs()),
+                Request.FtCreate("idx", [new VectorFieldFlat("vec", DistanceMetric.Cosine, 4) { InitialCap = 100 }], null).GetArgs()),
 
             // VectorFieldHnsw with all options
             () => Assert.Equal(
                 ["FT.CREATE", "idx", "SCHEMA", "vec", "VECTOR", "HNSW", "14", "DIM", "256", "DISTANCE_METRIC", "IP", "TYPE", "FLOAT32", "INITIAL_CAP", "1000", "M", "32", "EF_CONSTRUCTION", "200", "EF_RUNTIME", "50"],
-                Request.FtCreate("idx", [new VectorFieldHnsw("vec", DistanceMetric.IP, 256)
+                Request.FtCreate("idx", [new VectorFieldHnsw("vec", DistanceMetric.InnerProduct, 256)
                 {
                     InitialCap = 1000, NumberOfEdges = 32,
                     VectorsExaminedOnConstruction = 200, VectorsExaminedOnRuntime = 50
@@ -66,15 +66,15 @@ public class VectorSearchCommandTests
                 [
                     new TextField("title"),
                     new NumericField("score"),
-                    new VectorFieldFlat("embedding", DistanceMetric.L2, 4),
+                    new VectorFieldFlat("embedding", DistanceMetric.Euclidean, 4),
                 ],
-                new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = ["doc:"] }).GetArgs()),
+                new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["doc:"] }).GetArgs()),
 
             // Create with SkipInitialScan, NoOffsets, NoStopWords
             () => Assert.Equal(
                 ["FT.CREATE", "idx", "SKIPINITIALSCAN", "NOOFFSETS", "NOSTOPWORDS", "SCHEMA", "f", "TEXT"],
                 Request.FtCreate("idx", [new TextField("f")],
-                    new FtCreateOptions { SkipInitialScan = true, NoOffsets = true, NoStopWords = true }).GetArgs()),
+                    new FtCreateOptions { SkipInitialScan = true, Offsets = false, NoStopWords = true }).GetArgs()),
 
             // Create with StopWords
             () => Assert.Equal(
@@ -104,19 +104,19 @@ public class VectorSearchCommandTests
             // Search with VERBATIM and LIMIT
             () => Assert.Equal(
                 ["FT.SEARCH", "idx", "*", "VERBATIM", "LIMIT", "0", "10"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { Verbatim = true, Limit = new FtSearchLimit(0, 10) }).GetArgs()),
+                Request.FtSearch("idx", "*", new FtSearchOptions { Verbatim = true, Limit = new FtLimit(0, 10) }).GetArgs()),
 
             // Search with SORTBY and order
             () => Assert.Equal(
                 ["FT.SEARCH", "idx", "*", "SORTBY", "score", "DESC"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = "score", SortByOrder = FtSearchSortOrder.DESC }).GetArgs()),
+                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", FtSearchSortOrder.Descending) }).GetArgs()),
 
             // Search with RETURN fields
             () => Assert.Equal(
                 ["FT.SEARCH", "idx", "*", "RETURN", "3", "title", "AS", "t"],
                 Request.FtSearch("idx", "*", new FtSearchOptions
                 {
-                    ReturnFields = [new FtSearchReturnField("title") { Alias = "t" }]
+                    ReturnFields = [new FtSearchReturnField("title", "t")]
                 }).GetArgs()),
 
             // Search with PARAMS
@@ -135,12 +135,12 @@ public class VectorSearchCommandTests
             // Search with WITHSORTKEYS
             () => Assert.Equal(
                 ["FT.SEARCH", "idx", "*", "SORTBY", "score", "WITHSORTKEYS"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = "score", WithSortKeys = true }).GetArgs()),
+                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", withSortKeys: true) }).GetArgs()),
 
             // Search with WITHSORTKEYS + NOCONTENT — WITHSORTKEYS is silently stripped
             () => Assert.Equal(
                 ["FT.SEARCH", "idx", "*", "NOCONTENT", "SORTBY", "score"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = "score", WithSortKeys = true, NoContent = true }).GetArgs()),
+                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", withSortKeys: true), NoContent = true }).GetArgs()),
 
             // Search with INORDER and SLOP
             () => Assert.Equal(
@@ -152,8 +152,8 @@ public class VectorSearchCommandTests
                 ["FT.SEARCH", "idx", "@tag:{test}", "SOMESHARDS", "INCONSISTENT"],
                 Request.FtSearch("idx", "@tag:{test}", new FtSearchOptions
                 {
-                    ShardScope = FtSearchShardScope.SOMESHARDS,
-                    Consistency = FtSearchConsistencyMode.INCONSISTENT
+                    ShardScope = FtSearchShardScope.SomeShards,
+                    Consistency = FtSearchConsistencyMode.Inconsistent
                 }).GetArgs()),
 
             // Search with ALLSHARDS and CONSISTENT
@@ -161,8 +161,8 @@ public class VectorSearchCommandTests
                 ["FT.SEARCH", "idx", "*", "ALLSHARDS", "CONSISTENT"],
                 Request.FtSearch("idx", "*", new FtSearchOptions
                 {
-                    ShardScope = FtSearchShardScope.ALLSHARDS,
-                    Consistency = FtSearchConsistencyMode.CONSISTENT
+                    ShardScope = FtSearchShardScope.AllShards,
+                    Consistency = FtSearchConsistencyMode.Consistent
                 }).GetArgs())
         );
 
@@ -192,7 +192,7 @@ public class VectorSearchCommandTests
                     [
                         new FtAggregateGroupBy("@color")
                         {
-                            Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" }]
+                            Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }]
                         }
                     ]
                 }).GetArgs()),
@@ -204,7 +204,7 @@ public class VectorSearchCommandTests
                 {
                     Clauses =
                     [
-                        new FtAggregateSortBy(new FtAggregateSortProperty("@score", SortOrder.Descending)) { Max = 10 }
+                        new FtAggregateSortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], 10)
                     ]
                 }).GetArgs()),
 
@@ -229,7 +229,7 @@ public class VectorSearchCommandTests
                 ["FT.AGGREGATE", "idx", "*", "LIMIT", "0", "10"],
                 Request.FtAggregate("idx", "*", new FtAggregateOptions
                 {
-                    Clauses = [new FtAggregateLimit { Offset = 0, Count = 10 }]
+                    Clauses = [new FtLimit(0, 10)]
                 }).GetArgs()),
 
             // Aggregate with VERBATIM, TIMEOUT, PARAMS, DIALECT
@@ -249,14 +249,14 @@ public class VectorSearchCommandTests
             () => Assert.Equal(["FT.INFO", "idx"], Request.FtInfo("idx", null).GetArgs()),
             () => Assert.Equal(
                 ["FT.INFO", "idx", "LOCAL"],
-                Request.FtInfo("idx", new FtInfoOptions { Scope = FtInfoScope.LOCAL }).GetArgs()),
+                Request.FtInfo("idx", new FtInfoOptions { Scope = FtInfoScope.Local }).GetArgs()),
             () => Assert.Equal(
                 ["FT.INFO", "idx", "CLUSTER", "ALLSHARDS", "CONSISTENT"],
                 Request.FtInfo("idx", new FtInfoOptions
                 {
-                    Scope = FtInfoScope.CLUSTER,
-                    ShardScope = FtInfoShardScope.ALLSHARDS,
-                    Consistency = FtInfoConsistencyMode.CONSISTENT
+                    Scope = FtInfoScope.Cluster,
+                    ShardScope = FtInfoShardScope.AllShards,
+                    Consistency = FtInfoConsistencyMode.Consistent
                 }).GetArgs())
         );
 
@@ -269,32 +269,55 @@ public class VectorSearchCommandTests
         );
 
     [Fact]
-    public void ValidateFtCreateOptionsValidation()
-    {
-        // WithOffsets and NoOffsets are mutually exclusive
-        _ = Assert.Throws<ArgumentException>(() =>
-            new FtCreateOptions { WithOffsets = true, NoOffsets = true }.ToArgs());
-
+    public void ValidateFtCreateOptionsValidation() =>
         // NoStopWords and StopWords are mutually exclusive
         _ = Assert.Throws<ArgumentException>(() =>
             new FtCreateOptions { NoStopWords = true, StopWords = ["the"] }.ToArgs());
 
-        // WithSuffixTrie and NoSuffixTrie are mutually exclusive
-        _ = Assert.Throws<ArgumentException>(() =>
-            new TextField("f") { WithSuffixTrie = true, NoSuffixTrie = true }.ToArgs());
+    [Fact]
+    public void ValidateFtCreateSuffixTrieEncoding()
+    {
+        // SuffixTrie = true  → WITHSUFFIXTRIE
+        Assert.Equal(
+            ["title", "TEXT", "WITHSUFFIXTRIE"],
+            new TextField("title") { SuffixTrie = true }.ToArgs());
+
+        // SuffixTrie = false → NOSUFFIXTRIE
+        Assert.Equal(
+            ["title", "TEXT", "NOSUFFIXTRIE"],
+            new TextField("title") { SuffixTrie = false }.ToArgs());
+
+        // SuffixTrie = null  → omitted
+        Assert.Equal(
+            ["title", "TEXT"],
+            new TextField("title") { SuffixTrie = null }.ToArgs());
     }
 
     [Fact]
-    public void ValidateFtSearchOptionsValidation()
+    public void ValidateFtCreateOffsetsEncoding()
     {
-        // WithSortKeys requires SortBy
-        _ = Assert.Throws<ArgumentException>(() =>
-            new FtSearchOptions { WithSortKeys = true }.ToArgs());
+        // Offsets = true  → WITHOFFSETS
+        Assert.Equal(
+            ["WITHOFFSETS"],
+            new FtCreateOptions { Offsets = true }.ToArgs());
 
-        // SortByOrder requires SortBy
-        _ = Assert.Throws<ArgumentException>(() =>
-            new FtSearchOptions { SortByOrder = FtSearchSortOrder.ASC }.ToArgs());
+        // Offsets = false → NOOFFSETS
+        Assert.Equal(
+            ["NOOFFSETS"],
+            new FtCreateOptions { Offsets = false }.ToArgs());
+
+        // Offsets = null  → omitted
+        Assert.Equal(
+            [],
+            new FtCreateOptions { Offsets = null }.ToArgs());
     }
+
+    [Fact]
+    public void ValidateFtSearchSortByFieldNameOnly() =>
+        // SortBy with field name only — no order, no sort keys
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "SORTBY", "price"],
+            Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("price") }).GetArgs());
 
     [Fact]
     public void ValidateFtAggregateOptionsValidation() =>
@@ -368,7 +391,7 @@ public class VectorSearchCommandTests
                 Request.FtAggregate("idx", "*",
                     new FtAggregateOptionsBuilder()
                         .WithClause(new FtAggregateFilter("@score > 5"))
-                        .WithClause(new FtAggregateLimit { Offset = 0, Count = 10 })
+                        .WithClause(new FtLimit(0, 10))
                         .Build()).GetArgs()),
 
             // WithClauses replaces any previously accumulated clauses
@@ -377,7 +400,7 @@ public class VectorSearchCommandTests
                 Request.FtAggregate("idx", "*",
                     new FtAggregateOptionsBuilder()
                         .WithClause(new FtAggregateFilter("@score > 5"))
-                        .WithClauses([new FtAggregateLimit { Offset = 0, Count = 5 }])
+                        .WithClauses([new FtLimit(0, 5)])
                         .Build()).GetArgs()),
 
             // Builder and object-initializer produce identical args for a full options set
@@ -390,7 +413,7 @@ public class VectorSearchCommandTests
                         .Timeout(TimeSpan.FromSeconds(3))
                         .WithParam(new FtAggregateParam("k", "v"))
                         .Dialect(2)
-                        .GroupBy(["@condition"], new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" })
+                        .GroupBy(["@condition"], new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" })
                         .SortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], max: 10)
                         .Filter("@score > 5")
                         .Limit(0, 10)
@@ -406,10 +429,10 @@ public class VectorSearchCommandTests
                         Dialect = 2,
                         Clauses =
                         [
-                            new FtAggregateGroupBy("@condition") { Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" }] },
-                            new FtAggregateSortBy(new FtAggregateSortProperty("@score", SortOrder.Descending)) { Max = 10 },
+                            new FtAggregateGroupBy("@condition") { Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }] },
+                            new FtAggregateSortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], 10),
                             new FtAggregateFilter("@score > 5"),
-                            new FtAggregateLimit { Offset = 0, Count = 10 },
+                            new FtLimit(0, 10),
                         ]
                     }).GetArgs();
 

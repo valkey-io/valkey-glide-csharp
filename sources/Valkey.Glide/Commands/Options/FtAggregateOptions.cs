@@ -12,52 +12,16 @@ public interface IFtAggregateClause
 }
 
 /// <summary>
-/// Limits the number of retained records in the pipeline.
-/// </summary>
-public sealed class FtAggregateLimit : IFtAggregateClause
-{
-    private const long NoOffset = 0L;
-    private const long NoCount = -1L;
-
-    /// <summary>Number of results to skip. Defaults to <c>0</c>.</summary>
-    public long Offset { get; init; } = NoOffset;
-    /// <summary>Number of results to return. Defaults to <c>-1</c> (return all).</summary>
-    public long Count { get; init; } = NoCount;
-
-    GlideString[] IFtAggregateClause.ToArgs() => [ValkeyLiterals.LIMIT, Offset.ToGlideString(), Count.ToGlideString()];
-}
-
-/// <summary>
 /// Filters results using a predicate expression applied post-query.
 /// </summary>
 public sealed class FtAggregateFilter(string expression) : IFtAggregateClause
 {
-    /// <summary>The filter expression.</summary>
+    /// <summary>
+    /// The filter expression.
+    /// </summary>
     public string Expression { get; } = expression;
 
     GlideString[] IFtAggregateClause.ToArgs() => [ValkeyLiterals.FILTER, Expression];
-}
-
-/// <summary>
-/// Reducer functions available for use in a <see cref="FtAggregateReducer"/>.
-/// </summary>
-/// <seealso href="https://valkey.io/commands/ft.aggregate/">valkey.io</seealso>
-public enum FtReducerFunction
-{
-    /// <summary>Counts the number of records in each group.</summary>
-    COUNT,
-    /// <summary>Counts the number of distinct values of an expression.</summary>
-    COUNT_DISTINCT,
-    /// <summary>Sums the numeric values of an expression.</summary>
-    SUM,
-    /// <summary>Returns the minimum numeric value of an expression.</summary>
-    MIN,
-    /// <summary>Returns the maximum numeric value of an expression.</summary>
-    MAX,
-    /// <summary>Returns the average numeric value of an expression.</summary>
-    AVG,
-    /// <summary>Returns the standard deviation of the numeric values of an expression.</summary>
-    STDDEV,
 }
 
 /// <summary>
@@ -65,16 +29,24 @@ public enum FtReducerFunction
 /// </summary>
 public sealed class FtAggregateReducer(FtReducerFunction function)
 {
-    /// <summary>The reduction function.</summary>
+    /// <summary>
+    /// The reduction function.
+    /// </summary>
     public FtReducerFunction Function { get; } = function;
-    /// <summary>Arguments for the reducer function.</summary>
+
+    /// <summary>
+    /// Arguments for the reducer function.
+    /// </summary>
     public string[] Args { get; init; } = [];
-    /// <summary>Optional user-defined output property name.</summary>
+
+    /// <summary>
+    /// Optional user-defined output property name.
+    /// </summary>
     public string? Name { get; init; }
 
     internal GlideString[] ToArgs()
     {
-        List<GlideString> args = [ValkeyLiterals.REDUCE, Function.ToString(), Args.Length.ToString()];
+        List<GlideString> args = [ValkeyLiterals.REDUCE, Function.ToLiteral(), Args.Length.ToString()];
         foreach (var a in Args)
         {
             args.Add(a);
@@ -95,9 +67,14 @@ public sealed class FtAggregateReducer(FtReducerFunction function)
 /// </summary>
 public sealed class FtAggregateGroupBy(params string[] properties) : IFtAggregateClause
 {
-    /// <summary>Fields to group by (e.g. "@condition").</summary>
+    /// <summary>
+    /// Fields to group by (e.g. "@condition").
+    /// </summary>
     public string[] Properties { get; } = properties;
-    /// <summary>Aggregate functions applied to each group.</summary>
+
+    /// <summary>
+    /// Aggregate functions applied to each group.
+    /// </summary>
     public FtAggregateReducer[] Reducers { get; init; } = [];
 
     GlideString[] IFtAggregateClause.ToArgs()
@@ -122,8 +99,11 @@ public sealed class FtAggregateGroupBy(params string[] properties) : IFtAggregat
 /// </summary>
 public sealed class FtAggregateSortProperty(string property, SortOrder order = SortOrder.Default)
 {
-    /// <summary>The property name.</summary>
+    /// <summary>
+    /// The property name.
+    /// </summary>
     public string Property { get; } = property;
+
     /// <summary>
     /// The sort direction.
     /// <see cref="SortOrder.Default"/> omits the direction and lets the server use its default (ascending).
@@ -134,12 +114,17 @@ public sealed class FtAggregateSortProperty(string property, SortOrder order = S
 /// <summary>
 /// Sorts the pipeline by a list of properties.
 /// </summary>
-public sealed class FtAggregateSortBy(params FtAggregateSortProperty[] properties) : IFtAggregateClause
+public sealed class FtAggregateSortBy(FtAggregateSortProperty[] properties, int? max = null) : IFtAggregateClause
 {
-    /// <summary>Fields and their sort directions.</summary>
+    /// <summary>
+    /// Fields and their sort directions.
+    /// </summary>
     public FtAggregateSortProperty[] Properties { get; } = properties;
-    /// <summary>Optimizes sorting by only sorting the n-largest elements.</summary>
-    public int? Max { get; init; }
+
+    /// <summary>
+    /// Optimizes sorting by only sorting the n-largest elements.
+    /// </summary>
+    public int? Max { get; } = max;
 
     GlideString[] IFtAggregateClause.ToArgs()
     {
@@ -170,9 +155,14 @@ public sealed class FtAggregateSortBy(params FtAggregateSortProperty[] propertie
 /// </summary>
 public sealed class FtAggregateApply(string expression, string name) : IFtAggregateClause
 {
-    /// <summary>The transformation expression.</summary>
+    /// <summary>
+    /// The transformation expression.
+    /// </summary>
     public string Expression { get; } = expression;
-    /// <summary>The output property name.</summary>
+
+    /// <summary>
+    /// The output property name.
+    /// </summary>
     public string Name { get; } = name;
 
     GlideString[] IFtAggregateClause.ToArgs() => [ValkeyLiterals.APPLY, Expression, ValkeyLiterals.AS, Name];
@@ -183,10 +173,15 @@ public sealed class FtAggregateApply(string expression, string name) : IFtAggreg
 /// </summary>
 public sealed class FtAggregateParam(string key, string value)
 {
-    /// <summary>The parameter key.</summary>
-    public string Key { get; } = key;
-    /// <summary>The parameter value.</summary>
-    public string Value { get; } = value;
+    /// <summary>
+    /// The parameter key.
+    /// </summary>
+    public string Key { get; init; } = key;
+
+    /// <summary>
+    /// The parameter value.
+    /// </summary>
+    public string Value { get; init; } = value;
 }
 
 /// <summary>
@@ -203,7 +198,7 @@ public sealed class FtAggregateParam(string key, string value)
 ///     .Verbatim()
 ///     .Timeout(TimeSpan.FromSeconds(3))
 ///     .Dialect(2)
-///     .GroupBy(["@condition"], new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" })
+///     .GroupBy(["@condition"], new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" })
 ///     .SortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], max: 10)
 ///     .Filter("@score > 5")
 ///     .Limit(0, 10)
@@ -218,10 +213,10 @@ public sealed class FtAggregateParam(string key, string value)
 ///     Dialect = 2,
 ///     Clauses =
 ///     [
-///         new FtAggregateGroupBy("@condition") { Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" }] },
-///         new FtAggregateSortBy(new FtAggregateSortProperty("@score", SortOrder.Descending)) { Max = 10 },
+///         new FtAggregateGroupBy("@condition") { Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }] },
+///         new FtAggregateSortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], 10),
 ///         new FtAggregateFilter("@score > 5"),
-///         new FtAggregateLimit { Offset = 0, Count = 10 },
+///         new FtLimit(0, 10),
 ///     ]
 /// };
 /// </code>
@@ -277,7 +272,9 @@ public sealed class FtAggregateOptionsBuilder
 
     // ── Scalar options ────────────────────────────────────────────────────────
 
-    /// <summary>Sets the module timeout.</summary>
+    /// <summary>
+    /// Sets the module timeout.
+    /// </summary>
     public FtAggregateOptionsBuilder Timeout(TimeSpan timeout)
     {
         _timeout = timeout;
@@ -303,28 +300,36 @@ public sealed class FtAggregateOptionsBuilder
         return this;
     }
 
-    /// <summary>Enables VERBATIM — disables stemming on term searches.</summary>
+    /// <summary>
+    /// Enables VERBATIM — disables stemming on term searches.
+    /// </summary>
     public FtAggregateOptionsBuilder Verbatim()
     {
         _verbatim = true;
         return this;
     }
 
-    /// <summary>Enables INORDER — requires proximity matching of terms to be in order.</summary>
+    /// <summary>
+    /// Enables INORDER — requires proximity matching of terms to be in order.
+    /// </summary>
     public FtAggregateOptionsBuilder InOrder()
     {
         _inOrder = true;
         return this;
     }
 
-    /// <summary>Sets the SLOP value for proximity matching.</summary>
+    /// <summary>
+    /// Sets the SLOP value for proximity matching.
+    /// </summary>
     public FtAggregateOptionsBuilder Slop(int slop)
     {
         _slop = slop;
         return this;
     }
 
-    /// <summary>Sets the query DIALECT version.</summary>
+    /// <summary>
+    /// Sets the query DIALECT version.
+    /// </summary>
     public FtAggregateOptionsBuilder Dialect(int dialect)
     {
         _dialect = dialect;
@@ -333,7 +338,9 @@ public sealed class FtAggregateOptionsBuilder
 
     // ── Pipeline clauses ──────────────────────────────────────────────────────
 
-    /// <summary>Appends a single pipeline clause.</summary>
+    /// <summary>
+    /// Appends a single pipeline clause.
+    /// </summary>
     public FtAggregateOptionsBuilder WithClause(IFtAggregateClause clause)
     {
         _clauses.Add(clause);
@@ -350,40 +357,50 @@ public sealed class FtAggregateOptionsBuilder
         return this;
     }
 
-    /// <summary>Appends a GROUPBY clause with the given properties and reducers.</summary>
+    /// <summary>
+    /// Appends a GROUPBY clause with the given properties and reducers.
+    /// </summary>
     public FtAggregateOptionsBuilder GroupBy(IEnumerable<string> properties, params FtAggregateReducer[] reducers)
     {
         _clauses.Add(new FtAggregateGroupBy([.. properties]) { Reducers = reducers });
         return this;
     }
 
-    /// <summary>Appends a SORTBY clause.</summary>
+    /// <summary>
+    /// Appends a SORTBY clause.
+    /// </summary>
     /// <param name="properties">Fields and their sort directions.</param>
     /// <param name="max">When set, optimizes sorting by only retaining the top <paramref name="max"/> elements.</param>
     public FtAggregateOptionsBuilder SortBy(IEnumerable<FtAggregateSortProperty> properties, int? max = null)
     {
-        _clauses.Add(new FtAggregateSortBy([.. properties]) { Max = max });
+        _clauses.Add(new FtAggregateSortBy([.. properties], max));
         return this;
     }
 
-    /// <summary>Appends a FILTER clause.</summary>
+    /// <summary>
+    /// Appends a FILTER clause.
+    /// </summary>
     public FtAggregateOptionsBuilder Filter(string expression)
     {
         _clauses.Add(new FtAggregateFilter(expression));
         return this;
     }
 
-    /// <summary>Appends an APPLY clause.</summary>
+    /// <summary>
+    /// Appends an APPLY clause.
+    /// </summary>
     public FtAggregateOptionsBuilder Apply(string expression, string name)
     {
         _clauses.Add(new FtAggregateApply(expression, name));
         return this;
     }
 
-    /// <summary>Appends a LIMIT clause.</summary>
+    /// <summary>
+    /// Appends a LIMIT clause.
+    /// </summary>
     public FtAggregateOptionsBuilder Limit(long offset, long count)
     {
-        _clauses.Add(new FtAggregateLimit { Offset = offset, Count = count });
+        _clauses.Add(new FtLimit(offset, count));
         return this;
     }
 
@@ -396,7 +413,9 @@ public sealed class FtAggregateOptionsBuilder
 
     // ── Build ─────────────────────────────────────────────────────────────────
 
-    /// <summary>Constructs the <see cref="FtAggregateOptions"/> from the accumulated state.</summary>
+    /// <summary>
+    /// Constructs the <see cref="FtAggregateOptions"/> from the accumulated state.
+    /// </summary>
     public FtAggregateOptions Build() => new()
     {
         LoadAll = _loadAll,
@@ -417,23 +436,49 @@ public sealed class FtAggregateOptionsBuilder
 /// <seealso href="https://valkey.io/commands/ft.aggregate/">valkey.io</seealso>
 public sealed class FtAggregateOptions
 {
-    /// <summary>Loads all fields declared in the index. Mutually exclusive with <see cref="LoadFields"/>.</summary>
+    /// <summary>
+    /// Loads all fields declared in the index. Mutually exclusive with <see cref="LoadFields"/>.
+    /// </summary>
     public bool LoadAll { get; init; }
-    /// <summary>Loads only the specified fields. Mutually exclusive with <see cref="LoadAll"/>.</summary>
+
+    /// <summary>
+    /// Loads only the specified fields. Mutually exclusive with <see cref="LoadAll"/>.
+    /// </summary>
     public IEnumerable<string>? LoadFields { get; init; }
-    /// <summary>Overrides the module timeout.</summary>
+
+    /// <summary>
+    /// Overrides the module timeout.
+    /// </summary>
     public TimeSpan? Timeout { get; init; }
-    /// <summary>Key/value pairs referenced from within the query expression.</summary>
+
+    /// <summary>
+    /// Key/value pairs referenced from within the query expression.
+    /// </summary>
     public IEnumerable<FtAggregateParam>? Params { get; init; }
-    /// <summary>Pipeline clauses (FILTER, LIMIT, GROUPBY, SORTBY, APPLY) applied in order.</summary>
+
+    /// <summary>
+    /// Pipeline clauses (FILTER, LIMIT, GROUPBY, SORTBY, APPLY) applied in order.
+    /// </summary>
     public IEnumerable<IFtAggregateClause>? Clauses { get; init; }
-    /// <summary>Disables stemming on term searches.</summary>
+
+    /// <summary>
+    /// Disables stemming on term searches.
+    /// </summary>
     public bool Verbatim { get; init; }
-    /// <summary>Requires proximity matching of terms to be in order.</summary>
+
+    /// <summary>
+    /// Requires proximity matching of terms to be in order.
+    /// </summary>
     public bool InOrder { get; init; }
-    /// <summary>Sets the slop value for proximity matching.</summary>
+
+    /// <summary>
+    /// Sets the slop value for proximity matching.
+    /// </summary>
     public int? Slop { get; init; }
-    /// <summary>Sets the query dialect version.</summary>
+
+    /// <summary>
+    /// Sets the query dialect version.
+    /// </summary>
     public int? Dialect { get; init; }
 
     /// <summary>

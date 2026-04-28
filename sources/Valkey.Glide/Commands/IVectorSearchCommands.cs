@@ -17,25 +17,39 @@ public interface IVectorSearchCommands
     /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
     /// <param name="indexName">The name of the index to create.</param>
     /// <param name="schema">Field definitions that describe the index schema. Must contain at least one field.</param>
-    /// <param name="options">Optional index creation parameters.</param>
-    /// <returns>A task that completes when the index is created.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FtCreateAsync("my-index",
+    ///     [new TextField("title"), new NumericField("published_at"), new TagField("category")]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FtCreateAsync(ValkeyKey indexName, IEnumerable<IField> schema);
+
+    /// <summary>
+    /// Creates a new search index with additional options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
+    /// <param name="indexName">The name of the index to create.</param>
+    /// <param name="schema">Field definitions that describe the index schema. Must contain at least one field.</param>
+    /// <param name="options">Index creation parameters.</param>
     /// <remarks>
     /// <example>
     /// <code>
     /// await client.FtCreateAsync("my-index",
     ///     [new TextField("title"), new NumericField("published_at"), new TagField("category")],
-    ///     new FtCreateOptions { DataType = IndexDataType.HASH, Prefixes = ["blog:post:"] });
+    ///     new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = ["blog:post:"] });
     /// </code>
     /// </example>
     /// </remarks>
-    Task FtCreateAsync(string indexName, IEnumerable<IField> schema, FtCreateOptions? options = null);
+    Task FtCreateAsync(ValkeyKey indexName, IEnumerable<IField> schema, FtCreateOptions options);
 
     /// <summary>
     /// Drops an existing search index.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.dropindex/">valkey.io</seealso>
     /// <param name="indexName">The name of the index to drop.</param>
-    /// <returns>A task that completes when the index is dropped.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -43,7 +57,7 @@ public interface IVectorSearchCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FtDropIndexAsync(string indexName);
+    Task FtDropIndexAsync(ValkeyKey indexName);
 
     /// <summary>
     /// Returns a list of all existing index names.
@@ -67,7 +81,24 @@ public interface IVectorSearchCommands
     /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
     /// <param name="indexName">The name of the index to search.</param>
     /// <param name="query">The search query string.</param>
-    /// <param name="options">Optional search parameters.</param>
+    /// <returns>The search result containing total count and document data.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// FtSearchResult result = await client.FtSearchAsync("my-index", "*");
+    /// Console.WriteLine(result.TotalResults);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<FtSearchResult> FtSearchAsync(ValkeyKey indexName, ValkeyValue query);
+
+    /// <summary>
+    /// Executes a search query against an index with additional options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
+    /// <param name="indexName">The name of the index to search.</param>
+    /// <param name="query">The search query string.</param>
+    /// <param name="options">Search parameters.</param>
     /// <returns>The search result containing total count and document data.</returns>
     /// <remarks>
     /// <example>
@@ -83,7 +114,7 @@ public interface IVectorSearchCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<FtSearchResult> FtSearchAsync(string indexName, string query, FtSearchOptions? options = null);
+    Task<FtSearchResult> FtSearchAsync(ValkeyKey indexName, ValkeyValue query, FtSearchOptions options);
 
     /// <summary>
     /// Runs an aggregation pipeline against an index.
@@ -91,7 +122,27 @@ public interface IVectorSearchCommands
     /// <seealso href="https://valkey.io/commands/ft.aggregate/">valkey.io</seealso>
     /// <param name="indexName">The name of the index to aggregate.</param>
     /// <param name="query">The filter query string.</param>
-    /// <param name="options">Optional aggregation parameters.</param>
+    /// <returns>
+    /// An array of result rows. Each row's field values are typed as <see cref="object"/>:
+    /// fields loaded from documents are <see cref="string"/>, while reducer outputs
+    /// (e.g. COUNT, AVG, SUM) are <see cref="double"/>.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// FtAggregateRow[] rows = await client.FtAggregateAsync("my-index", "*");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<FtAggregateRow[]> FtAggregateAsync(ValkeyKey indexName, ValkeyValue query);
+
+    /// <summary>
+    /// Runs an aggregation pipeline against an index with additional options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">valkey.io</seealso>
+    /// <param name="indexName">The name of the index to aggregate.</param>
+    /// <param name="query">The filter query string.</param>
+    /// <param name="options">Aggregation parameters.</param>
     /// <returns>
     /// An array of result rows. Each row's field values are typed as <see cref="object"/>:
     /// fields loaded from documents are <see cref="string"/>, while reducer outputs
@@ -109,7 +160,7 @@ public interface IVectorSearchCommands
     ///         [
     ///             new FtAggregateGroupBy("@condition")
     ///             {
-    ///                 Reducers = [new FtAggregateReducer(FtReducerFunction.COUNT) { Name = "count" }]
+    ///                 Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }]
     ///             }
     ///         ]
     ///     });
@@ -118,38 +169,49 @@ public interface IVectorSearchCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task<FtAggregateRow[]> FtAggregateAsync(string indexName, string query, FtAggregateOptions? options = null);
+    Task<FtAggregateRow[]> FtAggregateAsync(ValkeyKey indexName, ValkeyValue query, FtAggregateOptions options);
 
     /// <summary>
     /// Returns information and statistics about an index.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.info/">valkey.io</seealso>
     /// <param name="indexName">The name of the index to inspect.</param>
-    /// <param name="options">Optional info parameters.</param>
     /// <returns>A dictionary of field names to their values describing the index.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, object&gt; localInfo = await client.FtInfoAsync("my-index",
-    ///     new FtInfoOptions
-    ///     {
-    ///         Scope = FtInfoScope.LOCAL,
-    ///         ShardScope = FtInfoShardScope.ALLSHARDS,
-    ///         Consistency = FtInfoConsistencyMode.CONSISTENT,
-    ///     });
-    /// Console.WriteLine(localInfo["index_name"]); // Output: my-index
+    /// Dictionary&lt;string, object&gt; info = await client.FtInfoAsync("my-index");
+    /// Console.WriteLine(info["index_name"]); // Output: my-index
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, object>> FtInfoAsync(string indexName, FtInfoOptions? options = null);
+    Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName);
+
+    /// <summary>
+    /// Returns information and statistics about an index with additional options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.info/">valkey.io</seealso>
+    /// <param name="indexName">The name of the index to inspect.</param>
+    /// <param name="options">Info parameters.</param>
+    /// <returns>A dictionary of field names to their values describing the index.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// Dictionary&lt;string, object&gt; info = await client.FtInfoAsync("my-index",
+    ///     new FtInfoOptions { Scope = FtInfoScope.Local });
+    /// Console.WriteLine(info["index_name"]); // Output: my-index
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName, FtInfoOptions options);
 
     /// <summary>
     /// Adds an alias to an existing index.
+    /// TODO: Once valkey-search 1.3 commands come out, verify there's support for byte arrays as aliases (ValkeyKey)
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.aliasadd/">valkey.io</seealso>
     /// <param name="alias">The alias name to add.</param>
     /// <param name="indexName">The index to associate the alias with.</param>
-    /// <returns>A task that completes when the alias is added.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -157,14 +219,13 @@ public interface IVectorSearchCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FtAliasAddAsync(string alias, string indexName);
+    Task FtAliasAddAsync(string alias, ValkeyKey indexName);
 
     /// <summary>
     /// Removes an alias from an index.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.aliasdel/">valkey.io</seealso>
     /// <param name="alias">The alias name to remove.</param>
-    /// <returns>A task that completes when the alias is removed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -180,7 +241,6 @@ public interface IVectorSearchCommands
     /// <seealso href="https://valkey.io/commands/ft.aliasupdate/">valkey.io</seealso>
     /// <param name="alias">The alias name to update.</param>
     /// <param name="indexName">The new index to associate the alias with.</param>
-    /// <returns>A task that completes when the alias is updated.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -188,7 +248,7 @@ public interface IVectorSearchCommands
     /// </code>
     /// </example>
     /// </remarks>
-    Task FtAliasUpdateAsync(string alias, string indexName);
+    Task FtAliasUpdateAsync(string alias, ValkeyKey indexName);
 
     /// <summary>
     /// Returns a map of all aliases to their associated index names.

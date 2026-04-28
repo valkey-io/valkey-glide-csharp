@@ -13,8 +13,8 @@ public class TestConfiguration : IDisposable
 {
     // Default test timeout
     // #184: Increase timeout on Windows to accound for WSL overhead.
-    public readonly static int DEFAULT_TIMEOUT_MS = OperatingSystem.IsWindows() ? 120_000 : 60_000;
-    public readonly static TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
+    public static readonly int DEFAULT_TIMEOUT_MS = OperatingSystem.IsWindows() ? 120_000 : 60_000;
+    public static readonly TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);
 
     // Addresses for the standalone and cluster servers.
     public static IList<Address> STANDALONE_ADDRESSES = [];
@@ -28,7 +28,7 @@ public class TestConfiguration : IDisposable
     private static readonly string StandaloneEndpointsEnvVar = "standalone-endpoints";
     private static readonly string ClusterEndpointsEnvVar = "cluster-endpoints";
 
-    private static readonly object LockObject = new object();
+    private static readonly object LockObject = new();
     private const string DefaultServerGroupName = "cluster";
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
@@ -319,10 +319,14 @@ public class TestConfiguration : IDisposable
             _startedServer = false;
 
             if (standaloneEndpoints is not null)
+            {
                 STANDALONE_ADDRESSES = Address.FromHosts(standaloneEndpoints);
+            }
 
             if (clusterEndpoints is not null)
+            {
                 CLUSTER_ADDRESSES = Address.FromHosts(clusterEndpoints);
+            }
         }
         else
         {
