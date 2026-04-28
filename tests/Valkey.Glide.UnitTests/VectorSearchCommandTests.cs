@@ -101,183 +101,211 @@ public class VectorSearchCommandTests
     public void ValidateFtListArgs() => Assert.Equal(["FT._LIST"], Request.FtList().GetArgs());
 
     [Fact]
-    public void ValidateFtSearchArgs() => Assert.Multiple(
-            // Basic search
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*"],
-                Request.FtSearch("idx", "*", null).GetArgs()),
-
-            // Search with NOCONTENT
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "@title:hello", "NOCONTENT"],
-                Request.FtSearch("idx", "@title:hello", new FtSearchOptions { NoContent = true }).GetArgs()),
-
-            // Search with VERBATIM and LIMIT
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "VERBATIM", "LIMIT", "0", "10"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { Verbatim = true, Limit = new FtLimit(0, 10) }).GetArgs()),
-
-            // Search with SORTBY and order
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "SORTBY", "score", "DESC"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", FtSearchSortOrder.Descending) }).GetArgs()),
-
-            // Search with RETURN fields
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "RETURN", "3", "title", "AS", "t"],
-                Request.FtSearch("idx", "*", new FtSearchOptions
-                {
-                    ReturnFields = [new FtSearchReturnField("title", "t")]
-                }).GetArgs()),
-
-            // Search with PARAMS
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "PARAMS", "2", "k1", "v1"],
-                Request.FtSearch("idx", "*", new FtSearchOptions
-                {
-                    Params = [new FtSearchParam("k1", "v1")]
-                }).GetArgs()),
-
-            // Search with TIMEOUT and DIALECT
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "TIMEOUT", "5000", "DIALECT", "2"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { Timeout = TimeSpan.FromMilliseconds(5000), Dialect = 2 }).GetArgs()),
-
-            // Search with WITHSORTKEYS
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "SORTBY", "score", "WITHSORTKEYS"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", withSortKeys: true) }).GetArgs()),
-
-            // Search with WITHSORTKEYS + NOCONTENT — WITHSORTKEYS is silently stripped
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "NOCONTENT", "SORTBY", "score"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", withSortKeys: true), NoContent = true }).GetArgs()),
-
-            // Search with INORDER and SLOP
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "INORDER", "SLOP", "2"],
-                Request.FtSearch("idx", "*", new FtSearchOptions { InOrder = true, Slop = 2 }).GetArgs()),
-
-            // Search with SHARDSCOPE and CONSISTENCY
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "@tag:{test}", "SOMESHARDS", "INCONSISTENT"],
-                Request.FtSearch("idx", "@tag:{test}", new FtSearchOptions
-                {
-                    ShardScope = FtSearchShardScope.SomeShards,
-                    Consistency = FtSearchConsistencyMode.Inconsistent
-                }).GetArgs()),
-
-            // Search with ALLSHARDS and CONSISTENT
-            () => Assert.Equal(
-                ["FT.SEARCH", "idx", "*", "ALLSHARDS", "CONSISTENT"],
-                Request.FtSearch("idx", "*", new FtSearchOptions
-                {
-                    ShardScope = FtSearchShardScope.AllShards,
-                    Consistency = FtSearchConsistencyMode.Consistent
-                }).GetArgs())
-        );
+    public void ValidateFtSearchArgs_Basic() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*"],
+            Request.FtSearch("idx", "*", null).GetArgs());
 
     [Fact]
-    public void ValidateFtAggregateArgs() => Assert.Multiple(
-            // Basic aggregate
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*"],
-                Request.FtAggregate("idx", "*", null).GetArgs()),
-
-            // Aggregate with LOAD *
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions { LoadAll = true }).GetArgs()),
-
-            // Aggregate with LOAD fields
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@f1", "@f2"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions { LoadFields = ["@f1", "@f2"] }).GetArgs()),
-
-            // Aggregate with GROUPBY and REDUCE
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "GROUPBY", "1", "@color", "REDUCE", "COUNT", "0", "AS", "count"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions
-                {
-                    Clauses =
-                    [
-                        new FtAggregateGroupBy("@color")
-                        {
-                            Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }]
-                        }
-                    ]
-                }).GetArgs()),
-
-            // Aggregate with SORTBY
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "SORTBY", "2", "@score", "DESC", "MAX", "10"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions
-                {
-                    Clauses =
-                    [
-                        new FtAggregateSortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], 10)
-                    ]
-                }).GetArgs()),
-
-            // Aggregate with FILTER
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "FILTER", "@score > 5"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions
-                {
-                    Clauses = [new FtAggregateFilter("@score > 5")]
-                }).GetArgs()),
-
-            // Aggregate with APPLY
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "APPLY", "@score * 2", "AS", "doubled"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions
-                {
-                    Clauses = [new FtAggregateApply("@score * 2", "doubled")]
-                }).GetArgs()),
-
-            // Aggregate with LIMIT
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LIMIT", "0", "10"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions
-                {
-                    Clauses = [new FtLimit(0, 10)]
-                }).GetArgs()),
-
-            // Aggregate with VERBATIM, TIMEOUT, PARAMS, DIALECT
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "VERBATIM", "TIMEOUT", "3000", "PARAMS", "2", "k", "v", "DIALECT", "2"],
-                Request.FtAggregate("idx", "*", new FtAggregateOptions
-                {
-                    Verbatim = true,
-                    Timeout = TimeSpan.FromMilliseconds(3000),
-                    Params = [new FtAggregateParam("k", "v")],
-                    Dialect = 2
-                }).GetArgs())
-        );
+    public void ValidateFtSearchArgs_NoContent() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "@title:hello", "NOCONTENT"],
+            Request.FtSearch("idx", "@title:hello", new FtSearchOptions { NoContent = true }).GetArgs());
 
     [Fact]
-    public void ValidateFtInfoArgs() => Assert.Multiple(
-            () => Assert.Equal(["FT.INFO", "idx"], Request.FtInfo("idx", null).GetArgs()),
-            () => Assert.Equal(
-                ["FT.INFO", "idx", "LOCAL"],
-                Request.FtInfo("idx", new FtInfoOptions { Scope = FtInfoScope.Local }).GetArgs()),
-            () => Assert.Equal(
-                ["FT.INFO", "idx", "CLUSTER", "ALLSHARDS", "CONSISTENT"],
-                Request.FtInfo("idx", new FtInfoOptions
-                {
-                    Scope = FtInfoScope.Cluster,
-                    ShardScope = FtInfoShardScope.AllShards,
-                    Consistency = FtInfoConsistencyMode.Consistent
-                }).GetArgs())
-        );
+    public void ValidateFtSearchArgs_VerbatimAndLimit() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "VERBATIM", "LIMIT", "0", "10"],
+            Request.FtSearch("idx", "*", new FtSearchOptions { Verbatim = true, Limit = new FtLimit(0, 10) }).GetArgs());
 
     [Fact]
-    public void ValidateFtAliasArgs() => Assert.Multiple(
-            () => Assert.Equal(["FT.ALIASADD", "myalias", "myindex"], Request.FtAliasAdd("myalias", "myindex").GetArgs()),
-            () => Assert.Equal(["FT.ALIASDEL", "myalias"], Request.FtAliasDel("myalias").GetArgs()),
-            () => Assert.Equal(["FT.ALIASUPDATE", "myalias", "newindex"], Request.FtAliasUpdate("myalias", "newindex").GetArgs()),
-            () => Assert.Equal(["FT._ALIASLIST"], Request.FtAliasList().GetArgs())
-        );
+    public void ValidateFtSearchArgs_SortByDesc() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "SORTBY", "score", "DESC"],
+            Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", FtSearchSortOrder.Descending) }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_ReturnFields() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "RETURN", "3", "title", "AS", "t"],
+            Request.FtSearch("idx", "*", new FtSearchOptions
+            {
+                ReturnFields = [new FtSearchReturnField("title", "t")]
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_Params() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "PARAMS", "2", "k1", "v1"],
+            Request.FtSearch("idx", "*", new FtSearchOptions
+            {
+                Params = [new FtSearchParam("k1", "v1")]
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_TimeoutAndDialect() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "TIMEOUT", "5000", "DIALECT", "2"],
+            Request.FtSearch("idx", "*", new FtSearchOptions { Timeout = TimeSpan.FromMilliseconds(5000), Dialect = 2 }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_WithSortKeys() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "SORTBY", "score", "WITHSORTKEYS"],
+            Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", withSortKeys: true) }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_WithSortKeysAndNoContent_SortKeysStripped() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "NOCONTENT", "SORTBY", "score"],
+            Request.FtSearch("idx", "*", new FtSearchOptions { SortBy = new FtSearchSortBy("score", withSortKeys: true), NoContent = true }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_InOrderAndSlop() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "INORDER", "SLOP", "2"],
+            Request.FtSearch("idx", "*", new FtSearchOptions { InOrder = true, Slop = 2 }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_ShardScopeAndConsistency() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "@tag:{test}", "SOMESHARDS", "INCONSISTENT"],
+            Request.FtSearch("idx", "@tag:{test}", new FtSearchOptions
+            {
+                ShardScope = FtSearchShardScope.SomeShards,
+                Consistency = FtSearchConsistencyMode.Inconsistent
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtSearchArgs_AllShardsAndConsistent() =>
+        Assert.Equal(
+            ["FT.SEARCH", "idx", "*", "ALLSHARDS", "CONSISTENT"],
+            Request.FtSearch("idx", "*", new FtSearchOptions
+            {
+                ShardScope = FtSearchShardScope.AllShards,
+                Consistency = FtSearchConsistencyMode.Consistent
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_Basic() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*"],
+            Request.FtAggregate("idx", "*", null).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_LoadAll() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions { LoadAll = true }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_LoadFields() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@f1", "@f2"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions { LoadFields = ["@f1", "@f2"] }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_GroupByAndReduce() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "GROUPBY", "1", "@color", "REDUCE", "COUNT", "0", "AS", "count"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions
+            {
+                Clauses =
+                [
+                    new FtAggregateGroupBy("@color")
+                    {
+                        Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }]
+                    }
+                ]
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_SortBy() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "SORTBY", "2", "@score", "DESC", "MAX", "10"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions
+            {
+                Clauses =
+                [
+                    new FtAggregateSortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], 10)
+                ]
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_Filter() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "FILTER", "@score > 5"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions
+            {
+                Clauses = [new FtAggregateFilter("@score > 5")]
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_Apply() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "APPLY", "@score * 2", "AS", "doubled"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions
+            {
+                Clauses = [new FtAggregateApply("@score * 2", "doubled")]
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_Limit() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LIMIT", "0", "10"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions
+            {
+                Clauses = [new FtLimit(0, 10)]
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAggregateArgs_VerbatimTimeoutParamsDialect() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "VERBATIM", "TIMEOUT", "3000", "PARAMS", "2", "k", "v", "DIALECT", "2"],
+            Request.FtAggregate("idx", "*", new FtAggregateOptions
+            {
+                Verbatim = true,
+                Timeout = TimeSpan.FromMilliseconds(3000),
+                Params = [new FtAggregateParam("k", "v")],
+                Dialect = 2
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtInfoArgs_Basic() =>
+        Assert.Equal(["FT.INFO", "idx"], Request.FtInfo("idx", null).GetArgs());
+
+    [Fact]
+    public void ValidateFtInfoArgs_LocalScope() =>
+        Assert.Equal(
+            ["FT.INFO", "idx", "LOCAL"],
+            Request.FtInfo("idx", new FtInfoOptions { Scope = FtInfoScope.Local }).GetArgs());
+
+    [Fact]
+    public void ValidateFtInfoArgs_ClusterWithFlags() =>
+        Assert.Equal(
+            ["FT.INFO", "idx", "CLUSTER", "ALLSHARDS", "CONSISTENT"],
+            Request.FtInfo("idx", new FtInfoOptions
+            {
+                Scope = FtInfoScope.Cluster,
+                ShardScope = FtInfoShardScope.AllShards,
+                Consistency = FtInfoConsistencyMode.Consistent
+            }).GetArgs());
+
+    [Fact]
+    public void ValidateFtAliasArgs_Add() =>
+        Assert.Equal(["FT.ALIASADD", "myalias", "myindex"], Request.FtAliasAdd("myalias", "myindex").GetArgs());
+
+    [Fact]
+    public void ValidateFtAliasArgs_Del() =>
+        Assert.Equal(["FT.ALIASDEL", "myalias"], Request.FtAliasDel("myalias").GetArgs());
+
+    [Fact]
+    public void ValidateFtAliasArgs_Update() =>
+        Assert.Equal(["FT.ALIASUPDATE", "myalias", "newindex"], Request.FtAliasUpdate("myalias", "newindex").GetArgs());
+
+    [Fact]
+    public void ValidateFtAliasArgs_List() =>
+        Assert.Equal(["FT._ALIASLIST"], Request.FtAliasList().GetArgs());
 
     [Fact]
     public void ValidateFtCreateOptionsValidation() =>
@@ -337,133 +365,142 @@ public class VectorSearchCommandTests
             new FtAggregateOptions { LoadAll = true, LoadFields = ["@f1"] }.ToArgs());
 
     [Fact]
-    public void ValidateFtAggregateOptionsBuilder() => Assert.Multiple(
-            // WithAllFields emits LOAD *
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder().WithAllFields().Build()).GetArgs()),
+    public void ValidateFtAggregateOptionsBuilder_WithAllFields() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder().WithAllFields().Build()).GetArgs());
 
-            // WithField adds a single field
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "1", "@title"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder().WithField("@title").Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithField() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "1", "@title"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder().WithField("@title").Build()).GetArgs());
 
-            // WithField called multiple times accumulates fields
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@f1", "@f2"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder().WithField("@f1").WithField("@f2").Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithFieldAccumulates() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@f1", "@f2"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder().WithField("@f1").WithField("@f2").Build()).GetArgs());
 
-            // WithFields replaces any previously accumulated fields
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@a", "@b"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .WithField("@old")
-                        .WithFields(["@a", "@b"])
-                        .Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithFieldsReplaces() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "2", "@a", "@b"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder()
+                    .WithField("@old")
+                    .WithFields(["@a", "@b"])
+                    .Build()).GetArgs());
 
-            // WithAllFields after WithField clears the field list and sets LOAD *
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder().WithField("@f1").WithAllFields().Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithAllFieldsAfterWithField() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder().WithField("@f1").WithAllFields().Build()).GetArgs());
 
-            // WithField after WithAllFields clears the LOAD * flag
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "1", "@f1"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder().WithAllFields().WithField("@f1").Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithFieldAfterWithAllFields() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "1", "@f1"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder().WithAllFields().WithField("@f1").Build()).GetArgs());
 
-            // WithParam adds a single param; called twice accumulates both
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "PARAMS", "4", "k1", "v1", "k2", "v2", "DIALECT", "2"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .WithParam(new FtAggregateParam("k1", "v1"))
-                        .WithParam(new FtAggregateParam("k2", "v2"))
-                        .Dialect(2)
-                        .Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithParamAccumulates() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "PARAMS", "4", "k1", "v1", "k2", "v2", "DIALECT", "2"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder()
+                    .WithParam(new FtAggregateParam("k1", "v1"))
+                    .WithParam(new FtAggregateParam("k2", "v2"))
+                    .Dialect(2)
+                    .Build()).GetArgs());
 
-            // WithParams replaces any previously accumulated params
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "PARAMS", "2", "k2", "v2"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .WithParam(new FtAggregateParam("k1", "v1"))
-                        .WithParams([new FtAggregateParam("k2", "v2")])
-                        .Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithParamsReplaces() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "PARAMS", "2", "k2", "v2"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder()
+                    .WithParam(new FtAggregateParam("k1", "v1"))
+                    .WithParams([new FtAggregateParam("k2", "v2")])
+                    .Build()).GetArgs());
 
-            // WithClause appends a single clause; called twice preserves order
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "FILTER", "@score > 5", "LIMIT", "0", "10"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .WithClause(new FtAggregateFilter("@score > 5"))
-                        .WithClause(new FtLimit(0, 10))
-                        .Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithClauseAccumulates() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "FILTER", "@score > 5", "LIMIT", "0", "10"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder()
+                    .WithClause(new FtAggregateFilter("@score > 5"))
+                    .WithClause(new FtLimit(0, 10))
+                    .Build()).GetArgs());
 
-            // WithClauses replaces any previously accumulated clauses
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LIMIT", "0", "5"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .WithClause(new FtAggregateFilter("@score > 5"))
-                        .WithClauses([new FtLimit(0, 5)])
-                        .Build()).GetArgs()),
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WithClausesReplaces() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LIMIT", "0", "5"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder()
+                    .WithClause(new FtAggregateFilter("@score > 5"))
+                    .WithClauses([new FtLimit(0, 5)])
+                    .Build()).GetArgs());
 
-            // Builder and object-initializer produce identical args for a full options set
-            () =>
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_BuilderMatchesInitializer()
+    {
+        var fromBuilder = Request.FtAggregate("idx", "*",
+            new FtAggregateOptionsBuilder()
+                .WithField("@f1").WithField("@f2")
+                .Verbatim()
+                .Timeout(TimeSpan.FromSeconds(3))
+                .WithParam(new FtAggregateParam("k", "v"))
+                .Dialect(2)
+                .GroupBy(["@condition"], new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" })
+                .SortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], max: 10)
+                .Filter("@score > 5")
+                .Limit(0, 10)
+                .Build()).GetArgs();
+
+        var fromInitializer = Request.FtAggregate("idx", "*",
+            new FtAggregateOptions
             {
-                var fromBuilder = Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .WithField("@f1").WithField("@f2")
-                        .Verbatim()
-                        .Timeout(TimeSpan.FromSeconds(3))
-                        .WithParam(new FtAggregateParam("k", "v"))
-                        .Dialect(2)
-                        .GroupBy(["@condition"], new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" })
-                        .SortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], max: 10)
-                        .Filter("@score > 5")
-                        .Limit(0, 10)
-                        .Build()).GetArgs();
+                LoadFields = ["@f1", "@f2"],
+                Verbatim = true,
+                Timeout = TimeSpan.FromSeconds(3),
+                Params = [new FtAggregateParam("k", "v")],
+                Dialect = 2,
+                Clauses =
+                [
+                    new FtAggregateGroupBy("@condition") { Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }] },
+                    new FtAggregateSortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], 10),
+                    new FtAggregateFilter("@score > 5"),
+                    new FtLimit(0, 10),
+                ]
+            }).GetArgs();
 
-                var fromInitializer = Request.FtAggregate("idx", "*",
-                    new FtAggregateOptions
-                    {
-                        LoadFields = ["@f1", "@f2"],
-                        Verbatim = true,
-                        Timeout = TimeSpan.FromSeconds(3),
-                        Params = [new FtAggregateParam("k", "v")],
-                        Dialect = 2,
-                        Clauses =
-                        [
-                            new FtAggregateGroupBy("@condition") { Reducers = [new FtAggregateReducer(FtReducerFunction.Count) { Name = "count" }] },
-                            new FtAggregateSortBy([new FtAggregateSortProperty("@score", SortOrder.Descending)], 10),
-                            new FtAggregateFilter("@score > 5"),
-                            new FtLimit(0, 10),
-                        ]
-                    }).GetArgs();
+        Assert.Equal(fromInitializer, fromBuilder);
+    }
 
-                Assert.Equal(fromInitializer, fromBuilder);
-            },
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WhenTrue() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder()
+                    .When(true, b => b.WithAllFields())
+                    .Build()).GetArgs());
 
-            // When(true) applies the configure action
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*", "LOAD", "*"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .When(true, b => b.WithAllFields())
-                        .Build()).GetArgs()),
-
-            // When(false) skips the configure action
-            () => Assert.Equal(
-                ["FT.AGGREGATE", "idx", "*"],
-                Request.FtAggregate("idx", "*",
-                    new FtAggregateOptionsBuilder()
-                        .When(false, b => b.WithAllFields())
-                        .Build()).GetArgs())
-        );
+    [Fact]
+    public void ValidateFtAggregateOptionsBuilder_WhenFalse() =>
+        Assert.Equal(
+            ["FT.AGGREGATE", "idx", "*"],
+            Request.FtAggregate("idx", "*",
+                new FtAggregateOptionsBuilder()
+                    .When(false, b => b.WithAllFields())
+                    .Build()).GetArgs());
 }

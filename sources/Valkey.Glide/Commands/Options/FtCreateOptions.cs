@@ -473,22 +473,22 @@ public sealed class FtCreateOptionsBuilder
 public sealed class FtCreateOptions
 {
     /// <summary>The index data type. If not set, a HASH index is created.</summary>
-    public IndexDataType? DataType { get; set; }
+    public IndexDataType? DataType { get; init; }
 
     /// <summary>Key prefixes to index.</summary>
-    public string[]? Prefixes { get; set; }
+    public string[]? Prefixes { get; init; }
 
     /// <summary>Default score for documents in the index. Default is 1.0.</summary>
-    public double? Score { get; set; }
+    public double? Score { get; init; }
 
     /// <summary>Default language for documents in the index.</summary>
-    public string? Language { get; set; }
+    public string? Language { get; init; }
 
     /// <summary>Skips scanning and indexing existing documents on index creation.</summary>
-    public bool SkipInitialScan { get; set; }
+    public bool SkipInitialScan { get; init; }
 
     /// <summary>Minimum word length to stem.</summary>
-    public int? MinStemSize { get; set; }
+    public int? MinStemSize { get; init; }
 
     /// <summary>
     /// Controls term offset storage.
@@ -498,21 +498,21 @@ public sealed class FtCreateOptions
     ///   <item><description><see langword="null"/> (default) — omit the option entirely</description></item>
     /// </list>
     /// </summary>
-    public bool? Offsets { get; set; }
+    public bool? Offsets { get; init; }
 
     /// <summary>Disables stop-word filtering. Mutually exclusive with <see cref="StopWords"/>.</summary>
-    public bool NoStopWords { get; set; }
+    public bool NoStopWords { get; init; }
 
     /// <summary>Custom list of stop words. Mutually exclusive with <see cref="NoStopWords"/>.</summary>
-    public string[]? StopWords { get; set; }
+    public string[]? StopWords { get; init; }
 
     /// <summary>Custom set of punctuation characters for tokenization.</summary>
-    public string? Punctuation { get; set; }
+    public string? Punctuation { get; init; }
 
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public GlideString[] ToArgs()
+    internal GlideString[] ToArgs()
     {
         if (NoStopWords && StopWords is { Length: > 0 })
         {

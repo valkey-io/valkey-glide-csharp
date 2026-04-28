@@ -18,7 +18,7 @@ public sealed class FtInfoOptions
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public GlideString[] ToArgs()
+    internal GlideString[] ToArgs()
     {
         List<GlideString> args = [];
         if (Scope.HasValue)

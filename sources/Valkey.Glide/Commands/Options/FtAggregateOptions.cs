@@ -484,7 +484,7 @@ public sealed class FtAggregateOptions
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public GlideString[] ToArgs()
+    internal GlideString[] ToArgs()
     {
         string[] loadFields = LoadFields?.ToArray() ?? [];
 

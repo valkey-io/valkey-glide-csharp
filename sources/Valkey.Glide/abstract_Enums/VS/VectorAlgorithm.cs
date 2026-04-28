@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands.Options;
 /// Represents the algorithm used for vector similarity search.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public enum VectorAlgorithm
+internal enum VectorAlgorithm
 {
     /// <summary>Brute force (flat) algorithm.</summary>
     Flat,

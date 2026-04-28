@@ -69,67 +69,67 @@ public sealed class FtSearchOptions
     /// <summary>
     /// Fields to return. If empty, all fields are returned.
     /// </summary>
-    public FtSearchReturnField[]? ReturnFields { get; set; }
+    public FtSearchReturnField[]? ReturnFields { get; init; }
 
     /// <summary>
     /// Overrides the module timeout.
     /// </summary>
-    public TimeSpan? Timeout { get; set; }
+    public TimeSpan? Timeout { get; init; }
 
     /// <summary>
     /// Key/value pairs referenced from within the query expression.
     /// </summary>
-    public FtSearchParam[]? Params { get; set; }
+    public FtSearchParam[]? Params { get; init; }
 
     /// <summary>
     /// Pagination. Only keys satisfying offset and count are returned.
     /// </summary>
-    public FtLimit? Limit { get; set; }
+    public FtLimit? Limit { get; init; }
 
     /// <summary>
     /// Returns only document IDs without field content.
     /// </summary>
-    public bool NoContent { get; set; }
+    public bool NoContent { get; init; }
 
     /// <summary>
     /// Sets the query dialect version.
     /// </summary>
-    public int? Dialect { get; set; }
+    public int? Dialect { get; init; }
 
     /// <summary>
     /// Disables stemming on text terms in the query.
     /// </summary>
-    public bool Verbatim { get; set; }
+    public bool Verbatim { get; init; }
 
     /// <summary>
     /// Requires proximity matching of text terms to be in order.
     /// </summary>
-    public bool InOrder { get; set; }
+    public bool InOrder { get; init; }
 
     /// <summary>
     /// Sets the slop value for proximity matching of text terms.
     /// </summary>
-    public int? Slop { get; set; }
+    public int? Slop { get; init; }
 
     /// <summary>
     /// Sort configuration. Bundles the field name, direction, and WITHSORTKEYS flag.
     /// </summary>
-    public FtSearchSortBy? SortBy { get; set; }
+    public FtSearchSortBy? SortBy { get; init; }
 
     /// <summary>
     /// Controls shard participation in cluster mode.
     /// </summary>
-    public FtSearchShardScope? ShardScope { get; set; }
+    public FtSearchShardScope? ShardScope { get; init; }
 
     /// <summary>
     /// Controls consistency requirements in cluster mode.
     /// </summary>
-    public FtSearchConsistencyMode? Consistency { get; set; }
+    public FtSearchConsistencyMode? Consistency { get; init; }
 
     /// <summary>
     /// Returns the command arguments for these options.
     /// </summary>
-    public GlideString[] ToArgs()
+    internal GlideString[] ToArgs()
     {
         List<GlideString> args = [];
         if (ShardScope.HasValue)
