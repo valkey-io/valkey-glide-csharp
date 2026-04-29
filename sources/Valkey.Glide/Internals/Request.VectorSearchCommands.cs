@@ -142,7 +142,7 @@ internal partial class Request
         long l => (ValkeyValue)l,
         double d => (ValkeyValue)d,
         bool b => (ValkeyValue)b,
-        _ => (ValkeyValue)value.ToString()!,
+        _ => (ValkeyValue)value.ToString(),
     };
 
     private static Dictionary<string, object> ParseFtInfoResponse(object data) => data is Dictionary<GlideString, object> map

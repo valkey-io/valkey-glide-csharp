@@ -155,6 +155,105 @@ jobs:
                       failures.json
                       valkey-glide/utils/clusters/**
 
+    tests-modules:
+        name: Module tests (Docker, net${{ matrix.dotnet }})
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix:
+                dotnet: ["8.0"]
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  submodules: true
+
+            - name: Set up dotnet ${{ matrix.dotnet }}
+              uses: actions/setup-dotnet@v5
+              with:
+                  dotnet-version: |
+                      9
+                      ${{ matrix.dotnet }}
+              env:
+                  DOTNET_INSTALL_DIR: ~/.dotnet
+
+            - name: Install shared software dependencies
+              uses: ./.github/workflows/install-shared-dependencies
+              with:
+                  os: ubuntu
+                  target: x86_64-unknown-linux-gnu
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  server-version: "9.0"
+
+            - uses: actions/cache@v5
+              with:
+                  path: rust/target
+                  key: rust-x86_64-unknown-linux-gnu
+
+            - name: Run module tests against Docker standalone
+              env:
+                  standalone-endpoints: "localhost:6389"
+              run: |
+                  dotnet test tests/Valkey.Glide.IntegrationTests/ \
+                    --framework net${{ matrix.dotnet }} \
+                    --filter "FullyQualifiedName~ValkeySearchCommand" \
+                    --logger "html;LogFileName=ModuleStandaloneTestReport.html" \
+                    --logger "trx;LogFileName=ModuleStandaloneTestResults.trx" \
+                    --logger "console;verbosity=detailed" \
+                    --results-directory .
+
+            - name: Run module tests against Docker cluster
+              env:
+                  cluster-endpoints: "localhost:8001,localhost:8002,localhost:8003,localhost:8004,localhost:8005,localhost:8006"
+              run: |
+                  dotnet test tests/Valkey.Glide.IntegrationTests/ \
+                    --framework net${{ matrix.dotnet }} \
+                    --filter "FullyQualifiedName~ValkeySearchCommand" \
+                    --logger "html;LogFileName=ModuleClusterTestReport.html" \
+                    --logger "trx;LogFileName=ModuleClusterTestResults.trx" \
+                    --logger "console;verbosity=detailed" \
+                    --results-directory .
+
+            - name: Derive failures.json (from TRX)
+              if: always()
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  SUMMARY_FILE=failures.json
+                  # Merge counts from both standalone and cluster TRX files
+                  FAILED=0; PASSED=0; TOTAL=0; SKIPPED=0
+                  for trx in ModuleStandaloneTestResults.trx ModuleClusterTestResults.trx; do
+                    if [ -f "$trx" ] && command -v xmllint >/dev/null 2>&1; then
+                      FAILED=$((FAILED + $(xmllint --xpath "string(//Counters/@failed)" "$trx" 2>/dev/null || echo 0)))
+                      PASSED=$((PASSED + $(xmllint --xpath "string(//Counters/@passed)" "$trx" 2>/dev/null || echo 0)))
+                      TOTAL=$((TOTAL + $(xmllint --xpath "string(//Counters/@total)" "$trx" 2>/dev/null || echo 0)))
+                      SKIPPED=$((SKIPPED + $(xmllint --xpath "string(//Counters/@skipped)" "$trx" 2>/dev/null || echo 0)))
+                    fi
+                  done
+                  cat > "$SUMMARY_FILE" <<EOF
+                  {
+                    "workflow": "C# tests",
+                    "runId": ${GITHUB_RUN_ID},
+                    "jobName": "Module tests (Docker, net${{ matrix.dotnet }})",
+                    "summary": { "total": $TOTAL, "passed": $PASSED, "failed": $FAILED, "skipped": $SKIPPED },
+                    "failed": [],
+                    "links": { "runUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }
+                  }
+                  EOF
+
+            - name: Upload test reports
+              if: always()
+              continue-on-error: true
+              uses: actions/upload-artifact@v7
+              with:
+                  name: module-test-reports-net${{ matrix.dotnet }}
+                  path: |
+                      ModuleStandaloneTestReport.html
+                      ModuleStandaloneTestResults.trx
+                      ModuleClusterTestReport.html
+                      ModuleClusterTestResults.trx
+                      failures.json
+
     get-containers:
         runs-on: ubuntu-latest
         if: false
